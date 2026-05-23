@@ -17,7 +17,8 @@ T_STONE = "stone1_5"     # parapets, pillar caps, arch ring
 T_FLOOR = "afloor1_4"    # bridge deck top, building floor/ceiling
 T_WALL  = "bricka2_1"    # building walls, arch jambs
 T_METAL = "metal5_4"     # pillar cap overhang trim
-T_ROCK  = "rock1_2"      # cave outer walls and ceiling
+T_ROCK  = "rock1_2"      # cave outer walls
+T_SKY   = "sky4"         # open sky above bridge
 
 # ── Bridge dimensions ────────────────────────────────────────────────────────
 BRX1, BRX2 = -512, 512       # Bridge X extent
@@ -135,7 +136,7 @@ B = []
 
 # ── Outer cave box (rock walls seal the map) ─────────────────────────────────
 B.append(box(OX1, OY1, FZ1,     OX2, OY2, FZ2,    T_ROCK))   # cave floor
-B.append(box(OX1, OY1, OZ2-16,  OX2, OY2, OZ2,    T_ROCK))   # cave ceiling
+B.append(box(OX1, OY1, OZ2-16,  OX2, OY2, OZ2,    T_SKY))    # sky ceiling (open sky above bridge)
 B.append(box(OX1, OY2-16, FZ1,  OX2, OY2, OZ2,    T_ROCK))   # N cave wall
 B.append(box(OX1, OY1, FZ1,     OX2, OY1+16, OZ2, T_ROCK))   # S cave wall
 B.append(box(OX2-16, OY1, FZ1,  OX2, OY2, OZ2,    T_ROCK))   # E cave wall
@@ -194,6 +195,8 @@ worldspawn = (
     '"classname" "worldspawn"\n'
     '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge"\n'
+    '"sky" "sky4"\n'
+    '"ambient" "40"\n'
     + "\n".join(B) +
     "\n}"
 )
@@ -223,22 +226,20 @@ E.append(ent("item_health", origin=" 128 0 152"))
 E.append(ent("item_health", origin="0 80 152"))
 E.append(ent("item_armortype", origin="-640 0 152"))
 
-# Torches on pillar caps (flame entities, one per cap)
-torch_z = P_CAP + 16   # just above cap slab
+# Torches on pillar caps — flickering lights (style 1 = torch flicker)
+torch_z = P_CAP + 20
 for px in PXS:
-    E.append(ent("light",  origin=f"{px}  {BRY2} {torch_z}", light="200"))
-    E.append(ent("light",  origin=f"{px}  {BRY1} {torch_z}", light="200"))
-    # Actual visible flame
-    E.append(ent("misc_explobox", origin=f"{px}  {BRY2-12} {P_CAP+4}"))
-    E.append(ent("misc_explobox", origin=f"{px}  {BRY1+12} {P_CAP+4}"))
+    for ty in [BRY2 - PAR_W//2, BRY1 + PAR_W//2]:
+        E.append(ent("light", origin=f"{px} {ty} {torch_z}",
+                     light="300", style="1"))
 
-# Building interior lights
-for lx, ll in [(-640, 250), (640, 250)]:
+# Building interior lights (bright, steady)
+for lx, ll in [(-640, 350), (640, 350)]:
     E.append(ent("light", origin=f"{lx} 0 260", light=str(ll)))
 
-# Bridge ambient lights (low, between pillar pairs)
-for lx in [-320, 0, 320]:
-    E.append(ent("light", origin=f"{lx} 0 200", light="150"))
+# Bridge ambient fill lights
+for lx in [-384, -128, 128, 384]:
+    E.append(ent("light", origin=f"{lx} 0 180", light="120"))
 
 # ── Write file ────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
