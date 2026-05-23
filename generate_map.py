@@ -186,36 +186,20 @@ for px in PXS:
     B.append(box(px-4, cy_n-4, P_CAP, px+4, cy_n+4, P_CAP+10, T_STONE, tt=T_LAVA))
     B.append(box(px-4, cy_s-4, P_CAP, px+4, cy_s+4, P_CAP+10, T_STONE, tt=T_LAVA))
 
-# ── Bridge piers (at pillar X positions, going from cave floor to deck) ───────
-for px in PXS:
-    B.append(box(px-PIER_HW, BRY2-PAR_W, FZ2, px+PIER_HW, BRY2, DZ1, T_STONE))
-    B.append(box(px-PIER_HW, BRY1, FZ2, px+PIER_HW, BRY1+PAR_W, DZ1, T_STONE))
-
-# ── Arches under the bridge (X-Z plane, one per span between piers, N and S) ──
-# Crown of each arch meets DZ1 (deck bottom). Spring line at zc = DZ1 - rin.
-# Spans: [west-building→pier0, pier0→pier1, pier1→pier2, pier2→pier3, pier3→east-building]
-under_spans = []
-x_faces = []  # X positions of pier faces + building faces
-x_faces.append(WBX2)                           # west building east face
-for px in PXS:
-    x_faces.append(px - PIER_HW)               # pier left face
-    x_faces.append(px + PIER_HW)               # pier right face
-x_faces.append(EBX1)                           # east building west face
-# Pair up: gaps are (x_faces[1],x_faces[2]), (x_faces[3],x_faces[4]), ...
-for i in range(0, len(x_faces)-1, 2):
-    xl, xr = x_faces[i], x_faces[i+1]
-    xc   = (xl + xr) / 2.0
-    rin  = (xr - xl) / 2.0
-    rout = rin + 16
-    zc   = DZ1 - rin                # spring line so crown = DZ1
-    seg  = 180.0 / A_SEGS
+# ── End arches under the bridge (Y-Z plane, one at each bridge end) ──────────
+# Each arch spans the bridge Y width (BRY1 to BRY2 = 256u), crown at DZ1.
+# Uses arch_seg (Y-Z plane, depth in X).
+EARCH_RIN  = (BRY2 - BRY1) // 2   # 128 — half bridge width
+EARCH_ROUT = EARCH_RIN + 16        # 144
+EARCH_ZC   = DZ1 - EARCH_RIN      # spring line Z = 0 (crown = DZ1 = 128)
+EARCH_THICK = 24                    # arch ring depth in X
+seg = 180.0 / A_SEGS
+for ex, direction in [(BRX1, "west"), (BRX2, "east")]:
+    xb = ex - EARCH_THICK // 2
+    xf = ex + EARCH_THICK // 2
     for j in range(A_SEGS):
-        # North side arch (visible from outside north)
-        B.append(arch_seg_xz(BRY2-PAR_W, BRY2, xc, zc, rin, rout,
-                              j*seg, (j+1)*seg, T_STONE))
-        # South side arch (visible from outside south)
-        B.append(arch_seg_xz(BRY1, BRY1+PAR_W, xc, zc, rin, rout,
-                              j*seg, (j+1)*seg, T_STONE))
+        B.append(arch_seg(xb, xf, 0.0, float(EARCH_ZC),
+                          EARCH_RIN, EARCH_ROUT, j*seg, (j+1)*seg, T_STONE))
 
 # ── Light panels (bright *teleport brushes on inner parapet face) ─────────────
 # Between every pair of adjacent pillar caps, centred, at eye-level on parapet
@@ -310,13 +294,9 @@ for px in panel_xs:
 for lx, ll in [(-640, 350), (640, 350)]:
     E.append(ent("light", origin=f"{lx} 0 260", light=str(ll)))
 
-# Underside of bridge — lights in the spans between piers, hugging deck bottom
-# Place one light per span, centred in X and Y (between N and S piers), just below DZ1
-for i in range(len(x_faces) - 1):
-    if i % 2 == 0:  # gap spans only (skip pier widths)
-        xl, xr = x_faces[i], x_faces[i+1]
-        lx = int((xl + xr) / 2)
-        E.append(ent("light", origin=f"{lx} 0 {DZ1 - 12}", light="200", style="0"))
+# Lights at bridge ends, illuminating the end arches
+for ex in [BRX1, BRX2]:
+    E.append(ent("light", origin=f"{ex} 0 {DZ1 - 20}", light="220"))
 
 # ── Write file ────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
