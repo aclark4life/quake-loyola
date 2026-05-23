@@ -7,11 +7,11 @@ Y = width, Z = height.
 import math
 
 # ── Textures ─────────────────────────────────────────────────────────────────
-T_STONE = "brown66"
-T_FLOOR = "floor0_1"
-T_WALL  = "brown25"
+T_STONE = "stone1_5"
+T_FLOOR = "afloor1_4"
+T_WALL  = "bricka2_1"
 T_METAL = "metal5_4"
-T_ROCK  = "rock1_1"
+T_ROCK  = "rock1_2"
 T_SKY   = "sky4"
 
 # ── Dimensions ───────────────────────────────────────────────────────────────
@@ -64,15 +64,16 @@ def face(p1, p2, p3, tex):
     return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} 0 0 0 1 1"
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
-    """Axis-aligned box brush. tt=top texture, tb=bottom texture."""
+    """Axis-aligned box brush. tt=top texture, tb=bottom texture.
+    Quake .map convention: (p2-p1)×(p3-p1) must point INWARD (CW from outside)."""
     tt = tt or tex; tb = tb or tex
     return "{\n" + "\n".join([
-        face((x1,y1,z1),(x1,y1,z2),(x1,y2,z1), tex),   # -X
-        face((x2,y1,z1),(x2,y2,z1),(x2,y1,z2), tex),   # +X
-        face((x1,y1,z1),(x2,y1,z1),(x1,y1,z2), tex),   # -Y
-        face((x1,y2,z1),(x1,y2,z2),(x2,y2,z1), tex),   # +Y
-        face((x1,y1,z1),(x1,y2,z1),(x2,y1,z1), tb),    # -Z
-        face((x1,y1,z2),(x2,y1,z2),(x1,y2,z2), tt),    # +Z
+        face((x1,y1,z1),(x1,y2,z1),(x1,y1,z2), tex),   # -X
+        face((x2,y1,z1),(x2,y1,z2),(x2,y2,z1), tex),   # +X
+        face((x1,y1,z1),(x1,y1,z2),(x2,y1,z1), tex),   # -Y
+        face((x1,y2,z1),(x2,y2,z1),(x1,y2,z2), tex),   # +Y
+        face((x1,y1,z1),(x2,y1,z1),(x1,y2,z1), tb),    # -Z
+        face((x1,y1,z2),(x1,y2,z2),(x2,y1,z2), tt),    # +Z
     ]) + "\n}"
 
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
@@ -88,18 +89,18 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     yi, zi = yc + rin  * cm, zc + rin  * sm
     yo, zo = yc + rout * cm, zc + rout * sm
     return "{\n" + "\n".join([
-        # +X front face  — outward normal +X
-        face((xf,yc,zc), (xf,yc+1,zc), (xf,yc,zc+1), tex),
-        # -X back face   — outward normal -X
-        face((xb,yc,zc), (xb,yc,zc+1), (xb,yc+1,zc), tex),
-        # Right radial cut (at θ=t1) — outward normal (0, sin t1, -cos t1)
-        face((xf,yc,zc), (xb,yc,zc), (xf, yc+c1, zc+s1), tex),
-        # Left  radial cut (at θ=t2) — outward normal (0, -sin t2, cos t2)
-        face((xf,yc,zc), (xf, yc+c2, zc+s2), (xb,yc,zc), tex),
-        # Inner face (tangent to inner circle at θ_mid) — normal toward centre
-        face((xf,yi,zi), (xf, yi-sm, zi+cm), (xb,yi,zi), tex),
-        # Outer face (tangent to outer circle at θ_mid) — normal away from centre
-        face((xf,yo,zo), (xb,yo,zo), (xf, yo-sm, zo+cm), tex),
+        # +X front face — inward normal (CW from outside)
+        face((xf,yc,zc), (xf,yc,zc+1), (xf,yc+1,zc), tex),
+        # -X back face
+        face((xb,yc,zc), (xb,yc+1,zc), (xb,yc,zc+1), tex),
+        # Right radial cut (at θ=t1)
+        face((xf,yc,zc), (xf, yc+c1, zc+s1), (xb,yc,zc), tex),
+        # Left  radial cut (at θ=t2)
+        face((xf,yc,zc), (xb,yc,zc), (xf, yc+c2, zc+s2), tex),
+        # Inner face (tangent to inner circle at θ_mid)
+        face((xf,yi,zi), (xb,yi,zi), (xf, yi-sm, zi+cm), tex),
+        # Outer face (tangent to outer circle at θ_mid)
+        face((xf,yo,zo), (xf, yo-sm, zo+cm), (xb,yo,zo), tex),
     ]) + "\n}"
 
 def arch_gate(cx, tex):
@@ -140,18 +141,19 @@ def ent(cls, **kw):
 B = []
 
 # -- Outer bounding box (sky shell sealing the map) --
+# Walls extend through floor/ceiling to ensure no zero-thickness shared faces.
 B.append(box(OX1, OY1, FZ1,     OX2, OY2, FZ2,    T_ROCK))          # ravine floor
 B.append(box(OX1, OY1, OZ2-16,  OX2, OY2, OZ2,    T_SKY))           # sky ceiling
-B.append(box(OX1, OY2-16, FZ2,  OX2, OY2, OZ2-16, T_SKY))           # N wall
-B.append(box(OX1, OY1, FZ2,     OX2, OY1+16, OZ2-16, T_SKY))        # S wall
-B.append(box(OX2-16, OY1, FZ2,  OX2, OY2, OZ2-16, T_SKY))           # E wall
-B.append(box(OX1, OY1, FZ2,     OX1+16, OY2, OZ2-16, T_SKY))        # W wall
+B.append(box(OX1, OY2-16, FZ1,  OX2, OY2, OZ2,    T_SKY))           # N wall (full height)
+B.append(box(OX1, OY1, FZ1,     OX2, OY1+16, OZ2, T_SKY))           # S wall (full height)
+B.append(box(OX2-16, OY1, FZ1,  OX2, OY2, OZ2,    T_SKY))           # E wall (full height)
+B.append(box(OX1, OY1, FZ1,     OX1+16, OY2, OZ2, T_SKY))           # W wall (full height)
 
 # -- Bridge deck --
 B.append(box(BRX1, BRY1, DZ1, BRX2, BRY2, DZ2, T_WALL, tt=T_FLOOR))
 
 # -- West building --
-B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ1, T_STONE))              # foundation
+B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ2, T_STONE))              # foundation (to deck top, seals gap)
 B.append(box(WBX1, BY1, BZ2, WBX2, BY2, BCEIL, T_STONE))            # ceiling slab
 B.append(box(WBX1,        BY1,        DZ2, WBX1+BWALL, BY2,        BZ2, T_STONE))  # W outer wall
 B.append(box(WBX1+BWALL,  BY2-BWALL,  DZ2, WBX2,       BY2,        BZ2, T_STONE))  # N wall
@@ -160,7 +162,7 @@ B.append(box(WBX2-BWALL,  BY1+BWALL,  DZ2, WBX2, -BOPEN_Y,        BZ2, T_STONE))
 B.append(box(WBX2-BWALL,  BOPEN_Y,    DZ2, WBX2,  BY2-BWALL,      BZ2, T_STONE))  # E jamb R
 
 # -- East building (mirror of west) --
-B.append(box(EBX1, BY1, FZ2, EBX2, BY2, DZ1, T_STONE))
+B.append(box(EBX1, BY1, FZ2, EBX2, BY2, DZ2, T_STONE))
 B.append(box(EBX1, BY1, BZ2, EBX2, BY2, BCEIL, T_STONE))
 B.append(box(EBX2-BWALL,  BY1,        DZ2, EBX2, BY2,        BZ2, T_STONE))  # E outer wall
 B.append(box(EBX1,        BY2-BWALL,  DZ2, EBX2-BWALL, BY2,  BZ2, T_STONE))  # N wall

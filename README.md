@@ -27,15 +27,15 @@ A Quake 1 deathmatch map inspired by the pedestrian bridge at Loyola University 
 
 ## Textures required
 
-All textures come from the stock `quake101.wad` (bundled with Quake):
+All textures come from the stock Quake data files. Extract `quake101.wad` from your Quake `PAK0.PAK` / `PAK1.PAK` files and place it alongside the `.map` file before compiling.
 
 | Surface | Texture name |
 |---|---|
-| Bridge deck top | `floor0_1` |
-| Stone pillars, arch, buildings | `brown66` |
-| Bridge deck underside / walls | `brown25` |
+| Bridge deck | `afloor1_4` |
+| Stone pillars, arch | `stone1_5` |
+| Building walls | `bricka2_1` |
 | Pillar caps, railings | `metal5_4` |
-| Ravine floor | `rock1_1` |
+| Ravine floor | `rock1_2` |
 | Sky surfaces | `sky4` |
 
 ## Entities
@@ -52,8 +52,8 @@ All textures come from the stock `quake101.wad` (bundled with Quake):
 
 ## Compiling
 
-You need the Quake compile tools: **qbsp**, **vis**, and **light**.  
-Popular options: [ericw-tools](https://github.com/ericwa/ericw-tools) or [TyrUtils-ericw](https://github.com/ericwa/tyrutils-ericw).
+You need **ericw-tools v0.18.1** or later: [github.com/ericwa/ericw-tools/releases](https://github.com/ericwa/ericw-tools/releases).  
+Place `quake101.wad` in the same directory as the `.map` file, then:
 
 ```bash
 # 1. BSP (geometry)
