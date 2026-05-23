@@ -1,0 +1,16 @@
+# Compiled BSP and related output
+*.bsp
+*.prt
+*.pts
+*.log
+*.content.json
+*.texinfo.json
+
+# WAD (derived from copyrighted Quake data)
+*.wad
+
+# Test/scratch files
+test_*
+loyola_bridge_test.*
+loyola_bridge_sky.map
+ref_test.*
