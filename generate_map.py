@@ -310,9 +310,13 @@ for px in panel_xs:
 for lx, ll in [(-640, 350), (640, 350)]:
     E.append(ent("light", origin=f"{lx} 0 260", light=str(ll)))
 
-# Bridge ambient fill lights
-for lx in [-384, -128, 128, 384]:
-    E.append(ent("light", origin=f"{lx} 0 180", light="120"))
+# Underside of bridge — lights in the spans between piers, hugging deck bottom
+# Place one light per span, centred in X and Y (between N and S piers), just below DZ1
+for i in range(len(x_faces) - 1):
+    if i % 2 == 0:  # gap spans only (skip pier widths)
+        xl, xr = x_faces[i], x_faces[i+1]
+        lx = int((xl + xr) / 2)
+        E.append(ent("light", origin=f"{lx} 0 {DZ1 - 12}", light="200", style="0"))
 
 # ── Write file ────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
