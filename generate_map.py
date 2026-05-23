@@ -19,6 +19,8 @@ T_WALL  = "bricka2_1"    # building walls, arch jambs
 T_METAL = "metal5_4"     # pillar cap overhang trim
 T_ROCK  = "rock1_2"      # cave outer walls
 T_SKY   = "sky4"         # open sky above bridge
+T_LAVA  = "*lava1"       # torch flame (fullbright orange)
+T_PANEL = "*teleport"    # light panel (fullbright blue)
 
 # ── Bridge dimensions ────────────────────────────────────────────────────────
 BRX1, BRX2 = -512, 512       # Bridge X extent
@@ -105,6 +107,25 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
         face((xf,yo,zo), (xf, yo-sm, zo+cm), (xb,yo,zo), tex),
     ]) + "\n}"
 
+def arch_seg_xz(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
+    """Arch voussoir in the X-Z plane (arch spans E-W, depth in Y).
+    Angles: 0=+X, 90=+Z. Crown at 90° faces upward. Face normals OUTWARD."""
+    t1, t2 = math.radians(t1d), math.radians(t2d)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    xi, zi = xc + rin  * cm, zc + rin  * sm
+    xo, zo = xc + rout * cm, zc + rout * sm
+    return "{\n" + "\n".join([
+        face((xc,   yf, zc),     (xc+1, yf, zc),     (xc,   yf, zc+1),   tex),  # +Y
+        face((xc,   yb, zc),     (xc,   yb, zc+1),   (xc+1, yb, zc),     tex),  # -Y
+        face((xc,   yf, zc),     (xc,   yb, zc),     (xc+c1,yf, zc+s1),  tex),  # right radial
+        face((xc,   yf, zc),     (xc+c2,yf, zc+s2),  (xc,   yb, zc),     tex),  # left radial
+        face((xi,   yf, zi),     (xi-sm,yf, zi+cm),   (xi,   yb, zi),     tex),  # inner
+        face((xo,   yf, zo),     (xo,   yb, zo),     (xo-sm,yf, zo+cm),  tex),  # outer
+    ]) + "\n}"
+
 def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex):
     """Wall with centred semicircular arch opening.
     rin must satisfy: floor_z + 2*rin == ceil_z (crown meets ceiling exactly).
@@ -159,11 +180,56 @@ for px in PXS:
     B.append(box(px-P_HW, BRY1, DZ2, px+P_HW, BRY1+PAR_W, P_Z, T_STONE))
     B.append(box(px-P_HW-P_CE, BRY1-P_CE, P_Z,
                  px+P_HW+P_CE, BRY1+PAR_W+P_CE, P_CAP, T_METAL))
+    # Torch flame brush on top of each cap (fullbright lava top = visible flame)
+    cy_n = BRY2 - PAR_W//2          # north cap centre Y = 116
+    cy_s = BRY1 + PAR_W//2          # south cap centre Y = -116
+    B.append(box(px-4, cy_n-4, P_CAP, px+4, cy_n+4, P_CAP+10, T_STONE, tt=T_LAVA))
+    B.append(box(px-4, cy_s-4, P_CAP, px+4, cy_s+4, P_CAP+10, T_STONE, tt=T_LAVA))
 
 # ── Bridge piers (at pillar X positions, going from cave floor to deck) ───────
 for px in PXS:
     B.append(box(px-PIER_HW, BRY2-PAR_W, FZ2, px+PIER_HW, BRY2, DZ1, T_STONE))
     B.append(box(px-PIER_HW, BRY1, FZ2, px+PIER_HW, BRY1+PAR_W, DZ1, T_STONE))
+
+# ── Arches under the bridge (X-Z plane, one per span between piers, N and S) ──
+# Crown of each arch meets DZ1 (deck bottom). Spring line at zc = DZ1 - rin.
+# Spans: [west-building→pier0, pier0→pier1, pier1→pier2, pier2→pier3, pier3→east-building]
+under_spans = []
+x_faces = []  # X positions of pier faces + building faces
+x_faces.append(WBX2)                           # west building east face
+for px in PXS:
+    x_faces.append(px - PIER_HW)               # pier left face
+    x_faces.append(px + PIER_HW)               # pier right face
+x_faces.append(EBX1)                           # east building west face
+# Pair up: gaps are (x_faces[1],x_faces[2]), (x_faces[3],x_faces[4]), ...
+for i in range(0, len(x_faces)-1, 2):
+    xl, xr = x_faces[i], x_faces[i+1]
+    xc   = (xl + xr) / 2.0
+    rin  = (xr - xl) / 2.0
+    rout = rin + 16
+    zc   = DZ1 - rin                # spring line so crown = DZ1
+    seg  = 180.0 / A_SEGS
+    for j in range(A_SEGS):
+        # North side arch (visible from outside north)
+        B.append(arch_seg_xz(BRY2-PAR_W, BRY2, xc, zc, rin, rout,
+                              j*seg, (j+1)*seg, T_STONE))
+        # South side arch (visible from outside south)
+        B.append(arch_seg_xz(BRY1, BRY1+PAR_W, xc, zc, rin, rout,
+                              j*seg, (j+1)*seg, T_STONE))
+
+# ── Light panels (bright *teleport brushes on inner parapet face) ─────────────
+# Between every pair of adjacent pillar caps, centred, at eye-level on parapet
+panel_xs = []
+all_x = [BRX1] + PXS + [BRX2]
+for i in range(len(all_x) - 1):
+    panel_xs.append((all_x[i] + all_x[i+1]) // 2)
+PANEL_H = DZ2 + 16   # panel bottom Z
+PANEL_T = PANEL_H + 20  # panel top Z
+for px in panel_xs:
+    # North parapet inner face at Y = BRY2-PAR_W = 104
+    B.append(box(px-8, BRY2-PAR_W-3, PANEL_H, px+8, BRY2-PAR_W, PANEL_T, T_PANEL))
+    # South parapet inner face at Y = BRY1+PAR_W = -104
+    B.append(box(px-8, BRY1+PAR_W, PANEL_H, px+8, BRY1+PAR_W+3, PANEL_T, T_PANEL))
 
 # ── West building ─────────────────────────────────────────────────────────────
 B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ2, T_STONE))               # foundation
@@ -226,12 +292,19 @@ E.append(ent("item_health", origin=" 128 0 152"))
 E.append(ent("item_health", origin="0 80 152"))
 E.append(ent("item_armortype", origin="-640 0 152"))
 
-# Torches on pillar caps — flickering lights (style 1 = torch flicker)
-torch_z = P_CAP + 20
+# Torches on pillar caps — flickering lights at torch brush position
 for px in PXS:
-    for ty in [BRY2 - PAR_W//2, BRY1 + PAR_W//2]:
-        E.append(ent("light", origin=f"{px} {ty} {torch_z}",
-                     light="300", style="1"))
+    cy_n = BRY2 - PAR_W//2
+    cy_s = BRY1 + PAR_W//2
+    E.append(ent("light", origin=f"{px} {cy_n} {P_CAP+20}",
+                 light="300", style="1"))
+    E.append(ent("light", origin=f"{px} {cy_s} {P_CAP+20}",
+                 light="300", style="1"))
+
+# Light panel glow (steady, close to panel face)
+for px in panel_xs:
+    E.append(ent("light", origin=f"{px} {BRY2-PAR_W-8} {PANEL_H+10}", light="180"))
+    E.append(ent("light", origin=f"{px} {BRY1+PAR_W+8} {PANEL_H+10}", light="180"))
 
 # Building interior lights (bright, steady)
 for lx, ll in [(-640, 350), (640, 350)]:
