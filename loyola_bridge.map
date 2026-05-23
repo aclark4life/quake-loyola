@@ -1,7 +1,6 @@
 {
 "classname" "worldspawn"
 "wad" "quake101.wad"
-"sky" "sky4"
 "message" "Loyola Bridge"
 {
 ( -896 -512 -16 ) ( -896 512 -16 ) ( -896 -512 0 ) rock1_2 0 0 0 1 1
@@ -587,6 +586,10 @@
 ( 432 -128 416 ) ( 464 -128 416 ) ( 432 128 416 ) stone1_5 0 0 0 1 1
 ( 432 -128 440 ) ( 432 128 440 ) ( 464 -128 440 ) stone1_5 0 0 0 1 1
 }
+}
+{
+"classname" "info_player_start"
+"origin" "-680 0 176"
 }
 {
 "classname" "info_player_deathmatch"

@@ -204,7 +204,6 @@ worldspawn = (
     '{\n'
     '"classname" "worldspawn"\n'
     '"wad" "quake101.wad"\n'
-    '"sky" "sky4"\n'
     '"message" "Loyola Bridge"\n'
     + "\n".join(B) +
     "\n}"
@@ -212,6 +211,9 @@ worldspawn = (
 
 # ── Other entities ────────────────────────────────────────────────────────────
 E = []
+
+# Single-player start (required to avoid crash on connect)
+E.append(ent("info_player_start", origin="-680 0 176"))
 
 # Deathmatch spawns — 3 per building room, 32 units above floor (Z=176)
 for pos in [
