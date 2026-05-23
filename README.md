@@ -6,7 +6,7 @@ A Quake 1 deathmatch map inspired by the pedestrian bridge at Loyola University 
 
 | File | Description |
 |---|---|
-| `loyola_bridge.map` | Map source (TrenchBroom / Quake 1 `.map` format) |
+| `loyola.map` | Map source (TrenchBroom / Quake 1 `.map` format) |
 | `generate_map.py` | Python script that generates the `.map` from scratch |
 
 ## Map layout
@@ -57,33 +57,33 @@ Place `quake101.wad` in the same directory as the `.map` file, then:
 
 ```bash
 # 1. BSP (geometry)
-qbsp loyola_bridge.map
+qbsp loyola.map
 
 # 2. Visibility (inter-leaf vis — speeds up rendering significantly)
-vis loyola_bridge.bsp
+vis loyola.bsp
 
 # 3. Lighting
-light loyola_bridge.bsp
+light loyola.bsp
 ```
 
-The compiled `loyola_bridge.bsp` goes in your Quake `id1/maps/` directory.
+The compiled `loyola.bsp` goes in your Quake `id1/maps/` directory.
 
 ## Loading in Quake
 
 ```
-quake -game id1 +map loyola_bridge
+quake -game id1 +map loyola
 ```
 
 Or from the console:
 ```
-map loyola_bridge
+map loyola
 ```
 
 ## Editing in TrenchBroom
 
 1. Open TrenchBroom and set game to **Quake**.
 2. Set your `quake101.wad` path under *Preferences → Quake → Game Path*.
-3. Open `loyola_bridge.map` — all brushes load as worldspawn geometry.
+3. Open `loyola.map` — all brushes load as worldspawn geometry.
 
 ## Regenerating the map
 
@@ -91,4 +91,4 @@ map loyola_bridge
 python3 generate_map.py
 ```
 
-This rewrites `loyola_bridge.map` from scratch. Edit constants at the top of the script to change dimensions, arch radius, pillar count, etc.
+This rewrites `loyola.map` from scratch. Edit constants at the top of the script to change dimensions, arch radius, pillar count, etc.
