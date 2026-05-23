@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate loyola_bridge.map — Quake 1 deathmatch map.
+"""Generate loyola.map — Quake 1 deathmatch map.
 
 Bridge runs East-West along the X axis.
 Y = width (N/S), Z = height.
@@ -317,7 +317,7 @@ for lx in [-384, -128, 128, 384]:
 # ── Write file ────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
 
-with open("loyola_bridge.map", "w") as fh:
+with open("loyola.map", "w") as fh:
     fh.write(map_text)
 
-print(f"loyola_bridge.map written — {len(B)} worldspawn brushes, {len(E)} entities")
+print(f"loyola.map written — {len(B)} worldspawn brushes, {len(E)} entities")
