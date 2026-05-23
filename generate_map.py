@@ -65,7 +65,7 @@ def face(p1, p2, p3, tex):
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
     """Axis-aligned box brush. tt=top texture, tb=bottom texture.
-    Quake .map convention: (p2-p1)×(p3-p1) must point INWARD (CW from outside)."""
+    ericw-tools convention: face normals must point OUTWARD (away from solid)."""
     tt = tt or tex; tb = tb or tex
     return "{\n" + "\n".join([
         face((x1,y1,z1),(x1,y2,z1),(x1,y1,z2), tex),   # -X
