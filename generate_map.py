@@ -2,55 +2,66 @@
 """Generate loyola_bridge.map — Quake 1 deathmatch map.
 
 Bridge runs East-West along the X axis.
-Y = width, Z = height.
+Y = width (N/S), Z = height.
+
+Structure matches reference screenshots:
+- Open bridge span with stone parapet walls + pillar caps + torches
+- Bridge supported by rectangular piers below the deck
+- Rocky cave environment (no sky box)
+- Semicircular arches in the outer building walls (cave-facing)
 """
 import math
 
 # ── Textures ─────────────────────────────────────────────────────────────────
-T_STONE = "stone1_5"
-T_FLOOR = "afloor1_4"
-T_WALL  = "bricka2_1"
-T_METAL = "metal5_4"
-T_ROCK  = "rock1_2"
-T_SKY   = "sky4"
+T_STONE = "stone1_5"     # parapets, pillar caps, arch ring
+T_FLOOR = "afloor1_4"    # bridge deck top, building floor/ceiling
+T_WALL  = "bricka2_1"    # building walls, arch jambs
+T_METAL = "metal5_4"     # pillar cap overhang trim
+T_ROCK  = "rock1_2"      # cave outer walls and ceiling
 
-# ── Dimensions ───────────────────────────────────────────────────────────────
+# ── Bridge dimensions ────────────────────────────────────────────────────────
 BRX1, BRX2 = -512, 512       # Bridge X extent
-BRY1, BRY2 = -128, 128       # Bridge Y extent
-DZ1, DZ2   = 128, 144        # Deck Z (bottom, top)
+BRY1, BRY2 = -128, 128       # Bridge Y extent (256 wide)
+DZ1,  DZ2  = 128, 144        # Deck slab (bottom, top)
 
-WBX1, WBX2 = -768, BRX1      # West building X
-EBX1, EBX2 =  BRX2, 768      # East building X
+# ── Parapet walls (solid stone sides on the bridge span) ─────────────────────
+PAR_W = 24                   # parapet Y-thickness
+PAR_Z = DZ2 + 64             # parapet top Z = 208
+
+# ── Pillar caps (square posts on top of parapets at regular X intervals) ─────
+PXS   = [-384, -128, 128, 384]
+P_HW  = 20                   # pillar half-Y (40 wide, flush with parapet outer face)
+P_Z   = DZ2 + 96             # pillar post top Z = 240
+P_CE  = 4                    # cap overhang each side in Y
+P_CAP = P_Z + 8              # cap slab top Z = 248
+
+# ── Bridge piers (rectangular supports below deck at pillar X positions) ─────
+PIER_HW = 16                 # pier half-width in X and Y
+
+# ── Buildings ────────────────────────────────────────────────────────────────
+WBX1, WBX2 = -768, BRX1      # West building X: -768 to -512
+EBX1, EBX2 =  BRX2, 768      # East building X:  512 to 768
 BY1,  BY2  = -192, 192        # Building Y
-BZ2        = 320              # Building interior ceiling (bottom of ceil slab)
-BCEIL      = BZ2 + 16
-BWALL      = 16
-BOPEN_Y    = BRY2             # Door opening ±Y = 128
+BWALL      = 16               # Wall thickness
+BZ2        = 288              # Building ceiling bottom
+BCEIL      = BZ2 + 16         # Building ceiling top = 304
+BOPEN_Y    = BRY2             # Bridge-side door half-width = 128
 
-OX1, OX2   = -896, 896        # Outer bounding box
-OY1, OY2   = -512, 512
-OZ2        = 576
-FZ1, FZ2   = -16, 0           # Ravine floor slab
+# ── Semicircular arch in outer building walls (cave-facing) ──────────────────
+# West building: arch in WEST outer wall (WBX1 to WBX1+BWALL)
+# East building: arch in EAST outer wall (EBX2-BWALL to EBX2)
+# A_RIN = 72 → spring line at DZ2 + A_RIN = 216
+#            → crown at 216 + 72 = 288 = BZ2 (arch crown exactly meets ceiling)
+A_RIN  = 72                   # arch inner radius (half-width of opening)
+A_ROUT = 96                   # arch outer radius (ring = 24 units thick)
+A_SEGS = 8                    # voussoir segments
+A_SPRZ = DZ2 + A_RIN          # spring line Z = 216
 
-# Pillars
-PXS = [-352, -128, 128, 352]
-PHW =  16                     # pillar half-width → 32×32 base
-PTZ =  240                    # pillar top Z (96 tall above deck)
-PCZ =  PTZ + 8                # pillar cap top Z
-PCE =  4                      # cap overhang on each side
-
-# Railings
-RZ2 = DZ2 + 24                # railing top = 168
-RIY =  120; ROY =  136        # inner/outer Y from centre
-
-# Arch gates (entry portals at each end of the span)
-ARCH_HX  = 16                 # half-thickness in X → 32-unit thick arch
-W_ARCH_X = -448               # west arch centre X
-E_ARCH_X =  448               # east arch centre X
-A_RIN    =  96                # opening half-width  (inner radius)
-A_ROUT   = 128                # outer radius = column outer Y
-A_SPRZ   = 288                # spring-line Z (top of columns, base of arch ring)
-A_SEGS   =  8                 # voussoir segments (22.5° each, 8 × 22.5 = 180°)
+# ── Outer cave box ───────────────────────────────────────────────────────────
+OX1, OX2 = -960, 960
+OY1, OY2 = -368, 368          # narrower than bridge span for cave feel
+OZ2      = 480                # cave ceiling
+FZ1, FZ2 = -16, 0             # cave floor slab
 
 # ── Geometry helpers ─────────────────────────────────────────────────────────
 def fv(v):
@@ -64,8 +75,7 @@ def face(p1, p2, p3, tex):
     return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} 0 0 0 1 1"
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
-    """Axis-aligned box brush. tt=top texture, tb=bottom texture.
-    ericw-tools convention: face normals must point OUTWARD (away from solid)."""
+    """Axis-aligned box brush. Face normals OUTWARD (ericw-tools convention)."""
     tt = tt or tex; tb = tb or tex
     return "{\n" + "\n".join([
         face((x1,y1,z1),(x1,y2,z1),(x1,y1,z2), tex),   # -X
@@ -77,58 +87,41 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
     ]) + "\n}"
 
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
-    """Single arch voussoir wedge in the Y-Z plane.
-    Angles measured from +Y axis, increasing toward +Z.
-    """
+    """Single arch voussoir wedge in the Y-Z plane. Face normals OUTWARD."""
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
     cm, sm = math.cos(tm), math.sin(tm)
-    # key points on inner/outer circles at segment midpoint
     yi, zi = yc + rin  * cm, zc + rin  * sm
     yo, zo = yc + rout * cm, zc + rout * sm
     return "{\n" + "\n".join([
-        # +X front face — inward normal (CW from outside)
         face((xf,yc,zc), (xf,yc,zc+1), (xf,yc+1,zc), tex),
-        # -X back face
         face((xb,yc,zc), (xb,yc+1,zc), (xb,yc,zc+1), tex),
-        # Right radial cut (at θ=t1)
         face((xf,yc,zc), (xf, yc+c1, zc+s1), (xb,yc,zc), tex),
-        # Left  radial cut (at θ=t2)
         face((xf,yc,zc), (xb,yc,zc), (xf, yc+c2, zc+s2), tex),
-        # Inner face (tangent to inner circle at θ_mid)
         face((xf,yi,zi), (xb,yi,zi), (xf, yi-sm, zi+cm), tex),
-        # Outer face (tangent to outer circle at θ_mid)
         face((xf,yo,zo), (xf, yo-sm, zo+cm), (xb,yo,zo), tex),
     ]) + "\n}"
 
-def arch_gate(cx, tex):
-    """Full arch gate: 2 columns + A_SEGS voussoir segments + crown cap."""
-    xb, xf = cx - ARCH_HX, cx + ARCH_HX
-    yc, zc = 0.0, float(A_SPRZ)
+def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex):
+    """Wall with centred semicircular arch opening.
+    rin must satisfy: floor_z + 2*rin == ceil_z (crown meets ceiling exactly).
+    Returns list of brush strings."""
+    sprz = floor_z + rin
+    seg  = 180.0 / segs
     brushes = []
-    # Left column  (Y = -A_ROUT → -A_RIN)
-    brushes.append(box(xb, -A_ROUT, DZ2, xf, -A_RIN, A_SPRZ, tex))
-    # Right column (Y =  A_RIN  →  A_ROUT)
-    brushes.append(box(xb,  A_RIN,  DZ2, xf,  A_ROUT, A_SPRZ, tex))
+    # Solid sections outside arch ring
+    brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
+    brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
+    # Straight jambs (±rin to ±rout, below spring line)
+    brushes.append(box(x1, -rout, floor_z, x2, -rin, sprz, tex))
+    brushes.append(box(x1,  rin,  floor_z, x2,  rout, sprz, tex))
     # Arch ring voussoirs
-    seg = 180.0 / A_SEGS
-    for i in range(A_SEGS):
-        brushes.append(arch_seg(xb, xf, yc, zc,
-                                A_RIN, A_ROUT,
-                                i * seg, (i+1) * seg, tex))
-    # Crown cap — sits directly on top of the arch ring
-    crown_z = A_SPRZ + A_ROUT          # = 416
-    brushes.append(box(xb, -A_ROUT, crown_z, xf, A_ROUT, crown_z + 24, tex))
+    for i in range(segs):
+        brushes.append(arch_seg(x1, x2, 0.0, float(sprz),
+                                rin, rout, i*seg, (i+1)*seg, tex))
     return brushes
-
-def pillar(cx, cy, tex, cap_tex):
-    """Stone pillar + metal cap centred at (cx, cy), standing on deck top."""
-    return [
-        box(cx-PHW,   cy-PHW,   DZ2, cx+PHW,   cy+PHW,   PTZ, tex),
-        box(cx-PHW-PCE, cy-PHW-PCE, PTZ, cx+PHW+PCE, cy+PHW+PCE, PCZ, cap_tex),
-    ]
 
 def ent(cls, **kw):
     lines = ["{", f'"classname" "{cls}"']
@@ -140,64 +133,60 @@ def ent(cls, **kw):
 # ── Build worldspawn brushes ─────────────────────────────────────────────────
 B = []
 
-# -- Outer bounding box (sky shell sealing the map) --
-# Walls extend through floor/ceiling to ensure no zero-thickness shared faces.
-B.append(box(OX1, OY1, FZ1,     OX2, OY2, FZ2,    T_ROCK))          # ravine floor
-B.append(box(OX1, OY1, OZ2-16,  OX2, OY2, OZ2,    T_SKY))           # sky ceiling
-B.append(box(OX1, OY2-16, FZ1,  OX2, OY2, OZ2,    T_SKY))           # N wall (full height)
-B.append(box(OX1, OY1, FZ1,     OX2, OY1+16, OZ2, T_SKY))           # S wall (full height)
-B.append(box(OX2-16, OY1, FZ1,  OX2, OY2, OZ2,    T_SKY))           # E wall (full height)
-B.append(box(OX1, OY1, FZ1,     OX1+16, OY2, OZ2, T_SKY))           # W wall (full height)
+# ── Outer cave box (rock walls seal the map) ─────────────────────────────────
+B.append(box(OX1, OY1, FZ1,     OX2, OY2, FZ2,    T_ROCK))   # cave floor
+B.append(box(OX1, OY1, OZ2-16,  OX2, OY2, OZ2,    T_ROCK))   # cave ceiling
+B.append(box(OX1, OY2-16, FZ1,  OX2, OY2, OZ2,    T_ROCK))   # N cave wall
+B.append(box(OX1, OY1, FZ1,     OX2, OY1+16, OZ2, T_ROCK))   # S cave wall
+B.append(box(OX2-16, OY1, FZ1,  OX2, OY2, OZ2,    T_ROCK))   # E cave wall
+B.append(box(OX1, OY1, FZ1,     OX1+16, OY2, OZ2, T_ROCK))   # W cave wall
 
-# -- Bridge deck --
+# ── Bridge deck ───────────────────────────────────────────────────────────────
 B.append(box(BRX1, BRY1, DZ1, BRX2, BRY2, DZ2, T_WALL, tt=T_FLOOR))
 
-# -- West building --
-B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ2, T_STONE))              # foundation (to deck top, seals gap)
-B.append(box(WBX1, BY1, BZ2, WBX2, BY2, BCEIL, T_STONE))            # ceiling slab
-B.append(box(WBX1,        BY1,        DZ2, WBX1+BWALL, BY2,        BZ2, T_STONE))  # W outer wall
-B.append(box(WBX1+BWALL,  BY2-BWALL,  DZ2, WBX2,       BY2,        BZ2, T_STONE))  # N wall
-B.append(box(WBX1+BWALL,  BY1,        DZ2, WBX2,        BY1+BWALL, BZ2, T_STONE))  # S wall
-B.append(box(WBX2-BWALL,  BY1+BWALL,  DZ2, WBX2, -BOPEN_Y,        BZ2, T_STONE))  # E jamb L
-B.append(box(WBX2-BWALL,  BOPEN_Y,    DZ2, WBX2,  BY2-BWALL,      BZ2, T_STONE))  # E jamb R
+# ── Parapet walls (continuous N/S strips along bridge span) ──────────────────
+B.append(box(BRX1, BRY2-PAR_W, DZ2, BRX2, BRY2, PAR_Z, T_STONE))  # N parapet
+B.append(box(BRX1, BRY1, DZ2, BRX2, BRY1+PAR_W, PAR_Z, T_STONE))  # S parapet
 
-# -- East building (mirror of west) --
-B.append(box(EBX1, BY1, FZ2, EBX2, BY2, DZ2, T_STONE))
-B.append(box(EBX1, BY1, BZ2, EBX2, BY2, BCEIL, T_STONE))
-B.append(box(EBX2-BWALL,  BY1,        DZ2, EBX2, BY2,        BZ2, T_STONE))  # E outer wall
-B.append(box(EBX1,        BY2-BWALL,  DZ2, EBX2-BWALL, BY2,  BZ2, T_STONE))  # N wall
-B.append(box(EBX1,        BY1,        DZ2, EBX2-BWALL,  BY1+BWALL, BZ2, T_STONE))  # S wall
-B.append(box(EBX1,        BY1+BWALL,  DZ2, EBX1+BWALL, -BOPEN_Y,  BZ2, T_STONE))  # W jamb L
-B.append(box(EBX1,        BOPEN_Y,    DZ2, EBX1+BWALL,  BY2-BWALL, BZ2, T_STONE))  # W jamb R
-
-# -- 8 pillars (4 north, 4 south) --
+# ── Pillar caps (4 per side, N and S; taller and wider than parapet) ─────────
 for px in PXS:
-    B.extend(pillar(px, BRY2, T_STONE, T_METAL))   # north side (Y = +128)
-    B.extend(pillar(px, BRY1, T_STONE, T_METAL))   # south side (Y = -128)
+    # North side (outer face flush with BRY2)
+    B.append(box(px-P_HW, BRY2-PAR_W, DZ2, px+P_HW, BRY2, P_Z, T_STONE))
+    B.append(box(px-P_HW-P_CE, BRY2-PAR_W-P_CE, P_Z,
+                 px+P_HW+P_CE, BRY2+P_CE, P_CAP, T_METAL))
+    # South side (outer face flush with BRY1)
+    B.append(box(px-P_HW, BRY1, DZ2, px+P_HW, BRY1+PAR_W, P_Z, T_STONE))
+    B.append(box(px-P_HW-P_CE, BRY1-P_CE, P_Z,
+                 px+P_HW+P_CE, BRY1+PAR_W+P_CE, P_CAP, T_METAL))
 
-# -- Railings (split around arch gate X extents to avoid brush overlap) --
-wa_xb = W_ARCH_X - ARCH_HX   # -464
-wa_xf = W_ARCH_X + ARCH_HX   # -432
-ea_xb = E_ARCH_X - ARCH_HX   #  432
-ea_xf = E_ARCH_X + ARCH_HX   #  464
+# ── Bridge piers (at pillar X positions, going from cave floor to deck) ───────
+for px in PXS:
+    B.append(box(px-PIER_HW, BRY2-PAR_W, FZ2, px+PIER_HW, BRY2, DZ1, T_STONE))
+    B.append(box(px-PIER_HW, BRY1, FZ2, px+PIER_HW, BRY1+PAR_W, DZ1, T_STONE))
 
-rail_spans = [
-    (WBX2,       wa_xb),            # W building → W arch
-    (wa_xf,      PXS[0] - PHW),     # W arch     → pillar 0
-    (PXS[0]+PHW, PXS[1] - PHW),     # pillar 0   → pillar 1
-    (PXS[1]+PHW, PXS[2] - PHW),     # pillar 1   → pillar 2
-    (PXS[2]+PHW, PXS[3] - PHW),     # pillar 2   → pillar 3
-    (PXS[3]+PHW, ea_xb),            # pillar 3   → E arch
-    (ea_xf,      EBX1),             # E arch     → E building
-]
+# ── West building ─────────────────────────────────────────────────────────────
+B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ2, T_STONE))               # foundation
+B.append(box(WBX1+BWALL, BY1, BZ2, WBX2, BY2, BCEIL, T_FLOOR))       # ceiling (excl. arch wall X)
+B.append(box(WBX1+BWALL, BY2-BWALL, DZ2, WBX2, BY2, BZ2, T_WALL))   # N wall
+B.append(box(WBX1+BWALL, BY1, DZ2, WBX2, BY1+BWALL, BZ2, T_WALL))   # S wall
+# East wall (bridge side): jambs only — opening matches bridge width ±128
+B.append(box(WBX2-BWALL, BY1+BWALL, DZ2, WBX2, -BOPEN_Y, BZ2, T_WALL))  # E jamb S
+B.append(box(WBX2-BWALL, BOPEN_Y, DZ2, WBX2, BY2-BWALL, BZ2, T_WALL))   # E jamb N
+# West wall (cave side): semicircular arch opening
+B.extend(arch_wall(WBX1, WBX1+BWALL, BY1, BY2, DZ2, BZ2,
+                   A_RIN, A_ROUT, A_SEGS, T_WALL))
 
-for x1, x2 in rail_spans:
-    B.append(box(x1,  RIY,  DZ2, x2,  ROY,  RZ2, T_METAL))   # N rail
-    B.append(box(x1, -ROY,  DZ2, x2, -RIY,  RZ2, T_METAL))   # S rail
-
-# -- Arch gates --
-B.extend(arch_gate(W_ARCH_X, T_STONE))
-B.extend(arch_gate(E_ARCH_X, T_STONE))
+# ── East building (mirror of west) ───────────────────────────────────────────
+B.append(box(EBX1, BY1, FZ2, EBX2, BY2, DZ2, T_STONE))
+B.append(box(EBX1, BY1, BZ2, EBX2-BWALL, BY2, BCEIL, T_FLOOR))
+B.append(box(EBX1, BY2-BWALL, DZ2, EBX2-BWALL, BY2, BZ2, T_WALL))   # N wall
+B.append(box(EBX1, BY1, DZ2, EBX2-BWALL, BY1+BWALL, BZ2, T_WALL))   # S wall
+# West wall (bridge side): jambs only
+B.append(box(EBX1, BY1+BWALL, DZ2, EBX1+BWALL, -BOPEN_Y, BZ2, T_WALL))  # W jamb S
+B.append(box(EBX1, BOPEN_Y, DZ2, EBX1+BWALL, BY2-BWALL, BZ2, T_WALL))   # W jamb N
+# East wall (cave side): semicircular arch opening
+B.extend(arch_wall(EBX2-BWALL, EBX2, BY1, BY2, DZ2, BZ2,
+                   A_RIN, A_ROUT, A_SEGS, T_WALL))
 
 # ── Assemble worldspawn entity ────────────────────────────────────────────────
 worldspawn = (
@@ -213,43 +202,43 @@ worldspawn = (
 E = []
 
 # Single-player start (required to avoid crash on connect)
-E.append(ent("info_player_start", origin="-680 0 176"))
+E.append(ent("info_player_start", origin="-640 0 176"))
 
-# Deathmatch spawns — 3 per building room, 32 units above floor (Z=176)
+# Deathmatch spawns
 for pos in [
-    (-680, -80, 176), (-680,  0, 176), (-680,  80, 176),   # west building
-    ( 680, -80, 176), ( 680,  0, 176), ( 680,  80, 176),   # east building
+    (-640, -80, 176), (-640,  0, 176), (-640,  80, 176),   # west building
+    ( 640, -80, 176), ( 640,  0, 176), ( 640,  80, 176),   # east building
 ]:
     E.append(ent("info_player_deathmatch",
                  origin=f"{pos[0]} {pos[1]} {pos[2]}"))
 
 # Weapons
-E.append(ent("weapon_supershotgun",   origin="0 0 152"))      # bridge centre
-E.append(ent("weapon_rocketlauncher", origin="-448 0 300"))   # under west arch
-E.append(ent("weapon_nailgun",        origin=" 448 0 300"))   # under east arch
+E.append(ent("weapon_supershotgun",   origin="0 0 152"))
+E.append(ent("weapon_rocketlauncher", origin="-256 0 152"))
+E.append(ent("weapon_nailgun",        origin=" 256 0 152"))
 
-# Health
-E.append(ent("item_health", origin="-256 0 152"))
-E.append(ent("item_health", origin=" 256 0 152"))
+# Health & armour
+E.append(ent("item_health", origin="-128 0 152"))
+E.append(ent("item_health", origin=" 128 0 152"))
 E.append(ent("item_health", origin="0 80 152"))
+E.append(ent("item_armortype", origin="-640 0 152"))
 
-# Armour
-E.append(ent("item_armortype", origin="-660 0 152"))
+# Torches on pillar caps (flame entities, one per cap)
+torch_z = P_CAP + 16   # just above cap slab
+for px in PXS:
+    E.append(ent("light",  origin=f"{px}  {BRY2} {torch_z}", light="200"))
+    E.append(ent("light",  origin=f"{px}  {BRY1} {torch_z}", light="200"))
+    # Actual visible flame
+    E.append(ent("misc_explobox", origin=f"{px}  {BRY2-12} {P_CAP+4}"))
+    E.append(ent("misc_explobox", origin=f"{px}  {BRY1+12} {P_CAP+4}"))
 
-# Lights
-lights = [
-    (-640,  0, 260, 250),   # west building interior
-    ( 640,  0, 260, 250),   # east building interior
-    (-352,  0, 220, 200),
-    (-128,  0, 220, 200),
-    (   0,  0, 220, 200),   # bridge centre
-    ( 128,  0, 220, 200),
-    ( 352,  0, 220, 200),
-    (-448,  0, 360, 220),   # west arch crown
-    ( 448,  0, 360, 220),   # east arch crown
-]
-for lx, ly, lz, ll in lights:
-    E.append(ent("light", origin=f"{lx} {ly} {lz}", light=str(ll)))
+# Building interior lights
+for lx, ll in [(-640, 250), (640, 250)]:
+    E.append(ent("light", origin=f"{lx} 0 260", light=str(ll)))
+
+# Bridge ambient lights (low, between pillar pairs)
+for lx in [-320, 0, 320]:
+    E.append(ent("light", origin=f"{lx} 0 200", light="150"))
 
 # ── Write file ────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
