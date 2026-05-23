@@ -247,6 +247,7 @@ worldspawn = (
     '"message" "Loyola Bridge"\n'
     '"sky" "sky4"\n'
     '"ambient" "40"\n'
+    '"dmflags" "128"\n'   # 128 = no self damage (supported by QuakeWorld / vkQuake)
     + "\n".join(B) +
     "\n}"
 )
@@ -265,16 +266,23 @@ for pos in [
     E.append(ent("info_player_deathmatch",
                  origin=f"{pos[0]} {pos[1]} {pos[2]}"))
 
-# Weapons
-E.append(ent("weapon_supershotgun",   origin="0 0 152"))
-E.append(ent("weapon_rocketlauncher", origin="-256 0 152"))
-E.append(ent("weapon_nailgun",        origin=" 256 0 152"))
+# Weapons — rocket launchers only
+ITEM_Z = DZ2 + 8  # just above deck
+E.append(ent("weapon_rocketlauncher", origin=f"  0   0 {ITEM_Z}"))   # bridge centre
+E.append(ent("weapon_rocketlauncher", origin=f"-640   0 {ITEM_Z}"))  # west building
+E.append(ent("weapon_rocketlauncher", origin=f" 640   0 {ITEM_Z}"))  # east building
 
-# Health & armour
-E.append(ent("item_health", origin="-128 0 152"))
-E.append(ent("item_health", origin=" 128 0 152"))
-E.append(ent("item_health", origin="0 80 152"))
-E.append(ent("item_armortype", origin="-640 0 152"))
+# Ammo — rockets spread along bridge and in buildings
+for ax in [-384, -128, 128, 384]:
+    E.append(ent("item_rockets", origin=f"{ax} 0 {ITEM_Z}"))
+E.append(ent("item_rockets", origin=f"-640  60 {ITEM_Z}"))
+E.append(ent("item_rockets", origin=f"-640 -60 {ITEM_Z}"))
+E.append(ent("item_rockets", origin=f" 640  60 {ITEM_Z}"))
+E.append(ent("item_rockets", origin=f" 640 -60 {ITEM_Z}"))
+
+# Health
+E.append(ent("item_health", origin=f"-128 0 {ITEM_Z}"))
+E.append(ent("item_health", origin=f" 128 0 {ITEM_Z}"))
 
 # Torches on pillar caps — flickering lights at torch brush position
 for px in PXS:
