@@ -27,14 +27,14 @@ DZ1,  DZ2  = 128, 144
 
 # ── Parapets ──────────────────────────────────────────────────────────────────
 PAR_W = 24
-PAR_Z = DZ2 + 16   # 160 — low curb, easy to jump over
+PAR_Z = DZ2 + 32   # 176 — knee-high wall, still jumpable
 
 # ── Pillar caps ───────────────────────────────────────────────────────────────
 PXS   = [-384, -128, 128, 384]
 P_HW  = 20
-P_Z   = DZ2 + 96   # 240
+P_Z   = PAR_Z + 16  # pillar post top — just above parapet
 P_CE  = 4
-P_CAP = P_Z + 8    # 248
+P_CAP = P_Z + 8     # cap slab top
 
 # ── Buildings ─────────────────────────────────────────────────────────────────
 WBX1, WBX2 = -768, BRX1
@@ -191,7 +191,7 @@ panel_xs = []
 all_x = [BRX1] + PXS + [BRX2]
 for i in range(len(all_x) - 1):
     panel_xs.append((all_x[i] + all_x[i+1]) // 2)
-PANEL_H = DZ2 + 16
+PANEL_H = (DZ2 + PAR_Z) // 2 - 10  # panel centred on parapet height
 PANEL_T = PANEL_H + 20
 for px in panel_xs:
     B.append(box(px-8, BRY2-PAR_W-3, PANEL_H, px+8, BRY2-PAR_W, PANEL_T, T_PANEL))
