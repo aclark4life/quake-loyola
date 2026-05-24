@@ -160,7 +160,8 @@ B.append(box(OX1,   OY1, FZ1, OX2,   OY2,          FZ2, T_ROCK))  # E-W floor
 B.append(box(NS_X1, OY2, FZ1, NS_X2, NS_Y2-WALL_T, FZ2, T_ROCK))  # N arm floor
 B.append(box(NS_X1, NS_Y1+WALL_T, FZ1, NS_X2, OY1, FZ2, T_ROCK))  # S arm floor
 
-B.append(box(OX1,   OY1, OZ2-WALL_T, OX2,   OY2,          OZ2, T_SKY))  # E-W sky
+# E-W sky ceiling (single brush — keeps BSP solid)
+B.append(box(OX1,   OY1, OZ2-WALL_T, OX2,   OY2, OZ2, T_SKY))  # E-W sky
 B.append(box(NS_X1, OY2, OZ2-WALL_T, NS_X2, NS_Y2-WALL_T, OZ2, T_SKY))  # N arm sky
 B.append(box(NS_X1, NS_Y1+WALL_T, OZ2-WALL_T, NS_X2, OY1, OZ2, T_SKY))  # S arm sky
 
@@ -173,7 +174,7 @@ for i in range(ARCH_SEGS):
     B.append(ramp_slab(sx1, sx2, BRY1, BRY2,
                        dbot(sx1), dbot(sx2),
                        dtop(sx1), dtop(sx2),
-                       T_WALL, tt=T_FLOOR))
+                       T_STONE, tt=T_FLOOR, tb=T_FLOOR))
 
 # ── Parapet walls — per-segment ramp slabs (cement, N and S) ─────────────────
 for i in range(ARCH_SEGS):
@@ -207,18 +208,25 @@ for px in PXS:
     B.append(box(px-4, cy_n-4, pcap, px+4, cy_n+4, pcap+10, T_STONE, tt=T_LAVA))
     B.append(box(px-4, cy_s-4, pcap, px+4, cy_s+4, pcap+10, T_STONE, tt=T_LAVA))
 
-# ── End arches under bridge (Y-Z plane at each bridge end) ───────────────────
-EARCH_RIN   = (BRY2 - BRY1) // 2   # 128
-EARCH_ROUT  = EARCH_RIN + 16        # 144
-EARCH_ZC    = DZ1 - EARCH_RIN       # 0  (arch crown = DZ1)
-EARCH_THICK = 24
+# ── End arch RINGS at bridge entrance/exit — thicker stone arch framing ───────
+# Arch semicircle: rin=128 (bridge half-width), crown at Z=DZ1=128, springs at Z=0
+EARCH_RIN  = (BRY2 - BRY1) // 2   # 128
+EARCH_ROUT = EARCH_RIN + 20        # 148 — chunkier stone ring
+EARCH_ZC   = FZ2                   # arch centre Z at floor (crown = FZ2+rin = DZ1)
+EARCH_T    = 40                    # arch ring thickness in X
 eseg = 180.0 / A_SEGS
-for ex in [BRX1, BRX2]:
-    xb = ex - EARCH_THICK // 2
-    xf = ex + EARCH_THICK // 2
+for ex, sign in [(BRX1, 1), (BRX2, -1)]:
+    xb = ex if sign == 1 else ex - EARCH_T
+    xf = ex + EARCH_T if sign == 1 else ex
     for j in range(A_SEGS):
         B.append(arch_seg(xb, xf, 0.0, float(EARCH_ZC),
                           EARCH_RIN, EARCH_ROUT, j*eseg, (j+1)*eseg, T_STONE))
+
+# ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
+# Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
+# At X=0 the deck bottom is at 192; panel at Z=148..160 clears all deck brushes.
+PANEL_Z = 148
+B.append(box(-48, -48, PANEL_Z, 48, 48, PANEL_Z + 12, T_PANEL))
 
 # ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
 panel_xs = []
@@ -319,13 +327,14 @@ for px in panel_xs:
 E.append(ent("light", origin="-640 0 260", light="350"))
 E.append(ent("light", origin=" 640 0 260", light="350"))
 
-# Bridge end arch lights (at deck bottom Z, unchanged at ends)
-for ex in [BRX1, BRX2]:
-    E.append(ent("light", origin=f"{ex} 0 {DZ1-20}", light="220"))
+# Bridge end arch lights — illuminate the stone arch faces
+for ex in [BRX1 + 20, BRX2 - 20]:
+    E.append(ent("light", origin=f"{ex} 0 90", light="300"))
 
-# Under-bridge road lights
-for rx in [-280, 0, 280]:
-    E.append(ent("light", origin=f"{rx} 0 64", light="240"))
+# Under-bridge road lights — moody, bright pool under the glow panel
+E.append(ent("light", origin=f"0 0 {PANEL_Z - 10}", light="520", style="1"))  # glow panel light
+for rx in [-280, 280]:
+    E.append(ent("light", origin=f"{rx} 0 64", light="160"))
 
 # N/S road arm lights
 for ry in [-800,-600,-420,420,600,800]:
