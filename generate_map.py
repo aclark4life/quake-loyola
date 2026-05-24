@@ -158,8 +158,14 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     )
 
 
-def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex):
-    sprz = floor_z + rin
+def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
+    """Stone wall with arched opening centred at Y=0.
+
+    stilt_h: height of straight sides before the arch springs (defaults to rin,
+             giving a plain semicircle; set > rin for a tall stilted/gothic arch).
+    """
+    stilt_h = rin if stilt_h is None else stilt_h
+    sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
     brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
@@ -282,30 +288,31 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── End arch RINGS at bridge entrance/exit — thicker stone arch framing ───────
-# Arch semicircle: rin=128 (bridge half-width), crown at Z=DZ1=128, springs at Z=0
-EARCH_RIN = (BRY2 - BRY1) // 2  # 128
-EARCH_ROUT = EARCH_RIN + 20  # 148 — chunkier stone ring
-EARCH_ZC = FZ2  # arch centre Z at floor (crown = FZ2+rin = DZ1)
-EARCH_T = 40  # arch ring thickness in X
-eseg = 180.0 / A_SEGS
+# ── End arch RINGS at bridge entrance/exit — tall stilted gothic arches ────────
+# Opening: 160 wide (Y=-80..80), straight sides to Z=160, crown at Z=240 (1:1.5 ratio)
+EARCH_RIN = 80
+EARCH_ROUT = 100  # ring 20 units thick
+EARCH_STILT = 160  # straight-side height before arch springs
+EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 240
+EARCH_T = 40  # arch thickness in X
 for ex, sign in [(BRX1, 1), (BRX2, -1)]:
     xb = ex if sign == 1 else ex - EARCH_T
     xf = ex + EARCH_T if sign == 1 else ex
-    for j in range(A_SEGS):
-        B.append(
-            arch_seg(
-                xb,
-                xf,
-                0.0,
-                float(EARCH_ZC),
-                EARCH_RIN,
-                EARCH_ROUT,
-                j * eseg,
-                (j + 1) * eseg,
-                T_STONE,
-            )
+    B.extend(
+        arch_wall(
+            xb,
+            xf,
+            BRY1,
+            BRY2,
+            FZ2,
+            EARCH_CROWN + 32,
+            EARCH_RIN,
+            EARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=EARCH_STILT,
         )
+    )
 
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
