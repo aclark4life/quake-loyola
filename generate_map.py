@@ -325,28 +325,6 @@ for px in panel_xs:
     B.append(box(px - 8, BRY2 - 27, ph, px + 8, BRY2 - 24, pt_, T_PANEL))
     B.append(box(px - 8, BRY1 + 24, ph, px + 8, BRY1 + 27, pt_, T_PANEL))
 
-# ════════════════════════════════════════════════════════════════════════════════
-# EAST + WEST BUILDINGS (unchanged)
-# ════════════════════════════════════════════════════════════════════════════════
-B.append(box(WBX1, BY1, FZ2, WBX2, BY2, DZ2, T_STONE))
-B.append(box(WBX1 + BWALL, BY1, BZ2, WBX2, BY2, BCEIL, T_FLOOR))
-B.append(box(WBX1 + BWALL, BY2 - BWALL, DZ2, WBX2, BY2, BZ2, T_WALL))
-B.append(box(WBX1 + BWALL, BY1, DZ2, WBX2, BY1 + BWALL, BZ2, T_WALL))
-B.append(box(WBX2 - BWALL, BY1 + BWALL, DZ2, WBX2, -BOPEN_Y, BZ2, T_WALL))
-B.append(box(WBX2 - BWALL, BOPEN_Y, DZ2, WBX2, BY2 - BWALL, BZ2, T_WALL))
-B.extend(
-    arch_wall(WBX1, WBX1 + BWALL, BY1, BY2, DZ2, BZ2, A_RIN, A_ROUT, A_SEGS, T_WALL)
-)
-
-B.append(box(EBX1, BY1, FZ2, EBX2, BY2, DZ2, T_STONE))
-B.append(box(EBX1, BY1, BZ2, EBX2 - BWALL, BY2, BCEIL, T_FLOOR))
-B.append(box(EBX1, BY2 - BWALL, DZ2, EBX2 - BWALL, BY2, BZ2, T_WALL))
-B.append(box(EBX1, BY1, DZ2, EBX2 - BWALL, BY1 + BWALL, BZ2, T_WALL))
-B.append(box(EBX1, BY1 + BWALL, DZ2, EBX1 + BWALL, -BOPEN_Y, BZ2, T_WALL))
-B.append(box(EBX1, BOPEN_Y, DZ2, EBX1 + BWALL, BY2 - BWALL, BZ2, T_WALL))
-B.extend(
-    arch_wall(EBX2 - BWALL, EBX2, BY1, BY2, DZ2, BZ2, A_RIN, A_ROUT, A_SEGS, T_WALL)
-)
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
