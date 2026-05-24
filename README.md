@@ -81,9 +81,51 @@ map loyola
 
 ## Editing in TrenchBroom
 
-1. Open TrenchBroom and set game to **Quake**.
-2. Set your `quake101.wad` path under *Preferences → Quake → Game Path*.
-3. Open `loyola.map` — all brushes load as worldspawn geometry.
+TrenchBroom is pre-configured for this project. The following files are written to
+TrenchBroom's app-support folder and are **not** committed to the repo (they reference
+absolute paths on your machine):
+
+| File | Location |
+|---|---|
+| Game path | `~/Library/Application Support/TrenchBroom/Preferences.json` |
+| Compile profiles | `~/Library/Application Support/TrenchBroom/games/Quake/CompilationProfiles.cfg` |
+| Engine profile | `~/Library/Application Support/TrenchBroom/games/Quake/GameEngineProfiles.cfg` |
+
+### Game path (`Preferences.json`)
+
+```json
+{
+    "Games/Quake/Path": "/Applications"
+}
+```
+
+Points TrenchBroom at the directory that contains `id1/` (PAK files, WADs, compiled maps).
+
+### Compile profiles (`CompilationProfiles.cfg`)
+
+Both profiles use `${MAP_DIR_PATH}` as the working directory so ericw-tools picks up
+`quake101.wad` from the same folder as the `.map` file.
+
+**Full Build** — qbsp → vis → light → copy to `/Applications/id1/maps/`  
+**Fast Build** — qbsp only → copy (quick geometry iteration)
+
+Tool paths point to `~/Downloads/ericw-tools-v0.18.1-Darwin/bin/`.  
+The compiled BSP is copied to `/Applications/id1/maps/` after each build.
+
+### Engine profile (`GameEngineProfiles.cfg`)
+
+Launches vkQuake with:
+
+```
+/Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map ${MAP_BASE_NAME}
+```
+
+### Workflow
+
+1. Open `loyola.map` in TrenchBroom (**File → Open**).
+2. Edit brushes / entities as needed.
+3. **Run → Compile Map** → choose *Full Build* or *Fast Build*.
+4. **Run → Launch Engine** → choose *vkQuake* to test immediately.
 
 ## Regenerating the map
 
