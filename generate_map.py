@@ -36,7 +36,7 @@ DZ1, DZ2 = 128, 144  # flat deck bottom / top (arch offsets added on top)
 # Blueprint: pillar heights 19 ft (ends) → 26 ft (centre) → rise = 7 ft = 106 units
 ARCH_RISE = 106  # centre rises 106 units above ends (was 64)
 ARCH_SEGS = 16  # segments approximating the curve
-SEG_W = (BRX2 - BRX1) // ARCH_SEGS  # 64 units per segment
+SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # 65.625 units per segment (float for exact coverage)
 
 
 def arch_z(x):
@@ -471,8 +471,8 @@ for i in range(ARCH_SEGS):
     pt1, pt2 = pb1 + PAR_H, pb2 + PAR_H  # parapet top = base + PAR_H
     # North parapet
     B.append(ramp_slab(sx1, sx2, BRY2 - PAR_W, BRY2, pb1, pb2, pt1, pt2, T_CEMENT))
-    # South parapet — omit segments fully within the walkway gap (X=-64..64)
-    if not (sx1 >= WALK_X1 and sx2 <= WALK_X2):
+    # South parapet — omit any segment that overlaps the walkway gap (X=WALK_X1..WALK_X2)
+    if not (sx1 < WALK_X2 and sx2 > WALK_X1):
         B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + PAR_W, pb1, pb2, pt1, pt2, T_CEMENT))
 
 
