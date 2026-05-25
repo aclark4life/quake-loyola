@@ -159,6 +159,41 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     )
 
 
+def arch_pie_seg(xb, xf, yc, zc, rad, t1d, t2d, tex):
+    t1, t2 = math.radians(t1d), math.radians(t2d)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    yo, zo = yc + rad * cm, zc + rad * sm
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
+                face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
+                face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
+                face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
+                face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
+            ]
+        )
+        + "\n}"
+    )
+
+
+def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
+    stilt_h = rin if stilt_h is None else stilt_h
+    sprz = floor_z + stilt_h
+    seg = 180.0 / segs
+    brushes = []
+    brushes.append(box(x1, -rin, floor_z, x2, rin, sprz, tex))
+    for i in range(segs):
+        brushes.append(
+            arch_pie_seg(x1, x2, yc, float(sprz), rin, i * seg, (i + 1) * seg, tex)
+        )
+    return brushes
+
+
 def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
     """Stone wall with arched opening centred at Y=0.
 
@@ -169,8 +204,10 @@ def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=Non
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
-    brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
-    brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
+    if y1 < -rout:
+        brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
+    if y2 > rout:
+        brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
     brushes.append(box(x1, -rout, floor_z, x2, -rin, sprz, tex))
     brushes.append(box(x1, rin, floor_z, x2, rout, sprz, tex))
     for i in range(segs):
@@ -419,32 +456,34 @@ E.append(
     )
 )
 
-# Teleport triggers at the ends of the bridge (resized for arches)
+# Teleport triggers at the ends of the bridge (rounded to fit arches)
 # West end trigger -> East destination
-west_trigger_brush = box(
+west_brushes = arch_fill(
     OX1 + WALL_T,
-    -T_ARCH_RIN,
-    DZ2,
     OX1 + WALL_T + T_ARCH_W,
+    0.0,
+    DZ2,
     T_ARCH_RIN,
-    DZ2 + T_ARCH_STILT + T_ARCH_RIN,
+    A_SEGS,
     T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
 )
-E.append(brush_ent("trigger_teleport", [west_trigger_brush], target="dest_east"))
-E.append(brush_ent("func_illusionary", [west_trigger_brush]))  # Visual part
+E.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
+E.append(brush_ent("func_illusionary", west_brushes))  # Visual part
 
 # East end trigger -> West destination
-east_trigger_brush = box(
+east_brushes = arch_fill(
     OX2 - WALL_T - T_ARCH_W,
-    -T_ARCH_RIN,
-    DZ2,
     OX2 - WALL_T,
+    0.0,
+    DZ2,
     T_ARCH_RIN,
-    DZ2 + T_ARCH_STILT + T_ARCH_RIN,
+    A_SEGS,
     T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
 )
-E.append(brush_ent("trigger_teleport", [east_trigger_brush], target="dest_west"))
-E.append(brush_ent("func_illusionary", [east_trigger_brush]))  # Visual part
+E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
+E.append(brush_ent("func_illusionary", east_brushes))  # Visual part
 
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
