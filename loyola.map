@@ -992,31 +992,31 @@
 }
 {
 "classname" "info_player_start"
-"origin" "-640 0 176"
+"origin" "0 0 240"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-640 -80 176"
+"origin" "0 0 240"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-640 0 176"
+"origin" "-160 0 233"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-640 80 176"
+"origin" "160 0 233"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "640 -80 176"
+"origin" "-320 0 215"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "640 0 176"
+"origin" "320 0 215"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "640 80 176"
+"origin" "0 64 240"
 }
 {
 "classname" "info_player_deathmatch"

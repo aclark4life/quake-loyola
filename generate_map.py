@@ -353,15 +353,15 @@ E = []
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
-E.append(ent("info_player_start", origin=f"-640 0 176"))
+E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
 for pos in [
-    (-640, -80, 176),
-    (-640, 0, 176),
-    (-640, 80, 176),
-    (640, -80, 176),
-    (640, 0, 176),
-    (640, 80, 176),
+    (0, 0, int(dtop(0) + 32)),
+    (-160, 0, int(dtop(-160) + 32)),
+    (160, 0, int(dtop(160) + 32)),
+    (-320, 0, int(dtop(-320) + 32)),
+    (320, 0, int(dtop(320) + 32)),
+    (0, 64, int(dtop(0) + 32)),
     (0, 550, ROAD_Z),
     (60, 700, ROAD_Z),
     (-60, 700, ROAD_Z),
