@@ -18,7 +18,8 @@ T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
 T_SKY = "sky4"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
-T_PANEL = "*teleport"  # light panel
+T_LIGHT_PANEL = "light1_1"  # light panel
+T_TELEPORT = "*teleport"  # teleport effect
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 BRX1, BRX2 = -512, 512
@@ -344,7 +345,7 @@ for ex, sign in [(BRX1, 1), (BRX2, -1)]:
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
 # At X=0 the deck bottom is at 192; panel at Z=148..160 clears all deck brushes.
 PANEL_Z = 148
-B.append(box(-48, -48, PANEL_Z, 48, 48, PANEL_Z + 12, T_PANEL))
+B.append(box(-48, -48, PANEL_Z, 48, 48, PANEL_Z + 12, T_LIGHT_PANEL))
 
 # ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
 panel_xs = []
@@ -355,8 +356,8 @@ for px in panel_xs:
     pbase = dtop(px)
     ph = pbase + PAR_H // 2 - 10
     pt_ = ph + 20
-    B.append(box(px - 8, BRY2 - 27, ph, px + 8, BRY2 - 24, pt_, T_PANEL))
-    B.append(box(px - 8, BRY1 + 24, ph, px + 8, BRY1 + 27, pt_, T_PANEL))
+    B.append(box(px - 8, BRY2 - 27, ph, px + 8, BRY2 - 24, pt_, T_LIGHT_PANEL))
+    B.append(box(px - 8, BRY1 + 24, ph, px + 8, BRY1 + 27, pt_, T_LIGHT_PANEL))
 
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
@@ -396,15 +397,16 @@ E.append(
 # Teleport triggers at the ends of the bridge
 # West end trigger -> East destination
 west_trigger_brush = box(
-    OX1 + WALL_T, BRY1, DZ2, OX1 + WALL_T + 16, BRY2, DZ2 + 64, T_PANEL
+    OX1 + WALL_T, BRY1, DZ2, OX1 + WALL_T + 16, BRY2, DZ2 + 64, T_TELEPORT
 )
 E.append(brush_ent("trigger_teleport", [west_trigger_brush], target="dest_east"))
 
 # East end trigger -> West destination
 east_trigger_brush = box(
-    OX2 - WALL_T - 16, BRY1, DZ2, OX2 - WALL_T, BRY2, DZ2 + 64, T_PANEL
+    OX2 - WALL_T - 16, BRY1, DZ2, OX2 - WALL_T, BRY2, DZ2 + 64, T_TELEPORT
 )
 E.append(brush_ent("trigger_teleport", [east_trigger_brush], target="dest_west"))
+
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
