@@ -16,7 +16,7 @@ T_CEMENT = "wbrick1_5"  # parapet / bridge walls (cement look)
 T_WALL = "bricka2_1"  # building walls
 T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
-T_SKY = "sky4"  # open sky ceiling
+T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_LIGHT_PANEL = "light1_1"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
@@ -524,7 +524,7 @@ worldspawn = (
     '"classname" "worldspawn"\n'
     '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge"\n'
-    '"sky" "sky4"\n'
+    f'"sky" "{T_SKY}"\n'
     '"ambient" "40"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
 )
