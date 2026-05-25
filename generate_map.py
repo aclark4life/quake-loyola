@@ -198,11 +198,9 @@ B.append(box(NS_X2, OY2, FZ1, OX2, NS_Y2, OZ2, T_ROCK))  # NE corner
 B.append(box(OX1, NS_Y1, FZ1, NS_X1, OY1, OZ2, T_ROCK))  # SW corner
 B.append(box(NS_X2, NS_Y1, FZ1, OX2, OY1, OZ2, T_ROCK))  # SE corner
 
-# Open E and W ends by removing rock walls, but add SKY walls to seal the leak
-# B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_ROCK))  # E end removed
-# B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_ROCK))  # W end removed
-B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_SKY))  # E end sky wall
-B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_SKY))  # W end sky wall
+# Restore rock walls at the E and W ends of the pathways
+B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_ROCK))  # E end
+B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_ROCK))  # W end
 B.append(box(NS_X1, NS_Y2 - WALL_T, FZ1, NS_X2, NS_Y2, OZ2, T_ROCK))  # N end
 B.append(box(NS_X1, NS_Y1, FZ1, NS_X2, NS_Y1 + WALL_T, OZ2, T_ROCK))  # S end
 
