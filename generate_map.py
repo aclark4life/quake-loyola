@@ -580,8 +580,16 @@ B.extend(
     )
 )
 
-# Roof slab
-B.append(box(BLDG_X1, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL))
+# Roof — open above lift shaft so players can ride to the rooftop
+B.append(
+    box(BLDG_X1, BLDG_Y1, BLDG_Z2, _stx1, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL)
+)  # west
+B.append(
+    box(_stx2, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL)
+)  # east
+B.append(
+    box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_WALL)
+)  # south of shaft
 
 # ── Interior floor slabs (floors 1-3, with stairwell opening) ────────────────
 for _f in range(1, BLDG_FLOORS):
@@ -591,40 +599,6 @@ for _f in range(1, BLDG_FLOORS):
     B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR))
     # East section: beside stairwell (north of _sty1, east of stairwell)
     B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR))
-
-# ── Staircase ramps (switchback each floor) ───────────────────────────────────
-for _f in range(BLDG_FLOORS - 1):
-    _z0, _z1 = _f * FLOOR_H, (_f + 1) * FLOOR_H
-    if _f % 2 == 0:
-        # Ramp rises from X=_stx1 (low) to X=_stx2 (high)
-        B.append(
-            ramp_slab(
-                _stx1,
-                _stx2,
-                _sty1,
-                _sty2,
-                _z0,
-                _z1,
-                _z0 + BLDG_WALL,
-                _z1 + BLDG_WALL,
-                T_FLOOR,
-            )
-        )
-    else:
-        # Reversed: high at X=_stx1, low at X=_stx2 (player walks right-to-left going up)
-        B.append(
-            ramp_slab(
-                _stx1,
-                _stx2,
-                _sty1,
-                _sty2,
-                _z1,
-                _z0,
-                _z1 + BLDG_WALL,
-                _z0 + BLDG_WALL,
-                T_FLOOR,
-            )
-        )
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
@@ -735,6 +709,14 @@ for px in panel_xs:
     ph = int(pbase + PAR_H // 2)
     E.append(ent("light", origin=f"{px} {BRY2 - 30} {ph}", light="180"))
     E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
+
+# Lift (func_plat) — rides from ground floor up through roof opening to rooftop
+# Platform placed at HIGH position (roof level); height = travel distance
+_lift_travel = BLDG_Z2 - 8  # 504 units from Z=0 up to Z=504 (top at Z=512)
+_lift_brush = [
+    box(_stx1 + 2, _sty1 + 2, BLDG_Z2 - 8, _stx2 - 2, _sty2 - 2, BLDG_Z2, T_FLOOR)
+]
+E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
 
 # Building interior lights — one per floor, centred
 _bcx = (BLDG_X1 + BLDG_X2) // 2
