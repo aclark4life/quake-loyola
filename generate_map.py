@@ -302,33 +302,33 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── End abutments removed to open pathway to the end of the world ──────────────
-# EARCH_RIN = 64
-# EARCH_ROUT = 80  # ring 16 units thick
-# EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
-# EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
-# EARCH_CEIL = 256  # top of abutment wall (above bridge deck)
-# EARCH_T = 40  # arch thickness in X
-# for ex, sign in [(BRX1, 1), (BRX2, -1)]:
-#     xb = ex if sign == 1 else ex - EARCH_T
-#     xf = ex + EARCH_T if sign == 1 else ex
-#     B.extend(
-#         arch_wall(
-#             xb,
-#             xf,
-#             BRY1,
-#             BRY2,
-#             FZ2,
-#             EARCH_CEIL,
-#             EARCH_RIN,
-#             EARCH_ROUT,
-#             A_SEGS,
-#             T_STONE,
-#             stilt_h=EARCH_STILT,
-#         )
-#     )
-#     # Fill above arch crown — solid stone abutment from crown to wall top
-#     B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
+# ── End abutments restored as supports (capped at deck height DZ2) ──────────────
+EARCH_RIN = 64
+EARCH_ROUT = 80  # ring 16 units thick
+EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
+EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
+EARCH_CEIL = DZ2  # top of abutment wall (level with bridge deck)
+EARCH_T = 40  # arch thickness in X
+for ex, sign in [(BRX1, 1), (BRX2, -1)]:
+    xb = ex if sign == 1 else ex - EARCH_T
+    xf = ex + EARCH_T if sign == 1 else ex
+    B.extend(
+        arch_wall(
+            xb,
+            xf,
+            BRY1,
+            BRY2,
+            FZ2,
+            EARCH_CEIL,
+            EARCH_RIN,
+            EARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=EARCH_STILT,
+        )
+    )
+    # Fill above arch crown — solid stone abutment up to deck top
+    B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
 
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
