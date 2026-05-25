@@ -26,12 +26,15 @@ T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
-BRX1, BRX2 = -512, 512
-BRY1, BRY2 = -128, 128
+# Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
+# Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
+BRX1, BRX2 = -525, 525  # arched span = 1050 units (was ±512)
+BRY1, BRY2 = -136, 136  # N-S width = 272 units ≈ 18 ft (was ±128)
 DZ1, DZ2 = 128, 144  # flat deck bottom / top (arch offsets added on top)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
-ARCH_RISE = 64  # centre rises 64 units above ends
+# Blueprint: pillar heights 19 ft (ends) → 26 ft (centre) → rise = 7 ft = 106 units
+ARCH_RISE = 106  # centre rises 106 units above ends (was 64)
 ARCH_SEGS = 16  # segments approximating the curve
 SEG_W = (BRX2 - BRX1) // ARCH_SEGS  # 64 units per segment
 
@@ -52,20 +55,25 @@ def dbot(x):
 
 
 # ── Parapet + pillar heights (above deck surface) ─────────────────────────────
-PAR_H = 32  # parapet wall height above deck
+# Blueprint: parapet = 4 ft = 60 units; width = 2.5 ft = 38 units
+# Pillar post = 4 ft 11 in = 74 units wide (P_HW=37); cap = 7 ft 2 in (P_CE=17)
+PAR_H = 60  # parapet wall height above deck (was 32; 4 ft × 15.1)
+PAR_W = 38  # parapet wall width N-S (was hardcoded 24; 2.5 ft × 15.1)
 PIL_EXTRA = 32  # lowered further from 40 for easier jumping
 PIL_CAP_H = 8  # cap slab height
-P_HW = 20  # pillar half-width in X
-P_CE = 4  # cap overhang each side
+P_HW = 37  # pillar post half-width in X (was 20; 4 ft 11 in / 2 × 15.1)
+P_CE = 17  # cap overhang each side (was 4; from 7 ft 2 in cap - 4 ft 11 in post)
 
-# ── Pillar X positions ────────────────────────────────────────────────────────
-PXS = [-384, -128, 128, 384]
+# ── Pillar X positions — 5 pillars (Pillar 1–5) ──────────────────────────────
+# Blueprint: 5 labelled pillars; outer pair ≈ ±350, inner pair ≈ ±175, centre 0
+PXS = [-350, -175, 0, 175, 350]  # was [-384, -128, 128, 384]
 
 # ── World layout ──────────────────────────────────────────────────────────────
 WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
-WORLD_X1, WORLD_X2 = -1024, 1024  # full world E-W extent
+# Blueprint: 750-unit flat approaches on each side of the 1050-unit arched span
+WORLD_X1, WORLD_X2 = -1275, 1275  # full world E-W extent (was ±1024)
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 WORLD_Z2 = 640  # sky ceiling height
 
@@ -444,16 +452,16 @@ for i in range(ARCH_SEGS):
 
 # ── Parapet walls — extended to both world edges ──────────────────────────────
 B.append(
-    box(WORLD_X1 + WALL_T, BRY2 - 24, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT)
+    box(WORLD_X1 + WALL_T, BRY2 - PAR_W, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT)
 )  # North west
 B.append(
-    box(WORLD_X1 + WALL_T, BRY1, DZ2, BRX1, BRY1 + 24, DZ2 + PAR_H, T_CEMENT)
+    box(WORLD_X1 + WALL_T, BRY1, DZ2, BRX1, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT)
 )  # South west
 B.append(
-    box(BRX2, BRY2 - 24, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
+    box(BRX2, BRY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
 )  # North east
 B.append(
-    box(BRX2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + 24, DZ2 + PAR_H, T_CEMENT)
+    box(BRX2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT)
 )  # South east
 
 for i in range(ARCH_SEGS):
@@ -462,29 +470,39 @@ for i in range(ARCH_SEGS):
     pb1, pb2 = dtop(sx1), dtop(sx2)  # parapet base follows deck top
     pt1, pt2 = pb1 + PAR_H, pb2 + PAR_H  # parapet top = base + PAR_H
     # North parapet
-    B.append(ramp_slab(sx1, sx2, BRY2 - 24, BRY2, pb1, pb2, pt1, pt2, T_CEMENT))
+    B.append(ramp_slab(sx1, sx2, BRY2 - PAR_W, BRY2, pb1, pb2, pt1, pt2, T_CEMENT))
     # South parapet — omit segments fully within the walkway gap (X=-64..64)
     if not (sx1 >= WALK_X1 and sx2 <= WALK_X2):
-        B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
+        B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + PAR_W, pb1, pb2, pt1, pt2, T_CEMENT))
 
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
 # Each pillar position now features a narrow arched pier supporting the deck.
+# Blueprint arch dimensions vary by pillar type:
+#   Outer (Pillar 1/5): 7 ft 9 in total (rout=59), 2 ft 9 in opening (rin=21)
+#   Inner (Pillar 2/4): 8 ft 8 in total (rout=65), interpolated opening (rin=30)
+#   Centre (Pillar 3):  13 ft total (rout=98), 9 ft arch height (rin=39)
+_OUTER_R = (59, 21)
+_INNER_R = (65, 30)
+_CENTR_R = (98, 39)
 for px in PXS:
     pdeck = dtop(px)  # deck surface at this X
     ppar = pdeck + PAR_H  # parapet top
     ppil = ppar + PIL_EXTRA  # pillar post top
     pcap = ppil + PIL_CAP_H  # cap slab top
-    cy_n = BRY2 - 12  # north cap centre Y
-    cy_s = BRY1 + 12  # south cap centre Y
+    cy_n = BRY2 - PAR_W // 2  # north cap centre Y
+    cy_s = BRY1 + PAR_W // 2  # south cap centre Y
 
     # Width of the pier in X (matches cap stone width)
     x1, x2 = px - P_HW - P_CE, px + P_HW + P_CE
 
-    # Arch opening logic for the pier
-    # Top of arch should be at dbot(px) = int(pdeck) - 16
-    a_rout = 80
-    a_rin = 64
+    # Arch opening varies by pillar type (outer / inner / centre)
+    if px == 0:
+        a_rout, a_rin = _CENTR_R
+    elif abs(px) == max(abs(p) for p in PXS):
+        a_rout, a_rin = _OUTER_R
+    else:
+        a_rout, a_rin = _INNER_R
     a_stilt = int(pdeck) - a_rout - FZ2 - 16
     if a_stilt < 0:
         a_stilt = 0
@@ -508,12 +526,12 @@ for px in PXS:
 
     # Pillar tops (the parts that stick above the deck)
     # North pillar top + cap
-    B.append(box(px - P_HW, BRY2 - 24, pdeck, px + P_HW, BRY2, ppil, T_STONE))
-    B.append(box(x1, BRY2 - 24 - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
+    B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_STONE))
+    B.append(box(x1, BRY2 - PAR_W - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
 
     # South pillar top + cap
-    B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + 24, ppil, T_STONE))
-    B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + 24 + P_CE, pcap, T_STONE))
+    B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
+    B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + PAR_W + P_CE, pcap, T_STONE))
 
     # Torch flames on cap top
     B.append(
@@ -525,7 +543,7 @@ for px in PXS:
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
-T_ARCH_ROUT = 128  # Fills the bridge width
+T_ARCH_ROUT = 136  # Fills the bridge width (updated to match BRY2=136)
 T_ARCH_STILT = 96  # Height of straight sides
 T_ARCH_CEIL = DZ2 + T_ARCH_STILT + T_ARCH_RIN + 32  # Stone above the arch
 T_ARCH_W = 32  # Thickness of the arch in X
@@ -562,8 +580,12 @@ for px in panel_xs:
     pbase = dtop(px)
     ph = pbase + PAR_H // 2 - 10
     pt_ = ph + 20
-    B.append(box(px - 8, BRY2 - 27, ph, px + 8, BRY2 - 24, pt_, T_LIGHT_PANEL))
-    B.append(box(px - 8, BRY1 + 24, ph, px + 8, BRY1 + 27, pt_, T_LIGHT_PANEL))
+    B.append(
+        box(px - 8, BRY2 - PAR_W - 3, ph, px + 8, BRY2 - PAR_W, pt_, T_LIGHT_PANEL)
+    )
+    B.append(
+        box(px - 8, BRY1 + PAR_W, ph, px + 8, BRY1 + PAR_W + 3, pt_, T_LIGHT_PANEL)
+    )
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -776,8 +798,8 @@ for pos in [
     (0, _bcy, FLOOR_H * 2 + 40),
     (0, _bcy, FLOOR_H * 3 + 40),
     # East/west campus ground
-    (800, 0, ROAD_Z),
-    (-800, 0, ROAD_Z),
+    (1000, 0, ROAD_Z),
+    (-1000, 0, ROAD_Z),
     # Road under bridge
     (0, 300, ROAD_Z),
     (0, -400, ROAD_Z),
@@ -787,14 +809,14 @@ for pos in [
 E.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
 E.append(ent("weapon_rocketlauncher", origin=f"0 {_bcy} {FLOOR_H + 40}"))
 E.append(ent("weapon_rocketlauncher", origin=f"0 {_bcy} {FLOOR_H * 3 + 40}"))
-E.append(ent("weapon_rocketlauncher", origin=f"800 0 {ROAD_Z}"))
+E.append(ent("weapon_rocketlauncher", origin=f"1000 0 {ROAD_Z}"))
 
-for ax in [-384, -128, 128, 384]:
+for ax in PXS:
     E.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
 for _by in [_bcy - 80, _bcy + 80]:
     E.append(ent("item_rockets", origin=f"80 {_by} {FLOOR_H * 2 + 40}"))
     E.append(ent("item_rockets", origin=f"-80 {_by} {FLOOR_H * 2 + 40}"))
-for rx in [600, 800]:
+for rx in [600, 1000]:
     E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z}"))
     E.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z}"))
 
@@ -849,7 +871,7 @@ _wk_mid_z = int((WALK_ZT1 + WALK_ZT2) / 2) + 60  # above ramp midpoint
 E.append(ent("light", origin=f"0 {_wk_mid_y} {_wk_mid_z}", light="260"))
 
 # West campus ambient + east campus ambient
-for _xx in [-800, 800]:
+for _xx in [-1000, 1000]:
     E.append(ent("light", origin=f"{_xx} 0 200", light="300"))
 
 # Teleport arch lights — both ends
