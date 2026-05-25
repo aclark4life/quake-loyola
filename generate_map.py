@@ -18,7 +18,7 @@ T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
 T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
-T_LIGHT_PANEL = "light1_1"  # light panel
+T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
@@ -503,7 +503,7 @@ for ey in [NS_Y1 + WALL_T, NS_Y2 - WALL_T - T_ARCH_W]:
 # ── Attached glow panel beneath arch centre ─────────────────────────────────
 # Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
 PANEL_Z = int(dbot(0)) - 4
-B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, "light3_7"))
+B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, T_LIGHT_PANEL))
 
 # ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
 panel_xs = []
