@@ -400,12 +400,14 @@ west_trigger_brush = box(
     OX1 + WALL_T, BRY1, DZ2, OX1 + WALL_T + 16, BRY2, DZ2 + 64, T_TELEPORT
 )
 E.append(brush_ent("trigger_teleport", [west_trigger_brush], target="dest_east"))
+E.append(brush_ent("func_illusionary", [west_trigger_brush]))  # Visual part
 
 # East end trigger -> West destination
 east_trigger_brush = box(
     OX2 - WALL_T - 16, BRY1, DZ2, OX2 - WALL_T, BRY2, DZ2 + 64, T_TELEPORT
 )
 E.append(brush_ent("trigger_teleport", [east_trigger_brush], target="dest_west"))
+E.append(brush_ent("func_illusionary", [east_trigger_brush]))  # Visual part
 
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
