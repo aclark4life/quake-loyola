@@ -77,6 +77,12 @@ FLOOR_H = 128  # floor-to-floor height
 BLDG_FLOORS = 4  # number of floors
 BLDG_Z2 = BLDG_FLOORS * FLOOR_H  # building top height = 512
 
+# ── Walkway from bridge to building 2nd floor ────────────────────────────────
+# Ramp spans the 128-unit gap (Y=-128 to Y=-256), dropping 64 Z units (~27°)
+WALK_X1, WALK_X2 = -64, 64  # walkway width (matches entrance)
+WALK_ZT1 = int(dtop(0))  # deck height at bridge end = 208
+WALK_ZT2 = FLOOR_H + BLDG_WALL  # floor-2 surface at building end = 144 = DZ2
+
 # ── Arch segments ─────────────────────────────────────────────────────────────
 A_SEGS = 8
 
@@ -129,6 +135,27 @@ def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
                 face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
                 face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
                 face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
+            ]
+        )
+        + "\n}"
+    )
+
+
+def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
+    """Prismatic slab whose bottom and top faces are sloped in the Y direction.
+    zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2."""
+    tt = tt or tex
+    tb = tb or tex
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
+                face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
+                face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex),  # -Y
+                face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex),  # +Y
+                face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
+                face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
             ]
         )
         + "\n}"
@@ -430,8 +457,9 @@ for i in range(ARCH_SEGS):
     pt1, pt2 = pb1 + PAR_H, pb2 + PAR_H  # parapet top = base + PAR_H
     # North parapet
     B.append(ramp_slab(sx1, sx2, BRY2 - 24, BRY2, pb1, pb2, pt1, pt2, T_CEMENT))
-    # South parapet
-    B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
+    # South parapet — omit segments fully within the walkway gap (X=-64..64)
+    if not (sx1 >= WALK_X1 and sx2 <= WALK_X2):
+        B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
 
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
@@ -533,6 +561,55 @@ for px in panel_xs:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# WALKWAY — ramp from bridge south edge down to building 2nd floor entrance
+# X=-64..64, Y=-128..-256; top slopes Z=208 (deck level) → Z=144 (floor-2 surface)
+# ════════════════════════════════════════════════════════════════════════════════
+_wk_zb1 = WALK_ZT1 - BLDG_WALL  # slab bottom at bridge end  = 192
+_wk_zb2 = WALK_ZT2 - BLDG_WALL  # slab bottom at building end = 128
+B.append(
+    ramp_slab_y(
+        WALK_X1,
+        WALK_X2,
+        BRY1,
+        BLDG_Y2,
+        _wk_zb1,
+        _wk_zb2,
+        WALK_ZT1,
+        WALK_ZT2,
+        T_CEMENT,
+        tt=T_FLOOR,
+    )
+)
+# Side rails slope with the ramp
+B.append(
+    ramp_slab_y(
+        WALK_X1 - 16,
+        WALK_X1,
+        BRY1,
+        BLDG_Y2,
+        WALK_ZT1,
+        WALK_ZT2,
+        WALK_ZT1 + PAR_H,
+        WALK_ZT2 + PAR_H,
+        T_CEMENT,
+    )
+)
+B.append(
+    ramp_slab_y(
+        WALK_X2,
+        WALK_X2 + 16,
+        BRY1,
+        BLDG_Y2,
+        WALK_ZT1,
+        WALK_ZT2,
+        WALK_ZT1 + PAR_H,
+        WALK_ZT2 + PAR_H,
+        T_CEMENT,
+    )
+)
+
+
+# ════════════════════════════════════════════════════════════════════════════════
 # BRUTALIST BUILDING — south campus, 4-floor playable tower
 # Footprint: X=-256 to 256, Y=-800 to -256, Z=0 to 512
 # North face faces the bridge; ground-level entrance at X=-64 to 64
@@ -556,6 +633,7 @@ B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y1 + BLDG_WALL, BLDG_Z2, T_WAL
 
 # North wall — faces bridge; ground entrance (X=-64..64, Z=0..128) + upper windows
 _door_n = [(_ENT_X1, FZ2, _ENT_X2, FLOOR_H)]  # ground entrance slot
+_door_2 = [(_ENT_X1, WALK_ZT2, _ENT_X2, FLOOR_H * 2)]  # 2nd-floor walkway entrance
 _win_n = [
     (-128, _f * FLOOR_H + 32, 128, _f * FLOOR_H + 80) for _f in range(1, BLDG_FLOORS)
 ]
@@ -567,7 +645,7 @@ B.extend(
         BLDG_X2,
         BLDG_Y2,
         BLDG_Z2,
-        _door_n + _win_n,
+        _door_n + _door_2 + _win_n,
         T_WALL,
     )
 )
@@ -683,6 +761,8 @@ for pos in [
     (160, 0, int(dtop(160) + 32)),
     (-320, 0, int(dtop(-320) + 32)),
     (320, 0, int(dtop(320) + 32)),
+    # Walkway mid-point
+    (0, (BRY1 + BLDG_Y2) // 2, int((WALK_ZT1 + WALK_ZT2) / 2) + 32),
     # Building ground floor (near entrance)
     (0, BLDG_Y2 - 64, ROAD_Z),
     # Building upper floors
@@ -756,6 +836,11 @@ for _f in range(BLDG_FLOORS):
     for _wy in [BLDG_Y1 + 80 + _i * 192 + 16 for _i in range(3)]:
         E.append(ent("light", origin=f"{BLDG_X2 + 10} {_wy} {_lz}", light="120"))
         E.append(ent("light", origin=f"{BLDG_X1 - 10} {_wy} {_lz}", light="120"))
+
+# Walkway light — mid-ramp, above the path
+_wk_mid_y = (BRY1 + BLDG_Y2) // 2  # = -192
+_wk_mid_z = int((WALK_ZT1 + WALK_ZT2) / 2) + 60  # above ramp midpoint
+E.append(ent("light", origin=f"0 {_wk_mid_y} {_wk_mid_z}", light="260"))
 
 # West campus ambient + east campus ambient
 for _xx in [-800, 800]:
