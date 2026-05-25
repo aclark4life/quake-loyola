@@ -443,7 +443,7 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east",
-        origin="900 0 176",
+        origin="840 0 176",
         angle="180",
     )
 )
@@ -451,7 +451,7 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_west",
-        origin="-900 0 176",
+        origin="-840 0 176",
         angle="0",
     )
 )
