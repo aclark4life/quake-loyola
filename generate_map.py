@@ -85,23 +85,27 @@ WORLD_X1, WORLD_X2 = -(525 + 741), (525 + 741)  # = ±1266 full world E-W extent
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 
 # ── Building (south campus, brutalist tower) ─────────────────────────────────
-BLDG_X1, BLDG_X2 = -256, 256  # centered under bridge (512 wide)
+# East of road (Charles St = X -256..256), in the flat bridge approach (X > BRX2=525)
+BLDG_X1, BLDG_X2 = 350, 850  # east of road; 500 units wide
+BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 600
 BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
 BLDG_FLOORS = 4  # number of floors
-# Raise building so 2nd-floor surface aligns with deck (flat walkway)
-BLDG_GROUND_Z = int(dtop(0)) - FLOOR_H - BLDG_WALL  # hill top = dtop(0)-144
-BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H  # building roof height
+# Building is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
+BLDG_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - BLDG_WALL)  # = 0 (no hill needed)
+BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H
 
-# Sky ceiling must clear the raised building
+# Sky ceiling must clear the building
 WORLD_Z2 = max(640, BLDG_Z2 + 128)
 
 # ── Walkway from bridge to building 2nd floor ────────────────────────────────
-# Flat span: bridge south edge (BRY1) to building north face (BLDG_Y2)
-WALK_X1, WALK_X2 = -64, 64  # walkway width (matches entrance)
-WALK_ZT1 = int(dtop(0))  # deck height at bridge end
-WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # 2nd-floor surface = WALK_ZT1 (flat)
+# Flat span at DZ2=144 (flat approach section); centered on building entrance
+WALK_X1 = BLDG_CX - 64  # = 536
+WALK_X2 = BLDG_CX + 64  # = 664
+WALK_ZT1 = int(dtop(BLDG_CX))  # = DZ2 = 144 (flat approach, no arch rise)
+WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # = 144 = WALK_ZT1 (flat)
+# No ramp needed: BLDG_GROUND_Z = 0 = road level
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
 A_SEGS = 8
@@ -472,9 +476,11 @@ B.append(
 B.append(
     box(BRX2, BRY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
 )  # North east
+# South east — gap at WALK_X1..WALK_X2 for walkway connection to building
+B.append(box(BRX2, BRY1, DZ2, WALK_X1, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT))
 B.append(
-    box(BRX2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT)
-)  # South east
+    box(WALK_X2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT)
+)
 
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
@@ -602,8 +608,8 @@ for px in panel_xs:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# WALKWAY — ramp from bridge south edge down to building 2nd floor entrance
-# X=-64..64, Y=-128..-256; top slopes Z=208 (deck level) → Z=144 (floor-2 surface)
+# WALKWAY — flat bridge from south edge to building 2nd floor entrance
+# X=-64..64, Y=BRY1..BLDG_Y2; flat at WALK_ZT1 = WALK_ZT2
 # ════════════════════════════════════════════════════════════════════════════════
 _wk_zb1 = WALK_ZT1 - BLDG_WALL  # slab bottom at bridge end  = 192
 _wk_zb2 = WALK_ZT2 - BLDG_WALL  # slab bottom at building end = 128
@@ -656,21 +662,20 @@ B.append(
 # North face faces the bridge; ground-level entrance at X=-64 to 64
 # Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
-_bix1 = BLDG_X1 + BLDG_WALL  # interior west  = -240
-_bix2 = BLDG_X2 - BLDG_WALL  # interior east  =  240
+_bix1 = BLDG_X1 + BLDG_WALL  # interior west
+_bix2 = BLDG_X2 - BLDG_WALL  # interior east
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
 _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 
-# Lift shaft to the right (east) of entrance: X=80..208, Y=-400 to -272
-_stx1, _stx2 = 80, 208
+# Entrance doorway — centred on building (BLDG_CX ± 64)
+_ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 536, 664
+
+# Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
+_stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 680, 808
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
 
-# Entrance doorway (fixed at centre-left of north face): X=-64..64
-_ENT_X1, _ENT_X2 = -64, 64
-
 # ── Outer walls ──────────────────────────────────────────────────────────────
-# Hill — solid rock base raising building to BLDG_GROUND_Z
-B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y2, BLDG_GROUND_Z, T_ROCK))
+# BLDG_GROUND_Z = 0: building sits at road level, no hill needed
 
 # South wall — solid back wall
 B.append(
@@ -685,7 +690,12 @@ _door_2 = [
     (_ENT_X1, WALK_ZT2, _ENT_X2, BLDG_GROUND_Z + FLOOR_H * 2)
 ]  # walkway entrance
 _win_n = [
-    (-128, BLDG_GROUND_Z + _f * FLOOR_H + 32, 128, BLDG_GROUND_Z + _f * FLOOR_H + 80)
+    (
+        BLDG_CX - 128,
+        BLDG_GROUND_Z + _f * FLOOR_H + 32,
+        BLDG_CX + 128,
+        BLDG_GROUND_Z + _f * FLOOR_H + 80,
+    )
     for _f in range(1, BLDG_FLOORS)
 ]
 B.extend(
@@ -834,13 +844,13 @@ for pos in [
     (-320, 0, int(dtop(-320) + 32)),
     (320, 0, int(dtop(320) + 32)),
     # Walkway mid-point
-    (0, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)),
+    (BLDG_CX, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)),
     # Building ground floor (near entrance)
-    (0, BLDG_Y2 - 64, BLDG_GROUND_Z + 40),
+    (BLDG_CX, BLDG_Y2 - 64, BLDG_GROUND_Z + 40),
     # Building upper floors
-    (0, _bcy, BLDG_GROUND_Z + FLOOR_H + 40),
-    (0, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40),
-    (0, _bcy, BLDG_GROUND_Z + FLOOR_H * 3 + 40),
+    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H + 40),
+    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40),
+    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 3 + 40),
     # East/west campus ground
     (1000, 0, ROAD_Z),
     (-1000, 0, ROAD_Z),
@@ -852,27 +862,43 @@ for pos in [
 
 E.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
 E.append(
-    ent("weapon_rocketlauncher", origin=f"0 {_bcy} {BLDG_GROUND_Z + FLOOR_H + 40}")
+    ent(
+        "weapon_rocketlauncher",
+        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H + 40}",
+    )
 )
 E.append(
-    ent("weapon_rocketlauncher", origin=f"0 {_bcy} {BLDG_GROUND_Z + FLOOR_H * 3 + 40}")
+    ent(
+        "weapon_rocketlauncher",
+        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 3 + 40}",
+    )
 )
 E.append(ent("weapon_rocketlauncher", origin=f"1000 0 {ROAD_Z}"))
 
 for ax in PXS:
     E.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
 for _by in [_bcy - 80, _bcy + 80]:
-    E.append(ent("item_rockets", origin=f"80 {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}"))
     E.append(
-        ent("item_rockets", origin=f"-80 {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}")
+        ent(
+            "item_rockets",
+            origin=f"{BLDG_CX + 80} {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
+        )
+    )
+    E.append(
+        ent(
+            "item_rockets",
+            origin=f"{BLDG_CX - 80} {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
+        )
     )
 for rx in [600, 1000]:
     E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z}"))
     E.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z}"))
 
 E.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
-E.append(ent("item_health", origin=f"0 {BLDG_Y2 - 64} {BLDG_GROUND_Z + 40}"))
-E.append(ent("item_health", origin=f"0 {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}"))
+E.append(ent("item_health", origin=f"{BLDG_CX} {BLDG_Y2 - 64} {BLDG_GROUND_Z + 40}"))
+E.append(
+    ent("item_health", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}")
+)
 
 # Torch lights on pillar caps
 if SHOW_SUPPORTS:
@@ -906,8 +932,8 @@ E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="20
 _bcy = (BLDG_Y1 + BLDG_Y2) // 2  # -528
 for _f in range(BLDG_FLOORS):
     _lz = BLDG_GROUND_Z + _f * FLOOR_H + FLOOR_H // 2
-    E.append(ent("light", origin=f"80  {_bcy} {_lz}", light="280"))
-    E.append(ent("light", origin=f"-80 {_bcy} {_lz}", light="280"))
+    E.append(ent("light", origin=f"{BLDG_CX + 80}  {_bcy} {_lz}", light="280"))
+    E.append(ent("light", origin=f"{BLDG_CX - 80} {_bcy} {_lz}", light="280"))
 
 # Building window glow (exterior, east + west faces)
 for _f in range(BLDG_FLOORS):
@@ -916,10 +942,11 @@ for _f in range(BLDG_FLOORS):
         E.append(ent("light", origin=f"{BLDG_X2 + 10} {_wy} {_lz}", light="120"))
         E.append(ent("light", origin=f"{BLDG_X1 - 10} {_wy} {_lz}", light="120"))
 
-# Walkway light — mid-ramp, above the path
+# Walkway light — above the flat walkway
 _wk_mid_y = (BRY1 + BLDG_Y2) // 2  # = -192
-_wk_mid_z = int((WALK_ZT1 + WALK_ZT2) / 2) + 60  # above ramp midpoint
-E.append(ent("light", origin=f"0 {_wk_mid_y} {_wk_mid_z}", light="260"))
+E.append(
+    ent("light", origin=f"{BLDG_CX} {_wk_mid_y} {int(WALK_ZT1 + 60)}", light="260")
+)
 
 # West campus ambient + east campus ambient
 for _xx in [-1000, 1000]:
