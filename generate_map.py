@@ -543,16 +543,19 @@ _bix2 = BLDG_X2 - BLDG_WALL  # interior east  =  240
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
 _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 
-# Lift shaft at center-north (near entrance): X=-64 to 64, Y=-400 to -272
-_stx1, _stx2 = -64, 64
+# Lift shaft to the right (east) of entrance: X=80..208, Y=-400 to -272
+_stx1, _stx2 = 80, 208
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
+
+# Entrance doorway (fixed at centre-left of north face): X=-64..64
+_ENT_X1, _ENT_X2 = -64, 64
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
 # South wall — solid back wall
 B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y1 + BLDG_WALL, BLDG_Z2, T_WALL))
 
 # North wall — faces bridge; ground entrance (X=-64..64, Z=0..128) + upper windows
-_door_n = [(_stx1, FZ2, _stx2, FLOOR_H)]  # ground entrance slot
+_door_n = [(_ENT_X1, FZ2, _ENT_X2, FLOOR_H)]  # ground entrance slot
 _win_n = [
     (-128, _f * FLOOR_H + 32, 128, _f * FLOOR_H + 80) for _f in range(1, BLDG_FLOORS)
 ]
