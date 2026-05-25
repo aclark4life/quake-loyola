@@ -81,13 +81,17 @@ WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
-WORLD_X1, WORLD_X2 = -(525 + 741), (525 + 741)  # = ±1266 full world E-W extent
+# East side extended by one building width (500) to give the building room
+BLDG_WIDTH = 500
+WORLD_X1 = -(525 + 741)  # = -1266 (west end unchanged)
+WORLD_X2 = 525 + 741 + BLDG_WIDTH  # = 1766  (east end extended)
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 
 # ── Building (south campus, brutalist tower) ─────────────────────────────────
-# East of road (Charles St = X -256..256), in the flat bridge approach (X > BRX2=525)
-BLDG_X1, BLDG_X2 = 350, 850  # east of road; 500 units wide
-BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 600
+# Pushed near the east world end; 64-unit gap between building and east wall
+BLDG_X2 = WORLD_X2 - WALL_T - 64  # = 1686
+BLDG_X1 = BLDG_X2 - BLDG_WIDTH  # = 1186
+BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 1436
 BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
