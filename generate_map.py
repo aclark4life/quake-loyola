@@ -143,7 +143,13 @@ def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
 
 def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     """Prismatic slab whose bottom and top faces are sloped in the Y direction.
-    zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2."""
+    zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2.
+    y1 and y2 may be passed in either order."""
+    # Normalise so y1 <= y2 (face normals assume this ordering)
+    if y1 > y2:
+        y1, y2 = y2, y1
+        zb1, zb2 = zb2, zb1
+        zt1, zt2 = zt2, zt1
     tt = tt or tex
     tb = tb or tex
     return (
