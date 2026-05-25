@@ -500,11 +500,10 @@ for ey in [NS_Y1 + WALL_T, NS_Y2 - WALL_T - T_ARCH_W]:
         )
     )
 
-# ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
-# Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
-# At X=0 the deck bottom is at 192; panel at Z=148..160 clears all deck brushes.
-PANEL_Z = 148
-B.append(box(-48, -48, PANEL_Z, 48, 48, PANEL_Z + 12, T_LIGHT_PANEL))
+# ── Attached glow panel beneath arch centre ─────────────────────────────────
+# Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
+PANEL_Z = int(dbot(0)) - 4
+B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, "light3_7"))
 
 # ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
 panel_xs = []
