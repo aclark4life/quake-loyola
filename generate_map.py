@@ -386,9 +386,9 @@ for i in range(ARCH_SEGS):
     B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
 
 
-# ── Pillar posts (stone, tall — support bridge from ground to cap) ────────────
+# ── Pillar posts (stone piers with arches) ───────────────────────────────────
+# Each pillar position now features a narrow arched pier supporting the deck.
 for px in PXS:
-    pbase = FZ2  # Pillar starts from ground
     pdeck = dtop(px)  # deck surface at this X
     ppar = pdeck + PAR_H  # parapet top
     ppil = ppar + PIL_EXTRA  # pillar post top
@@ -396,32 +396,42 @@ for px in PXS:
     cy_n = BRY2 - 12  # north cap centre Y
     cy_s = BRY1 + 12  # south cap centre Y
 
-    # North pillar post + cap
-    B.append(box(px - P_HW, BRY2 - 24, pbase, px + P_HW, BRY2, ppil, T_STONE))
-    B.append(
-        box(
-            px - P_HW - P_CE,
-            BRY2 - 24 - P_CE,
-            ppil,
-            px + P_HW + P_CE,
-            BRY2 + P_CE,
-            pcap,
+    # Width of the pier in X (matches cap stone width)
+    x1, x2 = px - P_HW - P_CE, px + P_HW + P_CE
+
+    # Arch opening logic for the pier
+    a_rin = 80
+    a_rout = 110
+    a_stilt = int(pdeck) - a_rin - FZ2 - 16
+    if a_stilt < 0:
+        a_stilt = 0
+
+    # Add the arched pier structure (spans BRY1 to BRY2)
+    B.extend(
+        arch_wall(
+            x1,
+            x2,
+            BRY1,
+            BRY2,
+            FZ2,
+            int(pdeck),
+            a_rin,
+            a_rout,
+            A_SEGS,
             T_STONE,
+            stilt_h=a_stilt,
         )
     )
-    # South pillar post + cap
-    B.append(box(px - P_HW, BRY1, pbase, px + P_HW, BRY1 + 24, ppil, T_STONE))
-    B.append(
-        box(
-            px - P_HW - P_CE,
-            BRY1 - P_CE,
-            ppil,
-            px + P_HW + P_CE,
-            BRY1 + 24 + P_CE,
-            pcap,
-            T_STONE,
-        )
-    )
+
+    # Pillar tops (the parts that stick above the deck)
+    # North pillar top + cap
+    B.append(box(px - P_HW, BRY2 - 24, pdeck, px + P_HW, BRY2, ppil, T_STONE))
+    B.append(box(x1, BRY2 - 24 - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
+
+    # South pillar top + cap
+    B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + 24, ppil, T_STONE))
+    B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + 24 + P_CE, pcap, T_STONE))
+
     # Torch flames on cap top
     B.append(
         box(px - 4, cy_n - 4, pcap, px + 4, cy_n + 4, pcap + 10, T_STONE, tt=T_LAVA)
@@ -429,63 +439,6 @@ for px in PXS:
     B.append(
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
-
-# ── Supporting arches under bridge deck ───────────────────────────────────────
-# Arches between pillars and at bridge ends
-arch_segments = [BRX1] + PXS + [BRX2]
-for i in range(len(arch_segments) - 1):
-    x1, x2 = arch_segments[i], arch_segments[i + 1]
-    xm = (x1 + x2) / 2
-    # Arch opening logic
-    a_ceil = int(dbot(xm))
-    a_rin = (
-        (x2 - x1 - P_HW * 2) // 2
-        if (x1 in PXS and x2 in PXS)
-        else (x2 - x1 - P_HW) // 2
-    )
-    if a_rin < 16:
-        a_rin = 16  # fallback
-    a_stilt = a_ceil - a_rin - FZ2
-    if a_stilt < 0:
-        a_stilt = 0
-        a_rin = a_ceil - FZ2
-
-    # Add arch walls (North and South sides)
-    B.extend(
-        arch_wall(
-            x1,
-            x2,
-            BRY2 - 24,
-            BRY2,
-            FZ2,
-            a_ceil,
-            a_rin,
-            a_rin + 16,
-            A_SEGS,
-            T_STONE,
-            stilt_h=a_stilt,
-        )
-    )
-    B.extend(
-        arch_wall(
-            x1,
-            x2,
-            BRY1,
-            BRY1 + 24,
-            FZ2,
-            a_ceil,
-            a_rin,
-            a_rin + 16,
-            A_SEGS,
-            T_STONE,
-            stilt_h=a_stilt,
-        )
-    )
-    # Fill solid stone above the arches up to deck bottom
-    B.append(box(x1, BRY2 - 24, FZ2 + a_stilt + a_rin, x2, BRY2, a_ceil, T_STONE))
-    B.append(box(x1, BRY1, FZ2 + a_stilt + a_rin, x2, BRY1 + 24, a_ceil, T_STONE))
-
-# ── Redundant end abutments removed, now handled by supporting arches loop ──
 
 # ── Teleport Arches at the ends of the bridge ────────────────────────────────
 T_ARCH_RIN = 96
