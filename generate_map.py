@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Generate loyola.map — cross-shaped Quake 1 deathmatch map.
+"""Generate loyola.map — Loyola bridge + brutalist building Quake 1 deathmatch map.
 
-Bridge matches Loyola Maryland campus bridge:
-  - Parabolic arch deck (rises 64 units at centre)
-  - Stone pillar posts (stone1_5) at regular intervals
-  - Cement parapet walls (wbrick1_5) between pillars
+Layout:
+  - Rectangular open world (±1024 E-W × ±960 N-S), open sky
+  - Road runs N-S under the bridge (like Charles Street at Loyola Maryland)
+  - Bridge spans E-W at deck height ~144; arched stone pillars over the road
+  - Brutalist building on west campus (X=-960 to -512, 4 playable floors)
+    Floor 2 (Z=128-256) connects directly to bridge deck via east-face doorway
+  - East campus: open area with bridge approach to east teleport arch
 """
 
 import math
@@ -57,28 +60,24 @@ P_CE = 4  # cap overhang each side
 # ── Pillar X positions ────────────────────────────────────────────────────────
 PXS = [-384, -128, 128, 384]
 
-# ── Buildings ─────────────────────────────────────────────────────────────────
-WBX1, WBX2 = -768, BRX1
-EBX1, EBX2 = BRX2, 768
-BY1, BY2 = -192, 192
-BWALL = 16
-BZ2 = 288
-BCEIL = BZ2 + 16
-BOPEN_Y = BRY2  # 128
-
-# ── Arch ring (building outer walls) ─────────────────────────────────────────
-A_RIN = 72
-A_ROUT = 96
-A_SEGS = 8
-
-# ── Cross cave dims ───────────────────────────────────────────────────────────
+# ── World layout ──────────────────────────────────────────────────────────────
 WALL_T = 16
-OX1, OX2 = -960, 960
-OY1, OY2 = -368, 368
-OZ2 = 480
 FZ1, FZ2 = -16, 0
-NS_X1, NS_X2 = OY1, OY2  # N-S arm X = -368..368
-NS_Y1, NS_Y2 = OX1, OX2  # N-S arm Y = -960..960
+ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
+WORLD_X1, WORLD_X2 = -1024, 1024  # full world E-W extent
+WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
+WORLD_Z2 = 640  # sky ceiling height
+
+# ── Building (west campus, brutalist tower) ───────────────────────────────────
+BLDG_X1, BLDG_X2 = -960, BRX1  # X=-960 to -512 (east face aligns with bridge start)
+BLDG_Y1, BLDG_Y2 = -256, 256  # building N-S footprint
+BLDG_WALL = 16  # wall thickness
+FLOOR_H = 128  # floor-to-floor height
+BLDG_FLOORS = 4  # number of floors
+BLDG_Z2 = BLDG_FLOORS * FLOOR_H  # building top height = 512
+
+# ── Arch segments ─────────────────────────────────────────────────────────────
+A_SEGS = 8
 
 
 # ── Geometry helpers ──────────────────────────────────────────────────────────
@@ -316,38 +315,76 @@ def brush_ent(cls, brushes, **kw):
     return "\n".join(lines)
 
 
+def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
+    """Wall slab (thin in Y) with rectangular cutouts.
+    openings: list of (ox1, oz1, ox2, oz2) — regions to omit in the x,z plane.
+    """
+    xs = sorted({x1, x2} | {o[0] for o in openings} | {o[2] for o in openings})
+    zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
+    brushes = []
+    for xi in range(len(xs) - 1):
+        for zi in range(len(zs) - 1):
+            cx1, cx2 = xs[xi], xs[xi + 1]
+            cz1, cz2 = zs[zi], zs[zi + 1]
+            covered = any(
+                o[0] <= cx1 and cx2 <= o[2] and o[1] <= cz1 and cz2 <= o[3]
+                for o in openings
+            )
+            if not covered:
+                brushes.append(box(cx1, y1, cz1, cx2, y2, cz2, tex))
+    return brushes
+
+
+def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
+    """Wall slab (thin in X) with rectangular cutouts.
+    openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
+    """
+    ys = sorted({y1, y2} | {o[0] for o in openings} | {o[2] for o in openings})
+    zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
+    brushes = []
+    for yi in range(len(ys) - 1):
+        for zi in range(len(zs) - 1):
+            cy1, cy2 = ys[yi], ys[yi + 1]
+            cz1, cz2 = zs[zi], zs[zi + 1]
+            covered = any(
+                o[0] <= cy1 and cy2 <= o[2] and o[1] <= cz1 and cz2 <= o[3]
+                for o in openings
+            )
+            if not covered:
+                brushes.append(box(x1, cy1, cz1, x2, cy2, cz2, tex))
+    return brushes
+
+
 # ── Build world brushes ───────────────────────────────────────────────────────
 B = []
 
 # ════════════════════════════════════════════════════════════════════════════════
-# CROSS CAVE SHELL — 4 corner blocks + N/S end walls + floors + sky ceilings
+# RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
 # ════════════════════════════════════════════════════════════════════════════════
-B.append(box(OX1, OY2, FZ1, NS_X1, NS_Y2, OZ2, T_ROCK))  # NW corner
-B.append(box(NS_X2, OY2, FZ1, OX2, NS_Y2, OZ2, T_ROCK))  # NE corner
-B.append(box(OX1, NS_Y1, FZ1, NS_X1, OY1, OZ2, T_ROCK))  # SW corner
-B.append(box(NS_X2, NS_Y1, FZ1, OX2, OY1, OZ2, T_ROCK))  # SE corner
-
-# Restore rock walls at the E and W ends of the pathways
-B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_ROCK))  # E end
-B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_ROCK))  # W end
-B.append(box(NS_X1, NS_Y2 - WALL_T, FZ1, NS_X2, NS_Y2, OZ2, T_ROCK))  # N end
-B.append(box(NS_X1, NS_Y1, FZ1, NS_X2, NS_Y1 + WALL_T, OZ2, T_ROCK))  # S end
-
-B.append(box(OX1, OY1, FZ1, OX2, OY2, FZ2, T_ROCK))  # E-W floor
-B.append(box(NS_X1, OY2, FZ1, NS_X2, NS_Y2 - WALL_T, FZ2, T_ROCK))  # N arm floor
-B.append(box(NS_X1, NS_Y1 + WALL_T, FZ1, NS_X2, OY1, FZ2, T_ROCK))  # S arm floor
-
-# E-W sky ceiling (single brush — keeps BSP solid)
-B.append(box(OX1, OY1, OZ2 - WALL_T, OX2, OY2, OZ2, T_SKY))  # E-W sky
-B.append(box(NS_X1, OY2, OZ2 - WALL_T, NS_X2, NS_Y2 - WALL_T, OZ2, T_SKY))  # N arm sky
-B.append(box(NS_X1, NS_Y1 + WALL_T, OZ2 - WALL_T, NS_X2, OY1, OZ2, T_SKY))  # S arm sky
+B.append(box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, FZ2, T_ROCK))  # floor
+B.append(
+    box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2, T_ROCK)
+)  # W wall
+B.append(
+    box(WORLD_X2 - WALL_T, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, WORLD_Z2, T_ROCK)
+)  # E wall
+B.append(
+    box(WORLD_X1, WORLD_Y2 - WALL_T, FZ1, WORLD_X2, WORLD_Y2, WORLD_Z2, T_ROCK)
+)  # N wall
+B.append(
+    box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y1 + WALL_T, WORLD_Z2, T_ROCK)
+)  # S wall
+B.append(
+    box(WORLD_X1, WORLD_Y1, WORLD_Z2 - WALL_T, WORLD_X2, WORLD_Y2, WORLD_Z2, T_SKY)
+)  # sky
 
 # ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
 # ════════════════════════════════════════════════════════════════════════════════
-# Extend bridge deck from BRX1 to OX1 and BRX2 to OX2
-B.append(box(OX1, BRY1, DZ1, BRX1, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR))
-B.append(box(BRX2, BRY1, DZ1, OX2, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR))
+# Extend bridge deck east to world edge (west replaced by building)
+B.append(
+    box(BRX2, BRY1, DZ1, WORLD_X2 - WALL_T, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR)
+)
 
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
@@ -369,11 +406,13 @@ for i in range(ARCH_SEGS):
     )
 
 # ── Parapet walls — extended to map boundaries ───────────────────────────────
-# Extend parapets from BRX1 to OX1 and BRX2 to OX2
-B.append(box(OX1, BRY2 - 24, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT))  # North
-B.append(box(OX1, BRY1, DZ2, BRX1, BRY1 + 24, DZ2 + PAR_H, T_CEMENT))  # South
-B.append(box(BRX2, BRY2 - 24, DZ2, OX2, BRY2, DZ2 + PAR_H, T_CEMENT))  # North
-B.append(box(BRX2, BRY1, DZ2, OX2, BRY1 + 24, DZ2 + PAR_H, T_CEMENT))  # South
+# Extend parapets east (west side replaced by building)
+B.append(
+    box(BRX2, BRY2 - 24, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
+)  # North
+B.append(
+    box(BRX2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + 24, DZ2 + PAR_H, T_CEMENT)
+)  # South
 
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
@@ -441,50 +480,30 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── Teleport Arches at the ends of the bridge ────────────────────────────────
+# ── Teleport Arch at east end of bridge ──────────────────────────────────────
 T_ARCH_RIN = 96
 T_ARCH_ROUT = 128  # Fills the bridge width
 T_ARCH_STILT = 96  # Height of straight sides
 T_ARCH_CEIL = DZ2 + T_ARCH_STILT + T_ARCH_RIN + 32  # Stone above the arch
 T_ARCH_W = 32  # Thickness of the arch in X
 
-for ex in [OX1 + WALL_T, OX2 - WALL_T - T_ARCH_W]:
-    xb, xf = ex, ex + T_ARCH_W
-    B.extend(
-        arch_wall(
-            xb,
-            xf,
-            BRY1,
-            BRY2,
-            DZ2,
-            T_ARCH_CEIL,
-            T_ARCH_RIN,
-            T_ARCH_ROUT,
-            A_SEGS,
-            T_STONE,
-            stilt_h=T_ARCH_STILT,
-        )
+# East arch only — west entrance is replaced by the building
+_ex = WORLD_X2 - WALL_T - T_ARCH_W
+B.extend(
+    arch_wall(
+        _ex,
+        _ex + T_ARCH_W,
+        BRY1,
+        BRY2,
+        DZ2,
+        T_ARCH_CEIL,
+        T_ARCH_RIN,
+        T_ARCH_ROUT,
+        A_SEGS,
+        T_STONE,
+        stilt_h=T_ARCH_STILT,
     )
-
-# North and South gateways (rotated for N-S pathways)
-T_ARCH_CEIL_NS = FZ2 + T_ARCH_STILT + T_ARCH_RIN + 32
-for ey in [NS_Y1 + WALL_T, NS_Y2 - WALL_T - T_ARCH_W]:
-    yb, yf = ey, ey + T_ARCH_W
-    B.extend(
-        arch_wall_y(
-            yb,
-            yf,
-            NS_X1,
-            NS_X2,
-            FZ2,
-            T_ARCH_CEIL_NS,
-            T_ARCH_RIN,
-            T_ARCH_ROUT,
-            A_SEGS,
-            T_STONE,
-            stilt_h=T_ARCH_STILT,
-        )
-    )
+)
 
 # ── Attached glow panel beneath arch centre ─────────────────────────────────
 # Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
@@ -504,6 +523,109 @@ for px in panel_xs:
     B.append(box(px - 8, BRY1 + 24, ph, px + 8, BRY1 + 27, pt_, T_LIGHT_PANEL))
 
 
+# ════════════════════════════════════════════════════════════════════════════════
+# BRUTALIST BUILDING — west campus, 4-floor playable tower
+# Footprint: X=-960 to -512, Y=-256 to 256, Z=0 to 512
+# Floor 2 (Z=128-256) connects directly to bridge deck (DZ2=144)
+# ════════════════════════════════════════════════════════════════════════════════
+_bix1 = BLDG_X1 + BLDG_WALL  # interior west  = -944
+_bix2 = BLDG_X2 - BLDG_WALL  # interior east  = -528
+_biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -240
+_biy2 = BLDG_Y2 - BLDG_WALL  # interior north =  240
+
+# Stairwell in NW corner of interior: X=-944 to -816, Y=112 to 240
+_stx1, _stx2 = _bix1, _bix1 + 128  # X: -944 to -816
+_sty1, _sty2 = _biy2 - 128, _biy2  # Y:  112 to  240
+
+# ── Outer walls ──────────────────────────────────────────────────────────────
+# West wall (solid)
+B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X1 + BLDG_WALL, BLDG_Y2, BLDG_Z2, T_WALL))
+
+# East wall with bridge doorway: Y=BRY1 to BRY2, Z=FLOOR_H to FLOOR_H*2
+_door_e = [(BRY1, FLOOR_H, BRY2, FLOOR_H * 2)]
+B.extend(
+    layered_wall_y(BLDG_Y1, _bix2, FZ2, BLDG_Y2, BLDG_X2, BLDG_Z2, _door_e, T_WALL)
+)
+
+# North and South walls with window openings (3 windows per floor, evenly spaced)
+_win_bands = [(-880, -848), (-752, -720), (-624, -592)]  # X ranges for each window
+_win_openings = []
+for _f in range(BLDG_FLOORS):
+    _zb = _f * FLOOR_H
+    for _wx1, _wx2 in _win_bands:
+        _win_openings.append((_wx1, _zb + 32, _wx2, _zb + 80))
+
+B.extend(
+    layered_wall(
+        BLDG_X1,
+        BLDG_Y2 - BLDG_WALL,
+        FZ2,
+        BLDG_X2,
+        BLDG_Y2,
+        BLDG_Z2,
+        _win_openings,
+        T_WALL,
+    )
+)
+B.extend(
+    layered_wall(
+        BLDG_X1,
+        BLDG_Y1,
+        FZ2,
+        BLDG_X2,
+        BLDG_Y1 + BLDG_WALL,
+        BLDG_Z2,
+        _win_openings,
+        T_WALL,
+    )
+)
+
+# Roof slab
+B.append(box(BLDG_X1, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL))
+
+# ── Interior floor slabs (floors 1-3, with stairwell opening) ────────────────
+for _f in range(1, BLDG_FLOORS):
+    _sz = _f * FLOOR_H
+    _st = _sz + BLDG_WALL
+    # South section: full interior width south of stairwell Y
+    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR))
+    # East section: beside stairwell (north of _sty1, east of stairwell)
+    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR))
+
+# ── Staircase ramps (switchback each floor) ───────────────────────────────────
+for _f in range(BLDG_FLOORS - 1):
+    _z0, _z1 = _f * FLOOR_H, (_f + 1) * FLOOR_H
+    if _f % 2 == 0:
+        # Ramp rises from X=_stx1 (low) to X=_stx2 (high)
+        B.append(
+            ramp_slab(
+                _stx1,
+                _stx2,
+                _sty1,
+                _sty2,
+                _z0,
+                _z1,
+                _z0 + BLDG_WALL,
+                _z1 + BLDG_WALL,
+                T_FLOOR,
+            )
+        )
+    else:
+        # Reversed: high at X=_stx1, low at X=_stx2 (player walks right-to-left going up)
+        B.append(
+            ramp_slab(
+                _stx1,
+                _stx2,
+                _sty1,
+                _sty2,
+                _z1,
+                _z0,
+                _z1 + BLDG_WALL,
+                _z0 + BLDG_WALL,
+                T_FLOOR,
+            )
+        )
+
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
@@ -520,59 +642,20 @@ E = []
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
-# Teleport destinations
+# Teleport destination — east arch → building floor 2 centre
 E.append(
     ent(
         "info_teleport_destination",
-        targetname="dest_east",
-        origin="840 0 176",
-        angle="180",
-    )
-)
-E.append(
-    ent(
-        "info_teleport_destination",
-        targetname="dest_west",
-        origin="-840 0 176",
-        angle="0",
-    )
-)
-E.append(
-    ent(
-        "info_teleport_destination",
-        targetname="dest_bridge_n",
-        origin="0 160 240",
-        angle="270",
-    )
-)
-E.append(
-    ent(
-        "info_teleport_destination",
-        targetname="dest_bridge_s",
-        origin="0 -160 240",
+        targetname="dest_building",
+        origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}",
         angle="90",
     )
 )
 
-# Teleport triggers at the ends of the bridge (rounded to fit arches)
-# West end trigger -> East destination
-west_brushes = arch_fill(
-    OX1 + WALL_T,
-    OX1 + WALL_T + T_ARCH_W,
-    0.0,
-    DZ2,
-    T_ARCH_RIN,
-    A_SEGS,
-    T_TELEPORT,
-    stilt_h=T_ARCH_STILT,
-)
-E.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
-E.append(brush_ent("func_illusionary", west_brushes))  # Visual part
-
-# East end trigger -> West destination
+# East arch trigger → building floor 2
 east_brushes = arch_fill(
-    OX2 - WALL_T - T_ARCH_W,
-    OX2 - WALL_T,
+    WORLD_X2 - WALL_T - T_ARCH_W,
+    WORLD_X2 - WALL_T,
     0.0,
     DZ2,
     T_ARCH_RIN,
@@ -580,75 +663,58 @@ east_brushes = arch_fill(
     T_TELEPORT,
     stilt_h=T_ARCH_STILT,
 )
-E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
+E.append(brush_ent("trigger_teleport", east_brushes, target="dest_building"))
 E.append(brush_ent("func_illusionary", east_brushes))  # Visual part
-
-# South end trigger -> Bridge North destination
-south_brushes = arch_fill_y(
-    NS_Y1 + WALL_T,
-    NS_Y1 + WALL_T + T_ARCH_W,
-    0.0,
-    FZ2,
-    T_ARCH_RIN,
-    A_SEGS,
-    T_TELEPORT,
-    stilt_h=T_ARCH_STILT,
-)
-E.append(brush_ent("trigger_teleport", south_brushes, target="dest_bridge_n"))
-E.append(brush_ent("func_illusionary", south_brushes))  # Visual part
-
-# North end trigger -> Bridge South destination
-north_brushes = arch_fill_y(
-    NS_Y2 - WALL_T - T_ARCH_W,
-    NS_Y2 - WALL_T,
-    0.0,
-    FZ2,
-    T_ARCH_RIN,
-    A_SEGS,
-    T_TELEPORT,
-    stilt_h=T_ARCH_STILT,
-)
-E.append(brush_ent("trigger_teleport", north_brushes, target="dest_bridge_s"))
-E.append(brush_ent("func_illusionary", north_brushes))  # Visual part
 
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
 for pos in [
+    # Bridge deck
     (0, 0, int(dtop(0) + 32)),
     (-160, 0, int(dtop(-160) + 32)),
     (160, 0, int(dtop(160) + 32)),
     (-320, 0, int(dtop(-320) + 32)),
     (320, 0, int(dtop(320) + 32)),
-    (0, 64, int(dtop(0) + 32)),
-    (0, 550, ROAD_Z),
-    (60, 700, ROAD_Z),
-    (-60, 700, ROAD_Z),
-    (0, -550, ROAD_Z),
-    (60, -700, ROAD_Z),
-    (-60, -700, ROAD_Z),
-    (200, 0, ROAD_Z),
-    (-200, 0, ROAD_Z),
+    # Building floor 2 (bridge level)
+    ((BLDG_X1 + BLDG_X2) // 2, 0, FLOOR_H + 40),
+    ((BLDG_X1 + BLDG_X2) // 2, 80, FLOOR_H + 40),
+    # Building floor 3
+    ((BLDG_X1 + BLDG_X2) // 2, 0, FLOOR_H * 2 + 40),
+    ((BLDG_X1 + BLDG_X2) // 2, -80, FLOOR_H * 2 + 40),
+    # East campus ground
+    (700, 0, ROAD_Z),
+    (700, 200, ROAD_Z),
+    (700, -200, ROAD_Z),
+    # Road under bridge
+    (0, 200, ROAD_Z),
+    (0, -200, ROAD_Z),
 ]:
     E.append(ent("info_player_deathmatch", origin=f"{pos[0]} {pos[1]} {pos[2]}"))
 
 E.append(ent("weapon_rocketlauncher", origin=f"0    0    {DECK_Z}"))
-E.append(ent("weapon_rocketlauncher", origin=f"-640 0    176"))
-E.append(ent("weapon_rocketlauncher", origin=f" 640 0    176"))
-E.append(ent("weapon_rocketlauncher", origin=f"0    600  {ROAD_Z}"))
-E.append(ent("weapon_rocketlauncher", origin=f"0   -600  {ROAD_Z}"))
+E.append(
+    ent("weapon_rocketlauncher", origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}")
+)
+E.append(
+    ent(
+        "weapon_rocketlauncher",
+        origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H * 3 + 40}",
+    )
+)
+E.append(ent("weapon_rocketlauncher", origin=f"700  0    {ROAD_Z}"))
 
 for ax in [-384, -128, 128, 384]:
     E.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
-for bx in [-60, 60]:
-    E.append(ent("item_rockets", origin=f"-640 {bx} 176"))
-    E.append(ent("item_rockets", origin=f" 640 {bx} 176"))
-for ry in [-800, -550, -300, 300, 550, 800]:
-    E.append(ent("item_rockets", origin=f"0 {ry} {ROAD_Z}"))
+for bx in [(BLDG_X1 + BLDG_X2) // 2]:
+    E.append(ent("item_rockets", origin=f"{bx} 80  {FLOOR_H * 2 + 40}"))
+    E.append(ent("item_rockets", origin=f"{bx} -80 {FLOOR_H * 2 + 40}"))
+for rx in [600, 750, 900]:
+    E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z}"))
 
 E.append(ent("item_health", origin=f"0    0    {DECK_Z}"))
-E.append(ent("item_health", origin=f"0  450    {ROAD_Z}"))
-E.append(ent("item_health", origin=f"0 -450    {ROAD_Z}"))
+E.append(ent("item_health", origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}"))
+E.append(ent("item_health", origin=f"700 200  {ROAD_Z}"))
 
 # Torch lights on pillar caps
 for px in PXS:
@@ -670,30 +736,39 @@ for px in panel_xs:
     E.append(ent("light", origin=f"{px} {BRY2 - 30} {ph}", light="180"))
     E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
 
-# Building interior lights
-E.append(ent("light", origin="-640 0 260", light="350"))
-E.append(ent("light", origin=" 640 0 260", light="350"))
+# Building interior lights — one per floor, centred
+_bcx = (BLDG_X1 + BLDG_X2) // 2
+for _f in range(BLDG_FLOORS):
+    _lz = _f * FLOOR_H + FLOOR_H // 2
+    E.append(ent("light", origin=f"{_bcx}  60 {_lz}", light="280"))
+    E.append(ent("light", origin=f"{_bcx} -60 {_lz}", light="280"))
 
-# Teleport arch lights
-E.append(ent("light", origin=f"{OX1 + WALL_T + 64} 0 {int(DZ2 + 100)}", light="250"))
-E.append(ent("light", origin=f"{OX2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250"))
-E.append(ent("light", origin=f"0 {NS_Y1 + WALL_T + 64} {int(FZ2 + 100)}", light="250"))
-E.append(ent("light", origin=f"0 {NS_Y2 - WALL_T - 64} {int(FZ2 + 100)}", light="250"))
+# Building window glow (exterior, north + south face)
+for _f in range(BLDG_FLOORS):
+    _lz = _f * FLOOR_H + 56
+    for _wx in [-864, -736, -608]:
+        E.append(ent("light", origin=f"{_wx} {BLDG_Y2 + 10} {_lz}", light="120"))
+        E.append(ent("light", origin=f"{_wx} {BLDG_Y1 - 10} {_lz}", light="120"))
+
+# East campus ambient lights
+for _ex in [600, 750, 900]:
+    E.append(ent("light", origin=f"{_ex} 0 200", light="300"))
+
+# Teleport arch light (east only)
+E.append(
+    ent("light", origin=f"{WORLD_X2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250")
+)
 
 # Bridge end arch lights — illuminate the stone arch faces
 for ex in [BRX1 + 20, BRX2 - 20]:
     E.append(ent("light", origin=f"{ex} 0 90", light="300"))
 
-# Under-bridge road lights — moody, bright pool under the glow panel
+# Under-bridge road lights
 E.append(
     ent("light", origin=f"0 0 {PANEL_Z - 10}", light="520", style="1")
 )  # glow panel light
 for rx in [-280, 280]:
     E.append(ent("light", origin=f"{rx} 0 64", light="160"))
-
-# N/S road arm lights
-for ry in [-800, -600, -420, 420, 600, 800]:
-    E.append(ent("light", origin=f"0 {ry} 300", light="320"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
