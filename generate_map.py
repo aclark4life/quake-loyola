@@ -49,7 +49,7 @@ def dbot(x):
 
 # ── Parapet + pillar heights (above deck surface) ─────────────────────────────
 PAR_H = 32  # parapet wall height above deck
-PIL_EXTRA = 48  # how much pillar post sticks above parapet top
+PIL_EXTRA = 40  # lowered from 48 so players can jump from parapet to cap
 PIL_CAP_H = 8  # cap slab height
 P_HW = 20  # pillar half-width in X
 P_CE = 4  # cap overhang each side
