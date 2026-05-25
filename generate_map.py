@@ -194,6 +194,65 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     return brushes
 
 
+def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
+    t1, t2 = math.radians(t1d), math.radians(t2d)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    xi, zi = xc + rin * cm, zc + rin * sm
+    xo, zo = xc + rout * cm, zc + rout * sm
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
+                face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
+                face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
+                face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
+                face((xi, yf, zi), (xi - sm, yf, zi + cm), (xi, yb, zi), tex),
+                face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
+            ]
+        )
+        + "\n}"
+    )
+
+
+def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
+    t1, t2 = math.radians(t1d), math.radians(t2d)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    xo, zo = xc + rad * cm, zc + rad * sm
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
+                face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
+                face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
+                face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
+                face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
+            ]
+        )
+        + "\n}"
+    )
+
+
+def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
+    stilt_h = rin if stilt_h is None else stilt_h
+    sprz = floor_z + stilt_h
+    seg = 180.0 / segs
+    brushes = []
+    brushes.append(box(-rin, y1, floor_z, rin, y2, sprz, tex))
+    for i in range(segs):
+        brushes.append(
+            arch_pie_seg_y(y1, y2, xc, float(sprz), rin, i * seg, (i + 1) * seg, tex)
+        )
+    return brushes
+
+
 def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
     """Stone wall with arched opening centred at Y=0.
 
@@ -213,6 +272,24 @@ def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=Non
     for i in range(segs):
         brushes.append(
             arch_seg(x1, x2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
+        )
+    return brushes
+
+
+def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
+    stilt_h = rin if stilt_h is None else stilt_h
+    sprz = floor_z + stilt_h
+    seg = 180.0 / segs
+    brushes = []
+    if x1 < -rout:
+        brushes.append(box(x1, y1, floor_z, -rout, y2, ceil_z, tex))
+    if x2 > rout:
+        brushes.append(box(rout, y1, floor_z, x2, y2, ceil_z, tex))
+    brushes.append(box(-rout, y1, floor_z, -rin, y2, sprz, tex))
+    brushes.append(box(rin, y1, floor_z, rout, y2, sprz, tex))
+    for i in range(segs):
+        brushes.append(
+            arch_seg_y(y1, y2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
         )
     return brushes
 
@@ -403,6 +480,26 @@ for ex in [OX1 + WALL_T, OX2 - WALL_T - T_ARCH_W]:
         )
     )
 
+# North and South gateways (rotated for N-S pathways)
+T_ARCH_CEIL_NS = FZ2 + T_ARCH_STILT + T_ARCH_RIN + 32
+for ey in [NS_Y1 + WALL_T, NS_Y2 - WALL_T - T_ARCH_W]:
+    yb, yf = ey, ey + T_ARCH_W
+    B.extend(
+        arch_wall_y(
+            yb,
+            yf,
+            NS_X1,
+            NS_X2,
+            FZ2,
+            T_ARCH_CEIL_NS,
+            T_ARCH_RIN,
+            T_ARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=T_ARCH_STILT,
+        )
+    )
+
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
 # At X=0 the deck bottom is at 192; panel at Z=148..160 clears all deck brushes.
@@ -455,6 +552,22 @@ E.append(
         angle="0",
     )
 )
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_bridge_n",
+        origin="0 160 240",
+        angle="270",
+    )
+)
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_bridge_s",
+        origin="0 -160 240",
+        angle="90",
+    )
+)
 
 # Teleport triggers at the ends of the bridge (rounded to fit arches)
 # West end trigger -> East destination
@@ -484,6 +597,34 @@ east_brushes = arch_fill(
 )
 E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_brushes))  # Visual part
+
+# South end trigger -> Bridge North destination
+south_brushes = arch_fill_y(
+    NS_Y1 + WALL_T,
+    NS_Y1 + WALL_T + T_ARCH_W,
+    0.0,
+    FZ2,
+    T_ARCH_RIN,
+    A_SEGS,
+    T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
+)
+E.append(brush_ent("trigger_teleport", south_brushes, target="dest_bridge_n"))
+E.append(brush_ent("func_illusionary", south_brushes))  # Visual part
+
+# North end trigger -> Bridge South destination
+north_brushes = arch_fill_y(
+    NS_Y2 - WALL_T - T_ARCH_W,
+    NS_Y2 - WALL_T,
+    0.0,
+    FZ2,
+    T_ARCH_RIN,
+    A_SEGS,
+    T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
+)
+E.append(brush_ent("trigger_teleport", north_brushes, target="dest_bridge_s"))
+E.append(brush_ent("func_illusionary", north_brushes))  # Visual part
 
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
@@ -551,6 +692,8 @@ E.append(ent("light", origin=" 640 0 260", light="350"))
 # Teleport arch lights
 E.append(ent("light", origin=f"{OX1 + WALL_T + 64} 0 {int(DZ2 + 100)}", light="250"))
 E.append(ent("light", origin=f"{OX2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250"))
+E.append(ent("light", origin=f"0 {NS_Y1 + WALL_T + 64} {int(FZ2 + 100)}", light="250"))
+E.append(ent("light", origin=f"0 {NS_Y2 - WALL_T - 64} {int(FZ2 + 100)}", light="250"))
 
 # Bridge end arch lights — illuminate the stone arch faces
 for ex in [BRX1 + 20, BRX2 - 20]:
