@@ -288,12 +288,14 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── End arch RINGS at bridge entrance/exit — tall stilted gothic arches ────────
-# Opening: 160 wide (Y=-80..80), straight sides to Z=160, crown at Z=240 (1:1.5 ratio)
-EARCH_RIN = 80
-EARCH_ROUT = 100  # ring 20 units thick
-EARCH_STILT = 160  # straight-side height before arch springs
-EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 240
+# ── End arch RINGS at bridge entrance/exit — below-deck gothic arches ──────────
+# Crown at DZ1=128 (flush with bridge deck bottom at bridge ends, arch is UNDER deck).
+# Solid stone fills above the arch to form the bridge abutment wall.
+EARCH_RIN = 64
+EARCH_ROUT = 80  # ring 16 units thick
+EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
+EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
+EARCH_CEIL = 256  # top of abutment wall (above bridge deck)
 EARCH_T = 40  # arch thickness in X
 for ex, sign in [(BRX1, 1), (BRX2, -1)]:
     xb = ex if sign == 1 else ex - EARCH_T
@@ -305,7 +307,7 @@ for ex, sign in [(BRX1, 1), (BRX2, -1)]:
             BRY1,
             BRY2,
             FZ2,
-            EARCH_CROWN + 32,
+            EARCH_CEIL,
             EARCH_RIN,
             EARCH_ROUT,
             A_SEGS,
@@ -313,6 +315,8 @@ for ex, sign in [(BRX1, 1), (BRX2, -1)]:
             stilt_h=EARCH_STILT,
         )
     )
+    # Fill above arch crown — solid stone abutment from crown to wall top
+    B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
 
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
