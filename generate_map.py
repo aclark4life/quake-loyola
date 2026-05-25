@@ -191,15 +191,18 @@ def ent(cls, **kw):
 B = []
 
 # ════════════════════════════════════════════════════════════════════════════════
-# CROSS CAVE SHELL — 4 corner blocks + end walls + floors + sky ceilings
+# CROSS CAVE SHELL — 4 corner blocks + N/S end walls + floors + sky ceilings
 # ════════════════════════════════════════════════════════════════════════════════
 B.append(box(OX1, OY2, FZ1, NS_X1, NS_Y2, OZ2, T_ROCK))  # NW corner
 B.append(box(NS_X2, OY2, FZ1, OX2, NS_Y2, OZ2, T_ROCK))  # NE corner
 B.append(box(OX1, NS_Y1, FZ1, NS_X1, OY1, OZ2, T_ROCK))  # SW corner
 B.append(box(NS_X2, NS_Y1, FZ1, OX2, OY1, OZ2, T_ROCK))  # SE corner
 
-B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_ROCK))  # E end
-B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_ROCK))  # W end
+# Open E and W ends by removing rock walls, but add SKY walls to seal the leak
+# B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_ROCK))  # E end removed
+# B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_ROCK))  # W end removed
+B.append(box(OX2 - WALL_T, OY1, FZ1, OX2, OY2, OZ2, T_SKY))  # E end sky wall
+B.append(box(OX1, OY1, FZ1, OX1 + WALL_T, OY2, OZ2, T_SKY))  # W end sky wall
 B.append(box(NS_X1, NS_Y2 - WALL_T, FZ1, NS_X2, NS_Y2, OZ2, T_ROCK))  # N end
 B.append(box(NS_X1, NS_Y1, FZ1, NS_X2, NS_Y1 + WALL_T, OZ2, T_ROCK))  # S end
 
@@ -213,8 +216,12 @@ B.append(box(NS_X1, OY2, OZ2 - WALL_T, NS_X2, NS_Y2 - WALL_T, OZ2, T_SKY))  # N 
 B.append(box(NS_X1, NS_Y1 + WALL_T, OZ2 - WALL_T, NS_X2, OY1, OZ2, T_SKY))  # S arm sky
 
 # ════════════════════════════════════════════════════════════════════════════════
-# ARCHED BRIDGE DECK — 16 ramp_slab segments, parabolic profile
+# ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
 # ════════════════════════════════════════════════════════════════════════════════
+# Extend bridge deck from BRX1 to OX1 and BRX2 to OX2
+B.append(box(OX1, BRY1, DZ1, BRX1, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR))
+B.append(box(BRX2, BRY1, DZ1, OX2, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR))
+
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
     sx2 = sx1 + SEG_W
@@ -234,7 +241,13 @@ for i in range(ARCH_SEGS):
         )
     )
 
-# ── Parapet walls — per-segment ramp slabs (cement, N and S) ─────────────────
+# ── Parapet walls — extended to map boundaries ───────────────────────────────
+# Extend parapets from BRX1 to OX1 and BRX2 to OX2
+B.append(box(OX1, BRY2 - 24, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT))  # North
+B.append(box(OX1, BRY1, DZ2, BRX1, BRY1 + 24, DZ2 + PAR_H, T_CEMENT))  # South
+B.append(box(BRX2, BRY2 - 24, DZ2, OX2, BRY2, DZ2 + PAR_H, T_CEMENT))  # North
+B.append(box(BRX2, BRY1, DZ2, OX2, BRY1 + 24, DZ2 + PAR_H, T_CEMENT))  # South
+
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
     sx2 = sx1 + SEG_W
@@ -244,6 +257,7 @@ for i in range(ARCH_SEGS):
     B.append(ramp_slab(sx1, sx2, BRY2 - 24, BRY2, pb1, pb2, pt1, pt2, T_CEMENT))
     # South parapet
     B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
+
 
 # ── Pillar posts (stone, tall — sit on deck surface at each arch height) ──────
 for px in PXS:
@@ -288,35 +302,33 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── End arch RINGS at bridge entrance/exit — below-deck gothic arches ──────────
-# Crown at DZ1=128 (flush with bridge deck bottom at bridge ends, arch is UNDER deck).
-# Solid stone fills above the arch to form the bridge abutment wall.
-EARCH_RIN = 64
-EARCH_ROUT = 80  # ring 16 units thick
-EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
-EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
-EARCH_CEIL = 256  # top of abutment wall (above bridge deck)
-EARCH_T = 40  # arch thickness in X
-for ex, sign in [(BRX1, 1), (BRX2, -1)]:
-    xb = ex if sign == 1 else ex - EARCH_T
-    xf = ex + EARCH_T if sign == 1 else ex
-    B.extend(
-        arch_wall(
-            xb,
-            xf,
-            BRY1,
-            BRY2,
-            FZ2,
-            EARCH_CEIL,
-            EARCH_RIN,
-            EARCH_ROUT,
-            A_SEGS,
-            T_STONE,
-            stilt_h=EARCH_STILT,
-        )
-    )
-    # Fill above arch crown — solid stone abutment from crown to wall top
-    B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
+# ── End abutments removed to open pathway to the end of the world ──────────────
+# EARCH_RIN = 64
+# EARCH_ROUT = 80  # ring 16 units thick
+# EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
+# EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
+# EARCH_CEIL = 256  # top of abutment wall (above bridge deck)
+# EARCH_T = 40  # arch thickness in X
+# for ex, sign in [(BRX1, 1), (BRX2, -1)]:
+#     xb = ex if sign == 1 else ex - EARCH_T
+#     xf = ex + EARCH_T if sign == 1 else ex
+#     B.extend(
+#         arch_wall(
+#             xb,
+#             xf,
+#             BRY1,
+#             BRY2,
+#             FZ2,
+#             EARCH_CEIL,
+#             EARCH_RIN,
+#             EARCH_ROUT,
+#             A_SEGS,
+#             T_STONE,
+#             stilt_h=EARCH_STILT,
+#         )
+#     )
+#     # Fill above arch crown — solid stone abutment from crown to wall top
+#     B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
 
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
