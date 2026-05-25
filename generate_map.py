@@ -5,9 +5,10 @@ Layout:
   - Rectangular open world (±1024 E-W × ±960 N-S), open sky
   - Road runs N-S under the bridge (like Charles Street at Loyola Maryland)
   - Bridge spans E-W at deck height ~144; arched stone pillars over the road
-  - Brutalist building on west campus (X=-960 to -512, 4 playable floors)
-    Floor 2 (Z=128-256) connects directly to bridge deck via east-face doorway
-  - East campus: open area with bridge approach to east teleport arch
+  - Brutalist building on south campus (X=-256 to 256, Y=-800 to -256, 4 floors)
+    North face faces bridge; ground-level entrance at X=-64..64
+    Lift shaft at center-north rises from ground through roof opening to rooftop
+  - West arch teleports to east; east arch teleports to west
 """
 
 import math
@@ -68,9 +69,9 @@ WORLD_X1, WORLD_X2 = -1024, 1024  # full world E-W extent
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 WORLD_Z2 = 640  # sky ceiling height
 
-# ── Building (west campus, brutalist tower) ───────────────────────────────────
-BLDG_X1, BLDG_X2 = -960, BRX1  # X=-960 to -512 (east face aligns with bridge start)
-BLDG_Y1, BLDG_Y2 = -256, 256  # building N-S footprint
+# ── Building (south campus, brutalist tower) ─────────────────────────────────
+BLDG_X1, BLDG_X2 = -256, 256  # centered under bridge (512 wide)
+BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge (BRY1=-128, 128-unit gap)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
 BLDG_FLOORS = 4  # number of floors
@@ -381,7 +382,10 @@ B.append(
 # ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
 # ════════════════════════════════════════════════════════════════════════════════
-# Extend bridge deck east to world edge (west replaced by building)
+# Extend bridge deck to both world edges
+B.append(
+    box(WORLD_X1 + WALL_T, BRY1, DZ1, BRX1, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR)
+)
 B.append(
     box(BRX2, BRY1, DZ1, WORLD_X2 - WALL_T, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR)
 )
@@ -405,14 +409,19 @@ for i in range(ARCH_SEGS):
         )
     )
 
-# ── Parapet walls — extended to map boundaries ───────────────────────────────
-# Extend parapets east (west side replaced by building)
+# ── Parapet walls — extended to both world edges ──────────────────────────────
+B.append(
+    box(WORLD_X1 + WALL_T, BRY2 - 24, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT)
+)  # North west
+B.append(
+    box(WORLD_X1 + WALL_T, BRY1, DZ2, BRX1, BRY1 + 24, DZ2 + PAR_H, T_CEMENT)
+)  # South west
 B.append(
     box(BRX2, BRY2 - 24, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
-)  # North
+)  # North east
 B.append(
     box(BRX2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + 24, DZ2 + PAR_H, T_CEMENT)
-)  # South
+)  # South east
 
 for i in range(ARCH_SEGS):
     sx1 = BRX1 + i * SEG_W
@@ -480,30 +489,30 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── Teleport Arch at east end of bridge ──────────────────────────────────────
+# ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
 T_ARCH_ROUT = 128  # Fills the bridge width
 T_ARCH_STILT = 96  # Height of straight sides
 T_ARCH_CEIL = DZ2 + T_ARCH_STILT + T_ARCH_RIN + 32  # Stone above the arch
 T_ARCH_W = 32  # Thickness of the arch in X
 
-# East arch only — west entrance is replaced by the building
-_ex = WORLD_X2 - WALL_T - T_ARCH_W
-B.extend(
-    arch_wall(
-        _ex,
-        _ex + T_ARCH_W,
-        BRY1,
-        BRY2,
-        DZ2,
-        T_ARCH_CEIL,
-        T_ARCH_RIN,
-        T_ARCH_ROUT,
-        A_SEGS,
-        T_STONE,
-        stilt_h=T_ARCH_STILT,
+for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
+    _xb, _xf = _ex, _ex + T_ARCH_W
+    B.extend(
+        arch_wall(
+            _xb,
+            _xf,
+            BRY1,
+            BRY2,
+            DZ2,
+            T_ARCH_CEIL,
+            T_ARCH_RIN,
+            T_ARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=T_ARCH_STILT,
+        )
     )
-)
 
 # ── Attached glow panel beneath arch centre ─────────────────────────────────
 # Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
@@ -524,37 +533,29 @@ for px in panel_xs:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# BRUTALIST BUILDING — west campus, 4-floor playable tower
-# Footprint: X=-960 to -512, Y=-256 to 256, Z=0 to 512
-# Floor 2 (Z=128-256) connects directly to bridge deck (DZ2=144)
+# BRUTALIST BUILDING — south campus, 4-floor playable tower
+# Footprint: X=-256 to 256, Y=-800 to -256, Z=0 to 512
+# North face faces the bridge; ground-level entrance at X=-64 to 64
+# Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
-_bix1 = BLDG_X1 + BLDG_WALL  # interior west  = -944
-_bix2 = BLDG_X2 - BLDG_WALL  # interior east  = -528
-_biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -240
-_biy2 = BLDG_Y2 - BLDG_WALL  # interior north =  240
+_bix1 = BLDG_X1 + BLDG_WALL  # interior west  = -240
+_bix2 = BLDG_X2 - BLDG_WALL  # interior east  =  240
+_biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
+_biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 
-# Stairwell in NW corner of interior: X=-944 to -816, Y=112 to 240
-_stx1, _stx2 = _bix1, _bix1 + 128  # X: -944 to -816
-_sty1, _sty2 = _biy2 - 128, _biy2  # Y:  112 to  240
+# Lift shaft at center-north (near entrance): X=-64 to 64, Y=-400 to -272
+_stx1, _stx2 = -64, 64
+_sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
-# West wall (solid)
-B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X1 + BLDG_WALL, BLDG_Y2, BLDG_Z2, T_WALL))
+# South wall — solid back wall
+B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y1 + BLDG_WALL, BLDG_Z2, T_WALL))
 
-# East wall with bridge doorway: Y=BRY1 to BRY2, Z=FLOOR_H to FLOOR_H*2
-_door_e = [(BRY1, FLOOR_H, BRY2, FLOOR_H * 2)]
-B.extend(
-    layered_wall_y(BLDG_Y1, _bix2, FZ2, BLDG_Y2, BLDG_X2, BLDG_Z2, _door_e, T_WALL)
-)
-
-# North and South walls with window openings (3 windows per floor, evenly spaced)
-_win_bands = [(-880, -848), (-752, -720), (-624, -592)]  # X ranges for each window
-_win_openings = []
-for _f in range(BLDG_FLOORS):
-    _zb = _f * FLOOR_H
-    for _wx1, _wx2 in _win_bands:
-        _win_openings.append((_wx1, _zb + 32, _wx2, _zb + 80))
-
+# North wall — faces bridge; ground entrance (X=-64..64, Z=0..128) + upper windows
+_door_n = [(_stx1, FZ2, _stx2, FLOOR_H)]  # ground entrance slot
+_win_n = [
+    (-128, _f * FLOOR_H + 32, 128, _f * FLOOR_H + 80) for _f in range(1, BLDG_FLOORS)
+]
 B.extend(
     layered_wall(
         BLDG_X1,
@@ -563,24 +564,30 @@ B.extend(
         BLDG_X2,
         BLDG_Y2,
         BLDG_Z2,
-        _win_openings,
-        T_WALL,
-    )
-)
-B.extend(
-    layered_wall(
-        BLDG_X1,
-        BLDG_Y1,
-        FZ2,
-        BLDG_X2,
-        BLDG_Y1 + BLDG_WALL,
-        BLDG_Z2,
-        _win_openings,
+        _door_n + _win_n,
         T_WALL,
     )
 )
 
-# Roof — open above lift shaft so players can ride to the rooftop
+# East and West walls — window openings (3 per floor along Y axis)
+_win_yw = [(BLDG_Y1 + 80 + _i * 192, BLDG_Y1 + 112 + _i * 192) for _i in range(3)]
+_win_yz = []
+for _f in range(BLDG_FLOORS):
+    for _wy1, _wy2 in _win_yw:
+        _win_yz.append((_wy1, _f * FLOOR_H + 32, _wy2, _f * FLOOR_H + 80))
+
+B.extend(
+    layered_wall_y(
+        BLDG_Y1, BLDG_X2 - BLDG_WALL, FZ2, BLDG_Y2, BLDG_X2, BLDG_Z2, _win_yz, T_WALL
+    )
+)
+B.extend(
+    layered_wall_y(
+        BLDG_Y1, BLDG_X1, FZ2, BLDG_Y2, BLDG_X1 + BLDG_WALL, BLDG_Z2, _win_yz, T_WALL
+    )
+)
+
+# Roof — open above lift shaft
 B.append(
     box(BLDG_X1, BLDG_Y1, BLDG_Z2, _stx1, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL)
 )  # west
@@ -591,14 +598,13 @@ B.append(
     box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_WALL)
 )  # south of shaft
 
-# ── Interior floor slabs (floors 1-3, with stairwell opening) ────────────────
+# ── Interior floor slabs (floors 1-3, lift shaft opening in center-north) ────
 for _f in range(1, BLDG_FLOORS):
     _sz = _f * FLOOR_H
     _st = _sz + BLDG_WALL
-    # South section: full interior width south of stairwell Y
-    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR))
-    # East section: beside stairwell (north of _sty1, east of stairwell)
-    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR))
+    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR))  # south bulk
+    B.append(box(_bix1, _sty1, _sz, _stx1, _biy2, _st, T_FLOOR))  # west of shaft
+    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR))  # east of shaft
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
@@ -616,17 +622,39 @@ E = []
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
-# Teleport destination — east arch → building floor 2 centre
+# Teleport destinations — west arch ↔ east arch
 E.append(
     ent(
         "info_teleport_destination",
-        targetname="dest_building",
-        origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}",
-        angle="90",
+        targetname="dest_east",
+        origin=f"{WORLD_X2 - WALL_T - 64} 0 {int(DZ2 + 40)}",
+        angle="180",
+    )
+)
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_west",
+        origin=f"{WORLD_X1 + WALL_T + 64} 0 {int(DZ2 + 40)}",
+        angle="0",
     )
 )
 
-# East arch trigger → building floor 2
+# West arch trigger → east destination
+west_brushes = arch_fill(
+    WORLD_X1 + WALL_T,
+    WORLD_X1 + WALL_T + T_ARCH_W,
+    0.0,
+    DZ2,
+    T_ARCH_RIN,
+    A_SEGS,
+    T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
+)
+E.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
+E.append(brush_ent("func_illusionary", west_brushes))
+
+# East arch trigger → west destination
 east_brushes = arch_fill(
     WORLD_X2 - WALL_T - T_ARCH_W,
     WORLD_X2 - WALL_T,
@@ -637,11 +665,13 @@ east_brushes = arch_fill(
     T_TELEPORT,
     stilt_h=T_ARCH_STILT,
 )
-E.append(brush_ent("trigger_teleport", east_brushes, target="dest_building"))
-E.append(brush_ent("func_illusionary", east_brushes))  # Visual part
+E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
+E.append(brush_ent("func_illusionary", east_brushes))
 
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
+
+_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # building center Y = -528
 
 for pos in [
     # Bridge deck
@@ -650,45 +680,38 @@ for pos in [
     (160, 0, int(dtop(160) + 32)),
     (-320, 0, int(dtop(-320) + 32)),
     (320, 0, int(dtop(320) + 32)),
-    # Building floor 2 (bridge level)
-    ((BLDG_X1 + BLDG_X2) // 2, 0, FLOOR_H + 40),
-    ((BLDG_X1 + BLDG_X2) // 2, 80, FLOOR_H + 40),
-    # Building floor 3
-    ((BLDG_X1 + BLDG_X2) // 2, 0, FLOOR_H * 2 + 40),
-    ((BLDG_X1 + BLDG_X2) // 2, -80, FLOOR_H * 2 + 40),
-    # East campus ground
-    (700, 0, ROAD_Z),
-    (700, 200, ROAD_Z),
-    (700, -200, ROAD_Z),
+    # Building ground floor (near entrance)
+    (0, BLDG_Y2 - 64, ROAD_Z),
+    # Building upper floors
+    (0, _bcy, FLOOR_H + 40),
+    (0, _bcy, FLOOR_H * 2 + 40),
+    (0, _bcy, FLOOR_H * 3 + 40),
+    # East/west campus ground
+    (800, 0, ROAD_Z),
+    (-800, 0, ROAD_Z),
     # Road under bridge
-    (0, 200, ROAD_Z),
-    (0, -200, ROAD_Z),
+    (0, 300, ROAD_Z),
+    (0, -400, ROAD_Z),
 ]:
     E.append(ent("info_player_deathmatch", origin=f"{pos[0]} {pos[1]} {pos[2]}"))
 
-E.append(ent("weapon_rocketlauncher", origin=f"0    0    {DECK_Z}"))
-E.append(
-    ent("weapon_rocketlauncher", origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}")
-)
-E.append(
-    ent(
-        "weapon_rocketlauncher",
-        origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H * 3 + 40}",
-    )
-)
-E.append(ent("weapon_rocketlauncher", origin=f"700  0    {ROAD_Z}"))
+E.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
+E.append(ent("weapon_rocketlauncher", origin=f"0 {_bcy} {FLOOR_H + 40}"))
+E.append(ent("weapon_rocketlauncher", origin=f"0 {_bcy} {FLOOR_H * 3 + 40}"))
+E.append(ent("weapon_rocketlauncher", origin=f"800 0 {ROAD_Z}"))
 
 for ax in [-384, -128, 128, 384]:
     E.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
-for bx in [(BLDG_X1 + BLDG_X2) // 2]:
-    E.append(ent("item_rockets", origin=f"{bx} 80  {FLOOR_H * 2 + 40}"))
-    E.append(ent("item_rockets", origin=f"{bx} -80 {FLOOR_H * 2 + 40}"))
-for rx in [600, 750, 900]:
+for _by in [_bcy - 80, _bcy + 80]:
+    E.append(ent("item_rockets", origin=f"80 {_by} {FLOOR_H * 2 + 40}"))
+    E.append(ent("item_rockets", origin=f"-80 {_by} {FLOOR_H * 2 + 40}"))
+for rx in [600, 800]:
     E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z}"))
+    E.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z}"))
 
-E.append(ent("item_health", origin=f"0    0    {DECK_Z}"))
-E.append(ent("item_health", origin=f"{(BLDG_X1 + BLDG_X2) // 2} 0 {FLOOR_H + 40}"))
-E.append(ent("item_health", origin=f"700 200  {ROAD_Z}"))
+E.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
+E.append(ent("item_health", origin=f"0 {BLDG_Y2 - 64} {ROAD_Z}"))
+E.append(ent("item_health", origin=f"0 {_bcy} {FLOOR_H * 2 + 40}"))
 
 # Torch lights on pillar caps
 for px in PXS:
@@ -711,32 +734,34 @@ for px in panel_xs:
     E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-# Platform placed at HIGH position (roof level); height = travel distance
-_lift_travel = BLDG_Z2 - 8  # 504 units from Z=0 up to Z=504 (top at Z=512)
+_lift_travel = BLDG_Z2 - 8
 _lift_brush = [
     box(_stx1 + 2, _sty1 + 2, BLDG_Z2 - 8, _stx2 - 2, _sty2 - 2, BLDG_Z2, T_FLOOR)
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
 
-# Building interior lights — one per floor, centred
-_bcx = (BLDG_X1 + BLDG_X2) // 2
+# Building interior lights — one per floor centred
+_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # -528
 for _f in range(BLDG_FLOORS):
     _lz = _f * FLOOR_H + FLOOR_H // 2
-    E.append(ent("light", origin=f"{_bcx}  60 {_lz}", light="280"))
-    E.append(ent("light", origin=f"{_bcx} -60 {_lz}", light="280"))
+    E.append(ent("light", origin=f"80  {_bcy} {_lz}", light="280"))
+    E.append(ent("light", origin=f"-80 {_bcy} {_lz}", light="280"))
 
-# Building window glow (exterior, north + south face)
+# Building window glow (exterior, east + west faces)
 for _f in range(BLDG_FLOORS):
     _lz = _f * FLOOR_H + 56
-    for _wx in [-864, -736, -608]:
-        E.append(ent("light", origin=f"{_wx} {BLDG_Y2 + 10} {_lz}", light="120"))
-        E.append(ent("light", origin=f"{_wx} {BLDG_Y1 - 10} {_lz}", light="120"))
+    for _wy in [BLDG_Y1 + 80 + _i * 192 + 16 for _i in range(3)]:
+        E.append(ent("light", origin=f"{BLDG_X2 + 10} {_wy} {_lz}", light="120"))
+        E.append(ent("light", origin=f"{BLDG_X1 - 10} {_wy} {_lz}", light="120"))
 
-# East campus ambient lights
-for _ex in [600, 750, 900]:
-    E.append(ent("light", origin=f"{_ex} 0 200", light="300"))
+# West campus ambient + east campus ambient
+for _xx in [-800, 800]:
+    E.append(ent("light", origin=f"{_xx} 0 200", light="300"))
 
-# Teleport arch light (east only)
+# Teleport arch lights — both ends
+E.append(
+    ent("light", origin=f"{WORLD_X1 + WALL_T + 64} 0 {int(DZ2 + 100)}", light="250")
+)
 E.append(
     ent("light", origin=f"{WORLD_X2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250")
 )
