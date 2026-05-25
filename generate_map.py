@@ -341,6 +341,31 @@ for ex, sign in [(BRX1, 1), (BRX2, -1)]:
     # Fill above arch crown — solid stone abutment up to deck top
     B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
 
+# ── Teleport Arches at the ends of the bridge ────────────────────────────────
+T_ARCH_RIN = 96
+T_ARCH_ROUT = 128  # Fills the bridge width
+T_ARCH_STILT = 96  # Height of straight sides
+T_ARCH_CEIL = DZ2 + T_ARCH_STILT + T_ARCH_RIN + 32  # Stone above the arch
+T_ARCH_W = 32  # Thickness of the arch in X
+
+for ex in [OX1 + WALL_T, OX2 - WALL_T - T_ARCH_W]:
+    xb, xf = ex, ex + T_ARCH_W
+    B.extend(
+        arch_wall(
+            xb,
+            xf,
+            BRY1,
+            BRY2,
+            DZ2,
+            T_ARCH_CEIL,
+            T_ARCH_RIN,
+            T_ARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=T_ARCH_STILT,
+        )
+    )
+
 # ── Hanging glow panel beneath arch centre (photo-accurate skylight look) ────
 # Placed well below the arch ceiling (deck bottom at arch ends = DZ1=128).
 # At X=0 the deck bottom is at 192; panel at Z=148..160 clears all deck brushes.
@@ -394,17 +419,29 @@ E.append(
     )
 )
 
-# Teleport triggers at the ends of the bridge
+# Teleport triggers at the ends of the bridge (resized for arches)
 # West end trigger -> East destination
 west_trigger_brush = box(
-    OX1 + WALL_T, BRY1, DZ2, OX1 + WALL_T + 16, BRY2, DZ2 + 64, T_TELEPORT
+    OX1 + WALL_T,
+    -T_ARCH_RIN,
+    DZ2,
+    OX1 + WALL_T + T_ARCH_W,
+    T_ARCH_RIN,
+    DZ2 + T_ARCH_STILT + T_ARCH_RIN,
+    T_TELEPORT,
 )
 E.append(brush_ent("trigger_teleport", [west_trigger_brush], target="dest_east"))
 E.append(brush_ent("func_illusionary", [west_trigger_brush]))  # Visual part
 
 # East end trigger -> West destination
 east_trigger_brush = box(
-    OX2 - WALL_T - 16, BRY1, DZ2, OX2 - WALL_T, BRY2, DZ2 + 64, T_TELEPORT
+    OX2 - WALL_T - T_ARCH_W,
+    -T_ARCH_RIN,
+    DZ2,
+    OX2 - WALL_T,
+    T_ARCH_RIN,
+    DZ2 + T_ARCH_STILT + T_ARCH_RIN,
+    T_TELEPORT,
 )
 E.append(brush_ent("trigger_teleport", [east_trigger_brush], target="dest_west"))
 E.append(brush_ent("func_illusionary", [east_trigger_brush]))  # Visual part
@@ -471,6 +508,10 @@ for px in panel_xs:
 # Building interior lights
 E.append(ent("light", origin="-640 0 260", light="350"))
 E.append(ent("light", origin=" 640 0 260", light="350"))
+
+# Teleport arch lights
+E.append(ent("light", origin=f"{OX1 + WALL_T + 64} 0 {int(DZ2 + 100)}", light="250"))
+E.append(ent("light", origin=f"{OX2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250"))
 
 # Bridge end arch lights — illuminate the stone arch faces
 for ex in [BRX1 + 20, BRX2 - 20]:
