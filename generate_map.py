@@ -400,9 +400,10 @@ for px in PXS:
     x1, x2 = px - P_HW - P_CE, px + P_HW + P_CE
 
     # Arch opening logic for the pier
-    a_rin = 80
-    a_rout = 110
-    a_stilt = int(pdeck) - a_rin - FZ2 - 16
+    # Top of arch should be at dbot(px) = int(pdeck) - 16
+    a_rout = 80
+    a_rin = 64
+    a_stilt = int(pdeck) - a_rout - FZ2 - 16
     if a_stilt < 0:
         a_stilt = 0
 
@@ -414,7 +415,7 @@ for px in PXS:
             BRY1,
             BRY2,
             FZ2,
-            int(pdeck),
+            int(pdeck) - 16,
             a_rin,
             a_rout,
             A_SEGS,
