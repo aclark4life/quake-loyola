@@ -10,7 +10,7 @@ Bridge matches Loyola Maryland campus bridge:
 import math
 
 # ── Textures ──────────────────────────────────────────────────────────────────
-T_STONE = "stone1_5"  # pillar posts + arch ring
+T_STONE = "city6_7"  # supporting pillars + arch ring
 T_FLOOR = "afloor1_4"  # deck top surface
 T_CEMENT = "wbrick1_5"  # parapet / bridge walls (cement look)
 T_WALL = "bricka2_1"  # building walls
@@ -263,10 +263,11 @@ def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=Non
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
-    if y1 < -rout:
-        brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
-    if y2 > rout:
-        brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
+    # Side walls removed to make arch freestanding
+    # if y1 < -rout:
+    #     brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
+    # if y2 > rout:
+    #     brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
     brushes.append(box(x1, -rout, floor_z, x2, -rin, sprz, tex))
     brushes.append(box(x1, rin, floor_z, x2, rout, sprz, tex))
     for i in range(segs):
@@ -281,10 +282,11 @@ def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=N
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
     brushes = []
-    if x1 < -rout:
-        brushes.append(box(x1, y1, floor_z, -rout, y2, ceil_z, tex))
-    if x2 > rout:
-        brushes.append(box(rout, y1, floor_z, x2, y2, ceil_z, tex))
+    # Side walls removed to make arch freestanding
+    # if x1 < -rout:
+    #     brushes.append(box(x1, y1, floor_z, -rout, y2, ceil_z, tex))
+    # if x2 > rout:
+    #     brushes.append(box(rout, y1, floor_z, x2, y2, ceil_z, tex))
     brushes.append(box(-rout, y1, floor_z, -rin, y2, sprz, tex))
     brushes.append(box(rin, y1, floor_z, rout, y2, sprz, tex))
     for i in range(segs):
@@ -384,10 +386,11 @@ for i in range(ARCH_SEGS):
     B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + 24, pb1, pb2, pt1, pt2, T_CEMENT))
 
 
-# ── Pillar posts (stone, tall — sit on deck surface at each arch height) ──────
+# ── Pillar posts (stone, tall — support bridge from ground to cap) ────────────
 for px in PXS:
-    pbase = dtop(px)  # base = deck surface at this X
-    ppar = pbase + PAR_H  # parapet top
+    pbase = FZ2  # Pillar starts from ground
+    pdeck = dtop(px)  # deck surface at this X
+    ppar = pdeck + PAR_H  # parapet top
     ppil = ppar + PIL_EXTRA  # pillar post top
     pcap = ppil + PIL_CAP_H  # cap slab top
     cy_n = BRY2 - 12  # north cap centre Y
@@ -427,33 +430,62 @@ for px in PXS:
         box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
     )
 
-# ── End abutments restored as supports (capped at deck height DZ2) ──────────────
-EARCH_RIN = 64
-EARCH_ROUT = 80  # ring 16 units thick
-EARCH_STILT = 64  # straight sides; crown = stilt + rin = 128 = DZ1
-EARCH_CROWN = EARCH_STILT + EARCH_RIN  # 128
-EARCH_CEIL = DZ2  # top of abutment wall (level with bridge deck)
-EARCH_T = 40  # arch thickness in X
-for ex, sign in [(BRX1, 1), (BRX2, -1)]:
-    xb = ex if sign == 1 else ex - EARCH_T
-    xf = ex + EARCH_T if sign == 1 else ex
+# ── Supporting arches under bridge deck ───────────────────────────────────────
+# Arches between pillars and at bridge ends
+arch_segments = [BRX1] + PXS + [BRX2]
+for i in range(len(arch_segments) - 1):
+    x1, x2 = arch_segments[i], arch_segments[i + 1]
+    xm = (x1 + x2) / 2
+    # Arch opening logic
+    a_ceil = int(dbot(xm))
+    a_rin = (
+        (x2 - x1 - P_HW * 2) // 2
+        if (x1 in PXS and x2 in PXS)
+        else (x2 - x1 - P_HW) // 2
+    )
+    if a_rin < 16:
+        a_rin = 16  # fallback
+    a_stilt = a_ceil - a_rin - FZ2
+    if a_stilt < 0:
+        a_stilt = 0
+        a_rin = a_ceil - FZ2
+
+    # Add arch walls (North and South sides)
     B.extend(
         arch_wall(
-            xb,
-            xf,
-            BRY1,
+            x1,
+            x2,
+            BRY2 - 24,
             BRY2,
             FZ2,
-            EARCH_CEIL,
-            EARCH_RIN,
-            EARCH_ROUT,
+            a_ceil,
+            a_rin,
+            a_rin + 16,
             A_SEGS,
             T_STONE,
-            stilt_h=EARCH_STILT,
+            stilt_h=a_stilt,
         )
     )
-    # Fill above arch crown — solid stone abutment up to deck top
-    B.append(box(xb, -EARCH_ROUT, EARCH_CROWN, xf, EARCH_ROUT, EARCH_CEIL, T_STONE))
+    B.extend(
+        arch_wall(
+            x1,
+            x2,
+            BRY1,
+            BRY1 + 24,
+            FZ2,
+            a_ceil,
+            a_rin,
+            a_rin + 16,
+            A_SEGS,
+            T_STONE,
+            stilt_h=a_stilt,
+        )
+    )
+    # Fill solid stone above the arches up to deck bottom
+    B.append(box(x1, BRY2 - 24, FZ2 + a_stilt + a_rin, x2, BRY2, a_ceil, T_STONE))
+    B.append(box(x1, BRY1, FZ2 + a_stilt + a_rin, x2, BRY1 + 24, a_ceil, T_STONE))
+
+# ── Redundant end abutments removed, now handled by supporting arches loop ──
 
 # ── Teleport Arches at the ends of the bridge ────────────────────────────────
 T_ARCH_RIN = 96
