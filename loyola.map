@@ -1039,6 +1039,42 @@
 }
 }
 {
+"classname" "info_teleport_destination"
+"targetname" "dest_east"
+"origin" "900 0 176"
+"angle" "180"
+}
+{
+"classname" "info_teleport_destination"
+"targetname" "dest_west"
+"origin" "-900 0 176"
+"angle" "0"
+}
+{
+"classname" "trigger_teleport"
+"target" "dest_east"
+{
+( -944 -128 144 ) ( -944 128 144 ) ( -944 -128 208 ) *teleport 0 0 0 1 1
+( -928 -128 144 ) ( -928 -128 208 ) ( -928 128 144 ) *teleport 0 0 0 1 1
+( -944 -128 144 ) ( -944 -128 208 ) ( -928 -128 144 ) *teleport 0 0 0 1 1
+( -944 128 144 ) ( -928 128 144 ) ( -944 128 208 ) *teleport 0 0 0 1 1
+( -944 -128 144 ) ( -928 -128 144 ) ( -944 128 144 ) *teleport 0 0 0 1 1
+( -944 -128 208 ) ( -944 128 208 ) ( -928 -128 208 ) *teleport 0 0 0 1 1
+}
+}
+{
+"classname" "trigger_teleport"
+"target" "dest_west"
+{
+( 928 -128 144 ) ( 928 128 144 ) ( 928 -128 208 ) *teleport 0 0 0 1 1
+( 944 -128 144 ) ( 944 -128 208 ) ( 944 128 144 ) *teleport 0 0 0 1 1
+( 928 -128 144 ) ( 928 -128 208 ) ( 944 -128 144 ) *teleport 0 0 0 1 1
+( 928 128 144 ) ( 944 128 144 ) ( 928 128 208 ) *teleport 0 0 0 1 1
+( 928 -128 144 ) ( 944 -128 144 ) ( 928 128 144 ) *teleport 0 0 0 1 1
+( 928 -128 208 ) ( 928 128 208 ) ( 944 -128 208 ) *teleport 0 0 0 1 1
+}
+}
+{
 "classname" "info_player_start"
 "origin" "0 0 240"
 }
