@@ -187,6 +187,18 @@ def ent(cls, **kw):
     return "\n".join(lines)
 
 
+def brush_ent(cls, brushes, **kw):
+    lines = ["{", f'"classname" "{cls}"']
+    for k, v in kw.items():
+        lines.append(f'"{k}" "{v}"')
+    for b in brushes:
+        # Each b is a string "{\n...\n}" from box/ramp_slab
+        # Keep the braces for the brush within the entity
+        lines.append(b)
+    lines.append("}")
+    return "\n".join(lines)
+
+
 # ── Build world brushes ───────────────────────────────────────────────────────
 B = []
 
@@ -362,6 +374,37 @@ worldspawn = (
 E = []
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
+
+# Teleport destinations
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_east",
+        origin="900 0 176",
+        angle="180",
+    )
+)
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_west",
+        origin="-900 0 176",
+        angle="0",
+    )
+)
+
+# Teleport triggers at the ends of the bridge
+# West end trigger -> East destination
+west_trigger_brush = box(
+    OX1 + WALL_T, BRY1, DZ2, OX1 + WALL_T + 16, BRY2, DZ2 + 64, T_PANEL
+)
+E.append(brush_ent("trigger_teleport", [west_trigger_brush], target="dest_east"))
+
+# East end trigger -> West destination
+east_trigger_brush = box(
+    OX2 - WALL_T - 16, BRY1, DZ2, OX2 - WALL_T, BRY2, DZ2 + 64, T_PANEL
+)
+E.append(brush_ent("trigger_teleport", [east_trigger_brush], target="dest_west"))
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
