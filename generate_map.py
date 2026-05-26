@@ -26,6 +26,7 @@ def ft(feet, inches=0):
 T_STONE = "city6_7"  # supporting pillars + arch ring
 T_FLOOR = "afloor1_4"  # deck top surface
 T_CEMENT = "wbrick1_5"  # parapet / bridge walls (cement look)
+T_CONCRETE = "sfloor3_2"  # smooth concrete — pyramid caps
 T_WALL = "tech03_1"  # building walls — ep1 military base
 T_FLOOR_BLDG = "tech10_1"  # building floors and ceilings
 T_METAL = "metal5_4"  # pillar cap trim
@@ -69,10 +70,8 @@ PAR_H = ft(4)  # parapet wall height above deck = 4 ft = 60 units
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PIL_EXTRA = 32  # extra pillar post height above parapet (gameplay)
 PIL_CAP_H = 8  # cap slab height
-PIL_PYR_H = (
-    8  # pyramid cap height on structural support piers (subtle concrete ornament)
-)
-PIL_PYR_W = 16  # pyramid base half-width (centred on cap slab)
+PIL_PYR_H = 6  # pyramid cap height — flat and subtle
+PIL_PYR_W = 10  # pyramid base half-width (centred on cap, minimal overhang)
 P_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 
@@ -593,7 +592,7 @@ if SHOW_SUPPORTS:
                 px + PIL_PYR_W,
                 cy_n + PIL_PYR_W,
                 pcap + PIL_PYR_H,
-                T_CEMENT,
+                T_CONCRETE,
             )
         )
 
@@ -608,7 +607,7 @@ if SHOW_SUPPORTS:
                 px + PIL_PYR_W,
                 cy_s + PIL_PYR_W,
                 pcap + PIL_PYR_H,
-                T_CEMENT,
+                T_CONCRETE,
             )
         )
 
