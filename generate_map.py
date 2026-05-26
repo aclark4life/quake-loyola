@@ -26,7 +26,7 @@ def ft(feet, inches=0):
 T_STONE = "city6_7"  # supporting pillars + arch ring
 T_FLOOR = "sfloor3_2"  # deck top surface
 T_CEMENT = "sfloor3_2"  # parapet / bridge walls
-T_ROAD = "ground1_7"  # blacktop road surface
+T_ROAD = "black"  # blacktop road surface
 T_WALL = "tech03_1"  # building walls — ep1 military base
 T_FLOOR_BLDG = "tech10_1"  # building floors and ceilings
 T_METAL = "metal5_4"  # pillar cap trim
@@ -491,8 +491,6 @@ B.append(
 B.append(
     box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
-# Centre stripe
-B.append(box(-_STRIPE_W, _ROAD_Y1, FZ2 + 2, _STRIPE_W, _ROAD_Y2, FZ2 + 4, T_CEMENT))
 
 # ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
