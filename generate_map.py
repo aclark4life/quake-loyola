@@ -74,7 +74,9 @@ P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 # ── Pillar X positions — 5 pillars (Pillar 1–5) ──────────────────────────────
 # Blueprint: 5 labelled pillars; outer pair ≈ ±350, inner pair ≈ ±175, centre 0
 PXS = [-350, -175, 0, 175, 350]  # pillar X positions (5 piers)
-SHOW_SUPPORTS = False  # set True to re-enable bridge piers + pillar tops
+# Bridge support visibility: False = none, set of X positions = those piers only, True = all
+# PXS = [-350, -175, 0, 175, 350]; add pairs from outermost in: {-350,350} → {-175,175} → {0}
+SHOW_SUPPORTS = {-350, 350}  # outer pair (furthest from centre)
 
 # ── World layout ──────────────────────────────────────────────────────────────
 WALL_T = 16
@@ -112,7 +114,7 @@ WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # = 144 = WALK_ZT1 (flat)
 # No ramp needed: BLDG_GROUND_Z = 0 = road level
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
-A_SEGS = 8
+A_SEGS = 16
 
 
 # ── Geometry helpers ──────────────────────────────────────────────────────────
@@ -324,13 +326,19 @@ def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=Non
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
-    # Side walls removed to make arch freestanding
-    # if y1 < -rout:
-    #     brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
-    # if y2 > rout:
-    #     brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(box(x1, -rout, floor_z, x2, -rin, sprz, tex))
-    brushes.append(box(x1, rin, floor_z, x2, rout, sprz, tex))
+    # Solid rock on either side of the arch (makes pier a solid mass, not freestanding)
+    if y1 < -rout:
+        brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
+    if y2 > rout:
+        brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
+    brushes.append(
+        box(x1, -rout, floor_z, x2, -rin, ceil_z, tex)
+    )  # south pillar, full height
+    brushes.append(
+        box(x1, rin, floor_z, x2, rout, ceil_z, tex)
+    )  # north pillar, full height
+    # Cap above arch crown: fills above the inner arc top
+    brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
     for i in range(segs):
         brushes.append(
             arch_seg(x1, x2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
@@ -504,11 +512,13 @@ for i in range(ARCH_SEGS):
 #   Outer (Pillar 1/5): 7 ft 9 in total → rout=59;  2 ft 9 in opening  → rin=21
 #   Inner (Pillar 2/4): 8 ft 8 in total → rout=65;  ~4 ft opening      → rin=30
 #   Centre (Pillar 3): 13 ft   total → rout=98;  9 ft arch opening → rin=68
-_OUTER_R = (59, 21)
-_INNER_R = (65, 30)
-_CENTR_R = (98, 68)  # was (98, 39) — rin=68 = half of 136 units (9 ft)
+_OUTER_R = (136, 96)  # rout=BRY2: gap starts at h=96.3 > rin=96, capped by cap box
+_INNER_R = (136, 96)
+_CENTR_R = (136, 96)
 if SHOW_SUPPORTS:
     for px in PXS:
+        if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
+            continue
         pdeck = dtop(px)  # deck surface at this X
         ppar = pdeck + PAR_H  # parapet top
         ppil = ppar + PIL_EXTRA  # pillar post top
@@ -907,6 +917,8 @@ E.append(
 # Torch lights on pillar caps
 if SHOW_SUPPORTS:
     for px in PXS:
+        if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
+            continue
         pbase = dtop(px)
         pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H
         cy_n = BRY2 - 12
