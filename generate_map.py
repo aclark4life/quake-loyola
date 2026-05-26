@@ -611,12 +611,30 @@ if SHOW_SUPPORTS:
             )
         )
 
-        # Torch flames on cap top
+        # Torch flames sit on top of the pyramid (no Z overlap with pyramid)
         B.append(
-            box(px - 4, cy_n - 4, pcap, px + 4, cy_n + 4, pcap + 10, T_STONE, tt=T_LAVA)
+            box(
+                px - 4,
+                cy_n - 4,
+                pcap + PIL_PYR_H,
+                px + 4,
+                cy_n + 4,
+                pcap + PIL_PYR_H + 10,
+                T_STONE,
+                tt=T_LAVA,
+            )
         )
         B.append(
-            box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
+            box(
+                px - 4,
+                cy_s - 4,
+                pcap + PIL_PYR_H,
+                px + 4,
+                cy_s + 4,
+                pcap + PIL_PYR_H + 10,
+                T_STONE,
+                tt=T_LAVA,
+            )
         )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
