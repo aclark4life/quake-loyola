@@ -69,7 +69,10 @@ PAR_H = ft(4)  # parapet wall height above deck = 4 ft = 60 units
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PIL_EXTRA = 32  # extra pillar post height above parapet (gameplay)
 PIL_CAP_H = 8  # cap slab height
-PIL_PYR_H = 24  # pyramid cap height on structural support piers
+PIL_PYR_H = (
+    8  # pyramid cap height on structural support piers (subtle concrete ornament)
+)
+PIL_PYR_W = 16  # pyramid base half-width (centred on cap slab)
 P_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 
@@ -579,78 +582,43 @@ if SHOW_SUPPORTS:
         )
 
         # Pillar tops (the parts that stick above the deck)
-        # North pillar top + flat cap slab + pyramid crown
+        # North pillar top + flat cap slab + small concrete pyramid
         B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_STONE))
         B.append(box(x1, BRY2 - PAR_W - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
         B.append(
             pyramid(
-                x1,
-                BRY2 - PAR_W - P_CE,
+                px - PIL_PYR_W,
+                cy_n - PIL_PYR_W,
                 pcap,
-                x2,
-                BRY2 + P_CE,
+                px + PIL_PYR_W,
+                cy_n + PIL_PYR_W,
                 pcap + PIL_PYR_H,
-                T_STONE,
+                T_CEMENT,
             )
         )
 
-        # South pillar top + flat cap slab + pyramid crown
+        # South pillar top + flat cap slab + small concrete pyramid
         B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
         B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + PAR_W + P_CE, pcap, T_STONE))
         B.append(
             pyramid(
-                x1,
-                BRY1 - P_CE,
+                px - PIL_PYR_W,
+                cy_s - PIL_PYR_W,
                 pcap,
-                x2,
-                BRY1 + PAR_W + P_CE,
+                px + PIL_PYR_W,
+                cy_s + PIL_PYR_W,
                 pcap + PIL_PYR_H,
-                T_STONE,
+                T_CEMENT,
             )
         )
 
-        # Torch flames on cap top (moved up to sit on pyramid base level)
+        # Torch flames on cap top
         B.append(
             box(px - 4, cy_n - 4, pcap, px + 4, cy_n + 4, pcap + 10, T_STONE, tt=T_LAVA)
         )
         B.append(
             box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
         )
-
-# ── Decorative corner posts at arch-span ends (BRX1 / BRX2) ─────────────────
-# Flat cap, no pyramid — purely ornamental; always present.
-_dcap_pdeck = DZ2  # flat approach: no arch rise at BRX1/BRX2
-_dcap_ppil = _dcap_pdeck + PAR_H + PIL_EXTRA
-_dcap_pcap = _dcap_ppil + PIL_CAP_H
-for _cx in [BRX1, BRX2]:
-    _dx1, _dx2 = _cx - P_HW, _cx + P_HW
-    _dX1, _dX2 = _cx - P_HW - P_CE, _cx + P_HW + P_CE
-    # North corner post
-    B.append(box(_dx1, BRY2 - PAR_W, _dcap_pdeck, _dx2, BRY2, _dcap_ppil, T_STONE))
-    B.append(
-        box(
-            _dX1,
-            BRY2 - PAR_W - P_CE,
-            _dcap_ppil,
-            _dX2,
-            BRY2 + P_CE,
-            _dcap_pcap,
-            T_STONE,
-        )
-    )
-    # South corner post
-    B.append(box(_dx1, BRY1, _dcap_pdeck, _dx2, BRY1 + PAR_W, _dcap_ppil, T_STONE))
-    B.append(
-        box(
-            _dX1,
-            BRY1 - P_CE,
-            _dcap_ppil,
-            _dX2,
-            BRY1 + PAR_W + P_CE,
-            _dcap_pcap,
-            T_STONE,
-        )
-    )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
