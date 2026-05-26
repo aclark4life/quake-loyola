@@ -587,14 +587,6 @@ if SHOW_SUPPORTS:
         # South pillar top
         B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
 
-        # Torch flames on pillar top
-        B.append(
-            box(px - 4, cy_n - 4, ppil, px + 4, cy_n + 4, ppil + 10, T_STONE, tt=T_LAVA)
-        )
-        B.append(
-            box(px - 4, cy_s - 4, ppil, px + 4, cy_s + 4, ppil + 10, T_STONE, tt=T_LAVA)
-        )
-
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
 T_ARCH_ROUT = 136  # Fills the bridge width (updated to match BRY2=136)
