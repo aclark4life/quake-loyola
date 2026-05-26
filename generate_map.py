@@ -581,60 +581,20 @@ if SHOW_SUPPORTS:
         )
 
         # Pillar tops (the parts that stick above the deck)
-        # North pillar top + flat cap slab + small concrete pyramid
+        # North pillar top + flat cap slab
         B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_STONE))
         B.append(box(x1, BRY2 - PAR_W - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
-        B.append(
-            pyramid(
-                px - PIL_PYR_W,
-                cy_n - PIL_PYR_W,
-                pcap,
-                px + PIL_PYR_W,
-                cy_n + PIL_PYR_W,
-                pcap + PIL_PYR_H,
-                T_CONCRETE,
-            )
-        )
 
-        # South pillar top + flat cap slab + small concrete pyramid
+        # South pillar top + flat cap slab
         B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
         B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + PAR_W + P_CE, pcap, T_STONE))
-        B.append(
-            pyramid(
-                px - PIL_PYR_W,
-                cy_s - PIL_PYR_W,
-                pcap,
-                px + PIL_PYR_W,
-                cy_s + PIL_PYR_W,
-                pcap + PIL_PYR_H,
-                T_CONCRETE,
-            )
-        )
 
-        # Torch flames sit on top of the pyramid (no Z overlap with pyramid)
+        # Torch flames on cap top
         B.append(
-            box(
-                px - 4,
-                cy_n - 4,
-                pcap + PIL_PYR_H,
-                px + 4,
-                cy_n + 4,
-                pcap + PIL_PYR_H + 10,
-                T_STONE,
-                tt=T_LAVA,
-            )
+            box(px - 4, cy_n - 4, pcap, px + 4, cy_n + 4, pcap + 10, T_STONE, tt=T_LAVA)
         )
         B.append(
-            box(
-                px - 4,
-                cy_s - 4,
-                pcap + PIL_PYR_H,
-                px + 4,
-                cy_s + 4,
-                pcap + PIL_PYR_H + 10,
-                T_STONE,
-                tt=T_LAVA,
-            )
+            box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
         )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
