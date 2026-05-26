@@ -26,7 +26,8 @@ def ft(feet, inches=0):
 T_STONE = "city6_7"  # supporting pillars + arch ring
 T_FLOOR = "afloor1_4"  # deck top surface
 T_CEMENT = "wbrick1_5"  # parapet / bridge walls (cement look)
-T_WALL = "bricka2_1"  # building walls
+T_WALL = "tech01_5"  # building walls — grey tech panels (ep1 military base)
+T_FLOOR_BLDG = "sfloor4_4"  # building floors
 T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
 T_SKY = "sky1"  # open sky ceiling
@@ -779,9 +780,9 @@ B.append(
 for _f in range(1, BLDG_FLOORS):
     _sz = BLDG_GROUND_Z + _f * FLOOR_H
     _st = _sz + BLDG_WALL
-    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR))  # south bulk
-    B.append(box(_bix1, _sty1, _sz, _stx1, _biy2, _st, T_FLOOR))  # west of shaft
-    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR))  # east of shaft
+    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR_BLDG))  # south bulk
+    B.append(box(_bix1, _sty1, _sz, _stx1, _biy2, _st, T_FLOOR_BLDG))  # west of shaft
+    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR_BLDG))  # east of shaft
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
@@ -940,7 +941,7 @@ for px in panel_xs:
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_FLOORS * FLOOR_H - 8  # travel distance (not absolute Z)
 _lift_brush = [
-    box(_stx1 + 2, _sty1 + 2, BLDG_Z2 - 8, _stx2 - 2, _sty2 - 2, BLDG_Z2, T_FLOOR)
+    box(_stx1 + 2, _sty1 + 2, BLDG_Z2 - 8, _stx2 - 2, _sty2 - 2, BLDG_Z2, T_FLOOR_BLDG)
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
 
