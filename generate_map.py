@@ -581,20 +581,18 @@ if SHOW_SUPPORTS:
         )
 
         # Pillar tops (the parts that stick above the deck)
-        # North pillar top + flat cap slab
+        # North pillar top
         B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_STONE))
-        B.append(box(x1, BRY2 - PAR_W - P_CE, ppil, x2, BRY2 + P_CE, pcap, T_STONE))
 
-        # South pillar top + flat cap slab
+        # South pillar top
         B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
-        B.append(box(x1, BRY1 - P_CE, ppil, x2, BRY1 + PAR_W + P_CE, pcap, T_STONE))
 
-        # Torch flames on cap top
+        # Torch flames on pillar top
         B.append(
-            box(px - 4, cy_n - 4, pcap, px + 4, cy_n + 4, pcap + 10, T_STONE, tt=T_LAVA)
+            box(px - 4, cy_n - 4, ppil, px + 4, cy_n + 4, ppil + 10, T_STONE, tt=T_LAVA)
         )
         B.append(
-            box(px - 4, cy_s - 4, pcap, px + 4, cy_s + 4, pcap + 10, T_STONE, tt=T_LAVA)
+            box(px - 4, cy_s - 4, ppil, px + 4, cy_s + 4, ppil + 10, T_STONE, tt=T_LAVA)
         )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
