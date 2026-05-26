@@ -767,13 +767,13 @@ B.extend(
 
 # Roof — open above lift shaft
 B.append(
-    box(BLDG_X1, BLDG_Y1, BLDG_Z2, _stx1, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL)
+    box(BLDG_X1, BLDG_Y1, BLDG_Z2, _stx1, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # west
 B.append(
-    box(_stx2, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_WALL)
+    box(_stx2, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # east
 B.append(
-    box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_WALL)
+    box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # south of shaft
 
 # ── Interior floor slabs (floors 1-3, lift shaft opening in center-north) ────
