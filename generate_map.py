@@ -788,7 +788,11 @@ B.append(
     box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # south of shaft
 
-# ── Interior floor slabs (floors 1-3, lift shaft opening in center-north) ────
+# ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
+# Floor 0 (ground): full slab with no shaft opening
+_sz0 = BLDG_GROUND_Z
+_st0 = _sz0 + BLDG_WALL
+B.append(box(_bix1, _biy1, _sz0, _bix2, _biy2, _st0, T_FLOOR_BLDG))
 for _f in range(1, BLDG_FLOORS):
     _sz = BLDG_GROUND_Z + _f * FLOOR_H
     _st = _sz + BLDG_WALL
