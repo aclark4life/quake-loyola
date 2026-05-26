@@ -472,6 +472,27 @@ B.append(
 )  # sky
 
 # ════════════════════════════════════════════════════════════════════════════════
+# CHARLES STREET — road surface, sidewalks, centre stripe
+# Road runs N-S (full Y); road channel E-W = ROAD_X1..ROAD_X2
+# ════════════════════════════════════════════════════════════════════════════════
+_ROAD_Y1 = WORLD_Y1 + WALL_T
+_ROAD_Y2 = WORLD_Y2 - WALL_T
+_WALK_W = 80  # sidewalk width (E-W)
+_WALK_H = 8  # sidewalk + curb height above road
+_STRIPE_W = 6  # centre-line stripe half-width
+
+# West sidewalk
+B.append(
+    box(ROAD_X1 - _WALK_W, _ROAD_Y1, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
+)
+# East sidewalk
+B.append(
+    box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
+)
+# Centre stripe (dashed would need many brushes; single stripe for now)
+B.append(box(-_STRIPE_W, _ROAD_Y1, FZ2, _STRIPE_W, _ROAD_Y2, FZ2 + 2, T_CEMENT))
+
+# ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
 # ════════════════════════════════════════════════════════════════════════════════
 # Extend bridge deck to both world edges
