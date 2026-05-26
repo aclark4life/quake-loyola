@@ -24,7 +24,7 @@ def ft(feet, inches=0):
 
 # ── Textures ──────────────────────────────────────────────────────────────────
 T_STONE = "city6_7"  # supporting pillars + arch ring
-T_FLOOR = "afloor1_4"  # deck top surface
+T_FLOOR = "sfloor3_2"  # deck top surface
 T_CEMENT = "wbrick1_5"  # parapet / bridge walls (cement look)
 T_CONCRETE = "sfloor3_2"  # smooth concrete — pyramid caps
 T_WALL = "tech03_1"  # building walls — ep1 military base
