@@ -549,8 +549,8 @@ if SHOW_SUPPORTS:
         cy_n = BRY2 - PAR_W // 2  # north cap centre Y
         cy_s = BRY1 + PAR_W // 2  # south cap centre Y
 
-        # Width of the pier in X (matches cap stone width)
-        x1, x2 = px - P_HW - P_CE, px + P_HW + P_CE
+        # Width of the pier in X (matches pillar post width)
+        x1, x2 = px - P_HW, px + P_HW
 
         # Arch opening varies by pillar type (outer / inner / centre)
         if px == 0:
