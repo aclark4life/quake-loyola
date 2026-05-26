@@ -12,18 +12,17 @@ A Quake 1 deathmatch map inspired by the pedestrian bridge at Loyola University 
 ## Map layout
 
 ```
-[W Building] ──── bridge span ──── [E Building]
+[West Campus] ──── bridge span ──── [Knott Hall]
               ↑arch              arch↑
-      pillars + railings all along
+      5 stone pillars supporting the span
 ```
 
-- **Bridge span**: 1024 × 256 units, deck at Z 128–144  
-- **Entry arch gates**: semicircular stone arch portals at each end (8 voussoir segments)  
-- **Stone pillars**: 8 total (4 per side) with metal caps  
-- **Metal railings**: between every pillar pair  
-- **Buildings**: hollow stone rooms at each end, connected flush to the deck  
-- **Ravine**: open void below the bridge; rock floor  
-- **Sky**: `sky4` dome, sealed outer box  
+- **Bridge span**: 1050-unit arched span (69.5 ft), deck at Z 128–144.
+- **Entry arch gates**: Semicircular stone arch portals at each end (16 voussoir segments) with teleport fields.
+- **Stone pillars**: 5 supporting piers (only 2 visible by default) with narrow arched openings.
+- **Knott Hall**: A 4-story brutalist tower on the south campus, featuring vertical "fins" on its north facade.
+- **Charles Street**: Road surface running N-S under the bridge.
+- **Sky**: `sky1` ceiling, sealed outer box.
 
 ## Textures required
 
@@ -31,24 +30,22 @@ All textures come from the stock Quake data files. Extract `quake101.wad` from y
 
 | Surface | Texture name |
 |---|---|
-| Bridge deck | `afloor1_4` |
-| Stone pillars, arch | `stone1_5` |
-| Building walls | `bricka2_1` |
-| Pillar caps, railings | `metal5_4` |
+| Bridge deck | `sfloor3_2` |
+| Stone pillars, arch | `city6_7` |
+| Knott Hall walls | `tech03_1` |
+| Road surface | `stone1_7` |
 | Ravine floor | `rock1_2` |
-| Sky surfaces | `sky4` |
+| Sky surfaces | `sky1` |
 
 ## Entities
 
 | Entity | Qty | Location |
 |---|---|---|
-| `info_player_deathmatch` | 6 | 3 per building room |
-| `weapon_supershotgun` | 1 | Bridge centre |
-| `weapon_rocketlauncher` | 1 | Under west arch |
-| `weapon_nailgun` | 1 | Under east arch |
-| `item_health` | 3 | Bridge deck |
-| `item_armortype` | 1 | West building |
-| `light` | 9 | Above pillars, arch crowns, building interiors |
+| `info_player_deathmatch` | 14 | Scattered across bridge, campus, and hall |
+| `weapon_rocketlauncher` | 4 | Bridge deck, Knott Hall (Floors 1 & 3), East campus |
+| `item_health` | 3 | Bridge deck, Hall entrance, Hall 2nd floor |
+| `light` | ~20 | Pillar caps, hall interior/exterior, road, and teleport arches |
+| `func_plat` | 1 | Lift shaft inside Knott Hall |
 
 ## Compiling
 

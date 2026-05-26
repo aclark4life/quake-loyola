@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generate loyola.map — Loyola bridge + brutalist building Quake 1 deathmatch map.
+"""Generate loyola.map — Loyola bridge + Knott Hall Quake 1 deathmatch map.
 
 Layout:
   - Rectangular open world (±1024 E-W × ±960 N-S), open sky
   - Road runs N-S under the bridge (like Charles Street at Loyola Maryland)
   - Bridge spans E-W at deck height ~144; arched stone pillars over the road
-  - Brutalist building on south campus (X=-256 to 256, Y=-800 to -256, 4 floors)
-    North face faces bridge; ground-level entrance at X=-64..64
+  - Knott Hall on south campus (X=1186 to 1686, Y=-800 to -256, 4 floors)
+    North face faces bridge; ground-level entrance at X=1372..1500
     Lift shaft at center-north rises from ground through roof opening to rooftop
   - West arch teleports to east; east arch teleports to west
 """
@@ -23,18 +23,19 @@ def ft(feet, inches=0):
 
 
 # ── Textures ──────────────────────────────────────────────────────────────────
-T_STONE = "city6_7"  # supporting pillars + arch ring
-T_FLOOR = "sfloor3_2"  # deck top surface
-T_CEMENT = "sfloor3_2"  # parapet / bridge walls
+T_STONE = "stone1_5"  # supporting pillars + arch ring
+T_FLOOR = "afloor1_4"  # deck top surface
+T_CEMENT = "stone1_5"  # parapet / bridge walls
 T_ROAD = "stone1_7"  # road surface
-T_WALL = "tech03_1"  # building walls — ep1 military base
-T_FLOOR_BLDG = "tech10_1"  # building floors and ceilings
+T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
+T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
-T_SKY = "sky1"  # open sky ceiling
+T_SKY = "sky4"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
+T_BLACK = "black"  # solid black texture
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
@@ -87,14 +88,14 @@ WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
-# East side extended by one building width (500) to give the building room
+# East side extended by one building width (500) to give the hall room
 BLDG_WIDTH = 500
 WORLD_X1 = -(525 + 741)  # = -1266 (west end unchanged)
 WORLD_X2 = 525 + 741 + BLDG_WIDTH  # = 1766  (east end extended)
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 
-# ── Building (south campus, brutalist tower) ─────────────────────────────────
-# Pushed near the east world end; 64-unit gap between building and east wall
+# ── Knott Hall (south campus tower) ──────────────────────────────────────────
+# Pushed near the east world end; 64-unit gap between hall and east wall
 BLDG_X2 = WORLD_X2 - WALL_T - 64  # = 1686
 BLDG_X1 = BLDG_X2 - BLDG_WIDTH  # = 1186
 BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 1436
@@ -102,15 +103,15 @@ BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
 BLDG_FLOORS = 4  # number of floors
-# Building is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
+# Knott Hall is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
 BLDG_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - BLDG_WALL)  # = 0 (no hill needed)
 BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H
 
-# Sky ceiling must clear the building
+# Sky ceiling must clear Knott Hall
 WORLD_Z2 = max(640, BLDG_Z2 + 128)
 
-# ── Walkway from bridge to building 2nd floor ────────────────────────────────
-# Flat span at DZ2=144 (flat approach section); centered on building entrance
+# ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
+# Flat span at DZ2=144 (flat approach section); centered on hall entrance
 WALK_X1 = BLDG_CX - 64  # = 536
 WALK_X2 = BLDG_CX + 64  # = 664
 WALK_ZT1 = int(dtop(BLDG_CX))  # = DZ2 = 144 (flat approach, no arch rise)
@@ -705,9 +706,9 @@ B.append(
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# BRUTALIST BUILDING — south campus, 4-floor playable tower
-# Footprint: X=-256 to 256, Y=-800 to -256, Z=0 to 512
-# North face faces the bridge; ground-level entrance at X=-64 to 64
+# KNOTT HALL — south campus, 4-floor playable tower
+# Footprint: X=1186 to 1686, Y=-800 to -256, Z=0 to 512
+# North face faces the bridge; ground-level entrance at X=1372..1500
 # Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
 _bix1 = BLDG_X1 + BLDG_WALL  # interior west
@@ -716,10 +717,10 @@ _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
 _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 
 # Entrance doorway — centred on building (BLDG_CX ± 64)
-_ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 536, 664
+_ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 1372, 1500
 
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
-_stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 680, 808
+_stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
@@ -730,78 +731,167 @@ B.append(
     box(BLDG_X1, BLDG_Y1, BLDG_GROUND_Z, BLDG_X2, BLDG_Y1 + BLDG_WALL, BLDG_Z2, T_WALL)
 )
 
-# North wall — faces bridge; ground entrance + 2nd-floor walkway opening + windows
+# North-West Indentation (Corner Notch)
+INDENT = 48
+# North wall — faces bridge; ground entrance + 2nd-floor walkway opening
 _door_n = [
     (_ENT_X1, BLDG_GROUND_Z, _ENT_X2, BLDG_GROUND_Z + FLOOR_H)
 ]  # ground entrance
 _door_2 = [
     (_ENT_X1, WALK_ZT2, _ENT_X2, BLDG_GROUND_Z + FLOOR_H * 2)
 ]  # walkway entrance
-_win_n = [
-    (
-        BLDG_CX - 128,
-        BLDG_GROUND_Z + _f * FLOOR_H + 32,
-        BLDG_CX + 128,
-        BLDG_GROUND_Z + _f * FLOOR_H + 80,
-    )
-    for _f in range(1, BLDG_FLOORS)
-]
 B.extend(
     layered_wall(
-        BLDG_X1,
+        BLDG_X1 + INDENT,
         BLDG_Y2 - BLDG_WALL,
         BLDG_GROUND_Z,
         BLDG_X2,
         BLDG_Y2,
         BLDG_Z2,
-        _door_n + _door_2 + _win_n,
+        _door_n + _door_2,
         T_WALL,
     )
 )
 
-# East and West walls — window openings (3 per floor along Y axis)
-_win_yw = [(BLDG_Y1 + 80 + _i * 192, BLDG_Y1 + 112 + _i * 192) for _i in range(3)]
-_win_yz = []
-for _f in range(BLDG_FLOORS):
-    for _wy1, _wy2 in _win_yw:
-        _win_yz.append(
-            (
-                _wy1,
-                BLDG_GROUND_Z + _f * FLOOR_H + 32,
-                _wy2,
-                BLDG_GROUND_Z + _f * FLOOR_H + 80,
+# NW Indentation inner walls
+B.append(
+    box(
+        BLDG_X1,
+        BLDG_Y2 - INDENT,
+        BLDG_GROUND_Z,
+        BLDG_X1 + INDENT,
+        BLDG_Y2 - INDENT + BLDG_WALL,
+        BLDG_Z2,
+        T_WALL,
+    )
+)
+B.append(
+    box(
+        BLDG_X1 + INDENT - BLDG_WALL,
+        BLDG_Y2 - INDENT,
+        BLDG_GROUND_Z,
+        BLDG_X1 + INDENT,
+        BLDG_Y2,
+        BLDG_Z2,
+        T_WALL,
+    )
+)
+
+# ── Brutalist Fins (All Exposed Facades) ────────────────────────────────────
+# Vertical concrete projections for that Knott Hall look
+FIN_W = 12  # width of fin
+FIN_D = 16  # depth (protrusion)
+
+# North Fins + Accents
+_fxs = list(range(BLDG_X1 + INDENT + 32, BLDG_X2 - 32, 64))
+for i, _fx in enumerate(_fxs):
+    if not (_fx + FIN_W > _ENT_X1 - 32 and _fx < _ENT_X2 + 32):
+        B.append(
+            box(
+                _fx,
+                BLDG_Y2,
+                BLDG_GROUND_Z,
+                _fx + FIN_W,
+                BLDG_Y2 + FIN_D,
+                BLDG_Z2,
+                T_WALL,
+            )
+        )
+        # Fill the entire gap between this fin and the next with dark texture
+        if i < len(_fxs) - 1:
+            _next_fx = _fxs[i + 1]
+            if not (_fx + FIN_W > _ENT_X1 - 32 and _next_fx < _ENT_X2 + 32):
+                B.append(
+                    box(
+                        _fx + FIN_W,
+                        BLDG_Y2,
+                        BLDG_GROUND_Z,
+                        _next_fx,
+                        BLDG_Y2 + 2,
+                        BLDG_Z2,
+                        T_BLACK,
+                    )
+                )
+
+# East Fins + Accents (protruding in X)
+_fys = list(range(BLDG_Y1 + 32, BLDG_Y2 - 32, 64))
+for i, _fy in enumerate(_fys):
+    B.append(
+        box(BLDG_X2, _fy, BLDG_GROUND_Z, BLDG_X2 + FIN_D, _fy + FIN_W, BLDG_Z2, T_WALL)
+    )
+    if i < len(_fys) - 1:
+        _next_fy = _fys[i + 1]
+        B.append(
+            box(
+                BLDG_X2 - 2,
+                _fy + FIN_W,
+                BLDG_GROUND_Z,
+                BLDG_X2,
+                _next_fy,
+                BLDG_Z2,
+                T_BLACK,
             )
         )
 
-B.extend(
-    layered_wall_y(
-        BLDG_Y1,
-        BLDG_X2 - BLDG_WALL,
-        BLDG_GROUND_Z,
-        BLDG_Y2,
-        BLDG_X2,
-        BLDG_Z2,
-        _win_yz,
-        T_WALL,
+# West Fins + Accents (protruding in X)
+_fys_w = list(range(BLDG_Y1 + 32, BLDG_Y2 - INDENT - 32, 64))
+for i, _fy in enumerate(_fys_w):
+    B.append(
+        box(BLDG_X1 - FIN_D, _fy, BLDG_GROUND_Z, BLDG_X1, _fy + FIN_W, BLDG_Z2, T_WALL)
     )
+    if i < len(_fys_w) - 1:
+        _next_fy = _fys_w[i + 1]
+        B.append(
+            box(
+                BLDG_X1,
+                _fy + FIN_W,
+                BLDG_GROUND_Z,
+                BLDG_X1 + 2,
+                _next_fy,
+                BLDG_Z2,
+                T_BLACK,
+            )
+        )
+
+# East and West walls — solid
+B.append(
+    box(BLDG_X2 - BLDG_WALL, BLDG_Y1, BLDG_GROUND_Z, BLDG_X2, BLDG_Y2, BLDG_Z2, T_WALL)
 )
-B.extend(
-    layered_wall_y(
-        BLDG_Y1,
+B.append(
+    box(
         BLDG_X1,
+        BLDG_Y1,
         BLDG_GROUND_Z,
-        BLDG_Y2,
         BLDG_X1 + BLDG_WALL,
+        BLDG_Y2 - INDENT,
         BLDG_Z2,
-        _win_yz,
         T_WALL,
     )
 )
 
-# Roof — open above lift shaft
+# Roof — open above lift shaft, clipped for NW indentation
 B.append(
-    box(BLDG_X1, BLDG_Y1, BLDG_Z2, _stx1, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
-)  # west
+    box(
+        BLDG_X1,
+        BLDG_Y1,
+        BLDG_Z2,
+        _stx1,
+        BLDG_Y2 - INDENT,
+        BLDG_Z2 + BLDG_WALL,
+        T_FLOOR_BLDG,
+    )
+)  # west bulk
+B.append(
+    box(
+        BLDG_X1 + INDENT,
+        BLDG_Y2 - INDENT,
+        BLDG_Z2,
+        _stx1,
+        BLDG_Y2,
+        BLDG_Z2 + BLDG_WALL,
+        T_FLOOR_BLDG,
+    )
+)  # west north-strip
 B.append(
     box(_stx2, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # east
@@ -810,23 +900,31 @@ B.append(
 )  # south of shaft
 
 # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
-# Floor 0 (ground): full slab with no shaft opening
+# Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
 _sz0 = BLDG_GROUND_Z
 _st0 = _sz0 + BLDG_WALL
-B.append(box(_bix1, _biy1, _sz0, _bix2, _biy2, _st0, T_FLOOR_BLDG))
+B.append(box(_bix1, _biy1, _sz0, _bix2, BLDG_Y2 - INDENT, _st0, T_FLOOR_BLDG))
+B.append(box(_bix1 + INDENT, BLDG_Y2 - INDENT, _sz0, _bix2, _biy2, _st0, T_FLOOR_BLDG))
+
 for _f in range(1, BLDG_FLOORS):
     _sz = BLDG_GROUND_Z + _f * FLOOR_H
     _st = _sz + BLDG_WALL
-    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR_BLDG))  # south bulk
-    B.append(box(_bix1, _sty1, _sz, _stx1, _biy2, _st, T_FLOOR_BLDG))  # west of shaft
-    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR_BLDG))  # east of shaft
+    # South bulk
+    B.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, T_FLOOR_BLDG))
+    # West of shaft, clipped for NW indentation
+    B.append(box(_bix1, _sty1, _sz, _stx1, BLDG_Y2 - INDENT, _st, T_FLOOR_BLDG))
+    B.append(
+        box(_bix1 + INDENT, BLDG_Y2 - INDENT, _sz, _stx1, _biy2, _st, T_FLOOR_BLDG)
+    )
+    # East of shaft
+    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR_BLDG))
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
     '"classname" "worldspawn"\n'
     '"wad" "quake101.wad"\n'
-    '"message" "Loyola Bridge"\n'
+    '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
     '"ambient" "40"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
@@ -886,7 +984,7 @@ E.append(brush_ent("func_illusionary", east_brushes))
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
-_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # building center Y = -528
+_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # Knott Hall center Y = -528
 
 for pos in [
     # Bridge deck
@@ -897,9 +995,9 @@ for pos in [
     (320, 0, int(dtop(320) + 32)),
     # Walkway mid-point
     (BLDG_CX, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)),
-    # Building ground floor (near entrance)
+    # Knott Hall ground floor (near entrance)
     (BLDG_CX, BLDG_Y2 - 64, BLDG_GROUND_Z + 40),
-    # Building upper floors
+    # Knott Hall upper floors
     (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H + 40),
     (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40),
     (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 3 + 40),
@@ -982,14 +1080,14 @@ _lift_brush = [
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
 
-# Building interior lights — one per floor centred
+# Knott Hall interior lights — one per floor centred
 _bcy = (BLDG_Y1 + BLDG_Y2) // 2  # -528
 for _f in range(BLDG_FLOORS):
     _lz = BLDG_GROUND_Z + _f * FLOOR_H + FLOOR_H // 2
     E.append(ent("light", origin=f"{BLDG_CX + 80}  {_bcy} {_lz}", light="280"))
     E.append(ent("light", origin=f"{BLDG_CX - 80} {_bcy} {_lz}", light="280"))
 
-# Building window glow (exterior, east + west faces)
+# Knott Hall window glow (exterior, east + west faces)
 for _f in range(BLDG_FLOORS):
     _lz = BLDG_GROUND_Z + _f * FLOOR_H + 56
     for _wy in [BLDG_Y1 + 80 + _i * 192 + 16 for _i in range(3)]:
