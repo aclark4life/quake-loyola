@@ -27,7 +27,7 @@ T_STONE = "sfloor3_2"  # general bridge structure (cement/stone look)
 T_PILLAR = "city2_7"  # supporting pillars (concrete, matches Knott Hall)
 T_FLOOR = "sfloor3_2"  # deck top surface
 T_CEMENT = "sfloor3_2"  # parapet / bridge walls
-T_ROAD = "stone1_7"  # road surface
+T_ROAD = "wgrnd1_5"  # road surface
 T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "metal5_4"  # pillar cap trim
@@ -704,9 +704,11 @@ for px in panel_xs:
     B.append(
         box(px - 8, BRY2 - PAR_W - 3, ph, px + 8, BRY2 - PAR_W, pt_, T_LIGHT_PANEL)
     )
-    B.append(
-        box(px - 8, BRY1 + PAR_W, ph, px + 8, BRY1 + PAR_W + 3, pt_, T_LIGHT_PANEL)
-    )
+    # Skip south panel if it's in the walkway gap
+    if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
+        B.append(
+            box(px - 8, BRY1 + PAR_W, ph, px + 8, BRY1 + PAR_W + 3, pt_, T_LIGHT_PANEL)
+        )
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -975,12 +977,12 @@ for _f in range(1, BLDG_FLOORS):
 # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
 # Walls around the lift shaft (_stx1.._stx2, _sty1.._sty2)
 _shaft_wall = 8
-# Doorways for each floor (on the South side)
-_shaft_doors_s = [
+# Doorways for each floor (on the West side — immediate left when entering)
+_shaft_doors_w = [
     (
-        _stx1 + 16,
+        _sty1 + 16,
         BLDG_GROUND_Z + _f * FLOOR_H,
-        _stx2 - 16,
+        _sty2 - 16,
         BLDG_GROUND_Z + _f * FLOOR_H + 96,
     )
     for _f in range(BLDG_FLOORS)
@@ -988,21 +990,21 @@ _shaft_doors_s = [
 
 # Shaft North wall (internal, solid)
 B.append(box(_stx1, _sty2, BLDG_GROUND_Z, _stx2, _sty2 + _shaft_wall, BLDG_Z2, T_WALL))
-# Shaft South wall (internal, with door openings)
+# Shaft South wall (internal, solid)
+B.append(box(_stx1, _sty1 - _shaft_wall, BLDG_GROUND_Z, _stx2, _sty1, BLDG_Z2, T_WALL))
+# Shaft West wall (internal, with door openings — faces entrance)
 B.extend(
-    layered_wall(
-        _stx1,
-        _sty1 - _shaft_wall,
-        BLDG_GROUND_Z,
-        _stx2,
+    layered_wall_y(
         _sty1,
+        _stx1 - _shaft_wall,
+        BLDG_GROUND_Z,
+        _sty2,
+        _stx1,
         BLDG_Z2,
-        _shaft_doors_s,
+        _shaft_doors_w,
         T_WALL,
     )
 )
-# Shaft West wall (internal)
-B.append(box(_stx1 - _shaft_wall, _sty1, BLDG_GROUND_Z, _stx1, _sty2, BLDG_Z2, T_WALL))
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
@@ -1095,17 +1097,17 @@ for _f in range(BLDG_FLOORS):
     _dz2 = _dz1 + 80  # slightly shorter door (80 units)
     _tname = f"elevator_door_{_f}"
 
-    # Door leaf — on South face of shaft
-    _d_brush = [box(_stx1 + 16, _sty1 - 2, _dz1, _stx2 - 16, _sty1 + 2, _dz2, T_METAL)]
+    # Door leaf — on West face of shaft (facing entrance)
+    _d_brush = [box(_stx1 - 2, _sty1 + 16, _dz1, _stx1 + 2, _sty2 - 16, _dz2, T_METAL)]
     E.append(
         brush_ent(
             "func_door", _d_brush, targetname=_tname, angle="-1", speed="300", wait="3"
         )
     )
 
-    # Trigger zone — in front of the door (South of it)
+    # Trigger zone — west of the door (in front of it)
     _tr_brush = [
-        box(_stx1 + 8, _sty1 - 48, _dz1, _stx2 - 8, _sty1 - 2, _dz2, "trigger")
+        box(_stx1 - 48, _sty1 + 8, _dz1, _stx1 - 2, _sty2 - 8, _dz2, "trigger")
     ]
     E.append(brush_ent("trigger_multiple", _tr_brush, target=_tname, wait="1"))
 
@@ -1198,7 +1200,8 @@ for px in panel_xs:
     pbase = dtop(px)
     ph = int(pbase + PAR_H // 2)
     E.append(ent("light", origin=f"{px} {BRY2 - 30} {ph}", light="180"))
-    E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
+    if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
+        E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
@@ -1228,12 +1231,6 @@ for _f in range(BLDG_FLOORS):
     for _wy in [BLDG_Y1 + 80 + _i * 192 + 16 for _i in range(3)]:
         E.append(ent("light", origin=f"{BLDG_X2 + 10} {_wy} {_lz}", light="120"))
         E.append(ent("light", origin=f"{BLDG_X1 - 10} {_wy} {_lz}", light="120"))
-
-# Walkway light — above the flat walkway
-_wk_mid_y = (BRY1 + BLDG_Y2) // 2  # = -192
-E.append(
-    ent("light", origin=f"{BLDG_CX} {_wk_mid_y} {int(WALK_ZT1 + 60)}", light="260")
-)
 
 # West campus ambient + east campus ambient
 for _xx in [-1000, 1000]:
