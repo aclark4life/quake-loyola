@@ -24,7 +24,7 @@ def ft(feet, inches=0):
 
 # ── Textures ──────────────────────────────────────────────────────────────────
 T_STONE = "sfloor3_2"  # general bridge structure (cement/stone look)
-T_PILLAR = "city6_7"  # supporting pillars (the specific stone)
+T_PILLAR = "city2_7"  # supporting pillars (concrete, matches Knott Hall)
 T_FLOOR = "sfloor3_2"  # deck top surface
 T_CEMENT = "sfloor3_2"  # parapet / bridge walls
 T_ROAD = "stone1_7"  # road surface
@@ -644,27 +644,36 @@ if SHOW_SUPPORTS:
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
 T_ARCH_ROUT = 136  # Fills the bridge width (updated to match BRY2=136)
-T_ARCH_STILT = 96  # Height of straight sides
-T_ARCH_CEIL = DZ2 + T_ARCH_STILT + T_ARCH_RIN + 32  # Stone above the arch
+T_ARCH_STILT = 96  # Height of straight sides before arch springs
 T_ARCH_W = 32  # Thickness of the arch in X
 
 for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
     _xb, _xf = _ex, _ex + T_ARCH_W
-    B.extend(
-        arch_wall(
-            _xb,
-            _xf,
-            BRY1,
-            BRY2,
-            DZ2,
-            T_ARCH_CEIL,
-            T_ARCH_RIN,
-            T_ARCH_ROUT,
-            A_SEGS,
-            T_STONE,
-            stilt_h=T_ARCH_STILT,
-        )
+    _sprz = DZ2 + T_ARCH_STILT  # Z where arch curve begins
+    # South post (extends to ground floor)
+    B.append(
+        box(_xb, BRY1, FZ2, _xf, BRY1 + (T_ARCH_ROUT - T_ARCH_RIN), _sprz, T_PILLAR)
     )
+    # North post (extends to ground floor)
+    B.append(
+        box(_xb, BRY2 - (T_ARCH_ROUT - T_ARCH_RIN), FZ2, _xf, BRY2, _sprz, T_PILLAR)
+    )
+    # Arch ring segments (rounded top)
+    _seg = 180.0 / A_SEGS
+    for i in range(A_SEGS):
+        B.append(
+            arch_seg(
+                _xb,
+                _xf,
+                0.0,
+                float(_sprz),
+                T_ARCH_RIN,
+                T_ARCH_ROUT,
+                i * _seg,
+                (i + 1) * _seg,
+                T_PILLAR,
+            )
+        )
 
 # ── Attached glow panel beneath arch centre ─────────────────────────────────
 # Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
@@ -1037,6 +1046,20 @@ west_brushes = arch_fill(
 E.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
 E.append(brush_ent("func_illusionary", west_brushes))
 
+# West arch lower trigger (ground floor)
+west_lower = arch_fill(
+    WORLD_X1 + WALL_T,
+    WORLD_X1 + WALL_T + T_ARCH_W,
+    0.0,
+    FZ2,
+    T_ARCH_RIN,
+    A_SEGS,
+    T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
+)
+E.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
+E.append(brush_ent("func_illusionary", west_lower))
+
 # East arch trigger → west destination
 east_brushes = arch_fill(
     WORLD_X2 - WALL_T - T_ARCH_W,
@@ -1050,6 +1073,20 @@ east_brushes = arch_fill(
 )
 E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_brushes))
+
+# East arch lower trigger (ground floor)
+east_lower = arch_fill(
+    WORLD_X2 - WALL_T - T_ARCH_W,
+    WORLD_X2 - WALL_T,
+    0.0,
+    FZ2,
+    T_ARCH_RIN,
+    A_SEGS,
+    T_TELEPORT,
+    stilt_h=T_ARCH_STILT,
+)
+E.append(brush_ent("trigger_teleport", east_lower, target="dest_west"))
+E.append(brush_ent("func_illusionary", east_lower))
 
 
 # ── Elevator Doors (func_door) for each floor ─────────────────────────────
