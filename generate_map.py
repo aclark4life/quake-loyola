@@ -76,9 +76,10 @@ PIL_PYR_H = 6  # pyramid cap height — flat and subtle
 PIL_PYR_W = 10  # pyramid base half-width (centred on cap, minimal overhang)
 P_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
+PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 
-# ── Pillar X positions — 2 pillars at the start of the curve
-PXS = [-525, 525]  # pillar X positions (at BRX1 and BRX2)
+# ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
+PXS = [-525, 525, 1025]  # pillar X positions (BRX1, BRX2, east side of Knott Hall)
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
 SHOW_SUPPORTS = True
 
@@ -338,27 +339,30 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     return brushes
 
 
-def arch_wall(x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
+def arch_wall(
+    x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, overhang=0
+):
     """Stone wall with arched opening centred at Y=0.
 
     stilt_h: height of straight sides before the arch springs (defaults to rin,
              giving a plain semicircle; set > rin for a tall stilted/gothic arch).
+    overhang: extra Y extent on the rectangular pillar portions beyond ±rout.
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
     # Solid rock on either side of the arch (makes pier a solid mass, not freestanding)
-    if y1 < -rout:
-        brushes.append(box(x1, y1, floor_z, x2, -rout, ceil_z, tex))
-    if y2 > rout:
-        brushes.append(box(x1, rout, floor_z, x2, y2, ceil_z, tex))
+    if y1 < -(rout + overhang):
+        brushes.append(box(x1, y1, floor_z, x2, -(rout + overhang), ceil_z, tex))
+    if y2 > (rout + overhang):
+        brushes.append(box(x1, rout + overhang, floor_z, x2, y2, ceil_z, tex))
     brushes.append(
-        box(x1, -rout, floor_z, x2, -rin, ceil_z, tex)
-    )  # south pillar, full height
+        box(x1, -(rout + overhang), floor_z, x2, -rin, ceil_z, tex)
+    )  # south pillar, full height (extended by overhang)
     brushes.append(
-        box(x1, rin, floor_z, x2, rout, ceil_z, tex)
-    )  # north pillar, full height
+        box(x1, rin, floor_z, x2, rout + overhang, ceil_z, tex)
+    )  # north pillar, full height (extended by overhang)
     # Cap above arch crown: fills above the inner arc top
     brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
     for i in range(segs):
@@ -555,7 +559,7 @@ for i in range(ARCH_SEGS):
 #   Outer (Pillar 1/5): 7 ft 9 in total → rout=59;  2 ft 9 in opening  → rin=21
 #   Inner (Pillar 2/4): 8 ft 8 in total → rout=65;  ~4 ft opening      → rin=30
 #   Centre (Pillar 3): 13 ft   total → rout=98;  9 ft arch opening → rin=68
-_OUTER_R = (136, 96)  # rout=BRY2: gap starts at h=96.3 > rin=96, capped by cap box
+_OUTER_R = (136, 96)  # rout=BRY2, keeps arch crown below deck
 _INNER_R = (136, 96)
 _CENTR_R = (136, 96)
 if SHOW_SUPPORTS:
@@ -583,7 +587,7 @@ if SHOW_SUPPORTS:
         if a_stilt < 0:
             a_stilt = 0
 
-        # Add the arched pier structure (spans BRY1 to BRY2)
+        # Add the arched pier structure (overhang extends pillar boxes past bridge)
         B.extend(
             arch_wall(
                 x1,
@@ -597,15 +601,45 @@ if SHOW_SUPPORTS:
                 A_SEGS,
                 T_PILLAR,
                 stilt_h=a_stilt,
+                overhang=PIL_OVERHANG,
             )
         )
 
-        # Pillar tops (the parts that stick above the deck)
+        # Pillar tops (above deck, extend PIL_OVERHANG past bridge edges and inward)
         # North pillar top
-        B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_PILLAR))
+        B.append(
+            box(
+                px - P_HW,
+                BRY2 - PAR_W - PIL_OVERHANG,
+                pdeck,
+                px + P_HW,
+                BRY2 + PIL_OVERHANG,
+                ppil,
+                T_PILLAR,
+            )
+        )
 
         # South pillar top
-        B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_PILLAR))
+        B.append(
+            box(
+                px - P_HW,
+                BRY1 - PIL_OVERHANG,
+                pdeck,
+                px + P_HW,
+                BRY1 + PAR_W + PIL_OVERHANG,
+                ppil,
+                T_PILLAR,
+            )
+        )
+
+        # Fill gap between pier top and deck surface in the overhang zone
+        pier_top_z = int(pdeck) - 16
+        B.append(
+            box(x1, BRY2, pier_top_z, x2, BRY2 + PIL_OVERHANG, pdeck, T_PILLAR)
+        )  # north
+        B.append(
+            box(x1, BRY1 - PIL_OVERHANG, pier_top_z, x2, BRY1, pdeck, T_PILLAR)
+        )  # south
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
