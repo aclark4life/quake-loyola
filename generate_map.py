@@ -32,7 +32,7 @@ T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "metal5_4"  # pillar cap trim
 T_ROCK = "rock1_2"  # cave outer shell
-T_SKY = "sky4"  # open sky ceiling
+T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
@@ -1046,17 +1046,10 @@ west_brushes = arch_fill(
 E.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
 E.append(brush_ent("func_illusionary", west_brushes))
 
-# West arch lower trigger (ground floor)
-west_lower = arch_fill(
-    WORLD_X1 + WALL_T,
-    WORLD_X1 + WALL_T + T_ARCH_W,
-    0.0,
-    FZ2,
-    T_ARCH_RIN,
-    A_SEGS,
-    T_TELEPORT,
-    stilt_h=T_ARCH_STILT,
-)
+# West lower trigger (ground floor — simple box between posts)
+_wlx1 = WORLD_X1 + WALL_T
+_wlx2 = _wlx1 + T_ARCH_W
+west_lower = [box(_wlx1, -T_ARCH_RIN, FZ2, _wlx2, T_ARCH_RIN, DZ2, T_TELEPORT)]
 E.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
 E.append(brush_ent("func_illusionary", west_lower))
 
@@ -1074,17 +1067,10 @@ east_brushes = arch_fill(
 E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_brushes))
 
-# East arch lower trigger (ground floor)
-east_lower = arch_fill(
-    WORLD_X2 - WALL_T - T_ARCH_W,
-    WORLD_X2 - WALL_T,
-    0.0,
-    FZ2,
-    T_ARCH_RIN,
-    A_SEGS,
-    T_TELEPORT,
-    stilt_h=T_ARCH_STILT,
-)
+# East lower trigger (ground floor — simple box between posts)
+_elx1 = WORLD_X2 - WALL_T - T_ARCH_W
+_elx2 = WORLD_X2 - WALL_T
+east_lower = [box(_elx1, -T_ARCH_RIN, FZ2, _elx2, T_ARCH_RIN, DZ2, T_TELEPORT)]
 E.append(brush_ent("trigger_teleport", east_lower, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_lower))
 
