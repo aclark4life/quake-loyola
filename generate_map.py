@@ -68,7 +68,7 @@ def dbot(x):
 
 
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
-PAR_H = ft(4)  # parapet wall height above deck = 4 ft = 60 units
+PAR_H = 32  # parapet wall height above deck — low enough to jump onto
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PIL_EXTRA = 32  # extra pillar post height above parapet (gameplay)
 PIL_CAP_H = 8  # cap slab height
