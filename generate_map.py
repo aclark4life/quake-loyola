@@ -77,12 +77,10 @@ PIL_PYR_W = 10  # pyramid base half-width (centred on cap, minimal overhang)
 P_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 
-# ── Pillar X positions — 5 pillars (Pillar 1–5) ──────────────────────────────
-# Blueprint: 5 labelled pillars; outer pair ≈ ±350, inner pair ≈ ±175, centre 0
-PXS = [-350, -175, 0, 175, 350]  # pillar X positions (5 piers)
+# ── Pillar X positions — 2 pillars at the start of the curve
+PXS = [-525, 525]  # pillar X positions (at BRX1 and BRX2)
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
-# PXS = [-350, -175, 0, 175, 350]; add pairs from outermost in: {-350,350} → {-175,175} → {0}
-SHOW_SUPPORTS = {-350, 350}  # outer pair (furthest from centre)
+SHOW_SUPPORTS = True
 
 # ── World layout ──────────────────────────────────────────────────────────────
 WALL_T = 16
@@ -91,14 +89,14 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 BLDG_WIDTH = 500
 WORLD_X1 = -(525 + 741)  # = -1266 (west end)
-WORLD_X2 = 525 + 741  # = 1266 (east end, symmetric)
+WORLD_X2 = 525 + 741 + 500  # = 1766 (extra space behind building)
 WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
-# Shifted closer to Charles Street (X=0)
-BLDG_X2 = WORLD_X2 - WALL_T - 64  # = 1186
-BLDG_X1 = BLDG_X2 - BLDG_WIDTH  # = 686
-BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 936
+# Positioned right next to the eastern pillar (X=525)
+BLDG_X1 = 525
+BLDG_X2 = BLDG_X1 + BLDG_WIDTH  # = 1025
+BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 775
 BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
