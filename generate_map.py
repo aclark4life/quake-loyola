@@ -650,15 +650,12 @@ T_ARCH_W = 32  # Thickness of the arch in X
 for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
     _xb, _xf = _ex, _ex + T_ARCH_W
     _sprz = DZ2 + T_ARCH_STILT  # Z where arch curve begins
-    # South post (extends to ground floor)
-    B.append(
-        box(_xb, BRY1, FZ2, _xf, BRY1 + (T_ARCH_ROUT - T_ARCH_RIN), _sprz, T_PILLAR)
-    )
-    # North post (extends to ground floor)
-    B.append(
-        box(_xb, BRY2 - (T_ARCH_ROUT - T_ARCH_RIN), FZ2, _xf, BRY2, _sprz, T_PILLAR)
-    )
-    # Arch ring segments (rounded top)
+    _post_w = T_ARCH_ROUT - T_ARCH_RIN  # post thickness in Y
+    # South post (extends to ground floor, with overhang)
+    B.append(box(_xb, BRY1 - PIL_OVERHANG, FZ2, _xf, BRY1 + _post_w, _sprz, T_PILLAR))
+    # North post (extends to ground floor, with overhang)
+    B.append(box(_xb, BRY2 - _post_w, FZ2, _xf, BRY2 + PIL_OVERHANG, _sprz, T_PILLAR))
+    # Arch ring segments (rounded top, with overhang)
     _seg = 180.0 / A_SEGS
     for i in range(A_SEGS):
         B.append(
@@ -668,7 +665,7 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
                 0.0,
                 float(_sprz),
                 T_ARCH_RIN,
-                T_ARCH_ROUT,
+                T_ARCH_ROUT + PIL_OVERHANG,
                 i * _seg,
                 (i + 1) * _seg,
                 T_PILLAR,
