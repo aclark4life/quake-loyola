@@ -680,6 +680,21 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
 PANEL_Z = int(dbot(0)) - 4
 B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, T_LIGHT_PANEL))
 
+# ── Under-bridge light panels along flat approaches ──────────────────────────
+_UNDER_PANEL_Z = DZ1 - 4  # just below flat deck bottom
+for rx in range(WORLD_X1 + 200, BRX1, 200):
+    B.append(
+        box(
+            rx - 24, -24, _UNDER_PANEL_Z, rx + 24, 24, _UNDER_PANEL_Z + 4, T_LIGHT_PANEL
+        )
+    )
+for rx in range(BRX2 + 200, WORLD_X2 - 100, 200):
+    B.append(
+        box(
+            rx - 24, -24, _UNDER_PANEL_Z, rx + 24, 24, _UNDER_PANEL_Z + 4, T_LIGHT_PANEL
+        )
+    )
+
 # ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
 panel_xs = []
 all_x = [BRX1] + PXS + [BRX2]
@@ -1245,6 +1260,12 @@ E.append(
 )  # glow panel light
 for rx in [-280, 280]:
     E.append(ent("light", origin=f"{rx} 0 64", light="160"))
+
+# Additional under-bridge lights along flat approaches
+for rx in range(WORLD_X1 + 200, BRX1, 200):
+    E.append(ent("light", origin=f"{rx} 0 64", light="200"))
+for rx in range(BRX2 + 200, WORLD_X2 - 100, 200):
+    E.append(ent("light", origin=f"{rx} 0 64", light="200"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
