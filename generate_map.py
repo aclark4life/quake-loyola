@@ -919,6 +919,40 @@ for _f in range(1, BLDG_FLOORS):
     # East of shaft
     B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR_BLDG))
 
+# ── Elevator Shaft Enclosure ──────────────────────────────────────────────
+# Walls around the lift shaft (_stx1.._stx2, _sty1.._sty2)
+_shaft_wall = 8
+# Doorways for each floor (on the South side)
+_shaft_doors_s = [
+    (
+        _stx1 + 16,
+        BLDG_GROUND_Z + _f * FLOOR_H,
+        _stx2 - 16,
+        BLDG_GROUND_Z + _f * FLOOR_H + 96,
+    )
+    for _f in range(BLDG_FLOORS)
+]
+
+# Shaft North wall (internal, solid)
+B.append(box(_stx1, _sty2, BLDG_GROUND_Z, _stx2, _sty2 + _shaft_wall, BLDG_Z2, T_WALL))
+# Shaft South wall (internal, with door openings)
+B.extend(
+    layered_wall(
+        _stx1,
+        _sty1 - _shaft_wall,
+        BLDG_GROUND_Z,
+        _stx2,
+        _sty1,
+        BLDG_Z2,
+        _shaft_doors_s,
+        T_WALL,
+    )
+)
+# Shaft West wall (internal)
+B.append(box(_stx1 - _shaft_wall, _sty1, BLDG_GROUND_Z, _stx1, _sty2, BLDG_Z2, T_WALL))
+# Shaft East wall (internal)
+B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
+
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
@@ -981,6 +1015,28 @@ east_brushes = arch_fill(
 E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_brushes))
 
+
+# ── Elevator Doors (func_door) for each floor ─────────────────────────────
+for _f in range(BLDG_FLOORS):
+    # Floor surface Z
+    _floor_surface_z = BLDG_GROUND_Z + _f * FLOOR_H + BLDG_WALL
+    _dz1 = _floor_surface_z
+    _dz2 = _dz1 + 80  # slightly shorter door (80 units)
+    _tname = f"elevator_door_{_f}"
+
+    # Door leaf — on South face of shaft
+    _d_brush = [box(_stx1 + 16, _sty1 - 2, _dz1, _stx2 - 16, _sty1 + 2, _dz2, T_METAL)]
+    E.append(
+        brush_ent(
+            "func_door", _d_brush, targetname=_tname, angle="-1", speed="300", wait="3"
+        )
+    )
+
+    # Trigger zone — in front of the door (South of it)
+    _tr_brush = [
+        box(_stx1 + 8, _sty1 - 48, _dz1, _stx2 - 8, _sty1 - 2, _dz2, "trigger")
+    ]
+    E.append(brush_ent("trigger_multiple", _tr_brush, target=_tname, wait="1"))
 
 E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
 
@@ -1074,9 +1130,17 @@ for px in panel_xs:
     E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-_lift_travel = BLDG_FLOORS * FLOOR_H - 8  # travel distance (not absolute Z)
+_lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
 _lift_brush = [
-    box(_stx1 + 2, _sty1 + 2, BLDG_Z2 - 8, _stx2 - 2, _sty2 - 2, BLDG_Z2, T_FLOOR_BLDG)
+    box(
+        _stx1 + 2,
+        _sty1 + 2,
+        BLDG_Z2 - 8,
+        _stx2 - 2,
+        _sty2 - 2,
+        BLDG_Z2,
+        T_FLOOR_BLDG,
+    )
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
 
