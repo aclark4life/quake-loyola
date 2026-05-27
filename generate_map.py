@@ -23,9 +23,10 @@ def ft(feet, inches=0):
 
 
 # ── Textures ──────────────────────────────────────────────────────────────────
-T_STONE = "stone1_5"  # supporting pillars + arch ring
-T_FLOOR = "afloor1_4"  # deck top surface
-T_CEMENT = "stone1_5"  # parapet / bridge walls
+T_STONE = "sfloor3_2"  # general bridge structure (cement/stone look)
+T_PILLAR = "city6_7"  # supporting pillars (the specific stone)
+T_FLOOR = "sfloor3_2"  # deck top surface
+T_CEMENT = "sfloor3_2"  # parapet / bridge walls
 T_ROAD = "stone1_7"  # road surface
 T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
@@ -597,17 +598,17 @@ if SHOW_SUPPORTS:
                 a_rin,
                 a_rout,
                 A_SEGS,
-                T_STONE,
+                T_PILLAR,
                 stilt_h=a_stilt,
             )
         )
 
         # Pillar tops (the parts that stick above the deck)
         # North pillar top
-        B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_STONE))
+        B.append(box(px - P_HW, BRY2 - PAR_W, pdeck, px + P_HW, BRY2, ppil, T_PILLAR))
 
         # South pillar top
-        B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_STONE))
+        B.append(box(px - P_HW, BRY1, pdeck, px + P_HW, BRY1 + PAR_W, ppil, T_PILLAR))
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
@@ -960,7 +961,11 @@ worldspawn = (
     '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
-    '"ambient" "40"\n'
+    '"ambient" "120"\n'
+    '"_sunlight" "350"\n'
+    '"_sunlight_color" "255 255 240"\n'
+    '"_sunlight_dir" "45 -45"\n'
+    '"_sunlight_penumbra" "12"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
 )
 
