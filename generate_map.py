@@ -70,7 +70,7 @@ def dbot(x):
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
 PAR_H = 32  # parapet wall height above deck — low enough to jump onto
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
-PIL_EXTRA = 32  # extra pillar post height above parapet (gameplay)
+PIL_EXTRA = 64  # extra pillar post height above parapet (gameplay)
 PIL_CAP_H = 8  # cap slab height
 PIL_PYR_H = 6  # pyramid cap height — flat and subtle
 PIL_PYR_W = 10  # pyramid base half-width (centred on cap, minimal overhang)
@@ -1015,9 +1015,9 @@ worldspawn = (
     '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
-    '"ambient" "120"\n'
-    '"_sunlight" "350"\n'
-    '"_sunlight_color" "255 255 240"\n'
+    '"ambient" "40"\n'
+    '"_sunlight" "60"\n'
+    '"_sunlight_color" "140 160 255"\n'
     '"_sunlight_dir" "45 -45"\n'
     '"_sunlight_penumbra" "12"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
@@ -1194,6 +1194,9 @@ if SHOW_SUPPORTS:
         E.append(
             ent("light", origin=f"{px} {cy_s} {int(pcap + 20)}", light="300", style="1")
         )
+        # Flames on pillar tops
+        E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap)}"))
+        E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_s} {int(pcap)}"))
 
 # Panel glow
 for px in panel_xs:
