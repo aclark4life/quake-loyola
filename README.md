@@ -2,6 +2,8 @@
 
 A Quake 1 deathmatch map inspired by the pedestrian bridge at Loyola University Maryland.
 
+![Screenshot](screenshot.png)
+
 ## Files
 
 | File | Description |
