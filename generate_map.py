@@ -585,6 +585,9 @@ if SHOW_SUPPORTS:
             a_rout, a_rin = _INNER_R
         a_stilt = int(pdeck) - a_rout - FZ2 - 16
         if a_stilt < 0:
+            # Arch would overshoot the bridge bottom; cap rout so the crown
+            # lands exactly at ceil_z (bridge deck underside).
+            a_rout = int(pdeck) - FZ2 - 16
             a_stilt = 0
 
         # Add the arched pier structure (overhang extends pillar boxes past bridge)
@@ -606,6 +609,7 @@ if SHOW_SUPPORTS:
         )
 
         # Pillar tops (above deck, extend PIL_OVERHANG past bridge edges and inward)
+        _pil_out = a_rout + PIL_OVERHANG  # outer Y extent matches stone base
         # North pillar top
         B.append(
             box(
@@ -613,7 +617,7 @@ if SHOW_SUPPORTS:
                 BRY2 - PAR_W - PIL_OVERHANG,
                 pdeck,
                 px + P_HW,
-                BRY2 + PIL_OVERHANG,
+                _pil_out,
                 ppil,
                 T_PILLAR,
             )
@@ -623,7 +627,7 @@ if SHOW_SUPPORTS:
         B.append(
             box(
                 px - P_HW,
-                BRY1 - PIL_OVERHANG,
+                -_pil_out,
                 pdeck,
                 px + P_HW,
                 BRY1 + PAR_W + PIL_OVERHANG,
@@ -634,12 +638,8 @@ if SHOW_SUPPORTS:
 
         # Fill gap between pier top and deck surface in the overhang zone
         pier_top_z = int(pdeck) - 16
-        B.append(
-            box(x1, BRY2, pier_top_z, x2, BRY2 + PIL_OVERHANG, pdeck, T_PILLAR)
-        )  # north
-        B.append(
-            box(x1, BRY1 - PIL_OVERHANG, pier_top_z, x2, BRY1, pdeck, T_PILLAR)
-        )  # south
+        B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
+        B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
@@ -1015,11 +1015,11 @@ worldspawn = (
     '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
-    '"ambient" "40"\n'
-    '"_sunlight" "60"\n'
-    '"_sunlight_color" "140 160 255"\n'
-    '"_sunlight_dir" "45 -45"\n'
-    '"_sunlight_penumbra" "12"\n'
+    '"ambient" "60"\n'
+    '"_sunlight" "220"\n'
+    '"_sunlight_color" "255 245 210"\n'
+    '"_sunlight_dir" "60 -60"\n'
+    '"_sunlight_penumbra" "8"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
 )
 
