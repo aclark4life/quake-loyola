@@ -4,6 +4,23 @@ A Quake 1 deathmatch map inspired by the pedestrian bridge at Loyola University 
 
 ![Screenshot](screenshot.png)
 
+## Real-world reference
+
+The map recreates the **pedestrian bridge over Charles Street** on Loyola University
+Maryland's Evergreen campus in northern Baltimore (39°20′46″N, 76°37′08″W).
+
+- **The bridge** spans east–west over North Charles Street, which runs north–south
+  through the 79-acre campus. The real bridge features Collegiate Gothic arched
+  stonework connecting the west and east sides of campus.
+- **Knott Hall** — formally the *Francis Xavier Knott, S.J. Knott Humanities Center* —
+  is the oldest building on campus (1896). Originally a Tudor Revival private residence
+  designed by Renwick, Aspinwall & Renwick for the Garrett family (heirs to the
+  Baltimore & Ohio Railroad fortune), it was purchased by the Jesuits in 1921 and
+  converted to academic use. The building sits east of Charles Street, south of the
+  bridge.
+- The campus was founded in 1852 and moved to its current "Evergreen" location in 1922.
+  Notable alumni include Tom Clancy and Mark Bowden.
+
 ## Files
 
 | File | Description |
