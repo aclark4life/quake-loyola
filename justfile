@@ -9,13 +9,11 @@ map_name  := "loyola"
 # Default task: setup, generate, compile, and deploy
 all: setup generate compile deploy
 
-# Download pd_300.wad if it doesn't exist
+# Download quake101.wad if it doesn't exist
 setup:
-    @if [ ! -f pd_300.wad ]; then \
-        echo "pd_300.wad not found, downloading from Quaketastic..."; \
-        curl -L -o progs_dump.zip http://www.quaketastic.com/files/single_player/mods/progs_dump_devkit_v300.zip; \
-        unzip -j progs_dump.zip "pd_300/development/wads/pd_300.wad" -d .; \
-        rm progs_dump.zip; \
+    @if [ ! -f quake101.wad ]; then \
+        echo "quake101.wad not found, downloading from Quaketastic..."; \
+        curl -L -o quake101.wad http://www.quaketastic.com/files/texture_wads/quake101.wad; \
     fi
 
 # Generate the .map file from the Python script

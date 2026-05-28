@@ -45,7 +45,7 @@ Maryland's Evergreen campus in northern Baltimore (39°20′46″N, 76°37′08�
 
 ## Textures required
 
-All textures come from the **progs_dump** devkit. Download **pd_300.wad** and place it alongside the `.map` file before compiling.
+All textures come from the community **quake101.wad** collection. Download **quake101.wad** and place it alongside the `.map` file before compiling.
 
 | Surface | Texture name |
 |---|---|
@@ -69,7 +69,7 @@ All textures come from the **progs_dump** devkit. Download **pd_300.wad** and pl
 ## Compiling
 
 You need **ericw-tools v0.18.1** or later: [github.com/ericwa/ericw-tools/releases](https://github.com/ericwa/ericw-tools/releases).  
-Place `pd_300.wad` in the same directory as the `.map` file, then:
+Place `quake101.wad` in the same directory as the `.map` file, then:
 
 ```bash
 # 1. BSP (geometry)
@@ -120,7 +120,7 @@ Points TrenchBroom at the directory that contains `id1/` (PAK files, WADs, compi
 ### Compile profiles (`CompilationProfiles.cfg`)
 
 Both profiles use `${MAP_DIR_PATH}` as the working directory so ericw-tools picks up
-`pd_300.wad` from the same folder as the `.map` file.
+`quake101.wad` from the same folder as the `.map` file.
 
 **Full Build** — qbsp → vis → light → copy to `/Applications/id1/maps/`  
 **Fast Build** — qbsp only → copy (quick geometry iteration)
