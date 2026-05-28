@@ -23,18 +23,18 @@ def ft(feet, inches=0):
 
 
 # ── Textures ──────────────────────────────────────────────────────────────────
-T_STONE = "city2_1"  # general bridge structure (cement/stone look)
+T_STONE = "sfloor3_2"  # general bridge structure (cement/stone look)
 T_PILLAR = "city2_7"  # supporting pillars (concrete, matches Knott Hall)
-T_FLOOR = "city2_1"  # deck top surface
-T_CEMENT = "city2_1"  # parapet / bridge walls
-T_ROAD = "floor01_5"  # road surface
+T_FLOOR = "sfloor3_2"  # deck top surface
+T_CEMENT = "sfloor3_2"  # parapet / bridge walls
+T_ROAD = "wgrnd1_5"  # road surface
 T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
-T_FLOOR_BLDG = "sfloor1_2"  # Knott Hall floors and ceilings
+T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "city2_7"  # elevator doors (matches walls)
-T_ROCK = "rock2"  # cave outer shell
+T_ROCK = "rock1_2"  # cave outer shell
 T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
-T_LIGHT_PANEL = "sfloor4_1"  # light panel
+T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
 T_BLACK = "black"  # solid black texture
 
@@ -1012,7 +1012,7 @@ B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T
 worldspawn = (
     "{\n"
     '"classname" "worldspawn"\n'
-    '"wad" "pd_300.wad"\n'
+    '"wad" "quake101.wad"\n'
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
     '"ambient" "40"\n'
