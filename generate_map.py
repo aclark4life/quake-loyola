@@ -23,10 +23,10 @@ def ft(feet, inches=0):
 
 
 # ── Textures ──────────────────────────────────────────────────────────────────
-T_STONE = "city6_7"  # general bridge structure (cement/stone look)
+T_STONE = "city2_1"  # general bridge structure (cement/stone look)
 T_PILLAR = "city2_7"  # supporting pillars (concrete, matches Knott Hall)
-T_FLOOR = "sfloor1_2"  # deck top surface
-T_CEMENT = "sfloor1_2"  # parapet / bridge walls
+T_FLOOR = "city2_1"  # deck top surface
+T_CEMENT = "city2_1"  # parapet / bridge walls
 T_ROAD = "floor01_5"  # road surface
 T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor1_2"  # Knott Hall floors and ceilings
