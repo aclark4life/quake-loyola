@@ -79,7 +79,7 @@ P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
-PXS = [-525, 525, 1025]  # pillar X positions (BRX1, BRX2, east side of Knott Hall)
+PXS = [-525, 525, 1185]  # pillar X positions (BRX1, BRX2, east side of Knott Hall)
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
 SHOW_SUPPORTS = True
 
@@ -101,7 +101,7 @@ BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 775
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
-BLDG_FLOORS = 4  # number of floors
+BLDG_FLOORS = 5  # number of floors
 # Knott Hall is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
 BLDG_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - BLDG_WALL)  # = 0 (no hill needed)
 BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H
