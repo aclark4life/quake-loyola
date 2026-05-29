@@ -88,9 +88,9 @@ WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
-BLDG_WIDTH = 500
+BLDG_WIDTH = 640
 WORLD_X1 = -(525 + 741)  # = -1266 (west end)
-WORLD_X2 = 525 + 741 + 500  # = 1766 (extra space behind building)
+WORLD_X2 = 525 + 741 + BLDG_WIDTH  # east world edge (741 units east of building)
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
@@ -787,7 +787,7 @@ B.append(
 )
 
 # North-West Indentation (Corner Notch)
-INDENT = 48
+INDENT = 80
 # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
 _door_n = [
     (_ENT_X1, BLDG_GROUND_Z, _ENT_X2, BLDG_GROUND_Z + FLOOR_H)
@@ -800,7 +800,7 @@ B.extend(
         BLDG_X1 + INDENT,
         BLDG_Y2 - BLDG_WALL,
         BLDG_GROUND_Z,
-        BLDG_X2,
+        BLDG_X2 - INDENT,
         BLDG_Y2,
         BLDG_Z2,
         _door_n + _door_2,
@@ -832,11 +832,43 @@ B.append(
     )
 )
 
+# NE Indentation inner walls (mirror of NW)
+B.append(
+    box(
+        BLDG_X2 - INDENT,
+        BLDG_Y2 - INDENT,
+        BLDG_GROUND_Z,
+        BLDG_X2,
+        BLDG_Y2 - INDENT + BLDG_WALL,
+        BLDG_Z2,
+        T_WALL,
+    )
+)
+B.append(
+    box(
+        BLDG_X2 - INDENT,
+        BLDG_Y2 - INDENT,
+        BLDG_GROUND_Z,
+        BLDG_X2 - INDENT + BLDG_WALL,
+        BLDG_Y2,
+        BLDG_Z2,
+        T_WALL,
+    )
+)
+
 # ── Brutalist Fins (All Exposed Facades) — currently disabled ─────────────────
 
-# East and West walls — solid
+# East and West walls — solid, stopping short of NE/NW cutouts
 B.append(
-    box(BLDG_X2 - BLDG_WALL, BLDG_Y1, BLDG_GROUND_Z, BLDG_X2, BLDG_Y2, BLDG_Z2, T_WALL)
+    box(
+        BLDG_X2 - BLDG_WALL,
+        BLDG_Y1,
+        BLDG_GROUND_Z,
+        BLDG_X2,
+        BLDG_Y2 - INDENT,
+        BLDG_Z2,
+        T_WALL,
+    )
 )
 B.append(
     box(
@@ -874,8 +906,27 @@ B.append(
     )
 )  # west north-strip
 B.append(
-    box(_stx2, BLDG_Y1, BLDG_Z2, BLDG_X2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
-)  # east
+    box(
+        _stx2,
+        BLDG_Y1,
+        BLDG_Z2,
+        BLDG_X2,
+        BLDG_Y2 - INDENT,
+        BLDG_Z2 + BLDG_WALL,
+        T_FLOOR_BLDG,
+    )
+)  # east bulk
+B.append(
+    box(
+        _stx2,
+        BLDG_Y2 - INDENT,
+        BLDG_Z2,
+        BLDG_X2 - INDENT,
+        BLDG_Y2,
+        BLDG_Z2 + BLDG_WALL,
+        T_FLOOR_BLDG,
+    )
+)  # east north-strip (NE cutout)
 B.append(
     box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # south of shaft
@@ -885,7 +936,17 @@ B.append(
 _sz0 = BLDG_GROUND_Z
 _st0 = _sz0 + BLDG_WALL
 B.append(box(_bix1, _biy1, _sz0, _bix2, BLDG_Y2 - INDENT, _st0, T_FLOOR_BLDG))
-B.append(box(_bix1 + INDENT, BLDG_Y2 - INDENT, _sz0, _bix2, _biy2, _st0, T_FLOOR_BLDG))
+B.append(
+    box(
+        _bix1 + INDENT,
+        BLDG_Y2 - INDENT,
+        _sz0,
+        _bix2 - INDENT,
+        _biy2,
+        _st0,
+        T_FLOOR_BLDG,
+    )
+)
 
 for _f in range(1, BLDG_FLOORS):
     _sz = BLDG_GROUND_Z + _f * FLOOR_H
@@ -897,8 +958,11 @@ for _f in range(1, BLDG_FLOORS):
     B.append(
         box(_bix1 + INDENT, BLDG_Y2 - INDENT, _sz, _stx1, _biy2, _st, T_FLOOR_BLDG)
     )
-    # East of shaft
-    B.append(box(_stx2, _sty1, _sz, _bix2, _biy2, _st, T_FLOOR_BLDG))
+    # East of shaft, clipped for NE indentation
+    B.append(box(_stx2, _sty1, _sz, _bix2, BLDG_Y2 - INDENT, _st, T_FLOOR_BLDG))
+    B.append(
+        box(_stx2, BLDG_Y2 - INDENT, _sz, _bix2 - INDENT, _biy2, _st, T_FLOOR_BLDG)
+    )
 
 # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
 # Walls around the lift shaft (_stx1.._stx2, _sty1.._sty2)
