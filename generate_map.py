@@ -41,15 +41,13 @@ T_BLACK = "black"  # solid black texture
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
-BRX1, BRX2 = -525, 525  # arched span = 1050 units = 69 ft 6 in
 BRY1, BRY2 = -136, 136  # N-S width = 272 units ≈ 18 ft
 DZ1, DZ2 = 128, 144  # flat deck bottom / top (arch offsets added on top)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
-# Blueprint: pillar heights 19 ft (ends) → 26 ft (centre) → rise = 7 ft = 106 units
-ARCH_RISE = 106  # centre rises 106 units = 7 ft above ends
-ARCH_SEGS = 16  # segments approximating the curve
-SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # 65.625 units per segment
+# BRX1/BRX2 set after world/building bounds are known (arch spans full world width)
+ARCH_RISE = 256  # centre rise — scaled for full world-to-pillar span
+ARCH_SEGS = 32  # segments approximating the wider curve
 
 
 def arch_z(x):
@@ -97,11 +95,15 @@ WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Kno
 BLDG_X2 = WORLD_X2 - WALL_T - 16  # 16 units clearance from east sky wall
 BLDG_X1 = BLDG_X2 - BLDG_WIDTH
 BLDG_CX = (BLDG_X1 + BLDG_X2) // 2
+# Arch spans from west world wall all the way to just west of Knott Hall pillar
+BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
+BRX2 = BLDG_X1 - 20  # east arch terminus at Knott Hall pillar
+SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
     -525,
     525,
     BLDG_X1 - 20,
-]  # pillar X positions (BRX1, BRX2, just west of Knott Hall)
+]  # pillar X positions (intermediate west, intermediate east, Knott Hall)
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
@@ -500,12 +502,10 @@ B.append(
 )
 
 # ════════════════════════════════════════════════════════════════════════════════
-# ARCHED BRIDGE DECK — extended to map boundaries OX1, OX2
+# ARCHED BRIDGE DECK — arch from BRX1 to BRX2 (Knott Hall pillar); flat stub east only
 # ════════════════════════════════════════════════════════════════════════════════
-# Extend bridge deck to both world edges
-B.append(
-    box(WORLD_X1 + WALL_T, BRY1, DZ1, BRX1, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR)
-)
+# West flat approach removed — arch now starts at world edge
+# East flat stub from arch terminus to building entrance
 B.append(
     box(BRX2, BRY1, DZ1, WORLD_X2 - WALL_T, BRY2, DZ2, T_STONE, tt=T_FLOOR, tb=T_FLOOR)
 )
@@ -529,13 +529,7 @@ for i in range(ARCH_SEGS):
         )
     )
 
-# ── Parapet walls — extended to both world edges ──────────────────────────────
-B.append(
-    box(WORLD_X1 + WALL_T, BRY2 - PAR_W, DZ2, BRX1, BRY2, DZ2 + PAR_H, T_CEMENT)
-)  # North west
-B.append(
-    box(WORLD_X1 + WALL_T, BRY1, DZ2, BRX1, BRY1 + PAR_W, DZ2 + PAR_H, T_CEMENT)
-)  # South west
+# ── Parapet walls — west flat approach removed; east flat stub only ───────────
 B.append(
     box(BRX2, BRY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, T_CEMENT)
 )  # North east
@@ -683,12 +677,7 @@ B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, T_LIGHT_PANEL))
 
 # ── Under-bridge light panels along flat approaches ──────────────────────────
 _UNDER_PANEL_Z = DZ1 - 4  # just below flat deck bottom
-for rx in range(WORLD_X1 + 200, BRX1, 200):
-    B.append(
-        box(
-            rx - 24, -24, _UNDER_PANEL_Z, rx + 24, 24, _UNDER_PANEL_Z + 4, T_LIGHT_PANEL
-        )
-    )
+# West flat approach removed — no under-bridge panels on west side
 for rx in range(BRX2 + 200, WORLD_X2 - 100, 200):
     B.append(
         box(
