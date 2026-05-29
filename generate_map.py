@@ -91,14 +91,14 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 BLDG_WIDTH = 500
 WORLD_X1 = -(525 + 741)  # = -1266 (west end)
 WORLD_X2 = 525 + 741 + 500  # = 1766 (extra space behind building)
-WORLD_Y1, WORLD_Y2 = -960, 960  # full world N-S extent
+WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # Positioned right next to the eastern pillar (X=525)
 BLDG_X1 = 525
 BLDG_X2 = BLDG_X1 + BLDG_WIDTH  # = 1025
 BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 775
-BLDG_Y1, BLDG_Y2 = -800, -256  # south of bridge south edge
+BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
 BLDG_FLOORS = 4  # number of floors
