@@ -1169,17 +1169,23 @@ if SHOW_SUPPORTS:
             continue
         pbase = dtop(px)
         pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H
-        cy_n = BRY2 - 12
-        cy_s = BRY1 + 12
+        cy_n = BRY2 - PAR_W // 2  # centred on north pillar cap
+        cy_s = BRY1 + PAR_W // 2  # centred on south pillar cap
         E.append(
             ent("light", origin=f"{px} {cy_n} {int(pcap + 20)}", light="300", style="1")
         )
         E.append(
             ent("light", origin=f"{px} {cy_s} {int(pcap + 20)}", light="300", style="1")
         )
-        # Flames on pillar tops
+        # Flames on pillar tops (centred on cap)
         E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap)}"))
         E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_s} {int(pcap)}"))
+        # Damaging trigger at each flame — hurts players who walk into the fire
+        for cy in [cy_n, cy_s]:
+            _fhb = box(
+                px - 16, cy - 16, int(pcap), px + 16, cy + 16, int(pcap) + 40, T_SKY
+            )
+            E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
 
 # Panel glow
 for px in panel_xs:
