@@ -79,7 +79,6 @@ P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
-PXS = [-525, 525, 1185]  # pillar X positions (BRX1, BRX2, east side of Knott Hall)
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
 SHOW_SUPPORTS = True
 
@@ -90,14 +89,19 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 BLDG_WIDTH = 640
 WORLD_X1 = -(525 + 741)  # = -1266 (west end)
-WORLD_X2 = 525 + 741 + BLDG_WIDTH  # east world edge (741 units east of building)
+WORLD_X2 = 525 + 741 + BLDG_WIDTH + 32  # east world edge, tight around building
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
-# Positioned right next to the eastern pillar (X=525)
-BLDG_X1 = 525
-BLDG_X2 = BLDG_X1 + BLDG_WIDTH  # = 1025
-BLDG_CX = (BLDG_X1 + BLDG_X2) // 2  # = 775
+# Flush against the east world wall
+BLDG_X2 = WORLD_X2 - WALL_T - 16  # 16 units clearance from east sky wall
+BLDG_X1 = BLDG_X2 - BLDG_WIDTH
+BLDG_CX = (BLDG_X1 + BLDG_X2) // 2
+PXS = [
+    -525,
+    525,
+    BLDG_X1 - 20,
+]  # pillar X positions (BRX1, BRX2, just west of Knott Hall)
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
