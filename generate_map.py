@@ -530,6 +530,23 @@ B.append(
     box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
 
+# West embankment — grassy hill from world edge to west sidewalk, rising to bridge deck height
+# arch_z(BRX1) = 0 so deck top at BRX1 is exactly DZ2; slope meets sidewalk at FZ2+_WALK_H
+B.append(
+    ramp_slab(
+        BRX1,
+        ROAD_X1 - _WALK_W,
+        _ROAD_Y1,
+        _ROAD_Y2,
+        FZ1,
+        FZ1,
+        DZ2,
+        FZ2 + _WALK_H,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+
 # ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — arch from BRX1 to BRX2 (Knott Hall pillar); flat stub east only
 # ════════════════════════════════════════════════════════════════════════════════
