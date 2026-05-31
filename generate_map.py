@@ -630,7 +630,7 @@ if SHOW_SUPPORTS:
                 T_PILLAR,
                 stilt_h=a_stilt,
                 overhang=PIL_OVERHANG,
-                base_h=48,
+                base_h=32,
             )
         )
 
