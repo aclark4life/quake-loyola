@@ -549,6 +549,87 @@ B.append(
     )
 )
 
+# Wall extending north from the abutment pier, deck height, city2_1 texture
+# Door opening ~160 units north of the pier (visible in bridge10)
+_ABUTMENT_X = min(PXS)  # = -1100
+_NORTH_WALL_Y1 = BRY2 + PIL_OVERHANG  # north face of pier = 152
+_SOUTH_WALL_Y2 = -(BRY2 + PIL_OVERHANG)  # south face of pier = -152
+_DOOR_W = 80  # door opening width (~5 ft)
+_DOOR_OFF = 160  # distance from pier face to door centre
+_DOOR_H = (
+    128  # door opening height — embankment rises ~56 units at wall, need clearance
+)
+# North wall — two segments with door gap
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        _NORTH_WALL_Y1,
+        FZ2,
+        _ABUTMENT_X + P_HW,
+        _NORTH_WALL_Y1 + _DOOR_OFF - _DOOR_W // 2,
+        DZ2,
+        "city2_1",
+    )
+)
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        _NORTH_WALL_Y1 + _DOOR_OFF + _DOOR_W // 2,
+        FZ2,
+        _ABUTMENT_X + P_HW,
+        WORLD_Y2 - WALL_T,
+        DZ2,
+        "city2_1",
+    )
+)
+# North door lintel (top of opening)
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        _NORTH_WALL_Y1 + _DOOR_OFF - _DOOR_W // 2,
+        FZ2 + _DOOR_H,
+        _ABUTMENT_X + P_HW,
+        _NORTH_WALL_Y1 + _DOOR_OFF + _DOOR_W // 2,
+        DZ2,
+        "city2_1",
+    )
+)
+# South wall — two segments with door gap
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        _SOUTH_WALL_Y2 - _DOOR_OFF + _DOOR_W // 2,
+        FZ2,
+        _ABUTMENT_X + P_HW,
+        _SOUTH_WALL_Y2,
+        DZ2,
+        "city2_1",
+    )
+)
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        WORLD_Y1 + WALL_T,
+        FZ2,
+        _ABUTMENT_X + P_HW,
+        _SOUTH_WALL_Y2 - _DOOR_OFF - _DOOR_W // 2,
+        DZ2,
+        "city2_1",
+    )
+)
+# South door lintel
+B.append(
+    box(
+        _ABUTMENT_X - P_HW,
+        _SOUTH_WALL_Y2 - _DOOR_OFF - _DOOR_W // 2,
+        FZ2 + _DOOR_H,
+        _ABUTMENT_X + P_HW,
+        _SOUTH_WALL_Y2 - _DOOR_OFF + _DOOR_W // 2,
+        DZ2,
+        "city2_1",
+    )
+)
+
 # ════════════════════════════════════════════════════════════════════════════════
 # ARCHED BRIDGE DECK — arch from BRX1 to BRX2 (Knott Hall pillar); flat stub east only
 # ════════════════════════════════════════════════════════════════════════════════
