@@ -46,7 +46,7 @@ DZ1, DZ2 = 128, 144  # flat deck bottom / top (arch offsets added on top)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # BRX1/BRX2 set after world/building bounds are known (arch spans full world width)
-ARCH_RISE = 256  # centre rise — scaled for full world-to-pillar span
+ARCH_RISE = 128  # centre rise — scaled for full world-to-pillar span
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
@@ -142,18 +142,22 @@ def face(p1, p2, p3, tex):
 
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
+    # Ensure x1 < x2 etc. to make winding order predictable
+    x1, x2 = min(x1, x2), max(x1, x2)
+    y1, y2 = min(y1, y2), max(y1, y2)
+    z1, z2 = min(z1, z2), max(z1, z2)
     tt = tt or tex
     tb = tb or tex
     return (
         "{\n"
         + "\n".join(
             [
-                face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tex),
-                face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tex),
-                face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),
-                face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
-                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
-                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt),
+                face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tex),  # -X
+                face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tex),  # +X
+                face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),  # -Y
+                face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),  # +Y
+                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),  # bottom
+                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt),  # top
             ]
         )
         + "\n}"
@@ -182,6 +186,11 @@ def pyramid(x1, y1, z1, x2, y2, z2, tex):
 def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     """Prismatic slab whose bottom and top faces are sloped in the X direction.
     zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2."""
+    # Normalise so x1 <= x2
+    if x1 > x2:
+        x1, x2 = x2, x1
+        zb1, zb2 = zb2, zb1
+        zt1, zt2 = zt2, zt1
     tt = tt or tex
     tb = tb or tex
     return (
@@ -358,22 +367,36 @@ def arch_wall(
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
-    # Solid rock on either side of the arch (makes pier a solid mass, not freestanding)
-    if y1 < -(rout + overhang):
-        brushes.append(box(x1, y1, floor_z, x2, -(rout + overhang), ceil_z, tex))
-    if y2 > (rout + overhang):
-        brushes.append(box(x1, rout + overhang, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(
-        box(x1, -(rout + overhang), floor_z, x2, -rin, ceil_z, tex)
-    )  # south pillar, full height (extended by overhang)
-    brushes.append(
-        box(x1, rin, floor_z, x2, rout + overhang, ceil_z, tex)
-    )  # north pillar, full height (extended by overhang)
-    # Cap above arch crown: fills above the inner arc top
-    brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
 
-    # Fill corner gaps where the arch ring (radius rout) doesn't reach the
-    # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
+    # Wide base (flaring out at bottom)
+    brushes.append(box(x1 - 4, y1 - 4, floor_z, x2 + 4, y2 + 4, floor_z + 8, tex))
+
+    # Wide capital/cap (flaring out at top, just below deck)
+    brushes.append(box(x1 - 4, y1 - 4, ceil_z - 8, x2 + 4, y2 + 4, ceil_z, tex))
+
+    # Horizontal trim/belt at springing line
+    brushes.append(box(x1 - 2, y1 - 2, sprz - 2, x2 + 2, y2 + 2, sprz + 2, tex))
+
+    # Solid rock on either side of the arch opening
+    # Opening width is rin*2 (from -rin to rin)
+    # Pillars on either side of opening go from |rin| to |rout + overhang|
+    # If the provided y1/y2 is wider than that, fill the rest with solid rock.
+
+    _p_width = rout + overhang
+    if y1 < -_p_width:
+        brushes.append(box(x1, y1, floor_z, x2, -_p_width, ceil_z, tex))
+    if y2 > _p_width:
+        brushes.append(box(x1, _p_width, floor_z, x2, y2, ceil_z, tex))
+
+    # Main Pillars flanking the arch opening
+    brushes.append(box(x1, -_p_width, floor_z, x2, -rin, ceil_z, tex))  # South
+    brushes.append(box(x1, rin, floor_z, x2, _p_width, ceil_z, tex))  # North
+
+    # Cap above arch crown: fills the space above the arch ring top up to ceil_z
+    if ceil_z > sprz + rin:
+        brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
+
+    # Corner fillers: seal the gaps between the circular arch and the rectangular pillars/cap
     if rout < rin * 1.41421356:
         h_side = math.sqrt(max(0, rout**2 - rin**2))
         # South-top corner
@@ -381,6 +404,7 @@ def arch_wall(
         # North-top corner
         brushes.append(box(x1, h_side, sprz + h_side, x2, rin, sprz + rin, tex))
 
+    # Arch ring segments
     for i in range(segs):
         brushes.append(
             arch_seg(x1, x2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
@@ -567,9 +591,9 @@ for i in range(ARCH_SEGS):
 #   Outer (Pillar 1/5): 7 ft 9 in total → rout=59;  2 ft 9 in opening  → rin=21
 #   Inner (Pillar 2/4): 8 ft 8 in total → rout=65;  ~4 ft opening      → rin=30
 #   Centre (Pillar 3): 13 ft   total → rout=98;  9 ft arch opening → rin=68
-_OUTER_R = (136, 96)  # rout=BRY2, keeps arch crown below deck
-_INNER_R = (136, 96)
-_CENTR_R = (136, 96)
+_OUTER_R = (80, 60)  # rout=BRY2, keeps arch crown below deck
+_INNER_R = (80, 60)
+_CENTR_R = (80, 60)
 if SHOW_SUPPORTS:
     for px in PXS:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
@@ -1201,9 +1225,9 @@ if SHOW_SUPPORTS:
 for px in panel_xs:
     pbase = dtop(px)
     ph = int(pbase + PAR_H // 2)
-    E.append(ent("light", origin=f"{px} {BRY2 - 30} {ph}", light="180"))
+    E.append(ent("light", origin=f"{px} {BRY2 - PAR_W - 20} {ph}", light="180"))
     if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
-        E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
+        E.append(ent("light", origin=f"{px} {BRY1 + PAR_W + 20} {ph}", light="180"))
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
