@@ -42,11 +42,14 @@ T_BLACK = "black"  # solid black texture
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
 BRY1, BRY2 = -136, 136  # N-S width = 272 units ≈ 18 ft
-DZ1, DZ2 = 128, 144  # flat deck bottom / top (arch offsets added on top)
+DZ1, DZ2 = (
+    208,
+    224,
+)  # flat deck bottom / top — raised for realistic road clearance (~14 ft)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # BRX1/BRX2 set after world/building bounds are known (arch spans full world width)
-ARCH_RISE = 256  # centre rise — scaled for full world-to-pillar span
+ARCH_RISE = 96  # centre rise — modest crown over flat approaches
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
@@ -346,13 +349,26 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def arch_wall(
-    x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, overhang=0
+    x1,
+    x2,
+    y1,
+    y2,
+    floor_z,
+    ceil_z,
+    rin,
+    rout,
+    segs,
+    tex,
+    stilt_h=None,
+    overhang=0,
+    base_h=0,
 ):
     """Stone wall with arched opening centred at Y=0.
 
     stilt_h: height of straight sides before the arch springs (defaults to rin,
              giving a plain semicircle; set > rin for a tall stilted/gothic arch).
     overhang: extra Y extent on the rectangular pillar portions beyond ±rout.
+    base_h: solid stone plinth height at ground level — arch opening starts above this.
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
@@ -371,6 +387,9 @@ def arch_wall(
     )  # north pillar, full height (extended by overhang)
     # Cap above arch crown: fills above the inner arc top
     brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
+    # Stone plinth at base — closes arch opening at ground level
+    if base_h > 0:
+        brushes.append(box(x1, -rin, floor_z, x2, rin, floor_z + base_h, tex))
 
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
     # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
@@ -563,13 +582,11 @@ for i in range(ARCH_SEGS):
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
 # Each pillar position now features a narrow arched pier supporting the deck.
-# Blueprint arch dimensions (rout = outer radius, rin = inner/opening radius):
-#   Outer (Pillar 1/5): 7 ft 9 in total → rout=59;  2 ft 9 in opening  → rin=21
-#   Inner (Pillar 2/4): 8 ft 8 in total → rout=65;  ~4 ft opening      → rin=30
-#   Centre (Pillar 3): 13 ft   total → rout=98;  9 ft arch opening → rin=68
-_OUTER_R = (136, 96)  # rout=BRY2, keeps arch crown below deck
-_INNER_R = (136, 96)
-_CENTR_R = (136, 96)
+# Arch openings span most of the bridge N-S width (BRY2=136, bridge=272 units)
+# rin = half-width of clear opening; rout = outer radius of arch ring
+_OUTER_R = (117, 80)  # narrower outer piers flanking road
+_INNER_R = (131, 90)  # slightly wider inner piers
+_CENTR_R = (128, 100)  # widest opening at centre
 if SHOW_SUPPORTS:
     for px in PXS:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
@@ -613,6 +630,7 @@ if SHOW_SUPPORTS:
                 T_PILLAR,
                 stilt_h=a_stilt,
                 overhang=PIL_OVERHANG,
+                base_h=48,
             )
         )
 
@@ -769,6 +787,29 @@ B.append(
 # North face faces the bridge; ground-level entrance at X=1372..1500
 # Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
+
+# ── Hill terrain under Knott Hall ─────────────────────────────────────────────
+# Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
+if BLDG_GROUND_Z > FZ2:
+    # Solid hill fill under the entire building footprint
+    B.append(box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y2, BLDG_GROUND_Z, T_ROCK))
+    # Sloped ramp on the north face — player can walk up from road to building entrance
+    _ramp_y1 = BLDG_Y2  # north face of building
+    _ramp_y2 = min(BLDG_Y2 + BLDG_GROUND_Z * 2, BRY1 - 16)  # ramp extent north
+    B.append(
+        ramp_slab_y(
+            BLDG_X1,
+            BLDG_X2,
+            _ramp_y1,
+            _ramp_y2,
+            FZ2,
+            FZ2,
+            BLDG_GROUND_Z,
+            FZ2,
+            T_ROCK,
+            tt=T_ROAD,
+        )
+    )
 _bix1 = BLDG_X1 + BLDG_WALL  # interior west
 _bix2 = BLDG_X2 - BLDG_WALL  # interior east
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
@@ -782,7 +823,6 @@ _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
-# BLDG_GROUND_Z = 0: building sits at road level, no hill needed
 
 # South wall — solid back wall
 B.append(
