@@ -124,7 +124,7 @@ WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # = 144 = WALK_ZT1 (flat)
 # No ramp needed: BLDG_GROUND_Z = 0 = road level
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
-A_SEGS = 16
+A_SEGS = 32
 
 
 # ── Geometry helpers ──────────────────────────────────────────────────────────
@@ -371,6 +371,16 @@ def arch_wall(
     )  # north pillar, full height (extended by overhang)
     # Cap above arch crown: fills above the inner arc top
     brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
+
+    # Fill corner gaps where the arch ring (radius rout) doesn't reach the
+    # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
+    if rout < rin * 1.41421356:
+        h_side = math.sqrt(max(0, rout**2 - rin**2))
+        # South-top corner
+        brushes.append(box(x1, -rin, sprz + h_side, x2, -h_side, sprz + rin, tex))
+        # North-top corner
+        brushes.append(box(x1, h_side, sprz + h_side, x2, rin, sprz + rin, tex))
+
     for i in range(segs):
         brushes.append(
             arch_seg(x1, x2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
