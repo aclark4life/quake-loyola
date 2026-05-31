@@ -533,7 +533,7 @@ B.append(
 
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
-_EMB_X2 = -560
+_EMB_X2 = -1000  # starts just east of abutment pier, keeping stone base visible
 B.append(
     ramp_slab(
         BRX1,
@@ -694,7 +694,7 @@ if SHOW_SUPPORTS:
         if px == min(PXS):
             # Solid cement fill in the arch opening (no through-passage at abutment)
             B.append(box(x1, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, T_CEMENT))
-            # Brick retaining wall on the west face, full bridge width + overhang
+            # Brick retaining wall on the west face — tops out at deck bottom, not parapet
             _emb_z = FZ2 + (DZ2 - FZ2) * (x1 - _EMB_X2) / (BRX1 - _EMB_X2)
             B.append(
                 box(
@@ -703,7 +703,7 @@ if SHOW_SUPPORTS:
                     int(_emb_z),
                     x1,
                     BRY2 + _arch_overhang,
-                    int(pdeck) + PAR_H,
+                    pier_top_z,
                     T_BRICK,
                 )
             )
