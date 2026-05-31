@@ -346,7 +346,19 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def arch_wall(
-    x1, x2, y1, y2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, overhang=0
+    x1,
+    x2,
+    y1,
+    y2,
+    floor_z,
+    ceil_z,
+    rin,
+    rout,
+    segs,
+    tex,
+    stilt_h=None,
+    overhang=0,
+    cap_win=False,
 ):
     """Stone wall with arched opening centred at Y=0.
 
@@ -370,7 +382,27 @@ def arch_wall(
         box(x1, rin, floor_z, x2, rout + overhang, ceil_z, tex)
     )  # north pillar, full height (extended by overhang)
     # Cap above arch crown: fills above the inner arc top
-    brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
+    _cap_z1 = int(sprz + rin)
+    _cap_h = ceil_z - _cap_z1
+    if cap_win and _cap_h >= 48:
+        # Decorative window: small rectangular opening centred in the cap
+        _win_w = max(8, rin // 4)  # half-width of window opening
+        _win_h = max(16, _cap_h // 3)  # height of window opening
+        _win_z1 = _cap_z1 + (_cap_h - _win_h) // 2
+        brushes.extend(
+            layered_wall(
+                x1,
+                -rin,
+                _cap_z1,
+                x2,
+                rin,
+                ceil_z,
+                [(-_win_w, _win_z1, _win_w, _win_z1 + _win_h)],
+                tex,
+            )
+        )
+    else:
+        brushes.append(box(x1, -rin, _cap_z1, x2, rin, ceil_z, tex))
 
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
     # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
@@ -613,6 +645,7 @@ if SHOW_SUPPORTS:
                 T_PILLAR,
                 stilt_h=a_stilt,
                 overhang=PIL_OVERHANG,
+                cap_win=True,
             )
         )
 
@@ -648,6 +681,12 @@ if SHOW_SUPPORTS:
         pier_top_z = int(pdeck) - 16
         B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
         B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
+
+        # "Loyola University Maryland" sign plaque — south pier face, visible from road
+        _plaque_face = -(a_rout + PIL_OVERHANG)  # = south face of pier solid
+        B.append(
+            box(x1 + 4, _plaque_face - 6, 48, x2 - 4, _plaque_face, 112, T_LIGHT_PANEL)
+        )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
@@ -712,6 +751,15 @@ for px in panel_xs:
         B.append(
             box(px - 8, BRY1 + PAR_W, ph, px + 8, BRY1 + PAR_W + 3, pt_, T_LIGHT_PANEL)
         )
+
+# Outer south-face parapet panels (visible from road / Charles Street)
+for px in panel_xs:
+    pbase = dtop(px)
+    ph = pbase + PAR_H // 2 - 10
+    pt_ = ph + 20
+    # Skip if in walkway gap
+    if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
+        B.append(box(px - 8, BRY1 - 3, ph, px + 8, BRY1, pt_, T_LIGHT_PANEL))
 
 
 # ════════════════════════════════════════════════════════════════════════════════
