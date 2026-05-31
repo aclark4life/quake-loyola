@@ -36,7 +36,7 @@ T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
-T_BLACK = "black"  # solid black texture
+T_BRICK = "bricka2_1"  # brick retaining wall (abutment pier west face)
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
@@ -89,7 +89,7 @@ FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 BLDG_WIDTH = 640
-WORLD_X1 = -(525 + 741)  # = -1266 (west end)
+WORLD_X1 = -(525 + 741 + 300)  # = -1566 (extended west for abutment pier)
 WORLD_X2 = 525 + 741 + BLDG_WIDTH + 32  # east world edge, tight around building
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
@@ -103,10 +103,11 @@ BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 BRX2 = BLDG_X1 - 20  # east arch terminus at Knott Hall pillar
 SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
+    -1100,  # west abutment pier (top of embankment hill)
     -525,
     525,
     BLDG_X1 - 20,
-]  # pillar X positions (intermediate west, intermediate east, Knott Hall)
+]  # pillar X positions
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
@@ -530,18 +531,19 @@ B.append(
     box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
 
-# West embankment — grassy hill from world edge to west sidewalk, rising to bridge deck height
-# arch_z(BRX1) = 0 so deck top at BRX1 is exactly DZ2; slope meets sidewalk at FZ2+_WALK_H
+# West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
+# Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
+_EMB_X2 = -560
 B.append(
     ramp_slab(
         BRX1,
-        ROAD_X1 - _WALK_W,
+        _EMB_X2,
         _ROAD_Y1,
         _ROAD_Y2,
         FZ1,
         FZ1,
         DZ2,
-        FZ2 + _WALK_H,
+        FZ2,
         T_ROCK,
         tt=T_ROCK,
     )
@@ -687,6 +689,24 @@ if SHOW_SUPPORTS:
         pier_top_z = int(pdeck) - 16
         B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
         B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
+
+        # Abutment pier (westernmost): fill arch opening with cement + brick retaining wall
+        if px == min(PXS):
+            # Solid cement fill in the arch opening (no through-passage at abutment)
+            B.append(box(x1, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, T_CEMENT))
+            # Brick retaining wall on the west face, full bridge width + overhang
+            _emb_z = FZ2 + (DZ2 - FZ2) * (x1 - _EMB_X2) / (BRX1 - _EMB_X2)
+            B.append(
+                box(
+                    x1 - 16,
+                    BRY1 - _arch_overhang,
+                    int(_emb_z),
+                    x1,
+                    BRY2 + _arch_overhang,
+                    int(pdeck) + PAR_H,
+                    T_BRICK,
+                )
+            )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
