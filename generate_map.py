@@ -632,6 +632,10 @@ if SHOW_SUPPORTS:
             a_rout = int(pdeck) - FZ2 - 16
             a_stilt = 0
 
+        # Compute arch body overhang so the pier always extends PIL_OVERHANG units
+        # past the bridge edges, regardless of a_rout (outer piers have small rout).
+        _arch_overhang = max(PIL_OVERHANG, BRY2 + PIL_OVERHANG - a_rout)
+
         # Add the arched pier structure (overhang extends pillar boxes past bridge)
         B.extend(
             arch_wall(
@@ -646,13 +650,13 @@ if SHOW_SUPPORTS:
                 A_SEGS,
                 T_PILLAR,
                 stilt_h=a_stilt,
-                overhang=PIL_OVERHANG,
+                overhang=_arch_overhang,
                 base_h=32,
             )
         )
 
         # Pillar tops (above deck, extend PIL_OVERHANG past bridge edges and inward)
-        _pil_out = a_rout + PIL_OVERHANG  # outer Y extent matches stone base
+        _pil_out = BRY2 + PIL_OVERHANG  # always overhang past bridge edge
         # North pillar top
         B.append(
             box(
