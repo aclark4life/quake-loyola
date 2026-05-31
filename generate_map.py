@@ -1041,6 +1041,105 @@ B.extend(
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
+# ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
+# Fascia panel follows the arch: one box per character hanging from dbot(x)
+_FAS_Y1, _FAS_Y2 = BRY1 - 6, BRY1  # 6 units thick, flush with south face
+_FAS_Y3, _FAS_Y4 = BRY2, BRY2 + 6  # north face panel
+_FAS_X1, _FAS_X2 = -500, 500  # between the two road piers
+_PX_W, _PX_H = 4, 4
+_FONT_ROWS = 6
+_TEXT = "LOYOLA UNIVERSITY MARYLAND"
+_CHAR_W = (4 + 1) * _PX_W  # 4 cols + 1 gap
+_TOTAL_W = len(_TEXT) * _CHAR_W - _PX_W
+_TEXT_X0 = 0 - _TOTAL_W // 2
+
+# Background fascia: per-character strip following arch curve, on south parapet face
+for _ci, _ch in enumerate(_TEXT):
+    _cx = _TEXT_X0 + _ci * _CHAR_W
+    _cx2 = _cx + 4 * _PX_W
+    _x_mid = (_cx + _cx2) / 2
+    _z_bot = int(dbot(_x_mid))  # deck soffit at this X
+    _z_top = int(dtop(_x_mid)) + PAR_H  # parapet top at this X
+    if _cx2 > _cx:
+        B.append(box(_cx, _FAS_Y1, _z_bot, _cx2, _FAS_Y2, _z_top, T_STONE))
+        B.append(box(_cx, _FAS_Y3, _z_bot, _cx2, _FAS_Y4, _z_top, T_STONE))
+
+_FONT = {
+    "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
+    "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],
+    "C": [0b0111, 0b1000, 0b1000, 0b1000, 0b0111, 0b0000],
+    "D": [0b1110, 0b1001, 0b1001, 0b1001, 0b1110, 0b0000],
+    "E": [0b1111, 0b1000, 0b1110, 0b1000, 0b1111, 0b0000],
+    "F": [0b1111, 0b1000, 0b1110, 0b1000, 0b1000, 0b0000],
+    "G": [0b0111, 0b1000, 0b1011, 0b1001, 0b0111, 0b0000],
+    "H": [0b1001, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
+    "I": [0b1110, 0b0100, 0b0100, 0b0100, 0b1110, 0b0000],
+    "J": [0b0011, 0b0001, 0b0001, 0b1001, 0b0110, 0b0000],
+    "K": [0b1001, 0b1010, 0b1100, 0b1010, 0b1001, 0b0000],
+    "L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1111, 0b0000],
+    "M": [0b1001, 0b1111, 0b1111, 0b1001, 0b1001, 0b0000],
+    "N": [0b1001, 0b1101, 0b1011, 0b1001, 0b1001, 0b0000],
+    "O": [0b0110, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
+    "P": [0b1110, 0b1001, 0b1110, 0b1000, 0b1000, 0b0000],
+    "R": [0b1110, 0b1001, 0b1110, 0b1010, 0b1001, 0b0000],
+    "S": [0b0111, 0b1000, 0b0110, 0b0001, 0b1110, 0b0000],
+    "T": [0b1111, 0b0100, 0b0100, 0b0100, 0b0100, 0b0000],
+    "U": [0b1001, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
+    "V": [0b1001, 0b1001, 0b1001, 0b0110, 0b0110, 0b0000],
+    "W": [0b1001, 0b1001, 0b1111, 0b1111, 0b1001, 0b0000],
+    "Y": [0b1001, 0b0110, 0b0100, 0b0100, 0b0100, 0b0000],
+    " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
+}
+
+
+def _render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
+    """Render text as pixel-font raised boxes on a fascia face.
+    Each character's Z is computed from dtop(x) so letters follow the arch curve.
+    mirror=True flips each glyph horizontally (needed for north-facing surface)."""
+    cols = 4
+    rows = 6
+    char_w = (cols + 1) * px_w  # 4 cols + 1 gap
+
+    brushes = []
+    for ci, ch in enumerate(text):
+        bitmap = _FONT.get(ch, _FONT[" "])
+        cx = x0 + ci * char_w
+        x_mid = cx + (cols * px_w) / 2
+        z_top = int(dtop(x_mid)) + PAR_H  # top of parapet face at this X
+        for row_i, row_bits in enumerate(bitmap):
+            z = z_top - row_i * px_h
+            for col_i in range(cols):
+                src_col = (cols - 1 - col_i) if mirror else col_i
+                if row_bits & (1 << (cols - 1 - src_col)):
+                    px = cx + col_i * px_w
+                    brushes.append(
+                        box(px, y_face - depth, z - px_h, px + px_w, y_face, z, tex)
+                    )
+    return brushes
+
+
+_letter_brushes = _render_text_fascia(
+    _TEXT,
+    x0=_TEXT_X0,
+    y_face=_FAS_Y1,
+    px_w=_PX_W,
+    px_h=_PX_H,
+    depth=4,
+    tex=T_LIGHT_PANEL,
+)
+# North face: text reversed + glyphs mirrored so it reads correctly from the north
+# y_face = _FAS_Y4 + 4 so letters protrude north (outward) beyond the background strip
+_letter_brushes += _render_text_fascia(
+    _TEXT[::-1],
+    x0=_TEXT_X0,
+    y_face=_FAS_Y4 + 4,
+    px_w=_PX_W,
+    px_h=_PX_H,
+    depth=4,
+    tex=T_LIGHT_PANEL,
+    mirror=True,
+)
+
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
@@ -1058,6 +1157,8 @@ worldspawn = (
 
 # ── Entities ──────────────────────────────────────────────────────────────────
 E = []
+# Letter brushes as func_detail — don't split vis BSP tree, keeps compile fast
+E.append(brush_ent("func_detail", _letter_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
