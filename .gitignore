@@ -16,3 +16,4 @@ loyola.lit
 loyola.vis
 *.pyc
 __pycache__/
+.tools/

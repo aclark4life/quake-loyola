@@ -1,13 +1,33 @@
 # justfile for Loyola bridge Quake 1 map
 
 # Paths to tools and directories
-tools_bin := "~/Downloads/ericw-tools-v0.18.1-Darwin/bin"
+ericw_version := "v0.18.1"
+ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version + "-Darwin"
+tools_bin     := ericw_dir + "/bin"
 quake_dir := "/Applications/id1"
 maps_dir  := quake_dir + "/maps"
 map_name  := "loyola"
 
 # Default task: setup, generate, compile, and deploy
 all: setup generate compile deploy
+
+# Download and install ericw-tools into .tools/
+install-tools:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    archive="ericw-tools-{{ericw_version}}-Darwin.zip"
+    url="https://github.com/ericwa/ericw-tools/releases/download/{{ericw_version}}/$archive"
+    dest="{{justfile_directory()}}/.tools"
+    if [ -d "{{ericw_dir}}" ]; then
+        echo "ericw-tools {{ericw_version}} already installed at {{ericw_dir}}"
+    else
+        mkdir -p "$dest"
+        echo "Downloading $archive..."
+        curl -L -o "$dest/$archive" "$url"
+        unzip -q "$dest/$archive" -d "$dest"
+        rm "$dest/$archive"
+        echo "Installed ericw-tools {{ericw_version}} to {{ericw_dir}}"
+    fi
 
 # Download quake101.wad if it doesn't exist
 setup:
@@ -21,7 +41,7 @@ generate:
     python3 generate_map.py
 
 # Compile the map (geometry, visibility, and lighting)
-compile:
+compile: install-tools
     {{tools_bin}}/qbsp {{map_name}}.map
     {{tools_bin}}/vis {{map_name}}.bsp
     {{tools_bin}}/light {{map_name}}.bsp
