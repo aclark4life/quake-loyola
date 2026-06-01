@@ -774,6 +774,53 @@ for i in range(ARCH_SEGS):
     if not (sx1 < WALK_X2 and sx2 > WALK_X1):
         B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + PAR_W, pb1, pb2, pt1, pt2, T_CEMENT))
 
+# ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
+_BLK_HW = 16  # block half-width in X (32 units wide)
+_BLK_H = 32  # block height above parapet top
+_PIR_M = P_HW + _BLK_HW + 4  # clearance from pier centre to block centre
+
+
+def _add_parapet_blocks(x_start, x_end, n, west_margin=None):
+    """Add n evenly-spaced cement blocks atop N and S parapets in a bridge span."""
+    mx0 = west_margin if west_margin is not None else _PIR_M
+    x0 = x_start + mx0
+    x1 = x_end - _PIR_M
+    for k in range(n):
+        cx = x0 + (x1 - x0) * (k + 1) / (n + 1)
+        bz = dtop(cx) + PAR_H
+        B.append(
+            box(
+                cx - _BLK_HW,
+                BRY2 - PAR_W,
+                bz,
+                cx + _BLK_HW,
+                BRY2,
+                bz + _BLK_H,
+                T_CEMENT,
+            )
+        )
+        B.append(
+            box(
+                cx - _BLK_HW,
+                BRY1,
+                bz,
+                cx + _BLK_HW,
+                BRY1 + PAR_W,
+                bz + _BLK_H,
+                T_CEMENT,
+            )
+        )
+
+
+# Western span (BRX1 → PXS[0]): 3 blocks; west margin clears teleport arch (arch is 32 wide)
+_add_parapet_blocks(BRX1, PXS[0], 3, west_margin=32 + _BLK_HW + 8)
+# Span 2 (PXS[0] → PXS[1]): eastern span 1, 3 blocks
+_add_parapet_blocks(PXS[0], PXS[1], 3)
+# Middle span (PXS[1] → PXS[2]): 4 blocks
+_add_parapet_blocks(PXS[1], PXS[2], 4)
+# Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
+_add_parapet_blocks(PXS[2], PXS[3], 3)
+
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
 # Each pillar position now features a narrow arched pier supporting the deck.
