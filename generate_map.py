@@ -89,7 +89,8 @@ FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 BLDG_WIDTH = 640
-WORLD_X1 = -(525 + 741 + 300)  # = -1566 (extended west for abutment pier)
+WORLD_X1 = -1837  # west wall; BRX1 = WORLD_X1+WALL_T = -1821, giving western span
+# of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + BLDG_WIDTH + 32  # east world edge, tight around building
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
