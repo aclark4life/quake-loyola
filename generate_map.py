@@ -1413,8 +1413,8 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_west",
-        origin=f"{WORLD_X1 + WALL_T + 64} 0 {int(DZ2 + 40)}",
-        angle="0",
+        origin=f"{BLDG_X1 - 200} {BLDG_Y1 + 64} {int(FZ2 + 24)}",
+        angle="180",  # facing west, toward Charles Street
     )
 )
 
@@ -1492,7 +1492,13 @@ for _f in range(BLDG_FLOORS):
     ]
     E.append(brush_ent("trigger_multiple", _tr_brush, target=_tname, wait="1"))
 
-E.append(ent("info_player_start", origin=f"0 0 {int(dtop(0) + 32)}"))
+E.append(
+    ent(
+        "info_player_start",
+        origin=f"{BLDG_CX} {BRY1 + PAR_W + 32} {int(DZ2 + 24)}",
+        angle="180",
+    )
+)
 
 _bcy = (BLDG_Y1 + BLDG_Y2) // 2  # Knott Hall center Y = -528
 
