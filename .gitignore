@@ -11,8 +11,8 @@
 
 # Test/scratch files
 test_*
-loyola_bridge_test.*
-loyola_bridge_sky.map
 ref_test.*
+loyola.lit
+loyola.vis
 *.pyc
 __pycache__/
