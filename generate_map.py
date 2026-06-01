@@ -1405,8 +1405,8 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east",
-        origin=f"{WORLD_X2 - WALL_T - 64} 0 {int(DZ2 + 40)}",
-        angle="180",
+        origin=f"{(_AB_X1 + _AB_X2) // 2} {(_NB_Y1 + _NB_Y2) // 2} {int(FZ2 + _AB_H + 40)}",
+        angle="270",  # facing south toward the bridge
     )
 )
 E.append(
