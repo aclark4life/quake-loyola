@@ -780,11 +780,19 @@ _BLK_H = 32  # block height above parapet top
 _PIR_M = P_HW + _BLK_HW + 4  # clearance from pier centre to block centre
 
 
-def _add_parapet_blocks(x_start, x_end, n, west_margin=None):
-    """Add n evenly-spaced cement blocks atop N and S parapets in a bridge span."""
+def _add_parapet_blocks(
+    x_start, x_end, n, west_margin=None, east_margin=None, n_south=None
+):
+    """Add evenly-spaced cement blocks atop N and S parapets in a bridge span.
+
+    n_south defaults to n.  South blocks that overlap the walkway gap
+    (WALK_X1..WALK_X2) are skipped automatically.
+    """
+    n_s = n if n_south is None else n_south
     mx0 = west_margin if west_margin is not None else _PIR_M
+    mx1 = east_margin if east_margin is not None else _PIR_M
     x0 = x_start + mx0
-    x1 = x_end - _PIR_M
+    x1 = x_end - mx1
     for k in range(n):
         cx = x0 + (x1 - x0) * (k + 1) / (n + 1)
         bz = dtop(cx) + PAR_H
@@ -799,17 +807,21 @@ def _add_parapet_blocks(x_start, x_end, n, west_margin=None):
                 T_CEMENT,
             )
         )
-        B.append(
-            box(
-                cx - _BLK_HW,
-                BRY1,
-                bz,
-                cx + _BLK_HW,
-                BRY1 + PAR_W,
-                bz + _BLK_H,
-                T_CEMENT,
+    for k in range(n_s):
+        cx = x0 + (x1 - x0) * (k + 1) / (n_s + 1)
+        bz = dtop(cx) + PAR_H
+        if not (cx - _BLK_HW < WALK_X2 and cx + _BLK_HW > WALK_X1):
+            B.append(
+                box(
+                    cx - _BLK_HW,
+                    BRY1,
+                    bz,
+                    cx + _BLK_HW,
+                    BRY1 + PAR_W,
+                    bz + _BLK_H,
+                    T_CEMENT,
+                )
             )
-        )
 
 
 # Western span (BRX1 → PXS[0]): 3 blocks; west margin clears teleport arch (arch is 32 wide)
@@ -820,6 +832,15 @@ _add_parapet_blocks(PXS[0], PXS[1], 3)
 _add_parapet_blocks(PXS[1], PXS[2], 4)
 # Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
 _add_parapet_blocks(PXS[2], PXS[3], 3)
+# East flat span in front of Knott Hall: 3 north, 2 south (south has walkway gap)
+_add_parapet_blocks(
+    BRX2,
+    WORLD_X2 - WALL_T,
+    3,
+    west_margin=_BLK_HW + 8,
+    east_margin=32 + _BLK_HW + 8,
+    n_south=2,
+)
 
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
