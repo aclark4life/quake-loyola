@@ -5393,8 +5393,14 @@
 }
 }
 {
+"classname" "info_teleport_destination"
+"targetname" "dest_east_deck"
+"origin" "1826 0 264"
+"angle" "180"
+}
+{
 "classname" "trigger_teleport"
-"target" "dest_west"
+"target" "dest_east_deck"
 {
 ( 1890 -96 0 ) ( 1890 96 0 ) ( 1890 -96 224 ) *teleport 0 0 0 1 1
 ( 1922 -96 0 ) ( 1922 -96 224 ) ( 1922 96 0 ) *teleport 0 0 0 1 1
