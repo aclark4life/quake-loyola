@@ -866,9 +866,23 @@ if SHOW_SUPPORTS:
         B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
         B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
 
-        # Abutment pier (westernmost): fill arch opening with cement (no through-passage)
+        # Abutment pier (westernmost): solid cement fill + arch teleport on west face
         if px == min(PXS):
-            B.append(box(x1, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, T_CEMENT))
+            # Cement fill starts 16 units east of pier face to make room for arch
+            B.append(box(x1 + 16, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, T_CEMENT))
+            # Arch-shaped teleport flush with the west face (recessed into pier)
+            _tele_stilt = pier_top_z - FZ2 - a_rin - 8
+            _abutment_tele_brush = arch_fill(
+                x1 + 2,
+                x1 + 18,
+                0.0,
+                FZ2,
+                a_rin,
+                A_SEGS,
+                T_TELEPORT,
+                stilt_h=_tele_stilt,
+            )
+            _abutment_tele_dest_z = int(pdeck) + 40  # spawn height above deck
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
@@ -1371,6 +1385,20 @@ if _letter_brushes:
     E.append(brush_ent("func_detail", _letter_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
+
+# Abutment pier teleport — arch opening teleports up to bridge deck above
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_abutment_deck",
+        origin=f"{min(PXS)} 0 {_abutment_tele_dest_z}",
+        angle="0",
+    )
+)
+E.append(
+    brush_ent("trigger_teleport", _abutment_tele_brush, target="dest_abutment_deck")
+)
+E.append(brush_ent("func_illusionary", _abutment_tele_brush))
 
 # Teleport destinations — west arch ↔ east arch
 E.append(
