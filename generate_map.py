@@ -559,6 +559,16 @@ _DOOR_OFF = 160  # distance from pier face to door centre
 _DOOR_H = (
     128  # door opening height — embankment rises ~56 units at wall, need clearance
 )
+# ── Abutment building dimensions (non-enterable brick buildings at N/S wall ends) ─
+_AB_FLOORS = 3
+_AB_H = _AB_FLOORS * FLOOR_H  # 384 units tall
+_AB_D = 300  # building N-S depth
+_AB_X2 = _ABUTMENT_X + P_HW + 32  # east face of building  = -1031
+_AB_X1 = _AB_X2 - 288  # west face of building  = -1319
+_NB_Y2 = WORLD_Y2 - WALL_T  # north building north face = 944
+_NB_Y1 = _NB_Y2 - _AB_D  # north building south face = 644
+_SB_Y1 = WORLD_Y1 + WALL_T  # south building south face = -2032
+_SB_Y2 = _SB_Y1 + _AB_D  # south building north face = -1732
 # North wall — two segments with door gap
 B.append(
     box(
@@ -577,7 +587,7 @@ B.append(
         _NORTH_WALL_Y1 + _DOOR_OFF + _DOOR_W // 2,
         FZ2,
         _ABUTMENT_X + P_HW,
-        WORLD_Y2 - WALL_T,
+        _NB_Y1,
         DZ2,
         "city2_1",
     )
@@ -609,7 +619,7 @@ B.append(
 B.append(
     box(
         _ABUTMENT_X - P_HW,
-        WORLD_Y1 + WALL_T,
+        _SB_Y2,
         FZ2,
         _ABUTMENT_X + P_HW,
         _SOUTH_WALL_Y2 - _DOOR_OFF - _DOOR_W // 2,
@@ -631,7 +641,92 @@ B.append(
 )
 
 # ════════════════════════════════════════════════════════════════════════════════
-# ARCHED BRIDGE DECK — arch from BRX1 to BRX2 (Knott Hall pillar); flat stub east only
+# ABUTMENT BUILDINGS — non-enterable 3-floor brick buildings at N/S wall ends
+# ════════════════════════════════════════════════════════════════════════════════
+
+
+def _win_row(n, lo, hi):
+    """Evenly-spaced window centre positions."""
+    step = (hi - lo) / n
+    return [lo + step * (i + 0.5) for i in range(n)]
+
+
+_WIN_W, _WIN_H, _WIN_T = 20, 28, 3  # window half-width, half-height, trim depth
+
+
+def _abutment_bldg_windows(bx1, bx2, by1, by2, bz1, floors, skip_n=False, skip_s=False):
+    """Protruding T_CEMENT window-trim panels on the visible faces of a solid brick box."""
+    brushes = []
+    nx = max(2, (bx2 - bx1) // 80)  # windows per floor along X
+    ny = max(1, (by2 - by1) // 80)  # windows per floor along Y
+    for fl in range(floors):
+        wz = bz1 + fl * FLOOR_H + FLOOR_H // 2
+        if not skip_s:  # south face — protrude outward in -Y
+            for wx in _win_row(nx, bx1 + 40, bx2 - 40):
+                brushes.append(
+                    box(
+                        wx - _WIN_W,
+                        by1 - _WIN_T,
+                        wz - _WIN_H,
+                        wx + _WIN_W,
+                        by1,
+                        wz + _WIN_H,
+                        T_CEMENT,
+                    )
+                )
+        if not skip_n:  # north face — protrude outward in +Y
+            for wx in _win_row(nx, bx1 + 40, bx2 - 40):
+                brushes.append(
+                    box(
+                        wx - _WIN_W,
+                        by2,
+                        wz - _WIN_H,
+                        wx + _WIN_W,
+                        by2 + _WIN_T,
+                        wz + _WIN_H,
+                        T_CEMENT,
+                    )
+                )
+        for wy in _win_row(ny, by1 + 40, by2 - 40):  # east face — protrude in +X
+            brushes.append(
+                box(
+                    bx2,
+                    wy - _WIN_W,
+                    wz - _WIN_H,
+                    bx2 + _WIN_T,
+                    wy + _WIN_W,
+                    wz + _WIN_H,
+                    T_CEMENT,
+                )
+            )
+        for wy in _win_row(ny, by1 + 40, by2 - 40):  # west face — protrude in -X
+            brushes.append(
+                box(
+                    bx1 - _WIN_T,
+                    wy - _WIN_W,
+                    wz - _WIN_H,
+                    bx1,
+                    wy + _WIN_W,
+                    wz + _WIN_H,
+                    T_CEMENT,
+                )
+            )
+    return brushes
+
+
+# North building: south face at Y=644, north face flush with world wall at Y=944
+B.append(box(_AB_X1, _NB_Y1, FZ2, _AB_X2, _NB_Y2, FZ2 + _AB_H, "city2_1"))
+B.extend(
+    _abutment_bldg_windows(_AB_X1, _AB_X2, _NB_Y1, _NB_Y2, FZ2, _AB_FLOORS, skip_n=True)
+)
+
+# South building: north face at Y=-1732, south face flush with world wall at Y=-2032
+B.append(box(_AB_X1, _SB_Y1, FZ2, _AB_X2, _SB_Y2, FZ2 + _AB_H, "city2_1"))
+B.extend(
+    _abutment_bldg_windows(_AB_X1, _AB_X2, _SB_Y1, _SB_Y2, FZ2, _AB_FLOORS, skip_s=True)
+)
+
+
 # ════════════════════════════════════════════════════════════════════════════════
 # West flat approach removed — arch now starts at world edge
 # East flat stub from arch terminus to building entrance
@@ -1163,6 +1258,8 @@ B.extend(
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
+DRAW_FASCIA_TEXT = False  # Set True to re-enable (slow to compile)
+
 # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
 # Fascia panel follows the arch: one box per character hanging from dbot(x)
 _FAS_Y1, _FAS_Y2 = BRY1 - 6, BRY1  # 6 units thick, flush with south face
@@ -1176,7 +1273,7 @@ _TOTAL_W = len(_TEXT) * _CHAR_W - _PX_W
 _TEXT_X0 = 0 - _TOTAL_W // 2
 
 # Background fascia: per-character strip following arch curve, on south parapet face
-for _ci, _ch in enumerate(_TEXT):
+for _ci, _ch in enumerate(_TEXT if DRAW_FASCIA_TEXT else []):
     _cx = _TEXT_X0 + _ci * _CHAR_W
     _cx2 = _cx + 4 * _PX_W
     _x_mid = (_cx + _cx2) / 2
@@ -1240,26 +1337,30 @@ def _render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
     return brushes
 
 
-_letter_brushes = _render_text_fascia(
-    _TEXT,
-    x0=_TEXT_X0,
-    y_face=_FAS_Y1,
-    px_w=_PX_W,
-    px_h=_PX_H,
-    depth=4,
-    tex=T_LIGHT_PANEL,
-)
-# North face: text reversed + glyphs mirrored so it reads correctly from the north
-# y_face = _FAS_Y4 + 4 so letters protrude north (outward) beyond the background strip
-_letter_brushes += _render_text_fascia(
-    _TEXT[::-1],
-    x0=_TEXT_X0,
-    y_face=_FAS_Y4 + 4,
-    px_w=_PX_W,
-    px_h=_PX_H,
-    depth=4,
-    tex=T_LIGHT_PANEL,
-    mirror=True,
+_letter_brushes = (
+    (
+        _render_text_fascia(
+            _TEXT,
+            x0=_TEXT_X0,
+            y_face=_FAS_Y1,
+            px_w=_PX_W,
+            px_h=_PX_H,
+            depth=4,
+            tex=T_LIGHT_PANEL,
+        )
+        + _render_text_fascia(
+            _TEXT[::-1],
+            x0=_TEXT_X0,
+            y_face=_FAS_Y4 + 4,
+            px_w=_PX_W,
+            px_h=_PX_H,
+            depth=4,
+            tex=T_LIGHT_PANEL,
+            mirror=True,
+        )
+    )
+    if DRAW_FASCIA_TEXT
+    else []
 )
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
@@ -1280,7 +1381,8 @@ worldspawn = (
 # ── Entities ──────────────────────────────────────────────────────────────────
 E = []
 # Letter brushes as func_detail — don't split vis BSP tree, keeps compile fast
-E.append(brush_ent("func_detail", _letter_brushes))
+if _letter_brushes:
+    E.append(brush_ent("func_detail", _letter_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
