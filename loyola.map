@@ -4418,8 +4418,8 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "dest_east"
-"origin" "1858 0 264"
-"angle" "180"
+"origin" "-1175 794 424"
+"angle" "270"
 }
 {
 "classname" "info_teleport_destination"
