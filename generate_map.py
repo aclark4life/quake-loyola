@@ -103,7 +103,7 @@ BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 BRX2 = BLDG_X1 - 20  # east arch terminus at Knott Hall pillar
 SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
-    -1300,  # west abutment pier (moved west; short approach, no parapet blocks)
+    -1100,  # west abutment pier (top of embankment hill)
     -525,
     525,
     BLDG_X1 - 20,
@@ -824,7 +824,8 @@ def _add_parapet_blocks(
             )
 
 
-# Western span (BRX1 → PXS[0]): no blocks — short approach span
+# Western span (BRX1 → PXS[0]): 3 blocks; west margin clears teleport arch (arch is 32 wide)
+_add_parapet_blocks(BRX1, PXS[0], 3, west_margin=32 + _BLK_HW + 8)
 # Span 2 (PXS[0] → PXS[1]): eastern span 1, 3 blocks
 _add_parapet_blocks(PXS[0], PXS[1], 3)
 # Middle span (PXS[1] → PXS[2]): 4 blocks
