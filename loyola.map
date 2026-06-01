@@ -4424,8 +4424,8 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "dest_west"
-"origin" "-1486 0 264"
-"angle" "0"
+"origin" "1066 -1824 24"
+"angle" "180"
 }
 {
 "classname" "trigger_teleport"
@@ -5563,7 +5563,8 @@
 }
 {
 "classname" "info_player_start"
-"origin" "0 0 350"
+"origin" "1586 -66 248"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
