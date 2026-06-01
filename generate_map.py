@@ -1453,11 +1453,20 @@ east_brushes = arch_fill(
 E.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
 E.append(brush_ent("func_illusionary", east_brushes))
 
-# East lower trigger (ground floor — simple box between posts)
+# East lower trigger (ground floor — teleports up to bridge deck above)
 _elx1 = WORLD_X2 - WALL_T - T_ARCH_W
 _elx2 = WORLD_X2 - WALL_T
+_east_lower_deck_x = _elx1 - 64  # west of the arch, on the flat deck approach
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_east_deck",
+        origin=f"{_east_lower_deck_x} 0 {int(DZ2 + 40)}",
+        angle="180",
+    )
+)
 east_lower = [box(_elx1, -T_ARCH_RIN, FZ2, _elx2, T_ARCH_RIN, DZ2, T_TELEPORT)]
-E.append(brush_ent("trigger_teleport", east_lower, target="dest_west"))
+E.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 E.append(brush_ent("func_illusionary", east_lower))
 
 
