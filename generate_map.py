@@ -866,23 +866,9 @@ if SHOW_SUPPORTS:
         B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
         B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
 
-        # Abutment pier (westernmost): fill arch opening with cement + brick retaining wall
+        # Abutment pier (westernmost): fill arch opening with cement (no through-passage)
         if px == min(PXS):
-            # Solid cement fill in the arch opening (no through-passage at abutment)
             B.append(box(x1, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, T_CEMENT))
-            # Brick retaining wall on the west face — tops out at deck bottom, not parapet
-            _emb_z = FZ2 + (DZ2 - FZ2) * (x1 - _EMB_X2) / (BRX1 - _EMB_X2)
-            B.append(
-                box(
-                    x1 - 16,
-                    BRY1 - _arch_overhang,
-                    int(_emb_z),
-                    x1,
-                    BRY2 + _arch_overhang,
-                    pier_top_z,
-                    T_BRICK,
-                )
-            )
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 T_ARCH_RIN = 96
