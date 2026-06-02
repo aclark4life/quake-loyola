@@ -1493,15 +1493,15 @@ _letter_brushes = (
     else []
 )
 
-# ── Campus lamp posts (brush geometry) ───────────────────────────────────────
-_LAMP_Y_OFF = BRY2 + 48  # north/south road shoulder offset
-_LAMP_POST_H = 80  # shaft + head total height
+# ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
+_LAMP_POST_H = DZ2  # match bridge deck height
 _LAMP_HEAD_H = 6  # lantern globe slab height
-_lamp_post_xs = [
-    lx for lx in range(BRX1 + 200, BRX2, 500) if all(abs(lx - px) > 80 for px in PXS)
-]
-for _lx in _lamp_post_xs:
-    for _ly in [_LAMP_Y_OFF, -_LAMP_Y_OFF]:
+# Sidewalk centre X positions (east and west of road)
+_LAMP_POST_XS = [ROAD_X1 - _WALK_W // 2, ROAD_X2 + _WALK_W // 2]
+# 3 evenly-spaced Y positions along the street
+_lamp_post_ys = [_ROAD_Y1 + (_ROAD_Y2 - _ROAD_Y1) * i // 4 for i in range(1, 4)]
+for _lx in _LAMP_POST_XS:
+    for _ly in _lamp_post_ys:
         # Narrow shaft
         B.append(
             box(
@@ -1526,11 +1526,16 @@ for _lx in _lamp_post_xs:
                 T_BRICK,
             )
         )
+        # Torch base above lantern — narrow post + brick cup (matches bridge pillars)
+        _tlz = FZ2 + _LAMP_POST_H
+        B.append(box(_lx - 3, _ly - 3, _tlz, _lx + 3, _ly + 3, _tlz + 16, T_CEMENT))
+        B.append(box(_lx - 5, _ly - 5, _tlz + 16, _lx + 5, _ly + 5, _tlz + 20, T_BRICK))
 
 # ── Under-bridge pendant fixtures (brush geometry) ────────────────────────────
-_PEND_XS = list(range(BRX1 + 300, BRX2, 300))
+_PEND_XS = list(range(BRX1 + 300, BRX2, 600))
 for _px in _PEND_XS:
-    B.append(box(_px - 6, -6, DZ1 - 10, _px + 6, 6, DZ1, T_BRICK))
+    _pdz = int(dbot(_px))
+    B.append(box(_px - 6, -6, _pdz - 10, _px + 6, 6, _pdz, T_BRICK))
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
@@ -1540,6 +1545,10 @@ worldspawn = (
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
     '"ambient" "60"\n'
+    '"_sunlight" "220"\n'
+    '"_sunlight_color" "255 245 210"\n'
+    '"_sunlight_dir" "60 -60"\n'
+    '"_sunlight_penumbra" "8"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
 )
 
@@ -1768,16 +1777,28 @@ if SHOW_SUPPORTS:
         for _uy in [BRY2 + 30, BRY1 - 30]:
             E.append(ent("light", origin=f"{px} {_uy} 16", light="200"))
 
-# Campus lamp post lights
-for _lx in _lamp_post_xs:
-    for _ly in [_LAMP_Y_OFF, -_LAMP_Y_OFF]:
-        E.append(
-            ent("light", origin=f"{_lx} {_ly} {FZ2 + _LAMP_POST_H - 4}", light="250")
+# Campus lamp post lights + torch flames
+for _lx in _LAMP_POST_XS:
+    for _ly in _lamp_post_ys:
+        _tlz = FZ2 + _LAMP_POST_H
+        E.append(ent("light", origin=f"{_lx} {_ly} {_tlz - 4}", light="250"))
+        E.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_tlz + 24}"))
+        _fhb = box(
+            _lx - 16,
+            _ly - 16,
+            _tlz + 24,
+            _lx + 16,
+            _ly + 16,
+            _tlz + 64,
+            T_SKY,
         )
+        E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
 
 # Under-bridge amber pendant lights — flicker style, hang below deck
 for _px in _PEND_XS:
-    E.append(ent("light", origin=f"{_px} 0 {DZ1 - 20}", light="200", style="1"))
+    E.append(
+        ent("light", origin=f"{_px} 0 {int(dbot(_px)) - 20}", light="200", style="1")
+    )
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
