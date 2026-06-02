@@ -845,6 +845,72 @@ _add_parapet_blocks(
 )
 
 
+# ── Parapet handrail tubes (two 4×4 rods stacked, through parapet blocks/pillars) ─
+_TUBE_HW = 2  # half-width of tube in Y and Z (4 units total)
+_TUBE_RISE = 10  # raise tubes above parapet top
+_TUBE_GAP = 12  # vertical gap between tube centres
+_TUBE_NY1 = BRY2 - PAR_W // 2 - _TUBE_HW
+_TUBE_NY2 = _TUBE_NY1 + _TUBE_HW * 2
+_TUBE_SY1 = BRY1 + PAR_W // 2 - _TUBE_HW
+_TUBE_SY2 = _TUBE_SY1 + _TUBE_HW * 2
+
+for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
+    for _i in range(ARCH_SEGS):
+        _sx1 = BRX1 + _i * SEG_W
+        _sx2 = _sx1 + SEG_W
+        _zb1 = dtop(_sx1) + PAR_H + _tube_z_extra
+        _zb2 = dtop(_sx2) + PAR_H + _tube_z_extra
+        B.append(
+            ramp_slab(
+                _sx1,
+                _sx2,
+                _TUBE_NY1,
+                _TUBE_NY2,
+                _zb1,
+                _zb2,
+                _zb1 + _TUBE_HW * 2,
+                _zb2 + _TUBE_HW * 2,
+                T_PILLAR,
+            )
+        )
+        if not (_sx1 < WALK_X2 and _sx2 > WALK_X1):
+            B.append(
+                ramp_slab(
+                    _sx1,
+                    _sx2,
+                    _TUBE_SY1,
+                    _TUBE_SY2,
+                    _zb1,
+                    _zb2,
+                    _zb1 + _TUBE_HW * 2,
+                    _zb2 + _TUBE_HW * 2,
+                    T_PILLAR,
+                )
+            )
+    # East flat section
+    _tbz = DZ2 + PAR_H + _tube_z_extra
+    _x_east_end = WORLD_X2 - WALL_T
+    B.append(
+        box(
+            BRX2, _TUBE_NY1, _tbz, _x_east_end, _TUBE_NY2, _tbz + _TUBE_HW * 2, T_PILLAR
+        )
+    )
+    B.append(
+        box(BRX2, _TUBE_SY1, _tbz, WALK_X1, _TUBE_SY2, _tbz + _TUBE_HW * 2, T_PILLAR)
+    )
+    B.append(
+        box(
+            WALK_X2,
+            _TUBE_SY1,
+            _tbz,
+            _x_east_end,
+            _TUBE_SY2,
+            _tbz + _TUBE_HW * 2,
+            T_PILLAR,
+        )
+    )
+
+
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
 # Each pillar position now features a narrow arched pier supporting the deck.
 # Arch openings span most of the bridge N-S width (BRY2=136, bridge=272 units)
