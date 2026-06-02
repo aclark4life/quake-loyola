@@ -72,9 +72,9 @@ def dbot(x):
 PAR_H = 32  # parapet wall height above deck — low enough to jump onto
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PIL_EXTRA = 64  # extra pillar post height above parapet (gameplay)
-PIL_CAP_H = 8  # cap slab height
-PIL_PYR_H = 6  # pyramid cap height — flat and subtle
-PIL_PYR_W = 10  # pyramid base half-width (centred on cap, minimal overhang)
+PIL_CAP_H = 12  # cap slab height
+PIL_PYR_H = 20  # pyramid cap height — visible triangular cement top
+PIL_PYR_W = 45  # pyramid base half-width — slightly wider than pillar (P_HW=37)
 P_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 P_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
@@ -776,8 +776,9 @@ for i in range(ARCH_SEGS):
         B.append(ramp_slab(sx1, sx2, BRY1, BRY1 + PAR_W, pb1, pb2, pt1, pt2, T_CEMENT))
 
 # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
-_BLK_HW = 16  # block half-width in X (32 units wide)
-_BLK_H = 32  # block height above parapet top
+_BLK_HW = 24  # block half-width in X (48 units wide along bridge)
+_BLK_H = 36  # block height above parapet top
+_BLK_OVH = 6  # how far blocks protrude outward past bridge N/S edge
 _PIR_M = P_HW + _BLK_HW + 4  # clearance from pier centre to block centre
 
 
@@ -796,26 +797,27 @@ def _add_parapet_blocks(
     x1 = x_end - mx1
     for k in range(n):
         cx = x0 + (x1 - x0) * (k + 1) / (n + 1)
-        bz = dtop(cx) + PAR_H
+        # Use minimum parapet top across block width so block never floats above parapet
+        bz = min(dtop(cx - _BLK_HW), dtop(cx), dtop(cx + _BLK_HW)) + PAR_H
         B.append(
             box(
                 cx - _BLK_HW,
                 BRY2 - PAR_W,
                 bz,
                 cx + _BLK_HW,
-                BRY2,
+                BRY2 + _BLK_OVH,
                 bz + _BLK_H,
                 T_CEMENT,
             )
         )
     for k in range(n_s):
         cx = x0 + (x1 - x0) * (k + 1) / (n_s + 1)
-        bz = dtop(cx) + PAR_H
+        bz = min(dtop(cx - _BLK_HW), dtop(cx), dtop(cx + _BLK_HW)) + PAR_H
         if not (cx - _BLK_HW < WALK_X2 and cx + _BLK_HW > WALK_X1):
             B.append(
                 box(
                     cx - _BLK_HW,
-                    BRY1,
+                    BRY1 - _BLK_OVH,
                     bz,
                     cx + _BLK_HW,
                     BRY1 + PAR_W,
@@ -825,8 +827,7 @@ def _add_parapet_blocks(
             )
 
 
-# Western span (BRX1 → PXS[0]): 3 blocks; west margin clears teleport arch (arch is 32 wide)
-_add_parapet_blocks(BRX1, PXS[0], 3, west_margin=32 + _BLK_HW + 8)
+# Western span (BRX1 → PXS[0]): no blocks — open span
 # Span 2 (PXS[0] → PXS[1]): eastern span 1, 3 blocks
 _add_parapet_blocks(PXS[0], PXS[1], 3)
 # Middle span (PXS[1] → PXS[2]): 4 blocks
@@ -934,6 +935,23 @@ if SHOW_SUPPORTS:
         pier_top_z = int(pdeck) - 16
         B.append(box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, T_PILLAR))  # north
         B.append(box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, T_PILLAR))  # south
+
+        # Cement cap slab + pyramid on top of each stone pillar post
+        _cap_x1, _cap_x2 = px - PIL_PYR_W, px + PIL_PYR_W
+        _n_cy1 = BRY2 - PAR_W - PIL_OVERHANG
+        _n_cy2 = BRY2 + PIL_OVERHANG
+        _s_cy1 = BRY1 - PIL_OVERHANG
+        _s_cy2 = BRY1 + PAR_W + PIL_OVERHANG
+        # Cap slabs (flat cement base)
+        B.append(box(_cap_x1, _n_cy1, ppil, _cap_x2, _n_cy2, pcap, T_CEMENT))
+        B.append(box(_cap_x1, _s_cy1, ppil, _cap_x2, _s_cy2, pcap, T_CEMENT))
+        # Pyramids on top of cap slabs
+        B.append(
+            pyramid(_cap_x1, _n_cy1, pcap, _cap_x2, _n_cy2, pcap + PIL_PYR_H, T_CEMENT)
+        )
+        B.append(
+            pyramid(_cap_x1, _s_cy1, pcap, _cap_x2, _s_cy2, pcap + PIL_PYR_H, T_CEMENT)
+        )
 
         # Abutment pier (westernmost): solid cement fill + arch teleport on west face
         if px == min(PXS):
@@ -1641,7 +1659,7 @@ if SHOW_SUPPORTS:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
         pbase = dtop(px)
-        pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H
+        pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H + PIL_PYR_H  # top of pyramid
         cy_n = BRY2 - PAR_W // 2  # centred on north pillar cap
         cy_s = BRY1 + PAR_W // 2  # centred on south pillar cap
         E.append(
@@ -1650,13 +1668,23 @@ if SHOW_SUPPORTS:
         E.append(
             ent("light", origin=f"{px} {cy_s} {int(pcap + 20)}", light="300", style="1")
         )
-        # Flames on pillar tops (centred on cap)
-        E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap)}"))
-        E.append(ent("light_flame_large_yellow", origin=f"{px} {cy_s} {int(pcap)}"))
+        # Flames on pillar tops — raised above pyramid apex so they visually sit on top
+        E.append(
+            ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
+        )
+        E.append(
+            ent("light_flame_large_yellow", origin=f"{px} {cy_s} {int(pcap + 24)}")
+        )
         # Damaging trigger at each flame — hurts players who walk into the fire
         for cy in [cy_n, cy_s]:
             _fhb = box(
-                px - 16, cy - 16, int(pcap), px + 16, cy + 16, int(pcap) + 40, T_SKY
+                px - 16,
+                cy - 16,
+                int(pcap + 24),
+                px + 16,
+                cy + 16,
+                int(pcap) + 64,
+                T_SKY,
             )
             E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
 
