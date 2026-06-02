@@ -1493,6 +1493,45 @@ _letter_brushes = (
     else []
 )
 
+# ── Campus lamp posts (brush geometry) ───────────────────────────────────────
+_LAMP_Y_OFF = BRY2 + 48  # north/south road shoulder offset
+_LAMP_POST_H = 80  # shaft + head total height
+_LAMP_HEAD_H = 6  # lantern globe slab height
+_lamp_post_xs = [
+    lx for lx in range(BRX1 + 200, BRX2, 500) if all(abs(lx - px) > 80 for px in PXS)
+]
+for _lx in _lamp_post_xs:
+    for _ly in [_LAMP_Y_OFF, -_LAMP_Y_OFF]:
+        # Narrow shaft
+        B.append(
+            box(
+                _lx - 4,
+                _ly - 4,
+                FZ2,
+                _lx + 4,
+                _ly + 4,
+                FZ2 + _LAMP_POST_H - _LAMP_HEAD_H,
+                T_PILLAR,
+            )
+        )
+        # Lantern head (wider, brick-red warmth)
+        B.append(
+            box(
+                _lx - 9,
+                _ly - 9,
+                FZ2 + _LAMP_POST_H - _LAMP_HEAD_H,
+                _lx + 9,
+                _ly + 9,
+                FZ2 + _LAMP_POST_H,
+                T_BRICK,
+            )
+        )
+
+# ── Under-bridge pendant fixtures (brush geometry) ────────────────────────────
+_PEND_XS = list(range(BRX1 + 300, BRX2, 300))
+for _px in _PEND_XS:
+    B.append(box(_px - 6, -6, DZ1 - 10, _px + 6, 6, DZ1, T_BRICK))
+
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
@@ -1720,6 +1759,25 @@ if SHOW_SUPPORTS:
                 T_SKY,
             )
             E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
+
+# Pillar base uplights — ground-level spots wash light up the pier faces
+if SHOW_SUPPORTS:
+    for px in PXS:
+        if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
+            continue
+        for _uy in [BRY2 + 30, BRY1 - 30]:
+            E.append(ent("light", origin=f"{px} {_uy} 16", light="200"))
+
+# Campus lamp post lights
+for _lx in _lamp_post_xs:
+    for _ly in [_LAMP_Y_OFF, -_LAMP_Y_OFF]:
+        E.append(
+            ent("light", origin=f"{_lx} {_ly} {FZ2 + _LAMP_POST_H - 4}", light="250")
+        )
+
+# Under-bridge amber pendant lights — flicker style, hang below deck
+for _px in _PEND_XS:
+    E.append(ent("light", origin=f"{_px} 0 {DZ1 - 20}", light="200", style="1"))
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
