@@ -89,7 +89,7 @@ FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 BLDG_WIDTH = 640
-WORLD_X1 = -1837  # west wall; BRX1 = WORLD_X1+WALL_T = -1821, giving western span
+WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + BLDG_WIDTH + 32  # east world edge, tight around building
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
@@ -104,7 +104,7 @@ BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 BRX2 = BLDG_X1 - 20  # east arch terminus at Knott Hall pillar
 SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
-    -1100,  # west abutment pier (top of embankment hill)
+    -1246,  # west abutment pier (top of embankment hill)
     -525,
     525,
     BLDG_X1 - 20,
@@ -534,7 +534,7 @@ B.append(
 
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
-_EMB_X2 = -1000  # starts just east of abutment pier, keeping stone base visible
+_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
 B.append(
     ramp_slab(
         BRX1,
