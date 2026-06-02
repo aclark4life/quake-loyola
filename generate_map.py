@@ -34,7 +34,6 @@ T_METAL = "city2_7"  # elevator doors (matches walls)
 T_ROCK = "rock1_2"  # cave outer shell
 T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
-T_LIGHT_PANEL = "sfloor4_4"  # light panel
 T_TELEPORT = "*teleport"  # teleport effect
 T_BRICK = "bricka2_1"  # brick retaining wall (abutment pier west face)
 
@@ -1018,6 +1017,17 @@ if SHOW_SUPPORTS:
         B.append(
             pyramid(_cap_x1, _s_cy1, pcap, _cap_x2, _s_cy2, pcap + PIL_PYR_H, T_CEMENT)
         )
+        # Torch bases above pyramid apex — narrow post + wide cup
+        _apex = pcap + PIL_PYR_H
+        for _tcy in [cy_n, cy_s]:
+            # Narrow stone post (6x6) rising from pyramid tip
+            B.append(
+                box(px - 3, _tcy - 3, _apex, px + 3, _tcy + 3, _apex + 16, T_CEMENT)
+            )
+            # Wider brick cup/bracket at top holds the flame
+            B.append(
+                box(px - 5, _tcy - 5, _apex + 16, px + 5, _tcy + 5, _apex + 20, T_BRICK)
+            )
 
         # Abutment pier (westernmost): solid cement fill + arch teleport on west face
         if px == min(PXS):
@@ -1066,39 +1076,6 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - T_ARCH_W]:
                 (i + 1) * _seg,
                 T_PILLAR,
             )
-        )
-
-# ── Attached glow panel beneath arch centre ─────────────────────────────────
-# Attached to bridge bottom (dbot(0) = 192). Size reduced to 1/4 (48x48).
-PANEL_Z = int(dbot(0)) - 4
-B.append(box(-24, -24, PANEL_Z, 24, 24, PANEL_Z + 4, T_LIGHT_PANEL))
-
-# ── Under-bridge light panels along flat approaches ──────────────────────────
-_UNDER_PANEL_Z = DZ1 - 4  # just below flat deck bottom
-# West flat approach removed — no under-bridge panels on west side
-for rx in range(BRX2 + 200, WORLD_X2 - 100, 200):
-    B.append(
-        box(
-            rx - 24, -24, _UNDER_PANEL_Z, rx + 24, 24, _UNDER_PANEL_Z + 4, T_LIGHT_PANEL
-        )
-    )
-
-# ── Light panels on inner parapet face (arch-aware Z) ────────────────────────
-panel_xs = []
-all_x = [BRX1] + PXS + [BRX2]
-for i in range(len(all_x) - 1):
-    panel_xs.append((all_x[i] + all_x[i + 1]) // 2)
-for px in panel_xs:
-    pbase = dtop(px)
-    ph = pbase + PAR_H // 2 - 10
-    pt_ = ph + 20
-    B.append(
-        box(px - 8, BRY2 - PAR_W - 3, ph, px + 8, BRY2 - PAR_W, pt_, T_LIGHT_PANEL)
-    )
-    # Skip south panel if it's in the walkway gap
-    if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
-        B.append(
-            box(px - 8, BRY1 + PAR_W, ph, px + 8, BRY1 + PAR_W + 3, pt_, T_LIGHT_PANEL)
         )
 
 
@@ -1499,7 +1476,7 @@ _letter_brushes = (
             px_w=_PX_W,
             px_h=_PX_H,
             depth=4,
-            tex=T_LIGHT_PANEL,
+            tex=T_WALL,
         )
         + _render_text_fascia(
             _TEXT[::-1],
@@ -1508,7 +1485,7 @@ _letter_brushes = (
             px_w=_PX_W,
             px_h=_PX_H,
             depth=4,
-            tex=T_LIGHT_PANEL,
+            tex=T_WALL,
             mirror=True,
         )
     )
@@ -1524,10 +1501,6 @@ worldspawn = (
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{T_SKY}"\n'
     '"ambient" "60"\n'
-    '"_sunlight" "220"\n'
-    '"_sunlight_color" "255 245 210"\n'
-    '"_sunlight_dir" "60 -60"\n'
-    '"_sunlight_penumbra" "8"\n'
     '"dmflags" "128"\n' + "\n".join(B) + "\n}"
 )
 
@@ -1728,12 +1701,6 @@ if SHOW_SUPPORTS:
         pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H + PIL_PYR_H  # top of pyramid
         cy_n = BRY2 - PAR_W // 2  # centred on north pillar cap
         cy_s = BRY1 + PAR_W // 2  # centred on south pillar cap
-        E.append(
-            ent("light", origin=f"{px} {cy_n} {int(pcap + 20)}", light="300", style="1")
-        )
-        E.append(
-            ent("light", origin=f"{px} {cy_s} {int(pcap + 20)}", light="300", style="1")
-        )
         # Flames on pillar tops — raised above pyramid apex so they visually sit on top
         E.append(
             ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
@@ -1754,14 +1721,6 @@ if SHOW_SUPPORTS:
             )
             E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
 
-# Panel glow
-for px in panel_xs:
-    pbase = dtop(px)
-    ph = int(pbase + PAR_H // 2)
-    E.append(ent("light", origin=f"{px} {BRY2 - 30} {ph}", light="180"))
-    if not (WALK_X1 - 8 <= px <= WALK_X2 + 8):
-        E.append(ent("light", origin=f"{px} {BRY1 + 30} {ph}", light="180"))
-
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
 _lift_brush = [
@@ -1776,49 +1735,6 @@ _lift_brush = [
     )
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
-
-# Knott Hall interior lights — one per floor centred
-_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # -528
-for _f in range(BLDG_FLOORS):
-    _lz = BLDG_GROUND_Z + _f * FLOOR_H + FLOOR_H // 2
-    E.append(ent("light", origin=f"{BLDG_CX + 80}  {_bcy} {_lz}", light="280"))
-    E.append(ent("light", origin=f"{BLDG_CX - 80} {_bcy} {_lz}", light="280"))
-
-# Knott Hall window glow (exterior, east + west faces)
-for _f in range(BLDG_FLOORS):
-    _lz = BLDG_GROUND_Z + _f * FLOOR_H + 56
-    for _wy in [BLDG_Y1 + 80 + _i * 192 + 16 for _i in range(3)]:
-        E.append(ent("light", origin=f"{BLDG_X2 + 10} {_wy} {_lz}", light="120"))
-        E.append(ent("light", origin=f"{BLDG_X1 - 10} {_wy} {_lz}", light="120"))
-
-# West campus ambient + east campus ambient
-for _xx in [-1000, 1000]:
-    E.append(ent("light", origin=f"{_xx} 0 200", light="300"))
-
-# Teleport arch lights — both ends
-E.append(
-    ent("light", origin=f"{WORLD_X1 + WALL_T + 64} 0 {int(DZ2 + 100)}", light="250")
-)
-E.append(
-    ent("light", origin=f"{WORLD_X2 - WALL_T - 64} 0 {int(DZ2 + 100)}", light="250")
-)
-
-# Bridge end arch lights — illuminate the stone arch faces
-for ex in [BRX1 + 20, BRX2 - 20]:
-    E.append(ent("light", origin=f"{ex} 0 90", light="300"))
-
-# Under-bridge road lights
-E.append(
-    ent("light", origin=f"0 0 {PANEL_Z - 10}", light="520", style="1")
-)  # glow panel light
-for rx in [-280, 280]:
-    E.append(ent("light", origin=f"{rx} 0 64", light="160"))
-
-# Additional under-bridge lights along flat approaches
-for rx in range(WORLD_X1 + 200, BRX1, 200):
-    E.append(ent("light", origin=f"{rx} 0 64", light="200"))
-for rx in range(BRX2 + 200, WORLD_X2 - 100, 200):
-    E.append(ent("light", origin=f"{rx} 0 64", light="200"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
