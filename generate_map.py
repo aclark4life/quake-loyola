@@ -778,7 +778,7 @@ for i in range(ARCH_SEGS):
 # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
 _BLK_HW = 24  # block half-width in X (48 units wide along bridge)
 _BLK_H = 36  # block height above parapet top
-_BLK_OVH = 6  # how far blocks protrude outward past bridge N/S edge
+_BLK_OVH = 0  # blocks flush with outer bridge wall
 _PIR_M = P_HW + _BLK_HW + 4  # clearance from pier centre to block centre
 
 
