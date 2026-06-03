@@ -46,6 +46,12 @@ compile: install-tools
     {{tools_bin}}/vis {{map_name}}.bsp
     {{tools_bin}}/light {{map_name}}.bsp
 
+# Fast compile: skips Full Vis pass (~0.3s vs ~115s), good for iteration
+compile-fast: install-tools
+    {{tools_bin}}/qbsp {{map_name}}.map
+    {{tools_bin}}/vis -fast {{map_name}}.bsp
+    {{tools_bin}}/light {{map_name}}.bsp
+
 # Deploy the compiled map and lighting data to the Quake directory
 deploy:
     mkdir -p {{maps_dir}}
