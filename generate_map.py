@@ -531,10 +531,11 @@ B.append(
     box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
 
-# ── Ennis Road (E-W, parallel to bridge, between bridge south edge and Knott Hall north) ──
-# Runs from Charles Street east edge (ROAD_X2) to the east world wall, dead-ending there.
-_ENNIS_Y = (BRY1 + BLDG_Y2) // 2  # -196: centred in the 120-unit gap
-_ENNIS_HW = 30  # road half-width → 60-unit carriageway (30 units clear each side)
+# ── Ennis Road (E-W, parallel to bridge, north side) ──
+# Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
+# Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
+_ENNIS_Y = BRY2 + 200  # 336: centred 200 units north of bridge north edge
+_ENNIS_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
 _ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 _ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 # Road surface
