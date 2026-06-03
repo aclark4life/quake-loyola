@@ -850,20 +850,29 @@ _PIR_M = P_HW + _BLK_HW + 4  # clearance from pier centre to block centre
 
 
 def _add_parapet_blocks(
-    x_start, x_end, n, west_margin=None, east_margin=None, n_south=None
+    x_start,
+    x_end,
+    n,
+    west_margin=None,
+    east_margin=None,
+    n_south=None,
+    east_margin_n=None,
 ):
     """Add evenly-spaced cement blocks atop N and S parapets in a bridge span.
 
     n_south defaults to n.  South blocks that overlap the walkway gap
     (WALK_X1..WALK_X2) are skipped automatically.
+    east_margin_n overrides east_margin for north blocks only.
     """
     n_s = n if n_south is None else n_south
     mx0 = west_margin if west_margin is not None else _PIR_M
     mx1 = east_margin if east_margin is not None else _PIR_M
+    mx1_n = east_margin_n if east_margin_n is not None else mx1
     x0 = x_start + mx0
-    x1 = x_end - mx1
+    x1_n = x_end - mx1_n
+    x1_s = x_end - mx1
     for k in range(n):
-        cx = x0 + (x1 - x0) * (k + 1) / (n + 1)
+        cx = x0 + (x1_n - x0) * (k + 1) / (n + 1)
         # Use minimum parapet top across block width so block never floats above parapet
         bz = min(dtop(cx - _BLK_HW), dtop(cx), dtop(cx + _BLK_HW)) + PAR_H
         B.append(
@@ -878,7 +887,7 @@ def _add_parapet_blocks(
             )
         )
     for k in range(n_s):
-        cx = x0 + (x1 - x0) * (k + 1) / (n_s + 1)
+        cx = x0 + (x1_s - x0) * (k + 1) / (n_s + 1)
         bz = min(dtop(cx - _BLK_HW), dtop(cx), dtop(cx + _BLK_HW)) + PAR_H
         if not (cx - _BLK_HW < WALK_X2 and cx + _BLK_HW > WALK_X1):
             B.append(
@@ -901,15 +910,48 @@ _add_parapet_blocks(PXS[0], PXS[1], 3)
 _add_parapet_blocks(PXS[1], PXS[2], 4)
 # Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
 _add_parapet_blocks(PXS[2], PXS[3], 3)
-# East flat span in front of Knott Hall: 3 north, 2 south (south has walkway gap)
+# East flat span split at PXS[4]=1938 pillar:
+#   North: 3 blocks each sub-span
+#   South: skip (walkway covers BRX2→PXS[4]); handle south east-of-walkway separately
+_add_parapet_blocks(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 _add_parapet_blocks(
-    BRX2,
+    PXS[4],
     WORLD_X2 - WALL_T,
     3,
-    west_margin=_BLK_HW + 8,
+    east_margin_n=_BLK_HW + 8,
     east_margin=64 + _BLK_HW + 8,
-    n_south=2,
+    n_south=0,
 )
+# South east of walkway: corner blocks only at each side of the opening
+# Corner block on east side of walkway opening (west face flush with WALK_X2)
+_cx_walk_e = WALK_X2 + _BLK_HW
+B.append(
+    box(
+        _cx_walk_e - _BLK_HW,
+        BRY1 - _BLK_OVH,
+        DZ2 + PAR_H,
+        _cx_walk_e + _BLK_HW,
+        BRY1 + PAR_W,
+        DZ2 + PAR_H + _BLK_H,
+        T_CEMENT,
+    )
+)
+# 3 south blocks evenly spread between PXS[4] and east world end
+_sex0 = PXS[4] + _PIR_M
+_sex1 = WORLD_X2 - WALL_T - (64 + _BLK_HW + 8)
+for _k in range(3):
+    _cx = _sex0 + (_sex1 - _sex0) * (_k + 1) / 4
+    B.append(
+        box(
+            int(_cx) - _BLK_HW,
+            BRY1 - _BLK_OVH,
+            DZ2 + PAR_H,
+            int(_cx) + _BLK_HW,
+            BRY1 + PAR_W,
+            DZ2 + PAR_H + _BLK_H,
+            T_CEMENT,
+        )
+    )
 # Extra block on west side of walkway opening (east face flush with WALK_X1)
 _cx_walk_w = WALK_X1 - _BLK_HW
 B.append(
