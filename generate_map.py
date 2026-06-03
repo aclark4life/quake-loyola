@@ -531,6 +531,49 @@ B.append(
     box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
 
+# ── Ennis Road (E-W, parallel to bridge, between bridge south edge and Knott Hall north) ──
+# Runs from Charles Street east edge (ROAD_X2) to the east world wall, dead-ending there.
+_ENNIS_Y = (BRY1 + BLDG_Y2) // 2  # -196: centred in the 120-unit gap
+_ENNIS_HW = 30  # road half-width → 60-unit carriageway (30 units clear each side)
+_ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
+_ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
+# Road surface
+B.append(
+    box(
+        _ENNIS_X1,
+        _ENNIS_Y - _ENNIS_HW,
+        FZ2,
+        _ENNIS_X2,
+        _ENNIS_Y + _ENNIS_HW,
+        FZ2 + 2,
+        T_ROAD,
+    )
+)
+# North curb / sidewalk
+B.append(
+    box(
+        _ENNIS_X1,
+        _ENNIS_Y + _ENNIS_HW,
+        FZ2,
+        _ENNIS_X2,
+        _ENNIS_Y + _ENNIS_HW + 16,
+        FZ2 + _WALK_H,
+        T_CEMENT,
+    )
+)
+# South curb / sidewalk
+B.append(
+    box(
+        _ENNIS_X1,
+        _ENNIS_Y - _ENNIS_HW - 16,
+        FZ2,
+        _ENNIS_X2,
+        _ENNIS_Y - _ENNIS_HW,
+        FZ2 + _WALK_H,
+        T_CEMENT,
+    )
+)
+
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 _EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
