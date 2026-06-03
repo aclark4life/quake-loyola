@@ -90,12 +90,14 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 BLDG_WIDTH = 640
 WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
-WORLD_X2 = 525 + 741 + BLDG_WIDTH + 32  # east world edge, tight around building
+WORLD_X2 = (
+    525 + 741 + BLDG_WIDTH + 32 + BLDG_WIDTH
+)  # extended east by one Knott Hall width
 WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # Flush against the east world wall
-BLDG_X2 = WORLD_X2 - WALL_T - 16  # 16 units clearance from east sky wall
+BLDG_X2 = 1906  # fixed position regardless of world size
 BLDG_X1 = BLDG_X2 - BLDG_WIDTH
 BLDG_CX = (BLDG_X1 + BLDG_X2) // 2
 # Arch spans from west world wall all the way to just west of Knott Hall pillar
@@ -107,6 +109,7 @@ PXS = [
     -525,
     525,
     BLDG_X1 - 20,
+    1938,  # east pillar at old world edge
 ]  # pillar X positions
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 BLDG_WALL = 16  # wall thickness
@@ -1559,42 +1562,30 @@ _letter_brushes = (
 )
 
 # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-_LAMP_POST_H = DZ2  # match bridge deck height
-_LAMP_HEAD_H = 6  # lantern globe slab height
-# Sidewalk centre X positions (east and west of road)
-_LAMP_POST_XS = [ROAD_X1 - _WALK_W // 2, ROAD_X2 + _WALK_W // 2]
-# 3 evenly-spaced Y positions along the street
-_lamp_post_ys = [_ROAD_Y1 + (_ROAD_Y2 - _ROAD_Y1) * i // 4 for i in range(1, 4)]
+_LAMP_POST_H = DZ2 + 32  # tall pole, extends above bridge deck
+# Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
+_LAMP_POST_XS = [1890]  # east side, near Ennis Road
+_lamp_post_ys = [_ENNIS_Y - _ENNIS_HW - 160]
 for _lx in _LAMP_POST_XS:
     for _ly in _lamp_post_ys:
+        _pole_top = FZ2 + _LAMP_POST_H
         # Narrow shaft
+        B.append(box(_lx - 2, _ly - 2, FZ2, _lx + 2, _ly + 2, _pole_top, T_PILLAR))
+        # Torch top — narrow post + brick cup (matches bridge pillar torches)
         B.append(
-            box(
-                _lx - 4,
-                _ly - 4,
-                FZ2,
-                _lx + 4,
-                _ly + 4,
-                FZ2 + _LAMP_POST_H - _LAMP_HEAD_H,
-                T_PILLAR,
-            )
+            box(_lx - 3, _ly - 3, _pole_top, _lx + 3, _ly + 3, _pole_top + 16, T_CEMENT)
         )
-        # Lantern head (wider, brick-red warmth)
         B.append(
             box(
-                _lx - 9,
-                _ly - 9,
-                FZ2 + _LAMP_POST_H - _LAMP_HEAD_H,
-                _lx + 9,
-                _ly + 9,
-                FZ2 + _LAMP_POST_H,
+                _lx - 5,
+                _ly - 5,
+                _pole_top + 16,
+                _lx + 5,
+                _ly + 5,
+                _pole_top + 20,
                 T_BRICK,
             )
         )
-        # Torch base above lantern — narrow post + brick cup (matches bridge pillars)
-        _tlz = FZ2 + _LAMP_POST_H
-        B.append(box(_lx - 3, _ly - 3, _tlz, _lx + 3, _ly + 3, _tlz + 16, T_CEMENT))
-        B.append(box(_lx - 5, _ly - 5, _tlz + 16, _lx + 5, _ly + 5, _tlz + 20, T_BRICK))
 
 # ── Under-bridge pendant fixtures (brush geometry) ────────────────────────────
 _PEND_XS = list(range(BRX1 + 300, BRX2, 600))
@@ -1842,22 +1833,13 @@ if SHOW_SUPPORTS:
         for _uy in [BRY2 + 30, BRY1 - 30]:
             E.append(ent("light", origin=f"{px} {_uy} 16", light="200"))
 
-# Campus lamp post lights + torch flames
+# Campus lamp post lights — flame above brick cup, matching bridge pillar torches
 for _lx in _LAMP_POST_XS:
     for _ly in _lamp_post_ys:
-        _tlz = FZ2 + _LAMP_POST_H
-        E.append(ent("light", origin=f"{_lx} {_ly} {_tlz - 4}", light="250"))
-        E.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_tlz + 24}"))
-        _fhb = box(
-            _lx - 16,
-            _ly - 16,
-            _tlz + 24,
-            _lx + 16,
-            _ly + 16,
-            _tlz + 64,
-            T_SKY,
-        )
-        E.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
+        _pole_top = FZ2 + _LAMP_POST_H
+        _flame_z = _pole_top + 20
+        E.append(ent("light", origin=f"{_lx} {_ly} {_flame_z}", light="300"))
+        E.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_flame_z + 4}"))
 
 # Under-bridge amber pendant lights — flicker style, hang below deck
 for _px in _PEND_XS:
