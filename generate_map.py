@@ -520,17 +520,6 @@ _WALK_W = 80  # sidewalk width (E-W)
 _WALK_H = 8  # sidewalk + curb height above road
 _STRIPE_W = 6  # centre-line stripe half-width
 
-# Road surface (2-unit overlay so it textures differently from surrounding ground)
-B.append(box(ROAD_X1, _ROAD_Y1, FZ2, ROAD_X2, _ROAD_Y2, FZ2 + 2, T_ROAD))
-# West sidewalk
-B.append(
-    box(ROAD_X1 - _WALK_W, _ROAD_Y1, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
-)
-# East sidewalk
-B.append(
-    box(ROAD_X2, _ROAD_Y1, FZ2, ROAD_X2 + _WALK_W, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
-)
-
 # ── Ennis Road (E-W, parallel to bridge, north side) ──
 # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
 # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
@@ -538,6 +527,38 @@ _ENNIS_Y = BRY2 + 400  # 536: centred 400 units north of bridge north edge
 _ENNIS_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
 _ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 _ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
+
+# Road surface (2-unit overlay so it textures differently from surrounding ground)
+B.append(box(ROAD_X1, _ROAD_Y1, FZ2, ROAD_X2, _ROAD_Y2, FZ2 + 2, T_ROAD))
+# West sidewalk
+B.append(
+    box(ROAD_X1 - _WALK_W, _ROAD_Y1, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
+)
+# East sidewalk — split into two segments to leave Ennis Road opening clear
+B.append(
+    box(
+        ROAD_X2,
+        _ROAD_Y1,
+        FZ2,
+        ROAD_X2 + _WALK_W,
+        _ENNIS_Y - _ENNIS_HW,
+        FZ2 + _WALK_H,
+        T_CEMENT,
+    )
+)
+B.append(
+    box(
+        ROAD_X2,
+        _ENNIS_Y + _ENNIS_HW,
+        FZ2,
+        ROAD_X2 + _WALK_W,
+        _ROAD_Y2,
+        FZ2 + _WALK_H,
+        T_CEMENT,
+    )
+)
+
+# ── Ennis Road brushes ──
 # Road surface (full length including intersection with Charles Street)
 B.append(
     box(
