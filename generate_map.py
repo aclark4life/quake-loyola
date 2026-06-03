@@ -907,8 +907,21 @@ _add_parapet_blocks(
     WORLD_X2 - WALL_T,
     3,
     west_margin=_BLK_HW + 8,
-    east_margin=32 + _BLK_HW + 8,
+    east_margin=64 + _BLK_HW + 8,
     n_south=2,
+)
+# Extra block on west side of walkway opening (east face flush with WALK_X1)
+_cx_walk_w = WALK_X1 - _BLK_HW
+B.append(
+    box(
+        _cx_walk_w - _BLK_HW,
+        BRY1 - _BLK_OVH,
+        DZ2 + PAR_H,
+        _cx_walk_w + _BLK_HW,
+        BRY1 + PAR_W,
+        DZ2 + PAR_H + _BLK_H,
+        T_CEMENT,
+    )
 )
 
 
@@ -1167,10 +1180,11 @@ B.append(
         tt=T_FLOOR,
     )
 )
-# Side rails slope with the ramp
+# Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
+_WALK_WALL = 32
 B.append(
     ramp_slab_y(
-        WALK_X1 - 16,
+        WALK_X1 - _WALK_WALL,
         WALK_X1,
         BRY1,
         BLDG_Y2,
@@ -1184,7 +1198,7 @@ B.append(
 B.append(
     ramp_slab_y(
         WALK_X2,
-        WALK_X2 + 16,
+        WALK_X2 + _WALK_WALL,
         BRY1,
         BLDG_Y2,
         WALK_ZT1,
@@ -1194,6 +1208,34 @@ B.append(
         T_CEMENT,
     )
 )
+# Handrail tubes along walkway sides, centred in the wall thickness
+for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
+    _tbz = WALK_ZT1 + PAR_H + _tube_z_extra
+    _ww_cx = _WALK_WALL // 2  # offset from inner face to wall centre
+    # West railing (centred in west wall)
+    B.append(
+        box(
+            WALK_X1 - _ww_cx - _TUBE_HW,
+            BLDG_Y2,
+            _tbz,
+            WALK_X1 - _ww_cx + _TUBE_HW,
+            BRY1,
+            _tbz + _TUBE_HW * 2,
+            T_PILLAR,
+        )
+    )
+    # East railing (centred in east wall)
+    B.append(
+        box(
+            WALK_X2 + _ww_cx - _TUBE_HW,
+            BLDG_Y2,
+            _tbz,
+            WALK_X2 + _ww_cx + _TUBE_HW,
+            BRY1,
+            _tbz + _TUBE_HW * 2,
+            T_PILLAR,
+        )
+    )
 
 
 # ════════════════════════════════════════════════════════════════════════════════
