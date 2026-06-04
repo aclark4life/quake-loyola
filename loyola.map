@@ -6358,7 +6358,7 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "dest_west"
-"origin" "1066 -1824 24"
+"origin" "1586 -1072 760"
 "angle" "180"
 }
 {
