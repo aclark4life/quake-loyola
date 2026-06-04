@@ -986,6 +986,65 @@ _add_parapet_blocks(PXS[1], PXS[2], 4)
 _add_parapet_blocks(PXS[2], PXS[3], 3)
 # East flat span: west sub-span (BRX2→PXS[4]) gets 3 north blocks; east sub-span open (matches ref)
 _add_parapet_blocks(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
+
+# ── Decorative squares on parapet outer faces (one per block position) ────────
+_SQ_HW = 12  # half-width in X (24 units wide)
+_SQ_HH = 10  # half-height in Z (20 units tall)
+_SQ_D = 1  # protrusion depth (1 unit proud)
+
+
+def _add_parapet_squares(
+    x_start,
+    x_end,
+    n,
+    west_margin=None,
+    east_margin=None,
+    n_south=None,
+    east_margin_n=None,
+):
+    """Add raised decorative squares on parapet outer faces, same positions as blocks."""
+    n_s = n if n_south is None else n_south
+    mx0 = west_margin if west_margin is not None else _PIR_M
+    mx1 = east_margin if east_margin is not None else _PIR_M
+    mx1_n = east_margin_n if east_margin_n is not None else mx1
+    x0 = x_start + mx0
+    x1_n = x_end - mx1_n
+    x1_s = x_end - mx1
+    for k in range(n):
+        cx = int(x0 + (x1_n - x0) * (k + 1) / (n + 1))
+        bz = int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW))) + PAR_H // 2
+        B.append(
+            box(
+                cx - _SQ_HW,
+                BRY2,
+                bz - _SQ_HH,
+                cx + _SQ_HW,
+                BRY2 + _SQ_D,
+                bz + _SQ_HH,
+                T_RAIL,
+            )
+        )
+    for k in range(n_s):
+        cx = int(x0 + (x1_s - x0) * (k + 1) / (n_s + 1))
+        if not (cx - _SQ_HW < WALK_X2 and cx + _SQ_HW > WALK_X1):
+            bz = int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW))) + PAR_H // 2
+            B.append(
+                box(
+                    cx - _SQ_HW,
+                    BRY1 - _SQ_D,
+                    bz - _SQ_HH,
+                    cx + _SQ_HW,
+                    BRY1,
+                    bz + _SQ_HH,
+                    T_RAIL,
+                )
+            )
+
+
+_add_parapet_squares(PXS[0], PXS[1], 3)
+_add_parapet_squares(PXS[1], PXS[2], 4)
+_add_parapet_squares(PXS[2], PXS[3], 3)
+_add_parapet_squares(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 # South east of walkway: corner blocks only at each side of the opening
 # Corner block on east side of walkway opening (west face flush with WALK_X2)
 _cx_walk_e = WALK_X2 + _BLK_HW
