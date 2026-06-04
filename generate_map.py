@@ -791,6 +791,57 @@ B.append(box(_BW_X1, _BW_NY, FZ2, _BW_EX2, _BW_NY + _BW_T, FZ2 + _BW_H, "city2_1
 B.append(
     box(_BW_X1, _BW_NY, FZ2, _BW_X1 + _BW_T, WORLD_Y2 - WALL_T, FZ2 + _BW_H, "city2_1")
 )
+# Corner pillar — square brick post at the L junction, wider than wall
+_BW_PIL_HW = 14  # pillar half-width (28 units square)
+_BW_PIL_H = 64  # pillar height — taller than wall
+_BW_CX = _BW_X1 + _BW_T // 2  # pillar centre X (wall centre)
+_BW_CY = _BW_NY + _BW_T // 2  # pillar centre Y (wall centre)
+B.append(
+    box(
+        _BW_CX - _BW_PIL_HW,
+        _BW_CY - _BW_PIL_HW,
+        FZ2,
+        _BW_CX + _BW_PIL_HW,
+        _BW_CY + _BW_PIL_HW,
+        FZ2 + _BW_PIL_H,
+        "city2_1",
+    )
+)
+# Cement collar — same width as pillar, sits between brick post and cap slab
+B.append(
+    box(
+        _BW_CX - _BW_PIL_HW,
+        _BW_CY - _BW_PIL_HW,
+        FZ2 + _BW_PIL_H,
+        _BW_CX + _BW_PIL_HW,
+        _BW_CY + _BW_PIL_HW,
+        FZ2 + _BW_PIL_H + 6,
+        T_CEMENT,
+    )
+)
+# Square cap slab, then shallow pyramid on top
+B.append(
+    box(
+        _BW_CX - _BW_PIL_HW - 1,
+        _BW_CY - _BW_PIL_HW - 1,
+        FZ2 + _BW_PIL_H + 6,
+        _BW_CX + _BW_PIL_HW + 1,
+        _BW_CY + _BW_PIL_HW + 1,
+        FZ2 + _BW_PIL_H + 10,
+        T_CEMENT,
+    )
+)
+B.append(
+    pyramid(
+        _BW_CX - _BW_PIL_HW - 1,
+        _BW_CY - _BW_PIL_HW - 1,
+        FZ2 + _BW_PIL_H + 10,
+        _BW_CX + _BW_PIL_HW + 1,
+        _BW_CY + _BW_PIL_HW + 1,
+        FZ2 + _BW_PIL_H + 16,
+        T_CEMENT,
+    )
+)
 
 
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
