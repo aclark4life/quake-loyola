@@ -1348,11 +1348,20 @@ _ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 1372, 1500
 _STEP_N = 10
 _STEP_RISE = BLDG_GROUND_Z // _STEP_N  # 8 units per step
 _STEP_DEPTH = 16  # 16 units per tread
+_STAIR_OFFSET = 384  # distance from north wall to stair base
 
+# Flat cement platform between building and stairs
+B.append(
+    box(
+        _ENT_X1, BLDG_Y2, FZ2, _ENT_X2, BLDG_Y2 + _STAIR_OFFSET, BLDG_GROUND_Z, T_CEMENT
+    )
+)
+
+_STAIR_Y0 = BLDG_Y2 + _STAIR_OFFSET  # south edge of staircase
 for _si in range(_STEP_N):
     _sz2 = FZ2 + (_si + 1) * _STEP_RISE
-    _sy_n = BLDG_Y2 + (_STEP_N - _si) * _STEP_DEPTH
-    B.append(box(_ENT_X1, BLDG_Y2, FZ2, _ENT_X2, _sy_n, _sz2, T_CEMENT, tt=T_CEMENT))
+    _sy_n = _STAIR_Y0 + (_STEP_N - _si) * _STEP_DEPTH
+    B.append(box(_ENT_X1, _STAIR_Y0, FZ2, _ENT_X2, _sy_n, _sz2, T_CEMENT, tt=T_CEMENT))
 
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
