@@ -680,8 +680,7 @@ _EPL_X1 = ROAD_X2  # flush with east edge of Charles St road
 _EPL_X2 = ROAD_X2 + _EPL_HW * 2  # 60 units deep into sidewalk
 _EPL_ZB = FZ2 + _WALK_H  # base sits on top of sidewalk curb
 _EPL_POST_H = 144  # post height ≈ 9.5 ft
-_EPL_CAP_H = 12  # cap slab height
-_EPL_CAP_OVH = 10  # cap overhang beyond pillar on each side
+_EPL_PYR_H = 40  # pyramid height ≈ pointed stone top
 
 for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
     # Post
@@ -696,15 +695,15 @@ for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
             T_WHITE_STONE,
         )
     )
-    # Cap
+    # Pointed pyramid top
     B.append(
-        box(
-            _EPL_X1 - _EPL_CAP_OVH,
-            _epy - _EPL_HW - _EPL_CAP_OVH,
+        pyramid(
+            _EPL_X1,
+            _epy - _EPL_HW,
             _EPL_ZB + _EPL_POST_H,
-            _EPL_X2 + _EPL_CAP_OVH,
-            _epy + _EPL_HW + _EPL_CAP_OVH,
-            _EPL_ZB + _EPL_POST_H + _EPL_CAP_H,
+            _EPL_X2,
+            _epy + _EPL_HW,
+            _EPL_ZB + _EPL_POST_H + _EPL_PYR_H,
             T_WHITE_STONE,
         )
     )
