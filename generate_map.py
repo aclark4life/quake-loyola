@@ -673,6 +673,41 @@ for _i in range(_CRN_SEGS):
         tri_prism(_cx_ne, _cy_ne, _px0, _py0, _px1, _py1, FZ2, FZ2 + _WALK_H, T_CEMENT)
     )
 
+# ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
+_EPL_HW = 30  # pillar half-width ≈ 4 ft square
+_EPL_X1 = ROAD_X2  # flush with east edge of Charles St road
+_EPL_X2 = ROAD_X2 + _EPL_HW * 2  # 60 units deep into sidewalk
+_EPL_ZB = FZ2 + _WALK_H  # base sits on top of sidewalk curb
+_EPL_POST_H = 144  # post height ≈ 9.5 ft
+_EPL_CAP_H = 12  # cap slab height
+_EPL_CAP_OVH = 10  # cap overhang beyond pillar on each side
+
+for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
+    # Post
+    B.append(
+        box(
+            _EPL_X1,
+            _epy - _EPL_HW,
+            _EPL_ZB,
+            _EPL_X2,
+            _epy + _EPL_HW,
+            _EPL_ZB + _EPL_POST_H,
+            T_STONE,
+        )
+    )
+    # Cap
+    B.append(
+        box(
+            _EPL_X1 - _EPL_CAP_OVH,
+            _epy - _EPL_HW - _EPL_CAP_OVH,
+            _EPL_ZB + _EPL_POST_H,
+            _EPL_X2 + _EPL_CAP_OVH,
+            _epy + _EPL_HW + _EPL_CAP_OVH,
+            _EPL_ZB + _EPL_POST_H + _EPL_CAP_H,
+            T_STONE,
+        )
+    )
+
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 _EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
