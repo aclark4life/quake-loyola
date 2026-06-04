@@ -1822,8 +1822,8 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_west",
-        origin=f"{BLDG_X1 - 200} {BLDG_Y1 + 64} {int(FZ2 + 24)}",
-        angle="180",  # facing west, toward Charles Street
+        origin=f"{BLDG_CX} {(BLDG_Y1 + BLDG_Y2) // 2} {int(BLDG_Z2 + 40)}",
+        angle="180",  # facing south, on Knott Hall rooftop
     )
 )
 
