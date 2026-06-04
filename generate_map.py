@@ -1291,6 +1291,15 @@ _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 # Entrance doorway — centred on building (BLDG_CX ± 64)
 _ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 1372, 1500
 
+# ── Entrance staircase ────────────────────────────────────────────────────────
+_STEP_N = 10
+_STEP_RISE = BLDG_GROUND_Z // _STEP_N  # 8 units per step
+_STEP_DEPTH = 16  # 16 units per tread
+
+for _si in range(_STEP_N):
+    _sz2 = FZ2 + (_si + 1) * _STEP_RISE
+    _sy_n = BLDG_Y2 + (_STEP_N - _si) * _STEP_DEPTH
+    B.append(box(_ENT_X1, BLDG_Y2, FZ2, _ENT_X2, _sy_n, _sz2, T_CEMENT, tt=T_CEMENT))
 
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
@@ -1452,14 +1461,14 @@ B.append(
 # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
 _sz0 = BLDG_GROUND_Z
 _st0 = _sz0 + BLDG_WALL
-B.append(box(_bix1, _biy1, _sz0, _bix2, BLDG_Y2 - INDENT, _st0, T_FLOOR_BLDG))
+B.append(box(BLDG_X1, BLDG_Y1, _sz0, BLDG_X2, BLDG_Y2 - INDENT, _st0, T_FLOOR_BLDG))
 B.append(
     box(
-        _bix1 + INDENT,
+        BLDG_X1 + INDENT,
         BLDG_Y2 - INDENT,
         _sz0,
-        _bix2 - INDENT,
-        _biy2,
+        BLDG_X2 - INDENT,
+        BLDG_Y2,
         _st0,
         T_FLOOR_BLDG,
     )
