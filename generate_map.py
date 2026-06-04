@@ -1204,8 +1204,8 @@ B.append(
         WALK_X1,
         BRY1,
         BLDG_Y2,
-        WALK_ZT1,
-        WALK_ZT2,
+        _wk_zb1,
+        _wk_zb2,
         WALK_ZT1 + PAR_H,
         WALK_ZT2 + PAR_H,
         T_CEMENT,
@@ -1217,8 +1217,8 @@ B.append(
         WALK_X2 + _WALK_WALL,
         BRY1,
         BLDG_Y2,
-        WALK_ZT1,
-        WALK_ZT2,
+        _wk_zb1,
+        _wk_zb2,
         WALK_ZT1 + PAR_H,
         WALK_ZT2 + PAR_H,
         T_CEMENT,
@@ -1904,6 +1904,14 @@ for _px in _PEND_XS:
     E.append(
         ent("light", origin=f"{_px} 0 {int(dbot(_px)) - 20}", light="200", style="1")
     )
+
+# Light on underside of walkway slab illuminating the ramp below
+_walk_mid_y = (BRY1 + BLDG_Y2) // 2
+_walk_frac = (BRY1 - _walk_mid_y) / float(BRY1 - BLDG_Y2)
+_walk_bot_mid = int(_wk_zb1 + _walk_frac * (_wk_zb2 - _wk_zb1))
+E.append(
+    ent("light", origin=f"{BLDG_CX} {_walk_mid_y} {_walk_bot_mid - 8}", light="300")
+)
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 _lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
