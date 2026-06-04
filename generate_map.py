@@ -1291,6 +1291,7 @@ _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 # Entrance doorway — centred on building (BLDG_CX ± 64)
 _ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 1372, 1500
 
+
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
@@ -1645,11 +1646,16 @@ for _lx in _LAMP_POST_XS:
             )
         )
 
-# ── Under-bridge pendant fixtures (brush geometry) ────────────────────────────
-_PEND_XS = list(range(BRX1 + 300, BRX2, 600))
-for _px in _PEND_XS:
-    _pdz = int(dbot(_px))
-    B.append(box(_px - 6, -6, _pdz - 10, _px + 6, 6, _pdz, T_BRICK))
+# ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
+_SPAN_CENTRES = [
+    (BRX1 + PXS[0]) // 2,
+    (PXS[0] + PXS[1]) // 2,
+    (PXS[1] + PXS[2]) // 2,
+    (PXS[2] + BRX2) // 2,
+    (BRX2 + PXS[4]) // 2,
+    (PXS[4] + WORLD_X2 - WALL_T) // 2,
+]
+_PEND_XS = _SPAN_CENTRES
 
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
