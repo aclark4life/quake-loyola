@@ -234,6 +234,25 @@ def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     )
 
 
+def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
+    """Triangular prism. Triangle (ax,ay)→(bx,by)→(cx,cy) must be CCW from above.
+    Face winding: side normals point inward (left-perpendicular of each CCW edge).
+    Bottom +Z (solid above), top -Z (solid below)."""
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((ax, ay, z2), (bx, by, z2), (ax, ay, z1), tex),  # side AB
+                face((bx, by, z2), (cx, cy, z2), (bx, by, z1), tex),  # side BC
+                face((cx, cy, z2), (ax, ay, z2), (cx, cy, z1), tex),  # side CA
+                face((ax, ay, z1), (bx, by, z1), (cx, cy, z1), tex),  # bottom (+Z)
+                face((ax, ay, z2), (cx, cy, z2), (bx, by, z2), tex),  # top (-Z)
+            ]
+        )
+        + "\n}"
+    )
+
+
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
@@ -537,14 +556,14 @@ B.append(box(ROAD_X1, _ROAD_Y1, FZ2, ROAD_X2, _ROAD_Y2, FZ2 + 2, T_ROAD))
 B.append(
     box(ROAD_X1 - _WALK_W, _ROAD_Y1, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
 )
-# East sidewalk — split into two segments to leave Ennis Road opening clear
+# East sidewalk — split into two segments, trimmed _WALK_W short of each corner
 B.append(
     box(
         ROAD_X2,
         _ROAD_Y1,
         FZ2,
         ROAD_X2 + _WALK_W,
-        _ENNIS_Y - _ENNIS_HW,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
         FZ2 + _WALK_H,
         T_CEMENT,
     )
@@ -552,7 +571,7 @@ B.append(
 B.append(
     box(
         ROAD_X2,
-        _ENNIS_Y + _ENNIS_HW,
+        _ENNIS_Y + _ENNIS_HW + _WALK_W,
         FZ2,
         ROAD_X2 + _WALK_W,
         _ROAD_Y2,
@@ -574,23 +593,23 @@ B.append(
         T_ROAD,
     )
 )
-# North curb — starts east of Charles Street to leave intersection clear
+# North curb — offset east by _WALK_W to cut corner square
 B.append(
     box(
-        ROAD_X2,
+        ROAD_X2 + _WALK_W,
         _ENNIS_Y + _ENNIS_HW,
         FZ2,
         _ENNIS_X2,
-        _ENNIS_Y + _ENNIS_HW + 16,
+        _ENNIS_Y + _ENNIS_HW + _WALK_W,
         FZ2 + _WALK_H,
         T_CEMENT,
     )
 )
-# South curb — starts east of Charles Street to leave intersection clear
+# South curb — offset east by _WALK_W to cut corner square
 B.append(
     box(
-        ROAD_X2,
-        _ENNIS_Y - _ENNIS_HW - 16,
+        ROAD_X2 + _WALK_W,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
         FZ2,
         _ENNIS_X2,
         _ENNIS_Y - _ENNIS_HW,
@@ -598,6 +617,40 @@ B.append(
         T_CEMENT,
     )
 )
+
+# ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
+# Arc center at the OUTER (far) corner so the curve faces outward toward the road.
+# Each corner: road box fills the cut square, cement arc fans sit on top.
+_CRN_R = _WALK_W  # corner radius = sidewalk width
+_CRN_SEGS = 12  # segments per arc (12 × 7.5° = 90°)
+
+# SE corner: far corner is at SE of cut square
+_cx_se = ROAD_X2 + _CRN_R
+_cy_se = _ENNIS_Y - _ENNIS_HW - _CRN_R
+B.append(box(ROAD_X2, _cy_se, FZ2, _cx_se, _ENNIS_Y - _ENNIS_HW, FZ2 + 2, T_ROAD))
+# Arc sweeps CCW from 90° (north) to 180° (west)
+for _i in range(_CRN_SEGS):
+    _a0 = math.radians(90 + _i * 90 / _CRN_SEGS)
+    _a1 = math.radians(90 + (_i + 1) * 90 / _CRN_SEGS)
+    _px0, _py0 = _cx_se + _CRN_R * math.cos(_a0), _cy_se + _CRN_R * math.sin(_a0)
+    _px1, _py1 = _cx_se + _CRN_R * math.cos(_a1), _cy_se + _CRN_R * math.sin(_a1)
+    B.append(
+        tri_prism(_cx_se, _cy_se, _px0, _py0, _px1, _py1, FZ2, FZ2 + _WALK_H, T_CEMENT)
+    )
+
+# NE corner: far corner is at NE of cut square
+_cx_ne = ROAD_X2 + _CRN_R
+_cy_ne = _ENNIS_Y + _ENNIS_HW + _CRN_R
+B.append(box(ROAD_X2, _ENNIS_Y + _ENNIS_HW, FZ2, _cx_ne, _cy_ne, FZ2 + 2, T_ROAD))
+# Arc sweeps CCW from 180° (west) to 270° (south)
+for _i in range(_CRN_SEGS):
+    _a0 = math.radians(180 + _i * 90 / _CRN_SEGS)
+    _a1 = math.radians(180 + (_i + 1) * 90 / _CRN_SEGS)
+    _px0, _py0 = _cx_ne + _CRN_R * math.cos(_a0), _cy_ne + _CRN_R * math.sin(_a0)
+    _px1, _py1 = _cx_ne + _CRN_R * math.cos(_a1), _cy_ne + _CRN_R * math.sin(_a1)
+    B.append(
+        tri_prism(_cx_ne, _cy_ne, _px0, _py0, _px1, _py1, FZ2, FZ2 + _WALK_H, T_CEMENT)
+    )
 
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
@@ -1630,9 +1683,9 @@ _letter_brushes = (
 )
 
 # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-_LAMP_POST_H = DZ2 + 32  # tall pole, extends above bridge deck
+_LAMP_POST_H = DZ2 - 32  # pole height (~12 ft)
 # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
-_LAMP_POST_XS = [1890]  # east side, near Ennis Road
+_LAMP_POST_XS = [1890, 1246]  # east sidewalk near Ennis, and next pier west
 _lamp_post_ys = [_ENNIS_Y - _ENNIS_HW - 160]
 for _lx in _LAMP_POST_XS:
     for _ly in _lamp_post_ys:
