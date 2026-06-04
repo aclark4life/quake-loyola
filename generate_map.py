@@ -1630,7 +1630,7 @@ B.extend(
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
-DRAW_FASCIA_TEXT = False  # Set True to re-enable (slow to compile)
+DRAW_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
 # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
 # Fascia panel follows the arch: one box per character hanging from dbot(x)
@@ -1644,16 +1644,7 @@ _CHAR_W = (4 + 1) * _PX_W  # 4 cols + 1 gap
 _TOTAL_W = len(_TEXT) * _CHAR_W - _PX_W
 _TEXT_X0 = 0 - _TOTAL_W // 2
 
-# Background fascia: per-character strip following arch curve, on south parapet face
-for _ci, _ch in enumerate(_TEXT if DRAW_FASCIA_TEXT else []):
-    _cx = _TEXT_X0 + _ci * _CHAR_W
-    _cx2 = _cx + 4 * _PX_W
-    _x_mid = (_cx + _cx2) / 2
-    _z_bot = int(dbot(_x_mid))  # deck soffit at this X
-    _z_top = int(dtop(_x_mid)) + PAR_H  # parapet top at this X
-    if _cx2 > _cx:
-        B.append(box(_cx, _FAS_Y1, _z_bot, _cx2, _FAS_Y2, _z_top, T_STONE))
-        B.append(box(_cx, _FAS_Y3, _z_bot, _cx2, _FAS_Y4, _z_top, T_STONE))
+# No separate background fascia boxes — parapet wall face is the backdrop
 
 _FONT = {
     "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
@@ -1696,7 +1687,7 @@ def _render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
         bitmap = _FONT.get(ch, _FONT[" "])
         cx = x0 + ci * char_w
         x_mid = cx + (cols * px_w) / 2
-        z_top = int(dtop(x_mid)) + PAR_H  # top of parapet face at this X
+        z_top = int(dtop(x_mid)) + PAR_H - 14  # centred in parapet height
         for row_i, row_bits in enumerate(bitmap):
             z = z_top - row_i * px_h
             for col_i in range(cols):
@@ -1714,20 +1705,20 @@ _letter_brushes = (
         _render_text_fascia(
             _TEXT,
             x0=_TEXT_X0,
-            y_face=_FAS_Y1,
+            y_face=BRY1,
             px_w=_PX_W,
             px_h=_PX_H,
-            depth=4,
-            tex=T_WALL,
+            depth=1,
+            tex=T_RAIL,
         )
         + _render_text_fascia(
             _TEXT[::-1],
             x0=_TEXT_X0,
-            y_face=_FAS_Y4 + 4,
+            y_face=BRY2 + 1,
             px_w=_PX_W,
             px_h=_PX_H,
-            depth=4,
-            tex=T_WALL,
+            depth=1,
+            tex=T_RAIL,
             mirror=True,
         )
     )
