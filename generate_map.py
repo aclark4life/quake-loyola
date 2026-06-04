@@ -1121,6 +1121,8 @@ if SHOW_SUPPORTS:
 
         # Add pier structure — easternmost pier gets a square opening, rest are arched
         if px == max(PXS):
+            # Overhang must reach BRY2+PIL_OVERHANG to match pillar tops above deck
+            _sq_overhang = BRY2 + PIL_OVERHANG - a_rin
             B.extend(
                 square_wall(
                     x1,
@@ -1131,7 +1133,7 @@ if SHOW_SUPPORTS:
                     int(pdeck) - 16,
                     a_rin,
                     T_PILLAR,
-                    overhang=_arch_overhang,
+                    overhang=_sq_overhang,
                     base_h=32,
                 )
             )
