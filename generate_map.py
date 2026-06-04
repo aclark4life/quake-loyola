@@ -675,41 +675,80 @@ for _i in range(_CRN_SEGS):
     )
 
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
-_EPL_HW = 30  # pillar half-width ≈ 4 ft square
-_EPL_OFFSET = _WALK_W + 20  # east of intersection corners + small gap
-_EPL_X1 = ROAD_X2 + _EPL_OFFSET  # clear of the curved sidewalk corners
-_EPL_X2 = _EPL_X1 + _EPL_HW * 2  # 60 units wide
-_EPL_ZB = FZ2  # base sits directly on ground
-_EPL_POST_H = 144  # post height ≈ 9.5 ft
-_EPL_PYR_H = 40  # pyramid height ≈ pointed stone top
+_EPL_HW = 22  # pillar half-width (was 30, ×0.75)
+_EPL_OFFSET = _WALK_W + 20
+_EPL_X1 = ROAD_X2 + _EPL_OFFSET
+_EPL_X2 = _EPL_X1 + _EPL_HW * 2
+_EPL_ZB = FZ2
+_EPL_POST_H = 81  # post height (was 108, ×0.75)
+_EPL_CAP_OVH = 1
+_EPL_CAP_H = 3
+
+# Bell shape — cap divider + single tapered step (no flare, no tip):
+#      |  |      step 2: hw=16, h=27
+#  ====+==+====  cap:    hw=23, h=1
+#      |  |      post:   hw=22, h=81
+_EPL_BELL2_HW = 19  # tapered top section half-width (wider than before, less than post)
+_EPL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
 
 for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
+    _epl_cx = _EPL_X1 + _EPL_HW  # pillar centre X
+    _cap_hw = _EPL_HW + _EPL_CAP_OVH  # = 40
+
     # Post
+    _base_h = _EPL_POST_H // 3  # bottom base = lower third of post
+    # Bottom base — same width as cap, gives plinth effect
+    B.append(
+        box(
+            _epl_cx - _cap_hw,
+            _epy - _cap_hw,
+            _EPL_ZB,
+            _epl_cx + _cap_hw,
+            _epy + _cap_hw,
+            _EPL_ZB + _base_h,
+            T_WHITE_STONE,
+        )
+    )
+    # Upper post — narrower, sits on bottom base
     B.append(
         box(
             _EPL_X1,
             _epy - _EPL_HW,
-            _EPL_ZB,
+            _EPL_ZB + _base_h,
             _EPL_X2,
             _epy + _EPL_HW,
             _EPL_ZB + _EPL_POST_H,
             T_WHITE_STONE,
         )
     )
-    # Pointed pyramid top
+    # Thin cap divider — overhangs post on all sides
+    _cap_z = _EPL_ZB + _EPL_POST_H
     B.append(
-        pyramid(
-            _EPL_X1,
-            _epy - _EPL_HW,
-            _EPL_ZB + _EPL_POST_H,
-            _EPL_X2,
-            _epy + _EPL_HW,
-            _EPL_ZB + _EPL_POST_H + _EPL_PYR_H,
+        box(
+            _epl_cx - _cap_hw,
+            _epy - _cap_hw,
+            _cap_z,
+            _epl_cx + _cap_hw,
+            _epy + _cap_hw,
+            _cap_z + _EPL_CAP_H,
+            T_WHITE_STONE,
+        )
+    )
+    # Bell step 2 — tapered top, narrower than post
+    _b2_z = _cap_z + _EPL_CAP_H
+    B.append(
+        box(
+            _epl_cx - _EPL_BELL2_HW,
+            _epy - _EPL_BELL2_HW,
+            _b2_z,
+            _epl_cx + _EPL_BELL2_HW,
+            _epy + _EPL_BELL2_HW,
+            _b2_z + _EPL_BELL2_H,
             T_WHITE_STONE,
         )
     )
     # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
-    _epl_apex = _EPL_ZB + _EPL_POST_H + _EPL_PYR_H
+    _epl_apex = _b2_z + _EPL_BELL2_H
     _epl_cx = _EPL_X1 + _EPL_HW
     B.append(
         box(
@@ -2140,7 +2179,7 @@ for _lx in _LAMP_POST_XS:
         E.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_flame_z + 4}"))
 
 # Ennis entrance pillar torches — flame above brick cup on each stone pillar
-_epl_flame_z = _EPL_ZB + _EPL_POST_H + _EPL_PYR_H + 20
+_epl_flame_z = _EPL_ZB + _EPL_POST_H + _EPL_CAP_H + _EPL_BELL2_H + 20
 _epl_cx = _EPL_X1 + _EPL_HW
 for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
     E.append(ent("light", origin=f"{_epl_cx} {_epy} {_epl_flame_z}", light="300"))
