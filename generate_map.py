@@ -678,7 +678,7 @@ for _i in range(_CRN_SEGS):
 _EPL_HW = 30  # pillar half-width ≈ 4 ft square
 _EPL_X1 = ROAD_X2  # flush with east edge of Charles St road
 _EPL_X2 = ROAD_X2 + _EPL_HW * 2  # 60 units deep into sidewalk
-_EPL_ZB = FZ2 + _WALK_H  # base sits on top of sidewalk curb
+_EPL_ZB = FZ2  # base sits directly on ground
 _EPL_POST_H = 144  # post height ≈ 9.5 ft
 _EPL_PYR_H = 40  # pyramid height ≈ pointed stone top
 
