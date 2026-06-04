@@ -37,7 +37,7 @@ T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_TELEPORT = "*teleport"  # teleport effect
 T_BRICK = "bricka2_1"  # brick retaining wall (abutment pier west face)
-T_WHITE_STONE = "rock3_2"  # white stone — Ennis Drive entrance pillars
+T_WHITE_STONE = "sfloor3_2"  # Ennis Drive entrance pillars
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
@@ -708,6 +708,31 @@ for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
             T_WHITE_STONE,
         )
     )
+    # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
+    _epl_apex = _EPL_ZB + _EPL_POST_H + _EPL_PYR_H
+    _epl_cx = _EPL_X1 + _EPL_HW
+    B.append(
+        box(
+            _epl_cx - 3,
+            _epy - 3,
+            _epl_apex,
+            _epl_cx + 3,
+            _epy + 3,
+            _epl_apex + 16,
+            T_CEMENT,
+        )
+    )
+    B.append(
+        box(
+            _epl_cx - 5,
+            _epy - 5,
+            _epl_apex + 16,
+            _epl_cx + 5,
+            _epy + 5,
+            _epl_apex + 20,
+            T_BRICK,
+        )
+    )
 
 # West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
@@ -1024,8 +1049,8 @@ _add_parapet_blocks(PXS[2], PXS[3], 3)
 _add_parapet_blocks(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 
 # ── Decorative squares on parapet outer faces (one per block position) ────────
-_SQ_HW = 12  # half-width in X (24 units wide)
-_SQ_HH = 10  # half-height in Z (20 units tall)
+_SQ_HW = 8  # half-width in X (16 units wide)
+_SQ_HH = 6  # half-height in Z (12 units tall)
 _SQ_D = 1  # protrusion depth (1 unit proud)
 
 
@@ -1048,7 +1073,11 @@ def _add_parapet_squares(
     x1_s = x_end - mx1
     for k in range(n):
         cx = int(x0 + (x1_n - x0) * (k + 1) / (n + 1))
-        bz = int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW))) + PAR_H // 2
+        bz = (
+            int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW)))
+            + PAR_H
+            + _BLK_H // 2
+        )
         B.append(
             box(
                 cx - _SQ_HW,
@@ -1063,7 +1092,11 @@ def _add_parapet_squares(
     for k in range(n_s):
         cx = int(x0 + (x1_s - x0) * (k + 1) / (n_s + 1))
         if not (cx - _SQ_HW < WALK_X2 and cx + _SQ_HW > WALK_X1):
-            bz = int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW))) + PAR_H // 2
+            bz = (
+                int(min(dtop(cx - _SQ_HW), dtop(cx), dtop(cx + _SQ_HW)))
+                + PAR_H
+                + _BLK_H // 2
+            )
             B.append(
                 box(
                     cx - _SQ_HW,
@@ -2105,6 +2138,15 @@ for _lx in _LAMP_POST_XS:
         _flame_z = _pole_top + 20
         E.append(ent("light", origin=f"{_lx} {_ly} {_flame_z}", light="300"))
         E.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_flame_z + 4}"))
+
+# Ennis entrance pillar torches — flame above brick cup on each stone pillar
+_epl_flame_z = _EPL_ZB + _EPL_POST_H + _EPL_PYR_H + 20
+_epl_cx = _EPL_X1 + _EPL_HW
+for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
+    E.append(ent("light", origin=f"{_epl_cx} {_epy} {_epl_flame_z}", light="300"))
+    E.append(
+        ent("light_flame_large_yellow", origin=f"{_epl_cx} {_epy} {_epl_flame_z + 4}")
+    )
 
 # Under-bridge amber pendant lights — flicker style, hang below deck
 for _px in _PEND_XS:

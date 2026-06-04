@@ -46,7 +46,7 @@ compile: install-tools
     {{tools_bin}}/vis {{map_name}}.bsp
     {{tools_bin}}/light {{map_name}}.bsp
 
-# Fast compile: skips Full Vis pass (~0.3s vs ~115s), good for iteration
+# Fast compile: skips Full Vis pass, uses 2x2 extra sampling for lighting
 compile-fast: install-tools
     {{tools_bin}}/qbsp {{map_name}}.map
     {{tools_bin}}/vis -fast {{map_name}}.bsp
