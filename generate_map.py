@@ -910,18 +910,8 @@ _add_parapet_blocks(PXS[0], PXS[1], 3)
 _add_parapet_blocks(PXS[1], PXS[2], 4)
 # Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
 _add_parapet_blocks(PXS[2], PXS[3], 3)
-# East flat span split at PXS[4]=1938 pillar:
-#   North: 3 blocks each sub-span
-#   South: skip (walkway covers BRX2→PXS[4]); handle south east-of-walkway separately
+# East flat span: west sub-span (BRX2→PXS[4]) gets 3 north blocks; east sub-span open (matches ref)
 _add_parapet_blocks(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
-_add_parapet_blocks(
-    PXS[4],
-    WORLD_X2 - WALL_T,
-    3,
-    east_margin_n=_BLK_HW + 8,
-    east_margin=64 + _BLK_HW + 8,
-    n_south=0,
-)
 # South east of walkway: corner blocks only at each side of the opening
 # Corner block on east side of walkway opening (west face flush with WALK_X2)
 _cx_walk_e = WALK_X2 + _BLK_HW
@@ -936,22 +926,6 @@ B.append(
         T_CEMENT,
     )
 )
-# 3 south blocks evenly spread between PXS[4] and east world end
-_sex0 = PXS[4] + _PIR_M
-_sex1 = WORLD_X2 - WALL_T - (64 + _BLK_HW + 8)
-for _k in range(3):
-    _cx = _sex0 + (_sex1 - _sex0) * (_k + 1) / 4
-    B.append(
-        box(
-            int(_cx) - _BLK_HW,
-            BRY1 - _BLK_OVH,
-            DZ2 + PAR_H,
-            int(_cx) + _BLK_HW,
-            BRY1 + PAR_W,
-            DZ2 + PAR_H + _BLK_H,
-            T_CEMENT,
-        )
-    )
 # Extra block on west side of walkway opening (east face flush with WALK_X1)
 _cx_walk_w = WALK_X1 - _BLK_HW
 B.append(
