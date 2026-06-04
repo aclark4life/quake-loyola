@@ -371,6 +371,26 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     return brushes
 
 
+def square_wall(x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_h=0):
+    """Stone wall with a rectangular (square-topped) opening centred at Y=0.
+    open_hw: half-width of the opening in Y.
+    overhang: extra Y extent on pillar portions beyond ±open_hw.
+    base_h: solid plinth height at ground level.
+    """
+    brushes = []
+    _ext = open_hw + overhang
+    if y1 < -_ext:
+        brushes.append(box(x1, y1, floor_z, x2, -_ext, ceil_z, tex))
+    if y2 > _ext:
+        brushes.append(box(x1, _ext, floor_z, x2, y2, ceil_z, tex))
+    brushes.append(box(x1, -_ext, floor_z, x2, -open_hw, ceil_z, tex))  # south pillar
+    brushes.append(box(x1, open_hw, floor_z, x2, _ext, ceil_z, tex))  # north pillar
+    brushes.append(box(x1, -open_hw, ceil_z - 16, x2, open_hw, ceil_z, tex))  # lintel
+    if base_h > 0:
+        brushes.append(box(x1, -open_hw, floor_z, x2, open_hw, floor_z + base_h, tex))
+    return brushes
+
+
 def arch_wall(
     x1,
     x2,
@@ -1099,24 +1119,40 @@ if SHOW_SUPPORTS:
         # past the bridge edges, regardless of a_rout (outer piers have small rout).
         _arch_overhang = max(PIL_OVERHANG, BRY2 + PIL_OVERHANG - a_rout)
 
-        # Add the arched pier structure (overhang extends pillar boxes past bridge)
-        B.extend(
-            arch_wall(
-                x1,
-                x2,
-                BRY1,
-                BRY2,
-                FZ2,
-                int(pdeck) - 16,
-                a_rin,
-                a_rout,
-                A_SEGS,
-                T_PILLAR,
-                stilt_h=a_stilt,
-                overhang=_arch_overhang,
-                base_h=32,
+        # Add pier structure — easternmost pier gets a square opening, rest are arched
+        if px == max(PXS):
+            B.extend(
+                square_wall(
+                    x1,
+                    x2,
+                    BRY1,
+                    BRY2,
+                    FZ2,
+                    int(pdeck) - 16,
+                    a_rin,
+                    T_PILLAR,
+                    overhang=_arch_overhang,
+                    base_h=32,
+                )
             )
-        )
+        else:
+            B.extend(
+                arch_wall(
+                    x1,
+                    x2,
+                    BRY1,
+                    BRY2,
+                    FZ2,
+                    int(pdeck) - 16,
+                    a_rin,
+                    a_rout,
+                    A_SEGS,
+                    T_PILLAR,
+                    stilt_h=a_stilt,
+                    overhang=_arch_overhang,
+                    base_h=32,
+                )
+            )
 
         # Pillar tops (above deck, extend PIL_OVERHANG past bridge edges and inward)
         _pil_out = BRY2 + PIL_OVERHANG  # always overhang past bridge edge
@@ -1358,10 +1394,17 @@ B.append(
 )
 
 _STAIR_Y0 = BLDG_Y2 + _STAIR_OFFSET  # south edge of staircase
+_STAIR_Y_END = _STAIR_Y0 + _STEP_N * _STEP_DEPTH  # north end of stairs (ground level)
 for _si in range(_STEP_N):
     _sz2 = FZ2 + (_si + 1) * _STEP_RISE
     _sy_n = _STAIR_Y0 + (_STEP_N - _si) * _STEP_DEPTH
     B.append(box(_ENT_X1, _STAIR_Y0, FZ2, _ENT_X2, _sy_n, _sz2, T_CEMENT, tt=T_CEMENT))
+
+# Small cement apron from stair base to Ennis south sidewalk
+_ENNIS_SW_EDGE = _ENNIS_Y - _ENNIS_HW - _WALK_W
+B.append(
+    box(_ENT_X1, _STAIR_Y_END, FZ2, _ENT_X2, _ENNIS_SW_EDGE, FZ2 + _WALK_H, T_CEMENT)
+)
 
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
