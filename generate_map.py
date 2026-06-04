@@ -32,6 +32,7 @@ T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "city2_7"  # elevator doors (matches walls)
 T_ROCK = "rock1_2"  # cave outer shell
+T_RAIL = "metal5_4"  # bridge and walkway railings
 T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_TELEPORT = "*teleport"  # teleport effect
@@ -1039,7 +1040,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
                 _zb2,
                 _zb1 + _TUBE_HW * 2,
                 _zb2 + _TUBE_HW * 2,
-                T_PILLAR,
+                T_RAIL,
             )
         )
         if not (_sx1 < WALK_X2 and _sx2 > WALK_X1):
@@ -1053,19 +1054,17 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
                     _zb2,
                     _zb1 + _TUBE_HW * 2,
                     _zb2 + _TUBE_HW * 2,
-                    T_PILLAR,
+                    T_RAIL,
                 )
             )
     # East flat section
     _tbz = DZ2 + PAR_H + _tube_z_extra
     _x_east_end = WORLD_X2 - WALL_T
     B.append(
-        box(
-            BRX2, _TUBE_NY1, _tbz, _x_east_end, _TUBE_NY2, _tbz + _TUBE_HW * 2, T_PILLAR
-        )
+        box(BRX2, _TUBE_NY1, _tbz, _x_east_end, _TUBE_NY2, _tbz + _TUBE_HW * 2, T_RAIL)
     )
     B.append(
-        box(BRX2, _TUBE_SY1, _tbz, WALK_X1, _TUBE_SY2, _tbz + _TUBE_HW * 2, T_PILLAR)
+        box(BRX2, _TUBE_SY1, _tbz, WALK_X1, _TUBE_SY2, _tbz + _TUBE_HW * 2, T_RAIL)
     )
     B.append(
         box(
@@ -1075,7 +1074,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
             _x_east_end,
             _TUBE_SY2,
             _tbz + _TUBE_HW * 2,
-            T_PILLAR,
+            T_RAIL,
         )
     )
 
@@ -1328,7 +1327,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
             WALK_X1 - _ww_cx + _TUBE_HW,
             BRY1,
             _tbz + _TUBE_HW * 2,
-            T_PILLAR,
+            T_RAIL,
         )
     )
     # East railing (centred in east wall)
@@ -1340,7 +1339,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
             WALK_X2 + _ww_cx + _TUBE_HW,
             BRY1,
             _tbz + _TUBE_HW * 2,
-            T_PILLAR,
+            T_RAIL,
         )
     )
 
