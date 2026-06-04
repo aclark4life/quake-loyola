@@ -95,7 +95,10 @@ WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western sp
 WORLD_X2 = (
     525 + 741 + BLDG_WIDTH + 32 + BLDG_WIDTH
 )  # extended east by one Knott Hall width
-WORLD_Y1, WORLD_Y2 = -2048, 960  # full world N-S extent (expanded south for Knott Hall)
+WORLD_Y1, WORLD_Y2 = (
+    -2048,
+    1200,
+)  # full world N-S extent (expanded north for Ennis wall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # Flush against the east world wall
@@ -677,8 +680,8 @@ for _i in range(_CRN_SEGS):
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
 _EPL_HW = 22  # pillar half-width (was 30, ×0.75)
 _EPL_OFFSET = _WALK_W + 20
-_EPL_X1 = ROAD_X2 + _EPL_OFFSET
-_EPL_X2 = _EPL_X1 + _EPL_HW * 2
+_EPL_X1 = PXS[2] - _EPL_HW  # align pillar centre with closest bridge pier (X=525)
+_EPL_X2 = PXS[2] + _EPL_HW
 _EPL_ZB = FZ2
 _EPL_POST_H = 81  # post height (was 108, ×0.75)
 _EPL_CAP_OVH = 1
@@ -773,7 +776,23 @@ for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
         )
     )
 
-# West embankment — rises from just west of the -525 pier to bridge deck height at BRX1.
+# ── Ennis Drive L-shaped campus boundary wall (north side of entrance) ────────
+# city2_1 brick wall from near Charles St sidewalk east to pillar, then turns north.
+# Starts with a small grass gap east of the sidewalk.
+_BW_T = 8  # wall thickness
+_BW_H = 48  # wall height ≈ 3 ft
+_BW_NY = _ENNIS_Y + _ENNIS_HW + _EPL_HW * 2  # south face Y (flush with north pillar)
+_BW_X1 = ROAD_X2 + _WALK_W + 48  # ~48u east of sidewalk (more grass)
+_BW_EX2 = PXS[2] + _EPL_HW + 80  # E-W wall extends past stone pillar
+_BW_NY2 = _BW_NY + 200  # north segment length
+# East-running segment (south base of L)
+B.append(box(_BW_X1, _BW_NY, FZ2, _BW_EX2, _BW_NY + _BW_T, FZ2 + _BW_H, "city2_1"))
+# North-turning segment — at the WEST end, runs north to world wall
+B.append(
+    box(_BW_X1, _BW_NY, FZ2, _BW_X1 + _BW_T, WORLD_Y2 - WALL_T, FZ2 + _BW_H, "city2_1")
+)
+
+
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 _EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
 B.append(
