@@ -37,7 +37,7 @@ T_SKY = "sky1"  # open sky ceiling
 T_LAVA = "*lava1"  # torch flame
 T_TELEPORT = "*teleport"  # teleport effect
 T_BRICK = "bricka2_1"  # brick retaining wall (abutment pier west face)
-T_WHITE_STONE = "compl1_7"  # white stone — Ennis Drive entrance pillars
+T_WHITE_STONE = "sfloor3_2"  # white stone — Ennis Drive entrance pillars
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
