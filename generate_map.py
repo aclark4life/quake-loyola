@@ -2351,70 +2351,130 @@ E.append(
 )
 
 _bcy = (BLDG_Y1 + BLDG_Y2) // 2  # Knott Hall center Y = -528
+_nb_cy_dm = (_NB_Y1 + _NB_Y2) // 2  # north building center Y
+_nb_cx_dm = (_AB_X1 + _AB_X2) // 2  # west buildings center X
+_sb1_cy = (_SB_Y1 + _SB_Y2) // 2  # south building 1 center Y
+_sb2_cy = (_SB2_Y1 + _SB2_Y2) // 2  # south building 2 center Y
 
-for pos in [
+# ── Deathmatch spawns — spread across all areas ──────────────────────────
+for pos, angle in [
     # Bridge deck
-    (0, 0, int(dtop(0) + 32)),
-    (-160, 0, int(dtop(-160) + 32)),
-    (160, 0, int(dtop(160) + 32)),
-    (-320, 0, int(dtop(-320) + 32)),
-    (320, 0, int(dtop(320) + 32)),
-    # Walkway mid-point
-    (BLDG_CX, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)),
-    # Knott Hall ground floor (near entrance)
-    (BLDG_CX, BLDG_Y2 - 64, BLDG_GROUND_Z + 40),
-    # Knott Hall upper floors
-    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H + 40),
-    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40),
-    (BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 3 + 40),
-    # East/west campus ground
-    (1000, 0, ROAD_Z),
-    (-1000, 0, ROAD_Z),
-    # Road under bridge
-    (0, 300, ROAD_Z),
-    (0, -400, ROAD_Z),
+    ((0, 0, int(dtop(0) + 32)), 180),
+    ((-200, 0, int(dtop(-200) + 32)), 90),
+    ((200, 0, int(dtop(200) + 32)), 270),
+    ((-400, 0, int(dtop(-400) + 32)), 90),
+    ((400, 0, int(dtop(400) + 32)), 270),
+    # Walkway
+    ((BLDG_CX, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)), 180),
+    # Knott Hall — ground, mid, upper floors
+    ((BLDG_CX, BLDG_Y2 - 80, BLDG_GROUND_Z + 40), 180),
+    ((BLDG_CX - 100, _bcy, BLDG_GROUND_Z + FLOOR_H + 40), 270),
+    ((BLDG_CX + 100, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40), 90),
+    ((BLDG_CX, BLDG_Y1 + 100, BLDG_GROUND_Z + FLOOR_H * 3 + 40), 0),
+    ((BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 4 + 40), 180),
+    # Knott Hall rooftop
+    ((BLDG_CX, _bcy, BLDG_Z2 + 40), 180),
+    # Charles Street
+    ((0, 300, ROAD_Z + 24), 180),
+    ((0, -400, ROAD_Z + 24), 0),
+    ((0, _sb1_cy, ROAD_Z + 24), 270),
+    # North building interior
+    ((_nb_cx_dm, _nb_cy_dm, FZ2 + 40), 90),
+    ((_nb_cx_dm, _nb_cy_dm, FZ2 + FLOOR_H + 40), 90),
+    # North building roof ridge
+    ((_nb_cx_dm, _nb_cy_dm, int(_nb_ridge_z + 40)), 90),
+    # South buildings interiors
+    ((_nb_cx_dm, _sb1_cy, FZ2 + 40), 90),
+    ((_nb_cx_dm, _sb2_cy, FZ2 + 40), 90),
+    # Ground east/west of bridge
+    ((800, 0, ROAD_Z + 24), 270),
+    ((-800, 0, ROAD_Z + 24), 90),
 ]:
-    E.append(ent("info_player_deathmatch", origin=f"{pos[0]} {pos[1]} {pos[2]}"))
-
-E.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
-E.append(
-    ent(
-        "weapon_rocketlauncher",
-        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H + 40}",
+    E.append(
+        ent(
+            "info_player_deathmatch",
+            origin=f"{pos[0]} {pos[1]} {pos[2]}",
+            angle=str(angle),
+        )
     )
-)
+
+# ── Weapons ───────────────────────────────────────────────────────────────
+# Rocket launcher — bridge centre (high value, exposed position)
+E.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
+# Rocket launcher — Knott Hall floor 3 (reward for climbing)
 E.append(
     ent(
         "weapon_rocketlauncher",
         origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 3 + 40}",
     )
 )
-E.append(ent("weapon_rocketlauncher", origin=f"1000 0 {ROAD_Z}"))
+# Rocket launcher — north building roof (teleport reward)
+E.append(
+    ent(
+        "weapon_rocketlauncher",
+        origin=f"{_nb_cx_dm} {_nb_cy_dm} {int(_nb_ridge_z + 40)}",
+    )
+)
 
+# Super shotgun — spread around mid-tier locations
+E.append(
+    ent("weapon_supershotgun", origin=f"{BLDG_CX} {BLDG_Y2 - 80} {BLDG_GROUND_Z + 40}")
+)
+E.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
+E.append(ent("weapon_supershotgun", origin=f"{_nb_cx_dm} {_sb1_cy} {FZ2 + 40}"))
+
+# Grenade launcher — Knott Hall floor 2, south building 2
+E.append(
+    ent(
+        "weapon_grenadelauncher",
+        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
+    )
+)
+E.append(ent("weapon_grenadelauncher", origin=f"{_nb_cx_dm} {_sb2_cy} {FZ2 + 40}"))
+
+# Nailgun — bridge approaches, Charles Street
+E.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
+E.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
+E.append(
+    ent("weapon_nailgun", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H + 40}")
+)
+
+# ── Ammo ──────────────────────────────────────────────────────────────────
 for ax in PXS:
     E.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
-for _by in [_bcy - 80, _bcy + 80]:
+for rx in [400, 800]:
+    E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
+    E.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
+for _kf in range(1, BLDG_FLOORS):
     E.append(
         ent(
             "item_rockets",
-            origin=f"{BLDG_CX + 80} {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
+            origin=f"{BLDG_CX + 80} {_bcy} {BLDG_GROUND_Z + _kf * FLOOR_H + 40}",
         )
     )
-    E.append(
-        ent(
-            "item_rockets",
-            origin=f"{BLDG_CX - 80} {_by} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
-        )
-    )
-for rx in [600, 1000]:
-    E.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z}"))
-    E.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z}"))
+E.append(ent("item_shells", origin=f"0 -300 {ROAD_Z + 24}"))
+E.append(ent("item_shells", origin=f"{_nb_cx_dm} {_nb_cy_dm} {FZ2 + 40}"))
+E.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
+E.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 
+# ── Health & Armor ────────────────────────────────────────────────────────
+# Health — scattered throughout
 E.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
 E.append(ent("item_health", origin=f"{BLDG_CX} {BLDG_Y2 - 64} {BLDG_GROUND_Z + 40}"))
 E.append(
     ent("item_health", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}")
 )
+E.append(ent("item_health", origin=f"0 400 {ROAD_Z + 24}"))
+E.append(ent("item_health", origin=f"0 -600 {ROAD_Z + 24}"))
+E.append(ent("item_health", origin=f"{_nb_cx_dm} {_sb2_cy} {FZ2 + 40}"))
+# Armor — contested locations
+E.append(ent("item_armor1", origin=f"-200 0 {DECK_Z}"))  # yellow armor on bridge
+E.append(
+    ent("item_armor2", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 4 + 40}")
+)  # red armor top floor
+E.append(
+    ent("item_armorInv", origin=f"{_nb_cx_dm} {_nb_cy_dm} {int(_nb_ridge_z + 40)}")
+)  # mega armor on roof ridge (teleport reward)
 
 # Torch lights on pillar caps
 if SHOW_SUPPORTS:
