@@ -2230,13 +2230,49 @@ B.extend(
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
-# ── Knott Hall hallways — N-S corridor, same width as entrance door ───────────
-# Two partition walls flanking the hallway opening (_ENT_X1.._ENT_X2 = 128 wide).
-# Runs full interior depth and full building height; door openings added later.
-B.append(
-    box(_ENT_X1 - BLDG_WALL, _biy1, BLDG_GROUND_Z, _ENT_X1, _biy2, BLDG_Z2, T_WALL)
-)  # west hallway wall (solid)
-# East wall: open at shaft Y zone (_sty1.._sty2) so elevator doors aren't blocked.
+# ── Knott Hall hallway + rooms — 2 rooms per side per floor ──────────────────
+# Partition Y splits vary per floor so each floor has different room proportions.
+_room_splits = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
+
+_wx1, _wx2 = _bix1, _ENT_X1 - BLDG_WALL  # west room X extents (1282..1506)
+_ex1, _ex2 = _ENT_X2 + BLDG_WALL, _bix2  # east room X extents (1666..1890)
+_wxc = (_wx1 + _wx2) // 2  # west room X center = 1394
+_exc = (_ex1 + _ex2) // 2  # east room X center = 1778
+
+# Collect door openings in hallway walls across all floors
+_w_hall_openings = []
+_e_hall_openings = [(_sty1, BLDG_GROUND_Z, _sty2, BLDG_Z2)]  # shaft gap always open
+
+for _fl in range(BLDG_FLOORS):
+    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+    _fz_surf = _fz1 + BLDG_WALL  # top of floor slab
+    _split = _room_splits[_fl]
+    _sr_yc = (_biy1 + _split) // 2  # south room Y center
+    _nr_yc = (_split + BLDG_WALL + _biy2) // 2  # north room Y center
+    _dz2 = _fz_surf + 96  # door top
+    _w_hall_openings += [
+        (_sr_yc - 32, _fz_surf, _sr_yc + 32, _dz2),
+        (_nr_yc - 32, _fz_surf, _nr_yc + 32, _dz2),
+    ]
+    _e_hall_openings += [
+        (_sr_yc - 32, _fz_surf, _sr_yc + 32, _dz2),
+        (_nr_yc - 32, _fz_surf, _nr_yc + 32, _dz2),
+    ]
+
+# West hallway wall with room door openings
+B.extend(
+    layered_wall_y(
+        _biy1,
+        _ENT_X1 - BLDG_WALL,
+        BLDG_GROUND_Z,
+        _biy2,
+        _ENT_X1,
+        BLDG_Z2,
+        _w_hall_openings,
+        T_WALL,
+    )
+)
+# East hallway wall with room door openings + shaft opening
 B.extend(
     layered_wall_y(
         _biy1,
@@ -2245,10 +2281,45 @@ B.extend(
         _biy2,
         _ENT_X2 + BLDG_WALL,
         BLDG_Z2,
-        [(_sty1, BLDG_GROUND_Z, _sty2, BLDG_Z2)],
+        _e_hall_openings,
         T_WALL,
     )
-)  # east hallway wall
+)
+
+# Partition walls per floor (divide each side into 2 rooms, with connecting door)
+for _fl in range(BLDG_FLOORS):
+    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+    _fz2 = _fz1 + FLOOR_H
+    _fz_surf = _fz1 + BLDG_WALL
+    _split = _room_splits[_fl]
+    _sp_y2 = _split + BLDG_WALL
+    _pdz2 = _fz_surf + 96
+    # West side partition wall with connecting door
+    B.extend(
+        layered_wall(
+            _wx1,
+            _split,
+            _fz1,
+            _wx2,
+            _sp_y2,
+            _fz2,
+            [(_wxc - 32, _fz_surf, _wxc + 32, _pdz2)],
+            T_WALL,
+        )
+    )
+    # East side partition wall with connecting door
+    B.extend(
+        layered_wall(
+            _ex1,
+            _split,
+            _fz1,
+            _ex2,
+            _sp_y2,
+            _fz2,
+            [(_exc - 32, _fz_surf, _exc + 32, _pdz2)],
+            T_WALL,
+        )
+    )
 
 DRAW_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
@@ -2435,6 +2506,96 @@ if _letter_brushes:
     E.append(brush_ent("func_detail", _letter_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
+
+# ── Knott Hall hallway floor-up teleports ─────────────────────────────────────
+# One teleport pad at the south dead-end of the hallway per floor.
+# Floors 0-3 go up one floor; floor 4 loops back to ground.
+_tele_hx1, _tele_hx2 = _ENT_X1, _ENT_X2  # hallway X
+_tele_hy1, _tele_hy2 = _biy1, _biy1 + 48  # south trigger zone
+_tele_hxc = (_tele_hx1 + _tele_hx2) // 2  # hallway X center
+_tele_dest_y = (_biy1 + _biy2) // 2  # destination = hallway midpoint, far from trigger
+
+for _fl in range(BLDG_FLOORS):
+    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+    _fz_surf = _fz1 + BLDG_WALL
+    _dest_fl = (_fl + 1) % BLDG_FLOORS
+    _dest_fz1 = BLDG_GROUND_Z + _dest_fl * FLOOR_H
+    _dest_surf = _dest_fz1 + BLDG_WALL  # top of destination floor slab
+    _dest_z = _dest_fz1 + FLOOR_H // 2  # mid-floor height, well above slab
+    _tname = f"knott_up_{_fl}"
+    E.append(
+        ent(
+            "info_teleport_destination",
+            targetname=_tname,
+            origin=f"{_tele_hxc} {_tele_dest_y} {_dest_z}",
+            angle="90",
+        )
+    )
+    # Trigger pad — full floor height so it's easy to walk into
+    _trig = box(
+        _tele_hx1, _tele_hy1, _fz_surf, _tele_hx2, _tele_hy2, _fz1 + FLOOR_H, T_TELEPORT
+    )
+    E.append(brush_ent("trigger_teleport", [_trig], target=_tname))
+    # Matching illusionary so the teleport texture is visible
+    E.append(brush_ent("func_illusionary", [_trig]))
+    # Flickering light to mark the pad
+    E.append(
+        ent(
+            "light",
+            origin=f"{_tele_hxc} {(_tele_hy1 + _tele_hy2) // 2} {_fz_surf + 64}",
+            light="200",
+            style="1",
+        )
+    )
+
+# ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
+_room_goodies = [
+    "item_health",
+    "weapon_supershotgun",
+    "item_shells",
+    "item_rockets",
+    "weapon_nailgun",
+    "item_spikes",
+    "weapon_grenadelauncher",
+    "item_health",
+    "item_shells",
+    "item_rockets",
+    "item_health",
+    "weapon_supershotgun",
+    "item_spikes",
+    "item_shells",
+    "weapon_nailgun",
+    "item_rockets",
+    "item_health",
+    "weapon_grenadelauncher",
+    "item_shells",
+    "item_spikes",
+]
+_gi = 0
+for _fl in range(BLDG_FLOORS):
+    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+    _item_z = _fz1 + BLDG_WALL + 24
+    _light_z = _fz1 + FLOOR_H - 24  # near ceiling
+    _split = _room_splits[_fl]
+    _sr_yc = (_biy1 + _split) // 2
+    _nr_yc = (_split + BLDG_WALL + _biy2) // 2
+    for _side_xc in [_wxc, _exc]:
+        for _ryc in [_sr_yc, _nr_yc]:
+            E.append(ent("light", origin=f"{_side_xc} {_ryc} {_light_z}", light="250"))
+            E.append(
+                ent(
+                    _room_goodies[_gi % len(_room_goodies)],
+                    origin=f"{_side_xc - 40} {_ryc} {_item_z}",
+                )
+            )
+            _gi += 1
+            E.append(
+                ent(
+                    _room_goodies[_gi % len(_room_goodies)],
+                    origin=f"{_side_xc + 40} {_ryc} {_item_z}",
+                )
+            )
+            _gi += 1
 
 # Abutment pier teleport — arch opening teleports up to bridge deck above
 E.append(
