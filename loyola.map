@@ -20518,7 +20518,7 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "knott_up_0"
-"origin" "1586 -1072 272"
+"origin" "1586 -1800 272"
 "angle" "90"
 }
 {
@@ -20553,7 +20553,7 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "knott_up_1"
-"origin" "1586 -1072 400"
+"origin" "1586 -1800 400"
 "angle" "90"
 }
 {
@@ -20588,7 +20588,7 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "knott_up_2"
-"origin" "1586 -1072 528"
+"origin" "1586 -1800 528"
 "angle" "90"
 }
 {
@@ -20623,7 +20623,7 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "knott_up_3"
-"origin" "1586 -1072 656"
+"origin" "1586 -1800 656"
 "angle" "90"
 }
 {
