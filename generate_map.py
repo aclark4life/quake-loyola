@@ -27,7 +27,7 @@ T_STONE = "sfloor3_2"  # general bridge structure (cement/stone look)
 T_PILLAR = "city2_7"  # supporting pillars (concrete, matches Knott Hall)
 T_FLOOR = "sfloor3_2"  # deck top surface
 T_CEMENT = "sfloor3_2"  # parapet / bridge walls
-T_ROAD = "wgrnd1_5"  # road surface
+T_ROAD = "azfloor1_1"  # road surface
 T_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 T_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 T_METAL = "city2_7"  # elevator doors (matches walls)
@@ -543,8 +543,11 @@ B = []
 # ════════════════════════════════════════════════════════════════════════════════
 B.append(box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, FZ2, T_ROCK))  # floor
 B.append(
-    box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2, T_SKY)
-)  # W wall (sky-textured for open look)
+    box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2 // 2, "wwall1_1")
+)  # W wall lower half
+B.append(
+    box(WORLD_X1, WORLD_Y1, WORLD_Z2 // 2, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2, T_SKY)
+)  # W wall upper half (sky)
 B.append(
     box(WORLD_X2 - WALL_T, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, WORLD_Z2, T_SKY)
 )  # E wall (sky-textured for open look)
