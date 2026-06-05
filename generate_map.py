@@ -2522,12 +2522,16 @@ for _fl in range(BLDG_FLOORS):
     _dest_fz1 = BLDG_GROUND_Z + _dest_fl * FLOOR_H
     _dest_surf = _dest_fz1 + BLDG_WALL  # top of destination floor slab
     _dest_z = _dest_fz1 + FLOOR_H // 2  # mid-floor height, well above slab
+    _dest_y = _tele_dest_y
+    if _fl == BLDG_FLOORS - 1:  # top floor → roof
+        _dest_z = BLDG_Z2 + 40
+        _dest_y = (_biy1 + _biy2) // 2
     _tname = f"knott_up_{_fl}"
     E.append(
         ent(
             "info_teleport_destination",
             targetname=_tname,
-            origin=f"{_tele_hxc} {_tele_dest_y} {_dest_z}",
+            origin=f"{_tele_hxc} {_dest_y} {_dest_z}",
             angle="90",
         )
     )
