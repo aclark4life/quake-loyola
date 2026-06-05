@@ -1111,7 +1111,10 @@ B.extend(
         "city2_1",
     )
 )
-# East wall — windows (spans between south/north wall inner faces)
+# East wall — windows + ground-level entrance (matches south buildings)
+_nb_e_openings = _nb_wins_yz(_nb_wy) + [
+    (_nb_cy - _NB_ENT_HW, FZ2, _nb_cy + _NB_ENT_HW, FZ2 + _NB_ENT_H)
+]
 B.extend(
     layered_wall_y(
         _NB_Y1 + _NB_WT,
@@ -1120,7 +1123,7 @@ B.extend(
         _NB_Y2 - _NB_WT,
         _AB_X2,
         FZ2 + _AB_H,
-        _nb_wins_yz(_nb_wy),
+        _nb_e_openings,
         "city2_1",
     )
 )
