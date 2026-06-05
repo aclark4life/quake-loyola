@@ -63,10 +63,12 @@ def arch_z(x):
 
 
 def dtop(x):
+    """Z coordinate of the deck surface (top face) at a given X position."""
     return DZ2 + arch_z(x)  # deck surface Z at x
 
 
 def dbot(x):
+    """Z coordinate of the deck underside at a given X position."""
     return DZ1 + arch_z(x)  # deck bottom  Z at x
 
 
@@ -142,19 +144,23 @@ A_SEGS = 32
 
 # ── Geometry helpers ──────────────────────────────────────────────────────────
 def fv(v):
+    """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
     f = float(v)
     return str(int(f)) if f == int(f) else f"{f:.6g}"
 
 
 def pt(x, y, z):
+    """Return a Quake map point literal string '( x y z )'."""
     return f"( {fv(x)} {fv(y)} {fv(z)} )"
 
 
 def face(p1, p2, p3, tex):
+    """Return a Quake MAP brush face string from 3 coplanar points and a texture name."""
     return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} 0 0 0 1 1"
 
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
+    """Axis-aligned rectangular brush. tex=sides, tt=top, tb=bottom (default to tex)."""
     tt = tt or tex
     tb = tb or tex
     return (
@@ -260,6 +266,8 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
 
 
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
+    """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
+    Angles t1d..t2d in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -284,6 +292,8 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
 
 
 def arch_pie_seg(xb, xf, yc, zc, rad, t1d, t2d, tex):
+    """Solid pie-slice brush for filling the interior of an arch (no inner hole).
+    Used to create func_illusionary teleport glows and solid arch infill."""
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -306,6 +316,8 @@ def arch_pie_seg(xb, xf, yc, zc, rad, t1d, t2d, tex):
 
 
 def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
+    """Solid arch fill (base box + pie segments) for an X-aligned arch opening.
+    Used for trigger_teleport and func_illusionary brush entities."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
@@ -319,6 +331,8 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
+    """One wedge-shaped brush segment of a semicircular arch ring (Y-aligned span).
+    Mirror of arch_seg with X and Y roles swapped."""
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -343,6 +357,7 @@ def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
 
 
 def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
+    """Solid pie-slice brush for filling a Y-aligned arch interior. Mirror of arch_pie_seg."""
     t1, t2 = math.radians(t1d), math.radians(t2d)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -365,6 +380,7 @@ def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
 
 
 def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
+    """Solid arch fill for a Y-aligned arch opening. Mirror of arch_fill."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
@@ -457,6 +473,8 @@ def arch_wall(
 
 
 def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
+    """Freestanding arch ring (posts + curved ring) aligned on the Y axis.
+    Side walls are omitted so the arch stands alone without flanking fill."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
@@ -476,6 +494,7 @@ def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=N
 
 
 def ent(cls, **kw):
+    """Return a Quake MAP point entity string for the given classname and key/value pairs."""
     lines = ["{", f'"classname" "{cls}"']
     for k, v in kw.items():
         lines.append(f'"{k}" "{v}"')
@@ -484,6 +503,7 @@ def ent(cls, **kw):
 
 
 def brush_ent(cls, brushes, **kw):
+    """Return a Quake MAP brush entity string wrapping one or more brush strings."""
     lines = ["{", f'"classname" "{cls}"']
     for k, v in kw.items():
         lines.append(f'"{k}" "{v}"')
@@ -1276,6 +1296,8 @@ B.append(
 
 
 def _make_south_bldg(by1, by2):
+    """Build the south abutment building geometry (walls, roof, windows, entrance)
+    between Y positions by1 (south) and by2 (north)."""
     bx1, bx2 = _AB_X1, _AB_X2
     cx = (bx1 + bx2) // 2
     ent_hw, ent_h = 48, 100
