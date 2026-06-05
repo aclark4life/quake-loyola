@@ -2247,7 +2247,8 @@ worldspawn = (
     '"_sunlight_color" "255 245 210"\n'
     '"_sunlight_dir" "60 -60"\n'
     '"_sunlight_penumbra" "8"\n'
-    '"dmflags" "128"\n' + "\n".join(B) + "\n}"
+    '"dmflags" "128"\n'
+    '"_fog" "0.03 0.5 0.5 0.6"\n' + "\n".join(B) + "\n}"
 )
 
 # ── Entities ──────────────────────────────────────────────────────────────────
