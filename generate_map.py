@@ -1895,6 +1895,9 @@ _door_n = [
 _door_2 = [
     (_ENT_X1, WALK_ZT2, _ENT_X2, BLDG_GROUND_Z + FLOOR_H * 2)
 ]  # walkway entrance
+_win_n = [
+    (BLDG_CX + 8, BLDG_GROUND_Z + FLOOR_H * 2, BLDG_CX + 56, BLDG_Z2)
+]  # narrow vertical window slot above walkway entrance up to roof
 B.extend(
     layered_wall(
         BLDG_X1 + INDENT,
@@ -1903,7 +1906,7 @@ B.extend(
         BLDG_X2 - INDENT,
         BLDG_Y2,
         BLDG_Z2,
-        _door_n + _door_2,
+        _door_n + _door_2 + _win_n,
         T_WALL,
     )
 )
@@ -2067,13 +2070,14 @@ for _f in range(1, BLDG_FLOORS):
 # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
 # Walls around the lift shaft (_stx1.._stx2, _sty1.._sty2)
 _shaft_wall = 8
-# Doorways for each floor (on the West side — immediate left when entering)
+# Door opening dimensions per floor (used for both wall openings and func_door entities)
+_shaft_door_h = 96  # door height
 _shaft_doors_w = [
     (
         _sty1 + 16,
         BLDG_GROUND_Z + _f * FLOOR_H,
         _sty2 - 16,
-        BLDG_GROUND_Z + _f * FLOOR_H + 96,
+        BLDG_GROUND_Z + _f * FLOOR_H + _shaft_door_h,
     )
     for _f in range(BLDG_FLOORS)
 ]
@@ -2082,7 +2086,7 @@ _shaft_doors_w = [
 B.append(box(_stx1, _sty2, BLDG_GROUND_Z, _stx2, _sty2 + _shaft_wall, BLDG_Z2, T_WALL))
 # Shaft South wall (internal, solid)
 B.append(box(_stx1, _sty1 - _shaft_wall, BLDG_GROUND_Z, _stx2, _sty1, BLDG_Z2, T_WALL))
-# Shaft West wall (internal, with door openings — faces entrance)
+# Shaft West wall (internal, openings for each floor's door)
 B.extend(
     layered_wall_y(
         _sty1,
@@ -2338,28 +2342,6 @@ E.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 E.append(brush_ent("func_illusionary", east_lower))
 
 
-# ── Elevator Doors (func_door) for each floor ─────────────────────────────
-for _f in range(BLDG_FLOORS):
-    # Floor surface Z
-    _floor_surface_z = BLDG_GROUND_Z + _f * FLOOR_H + BLDG_WALL
-    _dz1 = _floor_surface_z
-    _dz2 = _dz1 + 80  # slightly shorter door (80 units)
-    _tname = f"elevator_door_{_f}"
-
-    # Door leaf — on West face of shaft (facing entrance)
-    _d_brush = [box(_stx1 - 2, _sty1 + 16, _dz1, _stx1 + 2, _sty2 - 16, _dz2, T_METAL)]
-    E.append(
-        brush_ent(
-            "func_door", _d_brush, targetname=_tname, angle="-1", speed="300", wait="3"
-        )
-    )
-
-    # Trigger zone — west of the door (in front of it)
-    _tr_brush = [
-        box(_stx1 - 48, _sty1 + 8, _dz1, _stx1 - 2, _sty2 - 8, _dz2, "trigger")
-    ]
-    E.append(brush_ent("trigger_multiple", _tr_brush, target=_tname, wait="1"))
-
 E.append(
     ent(
         "info_player_start",
@@ -2524,6 +2506,15 @@ for _bly1, _bly2 in [(_NB_Y1, _NB_Y2), (_SB_Y1, _SB_Y2), (_SB2_Y1, _SB2_Y2)]:
     for _bfl in range(_AB_FLOORS):
         _blz = FZ2 + _bfl * FLOOR_H + FLOOR_H // 2
         E.append(ent("light", origin=f"{_bldg_light_x} {_bly} {_blz}", light="200"))
+
+# Interior lights for Knott Hall — 3×4 grid per floor
+for _kfl in range(BLDG_FLOORS):
+    _klz = BLDG_GROUND_Z + _kfl * FLOOR_H + FLOOR_H // 2
+    for _kxi in [1, 2, 3]:
+        _klx = BLDG_X1 + (BLDG_X2 - BLDG_X1) * _kxi // 4
+        for _kyi in [1, 2, 3, 4]:
+            _kly = BLDG_Y1 + (BLDG_Y2 - BLDG_Y1) * _kyi // 5
+            E.append(ent("light", origin=f"{_klx} {_kly} {_klz}", light="150"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
