@@ -578,9 +578,28 @@ _ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 
 # Road surface (2-unit overlay so it textures differently from surrounding ground)
 B.append(box(ROAD_X1, _ROAD_Y1, FZ2, ROAD_X2, _ROAD_Y2, FZ2 + 2, T_ROAD))
-# West sidewalk
+_SWALK_START = BRY2 + 200  # sidewalk starts north of bridge
+# West sidewalk — north of bridge
 B.append(
-    box(ROAD_X1 - _WALK_W, _ROAD_Y1, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT)
+    box(
+        ROAD_X1 - _WALK_W, _SWALK_START, FZ2, ROAD_X1, _ROAD_Y2, FZ2 + _WALK_H, T_CEMENT
+    )
+)
+# West curb — south section up to sidewalk start
+B.append(
+    box(ROAD_X1 - 8, _ROAD_Y1, FZ2, ROAD_X1, _SWALK_START, FZ2 + _WALK_H, T_CEMENT)
+)
+# Raised ground west of curb — rock/ground texture, flush with sidewalk
+B.append(
+    box(
+        ROAD_X1 - _WALK_W,
+        _ROAD_Y1,
+        FZ2,
+        ROAD_X1 - 8,
+        _SWALK_START,
+        FZ2 + _WALK_H,
+        T_ROCK,
+    )
 )
 # East sidewalk — split into two segments, trimmed _WALK_W short of each corner
 B.append(
