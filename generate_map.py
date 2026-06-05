@@ -2360,6 +2360,35 @@ _SPAN_CENTRES = [
 ]
 _PEND_XS = _SPAN_CENTRES
 
+# ── N/S arch stone wall panels (must be added to B before worldspawn assembly) ──
+_NS_ARCH_RIN_PRE = 256  # inner radius = road half-width
+_NS_ARCH_ROUT_PRE = 312  # outer radius
+_NS_ARCH_STILT_PRE = 96  # stilt height
+_NS_ARCH_W_PRE = 48  # arch thickness in Y
+_NS_WALL_W_PRE = 320  # stone wall width flanking road
+_NS_ARCH_TOP_PRE = FZ2 + _NS_ARCH_STILT_PRE + _NS_ARCH_RIN_PRE  # = 352
+
+for _pre_syb, _pre_syf in [
+    (_ROAD_Y1, _ROAD_Y1 + _NS_ARCH_W_PRE),
+    (_ROAD_Y2 - _NS_ARCH_W_PRE, _ROAD_Y2),
+]:
+    # Stone arch posts + ring
+    B.extend(
+        arch_wall_y(
+            _pre_syb,
+            _pre_syf,
+            WORLD_X1 + WALL_T,
+            WORLD_X2 - WALL_T,
+            FZ2,
+            _NS_ARCH_TOP_PRE,
+            _NS_ARCH_RIN_PRE,
+            _NS_ARCH_ROUT_PRE,
+            A_SEGS,
+            T_STONE,
+            stilt_h=_NS_ARCH_STILT_PRE,
+        )
+    )
+
 # ── Worldspawn ────────────────────────────────────────────────────────────────
 worldspawn = (
     "{\n"
@@ -2483,6 +2512,7 @@ E.append(
 )
 
 _NS_TRIG_INSET = 8  # push trigger away from world walls and road surface
+_NS_WALL_W = 320  # stone wall extends this far out from road edge on each side
 
 for _syb, _syf, _trig_y1, _trig_y2 in [
     (
@@ -2498,22 +2528,7 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
         _ROAD_Y2 - _NS_TRIG_INSET,
     ),  # north arch — trigger inset from north wall
 ]:
-    # Visible stone arch posts + ring
-    B.extend(
-        arch_wall_y(
-            _syb,
-            _syf,
-            WORLD_X1 + WALL_T,
-            WORLD_X2 - WALL_T,
-            FZ2,
-            FZ2 + _NS_ARCH_STILT + _NS_ARCH_RIN,
-            _NS_ARCH_RIN,
-            _NS_ARCH_ROUT,
-            A_SEGS,
-            T_STONE,
-            stilt_h=_NS_ARCH_STILT,
-        )
-    )
+    _arch_top = FZ2 + _NS_ARCH_STILT + _NS_ARCH_RIN
     # Box trigger — reliable activation, inset from walls
     _ns_trig = [
         box(
@@ -2522,7 +2537,7 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
             FZ2 + 4,
             ROAD_X2 - _NS_TRIG_INSET,
             _trig_y2,
-            FZ2 + _NS_ARCH_STILT + _NS_ARCH_RIN,
+            _arch_top,
             T_TELEPORT,
         )
     ]
