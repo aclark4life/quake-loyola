@@ -2089,6 +2089,51 @@ B.append(
     )
 )
 
+# Front mullions — protruding sfloor3_2 posts on each side of the recessed windows
+# and the narrow vertical window on the main north face. All protrude 12 units outward.
+_fm_div = 12  # mullion width
+_fm_pro = 12  # protrusion depth
+# NW recessed window: wall at y=BLDG_Y2-INDENT, protrude south
+for _mx in [_nw_win_cx - _win_half, _nw_win_cx + _win_half - _fm_div]:
+    B.append(
+        box(
+            _mx,
+            BLDG_Y2 - INDENT - _fm_pro,
+            BLDG_GROUND_Z,
+            _mx + _fm_div,
+            BLDG_Y2 - INDENT + BLDG_WALL,
+            BLDG_Z2,
+            T_CEMENT,
+        )
+    )
+# NE recessed window: wall at y=BLDG_Y2-INDENT, protrude south
+for _mx in [_ne_win_cx - _win_half, _ne_win_cx + _win_half - _fm_div]:
+    B.append(
+        box(
+            _mx,
+            BLDG_Y2 - INDENT - _fm_pro,
+            BLDG_GROUND_Z,
+            _mx + _fm_div,
+            BLDG_Y2 - INDENT + BLDG_WALL,
+            BLDG_Z2,
+            T_CEMENT,
+        )
+    )
+# Main front wall narrow window _win_n: wall at y=BLDG_Y2-BLDG_WALL, protrude north
+_win_n_x1, _win_n_x2 = BLDG_CX + 8, BLDG_CX + 56
+for _mx in [_win_n_x1, _win_n_x2 - _fm_div]:
+    B.append(
+        box(
+            _mx,
+            BLDG_Y2 - BLDG_WALL,
+            BLDG_GROUND_Z + FLOOR_H * 2,
+            _mx + _fm_div,
+            BLDG_Y2 + _fm_pro,
+            BLDG_Z2,
+            T_CEMENT,
+        )
+    )
+
 # ── Brutalist Fins (All Exposed Facades) — currently disabled ─────────────────
 
 # East and West walls — solid, stopping short of NE/NW cutouts
@@ -2103,17 +2148,53 @@ B.append(
         T_WALL,
     )
 )
-B.append(
-    box(
+
+# West wall — two 120-unit wide floor-to-ceiling windows, evenly spread
+# evenly spread: one at 1/6 and one at 3/6 of wall length
+_ww_half = 120
+_ww_wall_y1, _ww_wall_y2 = BLDG_Y1, BLDG_Y2 - INDENT
+_ww_quarter = (_ww_wall_y2 - _ww_wall_y1) // 4
+_ww_c1 = _ww_wall_y1 + _ww_quarter  # 1/4 along wall
+_ww_c2 = _ww_wall_y1 + 2 * _ww_quarter  # 2/4 along wall
+_ww_c3 = _ww_wall_y1 + 3 * _ww_quarter  # 3/4 along wall
+B.extend(
+    layered_wall_y(
+        _ww_wall_y1,
         BLDG_X1,
-        BLDG_Y1,
         BLDG_GROUND_Z,
+        _ww_wall_y2,
         BLDG_X1 + BLDG_WALL,
-        BLDG_Y2 - INDENT,
         BLDG_Z2,
+        [
+            (_ww_c1 - _ww_half, BLDG_GROUND_Z, _ww_c1 + _ww_half, BLDG_Z2),
+            (_ww_c2 - _ww_half, BLDG_GROUND_Z, _ww_c2 + _ww_half, BLDG_Z2),
+            (_ww_c3 - _ww_half, BLDG_GROUND_Z, _ww_c3 + _ww_half, BLDG_Z2),
+        ],
         T_WALL,
     )
 )
+# Vertical mullions — protrude 12 units west of wall face
+# 2 interior + 2 side mullions per window (4 total each)
+_ww_div_w = 12
+_ww_protrude = 12  # how far they stick out past the wall face
+for _wc in [_ww_c1, _ww_c2, _ww_c3]:
+    for _dy in [
+        _wc - _ww_half,  # left edge
+        _wc - 48,  # interior left
+        _wc + 36,  # interior right
+        _wc + _ww_half - _ww_div_w,  # right edge
+    ]:
+        B.append(
+            box(
+                BLDG_X1 - _ww_protrude,
+                _dy,
+                BLDG_GROUND_Z,
+                BLDG_X1 + BLDG_WALL,
+                _dy + _ww_div_w,
+                BLDG_Z2,
+                T_CEMENT,
+            )
+        )
 
 # Roof — open above lift shaft, clipped for NW indentation
 B.append(
