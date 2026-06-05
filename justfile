@@ -8,6 +8,10 @@ quake_dir := "/Applications/id1"
 maps_dir  := quake_dir + "/maps"
 map_name  := "loyola"
 
+# Show available recipes
+default:
+    @just --list
+
 # Default task: setup, generate, compile, and deploy
 all: setup generate compile deploy
 

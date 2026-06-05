@@ -38,6 +38,7 @@ T_LAVA = "*lava1"  # torch flame
 T_TELEPORT = "*teleport"  # teleport effect
 T_BRICK = "bricka2_1"  # brick retaining wall (abutment pier west face)
 T_WHITE_STONE = "sfloor3_2"  # Ennis Drive entrance pillars
+T_ROOF = "wgrnd1_5"  # street/road texture for roof
 
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
@@ -844,26 +845,56 @@ B.append(
 )
 
 
+# ── Abutment building dimensions (referenced by embankment split below) ────────
+_AB_FLOORS = 3
+_AB_H = _AB_FLOORS * FLOOR_H  # 384 units tall
+_AB_D = 600  # building N-S depth (doubled)
+_ABUTMENT_X = min(PXS)  # = -1100
+_AB_X2 = _ABUTMENT_X + P_HW + 32  # east face of building  = -1031
+_AB_X1 = _AB_X2 - 576  # west face of building (doubled width)
+_NB_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
+_NB_Y1 = _NB_Y2 - _AB_D  # north building south face
+_SB_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
+_SB_Y2 = _SB_Y1 + _AB_D  # south building 1 north face = -1432
+_SB2_Y1 = _SB_Y2  # south building 2 south face = -1432
+_SB2_Y2 = _SB2_Y1 + _AB_D  # south building 2 north face = -832
+
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 _EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
+# Interpolate ramp top-Z at the building's west face so the slope is continuous
+_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (_AB_X1 - BRX1) / (_EMB_X2 - BRX1))
+# South segment — west of south buildings (through buildings' Y range)
 B.append(
     ramp_slab(
         BRX1,
-        _EMB_X2,
+        _AB_X1,
         _ROAD_Y1,
-        _ROAD_Y2,
+        _SB2_Y2,
         FZ1,
         FZ1,
         DZ2,
-        FZ2,
+        _emb_zt_at_ab_x1,
         T_ROCK,
         tt=T_ROCK,
     )
 )
+# South segment — full width between south buildings and north building
+B.append(
+    ramp_slab(BRX1, _EMB_X2, _SB2_Y2, _NB_Y1, FZ1, FZ1, DZ2, FZ2, T_ROCK, tt=T_ROCK)
+)
+# Middle segment — only west of north building
+B.append(
+    ramp_slab(
+        BRX1, _AB_X1, _NB_Y1, _NB_Y2, FZ1, FZ1, DZ2, _emb_zt_at_ab_x1, T_ROCK, tt=T_ROCK
+    )
+)
+# North of north building — restore original ramp
+B.append(
+    ramp_slab(BRX1, _EMB_X2, _NB_Y2, _ROAD_Y2, FZ1, FZ1, DZ2, FZ2, T_ROCK, tt=T_ROCK)
+)
 
 # Wall extending north from the abutment pier, deck height, city2_1 texture
 # Door opening ~160 units north of the pier (visible in bridge10)
-_ABUTMENT_X = min(PXS)  # = -1100
 _NORTH_WALL_Y1 = BRY2 + PIL_OVERHANG  # north face of pier = 152
 _SOUTH_WALL_Y2 = -(BRY2 + PIL_OVERHANG)  # south face of pier = -152
 _DOOR_W = 80  # door opening width (~5 ft)
@@ -871,24 +902,17 @@ _DOOR_OFF = 160  # distance from pier face to door centre
 _DOOR_H = (
     128  # door opening height — embankment rises ~56 units at wall, need clearance
 )
-# ── Abutment building dimensions (non-enterable brick buildings at N/S wall ends) ─
-_AB_FLOORS = 3
-_AB_H = _AB_FLOORS * FLOOR_H  # 384 units tall
-_AB_D = 300  # building N-S depth
-_AB_X2 = _ABUTMENT_X + P_HW + 32  # east face of building  = -1031
-_AB_X1 = _AB_X2 - 288  # west face of building  = -1319
-_NB_Y2 = WORLD_Y2 - WALL_T  # north building north face = 944
-_NB_Y1 = _NB_Y2 - _AB_D  # north building south face = 644
-_SB_Y1 = WORLD_Y1 + WALL_T  # south building south face = -2032
-_SB_Y2 = _SB_Y1 + _AB_D  # south building north face = -1732
-# North wall — two segments with door gap
+# (Building dimensions already defined above)
+# South brick wall — from bridge pier south face to nearest south building, with door gap
+# Door centered 160 units north of the building (closer to buildings)
+_s_door_y = _SB2_Y2 + _DOOR_OFF  # door centre Y
 B.append(
     box(
         _ABUTMENT_X - P_HW,
-        _NORTH_WALL_Y1,
+        _SB2_Y2,
         FZ2,
         _ABUTMENT_X + P_HW,
-        _NORTH_WALL_Y1 + _DOOR_OFF - _DOOR_W // 2,
+        _s_door_y - _DOOR_W // 2,
         DZ2,
         "city2_1",
     )
@@ -896,31 +920,7 @@ B.append(
 B.append(
     box(
         _ABUTMENT_X - P_HW,
-        _NORTH_WALL_Y1 + _DOOR_OFF + _DOOR_W // 2,
-        FZ2,
-        _ABUTMENT_X + P_HW,
-        _NB_Y1,
-        DZ2,
-        "city2_1",
-    )
-)
-# North door lintel (top of opening)
-B.append(
-    box(
-        _ABUTMENT_X - P_HW,
-        _NORTH_WALL_Y1 + _DOOR_OFF - _DOOR_W // 2,
-        FZ2 + _DOOR_H,
-        _ABUTMENT_X + P_HW,
-        _NORTH_WALL_Y1 + _DOOR_OFF + _DOOR_W // 2,
-        DZ2,
-        "city2_1",
-    )
-)
-# South wall — two segments with door gap
-B.append(
-    box(
-        _ABUTMENT_X - P_HW,
-        _SOUTH_WALL_Y2 - _DOOR_OFF + _DOOR_W // 2,
+        _s_door_y + _DOOR_W // 2,
         FZ2,
         _ABUTMENT_X + P_HW,
         _SOUTH_WALL_Y2,
@@ -931,22 +931,10 @@ B.append(
 B.append(
     box(
         _ABUTMENT_X - P_HW,
-        _SB_Y2,
-        FZ2,
-        _ABUTMENT_X + P_HW,
-        _SOUTH_WALL_Y2 - _DOOR_OFF - _DOOR_W // 2,
-        DZ2,
-        "city2_1",
-    )
-)
-# South door lintel
-B.append(
-    box(
-        _ABUTMENT_X - P_HW,
-        _SOUTH_WALL_Y2 - _DOOR_OFF - _DOOR_W // 2,
+        _s_door_y - _DOOR_W // 2,
         FZ2 + _DOOR_H,
         _ABUTMENT_X + P_HW,
-        _SOUTH_WALL_Y2 - _DOOR_OFF + _DOOR_W // 2,
+        _s_door_y + _DOOR_W // 2,
         DZ2,
         "city2_1",
     )
@@ -1026,17 +1014,260 @@ def _abutment_bldg_windows(bx1, bx2, by1, by2, bz1, floors, skip_n=False, skip_s
     return brushes
 
 
-# North building: south face at Y=644, north face flush with world wall at Y=944
-B.append(box(_AB_X1, _NB_Y1, FZ2, _AB_X2, _NB_Y2, FZ2 + _AB_H, "city2_1"))
+# ── North building — hollow shell with windows, entrance, and gable roof ───────
+_NB_WT = 16  # wall thickness
+_NB_WW = 36  # window half-width
+_NB_WH = 44  # window half-height
+_NB_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
+_NB_ENT_H = 100  # entrance height
+
+_nb_cx = (_AB_X1 + _AB_X2) // 2  # building X center
+_nb_cy = (_NB_Y1 + _NB_Y2) // 2  # building Y center (gable ridge line)
+
+# Window X centers on south/north face: 2 left + 2 right of the entrance gap
+_nb_wx = [_AB_X1 + (_nb_cx - _NB_ENT_HW - _AB_X1) * k // 3 for k in [1, 2]] + [
+    (_nb_cx + _NB_ENT_HW) + (_AB_X2 - _nb_cx - _NB_ENT_HW) * k // 3 for k in [1, 2]
+]
+# Window Y centers on east/west face: 3 evenly spaced
+_nb_wy = [_NB_Y1 + (_NB_Y2 - _NB_Y1) * k // 4 for k in [1, 2, 3]]
+
+_nb_wz_lo = (FLOOR_H - _NB_WH * 2) // 2  # window sill offset within a floor
+_nb_wz_hi = _nb_wz_lo + _NB_WH * 2  # window head offset within a floor
+
+
+def _nb_wins_xz(wx_list):
+    """Window openings (all floors) for X-facing wall (south/north)."""
+    return [
+        (
+            wx - _NB_WW,
+            FZ2 + fl * FLOOR_H + _nb_wz_lo,
+            wx + _NB_WW,
+            FZ2 + fl * FLOOR_H + _nb_wz_hi,
+        )
+        for fl in range(_AB_FLOORS)
+        for wx in wx_list
+    ]
+
+
+def _nb_wins_yz(wy_list):
+    """Window openings (all floors) for Y-facing wall (east/west)."""
+    return [
+        (
+            wy - _NB_WW,
+            FZ2 + fl * FLOOR_H + _nb_wz_lo,
+            wy + _NB_WW,
+            FZ2 + fl * FLOOR_H + _nb_wz_hi,
+        )
+        for fl in range(_AB_FLOORS)
+        for wy in wy_list
+    ]
+
+
+# South wall (faces bridge) — windows + ground-level entrance
+_nb_s_openings = _nb_wins_xz(_nb_wx) + [
+    (_nb_cx - _NB_ENT_HW, FZ2, _nb_cx + _NB_ENT_HW, FZ2 + _NB_ENT_H)
+]
 B.extend(
-    _abutment_bldg_windows(_AB_X1, _AB_X2, _NB_Y1, _NB_Y2, FZ2, _AB_FLOORS, skip_n=True)
+    layered_wall(
+        _AB_X1,
+        _NB_Y1,
+        FZ2,
+        _AB_X2,
+        _NB_Y1 + _NB_WT,
+        FZ2 + _AB_H,
+        _nb_s_openings,
+        "city2_1",
+    )
+)
+# North wall — windows only
+B.extend(
+    layered_wall(
+        _AB_X1,
+        _NB_Y2 - _NB_WT,
+        FZ2,
+        _AB_X2,
+        _NB_Y2,
+        FZ2 + _AB_H,
+        _nb_wins_xz(_nb_wx),
+        "city2_1",
+    )
+)
+# East wall — windows (spans between south/north wall inner faces)
+B.extend(
+    layered_wall_y(
+        _NB_Y1 + _NB_WT,
+        _AB_X2 - _NB_WT,
+        FZ2,
+        _NB_Y2 - _NB_WT,
+        _AB_X2,
+        FZ2 + _AB_H,
+        _nb_wins_yz(_nb_wy),
+        "city2_1",
+    )
+)
+# West wall — windows
+B.extend(
+    layered_wall_y(
+        _NB_Y1 + _NB_WT,
+        _AB_X1,
+        FZ2,
+        _NB_Y2 - _NB_WT,
+        _AB_X1 + _NB_WT,
+        FZ2 + _AB_H,
+        _nb_wins_yz(_nb_wy),
+        "city2_1",
+    )
+)
+# Ceiling slab
+B.append(
+    box(_AB_X1, _NB_Y1, FZ2 + _AB_H, _AB_X2, _NB_Y2, FZ2 + _AB_H + _NB_WT, "city2_1")
 )
 
-# South building: north face at Y=-1732, south face flush with world wall at Y=-2032
-B.append(box(_AB_X1, _SB_Y1, FZ2, _AB_X2, _SB_Y2, FZ2 + _AB_H, "city2_1"))
-B.extend(
-    _abutment_bldg_windows(_AB_X1, _AB_X2, _SB_Y1, _SB_Y2, FZ2, _AB_FLOORS, skip_s=True)
+# Gable (A-frame) roof — ridge runs N-S at building X center, FLOOR_H above ceiling
+_nb_eave_z = FZ2 + _AB_H + _NB_WT  # top of ceiling slab = eave level
+_nb_ridge_z = _nb_eave_z + FLOOR_H  # ridge apex
+_nb_slab_t = 16  # roof slab thickness at eave
+# West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
+B.append(
+    ramp_slab(
+        _AB_X1,
+        _nb_cx,
+        _NB_Y1,
+        _NB_Y2,
+        _nb_eave_z,
+        _nb_eave_z,
+        _nb_eave_z + _nb_slab_t,
+        _nb_ridge_z,
+        T_ROOF,
+    )
 )
+# East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
+B.append(
+    ramp_slab(
+        _nb_cx,
+        _AB_X2,
+        _NB_Y1,
+        _NB_Y2,
+        _nb_eave_z,
+        _nb_eave_z,
+        _nb_ridge_z,
+        _nb_eave_z + _nb_slab_t,
+        T_ROOF,
+    )
+)
+# Interior floor — flat ground surface inside the building (covers the hill void)
+B.append(
+    box(
+        _AB_X1 + _NB_WT,
+        _NB_Y1 + _NB_WT,
+        FZ1,
+        _AB_X2 - _NB_WT,
+        _NB_Y2 - _NB_WT,
+        FZ2,
+        T_ROCK,
+        tt=T_ROAD,
+    )
+)
+
+
+# ── Two south buildings — exact copies of north building, stacked N-S ──────────
+# Same X footprint (_AB_X1.._AB_X2), entrance on east face (faces Charles Street).
+
+
+def _make_south_bldg(by1, by2):
+    bx1, bx2 = _AB_X1, _AB_X2
+    cx = (bx1 + bx2) // 2
+    ent_hw, ent_h = 48, 100
+    wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
+        (cx + ent_hw) + (bx2 - cx - ent_hw) * k // 3 for k in [1, 2]
+    ]
+    wy_list = [by1 + (by2 - by1) * k // 4 for k in [1, 2, 3]]
+
+    def wxz():
+        return [
+            (
+                wx - _NB_WW,
+                FZ2 + fl * FLOOR_H + _nb_wz_lo,
+                wx + _NB_WW,
+                FZ2 + fl * FLOOR_H + _nb_wz_hi,
+            )
+            for fl in range(_AB_FLOORS)
+            for wx in wx_list
+        ]
+
+    def wyz():
+        return [
+            (
+                wy - _NB_WW,
+                FZ2 + fl * FLOOR_H + _nb_wz_lo,
+                wy + _NB_WW,
+                FZ2 + fl * FLOOR_H + _nb_wz_hi,
+            )
+            for fl in range(_AB_FLOORS)
+            for wy in wy_list
+        ]
+
+    brushes = []
+    # Interior floor
+    brushes.append(
+        box(
+            bx1 + _NB_WT,
+            by1 + _NB_WT,
+            FZ1,
+            bx2 - _NB_WT,
+            by2 - _NB_WT,
+            FZ2,
+            T_ROCK,
+            tt=T_ROAD,
+        )
+    )
+    brushes.extend(
+        layered_wall(bx1, by1, FZ2, bx2, by1 + _NB_WT, FZ2 + _AB_H, wxz(), "city2_1")
+    )
+    brushes.extend(
+        layered_wall(bx1, by2 - _NB_WT, FZ2, bx2, by2, FZ2 + _AB_H, wxz(), "city2_1")
+    )
+    brushes.extend(
+        layered_wall_y(
+            by1 + _NB_WT,
+            bx1,
+            FZ2,
+            by2 - _NB_WT,
+            bx1 + _NB_WT,
+            FZ2 + _AB_H,
+            wyz(),
+            "city2_1",
+        )
+    )
+    cy = (by1 + by2) // 2
+    east_openings = wyz() + [(cy - ent_hw, FZ2, cy + ent_hw, FZ2 + ent_h)]
+    brushes.extend(
+        layered_wall_y(
+            by1 + _NB_WT,
+            bx2 - _NB_WT,
+            FZ2,
+            by2 - _NB_WT,
+            bx2,
+            FZ2 + _AB_H,
+            east_openings,
+            "city2_1",
+        )
+    )
+    brushes.append(
+        box(bx1, by1, FZ2 + _AB_H, bx2, by2, FZ2 + _AB_H + _NB_WT, "city2_1")
+    )
+    eave_z, ridge_z, slab_t = FZ2 + _AB_H + _NB_WT, FZ2 + _AB_H + _NB_WT + FLOOR_H, 16
+    brushes.append(
+        ramp_slab(bx1, cx, by1, by2, eave_z, eave_z, eave_z + slab_t, ridge_z, T_ROOF)
+    )
+    brushes.append(
+        ramp_slab(cx, bx2, by1, by2, eave_z, eave_z, ridge_z, eave_z + slab_t, T_ROOF)
+    )
+    return brushes
+
+
+B.extend(_make_south_bldg(_SB_Y1, _SB_Y2))
+B.extend(_make_south_bldg(_SB2_Y1, _SB2_Y2))
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -2042,7 +2273,7 @@ E.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east",
-        origin=f"{(_AB_X1 + _AB_X2) // 2} {(_NB_Y1 + _NB_Y2) // 2} {int(FZ2 + _AB_H + 40)}",
+        origin=f"{(_AB_X1 + _AB_X2) // 2} {(_NB_Y1 + _NB_Y2) // 2} {int(_nb_ridge_z + 40)}",
         angle="270",  # facing south toward the bridge
     )
 )
@@ -2285,6 +2516,14 @@ _lift_brush = [
     )
 ]
 E.append(brush_ent("func_plat", _lift_brush, height=str(_lift_travel), speed="200"))
+
+# Interior lights for the three campus buildings (north + 2 south)
+_bldg_light_x = (_AB_X1 + _AB_X2) // 2
+for _bly1, _bly2 in [(_NB_Y1, _NB_Y2), (_SB_Y1, _SB_Y2), (_SB2_Y1, _SB2_Y2)]:
+    _bly = (_bly1 + _bly2) // 2
+    for _bfl in range(_AB_FLOORS):
+        _blz = FZ2 + _bfl * FLOOR_H + FLOOR_H // 2
+        E.append(ent("light", origin=f"{_bldg_light_x} {_bly} {_blz}", light="200"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(E) + "\n"
