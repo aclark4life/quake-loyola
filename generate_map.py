@@ -2036,15 +2036,18 @@ B.extend(
     )
 )
 
-# NW Indentation inner walls
-B.append(
-    box(
+# NW Indentation inner walls — recessed back wall has a centered 48-unit window
+_nw_win_cx = BLDG_X1 + INDENT // 2  # = 1306
+_win_half = 24
+B.extend(
+    layered_wall(
         BLDG_X1,
         BLDG_Y2 - INDENT,
         BLDG_GROUND_Z,
         BLDG_X1 + INDENT,
         BLDG_Y2 - INDENT + BLDG_WALL,
         BLDG_Z2,
+        [(_nw_win_cx - _win_half, BLDG_GROUND_Z, _nw_win_cx + _win_half, BLDG_Z2)],
         T_WALL,
     )
 )
@@ -2060,15 +2063,17 @@ B.append(
     )
 )
 
-# NE Indentation inner walls (mirror of NW)
-B.append(
-    box(
+# NE Indentation inner walls (mirror of NW) — recessed back wall has a centered 48-unit window
+_ne_win_cx = BLDG_X2 - INDENT // 2  # = 1866
+B.extend(
+    layered_wall(
         BLDG_X2 - INDENT,
         BLDG_Y2 - INDENT,
         BLDG_GROUND_Z,
         BLDG_X2,
         BLDG_Y2 - INDENT + BLDG_WALL,
         BLDG_Z2,
+        [(_ne_win_cx - _win_half, BLDG_GROUND_Z, _ne_win_cx + _win_half, BLDG_Z2)],
         T_WALL,
     )
 )
