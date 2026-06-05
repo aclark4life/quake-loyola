@@ -2467,6 +2467,79 @@ east_lower = [box(_elx1, -T_ARCH_RIN, FZ2, _elx2, T_ARCH_RIN, DZ2, T_TELEPORT)]
 E.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 E.append(brush_ent("func_illusionary", east_lower))
 
+# ── North & South Charles Street arch teleports → bridge deck centre ─────────
+_NS_ARCH_RIN = 256  # inner radius = road half-width
+_NS_ARCH_ROUT = 312  # outer radius (post thickness = 56, more substantial)
+_NS_ARCH_STILT = 96  # straight post height before arch springs
+_NS_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
+
+E.append(
+    ent(
+        "info_teleport_destination",
+        targetname="dest_bridge_mid",
+        origin=f"0 0 {int(dtop(0) + 56)}",
+        angle="90",
+    )
+)
+
+_NS_TRIG_INSET = 8  # push trigger away from world walls and road surface
+
+for _syb, _syf, _trig_y1, _trig_y2 in [
+    (
+        _ROAD_Y1,
+        _ROAD_Y1 + _NS_ARCH_W,
+        _ROAD_Y1 + _NS_TRIG_INSET,
+        _ROAD_Y1 + _NS_ARCH_W,
+    ),  # south arch — trigger inset from south wall
+    (
+        _ROAD_Y2 - _NS_ARCH_W,
+        _ROAD_Y2,
+        _ROAD_Y2 - _NS_ARCH_W,
+        _ROAD_Y2 - _NS_TRIG_INSET,
+    ),  # north arch — trigger inset from north wall
+]:
+    # Visible stone arch posts + ring
+    B.extend(
+        arch_wall_y(
+            _syb,
+            _syf,
+            WORLD_X1 + WALL_T,
+            WORLD_X2 - WALL_T,
+            FZ2,
+            FZ2 + _NS_ARCH_STILT + _NS_ARCH_RIN,
+            _NS_ARCH_RIN,
+            _NS_ARCH_ROUT,
+            A_SEGS,
+            T_STONE,
+            stilt_h=_NS_ARCH_STILT,
+        )
+    )
+    # Box trigger — reliable activation, inset from walls
+    _ns_trig = [
+        box(
+            ROAD_X1 + _NS_TRIG_INSET,
+            _trig_y1,
+            FZ2 + 4,
+            ROAD_X2 - _NS_TRIG_INSET,
+            _trig_y2,
+            FZ2 + _NS_ARCH_STILT + _NS_ARCH_RIN,
+            T_TELEPORT,
+        )
+    ]
+    E.append(brush_ent("trigger_teleport", _ns_trig, target="dest_bridge_mid"))
+    # Arch-shaped illusionary fill so the teleport glow looks like an arch
+    _ns_glow = arch_fill_y(
+        _syb,
+        _syf,
+        0.0,
+        FZ2 + 4,
+        _NS_ARCH_RIN,
+        A_SEGS,
+        T_TELEPORT,
+        stilt_h=_NS_ARCH_STILT,
+    )
+    E.append(brush_ent("func_illusionary", _ns_glow))
+
 
 E.append(
     ent(
