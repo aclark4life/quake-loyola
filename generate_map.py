@@ -2230,6 +2230,26 @@ B.extend(
 # Shaft East wall (internal)
 B.append(box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, T_WALL))
 
+# ── Knott Hall hallways — N-S corridor, same width as entrance door ───────────
+# Two partition walls flanking the hallway opening (_ENT_X1.._ENT_X2 = 128 wide).
+# Runs full interior depth and full building height; door openings added later.
+B.append(
+    box(_ENT_X1 - BLDG_WALL, _biy1, BLDG_GROUND_Z, _ENT_X1, _biy2, BLDG_Z2, T_WALL)
+)  # west hallway wall (solid)
+# East wall: open at shaft Y zone (_sty1.._sty2) so elevator doors aren't blocked.
+B.extend(
+    layered_wall_y(
+        _biy1,
+        _ENT_X2,
+        BLDG_GROUND_Z,
+        _biy2,
+        _ENT_X2 + BLDG_WALL,
+        BLDG_Z2,
+        [(_sty1, BLDG_GROUND_Z, _sty2, BLDG_Z2)],
+        T_WALL,
+    )
+)  # east hallway wall
+
 DRAW_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
 # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
