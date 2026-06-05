@@ -1966,6 +1966,23 @@ if BLDG_GROUND_Z > FZ2:
             tt=T_ROAD,
         )
     )
+    # Long ground ramp from east Charles Street sidewalk up to Knott Hall west wall
+    _west_ramp_x1 = ROAD_X2 + _WALK_W  # east edge of east sidewalk = 336
+    _west_ramp_x2 = BLDG_X1  # Knott Hall west wall = 1266
+    B.append(
+        ramp_slab(
+            _west_ramp_x1,
+            _west_ramp_x2,
+            BLDG_Y1,
+            BLDG_Y2,
+            FZ2,
+            FZ2,
+            FZ2 + _WALK_H,
+            BLDG_GROUND_Z,
+            T_ROCK,
+            tt=T_ROCK,
+        )
+    )
 _bix1 = BLDG_X1 + BLDG_WALL  # interior west
 _bix2 = BLDG_X2 - BLDG_WALL  # interior east
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
