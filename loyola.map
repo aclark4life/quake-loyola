@@ -18362,7 +18362,7 @@
 "classname" "info_teleport_destination"
 "targetname" "dest_bridge_mid"
 "origin" "0 0 371"
-"angle" "90"
+"angle" "0"
 }
 {
 "classname" "trigger_teleport"
