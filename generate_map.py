@@ -2158,6 +2158,9 @@ B.append(
 B.append(
     box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
 )  # south of shaft
+B.append(
+    box(_stx1, _sty2, BLDG_Z2, _stx2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, T_FLOOR_BLDG)
+)  # north of shaft (closes roof over north wall above shaft)
 
 # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
 # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
