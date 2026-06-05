@@ -697,6 +697,85 @@ for _i in range(_CRN_SEGS):
         tri_prism(_cx_ne, _cy_ne, _px0, _py0, _px1, _py1, FZ2, FZ2 + _WALK_H, T_CEMENT)
     )
 
+# ── Sidewalk ramps — smooth ground-to-sidewalk transitions ───────────────────
+_RAMP_W = 64  # ramp width in units
+
+# West ramp — slopes from ground up to west sidewalk edge (full N-S extent)
+B.append(
+    ramp_slab(
+        ROAD_X1 - _WALK_W - _RAMP_W,
+        ROAD_X1 - _WALK_W,
+        _ROAD_Y1,
+        _ROAD_Y2,
+        FZ1,
+        FZ1,
+        FZ2,
+        FZ2 + _WALK_H,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+# East ramp — south of Ennis Road
+B.append(
+    ramp_slab(
+        ROAD_X2 + _WALK_W,
+        ROAD_X2 + _WALK_W + _RAMP_W,
+        _ROAD_Y1,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
+        FZ1,
+        FZ1,
+        FZ2 + _WALK_H,
+        FZ2,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+# East ramp — north of Ennis Road
+B.append(
+    ramp_slab(
+        ROAD_X2 + _WALK_W,
+        ROAD_X2 + _WALK_W + _RAMP_W,
+        _ENNIS_Y + _ENNIS_HW + _WALK_W,
+        _ROAD_Y2,
+        FZ1,
+        FZ1,
+        FZ2 + _WALK_H,
+        FZ2,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+# Ennis north ramp — slopes from north curb edge down going north
+B.append(
+    ramp_slab_y(
+        ROAD_X2 + _WALK_W,
+        _ENNIS_X2,
+        _ENNIS_Y + _ENNIS_HW + _WALK_W,
+        _ENNIS_Y + _ENNIS_HW + _WALK_W + _RAMP_W,
+        FZ1,
+        FZ1,
+        FZ2 + _WALK_H,
+        FZ2,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+# Ennis south ramp — slopes from south curb edge down going south
+B.append(
+    ramp_slab_y(
+        ROAD_X2 + _WALK_W,
+        _ENNIS_X2,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W - _RAMP_W,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
+        FZ1,
+        FZ1,
+        FZ2,
+        FZ2 + _WALK_H,
+        T_ROCK,
+        tt=T_ROCK,
+    )
+)
+
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
 _EPL_HW = 22  # pillar half-width (was 30, ×0.75)
 _EPL_OFFSET = _WALK_W + 20
