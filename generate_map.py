@@ -2507,7 +2507,7 @@ E.append(
         "info_teleport_destination",
         targetname="dest_bridge_mid",
         origin=f"0 0 {int(dtop(0) + 56)}",
-        angle="90",
+        angle="0",
     )
 )
 
