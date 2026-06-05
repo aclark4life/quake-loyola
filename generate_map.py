@@ -1269,6 +1269,30 @@ def _make_south_bldg(by1, by2):
 B.extend(_make_south_bldg(_SB_Y1, _SB_Y2))
 B.extend(_make_south_bldg(_SB2_Y1, _SB2_Y2))
 
+# ── Iron fence along east face of west buildings ──────────────────────────
+_FNC_X1 = _AB_X2 + 96  # well clear of building face
+_FNC_X2 = _FNC_X1 + 2  # picket/rail thickness
+_FNC_H = 96  # fence height
+_FNC_SPACING = 16  # picket center-to-center
+_FNC_RAIL = 8  # rail thickness
+_FNC_TEX = "metal4_4"
+
+for _fy1, _fy2 in [(_ROAD_Y1, _ROAD_Y2)]:
+    # Top rail — thin, dropped so pickets extend above it
+    B.append(
+        box(
+            _FNC_X1, _fy1, FZ2 + _FNC_H - 28, _FNC_X2, _fy2, FZ2 + _FNC_H - 26, _FNC_TEX
+        )
+    )
+    # Pickets — thin (2 wide) with thick posts (8 wide) every 10th
+    _py = _fy1
+    _pi = 0
+    while _py + 2 <= _fy2:
+        _pw = 8 if _pi % 10 == 0 else 2
+        B.append(box(_FNC_X1, _py, FZ2, _FNC_X2, _py + _pw, FZ2 + _FNC_H, _FNC_TEX))
+        _py += _FNC_SPACING
+        _pi += 1
+
 
 # ════════════════════════════════════════════════════════════════════════════════
 # West flat approach removed — arch now starts at world edge
