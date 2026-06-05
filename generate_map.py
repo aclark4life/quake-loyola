@@ -2513,7 +2513,7 @@ ROAD_Z = FZ2 + 8
 _tele_hx1, _tele_hx2 = _ENT_X1, _ENT_X2  # hallway X
 _tele_hy1, _tele_hy2 = _biy1, _biy1 + 48  # south trigger zone
 _tele_hxc = (_tele_hx1 + _tele_hx2) // 2  # hallway X center
-_tele_dest_y = (_biy1 + _biy2) // 2  # destination = hallway midpoint, far from trigger
+_tele_dest_y = _biy1 + 72  # just north of trigger zone
 
 for _fl in range(BLDG_FLOORS):
     _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
