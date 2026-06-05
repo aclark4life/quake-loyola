@@ -2452,13 +2452,6 @@ E.append(
         origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 3 + 40}",
     )
 )
-# Rocket launcher — north building roof (teleport reward)
-E.append(
-    ent(
-        "weapon_rocketlauncher",
-        origin=f"{_nb_cx_dm} {_nb_cy_dm} {int(_nb_ridge_z + 40)}",
-    )
-)
 
 # Super shotgun — spread around mid-tier locations
 E.append(

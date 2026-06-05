@@ -17778,10 +17778,6 @@
 "origin" "1586 -1072 504"
 }
 {
-"classname" "weapon_rocketlauncher"
-"origin" "-1465 734 568"
-}
-{
 "classname" "weapon_supershotgun"
 "origin" "1586 -336 120"
 }
