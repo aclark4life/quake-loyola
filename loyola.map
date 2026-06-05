@@ -16029,58 +16029,112 @@
 {
 "classname" "info_player_deathmatch"
 "origin" "0 0 347"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-160 0 350"
+"origin" "-200 0 351"
+"angle" "90"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "160 0 341"
+"origin" "200 0 340"
+"angle" "270"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-320 0 351"
+"origin" "-400 0 351"
+"angle" "90"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "320 0 334"
+"origin" "400 0 330"
+"angle" "270"
 }
 {
 "classname" "info_player_deathmatch"
 "origin" "1586 -196 256"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "1586 -320 120"
+"origin" "1586 -336 120"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "1586 -1072 248"
+"origin" "1486 -1072 248"
+"angle" "270"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "1586 -1072 376"
+"origin" "1686 -1072 376"
+"angle" "90"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "1586 -1072 504"
+"origin" "1586 -1788 504"
+"angle" "0"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "1000 0 8"
+"origin" "1586 -1072 632"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "-1000 0 8"
+"origin" "1586 -1072 760"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "0 300 8"
+"origin" "0 300 32"
+"angle" "180"
 }
 {
 "classname" "info_player_deathmatch"
-"origin" "0 -400 8"
+"origin" "0 -400 32"
+"angle" "0"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "0 -1732 32"
+"angle" "270"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-1465 734 40"
+"angle" "90"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-1465 734 168"
+"angle" "90"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-1465 734 568"
+"angle" "90"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-1465 -1732 40"
+"angle" "90"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-1465 -1132 40"
+"angle" "90"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "800 0 32"
+"angle" "270"
+}
+{
+"classname" "info_player_deathmatch"
+"origin" "-800 0 32"
+"angle" "90"
 }
 {
 "classname" "weapon_rocketlauncher"
@@ -16088,15 +16142,43 @@
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1586 -1072 248"
-}
-{
-"classname" "weapon_rocketlauncher"
 "origin" "1586 -1072 504"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1000 0 8"
+"origin" "-1465 734 568"
+}
+{
+"classname" "weapon_supershotgun"
+"origin" "1586 -336 120"
+}
+{
+"classname" "weapon_supershotgun"
+"origin" "0 300 32"
+}
+{
+"classname" "weapon_supershotgun"
+"origin" "-1465 -1732 40"
+}
+{
+"classname" "weapon_grenadelauncher"
+"origin" "1586 -1072 376"
+}
+{
+"classname" "weapon_grenadelauncher"
+"origin" "-1465 -1132 40"
+}
+{
+"classname" "weapon_nailgun"
+"origin" "-600 0 32"
+}
+{
+"classname" "weapon_nailgun"
+"origin" "600 0 32"
+}
+{
+"classname" "weapon_nailgun"
+"origin" "1586 -1072 248"
 }
 {
 "classname" "item_rockets"
@@ -16120,35 +16202,51 @@
 }
 {
 "classname" "item_rockets"
-"origin" "1666 -1152 376"
+"origin" "400 0 32"
 }
 {
 "classname" "item_rockets"
-"origin" "1506 -1152 376"
+"origin" "-400 0 32"
 }
 {
 "classname" "item_rockets"
-"origin" "1666 -992 376"
+"origin" "800 0 32"
 }
 {
 "classname" "item_rockets"
-"origin" "1506 -992 376"
+"origin" "-800 0 32"
 }
 {
 "classname" "item_rockets"
-"origin" "600 0 8"
+"origin" "1666 -1072 248"
 }
 {
 "classname" "item_rockets"
-"origin" "-600 0 8"
+"origin" "1666 -1072 376"
 }
 {
 "classname" "item_rockets"
-"origin" "1000 0 8"
+"origin" "1666 -1072 504"
 }
 {
 "classname" "item_rockets"
-"origin" "-1000 0 8"
+"origin" "1666 -1072 632"
+}
+{
+"classname" "item_shells"
+"origin" "0 -300 32"
+}
+{
+"classname" "item_shells"
+"origin" "-1465 734 40"
+}
+{
+"classname" "item_spikes"
+"origin" "-400 200 32"
+}
+{
+"classname" "item_spikes"
+"origin" "400 -200 32"
 }
 {
 "classname" "item_health"
@@ -16161,6 +16259,30 @@
 {
 "classname" "item_health"
 "origin" "1586 -1072 376"
+}
+{
+"classname" "item_health"
+"origin" "0 400 32"
+}
+{
+"classname" "item_health"
+"origin" "0 -600 32"
+}
+{
+"classname" "item_health"
+"origin" "-1465 -1132 40"
+}
+{
+"classname" "item_armor1"
+"origin" "-200 0 323.16584789326043"
+}
+{
+"classname" "item_armor2"
+"origin" "1586 -1072 632"
+}
+{
+"classname" "item_armorInv"
+"origin" "-1465 734 568"
 }
 {
 "classname" "light_flame_large_yellow"
