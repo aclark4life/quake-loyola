@@ -2082,7 +2082,7 @@ if BLDG_GROUND_Z > FZ2:
             BLDG_GROUND_Z,
             FZ2,
             TEX_GROUND,
-            tt=TEX_ROAD,
+            tt=TEX_GROUND,
         )
     )
     # Long ground ramp from east Charles Street sidewalk up to Knott Hall west wall
