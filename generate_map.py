@@ -2124,7 +2124,7 @@ if BLDG_GROUND_Z > FZ2:
         ramp_slab(
             _west_ramp_x1,
             _west_ramp_x2,
-            BLDG_Y1,
+            WORLD_Y1 + WALL_T,
             BLDG_Y2,
             FZ2,
             FZ2,
@@ -2435,16 +2435,101 @@ _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
+INDENT = 80  # corner indentation depth
+_win_half = 24  # half-width of recessed corner windows
+_fm_div = 12  # mullion width
+_fm_pro = 12  # mullion protrusion depth
 
-# South wall — solid back wall
-BRUSHES.append(
-    box(
-        BLDG_X1, BLDG_Y1, BLDG_GROUND_Z, BLDG_X2, BLDG_Y1 + BLDG_WALL, BLDG_Z2, TEX_WALL
+# South wall — mirrors north wall: indented SW/SE corners with recessed windows
+# Main south face (between SW and SE indentations) — solid, no window
+BRUSHES.extend(
+    layered_wall(
+        BLDG_X1 + INDENT,
+        BLDG_Y1,
+        BLDG_GROUND_Z,
+        BLDG_X2 - INDENT,
+        BLDG_Y1 + BLDG_WALL,
+        BLDG_Z2,
+        [],
+        TEX_WALL,
     )
 )
-
+# SW Indentation inner walls — recessed back wall with centered 48-unit window
+_sw_win_cx = BLDG_X1 + INDENT // 2  # = 1306
+BRUSHES.extend(
+    layered_wall(
+        BLDG_X1,
+        BLDG_Y1 + INDENT - BLDG_WALL,
+        BLDG_GROUND_Z,
+        BLDG_X1 + INDENT,
+        BLDG_Y1 + INDENT,
+        BLDG_Z2,
+        [(_sw_win_cx - _win_half, BLDG_GROUND_Z, _sw_win_cx + _win_half, BLDG_Z2)],
+        TEX_WALL,
+    )
+)
+BRUSHES.append(
+    box(
+        BLDG_X1 + INDENT - BLDG_WALL,
+        BLDG_Y1,
+        BLDG_GROUND_Z,
+        BLDG_X1 + INDENT,
+        BLDG_Y1 + INDENT,
+        BLDG_Z2,
+        TEX_WALL,
+    )
+)
+# SE Indentation inner walls — recessed back wall with centered 48-unit window
+_se_win_cx = BLDG_X2 - INDENT // 2  # = 1866
+BRUSHES.extend(
+    layered_wall(
+        BLDG_X2 - INDENT,
+        BLDG_Y1 + INDENT - BLDG_WALL,
+        BLDG_GROUND_Z,
+        BLDG_X2,
+        BLDG_Y1 + INDENT,
+        BLDG_Z2,
+        [(_se_win_cx - _win_half, BLDG_GROUND_Z, _se_win_cx + _win_half, BLDG_Z2)],
+        TEX_WALL,
+    )
+)
+BRUSHES.append(
+    box(
+        BLDG_X2 - INDENT,
+        BLDG_Y1,
+        BLDG_GROUND_Z,
+        BLDG_X2 - INDENT + BLDG_WALL,
+        BLDG_Y1 + INDENT,
+        BLDG_Z2,
+        TEX_WALL,
+    )
+)
+# South mullions — protrude outward (south, -Y)
+for _mx in [_sw_win_cx - _win_half - _fm_div, _sw_win_cx + _win_half]:
+    BRUSHES.append(
+        box(
+            _mx,
+            BLDG_Y1 + INDENT - BLDG_WALL,
+            BLDG_GROUND_Z,
+            _mx + _fm_div,
+            BLDG_Y1 + INDENT + _fm_pro,
+            BLDG_Z2,
+            TEX_CEMENT,
+        )
+    )
+for _mx in [_se_win_cx - _win_half - _fm_div, _se_win_cx + _win_half]:
+    BRUSHES.append(
+        box(
+            _mx,
+            BLDG_Y1 + INDENT - BLDG_WALL,
+            BLDG_GROUND_Z,
+            _mx + _fm_div,
+            BLDG_Y1 + INDENT + _fm_pro,
+            BLDG_Z2,
+            TEX_CEMENT,
+        )
+    )
 # North-West Indentation (Corner Notch)
-INDENT = 80
 # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
 _door_n = [
     (_ENT_X1, BLDG_GROUND_Z, _ENT_X2, BLDG_GROUND_Z + FLOOR_H)
@@ -2470,7 +2555,6 @@ BRUSHES.extend(
 
 # NW Indentation inner walls — recessed back wall has a centered 48-unit window
 _nw_win_cx = BLDG_X1 + INDENT // 2  # = 1306
-_win_half = 24
 BRUSHES.extend(
     layered_wall(
         BLDG_X1,
@@ -2523,8 +2607,6 @@ BRUSHES.append(
 
 # Front mullions — protruding sfloor3_2 posts on each side of the recessed windows
 # and the narrow vertical window on the main north face. All protrude 12 units outward.
-_fm_div = 12  # mullion width
-_fm_pro = 12  # protrusion depth
 # NW recessed window: mullions just outside the opening so player can fit through
 for _mx in [_nw_win_cx - _win_half - _fm_div, _nw_win_cx + _win_half]:
     BRUSHES.append(
