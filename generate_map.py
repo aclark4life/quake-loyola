@@ -246,7 +246,9 @@ def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
 def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     """Prismatic slab whose bottom and top faces are sloped in the Y direction.
     zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2.
-    y1 and y2 may be passed in either order."""
+    y1 and y2 may be passed in either order.
+    When one end tapers to a knife-edge (zb==zt), that end face is omitted so
+    the brush remains valid (5-face wedge instead of a degenerate 6-face prism)."""
     # Normalise so y1 <= y2 (face normals assume this ordering)
     if y1 > y2:
         y1, y2 = y2, y1
@@ -254,20 +256,18 @@ def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
         zt1, zt2 = zt2, zt1
     tt = tt or tex
     tb = tb or tex
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
-                face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
-                face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex),  # -Y
-                face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex),  # +Y
-                face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
-                face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
-            ]
-        )
-        + "\n}"
-    )
+    faces = [
+        face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
+        face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
+        face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
+        face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
+    ]
+    # Only emit end-cap faces when the end has non-zero thickness
+    if zt1 != zb1:
+        faces.append(face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex))  # -Y
+    if zt2 != zb2:
+        faces.append(face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex))  # +Y
+    return "{\n" + "\n".join(faces) + "\n}"
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
@@ -2454,8 +2454,6 @@ _RAIL_H = 72  # stair handrail height
 _RAIL_TEX = "metal4_4"
 _RAIL_SPACING = 16
 for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
-    _ry = BLDG_Y2
-    _ri = 0
     # Top rail - sloped section on stairs only
     _z_top_plat = BLDG_GROUND_Z + _RAIL_H - 28
     _z_top_end = FZ2 + _RAIL_H - 28
