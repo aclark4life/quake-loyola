@@ -2282,6 +2282,43 @@ BRUSHES.append(
     )
 )
 
+# ── West sidewalk south extension — flat at hill level from building south to world edge ──
+BRUSHES.append(
+    box(
+        _BR_WS_X1,
+        WORLD_Y1 + WALL_T,
+        FZ1,
+        _BR_WS_X2,
+        _BR_Y1,
+        _BR_ZT_S + _WALK_H,
+        TEX_CEMENT,
+    )
+)
+# ── East sidewalk south extension — flat at hill level from building south to world edge ──
+BRUSHES.append(
+    box(
+        _BR_ES_X1,
+        WORLD_Y1 + WALL_T,
+        FZ1,
+        _BR_ES_X2,
+        _BR_Y1,
+        _BR_ZT_S + _WALK_H,
+        TEX_CEMENT,
+    )
+)
+# ── Road south extension — flat at hill level from building south to world edge ──
+BRUSHES.append(
+    box(
+        _BR_RD_X1,
+        WORLD_Y1 + WALL_T,
+        FZ1,
+        _BR_RD_X2,
+        _BR_Y1,
+        _BR_ZT_S + 2,
+        TEX_ROAD,
+    )
+)
+
 # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
 _BR_EXT_Y1 = _BR_Y2  # = -256 (north face of building)
 _BR_EXT_Y2 = _ENNIS_Y - _ENNIS_HW - _WALK_W  # = 328 (Ennis south sidewalk edge)
