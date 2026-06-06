@@ -2182,7 +2182,7 @@ for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
         )
     )
 
-    # Pickets and thick posts
+    # Pickets (uniform thin posts for handrail)
     while _ry <= _STAIR_Y_END:
         if _ry < _STAIR_Y0:
             _gz = BLDG_GROUND_Z
@@ -2192,7 +2192,7 @@ for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
                 BLDG_GROUND_Z - int((_ry - _STAIR_Y0) * (_STEP_RISE / _STEP_DEPTH)),
             )
 
-        _pw = 8 if _ri % 10 == 0 else 2
+        _pw = 2
         if _is_west:
             _px1, _px2 = _rx_base - _pw, _rx_base
         else:
