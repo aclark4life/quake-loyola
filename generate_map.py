@@ -2134,6 +2134,18 @@ if BLDG_GROUND_Z > FZ2:
             tt=TEX_GROUND,
         )
     )
+    # South terrain fill — flat ground at building level behind south wall to east world edge
+    BRUSHES.append(
+        box(
+            BLDG_X1,
+            WORLD_Y1 + WALL_T,
+            FZ1,
+            WORLD_X2 - WALL_T,
+            BLDG_Y1,
+            BLDG_GROUND_Z,
+            TEX_GROUND,
+        )
+    )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
