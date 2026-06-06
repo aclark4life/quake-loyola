@@ -2144,6 +2144,63 @@ BRUSHES.append(
     box(_ENT_X1, _STAIR_Y_END, FZ2, _ENT_X2, _ENNIS_SW_EDGE, FZ2 + _WALK_H, TEX_CEMENT)
 )
 
+# ── Stair railings ────────────────────────────────────────────────────────────
+# Matching the iron fence style on the west side (metal4_4, pickets, thick posts)
+_RAIL_H = 96
+_RAIL_TEX = "metal4_4"
+_RAIL_SPACING = 16
+for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
+    _ry = BLDG_Y2
+    _ri = 0
+    # Top rail - flat section on platform
+    _z_top_plat = BLDG_GROUND_Z + _RAIL_H - 28
+    BRUSHES.append(
+        box(
+            _rx_base - 2 if _is_west else _rx_base,
+            BLDG_Y2,
+            _z_top_plat,
+            _rx_base if _is_west else _rx_base + 2,
+            _STAIR_Y0,
+            _z_top_plat + 2,
+            _RAIL_TEX,
+        )
+    )
+    # Top rail - sloped section on stairs
+    _z_top_end = FZ2 + _RAIL_H - 28
+    BRUSHES.append(
+        ramp_slab_y(
+            _rx_base - 2 if _is_west else _rx_base,
+            _rx_base if _is_west else _rx_base + 2,
+            _STAIR_Y0,
+            _STAIR_Y_END,
+            _z_top_plat,
+            _z_top_end,
+            _z_top_plat + 2,
+            _z_top_end + 2,
+            _RAIL_TEX,
+        )
+    )
+
+    # Pickets and thick posts
+    while _ry <= _STAIR_Y_END:
+        if _ry < _STAIR_Y0:
+            _gz = BLDG_GROUND_Z
+        else:
+            _gz = max(
+                FZ2,
+                BLDG_GROUND_Z - int((_ry - _STAIR_Y0) * (_STEP_RISE / _STEP_DEPTH)),
+            )
+
+        _pw = 8 if _ri % 10 == 0 else 2
+        if _is_west:
+            _px1, _px2 = _rx_base - _pw, _rx_base
+        else:
+            _px1, _px2 = _rx_base, _rx_base + _pw
+
+        BRUSHES.append(box(_px1, _ry, _gz, _px2, _ry + _pw, _gz + _RAIL_H, _RAIL_TEX))
+        _ry += _RAIL_SPACING
+        _ri += 1
+
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
 _sty1, _sty2 = _biy2 - 128, _biy2  # Y: -400 to -272
