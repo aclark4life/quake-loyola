@@ -2568,27 +2568,53 @@ for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
 
 # ── Brutalist Fins (All Exposed Facades) — currently disabled ─────────────────
 
-# East and West walls — solid, stopping short of NE/NW cutouts
-BRUSHES.append(
-    box(
-        BLDG_X2 - BLDG_WALL,
-        BLDG_Y1,
-        BLDG_GROUND_Z,
-        BLDG_X2,
-        BLDG_Y2 - INDENT,
-        BLDG_Z2,
-        TEX_WALL,
-    )
-)
-
-# West wall — two 120-unit wide floor-to-ceiling windows, evenly spread
-# evenly spread: one at 1/6 and one at 3/6 of wall length
+# East wall — three 120-unit wide floor-to-ceiling windows, matching west side
+# Shared window layout variables (used for both east and west walls)
 _ww_half = 120
 _ww_wall_y1, _ww_wall_y2 = BLDG_Y1, BLDG_Y2 - INDENT
 _ww_quarter = (_ww_wall_y2 - _ww_wall_y1) // 4
-_ww_c1 = _ww_wall_y1 + _ww_quarter  # 1/4 along wall
-_ww_c2 = _ww_wall_y1 + 2 * _ww_quarter  # 2/4 along wall
-_ww_c3 = _ww_wall_y1 + 3 * _ww_quarter  # 3/4 along wall
+_ww_c1 = _ww_wall_y1 + _ww_quarter
+_ww_c2 = _ww_wall_y1 + 2 * _ww_quarter
+_ww_c3 = _ww_wall_y1 + 3 * _ww_quarter
+_ww_div_w = 12
+_ww_protrude = 12
+BRUSHES.extend(
+    layered_wall_y(
+        _ww_wall_y1,
+        BLDG_X2 - BLDG_WALL,
+        BLDG_GROUND_Z,
+        _ww_wall_y2,
+        BLDG_X2,
+        BLDG_Z2,
+        [
+            (_ww_c1 - _ww_half, BLDG_GROUND_Z, _ww_c1 + _ww_half, BLDG_Z2),
+            (_ww_c2 - _ww_half, BLDG_GROUND_Z, _ww_c2 + _ww_half, BLDG_Z2),
+            (_ww_c3 - _ww_half, BLDG_GROUND_Z, _ww_c3 + _ww_half, BLDG_Z2),
+        ],
+        TEX_WALL,
+    )
+)
+# Vertical mullions — protrude 12 units east of wall face
+for _wc in [_ww_c1, _ww_c2, _ww_c3]:
+    for _dy in [
+        _wc - _ww_half,  # left edge
+        _wc - 48,  # interior left
+        _wc + 36,  # interior right
+        _wc + _ww_half - _ww_div_w,  # right edge
+    ]:
+        BRUSHES.append(
+            box(
+                BLDG_X2 - BLDG_WALL,
+                _dy,
+                BLDG_GROUND_Z,
+                BLDG_X2 + _ww_protrude,
+                _dy + _ww_div_w,
+                BLDG_Z2,
+                TEX_CEMENT,
+            )
+        )
+
+# West wall — three 120-unit wide floor-to-ceiling windows, evenly spread
 BRUSHES.extend(
     layered_wall_y(
         _ww_wall_y1,
@@ -2607,8 +2633,6 @@ BRUSHES.extend(
 )
 # Vertical mullions — protrude 12 units west of wall face
 # 2 interior + 2 side mullions per window (4 total each)
-_ww_div_w = 12
-_ww_protrude = 12  # how far they stick out past the wall face
 for _wc in [_ww_c1, _ww_c2, _ww_c3]:
     for _dy in [
         _wc - _ww_half,  # left edge
