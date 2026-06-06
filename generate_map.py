@@ -2063,6 +2063,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
 
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
+_ENNIS_SW_EDGE = _ENNIS_Y - _ENNIS_HW - _WALK_W  # Ennis south sidewalk
 if BLDG_GROUND_Z > FZ2:
     # Solid hill fill under the entire building footprint
     BRUSHES.append(
@@ -2070,7 +2071,7 @@ if BLDG_GROUND_Z > FZ2:
     )
     # Sloped ramp on the north face — player can walk up from road to building entrance
     _ramp_y1 = BLDG_Y2  # north face of building
-    _ramp_y2 = min(BLDG_Y2 + BLDG_GROUND_Z * 2, BRY1 - 16)  # ramp extent north
+    _ramp_y2 = _ENNIS_SW_EDGE  # extended north for a gentler slope
     BRUSHES.append(
         ramp_slab_y(
             BLDG_X1,
@@ -2139,7 +2140,6 @@ for _si in range(_STEP_N):
     )
 
 # Small cement apron from stair base to Ennis south sidewalk
-_ENNIS_SW_EDGE = _ENNIS_Y - _ENNIS_HW - _WALK_W
 BRUSHES.append(
     box(_ENT_X1, _STAIR_Y_END, FZ2, _ENT_X2, _ENNIS_SW_EDGE, FZ2 + _WALK_H, TEX_CEMENT)
 )
