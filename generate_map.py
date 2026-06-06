@@ -2239,8 +2239,8 @@ BRUSHES.append(
 # and the narrow vertical window on the main north face. All protrude 12 units outward.
 _fm_div = 12  # mullion width
 _fm_pro = 12  # protrusion depth
-# NW recessed window: wall at y=BLDG_Y2-INDENT, protrude south
-for _mx in [_nw_win_cx - _win_half, _nw_win_cx + _win_half - _fm_div]:
+# NW recessed window: mullions just outside the opening so player can fit through
+for _mx in [_nw_win_cx - _win_half - _fm_div, _nw_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
@@ -2252,8 +2252,8 @@ for _mx in [_nw_win_cx - _win_half, _nw_win_cx + _win_half - _fm_div]:
             TEX_CEMENT,
         )
     )
-# NE recessed window: wall at y=BLDG_Y2-INDENT, protrude south
-for _mx in [_ne_win_cx - _win_half, _ne_win_cx + _win_half - _fm_div]:
+# NE recessed window: mullions just outside the opening so player can fit through
+for _mx in [_ne_win_cx - _win_half - _fm_div, _ne_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
@@ -2265,9 +2265,9 @@ for _mx in [_ne_win_cx - _win_half, _ne_win_cx + _win_half - _fm_div]:
             TEX_CEMENT,
         )
     )
-# Main front wall narrow window _win_n: wall at y=BLDG_Y2-BLDG_WALL, protrude north
+# Main front wall narrow window _win_n: mullions just outside the opening so player can fit through
 _win_n_x1, _win_n_x2 = BLDG_CX + 8, BLDG_CX + 56
-for _mx in [_win_n_x1, _win_n_x2 - _fm_div]:
+for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
     BRUSHES.append(
         box(
             _mx,

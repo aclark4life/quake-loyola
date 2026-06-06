@@ -57,7 +57,14 @@ Terms used when discussing the map's structure and the Python generator code.
 | **Pillar post** | Stone column above the deck surface, extending `PIL_EXTRA` units above the parapet. |
 | **Overhang** | How far the pier stone extends beyond the bridge's N/S edges (`PIL_OVERHANG = 16` units). |
 
-### Arch gates
+### Knott Hall
+
+| Term | Description |
+|---|---|
+| **Mullion** | Vertical protruding cement post flanking a window opening on Knott Hall's north facade. Mullions sit just outside each window opening (not inside) so players can pass through. Width = 12 units, protrusion = 12 units. |
+| **Recessed window** | Window set back in the NW or NE indented corner of the north facade. Each opening is 48 units wide, framed by mullions on the outer edges. |
+| **Indentation** | 80-unit corner notch cut from the NW and NE corners of the north face, creating a recessed alcove with its own back wall and window. |
+
 
 | Term | Description |
 |---|---|
