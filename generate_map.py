@@ -2864,7 +2864,7 @@ _SHELF_H = 64  # height of shelf stack
 _SHELF_D = 16  # depth (one wall-thickness)
 _SHELF_W = 64  # width
 
-_shelf_offsets = [-48, 32, -16, 48, -32]
+_shelf_offsets = [0, 0, 0, 0, 0]
 
 for _fl in range(BLDG_FLOORS):
     _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
