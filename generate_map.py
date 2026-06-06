@@ -2441,7 +2441,16 @@ _fm_div = 12  # mullion width
 _fm_pro = 12  # mullion protrusion depth
 
 # South wall — mirrors north wall: indented SW/SE corners with recessed windows
-# Main south face (between SW and SE indentations) — solid, no window
+# Main south face — hallway openings cut through at each floor level
+_s_wall_openings = [
+    (
+        _ENT_X1,
+        BLDG_GROUND_Z + fl * FLOOR_H + BLDG_WALL,
+        _ENT_X2,
+        BLDG_GROUND_Z + (fl + 1) * FLOOR_H,
+    )
+    for fl in range(BLDG_FLOORS)
+]
 BRUSHES.extend(
     layered_wall(
         BLDG_X1 + INDENT,
@@ -2450,7 +2459,7 @@ BRUSHES.extend(
         BLDG_X2 - INDENT,
         BLDG_Y1 + BLDG_WALL,
         BLDG_Z2,
-        [],
+        _s_wall_openings,
         TEX_WALL,
     )
 )
@@ -3149,56 +3158,6 @@ if _letter_brushes:
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
-# ── Knott Hall hallway floor-up teleports ─────────────────────────────────────
-# One teleport pad at the south dead-end of the hallway per floor.
-# Floors 0-3 go up one floor; floor 4 loops back to ground.
-_tele_hx1, _tele_hx2 = _ENT_X1, _ENT_X2  # hallway X
-_tele_hy1, _tele_hy2 = _biy1, _biy1 + 48  # south trigger zone
-_tele_hxc = (_tele_hx1 + _tele_hx2) // 2  # hallway X center
-_tele_dest_y = _biy1 + 72  # just north of trigger zone
-
-for _fl in range(BLDG_FLOORS):
-    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
-    _fz_surf = _fz1 + BLDG_WALL
-    _dest_fl = (_fl + 1) % BLDG_FLOORS
-    _dest_fz1 = BLDG_GROUND_Z + _dest_fl * FLOOR_H
-    _dest_surf = _dest_fz1 + BLDG_WALL  # top of destination floor slab
-    _dest_z = _dest_fz1 + FLOOR_H // 2  # mid-floor height, well above slab
-    _dest_y = _tele_dest_y
-    if _fl == BLDG_FLOORS - 1:  # top floor → roof
-        _dest_z = BLDG_Z2 + 40
-        _dest_y = (_biy1 + _biy2) // 2
-    _tname = f"knott_up_{_fl}"
-    ENTITIES.append(
-        ent(
-            "info_teleport_destination",
-            targetname=_tname,
-            origin=f"{_tele_hxc} {_dest_y} {_dest_z}",
-            angle="90",
-        )
-    )
-    # Trigger pad — full floor height so it's easy to walk into
-    _trig = box(
-        _tele_hx1,
-        _tele_hy1,
-        _fz_surf,
-        _tele_hx2,
-        _tele_hy2,
-        _fz1 + FLOOR_H,
-        TEX_TELEPORT,
-    )
-    ENTITIES.append(brush_ent("trigger_teleport", [_trig], target=_tname))
-    # Matching illusionary so the teleport texture is visible
-    ENTITIES.append(brush_ent("func_illusionary", [_trig]))
-    # Flickering light to mark the pad
-    ENTITIES.append(
-        ent(
-            "light",
-            origin=f"{_tele_hxc} {(_tele_hy1 + _tele_hy2) // 2} {_fz_surf + 64}",
-            light="200",
-            style="1",
-        )
-    )
 
 # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
 _room_goodies = [
