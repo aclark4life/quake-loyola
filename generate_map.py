@@ -73,7 +73,7 @@ def dbot(x):
 
 
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
-PAR_H = 32  # parapet wall height above deck — low enough to jump onto
+PAR_H = 36  # parapet wall height above deck — at jump limit (~40 units)
 PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PIL_EXTRA = 64  # extra pillar post height above parapet (gameplay)
 PIL_CAP_H = 12  # cap slab height
@@ -2393,7 +2393,7 @@ BRUSHES.append(
 # ── Stair railings ────────────────────────────────────────────────────────────
 # Matching the iron fence style on the west side (metal4_4, pickets, thick posts)
 # Lowered to handrail height (top of rail at ~3 feet = 46 units)
-_RAIL_H = 72
+_RAIL_H = 66  # effective picket height = _RAIL_H - 26 = 40 units — at jump limit
 _RAIL_TEX = "metal4_4"
 _RAIL_SPACING = 16
 for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
