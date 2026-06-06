@@ -2266,7 +2266,20 @@ BRUSHES.append(
     )
 )
 
-# Terrain east of east sidewalk — ramps up matching the hill slope
+# Terrain east of east sidewalk — south flat + sloped main section matching sidewalk
+# South extension: flat at hill level
+BRUSHES.append(
+    box(
+        _BR_ES_X2,
+        WORLD_Y1 + WALL_T,
+        FZ1,
+        WORLD_X2 - WALL_T,
+        _BR_Y1,
+        _BR_ZT_S + _WALK_H,
+        TEX_GROUND,
+    )
+)
+# Main back road section: slopes with the sidewalk (88 at south → 8 at north)
 BRUSHES.append(
     ramp_slab_y(
         _BR_ES_X2,
@@ -2275,26 +2288,25 @@ BRUSHES.append(
         _BR_Y2,
         FZ1,
         FZ1,
-        _BR_ZT_S,
-        _BR_ZT_N,
+        _BR_ZT_S + _WALK_H,
+        _BR_ZT_N + _WALK_H,
         TEX_GROUND,
         tt=TEX_GROUND,
     )
 )
 
-# ── West sidewalk south extension — flat at hill level from building south to world edge ──
+# ── South extension — road + east sidewalk behind Knott Hall to world edge ──
 BRUSHES.append(
     box(
-        _BR_WS_X1,
+        BLDG_X1,
         WORLD_Y1 + WALL_T,
         FZ1,
-        _BR_WS_X2,
+        _BR_ES_X1,
         _BR_Y1,
-        _BR_ZT_S + _WALK_H,
-        TEX_CEMENT,
+        _BR_ZT_S + 2,
+        TEX_ROAD,
     )
 )
-# ── East sidewalk south extension — flat at hill level from building south to world edge ──
 BRUSHES.append(
     box(
         _BR_ES_X1,
@@ -2304,18 +2316,6 @@ BRUSHES.append(
         _BR_Y1,
         _BR_ZT_S + _WALK_H,
         TEX_CEMENT,
-    )
-)
-# ── Road south extension — flat at hill level from building south to world edge ──
-BRUSHES.append(
-    box(
-        _BR_RD_X1,
-        WORLD_Y1 + WALL_T,
-        FZ1,
-        _BR_RD_X2,
-        _BR_Y1,
-        _BR_ZT_S + 2,
-        TEX_ROAD,
     )
 )
 
@@ -2335,9 +2335,17 @@ BRUSHES.append(
 BRUSHES.append(
     box(_BR_ES_X1, _BR_EXT_Y1, FZ2, _BR_ES_X2, _BR_EXT_Y2, FZ2 + _WALK_H, TEX_CEMENT)
 )
-# Terrain east of east sidewalk — flat at ground level
+# Terrain east of east sidewalk — flush with sidewalk top
 BRUSHES.append(
-    box(_BR_ES_X2, _BR_EXT_Y1, FZ1, WORLD_X2 - WALL_T, _BR_EXT_Y2, FZ2, TEX_GROUND)
+    box(
+        _BR_ES_X2,
+        _BR_EXT_Y1,
+        FZ1,
+        WORLD_X2 - WALL_T,
+        _BR_EXT_Y2,
+        FZ2 + _WALK_H,
+        TEX_GROUND,
+    )
 )
 
 # Road patch filling the gap between back road end (Y=328) and Ennis road (Y=408)
