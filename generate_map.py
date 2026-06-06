@@ -2146,7 +2146,8 @@ BRUSHES.append(
 
 # ── Stair railings ────────────────────────────────────────────────────────────
 # Matching the iron fence style on the west side (metal4_4, pickets, thick posts)
-_RAIL_H = 96
+# Lowered to handrail height (top of rail at ~3 feet = 46 units)
+_RAIL_H = 72
 _RAIL_TEX = "metal4_4"
 _RAIL_SPACING = 16
 for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
@@ -2197,7 +2198,10 @@ for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
         else:
             _px1, _px2 = _rx_base, _rx_base + _pw
 
-        BRUSHES.append(box(_px1, _ry, _gz, _px2, _ry + _pw, _gz + _RAIL_H, _RAIL_TEX))
+        # Pickets stop at the top of the cross beam (_RAIL_H - 26)
+        BRUSHES.append(
+            box(_px1, _ry, _gz, _px2, _ry + _pw, _gz + _RAIL_H - 26, _RAIL_TEX)
+        )
         _ry += _RAIL_SPACING
         _ri += 1
 
