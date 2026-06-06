@@ -31,7 +31,7 @@ TEX_ROAD = "azfloor1_1"  # road surface
 TEX_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
 TEX_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
 TEX_METAL = "city2_7"  # elevator doors (matches walls)
-TEX_ROCK = "rock1_2"  # cave outer shell
+TEX_GROUND = "ground1_1"  # ground/terrain surface
 TEX_RAIL = "metal5_4"  # bridge and walkway railings
 TEX_SKY = "sky1"  # open sky ceiling
 TEX_LAVA = "*lava1"  # torch flame
@@ -173,6 +173,30 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
                 face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
                 face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
                 face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt),
+            ]
+        )
+        + "\n}"
+    )
+
+
+def shelf_box(x1, y1, z1, x2, y2, z2, tex_case, tex_front, front="y1"):
+    """Box with tex_front on one face, tex_case on all others.
+    front: which face is the display face — 'y1' (-Y south), 'y2' (+Y north),
+                                             'x1' (-X west),  'x2' (+X east)."""
+    tx1 = tex_front if front == "x1" else tex_case
+    tx2 = tex_front if front == "x2" else tex_case
+    ty1 = tex_front if front == "y1" else tex_case
+    ty2 = tex_front if front == "y2" else tex_case
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tx1),
+                face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tx2),
+                face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ty1),
+                face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), ty2),
+                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tex_case),
+                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tex_case),
             ]
         )
         + "\n}"
@@ -561,7 +585,9 @@ BRUSHES = []
 # ════════════════════════════════════════════════════════════════════════════════
 # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
 # ════════════════════════════════════════════════════════════════════════════════
-BRUSHES.append(box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, FZ2, TEX_ROCK))  # floor
+BRUSHES.append(
+    box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X2, WORLD_Y2, FZ2, TEX_GROUND)
+)  # floor
 BRUSHES.append(
     box(WORLD_X1, WORLD_Y1, FZ1, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2, TEX_SKY)
 )  # W wall
@@ -624,7 +650,7 @@ BRUSHES.append(
         ROAD_X1 - 8,
         _SWALK_START,
         FZ2 + _WALK_H,
-        TEX_ROCK,
+        TEX_GROUND,
     )
 )
 # East sidewalk — split into two segments, trimmed _WALK_W short of each corner
@@ -745,8 +771,8 @@ BRUSHES.append(
         FZ1,
         FZ2,
         FZ2 + _WALK_H,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # East ramp — south of Ennis Road
@@ -760,8 +786,8 @@ BRUSHES.append(
         FZ1,
         FZ2 + _WALK_H,
         FZ2,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # East ramp — north of Ennis Road
@@ -775,8 +801,8 @@ BRUSHES.append(
         FZ1,
         FZ2 + _WALK_H,
         FZ2,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # Ennis north ramp — slopes from north curb edge down going north
@@ -790,8 +816,8 @@ BRUSHES.append(
         FZ1,
         FZ2 + _WALK_H,
         FZ2,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # Ennis south ramp — slopes from south curb edge down going south
@@ -805,8 +831,8 @@ BRUSHES.append(
         FZ1,
         FZ2,
         FZ2 + _WALK_H,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 
@@ -1008,13 +1034,15 @@ BRUSHES.append(
         FZ1,
         DZ2,
         _emb_zt_at_ab_x1,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # South segment — full width between south buildings and north building
 BRUSHES.append(
-    ramp_slab(BRX1, _EMB_X2, _SB2_Y2, _NB_Y1, FZ1, FZ1, DZ2, FZ2, TEX_ROCK, tt=TEX_ROCK)
+    ramp_slab(
+        BRX1, _EMB_X2, _SB2_Y2, _NB_Y1, FZ1, FZ1, DZ2, FZ2, TEX_GROUND, tt=TEX_GROUND
+    )
 )
 # Middle segment — only west of north building
 BRUSHES.append(
@@ -1027,14 +1055,14 @@ BRUSHES.append(
         FZ1,
         DZ2,
         _emb_zt_at_ab_x1,
-        TEX_ROCK,
-        tt=TEX_ROCK,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # North of north building — restore original ramp
 BRUSHES.append(
     ramp_slab(
-        BRX1, _EMB_X2, _NB_Y2, _ROAD_Y2, FZ1, FZ1, DZ2, FZ2, TEX_ROCK, tt=TEX_ROCK
+        BRX1, _EMB_X2, _NB_Y2, _ROAD_Y2, FZ1, FZ1, DZ2, FZ2, TEX_GROUND, tt=TEX_GROUND
     )
 )
 
@@ -1312,7 +1340,7 @@ BRUSHES.append(
         _AB_X2 - _NB_WT,
         _NB_Y2 - _NB_WT,
         FZ2,
-        TEX_ROCK,
+        TEX_GROUND,
         tt=TEX_ROAD,
     )
 )
@@ -1367,7 +1395,7 @@ def _make_south_bldg(by1, by2):
             bx2 - _NB_WT,
             by2 - _NB_WT,
             FZ2,
-            TEX_ROCK,
+            TEX_GROUND,
             tt=TEX_ROAD,
         )
     )
@@ -2038,7 +2066,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
 if BLDG_GROUND_Z > FZ2:
     # Solid hill fill under the entire building footprint
     BRUSHES.append(
-        box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y2, BLDG_GROUND_Z, TEX_ROCK)
+        box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y2, BLDG_GROUND_Z, TEX_GROUND)
     )
     # Sloped ramp on the north face — player can walk up from road to building entrance
     _ramp_y1 = BLDG_Y2  # north face of building
@@ -2053,7 +2081,7 @@ if BLDG_GROUND_Z > FZ2:
             FZ2,
             BLDG_GROUND_Z,
             FZ2,
-            TEX_ROCK,
+            TEX_GROUND,
             tt=TEX_ROAD,
         )
     )
@@ -2070,8 +2098,8 @@ if BLDG_GROUND_Z > FZ2:
             FZ2,
             FZ2 + _WALK_H,
             BLDG_GROUND_Z,
-            TEX_ROCK,
-            tt=TEX_ROCK,
+            TEX_GROUND,
+            tt=TEX_GROUND,
         )
     )
 _bix1 = BLDG_X1 + BLDG_WALL  # interior west
@@ -2709,7 +2737,7 @@ for _pre_syb, _pre_syf in [
 worldspawn = (
     "{\n"
     '"classname" "worldspawn"\n'
-    '"wad" "quake101.wad"\n'
+    '"wad" "quake101.wad;ad.wad"\n'
     '"message" "Loyola Bridge & Knott Hall"\n'
     f'"sky" "{TEX_SKY}"\n'
     '"ambient" "60"\n'
@@ -2831,7 +2859,73 @@ for _fl in range(BLDG_FLOORS):
             )
             _gi += 1
 
-# Abutment pier teleport — arch opening teleports up to bridge deck above
+# ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
+_SHELF_H = 64  # height of shelf stack
+_SHELF_D = 16  # depth (one wall-thickness)
+_SHELF_W = 64  # width
+
+_shelf_offsets = [-48, 32, -16, 48, -32]
+
+for _fl in range(BLDG_FLOORS):
+    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+    _fz_surf = _fz1 + BLDG_WALL
+    _split = _room_splits[_fl]
+    _stex = "shelf_1"
+    _xoff = _shelf_offsets[_fl]
+
+    for _sxc in [_wxc, _exc]:
+        # South room: shelf against south wall — front faces south (-Y)
+        _sp = _sxc + _xoff
+        ENTITIES.append(
+            brush_ent(
+                "func_wall",
+                [
+                    box(
+                        _sp - _SHELF_W // 2,
+                        _biy1,
+                        _fz_surf,
+                        _sp + _SHELF_W // 2,
+                        _biy1 + _SHELF_D,
+                        _fz_surf + _SHELF_H,
+                        "shelf_1",
+                    )
+                ],
+            )
+        )
+        ENTITIES.append(
+            ent(
+                "light",
+                origin=f"{_sp} {_biy1 + 32} {_fz_surf + _SHELF_H + 24}",
+                light="180",
+            )
+        )
+        # North room: shelf against north wall — front faces north (+Y)
+        _np = _sxc - _xoff
+        ENTITIES.append(
+            brush_ent(
+                "func_wall",
+                [
+                    box(
+                        _np - _SHELF_W // 2,
+                        _biy2 - _SHELF_D,
+                        _fz_surf,
+                        _np + _SHELF_W // 2,
+                        _biy2,
+                        _fz_surf + _SHELF_H,
+                        "shelf_1",
+                    )
+                ],
+            )
+        )
+        ENTITIES.append(
+            ent(
+                "light",
+                origin=f"{_np} {_biy2 - 32} {_fz_surf + _SHELF_H + 24}",
+                light="180",
+            )
+        )
+
+
 ENTITIES.append(
     ent(
         "info_teleport_destination",

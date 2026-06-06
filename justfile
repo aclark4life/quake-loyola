@@ -33,11 +33,15 @@ install-tools:
         echo "Installed ericw-tools {{ericw_version}} to {{ericw_dir}}"
     fi
 
-# Download quake101.wad if it doesn't exist
+# Download WADs if they don't exist
 setup:
     @if [ ! -f quake101.wad ]; then \
         echo "quake101.wad not found, downloading from Quaketastic..."; \
         curl -L -o quake101.wad http://www.quaketastic.com/files/texture_wads/quake101.wad; \
+    fi
+    @if [ ! -f ad.wad ]; then \
+        echo "ad.wad not found, downloading from Quaketastic..."; \
+        curl -L -o ad.wad http://www.quaketastic.com/files/texture_wads/ad.wad; \
     fi
 
 # Generate the .map file from the Python script
