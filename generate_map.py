@@ -2393,26 +2393,14 @@ BRUSHES.append(
 # ── Stair railings ────────────────────────────────────────────────────────────
 # Matching the iron fence style on the west side (metal4_4, pickets, thick posts)
 # Lowered to handrail height (top of rail at ~3 feet = 46 units)
-_RAIL_H = 66  # effective picket height = _RAIL_H - 26 = 40 units — at jump limit
+_RAIL_H = 72  # stair handrail height
 _RAIL_TEX = "metal4_4"
 _RAIL_SPACING = 16
 for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
     _ry = BLDG_Y2
     _ri = 0
-    # Top rail - flat section on platform
+    # Top rail - sloped section on stairs only
     _z_top_plat = BLDG_GROUND_Z + _RAIL_H - 28
-    BRUSHES.append(
-        box(
-            _rx_base - 2 if _is_west else _rx_base,
-            BLDG_Y2,
-            _z_top_plat,
-            _rx_base if _is_west else _rx_base + 2,
-            _STAIR_Y0,
-            _z_top_plat + 2,
-            _RAIL_TEX,
-        )
-    )
-    # Top rail - sloped section on stairs
     _z_top_end = FZ2 + _RAIL_H - 28
     BRUSHES.append(
         ramp_slab_y(
@@ -2428,28 +2416,19 @@ for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
         )
     )
 
-    # Pickets (uniform thin posts for handrail)
-    while _ry <= _STAIR_Y_END:
-        if _ry < _STAIR_Y0:
-            _gz = BLDG_GROUND_Z
-        else:
-            _gz = max(
-                FZ2,
-                BLDG_GROUND_Z - int((_ry - _STAIR_Y0) * (_STEP_RISE / _STEP_DEPTH)),
-            )
-
+    # Posts at top and bottom of stairs only
+    for _ry, _gz in [
+        (_STAIR_Y0, BLDG_GROUND_Z),
+        (_STAIR_Y_END, FZ2),
+    ]:
         _pw = 2
         if _is_west:
             _px1, _px2 = _rx_base - _pw, _rx_base
         else:
             _px1, _px2 = _rx_base, _rx_base + _pw
-
-        # Pickets stop at the top of the cross beam (_RAIL_H - 26)
         BRUSHES.append(
             box(_px1, _ry, _gz, _px2, _ry + _pw, _gz + _RAIL_H - 26, _RAIL_TEX)
         )
-        _ry += _RAIL_SPACING
-        _ri += 1
 
 # Lift shaft east of entrance: 16 units east of _ENT_X2, 128 wide
 _stx1, _stx2 = _ENT_X2 + 16, _ENT_X2 + 16 + 128  # = 1516, 1644
