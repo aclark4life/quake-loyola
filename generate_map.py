@@ -99,7 +99,7 @@ WORLD_X2 = (
     525 + 741 + BLDG_WIDTH + 32 + BLDG_WIDTH
 )  # extended east by one Knott Hall width
 WORLD_Y1, WORLD_Y2 = (
-    -2048,
+    -2432,
     1200,
 )  # full world N-S extent (expanded north for Ennis wall)
 
