@@ -702,10 +702,24 @@ BRUSHES.append(
         TEX_CEMENT,
     )
 )
-# South curb — offset east by _WALK_W to cut corner square
+# South curb — split into two segments with a gap for the back road entrance
+# West segment: Charles St east sidewalk to back road west sidewalk
 BRUSHES.append(
     box(
         ROAD_X2 + _WALK_W,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
+        FZ2,
+        BLDG_X2,
+        _ENNIS_Y - _ENNIS_HW,
+        FZ2 + _WALK_H,
+        TEX_CEMENT,
+    )
+)
+# East segment: back road east sidewalk east to world wall
+# _BR_ES_X2 = BLDG_X2 + _WALK_W + 2*128 + _WALK_W (computed inline to avoid forward-ref)
+BRUSHES.append(
+    box(
+        BLDG_X2 + _WALK_W + 2 * 128 + _WALK_W,
         _ENNIS_Y - _ENNIS_HW - _WALK_W,
         FZ2,
         _ENNIS_X2,
@@ -821,9 +835,26 @@ BRUSHES.append(
     )
 )
 # Ennis south ramp — slopes from south curb edge down going south
+# Split into two segments to leave a gap for the back road corridor (X=1906..2322)
+_BR_CORRIDOR_X1 = BLDG_X2  # = 1906
+_BR_CORRIDOR_X2 = BLDG_X2 + _WALK_W + 2 * 128 + _WALK_W  # = 2322
 BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + _WALK_W,
+        _BR_CORRIDOR_X1,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W - _RAMP_W,
+        _ENNIS_Y - _ENNIS_HW - _WALK_W,
+        FZ1,
+        FZ1,
+        FZ2,
+        FZ2 + _WALK_H,
+        TEX_GROUND,
+        tt=TEX_GROUND,
+    )
+)
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_CORRIDOR_X2,
         _ENNIS_X2,
         _ENNIS_Y - _ENNIS_HW - _WALK_W - _RAMP_W,
         _ENNIS_Y - _ENNIS_HW - _WALK_W,
@@ -2103,6 +2134,221 @@ if BLDG_GROUND_Z > FZ2:
             tt=TEX_GROUND,
         )
     )
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
+# Sidewalks with rounded north entrance corners (like Ennis Drive)
+# Road slopes from Z=0 at the north entrance to BLDG_GROUND_Z at the back.
+# ══════════════════════════════════════════════════════════════════════════════
+_BR_HW = 128  # back road half-width (256-unit carriageway, like Ennis)
+_BR_WALK_W = _WALK_W  # sidewalk width = 80 units (matches Charles St sidewalks)
+_BR_CRN_R = _WALK_W  # corner radius = sidewalk width
+_BR_CRN_SEGS = _CRN_SEGS  # 12 arc segments = 90°
+
+# ── X extents (road runs N-S, east of building east wall) ──
+_BR_WS_X1 = BLDG_X2  # west sidewalk west = building east wall = 1906
+_BR_WS_X2 = BLDG_X2 + _BR_WALK_W  # west sidewalk east = road west edge = 1986
+_BR_RD_X1 = _BR_WS_X2  # road west edge = 1986
+_BR_RD_X2 = _BR_RD_X1 + 2 * _BR_HW  # road east edge = 2242
+_BR_ES_X1 = _BR_RD_X2  # east sidewalk west = 2242
+_BR_ES_X2 = _BR_RD_X2 + _BR_WALK_W  # east sidewalk east = 2322
+
+# ── Y extents (north entrance → south back-wall) ──
+_BR_Y1 = BLDG_Y1  # south end: back of building = -1888
+_BR_Y2 = BLDG_Y2  # north end: north face of building = -256
+
+# ── Elevation: road surface rises gradually from north (Z=0) to south (Z=hill top) ──
+_BR_ZT_N = FZ2  # road top at north entrance = 0
+_BR_ZT_S = BLDG_GROUND_Z  # road top at south/back     = 80
+
+# Road surface — 2-unit textured overlay riding on sloped fill
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_RD_X1,
+        _BR_RD_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S + 2,
+        _BR_ZT_N + 2,
+        TEX_ROAD,
+        tt=TEX_ROAD,
+    )
+)
+# Road fill — solid ground under road surface
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_RD_X1,
+        _BR_RD_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S,
+        _BR_ZT_N,
+        TEX_GROUND,
+        tt=TEX_GROUND,
+    )
+)
+
+# West sidewalk (strip between building east wall and road) — slopes with road
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_WS_X1,
+        _BR_WS_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S + _WALK_H,
+        _BR_ZT_N + _WALK_H,
+        TEX_CEMENT,
+        tt=TEX_CEMENT,
+    )
+)
+# West sidewalk fill
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_WS_X1,
+        _BR_WS_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S,
+        _BR_ZT_N,
+        TEX_GROUND,
+        tt=TEX_GROUND,
+    )
+)
+
+# East sidewalk — slopes with road
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_ES_X1,
+        _BR_ES_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S + _WALK_H,
+        _BR_ZT_N + _WALK_H,
+        TEX_CEMENT,
+        tt=TEX_CEMENT,
+    )
+)
+# East sidewalk fill
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_ES_X1,
+        _BR_ES_X2,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S,
+        _BR_ZT_N,
+        TEX_GROUND,
+        tt=TEX_GROUND,
+    )
+)
+
+# Terrain east of east sidewalk — ramps up matching the hill slope
+BRUSHES.append(
+    ramp_slab_y(
+        _BR_ES_X2,
+        WORLD_X2 - WALL_T,
+        _BR_Y1,
+        _BR_Y2,
+        FZ1,
+        FZ1,
+        _BR_ZT_S,
+        _BR_ZT_N,
+        TEX_GROUND,
+        tt=TEX_GROUND,
+    )
+)
+
+# ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
+_BR_EXT_Y1 = _BR_Y2  # = -256 (north face of building)
+_BR_EXT_Y2 = _ENNIS_Y - _ENNIS_HW - _WALK_W  # = 328 (Ennis south sidewalk edge)
+
+# Flat road surface
+BRUSHES.append(
+    box(_BR_RD_X1, _BR_EXT_Y1, FZ2, _BR_RD_X2, _BR_EXT_Y2, FZ2 + 2, TEX_ROAD)
+)
+# West sidewalk
+BRUSHES.append(
+    box(_BR_WS_X1, _BR_EXT_Y1, FZ2, _BR_WS_X2, _BR_EXT_Y2, FZ2 + _WALK_H, TEX_CEMENT)
+)
+# East sidewalk
+BRUSHES.append(
+    box(_BR_ES_X1, _BR_EXT_Y1, FZ2, _BR_ES_X2, _BR_EXT_Y2, FZ2 + _WALK_H, TEX_CEMENT)
+)
+# Terrain east of east sidewalk — flat at ground level
+BRUSHES.append(
+    box(_BR_ES_X2, _BR_EXT_Y1, FZ1, WORLD_X2 - WALL_T, _BR_EXT_Y2, FZ2, TEX_GROUND)
+)
+
+# Road patch filling the gap between back road end (Y=328) and Ennis road (Y=408)
+# (This was previously the Ennis south sidewalk; now it's part of the road junction)
+BRUSHES.append(
+    box(_BR_RD_X1, _BR_EXT_Y2, FZ2, _BR_RD_X2, _ENNIS_Y - _ENNIS_HW, FZ2 + 2, TEX_ROAD)
+)
+
+# ── Rounded corners where back road meets Ennis south (inside the junction) ───
+# Centers at the back-road-facing (south) corners so the curved face points toward
+# the back road — matching the Charles/Ennis corner style.
+# West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
+_BR_JCX_W = _BR_WS_X1  # = 1906 (SW corner of cut square)
+_BR_JCY = _ENNIS_Y - _ENNIS_HW  # = 408 (Ennis south road edge)
+BRUSHES.append(box(_BR_WS_X1, _BR_EXT_Y2, FZ2, _BR_RD_X1, _BR_JCY, FZ2 + 2, TEX_ROAD))
+for _i in range(_BR_CRN_SEGS):
+    _a0 = math.radians(0 + _i * 90 / _BR_CRN_SEGS)
+    _a1 = math.radians(0 + (_i + 1) * 90 / _BR_CRN_SEGS)
+    _px0 = _BR_JCX_W + _BR_CRN_R * math.cos(_a0)
+    _py0 = _BR_EXT_Y2 + _BR_CRN_R * math.sin(_a0)
+    _px1 = _BR_JCX_W + _BR_CRN_R * math.cos(_a1)
+    _py1 = _BR_EXT_Y2 + _BR_CRN_R * math.sin(_a1)
+    BRUSHES.append(
+        tri_prism(
+            _BR_JCX_W,
+            _BR_EXT_Y2,
+            _px0,
+            _py0,
+            _px1,
+            _py1,
+            FZ2,
+            FZ2 + _WALK_H,
+            TEX_CEMENT,
+        )
+    )
+
+# East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
+_BR_JCX_E = _BR_ES_X2  # = 2322 (SE corner of cut square)
+BRUSHES.append(box(_BR_ES_X1, _BR_EXT_Y2, FZ2, _BR_ES_X2, _BR_JCY, FZ2 + 2, TEX_ROAD))
+for _i in range(_BR_CRN_SEGS):
+    _a0 = math.radians(90 + _i * 90 / _BR_CRN_SEGS)
+    _a1 = math.radians(90 + (_i + 1) * 90 / _BR_CRN_SEGS)
+    _px0 = _BR_JCX_E + _BR_CRN_R * math.cos(_a0)
+    _py0 = _BR_EXT_Y2 + _BR_CRN_R * math.sin(_a0)
+    _px1 = _BR_JCX_E + _BR_CRN_R * math.cos(_a1)
+    _py1 = _BR_EXT_Y2 + _BR_CRN_R * math.sin(_a1)
+    BRUSHES.append(
+        tri_prism(
+            _BR_JCX_E,
+            _BR_EXT_Y2,
+            _px0,
+            _py0,
+            _px1,
+            _py1,
+            FZ2,
+            FZ2 + _WALK_H,
+            TEX_CEMENT,
+        )
+    )
+
 _bix1 = BLDG_X1 + BLDG_WALL  # interior west
 _bix2 = BLDG_X2 - BLDG_WALL  # interior east
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
