@@ -2901,29 +2901,36 @@ for _fl in range(BLDG_FLOORS):
         )
         # North room: shelf against north wall — front faces north (+Y)
         _np = _sxc - _xoff
-        ENTITIES.append(
-            brush_ent(
-                "func_wall",
-                [
-                    box(
-                        _np - _SHELF_W // 2,
-                        _biy2 - _SHELF_D,
-                        _fz_surf,
-                        _np + _SHELF_W // 2,
-                        _biy2,
-                        _fz_surf + _SHELF_H,
-                        "shelf_1",
-                    )
-                ],
-            )
+        _n_in_shaft = (
+            _np + _SHELF_W // 2 > _stx1
+            and _np - _SHELF_W // 2 < _stx2
+            and _biy2 > _sty1
+            and _biy2 - _SHELF_D < _sty2
         )
-        ENTITIES.append(
-            ent(
-                "light",
-                origin=f"{_np} {_biy2 - 32} {_fz_surf + _SHELF_H + 24}",
-                light="180",
+        if not _n_in_shaft:
+            ENTITIES.append(
+                brush_ent(
+                    "func_wall",
+                    [
+                        box(
+                            _np - _SHELF_W // 2,
+                            _biy2 - _SHELF_D,
+                            _fz_surf,
+                            _np + _SHELF_W // 2,
+                            _biy2,
+                            _fz_surf + _SHELF_H,
+                            "shelf_1",
+                        )
+                    ],
+                )
             )
-        )
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=f"{_np} {_biy2 - 32} {_fz_surf + _SHELF_H + 24}",
+                    light="180",
+                )
+            )
 
 
 ENTITIES.append(
