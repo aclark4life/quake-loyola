@@ -18872,17 +18872,17 @@
 }
 {
 "classname" "light"
-"origin" "-1315 0 84"
+"origin" "-1177 0 84"
 "light" "700"
 }
 {
 "classname" "light"
-"origin" "-1315 68 84"
+"origin" "-1177 68 84"
 "light" "500"
 }
 {
 "classname" "light"
-"origin" "-1315 -68 84"
+"origin" "-1177 -68 84"
 "light" "500"
 }
 {
