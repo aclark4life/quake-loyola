@@ -45,8 +45,8 @@ TEX_ROOF = "wgrnd1_5"  # street/road texture for roof
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
 PB_Y1, PB_Y2 = -136, 136  # N-S width = 272 units ≈ 18 ft
 PB_DZ1, PB_DZ2 = (
-    336,
-    352,
+    224,
+    240,
 )  # flat deck bottom / top — raised for realistic road clearance (~22 ft)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
@@ -1910,9 +1910,9 @@ for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
 # Each pillar position now features a narrow arched pier supporting the deck.
 # Arch openings span most of the bridge N-S width (PB_Y2=136, bridge=272 units)
 # rin = half-width of clear opening; rout = outer radius of arch ring
-PB_PIL_OUTER_R = (140, 100)  # narrower outer piers flanking road
-PB_PIL_INNER_R = (160, 112)  # slightly wider inner piers
-PB_PIL_CENTR_R = (160, 120)  # widest opening at centre
+PB_PIL_OUTER_R = (140, 72)  # narrower outer piers flanking road
+PB_PIL_INNER_R = (160, 84)  # slightly wider inner piers
+PB_PIL_CENTR_R = (160, 90)  # widest opening at centre
 if SHOW_SUPPORTS:
     for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
