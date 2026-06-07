@@ -1941,9 +1941,8 @@ if SHOW_SUPPORTS:
             a_rout = int(pdeck) - FZ2 - 16
             a_stilt = 0
 
-        # Compute arch body overhang so the pier always extends PB_PIL_OVERHANG units
-        # past the bridge edges, regardless of a_rout (outer piers have small rout).
-        _arch_overhang = max(PB_PIL_OVERHANG, PB_Y2 + PB_PIL_OVERHANG - a_rout)
+        # Pin outer pier wall to exactly match the pillar tops above deck
+        _arch_overhang = max(0, PB_Y2 + PB_PIL_OVERHANG - a_rout)
 
         # Ramped plinth: outer piers ramp up on their outward face so players
         # can run up from outside. East piers: high east side; west piers: high west side.
@@ -3799,8 +3798,8 @@ for _px in PB_PEND_XS:
 # Pier base lights — illuminate plinths and arch openings from just inside each pier
 for _px in PB_ARCH_X:
     _pz = FZ2 + PB_PIL_BASE_RAMP_H + 60  # just above the plinth top, low in the arch
-    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y2 // 2} {_pz}", light="400"))
-    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y1 // 2} {_pz}", light="400"))
+    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y2 // 2} {_pz}", light="250"))
+    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y1 // 2} {_pz}", light="250"))
 
 # Light on underside of walkway slab illuminating the ramp below
 if KH_WALKWAY_ENABLED:
