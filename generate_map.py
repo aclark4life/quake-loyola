@@ -620,10 +620,10 @@ CS_STRIPE_W = 6  # centre-line stripe half-width
 # ── Ennis Road (E-W, parallel to bridge, north side) ──
 # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
 # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-ENNIS_Y = PB_Y2 + 400  # 536: centred 400 units north of bridge north edge
-ENNIS_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
-ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
-ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
+EP_Y = PB_Y2 + 400  # 536: centred 400 units north of bridge north edge
+EP_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
+EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
+EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 
 # Road surface (2-unit overlay so it textures differently from surrounding ground)
 BRUSHES.append(box(ROAD_X1, CS_Y1, FZ2, ROAD_X2, CS_Y2, FZ2 + 2, TEX_ROAD))
@@ -663,7 +663,7 @@ BRUSHES.append(
         CS_Y1,
         FZ2,
         ROAD_X2 + CS_WALK_W,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -671,7 +671,7 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2,
-        ENNIS_Y + ENNIS_HW + CS_WALK_W,
+        EP_Y + EP_HW + CS_WALK_W,
         FZ2,
         ROAD_X2 + CS_WALK_W,
         CS_Y2,
@@ -684,11 +684,11 @@ BRUSHES.append(
 # Road surface (full length including intersection with Charles Street)
 BRUSHES.append(
     box(
-        ENNIS_X1,
-        ENNIS_Y - ENNIS_HW,
+        EP_X1,
+        EP_Y - EP_HW,
         FZ2,
-        ENNIS_X2,
-        ENNIS_Y + ENNIS_HW,
+        EP_X2,
+        EP_Y + EP_HW,
         FZ2 + 2,
         TEX_ROAD,
     )
@@ -697,10 +697,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2 + CS_WALK_W,
-        ENNIS_Y + ENNIS_HW,
+        EP_Y + EP_HW,
         FZ2,
-        ENNIS_X2,
-        ENNIS_Y + ENNIS_HW + CS_WALK_W,
+        EP_X2,
+        EP_Y + EP_HW + CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -710,10 +710,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2 + CS_WALK_W,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ2,
         KH_X2,
-        ENNIS_Y - ENNIS_HW,
+        EP_Y - EP_HW,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -723,10 +723,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ2,
-        ENNIS_X2,
-        ENNIS_Y - ENNIS_HW,
+        EP_X2,
+        EP_Y - EP_HW,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -740,8 +740,8 @@ CS_CRN_SEGS = 12  # segments per arc (12 × 7.5° = 90°)
 
 # SE corner: far corner is at SE of cut square
 cx_se = ROAD_X2 + CS_CRN_R
-cy_se = ENNIS_Y - ENNIS_HW - CS_CRN_R
-BRUSHES.append(box(ROAD_X2, cy_se, FZ2, cx_se, ENNIS_Y - ENNIS_HW, FZ2 + 2, TEX_ROAD))
+cy_se = EP_Y - EP_HW - CS_CRN_R
+BRUSHES.append(box(ROAD_X2, cy_se, FZ2, cx_se, EP_Y - EP_HW, FZ2 + 2, TEX_ROAD))
 # Arc sweeps CCW from 90° (north) to 180° (west)
 for _i in range(CS_CRN_SEGS):
     _a0 = math.radians(90 + _i * 90 / CS_CRN_SEGS)
@@ -756,8 +756,8 @@ for _i in range(CS_CRN_SEGS):
 
 # NE corner: far corner is at NE of cut square
 cx_ne = ROAD_X2 + CS_CRN_R
-cy_ne = ENNIS_Y + ENNIS_HW + CS_CRN_R
-BRUSHES.append(box(ROAD_X2, ENNIS_Y + ENNIS_HW, FZ2, cx_ne, cy_ne, FZ2 + 2, TEX_ROAD))
+cy_ne = EP_Y + EP_HW + CS_CRN_R
+BRUSHES.append(box(ROAD_X2, EP_Y + EP_HW, FZ2, cx_ne, cy_ne, FZ2 + 2, TEX_ROAD))
 # Arc sweeps CCW from 180° (west) to 270° (south)
 for _i in range(CS_CRN_SEGS):
     _a0 = math.radians(180 + _i * 90 / CS_CRN_SEGS)
@@ -794,7 +794,7 @@ BRUSHES.append(
         ROAD_X2 + CS_WALK_W,
         ROAD_X2 + CS_WALK_W + CS_RAMP_W,
         CS_Y1,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ1,
         FZ1,
         FZ2 + CS_WALK_H,
@@ -808,7 +808,7 @@ BRUSHES.append(
     ramp_slab(
         ROAD_X2 + CS_WALK_W,
         ROAD_X2 + CS_WALK_W + CS_RAMP_W,
-        ENNIS_Y + ENNIS_HW + CS_WALK_W,
+        EP_Y + EP_HW + CS_WALK_W,
         CS_Y2,
         FZ1,
         FZ1,
@@ -822,9 +822,9 @@ BRUSHES.append(
 BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + CS_WALK_W,
-        ENNIS_X2,
-        ENNIS_Y + ENNIS_HW + CS_WALK_W,
-        ENNIS_Y + ENNIS_HW + CS_WALK_W + CS_RAMP_W,
+        EP_X2,
+        EP_Y + EP_HW + CS_WALK_W,
+        EP_Y + EP_HW + CS_WALK_W + CS_RAMP_W,
         FZ1,
         FZ1,
         FZ2 + CS_WALK_H,
@@ -841,8 +841,8 @@ BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + CS_WALK_W,
         KH_BR_CORRIDOR_X1,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W - CS_RAMP_W,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_Y - EP_HW - CS_WALK_W - CS_RAMP_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ1,
         FZ1,
         FZ2,
@@ -854,9 +854,9 @@ BRUSHES.append(
 BRUSHES.append(
     ramp_slab_y(
         KH_BR_CORRIDOR_X2,
-        ENNIS_X2,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W - CS_RAMP_W,
-        ENNIS_Y - ENNIS_HW - CS_WALK_W,
+        EP_X2,
+        EP_Y - EP_HW - CS_WALK_W - CS_RAMP_W,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ1,
         FZ1,
         FZ2,
@@ -867,58 +867,58 @@ BRUSHES.append(
 )
 
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
-ENNIS_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
-ENNIS_PIL_OFFSET = CS_WALK_W + 20
-ENNIS_PIL_X1 = (
-    PB_ARCH_X[2] - ENNIS_PIL_HW
+EP_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
+EP_PIL_OFFSET = CS_WALK_W + 20
+EP_PIL_X1 = (
+    PB_ARCH_X[2] - EP_PIL_HW
 )  # align pillar centre with closest bridge pier (X=525)
-ENNIS_PIL_X2 = PB_ARCH_X[2] + ENNIS_PIL_HW
-ENNIS_PIL_ZB = FZ2
-ENNIS_PIL_POST_H = 81  # post height (was 108, ×0.75)
-ENNIS_PIL_CAP_OVH = 1
-ENNIS_PIL_CAP_H = 3
+EP_PIL_X2 = PB_ARCH_X[2] + EP_PIL_HW
+EP_PIL_ZB = FZ2
+EP_PIL_POST_H = 81  # post height (was 108, ×0.75)
+EP_PIL_CAP_OVH = 1
+EP_PIL_CAP_H = 3
 
 # Bell shape — cap divider + single tapered step (no flare, no tip):
 #      |  |      step 2: hw=16, h=27
 #  ====+==+====  cap:    hw=23, h=1
 #      |  |      post:   hw=22, h=81
-ENNIS_PIL_BELL2_HW = (
+EP_PIL_BELL2_HW = (
     19  # tapered top section half-width (wider than before, less than post)
 )
-ENNIS_PIL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
+EP_PIL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
 
-for _epy in (ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW, ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW):
-    ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW  # pillar centre X
-    _cap_hw = ENNIS_PIL_HW + ENNIS_PIL_CAP_OVH  # = 40
+for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
+    ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW  # pillar centre X
+    _cap_hw = EP_PIL_HW + EP_PIL_CAP_OVH  # = 40
 
     # Post
-    _base_h = ENNIS_PIL_POST_H // 3  # bottom base = lower third of post
+    _base_h = EP_PIL_POST_H // 3  # bottom base = lower third of post
     # Bottom base — same width as cap, gives plinth effect
     BRUSHES.append(
         box(
             ennis_pil_cx - _cap_hw,
             _epy - _cap_hw,
-            ENNIS_PIL_ZB,
+            EP_PIL_ZB,
             ennis_pil_cx + _cap_hw,
             _epy + _cap_hw,
-            ENNIS_PIL_ZB + _base_h,
+            EP_PIL_ZB + _base_h,
             TEX_WHITE_STONE,
         )
     )
     # Upper post — narrower, sits on bottom base
     BRUSHES.append(
         box(
-            ENNIS_PIL_X1,
-            _epy - ENNIS_PIL_HW,
-            ENNIS_PIL_ZB + _base_h,
-            ENNIS_PIL_X2,
-            _epy + ENNIS_PIL_HW,
-            ENNIS_PIL_ZB + ENNIS_PIL_POST_H,
+            EP_PIL_X1,
+            _epy - EP_PIL_HW,
+            EP_PIL_ZB + _base_h,
+            EP_PIL_X2,
+            _epy + EP_PIL_HW,
+            EP_PIL_ZB + EP_PIL_POST_H,
             TEX_WHITE_STONE,
         )
     )
     # Thin cap divider — overhangs post on all sides
-    _cap_z = ENNIS_PIL_ZB + ENNIS_PIL_POST_H
+    _cap_z = EP_PIL_ZB + EP_PIL_POST_H
     BRUSHES.append(
         box(
             ennis_pil_cx - _cap_hw,
@@ -926,26 +926,26 @@ for _epy in (ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW, ENNIS_Y + ENNIS_HW + ENNIS_PIL_H
             _cap_z,
             ennis_pil_cx + _cap_hw,
             _epy + _cap_hw,
-            _cap_z + ENNIS_PIL_CAP_H,
+            _cap_z + EP_PIL_CAP_H,
             TEX_WHITE_STONE,
         )
     )
     # Bell step 2 — tapered top, narrower than post
-    _b2_z = _cap_z + ENNIS_PIL_CAP_H
+    _b2_z = _cap_z + EP_PIL_CAP_H
     BRUSHES.append(
         box(
-            ennis_pil_cx - ENNIS_PIL_BELL2_HW,
-            _epy - ENNIS_PIL_BELL2_HW,
+            ennis_pil_cx - EP_PIL_BELL2_HW,
+            _epy - EP_PIL_BELL2_HW,
             _b2_z,
-            ennis_pil_cx + ENNIS_PIL_BELL2_HW,
-            _epy + ENNIS_PIL_BELL2_HW,
-            _b2_z + ENNIS_PIL_BELL2_H,
+            ennis_pil_cx + EP_PIL_BELL2_HW,
+            _epy + EP_PIL_BELL2_HW,
+            _b2_z + EP_PIL_BELL2_H,
             TEX_WHITE_STONE,
         )
     )
     # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
-    _ennis_pil_apex = _b2_z + ENNIS_PIL_BELL2_H
-    ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
+    _ennis_pil_apex = _b2_z + EP_PIL_BELL2_H
+    ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW
     BRUSHES.append(
         box(
             ennis_pil_cx - 3,
@@ -972,15 +972,15 @@ for _epy in (ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW, ENNIS_Y + ENNIS_HW + ENNIS_PIL_H
 # ── Ennis Drive L-shaped campus boundary wall (north side of entrance) ────────
 # city2_1 brick wall from near Charles St sidewalk east to pillar, then turns north.
 # Starts with a small grass gap east of the sidewalk.
-ENNIS_WALL_T = 8  # wall thickness
-ENNIS_WALL_H = 48  # wall height ≈ 3 ft
-bw_ny = ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW * 2  # south face Y (flush with north pillar)
+EP_WALL_T = 8  # wall thickness
+EP_WALL_H = 48  # wall height ≈ 3 ft
+bw_ny = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
 bw_x1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
-bwex2 = PB_ARCH_X[2] + ENNIS_PIL_HW + 80  # E-W wall extends past stone pillar
+bwex2 = PB_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
 bw_ny2 = bw_ny + 200  # north segment length
 # East-running segment (south base of L)
 BRUSHES.append(
-    box(bw_x1, bw_ny, FZ2, bwex2, bw_ny + ENNIS_WALL_T, FZ2 + ENNIS_WALL_H, "city2_1")
+    box(bw_x1, bw_ny, FZ2, bwex2, bw_ny + EP_WALL_T, FZ2 + EP_WALL_H, "city2_1")
 )
 # North-turning segment — at the WEST end, runs north to world wall
 BRUSHES.append(
@@ -988,60 +988,60 @@ BRUSHES.append(
         bw_x1,
         bw_ny,
         FZ2,
-        bw_x1 + ENNIS_WALL_T,
+        bw_x1 + EP_WALL_T,
         WORLD_Y2 - WALL_T,
-        FZ2 + ENNIS_WALL_H,
+        FZ2 + EP_WALL_H,
         "city2_1",
     )
 )
 # Corner pillar — square brick post at the L junction, wider than wall
-ENNIS_WALL_PIL_HW = 14  # pillar half-width (28 units square)
-ENNIS_WALL_PIL_H = 64  # pillar height — taller than wall
-bw_cx = bw_x1 + ENNIS_WALL_T // 2  # pillar centre X (wall centre)
-bw_cy = bw_ny + ENNIS_WALL_T // 2  # pillar centre Y (wall centre)
+EP_WALL_PIL_HW = 14  # pillar half-width (28 units square)
+EP_WALL_PIL_H = 64  # pillar height — taller than wall
+bw_cx = bw_x1 + EP_WALL_T // 2  # pillar centre X (wall centre)
+bw_cy = bw_ny + EP_WALL_T // 2  # pillar centre Y (wall centre)
 BRUSHES.append(
     box(
-        bw_cx - ENNIS_WALL_PIL_HW,
-        bw_cy - ENNIS_WALL_PIL_HW,
+        bw_cx - EP_WALL_PIL_HW,
+        bw_cy - EP_WALL_PIL_HW,
         FZ2,
-        bw_cx + ENNIS_WALL_PIL_HW,
-        bw_cy + ENNIS_WALL_PIL_HW,
-        FZ2 + ENNIS_WALL_PIL_H,
+        bw_cx + EP_WALL_PIL_HW,
+        bw_cy + EP_WALL_PIL_HW,
+        FZ2 + EP_WALL_PIL_H,
         "city2_1",
     )
 )
 # Cement collar — same width as pillar, sits between brick post and cap slab
 BRUSHES.append(
     box(
-        bw_cx - ENNIS_WALL_PIL_HW,
-        bw_cy - ENNIS_WALL_PIL_HW,
-        FZ2 + ENNIS_WALL_PIL_H,
-        bw_cx + ENNIS_WALL_PIL_HW,
-        bw_cy + ENNIS_WALL_PIL_HW,
-        FZ2 + ENNIS_WALL_PIL_H + 6,
+        bw_cx - EP_WALL_PIL_HW,
+        bw_cy - EP_WALL_PIL_HW,
+        FZ2 + EP_WALL_PIL_H,
+        bw_cx + EP_WALL_PIL_HW,
+        bw_cy + EP_WALL_PIL_HW,
+        FZ2 + EP_WALL_PIL_H + 6,
         TEX_CEMENT,
     )
 )
 # Square cap slab, then shallow pyramid on top
 BRUSHES.append(
     box(
-        bw_cx - ENNIS_WALL_PIL_HW - 1,
-        bw_cy - ENNIS_WALL_PIL_HW - 1,
-        FZ2 + ENNIS_WALL_PIL_H + 6,
-        bw_cx + ENNIS_WALL_PIL_HW + 1,
-        bw_cy + ENNIS_WALL_PIL_HW + 1,
-        FZ2 + ENNIS_WALL_PIL_H + 10,
+        bw_cx - EP_WALL_PIL_HW - 1,
+        bw_cy - EP_WALL_PIL_HW - 1,
+        FZ2 + EP_WALL_PIL_H + 6,
+        bw_cx + EP_WALL_PIL_HW + 1,
+        bw_cy + EP_WALL_PIL_HW + 1,
+        FZ2 + EP_WALL_PIL_H + 10,
         TEX_CEMENT,
     )
 )
 BRUSHES.append(
     pyramid(
-        bw_cx - ENNIS_WALL_PIL_HW - 1,
-        bw_cy - ENNIS_WALL_PIL_HW - 1,
-        FZ2 + ENNIS_WALL_PIL_H + 10,
-        bw_cx + ENNIS_WALL_PIL_HW + 1,
-        bw_cy + ENNIS_WALL_PIL_HW + 1,
-        FZ2 + ENNIS_WALL_PIL_H + 16,
+        bw_cx - EP_WALL_PIL_HW - 1,
+        bw_cy - EP_WALL_PIL_HW - 1,
+        FZ2 + EP_WALL_PIL_H + 10,
+        bw_cx + EP_WALL_PIL_HW + 1,
+        bw_cy + EP_WALL_PIL_HW + 1,
+        FZ2 + EP_WALL_PIL_H + 16,
         TEX_CEMENT,
     )
 )
@@ -2153,13 +2153,13 @@ for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
 
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
-ENNIS_SW_EDGE = ENNIS_Y - ENNIS_HW - CS_WALK_W  # Ennis south sidewalk
+EP_SW_EDGE = EP_Y - EP_HW - CS_WALK_W  # Ennis south sidewalk
 if KH_GROUND_Z > FZ2:
     # Solid hill fill under the entire building footprint
     BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
     # Sloped ramp on the north face — player can walk up from road to building entrance
     _ramp_y1 = KH_Y2  # north face of building
-    _ramp_y2 = ENNIS_SW_EDGE  # extended north for a gentler slope
+    _ramp_y2 = EP_SW_EDGE  # extended north for a gentler slope
     BRUSHES.append(
         ramp_slab_y(
             KH_X1,
@@ -2378,7 +2378,7 @@ BRUSHES.append(
 
 # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
 KH_BR_EXT_Y1 = KH_BR_Y2  # = -256 (north face of building)
-KH_BR_EXT_Y2 = ENNIS_Y - ENNIS_HW - CS_WALK_W  # = 328 (Ennis south sidewalk edge)
+KH_BR_EXT_Y2 = EP_Y - EP_HW - CS_WALK_W  # = 328 (Ennis south sidewalk edge)
 
 # Flat road surface
 BRUSHES.append(
@@ -2429,7 +2429,7 @@ BRUSHES.append(
         KH_BR_EXT_Y2,
         FZ2,
         KH_BR_RD_X2,
-        ENNIS_Y - ENNIS_HW,
+        EP_Y - EP_HW,
         FZ2 + 2,
         TEX_ROAD,
     )
@@ -2440,7 +2440,7 @@ BRUSHES.append(
 # the back road — matching the Charles/Ennis corner style.
 # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
 KH_BR_JCX_W = KH_BR_WS_X1  # = 1906 (SW corner of cut square)
-KH_BR_JCY = ENNIS_Y - ENNIS_HW  # = 408 (Ennis south road edge)
+KH_BR_JCY = EP_Y - EP_HW  # = 408 (Ennis south road edge)
 BRUSHES.append(
     box(KH_BR_WS_X1, KH_BR_EXT_Y2, FZ2, KH_BR_RD_X1, KH_BR_JCY, FZ2 + 2, TEX_ROAD)
 )
@@ -2534,7 +2534,7 @@ BRUSHES.append(
         stair_y_end,
         FZ2,
         KH_ENT_X2,
-        ENNIS_SW_EDGE,
+        EP_SW_EDGE,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -3202,7 +3202,7 @@ letter_brushes = (
 CS_LAMP_POST_H = PB_DZ2 - 32  # pole height (~12 ft)
 # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
 CS_LAMP_POST_XS = [1890, 1246]  # east sidewalk near Ennis, and next pier west
-lamp_post_ys = [ENNIS_Y - ENNIS_HW - 160]
+lamp_post_ys = [EP_Y - EP_HW - 160]
 for _lx in CS_LAMP_POST_XS:
     for _ly in lamp_post_ys:
         _pole_top = FZ2 + CS_LAMP_POST_H
@@ -3713,11 +3713,9 @@ for _lx in CS_LAMP_POST_XS:
         )
 
 # Ennis entrance pillar torches — flame above brick cup on each stone pillar
-ennis_pil_flame_z = (
-    ENNIS_PIL_ZB + ENNIS_PIL_POST_H + ENNIS_PIL_CAP_H + ENNIS_PIL_BELL2_H + 20
-)
-ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
-for _epy in (ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW, ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW):
+ennis_pil_flame_z = EP_PIL_ZB + EP_PIL_POST_H + EP_PIL_CAP_H + EP_PIL_BELL2_H + 20
+ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW
+for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
     ENTITIES.append(
         ent("light", origin=f"{ennis_pil_cx} {_epy} {ennis_pil_flame_z}", light="300")
     )

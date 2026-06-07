@@ -152,11 +152,11 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `CS_SWALK_START` | West Charles Street sidewalk start north of the bridge; also sets the curb/ground split below it |
 | `CS_WALK_H`, `CS_WALK_W` | Charles Street sidewalk height/width; cascade into Ennis curbs, the Ennis wall setback, RH fence placement, Knott Hall terrain ramps, and the back-road sidewalks |
 | `CS_Y1`, `CS_Y2` | Charles Street south/north extents; anchor road surface, sidewalk/fence spans, embankment ends, and north/south street arch teleports |
-| `ENNIS_PIL_HW` | Ennis Drive entrance pillar half-width; also sets Y offsets for pillar placement relative to Ennis Road edges |
-| `ENNIS_PIL_POST_H`, `ENNIS_PIL_BELL2_H` | Entrance pillar heights; set flame/light Z above pillar tops |
-| `ENNIS_PIL_X1`, `ENNIS_PIL_X2` | Entrance pillar E–W extents; pinned to `PB_ARCH_X[2]` — move that pier and pillars move too |
-| `ENNIS_WALL_PIL_HW`, `ENNIS_WALL_PIL_H` | Boundary-wall corner pillar footprint/height; also set collar, cap, and pyramid extents |
-| `ENNIS_WALL_T`, `ENNIS_WALL_H` | L-shaped campus wall thickness/height; affect both wall legs and the pillar centering derived from them |
+| `EP_PIL_HW` | Ennis Drive entrance pillar half-width; also sets Y offsets for pillar placement relative to Ennis Road edges |
+| `EP_PIL_POST_H`, `EP_PIL_BELL2_H` | Entrance pillar heights; set flame/light Z above pillar tops |
+| `EP_PIL_X1`, `EP_PIL_X2` | Entrance pillar E–W extents; pinned to `PB_ARCH_X[2]` — move that pier and pillars move too |
+| `EP_WALL_PIL_HW`, `EP_WALL_PIL_H` | Boundary-wall corner pillar footprint/height; also set collar, cap, and pyramid extents |
+| `EP_WALL_T`, `EP_WALL_H` | L-shaped campus wall thickness/height; affect both wall legs and the pillar centering derived from them |
 | `KH_BR_CORRIDOR_X1/X2` | Gap left in the Ennis south curb for the Knott back-road corridor |
 | `KH_BR_HW`, `KH_BR_WALK_W` | Back-road carriageway and sidewalk widths; ripple through junction geometry, extension slab widths, and terrain fill east of the road |
 | `KH_BR_Y1/Y2`, `KH_BR_ZT_N/S` | Back-road span and slope anchors; changing them reshapes the sloped road, both sidewalks, and the extension up to Ennis |
