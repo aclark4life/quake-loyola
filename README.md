@@ -147,10 +147,10 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 
 | Constant | Objects affected |
 |---|---|
-| `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
-| `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
+| `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
+| `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `PBX1`, `PBX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
 | `PBY1`, `PBY2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
 | `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
