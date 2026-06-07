@@ -155,6 +155,13 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `BLDG_X1/X2`, `BLDG_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `WORLD_X1/X2` | Derives `BRX1`; resizing the world changes the arch span and all wall-relative positions |
 | `FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
+| `_AB_FLOORS`, `_AB_D` | Abutment building floor count and N–S depth; shared with north/south building depth |
+| `_ABUTMENT_X` | Derived from `PXS[0]`; pins the abutment building X — move the west pier and the building moves too |
+| `_AB_X1`, `_AB_X2` | Abutment building E–W extents; also anchor the embankment ramp split and the brick wall positions |
+| `_NB_Y1`, `_NB_Y2` | North building Y extents; derived from `WORLD_Y2`, shifts south building stack indirectly |
+| `_SB_Y1/Y2`, `_SB2_Y1/Y2` | South building 1 & 2 Y extents; stacked directly — changing `_AB_D` shifts both |
+| `_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
+| `_NB_WW`, `_NB_WH` | Window half-width / half-height; shared across all west campus building facades |
 
 ### Gameplay flow
 
