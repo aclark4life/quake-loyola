@@ -1304,7 +1304,7 @@ _cw_x1 = _ew_x2  # starts where iron fence ends
 _cw_x2 = WORLD_X2 - WALL_T  # east world wall inner face
 _cw_fy1 = bw_ny  # south face
 _cw_fy2 = bw_ny + EP_WALL_T  # north face
-_cw_h = 48  # parapet height (shorter than iron fence)
+_cw_h = 32  # parapet height — low enough to jump over
 _cw_pil_hw = 14  # pillar half-width
 _cw_pil_h = _cw_h + 16  # pillar slightly taller than wall
 # Wall body
