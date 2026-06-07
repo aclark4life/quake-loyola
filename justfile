@@ -13,7 +13,7 @@ default:
     @just --list
 
 # Default task: setup, generate, compile, and deploy
-all: setup generate compile deploy
+all: setup generate compile-fast deploy
 
 # Download and install ericw-tools into .tools/
 install-tools:
