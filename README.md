@@ -39,7 +39,7 @@ Terms used when discussing the map's structure and the Python generator code.
 | **Arch span** | The curved section of the bridge deck (PBX1 to PBX2, 1050 units). The deck surface follows a parabolic arch rising 106 units at the centre. |
 | **Flat approach** | Straight deck sections extending from each end of the arch span to the world boundary. Deck sits at constant Z. |
 | **Deck** | The walkable bridge surface. `dtop(x)` = top face Z; `dbot(x)` = bottom face Z. Deck slab thickness is 16 units. |
-| **Arch rise** | How far the deck centre is raised above the endpoints (`ARCH_RISE = 106` units ≈ 7 ft). |
+| **Arch rise** | How far the deck centre is raised above the endpoints (`PB_ARCH_RISE = 106` units ≈ 7 ft). |
 | **Parapet** | Low stone wall running along the north and south edges of the deck, 32 units tall. Players can jump onto it. |
 
 ### Pier / pillar
@@ -147,8 +147,8 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 
 | Constant | Objects affected |
 |---|---|
-| `ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
-| `DZ1`, `DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`DZ2 + ARCH_STILT`), walkway Z |
+| `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
+| `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `PBX1`, `PBX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |

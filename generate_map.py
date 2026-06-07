@@ -44,14 +44,14 @@ TEX_ROOF = "wgrnd1_5"  # street/road texture for roof
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
 PBY1, PBY2 = -136, 136  # N-S width = 272 units ≈ 18 ft
-DZ1, DZ2 = (
+PB_DZ1, PB_DZ2 = (
     208,
     224,
 )  # flat deck bottom / top — raised for realistic road clearance (~14 ft)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # PBX1/PBX2 set after world/building bounds are known (arch spans full world width)
-ARCH_RISE = 96  # centre rise — modest crown over flat approaches
+PB_ARCH_RISE = 96  # centre rise — modest crown over flat approaches
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
@@ -59,17 +59,17 @@ def arch_z(x):
     """Z offset above flat datum for parabolic arch at x."""
     xc = (PBX1 + PBX2) / 2.0
     half = (PBX2 - PBX1) / 2.0
-    return ARCH_RISE * max(0.0, 1.0 - ((x - xc) / half) ** 2)
+    return PB_ARCH_RISE * max(0.0, 1.0 - ((x - xc) / half) ** 2)
 
 
 def dtop(x):
     """Z coordinate of the deck surface (top face) at a given X position."""
-    return DZ2 + arch_z(x)  # deck surface Z at x
+    return PB_DZ2 + arch_z(x)  # deck surface Z at x
 
 
 def dbot(x):
     """Z coordinate of the deck underside at a given X position."""
-    return DZ1 + arch_z(x)  # deck bottom  Z at x
+    return PB_DZ1 + arch_z(x)  # deck bottom  Z at x
 
 
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
@@ -126,18 +126,18 @@ KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
 KH_FLOOR_H = 128  # floor-to-floor height
 KH_FLOORS = 5  # number of floors
-# Knott Hall is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
-KH_GROUND_Z = max(FZ2, DZ2 - KH_FLOOR_H - KH_WALL)  # = 0 (no hill needed)
+# Knott Hall is in flat approach: deck = PB_DZ2 = 144; 2nd floor aligns automatically
+KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 0 (no hill needed)
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
 WORLD_Z2 = max(640, KH_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
-# Flat span at DZ2=144 (flat approach section); pinned to original building centre
+# Flat span at PB_DZ2=144 (flat approach section); pinned to original building centre
 WALK_X1 = _ORIG_KH_CX - 64
 WALK_X2 = _ORIG_KH_CX + 64
-WALK_ZT1 = int(dtop(_ORIG_KH_CX))  # = DZ2 = 144 (flat approach, no arch rise)
+WALK_ZT1 = int(dtop(_ORIG_KH_CX))  # = PB_DZ2 = 144 (flat approach, no arch rise)
 WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL  # = 144 = WALK_ZT1 (flat)
 # No ramp needed: KH_GROUND_Z = 0 = road level
 
@@ -1056,7 +1056,7 @@ RH_SOUTH2_Y2 = RH_SOUTH2_Y1 + RH_DEPTH  # south building 2 north face = -832
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 RH_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
 # Interpolate ramp top-Z at the building's west face so the slope is continuous
-_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (RH_X1 - PBX1) / (RH_EMB_X2 - PBX1))
+_emb_zt_at_ab_x1 = int(PB_DZ2 + (FZ2 - PB_DZ2) * (RH_X1 - PBX1) / (RH_EMB_X2 - PBX1))
 # South segment — west of south buildings (through buildings' Y range)
 BRUSHES.append(
     ramp_slab(
@@ -1066,7 +1066,7 @@ BRUSHES.append(
         RH_SOUTH2_Y2,
         FZ1,
         FZ1,
-        DZ2,
+        PB_DZ2,
         _emb_zt_at_ab_x1,
         TEX_GROUND,
         tt=TEX_GROUND,
@@ -1081,7 +1081,7 @@ BRUSHES.append(
         RH_NORTH_Y1,
         FZ1,
         FZ1,
-        DZ2,
+        PB_DZ2,
         FZ2,
         TEX_GROUND,
         tt=TEX_GROUND,
@@ -1096,7 +1096,7 @@ BRUSHES.append(
         RH_NORTH_Y2,
         FZ1,
         FZ1,
-        DZ2,
+        PB_DZ2,
         _emb_zt_at_ab_x1,
         TEX_GROUND,
         tt=TEX_GROUND,
@@ -1111,7 +1111,7 @@ BRUSHES.append(
         _ROAD_Y2,
         FZ1,
         FZ1,
-        DZ2,
+        PB_DZ2,
         FZ2,
         TEX_GROUND,
         tt=TEX_GROUND,
@@ -1138,7 +1138,7 @@ BRUSHES.append(
         FZ2,
         RH_PIER_X + P_HW,
         _s_door_y - _DOOR_W // 2,
-        DZ2,
+        PB_DZ2,
         "city2_1",
     )
 )
@@ -1149,7 +1149,7 @@ BRUSHES.append(
         FZ2,
         RH_PIER_X + P_HW,
         _SOUTH_WALL_Y2,
-        DZ2,
+        PB_DZ2,
         "city2_1",
     )
 )
@@ -1160,7 +1160,7 @@ BRUSHES.append(
         FZ2 + _DOOR_H,
         RH_PIER_X + P_HW,
         _s_door_y + _DOOR_W // 2,
-        DZ2,
+        PB_DZ2,
         "city2_1",
     )
 )
@@ -1543,10 +1543,10 @@ BRUSHES.append(
     box(
         PBX2,
         PBY1,
-        DZ1,
+        PB_DZ1,
         WORLD_X2 - WALL_T,
         PBY2,
-        DZ2,
+        PB_DZ2,
         TEX_STONE,
         tt=TEX_FLOOR,
         tb=TEX_FLOOR,
@@ -1574,12 +1574,22 @@ for i in range(ARCH_SEGS):
 
 # ── Parapet walls — west flat approach removed; east flat stub only ───────────
 BRUSHES.append(
-    box(PBX2, PBY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, PBY2, DZ2 + PAR_H, TEX_CEMENT)
+    box(PBX2, PBY2 - PAR_W, PB_DZ2, WORLD_X2 - WALL_T, PBY2, PB_DZ2 + PAR_H, TEX_CEMENT)
 )  # North east
 # South east — gap at WALK_X1..WALK_X2 for walkway connection to building
-BRUSHES.append(box(PBX2, PBY1, DZ2, WALK_X1, PBY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT))
 BRUSHES.append(
-    box(WALK_X2, PBY1, DZ2, WORLD_X2 - WALL_T, PBY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT)
+    box(PBX2, PBY1, PB_DZ2, WALK_X1, PBY1 + PAR_W, PB_DZ2 + PAR_H, TEX_CEMENT)
+)
+BRUSHES.append(
+    box(
+        WALK_X2,
+        PBY1,
+        PB_DZ2,
+        WORLD_X2 - WALL_T,
+        PBY1 + PAR_W,
+        PB_DZ2 + PAR_H,
+        TEX_CEMENT,
+    )
 )
 
 for i in range(ARCH_SEGS):
@@ -1741,10 +1751,10 @@ BRUSHES.append(
     box(
         _cx_walk_e - _BLK_HW,
         PBY1 - _BLK_OVH,
-        DZ2 + PAR_H,
+        PB_DZ2 + PAR_H,
         _cx_walk_e + _BLK_HW,
         PBY1 + PAR_W,
-        DZ2 + PAR_H + _BLK_H,
+        PB_DZ2 + PAR_H + _BLK_H,
         TEX_CEMENT,
     )
 )
@@ -1754,10 +1764,10 @@ BRUSHES.append(
     box(
         _cx_walk_w - _BLK_HW,
         PBY1 - _BLK_OVH,
-        DZ2 + PAR_H,
+        PB_DZ2 + PAR_H,
         _cx_walk_w + _BLK_HW,
         PBY1 + PAR_W,
-        DZ2 + PAR_H + _BLK_H,
+        PB_DZ2 + PAR_H + _BLK_H,
         TEX_CEMENT,
     )
 )
@@ -1806,7 +1816,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
                 )
             )
     # East flat section
-    _tbz = DZ2 + PAR_H + _tube_z_extra
+    _tbz = PB_DZ2 + PAR_H + _tube_z_extra
     _x_east_end = WORLD_X2 - WALL_T
     BRUSHES.append(
         box(
@@ -2010,7 +2020,7 @@ TEX_ARCH_W = 32  # Thickness of the arch in X
 
 for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
     _xb, _xf = _ex, _ex + TEX_ARCH_W
-    _sprz = DZ2 + TEX_ARCH_STILT  # Z where arch curve begins
+    _sprz = PB_DZ2 + TEX_ARCH_STILT  # Z where arch curve begins
     _post_w = TEX_ARCH_ROUT - TEX_ARCH_RIN  # post thickness in Y
     # South post (extends to ground floor, with overhang)
     BRUSHES.append(
@@ -3139,7 +3149,7 @@ _letter_brushes = (
 )
 
 # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-_LAMP_POST_H = DZ2 - 32  # pole height (~12 ft)
+_LAMP_POST_H = PB_DZ2 - 32  # pole height (~12 ft)
 # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
 _LAMP_POST_XS = [1890, 1246]  # east sidewalk near Ennis, and next pier west
 _lamp_post_ys = [_ENNIS_Y - _ENNIS_HW - 160]
@@ -3368,7 +3378,7 @@ west_brushes = arch_fill(
     WORLD_X1 + WALL_T,
     WORLD_X1 + WALL_T + TEX_ARCH_W,
     0.0,
-    DZ2,
+    PB_DZ2,
     TEX_ARCH_RIN,
     A_SEGS,
     TEX_TELEPORT,
@@ -3380,7 +3390,7 @@ ENTITIES.append(brush_ent("func_illusionary", west_brushes))
 # West lower trigger (ground floor — simple box between posts)
 _wlx1 = WORLD_X1 + WALL_T
 _wlx2 = _wlx1 + TEX_ARCH_W
-west_lower = [box(_wlx1, -TEX_ARCH_RIN, FZ2, _wlx2, TEX_ARCH_RIN, DZ2, TEX_TELEPORT)]
+west_lower = [box(_wlx1, -TEX_ARCH_RIN, FZ2, _wlx2, TEX_ARCH_RIN, PB_DZ2, TEX_TELEPORT)]
 ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
 ENTITIES.append(brush_ent("func_illusionary", west_lower))
 
@@ -3389,7 +3399,7 @@ east_brushes = arch_fill(
     WORLD_X2 - WALL_T - TEX_ARCH_W,
     WORLD_X2 - WALL_T,
     0.0,
-    DZ2,
+    PB_DZ2,
     TEX_ARCH_RIN,
     A_SEGS,
     TEX_TELEPORT,
@@ -3406,11 +3416,11 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east_deck",
-        origin=f"{_east_lower_deck_x} 0 {int(DZ2 + 40)}",
+        origin=f"{_east_lower_deck_x} 0 {int(PB_DZ2 + 40)}",
         angle="180",
     )
 )
-east_lower = [box(_elx1, -TEX_ARCH_RIN, FZ2, _elx2, TEX_ARCH_RIN, DZ2, TEX_TELEPORT)]
+east_lower = [box(_elx1, -TEX_ARCH_RIN, FZ2, _elx2, TEX_ARCH_RIN, PB_DZ2, TEX_TELEPORT)]
 ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
@@ -3477,7 +3487,7 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
 ENTITIES.append(
     ent(
         "info_player_start",
-        origin=f"{KH_CX} {PBY1 + PAR_W + 32} {int(DZ2 + 24)}",
+        origin=f"{KH_CX} {PBY1 + PAR_W + 32} {int(PB_DZ2 + 24)}",
         angle="180",
     )
 )
