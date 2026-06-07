@@ -369,19 +369,31 @@ def make_tree(cx, cy, base_z):
 
 
 def make_bush(cx, cy, base_z, size=24):
-    """Cartoon bush: squat box base + low pyramid cap, all ground texture."""
+    """Cartoon bush: raised rectangular body with a small pyramid cap."""
     brushes = []
+    # Short legs lifting it off the ground
+    brushes.append(box(cx - 6, cy - 6, base_z, cx + 6, cy + 6, base_z + 10, TEX_GROUND))
+    # Main rectangular body
     brushes.append(
-        box(cx - size, cy - size, base_z, cx + size, cy + size, base_z + 16, TEX_GROUND)
-    )
-    brushes.append(
-        pyramid(
+        box(
             cx - size,
             cy - size,
-            base_z + 12,
+            base_z + 10,
             cx + size,
             cy + size,
-            base_z + size + 8,
+            base_z + size + 10,
+            TEX_GROUND,
+        )
+    )
+    # Small pyramid cap — just a hint of taper
+    brushes.append(
+        pyramid(
+            cx - size + 4,
+            cy - size + 4,
+            base_z + size + 6,
+            cx + size - 4,
+            cy + size - 4,
+            base_z + size + 20,
             TEX_GROUND,
         )
     )
@@ -4380,32 +4392,28 @@ ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
 
 # ── Cartoon bushes as func_detail ────────────────────────────────────────────
 _bush_positions = [
-    # Along south face of Ennis brick wall
-    (bw_x1 + 60, bw_ny - 40),
-    (bw_x1 + 160, bw_ny - 40),
-    (bw_x1 + 260, bw_ny - 40),
-    (bw_x1 + 360, bw_ny - 40),
-    # Along south face of iron fence
-    (int(_ew_x1 + 120), bw_ny - 40),
-    (int(_ew_x1 + 300), bw_ny - 40),
-    (int(_ew_x1 + 500), bw_ny - 40),
-    (int(_ew_x1 + 700), bw_ny - 40),
-    # Along south face of cement parapet wall
-    (int(_cw_x1 + 120), bw_ny - 40),
-    (int(_cw_x1 + 320), bw_ny - 40),
-    (int(_cw_x1 + 560), bw_ny - 40),
-    # Along Knott Hall east face
-    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2 - 200),
-    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2),
-    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2 + 200),
-    # Along west building east face (RH_X2)
-    (RH_X2 - 48, -200),
-    (RH_X2 - 48, 200),
-    (RH_X2 - 48, 500),
-    # Charles St sidewalk east edge
-    (ROAD_X2 + 60, -400),
-    (ROAD_X2 + 60, -700),
-    (ROAD_X2 + 60, -1000),
+    # Along north face of Ennis brick wall (campus grass side, not sidewalk)
+    (bw_x1 + 60, bw_ny + EP_WALL_T + 40),
+    (bw_x1 + 160, bw_ny + EP_WALL_T + 40),
+    (bw_x1 + 260, bw_ny + EP_WALL_T + 40),
+    (bw_x1 + 360, bw_ny + EP_WALL_T + 40),
+    # Along north face of iron fence
+    (int(_ew_x1 + 120), bw_ny + EP_WALL_T + 40),
+    (int(_ew_x1 + 300), bw_ny + EP_WALL_T + 40),
+    (int(_ew_x1 + 500), bw_ny + EP_WALL_T + 40),
+    (int(_ew_x1 + 700), bw_ny + EP_WALL_T + 40),
+    # Along north face of cement parapet wall
+    (int(_cw_x1 + 120), bw_ny + EP_WALL_T + 40),
+    (int(_cw_x1 + 320), bw_ny + EP_WALL_T + 40),
+    (int(_cw_x1 + 560), bw_ny + EP_WALL_T + 40),
+    # Along Knott Hall west face (outside building)
+    (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 - 200),
+    (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
+    (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 + 200),
+    # Along west building east face (outside building)
+    (RH_X2 + 48, -200),
+    (RH_X2 + 48, 200),
+    (RH_X2 + 48, 500),
 ]
 _all_bush_brushes = []
 for _bx, _by in _bush_positions:
