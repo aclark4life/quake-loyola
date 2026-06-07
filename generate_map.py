@@ -92,7 +92,7 @@ WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
-BLDG_WIDTH = 640
+BLDG_WIDTH = 1024
 WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
 WORLD_X2 = (
@@ -108,15 +108,20 @@ WORLD_Y1, WORLD_Y2 = (
 BLDG_X2 = 1906  # fixed position regardless of world size
 BLDG_X1 = BLDG_X2 - BLDG_WIDTH
 BLDG_CX = (BLDG_X1 + BLDG_X2) // 2
-# Arch spans from west world wall all the way to just west of Knott Hall pillar
+# Original building centre (BLDG_WIDTH=640) — entrance, walkway, stairs stay pinned here
+_ORIG_BLDG_CX = BLDG_X2 - 640 // 2  # = 1586
+# Arch spans from west world wall all the way to just west of Knott Hall pier.
+# The pier stays at its original position (BLDG_X2 - 640 - 20 = 1246) regardless
+# of how wide the building is — the west wall now extends past it.
+_PIER_X = BLDG_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
 BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
-BRX2 = BLDG_X1 - 20  # east arch terminus at Knott Hall pillar
+BRX2 = _PIER_X  # east arch terminus at fixed pier position
 SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
     -1246,  # west abutment pier (top of embankment hill)
     -525,
     525,
-    BLDG_X1 - 20,
+    _PIER_X,
     1938,  # east pillar at old world edge
 ]  # pillar X positions
 BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
@@ -131,10 +136,10 @@ BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H
 WORLD_Z2 = max(640, BLDG_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
-# Flat span at DZ2=144 (flat approach section); centered on hall entrance
-WALK_X1 = BLDG_CX - 64  # = 536
-WALK_X2 = BLDG_CX + 64  # = 664
-WALK_ZT1 = int(dtop(BLDG_CX))  # = DZ2 = 144 (flat approach, no arch rise)
+# Flat span at DZ2=144 (flat approach section); pinned to original building centre
+WALK_X1 = _ORIG_BLDG_CX - 64
+WALK_X2 = _ORIG_BLDG_CX + 64
+WALK_ZT1 = int(dtop(_ORIG_BLDG_CX))  # = DZ2 = 144 (flat approach, no arch rise)
 WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # = 144 = WALK_ZT1 (flat)
 # No ramp needed: BLDG_GROUND_Z = 0 = road level
 
@@ -2411,8 +2416,8 @@ _bix2 = BLDG_X2 - BLDG_WALL  # interior east
 _biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
 _biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
 
-# Entrance doorway — centred on building (BLDG_CX ± 64)
-_ENT_X1, _ENT_X2 = BLDG_CX - 64, BLDG_CX + 64  # = 1372, 1500
+# Entrance doorway — pinned to original building centre, not current BLDG_CX
+_ENT_X1, _ENT_X2 = _ORIG_BLDG_CX - 64, _ORIG_BLDG_CX + 64
 
 # ── Entrance staircase ────────────────────────────────────────────────────────
 _STEP_N = 10
@@ -2602,7 +2607,7 @@ _door_2 = [
     (_ENT_X1, WALK_ZT2, _ENT_X2, BLDG_GROUND_Z + FLOOR_H * 2)
 ]  # walkway entrance
 _win_n = [
-    (BLDG_CX + 8, BLDG_GROUND_Z + FLOOR_H * 2, BLDG_CX + 56, BLDG_Z2)
+    (_ORIG_BLDG_CX + 8, BLDG_GROUND_Z + FLOOR_H * 2, _ORIG_BLDG_CX + 56, BLDG_Z2)
 ]  # narrow vertical window slot above walkway entrance up to roof
 BRUSHES.extend(
     layered_wall(
@@ -2698,7 +2703,7 @@ for _mx in [_ne_win_cx - _win_half - _fm_div, _ne_win_cx + _win_half]:
         )
     )
 # Main front wall narrow window _win_n: mullions just outside the opening so player can fit through
-_win_n_x1, _win_n_x2 = BLDG_CX + 8, BLDG_CX + 56
+_win_n_x1, _win_n_x2 = _ORIG_BLDG_CX + 8, _ORIG_BLDG_CX + 56
 for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
     BRUSHES.append(
         box(
