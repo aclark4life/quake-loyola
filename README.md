@@ -86,6 +86,89 @@ Terms used when discussing the map's structure and the Python generator code.
 - **Charles Street**: Road surface running N-S under the bridge.
 - **Sky**: `sky1` ceiling, sealed outer box.
 
+## Object relationships
+
+This section describes how the map's major objects relate to each other — spatially, structurally, and via gameplay connections — to guide discussion of changes.
+
+### Spatial hierarchy
+
+Everything is enclosed in the **world shell** (floor + 4 walls + sky ceiling). Objects inside:
+
+```
+World shell
+├── Charles Street (N–S road, runs full Y extent)
+│   ├── West sidewalk & curb
+│   ├── East sidewalk & curb
+│   ├── South arch teleport gate  ──→ bridge deck centre
+│   └── North arch teleport gate  ──→ bridge deck centre
+├── Ennis Road (E–W road, T-junction north of bridge)
+│   └── Ennis Drive entrance pillars & boundary wall
+├── West campus buildings
+│   ├── Abutment building (3-floor brick, west end of bridge)
+│   ├── North building (gabled, north side of Ennis Road)
+│   ├── South building 1 & South building 2
+│   └── Iron fence (east face of west buildings)
+├── Embankment (sloped ground ramp from road level up to bridge deck Z)
+├── Bridge (E–W span over Charles Street, Z 208 → 320 at crown)
+│   ├── Arch deck (32 segments BRX1 → BRX2, parabolic rise)
+│   ├── Parapet walls (N & S edges, full span)
+│   ├── Parapet blocks & handrails
+│   ├── Stone piers ×5 (at PXS[] positions)
+│   │   └── each: arch wall → voussoir ring → cap → pillar post
+│   ├── West teleport arch (X = BRX1 / west world wall)
+│   └── East teleport arch (X = east world wall)
+├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
+├── Knott Hall (south campus tower, X 1266–1906)
+│   ├── Outer walls (5 floors + roof)
+│   ├── Interior floors, hallway & rooms
+│   ├── Elevator (func_plat) inside lift shaft
+│   ├── Entrance staircase & railings (north face, ground level)
+│   └── Fascia lettering ("LOYOLA UNIVERSITY MARYLAND")
+└── Campus lamp posts (along Charles Street)
+```
+
+### Teleport connections
+
+Each `trigger_teleport` brush points to an `info_teleport_destination` by `targetname`.
+
+| Trigger location | `targetname` | Destination |
+|---|---|---|
+| West arch — deck level | `dest_east` | North building rooftop (west campus) |
+| West arch — ground level | `dest_east` | North building rooftop (west campus) |
+| East arch — deck level | `dest_west` | Knott Hall rooftop |
+| East arch — ground level | `dest_east_deck` | Flat deck, just west of east arch |
+| Abutment arch (Y = 0, deck) | `dest_abutment_deck` | Bridge deck above abutment pier |
+| Charles St south arch gate | `dest_bridge_mid` | Bridge deck centre |
+| Charles St north arch gate | `dest_bridge_mid` | Bridge deck centre |
+
+### Structural dependencies
+
+These constants are "load-bearing" across multiple objects; changing one cascades.
+
+| Constant | Objects affected |
+|---|---|
+| `BRX1`, `BRX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
+| `BRY1`, `BRY2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
+| `DZ1`, `DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`DZ2 + ARCH_STILT`), walkway Z |
+| `ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
+| `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
+| `BLDG_X1/X2`, `BLDG_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
+| `WORLD_X1/X2` | Derives `BRX1`; resizing the world changes the arch span and all wall-relative positions |
+| `FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
+
+### Gameplay flow
+
+```
+Charles Street  ──[south arch]──┐
+                                 ├──→  Bridge deck centre
+Charles Street  ──[north arch]──┘
+
+Bridge west end ──[walk through arch]──→  West campus rooftop  ──(drop down)──→  ground
+Bridge east end ──[walk through arch]──→  Knott Hall rooftop
+Bridge east end ──[walkway]──────────→  Knott Hall 2nd floor
+Knott Hall                            ──[lift (func_plat)]──→  Floors 1–5
+```
+
 ## Textures required
 
 All textures come from the community **quake101.wad** collection. Download **quake101.wad** and place it alongside the `.map` file before compiling.
