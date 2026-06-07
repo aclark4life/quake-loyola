@@ -36,7 +36,7 @@ Terms used when discussing the map's structure and the Python generator code.
 
 | Term | Description |
 |---|---|
-| **Arch span** | The curved section of the bridge deck (PBX1 to PBX2, 1050 units). The deck surface follows a parabolic arch rising 106 units at the centre. |
+| **Arch span** | The curved section of the bridge deck (PB_X1 to PB_X2, 1050 units). The deck surface follows a parabolic arch rising 106 units at the centre. |
 | **Flat approach** | Straight deck sections extending from each end of the arch span to the world boundary. Deck sits at constant Z. |
 | **Deck** | The walkable bridge surface. `dtop(x)` = top face Z; `dbot(x)` = bottom face Z. Deck slab thickness is 16 units. |
 | **Arch rise** | How far the deck centre is raised above the endpoints (`PB_ARCH_RISE = 106` units ≈ 7 ft). |
@@ -110,12 +110,12 @@ World shell
 │   └── Iron fence (east face of west buildings)
 ├── Embankment (sloped ground ramp from road level up to bridge deck Z)
 ├── Bridge (E–W span over Charles Street, Z 208 → 320 at crown)
-│   ├── Arch deck (32 segments PBX1 → PBX2, parabolic rise)
+│   ├── Arch deck (32 segments PB_X1 → PB_X2, parabolic rise)
 │   ├── Parapet walls (N & S edges, full span)
 │   ├── Parapet blocks & handrails
 │   ├── Stone piers ×5 (at PXS[] positions)
 │   │   └── each: arch wall → voussoir ring → cap → pillar post
-│   ├── West teleport arch (X = PBX1 / west world wall)
+│   ├── West teleport arch (X = PB_X1 / west world wall)
 │   └── East teleport arch (X = east world wall)
 ├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
 ├── Knott Hall (south campus tower, X 1266–1906)
@@ -151,8 +151,8 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
 | `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
-| `PBX1`, `PBX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
-| `PBY1`, `PBY2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
+| `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
+| `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
 | `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
 | `RH_DEPTH` | Residence hall N–S depth; shared by all four RH buildings — changing it shifts the south building stack |
 | `RH_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
@@ -163,7 +163,7 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `RH_WALL` | Wall thickness; used for all RH interior/exterior dimensions and window placement |
 | `RH_WIN_HW`, `RH_WIN_HH` | Window half-width / half-height; shared across all RH building facades |
 | `RH_X1`, `RH_X2` | RH building E–W extents; also anchor the embankment ramp split and the brick wall positions |
-| `WORLD_X1/X2` | Derives `PBX1`; resizing the world changes the arch span and all wall-relative positions |
+| `WORLD_X1/X2` | Derives `PB_X1`; resizing the world changes the arch span and all wall-relative positions |
 
 ### Gameplay flow
 
