@@ -83,6 +83,7 @@ PB_PIL_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
+PB_PIL_BASE_RAMP_H = 160  # high side of ramped plinth on outer piers (~10 ft)
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
@@ -455,6 +456,7 @@ def arch_wall(
     stilt_h=None,
     overhang=0,
     base_h=0,
+    base_ramp=None,
 ):
     """Stone wall with arched opening centred at Y=0.
 
@@ -462,6 +464,9 @@ def arch_wall(
              giving a plain semicircle; set > rin for a tall stilted/gothic arch).
     overhang: extra Y extent on the rectangular pillar portions beyond ±rout.
     base_h: solid stone plinth height at ground level — arch opening starts above this.
+    base_ramp: if given, a (zt_x1, zt_x2) tuple — replaces the flat base_h box with a
+               ramp_slab whose top slopes from zt_x1 at x=x1 to zt_x2 at x=x2.
+               base_h is ignored when base_ramp is set.
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
@@ -481,7 +486,10 @@ def arch_wall(
     # Cap above arch crown: fills above the inner arc top
     brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
     # Stone plinth at base — closes arch opening at ground level
-    if base_h > 0:
+    if base_ramp is not None:
+        zt1, zt2 = base_ramp
+        brushes.append(ramp_slab(x1, x2, -rin, rin, floor_z, floor_z, zt1, zt2, tex))
+    elif base_h > 0:
         brushes.append(box(x1, -rin, floor_z, x2, rin, floor_z + base_h, tex))
 
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
@@ -1897,6 +1905,18 @@ if SHOW_SUPPORTS:
         # past the bridge edges, regardless of a_rout (outer piers have small rout).
         _arch_overhang = max(PB_PIL_OVERHANG, PB_Y2 + PB_PIL_OVERHANG - a_rout)
 
+        # Ramped plinth: outer piers ramp up on their outward face so players
+        # can run up from outside. East piers: high east side; west piers: high west side.
+        # Central / road piers get a flat plinth.
+        if px > 0:
+            # East of road — ramp slopes up toward east (low at x1, high at x2)
+            _base_ramp = (FZ2 + PB_PIL_BASE_H, FZ2 + PB_PIL_BASE_RAMP_H)
+        elif px < 0:
+            # West of road — ramp slopes up toward west (high at x1, low at x2)
+            _base_ramp = (FZ2 + PB_PIL_BASE_RAMP_H, FZ2 + PB_PIL_BASE_H)
+        else:
+            _base_ramp = None  # centre pier — flat plinth
+
         # Add pier structure — easternmost pier gets a square opening, rest are arched
         if px == max(PB_ARCH_X):
             # Overhang must reach PB_Y2+PB_PIL_OVERHANG to match pillar tops above deck
@@ -1931,6 +1951,7 @@ if SHOW_SUPPORTS:
                     stilt_h=a_stilt,
                     overhang=_arch_overhang,
                     base_h=PB_PIL_BASE_H,
+                    base_ramp=_base_ramp,
                 )
             )
 
