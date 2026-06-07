@@ -76,7 +76,7 @@ def dbot(x):
 
 
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
-PB_PAR_H = 48  # parapet wall height above deck — ~3 ft, matches reference photos
+PB_PAR_H = 40  # parapet wall height above deck — lowered so player can jump on top
 PB_PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PB_PIL_EXTRA = 64  # extra pillar post height above parapet (gameplay)
 PB_PIL_CAP_H = 12  # cap slab height
@@ -84,6 +84,8 @@ PB_PIL_PYR_H = 20  # pyramid cap height — visible triangular cement top
 PB_PIL_PYR_W = 45  # pyramid base half-width — slightly wider than pillar (PB_PIL_HW=37)
 PB_PIL_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
+PB_PIL_CAP_IN_OVH = 4  # inward (deck-facing) overhang of cap slab past pillar post
+PB_PIL_CAP_OUT_OVH = 20  # outward (N/S road-facing) overhang of cap slab
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
 PB_PIL_BASE_RAMP_H = 40  # high side of ramped plinth — subtle incline, still jumpable
@@ -104,8 +106,8 @@ WORLD_X1 = -1983  # west wall; PB_X1 = WORLD_X1+WALL_T = -1967, giving western s
 # of 721 units (= PB_ARCH_X[2]→PB_ARCH_X[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
-    -2432,
-    1200,
+    -1920,
+    1712,
 )  # full world N-S extent (expanded north for Ennis wall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
@@ -121,6 +123,8 @@ KH_ORIG_CX = KH_X2 - 640 // 2  # = 1586
 KH_PIER_X = KH_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at fixed pier position
+# Eastern flat span angles southward to match the real-life path curve (10–15°)
+EAST_SPAN_ANGLE = 12.0  # degrees; pivot at x=PB_X2, east end shifts south
 SEG_W = (PB_X2 - PB_X1) / ARCH_SEGS  # segment width for full-span arch
 PB_ARCH_X = [
     -1246,  # west abutment pier (top of embankment hill)
@@ -184,6 +188,42 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
                 face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
                 face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
                 face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt),
+            ]
+        )
+        + "\n}"
+    )
+
+
+def east_y_shift(x):
+    """Southward Y shift (negative = south) for a given X east of the easternmost pier.
+    Pivots at PB_ARCH_X[4] (= 1938); zero for x <= that pier."""
+    pivot = PB_ARCH_X[4]
+    if x <= pivot:
+        return 0.0
+    return -(x - pivot) * math.tan(math.radians(EAST_SPAN_ANGLE))
+
+
+def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
+    """Rectangular slab with Y-shear: at x=x1 the Y-range is [y1+s1, y2+s1],
+    at x=x2 it is [y1+s2, y2+s2].  Negative s = southward shift."""
+    tt = tt or tex
+    tb = tb or tex
+    y1a, y2a = y1 + s1, y2 + s1
+    y1b, y2b = y1 + s2, y2 + s2
+    return (
+        "{\n"
+        + "\n".join(
+            [
+                face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),  # -X west
+                face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),  # +X east
+                face(
+                    (x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex
+                ),  # south (angled)
+                face(
+                    (x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex
+                ),  # north (angled)
+                face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb),  # bottom
+                face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),  # top
             ]
         )
         + "\n}"
@@ -357,7 +397,7 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
     brushes = []
-    brushes.append(box(x1, -rin, floor_z, x2, rin, sprz, tex))
+    brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, sprz, tex))
     for i in range(segs):
         brushes.append(
             arch_pie_seg(x1, x2, yc, float(sprz), rin, i * seg, (i + 1) * seg, tex)
@@ -1035,18 +1075,143 @@ bw_ny2 = bw_ny + 200  # north segment length
 BRUSHES.append(
     box(bw_x1, bw_ny, FZ2, bwex2, bw_ny + EP_WALL_T, FZ2 + EP_WALL_H, "city2_1")
 )
-# North-turning segment — at the WEST end, runs north to world wall
+# North-turning segment — south half brick, north half iron fence
+bw_mid_y = (bw_ny + WORLD_Y2 - WALL_T) // 2  # midpoint of north segment
 BRUSHES.append(
     box(
         bw_x1,
         bw_ny,
         FZ2,
         bw_x1 + EP_WALL_T,
-        WORLD_Y2 - WALL_T,
+        bw_mid_y,
         FZ2 + EP_WALL_H,
         "city2_1",
     )
 )
+# North half — iron fence matching west-side style (FNC_* constants defined later)
+_gfx1 = bw_x1 + EP_WALL_T // 2 - 1  # centre the pickets on the wall line
+_gfx2 = _gfx1 + 2
+_g_fnc_h = 96
+_g_fnc_spacing = 16
+_g_fnc_tex = "metal4_4"
+# Top rail
+BRUSHES.append(
+    box(
+        _gfx1,
+        bw_mid_y,
+        FZ2 + _g_fnc_h - 28,
+        _gfx2,
+        WORLD_Y2 - WALL_T,
+        FZ2 + _g_fnc_h - 26,
+        _g_fnc_tex,
+    )
+)
+# Pickets
+_gpy = bw_mid_y
+_gpi = 0
+while _gpy + 2 <= WORLD_Y2 - WALL_T:
+    _gpw = 8 if _gpi % 10 == 0 else 2
+    BRUSHES.append(
+        box(_gfx1, _gpy, FZ2, _gfx2, _gpy + _gpw, FZ2 + _g_fnc_h, _g_fnc_tex)
+    )
+    _gpy += _g_fnc_spacing
+    _gpi += 1
+
+# ── Hollow iron square frames atop south brick wall — matches fence height ──
+# Each frame is a hollow rectangle in the Y-Z plane, sitting on a short stem.
+_sq_sz = 44  # outer width in Y (kept the same)
+_sq_stem_h = 12  # stem height from wall top to frame bottom
+_sq_t = 2  # bar thickness
+_sq_xhw = 2  # half-thickness in X (thin slab)
+_sq_cx = bw_x1 + EP_WALL_T // 2  # X centre = wall centre
+_sq_z1 = FZ2 + EP_WALL_H  # base = wall top
+_sq_z2 = _sq_z1 + 44  # total height unchanged (same top as before)
+_sq_fz1 = _sq_z1 + _sq_stem_h  # frame bottom (above stem)
+_sq_spacing = _sq_sz + 16  # gap between frame centres
+_sq_cy = bw_ny + _sq_spacing // 2
+_sq_first = True
+while _sq_cy + _sq_sz // 2 <= bw_mid_y:
+    _this_sz = _sq_sz // 2 if _sq_first else _sq_sz  # half-size nearest pillar
+    _sq_first = False
+    _y1 = _sq_cy - _this_sz // 2
+    _y2 = _sq_cy + _this_sz // 2
+    # Stem — small vertical bar from wall top to frame bottom, centred in Y
+    BRUSHES.append(
+        box(
+            _sq_cx - _sq_xhw,
+            _sq_cy - _sq_t // 2,
+            _sq_z1,
+            _sq_cx + _sq_xhw,
+            _sq_cy + _sq_t // 2,
+            _sq_fz1,
+            _g_fnc_tex,
+        )
+    )
+    # Bottom bar
+    BRUSHES.append(
+        box(
+            _sq_cx - _sq_xhw,
+            _y1,
+            _sq_fz1,
+            _sq_cx + _sq_xhw,
+            _y2,
+            _sq_fz1 + _sq_t,
+            _g_fnc_tex,
+        )
+    )
+    # Top bar
+    BRUSHES.append(
+        box(
+            _sq_cx - _sq_xhw,
+            _y1,
+            _sq_z2 - _sq_t,
+            _sq_cx + _sq_xhw,
+            _y2,
+            _sq_z2,
+            _g_fnc_tex,
+        )
+    )
+    # Left (south) post
+    BRUSHES.append(
+        box(
+            _sq_cx - _sq_xhw,
+            _y1,
+            _sq_fz1,
+            _sq_cx + _sq_xhw,
+            _y1 + _sq_t,
+            _sq_z2,
+            _g_fnc_tex,
+        )
+    )
+    # Right (north) post
+    BRUSHES.append(
+        box(
+            _sq_cx - _sq_xhw,
+            _y2 - _sq_t,
+            _sq_fz1,
+            _sq_cx + _sq_xhw,
+            _y2,
+            _sq_z2,
+            _g_fnc_tex,
+        )
+    )
+    # Connector to next square — thin bar at mid-height between right post and next left post
+    _conn_y1 = _sq_cy + _this_sz // 2
+    _conn_y2 = _sq_cy + _sq_spacing - _sq_sz // 2
+    _conn_zmid = _sq_fz1 + (_sq_z2 - _sq_fz1) // 2
+    if _conn_y2 <= bw_mid_y:
+        BRUSHES.append(
+            box(
+                _sq_cx - _sq_xhw,
+                _conn_y1,
+                _conn_zmid - _sq_t // 2,
+                _sq_cx + _sq_xhw,
+                _conn_y2,
+                _conn_zmid + _sq_t // 2,
+                _g_fnc_tex,
+            )
+        )
+    _sq_cy += _sq_spacing
 # Corner pillar — square brick post at the L junction, wider than wall
 EP_WALL_PIL_HW = 14  # pillar half-width (28 units square)
 EP_WALL_PIL_H = 64  # pillar height — taller than wall
@@ -1595,15 +1760,35 @@ for _fy1, _fy2 in [(CS_Y1, CS_Y2)]:
 
 # ════════════════════════════════════════════════════════════════════════════════
 # West flat approach removed — arch now starts at world edge
-# East flat stub from arch terminus to building entrance
+# East flat stub from arch terminus to building entrance — angled southward
+_es1 = 0.0  # no shift at the pier (pivot)
+_es2 = east_y_shift(WORLD_X2 - WALL_T)  # full southward shift at east world wall
+_ep = PB_ARCH_X[4]  # easternmost pier — where the angle begins
+# Straight section: arch terminus → easternmost pier
 BRUSHES.append(
     box(
         PB_X2,
         PB_Y1,
         PB_DZ1,
+        _ep,
+        PB_Y2,
+        PB_DZ2,
+        TEX_STONE,
+        tt=TEX_FLOOR,
+        tb=TEX_FLOOR,
+    )
+)
+# Angled section: easternmost pier → east world wall
+BRUSHES.append(
+    shear_box_y(
+        _ep,
+        PB_Y1,
+        PB_DZ1,
         WORLD_X2 - WALL_T,
         PB_Y2,
         PB_DZ2,
+        _es1,
+        _es2,
         TEX_STONE,
         tt=TEX_FLOOR,
         tb=TEX_FLOOR,
@@ -1630,29 +1815,42 @@ for i in range(ARCH_SEGS):
     )
 
 # ── Parapet walls — west flat approach removed; east flat stub only ───────────
+# North east parapet: straight PB_X2→pier, then angled pier→world wall
 BRUSHES.append(
-    box(
-        PB_X2,
+    box(PB_X2, PB_Y2 - PB_PAR_W, PB_DZ2, _ep, PB_Y2, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
+)
+BRUSHES.append(
+    shear_box_y(
+        _ep,
         PB_Y2 - PB_PAR_W,
         PB_DZ2,
         WORLD_X2 - WALL_T,
         PB_Y2,
         PB_DZ2 + PB_PAR_H,
+        _es1,
+        _es2,
         TEX_CEMENT,
     )
 )  # North east
 # South east — gap at WALK_X1..WALK_X2 for walkway connection to building
+# West piece (PB_X2→WALK_X1): entirely before pier, straight
 BRUSHES.append(
     box(PB_X2, PB_Y1, PB_DZ2, WALK_X1, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
 )
+# East piece (WALK_X2→world wall): straight to pier, then angled
 BRUSHES.append(
-    box(
-        WALK_X2,
+    box(WALK_X2, PB_Y1, PB_DZ2, _ep, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
+)
+BRUSHES.append(
+    shear_box_y(
+        _ep,
         PB_Y1,
         PB_DZ2,
         WORLD_X2 - WALL_T,
         PB_Y1 + PB_PAR_W,
         PB_DZ2 + PB_PAR_H,
+        _es1,
+        _es2,
         TEX_CEMENT,
     )
 )
@@ -1687,12 +1885,14 @@ def add_parapet_blocks(
     east_margin=None,
     n_south=None,
     east_margin_n=None,
+    y_shift_fn=None,
 ):
     """Add evenly-spaced cement blocks atop N and S parapets in a bridge span.
 
     n_south defaults to n.  South blocks that overlap the walkway gap
     (WALK_X1..WALK_X2) are skipped automatically.
     east_margin_n overrides east_margin for north blocks only.
+    y_shift_fn(cx) returns a southward Y offset for angled spans (e.g. east flat span).
     """
     n_s = n if n_south is None else n_south
     mx0 = west_margin if west_margin is not None else PB_BLK_PIR_M
@@ -1703,30 +1903,32 @@ def add_parapet_blocks(
     x1_s = x_end - mx1
     for k in range(n):
         cx = x0 + (x1_n - x0) * (k + 1) / (n + 1)
+        sy = y_shift_fn(cx) if y_shift_fn else 0.0
         # Use minimum parapet top across block width so block never floats above parapet
         bz = min(dtop(cx - PBPB_BLK_HW), dtop(cx), dtop(cx + PBPB_BLK_HW)) + PB_PAR_H
         BRUSHES.append(
             box(
                 cx - PBPB_BLK_HW,
-                PB_Y2 - PB_PAR_W,
+                PB_Y2 - PB_PAR_W + sy,
                 bz,
                 cx + PBPB_BLK_HW,
-                PB_Y2 + PB_BLK_OVH,
+                PB_Y2 + PB_BLK_OVH + sy,
                 bz + PB_BLK_H,
                 TEX_CEMENT,
             )
         )
     for k in range(n_s):
         cx = x0 + (x1_s - x0) * (k + 1) / (n_s + 1)
+        sy = y_shift_fn(cx) if y_shift_fn else 0.0
         bz = min(dtop(cx - PBPB_BLK_HW), dtop(cx), dtop(cx + PBPB_BLK_HW)) + PB_PAR_H
         if not (cx - PBPB_BLK_HW < WALK_X2 and cx + PBPB_BLK_HW > WALK_X1):
             BRUSHES.append(
                 box(
                     cx - PBPB_BLK_HW,
-                    PB_Y1 - PB_BLK_OVH,
+                    PB_Y1 - PB_BLK_OVH + sy,
                     bz,
                     cx + PBPB_BLK_HW,
-                    PB_Y1 + PB_PAR_W,
+                    PB_Y1 + PB_PAR_W + sy,
                     bz + PB_BLK_H,
                     TEX_CEMENT,
                 )
@@ -1741,7 +1943,14 @@ add_parapet_blocks(PB_ARCH_X[1], PB_ARCH_X[2], 4)
 # Eastern span 2 (PB_ARCH_X[2] → PB_ARCH_X[3]): 3 blocks
 add_parapet_blocks(PB_ARCH_X[2], PB_ARCH_X[3], 3)
 # East flat span: west sub-span (PB_X2→PB_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
-add_parapet_blocks(PB_X2, PB_ARCH_X[4], 3, west_margin=PBPB_BLK_HW + 8, n_south=0)
+add_parapet_blocks(
+    PB_X2,
+    PB_ARCH_X[4],
+    3,
+    west_margin=PBPB_BLK_HW + 8,
+    n_south=0,
+    y_shift_fn=east_y_shift,
+)
 
 # ── Decorative squares on parapet outer faces (one per block position) ────────
 PB_SQ_HW = 8  # half-width in X (16 units wide)
@@ -1757,6 +1966,7 @@ def add_parapet_squares(
     east_margin=None,
     n_south=None,
     east_margin_n=None,
+    y_shift_fn=None,
 ):
     """Add raised decorative squares on parapet outer faces, same positions as blocks."""
     n_s = n if n_south is None else n_south
@@ -1768,6 +1978,7 @@ def add_parapet_squares(
     x1_s = x_end - mx1
     for k in range(n):
         cx = int(x0 + (x1_n - x0) * (k + 1) / (n + 1))
+        sy = y_shift_fn(cx) if y_shift_fn else 0.0
         bz = (
             int(min(dtop(cx - PB_SQ_HW), dtop(cx), dtop(cx + PB_SQ_HW)))
             + PB_PAR_H
@@ -1776,16 +1987,17 @@ def add_parapet_squares(
         BRUSHES.append(
             box(
                 cx - PB_SQ_HW,
-                PB_Y2,
+                PB_Y2 + sy,
                 bz - PB_SQ_HH,
                 cx + PB_SQ_HW,
-                PB_Y2 + PB_SQ_D,
+                PB_Y2 + PB_SQ_D + sy,
                 bz + PB_SQ_HH,
                 TEX_RAIL,
             )
         )
     for k in range(n_s):
         cx = int(x0 + (x1_s - x0) * (k + 1) / (n_s + 1))
+        sy = y_shift_fn(cx) if y_shift_fn else 0.0
         if not (cx - PB_SQ_HW < WALK_X2 and cx + PB_SQ_HW > WALK_X1):
             bz = (
                 int(min(dtop(cx - PB_SQ_HW), dtop(cx), dtop(cx + PB_SQ_HW)))
@@ -1795,10 +2007,10 @@ def add_parapet_squares(
             BRUSHES.append(
                 box(
                     cx - PB_SQ_HW,
-                    PB_Y1 - PB_SQ_D,
+                    PB_Y1 - PB_SQ_D + sy,
                     bz - PB_SQ_HH,
                     cx + PB_SQ_HW,
-                    PB_Y1,
+                    PB_Y1 + sy,
                     bz + PB_SQ_HH,
                     TEX_RAIL,
                 )
@@ -1808,7 +2020,14 @@ def add_parapet_squares(
 add_parapet_squares(PB_ARCH_X[0], PB_ARCH_X[1], 3)
 add_parapet_squares(PB_ARCH_X[1], PB_ARCH_X[2], 4)
 add_parapet_squares(PB_ARCH_X[2], PB_ARCH_X[3], 3)
-add_parapet_squares(PB_X2, PB_ARCH_X[4], 3, west_margin=PBPB_BLK_HW + 8, n_south=0)
+add_parapet_squares(
+    PB_X2,
+    PB_ARCH_X[4],
+    3,
+    west_margin=PBPB_BLK_HW + 8,
+    n_south=0,
+    y_shift_fn=east_y_shift,
+)
 # South east of walkway: corner blocks only at each side of the opening
 # Corner block on east side of walkway opening (west face flush with WALK_X2)
 cx_walk_e = WALK_X2 + PBPB_BLK_HW
@@ -1880,31 +2099,44 @@ for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
                     TEX_RAIL,
                 )
             )
-    # East flat section
+    # East flat section — straight PB_X2→pier, angled pier→world wall
     _tbz = PB_DZ2 + PB_PAR_H + _tube_z_extra
     _x_east_end = WORLD_X2 - WALL_T
+    # North tube: straight then angled
     BRUSHES.append(
-        box(
-            PB_X2,
+        box(PB_X2, tube_ny1, _tbz, _ep, tube_ny2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
+    )
+    BRUSHES.append(
+        shear_box_y(
+            _ep,
             tube_ny1,
             _tbz,
             _x_east_end,
             tube_ny2,
             _tbz + PB_TUBE_HW * 2,
+            _es1,
+            _es2,
             TEX_RAIL,
         )
     )
+    # South tube west piece (PB_X2→WALK_X1): before pier, straight
     BRUSHES.append(
         box(PB_X2, tube_sy1, _tbz, WALK_X1, tube_sy2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
     )
+    # South tube east piece (WALK_X2→world wall): straight to pier, then angled
     BRUSHES.append(
-        box(
-            WALK_X2,
+        box(WALK_X2, tube_sy1, _tbz, _ep, tube_sy2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
+    )
+    BRUSHES.append(
+        shear_box_y(
+            _ep,
             tube_sy1,
             _tbz,
             _x_east_end,
             tube_sy2,
             _tbz + PB_TUBE_HW * 2,
+            _es1,
+            _es2,
             TEX_RAIL,
         )
     )
@@ -2046,10 +2278,14 @@ if SHOW_SUPPORTS:
 
         # Cement cap slab + pyramid on top of each stone pillar post
         _cap_x1, _cap_x2 = px - PB_PIL_PYR_W, px + PB_PIL_PYR_W
-        _n_cy1 = PB_Y2 - PB_PAR_W - PB_PIL_OVERHANG
-        _n_cy2 = PB_Y2 + PB_PIL_OVERHANG
-        _s_cy1 = PB_Y1 - PB_PIL_OVERHANG
-        _s_cy2 = PB_Y1 + PB_PAR_W + PB_PIL_OVERHANG
+        _n_cy1 = (
+            PB_Y2 - PB_PAR_W - PB_PIL_OVERHANG - PB_PIL_CAP_IN_OVH
+        )  # inward past pillar post
+        _n_cy2 = PB_Y2 + PB_PIL_CAP_OUT_OVH  # outward (north/road-facing) edge
+        _s_cy1 = PB_Y1 - PB_PIL_CAP_OUT_OVH  # outward (south/road-facing) edge
+        _s_cy2 = (
+            PB_Y1 + PB_PAR_W + PB_PIL_OVERHANG + PB_PIL_CAP_IN_OVH
+        )  # inward past pillar post
         # Cap slabs (flat cement base)
         BRUSHES.append(box(_cap_x1, _n_cy1, ppil, _cap_x2, _n_cy2, pcap, TEX_CEMENT))
         BRUSHES.append(box(_cap_x1, _s_cy1, ppil, _cap_x2, _s_cy2, pcap, TEX_CEMENT))
@@ -2110,17 +2346,36 @@ TEX_ARCH_ROUT = 136  # Fills the bridge width (updated to match PB_Y2=136)
 TEX_ARCH_STILT = 96  # Height of straight sides before arch springs
 TEX_ARCH_W = 32  # Thickness of the arch in X
 
-for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
+for _ex, _ayc in [
+    (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
+    (WORLD_X2 - WALL_T - TEX_ARCH_W, _es2),  # east arch — shifted south with span
+]:
     _xb, _xf = _ex, _ex + TEX_ARCH_W
     _sprz = PB_DZ2 + TEX_ARCH_STILT  # Z where arch curve begins
     _post_w = TEX_ARCH_ROUT - TEX_ARCH_RIN  # post thickness in Y
     # South post (extends to ground floor, with overhang)
     BRUSHES.append(
-        box(_xb, PB_Y1 - PB_PIL_OVERHANG, FZ2, _xf, PB_Y1 + _post_w, _sprz, TEX_PILLAR)
+        box(
+            _xb,
+            PB_Y1 - PB_PIL_OVERHANG + _ayc,
+            FZ2,
+            _xf,
+            PB_Y1 + _post_w + _ayc,
+            _sprz,
+            TEX_PILLAR,
+        )
     )
     # North post (extends to ground floor, with overhang)
     BRUSHES.append(
-        box(_xb, PB_Y2 - _post_w, FZ2, _xf, PB_Y2 + PB_PIL_OVERHANG, _sprz, TEX_PILLAR)
+        box(
+            _xb,
+            PB_Y2 - _post_w + _ayc,
+            FZ2,
+            _xf,
+            PB_Y2 + PB_PIL_OVERHANG + _ayc,
+            _sprz,
+            TEX_PILLAR,
+        )
     )
     # Arch ring segments (rounded top, with overhang)
     _seg = 180.0 / A_SEGS
@@ -2129,7 +2384,7 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
             arch_seg(
                 _xb,
                 _xf,
-                0.0,
+                _ayc,
                 float(_sprz),
                 TEX_ARCH_RIN,
                 TEX_ARCH_ROUT + PB_PIL_OVERHANG,
@@ -3526,11 +3781,11 @@ west_lower = [box(wlx1, -TEX_ARCH_RIN, FZ2, wlx2, TEX_ARCH_RIN, PB_DZ2, TEX_TELE
 ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
 ENTITIES.append(brush_ent("func_illusionary", west_lower))
 
-# East arch trigger → west destination
+# East arch trigger → west destination (shifted south to match angled span)
 east_brushes = arch_fill(
     WORLD_X2 - WALL_T - TEX_ARCH_W,
     WORLD_X2 - WALL_T,
-    0.0,
+    _es2,
     PB_DZ2,
     TEX_ARCH_RIN,
     A_SEGS,
@@ -3548,11 +3803,13 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east_deck",
-        origin=f"{east_lower_deck_x} 0 {int(PB_DZ2 + 40)}",
+        origin=f"{east_lower_deck_x} {int(_es2)} {int(PB_DZ2 + 40)}",
         angle="180",
     )
 )
-east_lower = [box(elx1, -TEX_ARCH_RIN, FZ2, elx2, TEX_ARCH_RIN, PB_DZ2, TEX_TELEPORT)]
+east_lower = [
+    box(elx1, _es2 - TEX_ARCH_RIN, FZ2, elx2, _es2 + TEX_ARCH_RIN, PB_DZ2, TEX_TELEPORT)
+]
 ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
