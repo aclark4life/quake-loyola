@@ -3793,8 +3793,15 @@ for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
 # Under-bridge amber pendant lights — flicker style, hang below deck
 for _px in PB_PEND_XS:
     ENTITIES.append(
-        ent("light", origin=f"{_px} 0 {int(dbot(_px)) - 20}", light="200", style="1")
+        ent("light", origin=f"{_px} 0 {int(dbot(_px)) - 20}", light="350", style="1")
     )
+
+# Pier base lights — illuminate plinths and arch openings from just inside each pier
+for _px in PB_ARCH_X:
+    _pz = int(dbot(_px)) - 40  # midway between deck underside and plinth top
+    # Two lights per pier, offset N and S so they wash across the plinth face
+    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y2 // 2} {_pz}", light="250"))
+    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y1 // 2} {_pz}", light="250"))
 
 # Light on underside of walkway slab illuminating the ramp below
 if KH_WALKWAY_ENABLED:
