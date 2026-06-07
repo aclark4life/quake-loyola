@@ -138,6 +138,7 @@ KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 WORLD_Z2 = max(640, KH_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
+KH_ENABLED = False  # set True to re-enable Knott Hall building
 KH_WALKWAY_ENABLED = False  # set True to re-connect walkway to Knott Hall 2nd floor
 # Flat span at PB_DZ2 (flat approach section); pinned to original building centre
 WALK_X1 = KH_ORIG_CX - 64
@@ -2220,6 +2221,8 @@ if KH_WALKWAY_ENABLED:
 # Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
 
+_kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
+
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
 EP_SW_EDGE = EP_Y - EP_HW - CS_WALK_W  # Ennis south sidewalk
@@ -3171,6 +3174,9 @@ for _fl in range(KH_FLOORS):
         )
     )
 
+if not KH_ENABLED:
+    del BRUSHES[_kh_brush_start:]
+
 DRAW_FASCIAKH_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
 # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
@@ -3369,6 +3375,7 @@ ROAD_Z = FZ2 + 8
 
 
 # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
+_kh_ent_start = len(ENTITIES)  # checkpoint — trimmed below if KH_ENABLED is False
 room_goodies = [
     "item_health",
     "weapon_supershotgun",
@@ -3460,6 +3467,9 @@ for _fl in range(KH_FLOORS):
             )
         )
 
+
+if not KH_ENABLED:
+    del ENTITIES[_kh_ent_start:]
 
 ENTITIES.append(
     ent(
@@ -3626,15 +3636,21 @@ for pos, angle in [
     ((-400, 0, int(dtop(-400) + 32)), 90),
     ((400, 0, int(dtop(400) + 32)), 270),
     # Walkway
-    ((KH_CX, (PB_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180),
+    *([((KH_CX, (PB_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180)] if KH_ENABLED else []),
     # Knott Hall — ground, mid, upper floors
-    ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
-    ((KH_CX - 100, bcy, KH_GROUND_Z + KH_FLOOR_H + 40), 270),
-    ((KH_CX + 100, bcy, KH_GROUND_Z + KH_FLOOR_H * 2 + 40), 90),
-    ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + KH_FLOOR_H * 3 + 40), 0),
-    ((KH_CX, bcy, KH_GROUND_Z + KH_FLOOR_H * 4 + 40), 180),
-    # Knott Hall rooftop
-    ((KH_CX, bcy, KH_Z2 + 40), 180),
+    *(
+        [
+            ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
+            ((KH_CX - 100, bcy, KH_GROUND_Z + KH_FLOOR_H + 40), 270),
+            ((KH_CX + 100, bcy, KH_GROUND_Z + KH_FLOOR_H * 2 + 40), 90),
+            ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + KH_FLOOR_H * 3 + 40), 0),
+            ((KH_CX, bcy, KH_GROUND_Z + KH_FLOOR_H * 4 + 40), 180),
+            # Knott Hall rooftop
+            ((KH_CX, bcy, KH_Z2 + 40), 180),
+        ]
+        if KH_ENABLED
+        else []
+    ),
     # Charles Street
     ((0, 300, ROAD_Z + 24), 180),
     ((0, -400, ROAD_Z + 24), 0),
@@ -3663,27 +3679,30 @@ for pos, angle in [
 # Rocket launcher — bridge centre (high value, exposed position)
 ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
 # Rocket launcher — Knott Hall floor 3 (reward for climbing)
-ENTITIES.append(
-    ent(
-        "weapon_rocketlauncher",
-        origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 3 + 40}",
+if KH_ENABLED:
+    ENTITIES.append(
+        ent(
+            "weapon_rocketlauncher",
+            origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 3 + 40}",
+        )
     )
-)
 
 # Super shotgun — spread around mid-tier locations
-ENTITIES.append(
-    ent("weapon_supershotgun", origin=f"{KH_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
-)
+if KH_ENABLED:
+    ENTITIES.append(
+        ent("weapon_supershotgun", origin=f"{KH_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
+    )
 ENTITIES.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FZ2 + 40}"))
 
 # Grenade launcher — Knott Hall floor 2, south building 2
-ENTITIES.append(
-    ent(
-        "weapon_grenadelauncher",
-        origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}",
+if KH_ENABLED:
+    ENTITIES.append(
+        ent(
+            "weapon_grenadelauncher",
+            origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}",
+        )
     )
-)
 ENTITIES.append(
     ent("weapon_grenadelauncher", origin=f"{RH_CX} {RH_SOUTH2_CY} {FZ2 + 40}")
 )
@@ -3691,9 +3710,10 @@ ENTITIES.append(
 # Nailgun — bridge approaches, Charles Street
 ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
-ENTITIES.append(
-    ent("weapon_nailgun", origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H + 40}")
-)
+if KH_ENABLED:
+    ENTITIES.append(
+        ent("weapon_nailgun", origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H + 40}")
+    )
 
 # ── Ammo ──────────────────────────────────────────────────────────────────
 for ax in PB_ARCH_X:
@@ -3819,21 +3839,22 @@ if KH_WALKWAY_ENABLED:
     )
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
-lift_brush = [
-    box(
-        stx1 + 2,
-        sty1 + 2,
-        KH_Z2 - 8,
-        stx2 - 2,
-        sty2 - 2,
-        KH_Z2,
-        TEX_FLOOR_KH,
+if KH_ENABLED:
+    lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
+    lift_brush = [
+        box(
+            stx1 + 2,
+            sty1 + 2,
+            KH_Z2 - 8,
+            stx2 - 2,
+            sty2 - 2,
+            KH_Z2,
+            TEX_FLOOR_KH,
+        )
+    ]
+    ENTITIES.append(
+        brush_ent("func_plat", lift_brush, height=str(lift_travel), speed="200")
     )
-]
-ENTITIES.append(
-    brush_ent("func_plat", lift_brush, height=str(lift_travel), speed="200")
-)
 
 # Interior lights for the three campus buildings (north + 2 south)
 bldg_light_x = (RH_X1 + RH_X2) // 2
@@ -3850,13 +3871,16 @@ for _bly1, _bly2 in [
         )
 
 # Interior lights for Knott Hall — 3×4 grid per floor
-for _kfl in range(KH_FLOORS):
-    _klz = KH_GROUND_Z + _kfl * KH_FLOOR_H + KH_FLOOR_H // 2
-    for _kxi in [1, 2, 3]:
-        _klx = KH_X1 + (KH_X2 - KH_X1) * _kxi // 4
-        for _kyi in [1, 2, 3, 4]:
-            _kly = KH_Y1 + (KH_Y2 - KH_Y1) * _kyi // 5
-            ENTITIES.append(ent("light", origin=f"{_klx} {_kly} {_klz}", light="150"))
+if KH_ENABLED:
+    for _kfl in range(KH_FLOORS):
+        _klz = KH_GROUND_Z + _kfl * KH_FLOOR_H + KH_FLOOR_H // 2
+        for _kxi in [1, 2, 3]:
+            _klx = KH_X1 + (KH_X2 - KH_X1) * _kxi // 4
+            for _kyi in [1, 2, 3, 4]:
+                _kly = KH_Y1 + (KH_Y2 - KH_Y1) * _kyi // 5
+                ENTITIES.append(
+                    ent("light", origin=f"{_klx} {_kly} {_klz}", light="150")
+                )
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
