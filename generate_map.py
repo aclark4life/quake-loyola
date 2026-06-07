@@ -95,9 +95,7 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 BLDG_WIDTH = 1024
 WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
-WORLD_X2 = (
-    525 + 741 + BLDG_WIDTH + 32 + BLDG_WIDTH
-)  # extended east by one Knott Hall width
+WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of BLDG_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
     -2432,
     1200,
