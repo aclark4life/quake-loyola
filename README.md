@@ -147,6 +147,9 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 
 | Constant | Objects affected |
 |---|---|
+| `ENNIS_PIL_HW` | Ennis Drive entrance pillar half-width; also sets Y offsets for pillar placement relative to Ennis Road edges |
+| `ENNIS_PIL_POST_H`, `ENNIS_PIL_BELL2_H` | Entrance pillar heights; set flame/light Z above pillar tops |
+| `ENNIS_PIL_X1`, `ENNIS_PIL_X2` | Entrance pillar E–W extents; pinned to `PB_ARCH_X[2]` — move that pier and pillars move too |
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `PB_PIL_HW` | Pier post half-width; affects arch wall extents, cap size, overhang, and brick wall X positions |
