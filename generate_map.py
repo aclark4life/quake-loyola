@@ -1066,7 +1066,7 @@ for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
 # city2_1 brick wall from near Charles St sidewalk east to pillar, then turns north.
 # Starts with a small grass gap east of the sidewalk.
 EP_WALL_T = 8  # wall thickness
-EP_WALL_H = 48  # wall height ≈ 3 ft
+EP_WALL_H = 96  # wall height — matches iron fence
 bw_ny = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
 bw_x1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
 bwex2 = PB_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
@@ -1117,104 +1117,108 @@ while _gpy + 2 <= WORLD_Y2 - WALL_T:
     _gpy += _g_fnc_spacing
     _gpi += 1
 
-# ── Hollow iron square frames atop south brick wall — matches fence height ──
-# Each frame is a hollow rectangle in the Y-Z plane, sitting on a short stem.
-_sq_sz = 44  # outer width in Y (kept the same)
-_sq_stem_h = 12  # stem height from wall top to frame bottom
-_sq_t = 2  # bar thickness
-_sq_xhw = 2  # half-thickness in X (thin slab)
-_sq_cx = bw_x1 + EP_WALL_T // 2  # X centre = wall centre
-_sq_z1 = FZ2 + EP_WALL_H  # base = wall top
-_sq_z2 = _sq_z1 + 44  # total height unchanged (same top as before)
-_sq_fz1 = _sq_z1 + _sq_stem_h  # frame bottom (above stem)
-_sq_spacing = _sq_sz + 16  # gap between frame centres
-_sq_cy = bw_ny + _sq_spacing // 2
-_sq_first = True
-while _sq_cy + _sq_sz // 2 <= bw_mid_y:
-    _this_sz = _sq_sz // 2 if _sq_first else _sq_sz  # half-size nearest pillar
-    _sq_first = False
-    _y1 = _sq_cy - _this_sz // 2
-    _y2 = _sq_cy + _this_sz // 2
-    # Stem — small vertical bar from wall top to frame bottom, centred in Y
+# ── Decorative iron panels on west face of brick wall, sitting ON TOP of wall ──
+# Panels protrude above wall top; rectangles are horizontal (wider than tall).
+_pf_x1 = bw_x1 - 2  # protrude 2 units from west face
+_pf_x2 = bw_x1
+_p_t = 2  # bar thickness
+_p_ow = 48  # outer frame Y width (wide = horizontal)
+_p_oh = 28  # outer frame Z height (shorter than wide)
+_p_iw = 28  # inner frame Y width
+_p_ih = 12  # inner frame Z height
+_p_z1 = FZ2 + EP_WALL_H  # panels start at wall top
+_p_zctr = _p_z1 + _p_oh // 2  # Z centre above wall top
+_p_spacing = _p_ow + 16  # centre-to-centre spacing
+
+# Snap bw_mid_y to the north edge of the last full panel that fits in the original half-space
+_p_avail = bw_mid_y - bw_ny
+_p_count = max(
+    1, (_p_avail + _p_ow) // (_p_ow + 8)
+)  # at least 8-unit gap between panels
+_p_spacing = _p_avail // _p_count  # evenly distribute N panels across the brick space
+
+# Start first panel so its south edge aligns exactly with bw_ny (no overhang)
+_p_cy = bw_ny + _p_spacing // 2
+_p_drawn = 0
+while _p_drawn < _p_count:
+    _pw = _p_ow
+    _piw = _p_iw
+
+    y1_o = _p_cy - _pw // 2
+    y2_o = _p_cy + _pw // 2
+    z1_o = _p_zctr - _p_oh // 2
+    z2_o = _p_zctr + _p_oh // 2
+    y1_i = _p_cy - _piw // 2
+    y2_i = _p_cy + _piw // 2
+    z1_i = _p_zctr - _p_ih // 2
+    z2_i = _p_zctr + _p_ih // 2
+
+    # Outer rectangle
     BRUSHES.append(
-        box(
-            _sq_cx - _sq_xhw,
-            _sq_cy - _sq_t // 2,
-            _sq_z1,
-            _sq_cx + _sq_xhw,
-            _sq_cy + _sq_t // 2,
-            _sq_fz1,
-            _g_fnc_tex,
-        )
-    )
-    # Bottom bar
+        box(_pf_x1, y1_o, z1_o, _pf_x2, y2_o, z1_o + _p_t, _g_fnc_tex)
+    )  # bottom
     BRUSHES.append(
-        box(
-            _sq_cx - _sq_xhw,
-            _y1,
-            _sq_fz1,
-            _sq_cx + _sq_xhw,
-            _y2,
-            _sq_fz1 + _sq_t,
-            _g_fnc_tex,
-        )
-    )
-    # Top bar
+        box(_pf_x1, y1_o, z2_o - _p_t, _pf_x2, y2_o, z2_o, _g_fnc_tex)
+    )  # top
     BRUSHES.append(
-        box(
-            _sq_cx - _sq_xhw,
-            _y1,
-            _sq_z2 - _sq_t,
-            _sq_cx + _sq_xhw,
-            _y2,
-            _sq_z2,
-            _g_fnc_tex,
-        )
-    )
-    # Left (south) post
+        box(_pf_x1, y1_o, z1_o, _pf_x2, y1_o + _p_t, z2_o, _g_fnc_tex)
+    )  # left
     BRUSHES.append(
-        box(
-            _sq_cx - _sq_xhw,
-            _y1,
-            _sq_fz1,
-            _sq_cx + _sq_xhw,
-            _y1 + _sq_t,
-            _sq_z2,
-            _g_fnc_tex,
-        )
-    )
-    # Right (north) post
+        box(_pf_x1, y2_o - _p_t, z1_o, _pf_x2, y2_o, z2_o, _g_fnc_tex)
+    )  # right
+    # Inner rectangle
     BRUSHES.append(
-        box(
-            _sq_cx - _sq_xhw,
-            _y2 - _sq_t,
-            _sq_fz1,
-            _sq_cx + _sq_xhw,
-            _y2,
-            _sq_z2,
-            _g_fnc_tex,
+        box(_pf_x1, y1_i, z1_i, _pf_x2, y2_i, z1_i + _p_t, _g_fnc_tex)
+    )  # bottom
+    BRUSHES.append(
+        box(_pf_x1, y1_i, z2_i - _p_t, _pf_x2, y2_i, z2_i, _g_fnc_tex)
+    )  # top
+    BRUSHES.append(
+        box(_pf_x1, y1_i, z1_i, _pf_x2, y1_i + _p_t, z2_i, _g_fnc_tex)
+    )  # left
+    BRUSHES.append(
+        box(_pf_x1, y2_i - _p_t, z1_i, _pf_x2, y2_i, z2_i, _g_fnc_tex)
+    )  # right
+    # Diagonal corner connectors: each inner corner → corresponding outer corner
+    BRUSHES.append(
+        ramp_slab_y(
+            _pf_x1, _pf_x2, y1_o, y1_i, z1_o, z1_i, z1_o + _p_t, z1_i + _p_t, _g_fnc_tex
         )
-    )
-    # Connector to next square — thin bar at mid-height between right post and next left post
-    _conn_y1 = _sq_cy + _this_sz // 2
-    _conn_y2 = _sq_cy + _sq_spacing - _sq_sz // 2
-    _conn_zmid = _sq_fz1 + (_sq_z2 - _sq_fz1) // 2
-    if _conn_y2 <= bw_mid_y:
+    )  # bottom-left
+    BRUSHES.append(
+        ramp_slab_y(
+            _pf_x1, _pf_x2, y2_i, y2_o, z1_i, z1_o, z1_i + _p_t, z1_o + _p_t, _g_fnc_tex
+        )
+    )  # bottom-right
+    BRUSHES.append(
+        ramp_slab_y(
+            _pf_x1, _pf_x2, y1_o, y1_i, z2_o - _p_t, z2_i - _p_t, z2_o, z2_i, _g_fnc_tex
+        )
+    )  # top-left
+    BRUSHES.append(
+        ramp_slab_y(
+            _pf_x1, _pf_x2, y2_i, y2_o, z2_i - _p_t, z2_o - _p_t, z2_i, z2_o, _g_fnc_tex
+        )
+    )  # top-right
+    # Connector to next panel at mid-Z
+    _conn_y2_p = _p_cy + _p_spacing - _p_ow // 2
+    if _p_drawn + 1 < _p_count:
         BRUSHES.append(
             box(
-                _sq_cx - _sq_xhw,
-                _conn_y1,
-                _conn_zmid - _sq_t // 2,
-                _sq_cx + _sq_xhw,
-                _conn_y2,
-                _conn_zmid + _sq_t // 2,
+                _pf_x1,
+                y2_o,
+                _p_zctr - _p_t // 2,
+                _pf_x2,
+                _conn_y2_p,
+                _p_zctr + _p_t // 2,
                 _g_fnc_tex,
             )
         )
-    _sq_cy += _sq_spacing
+    _p_cy += _p_spacing
+    _p_drawn += 1
 # Corner pillar — square brick post at the L junction, wider than wall
 EP_WALL_PIL_HW = 14  # pillar half-width (28 units square)
-EP_WALL_PIL_H = 64  # pillar height — taller than wall
+EP_WALL_PIL_H = 120  # pillar height — taller than wall
 bw_cx = bw_x1 + EP_WALL_T // 2  # pillar centre X (wall centre)
 bw_cy = bw_ny + EP_WALL_T // 2  # pillar centre Y (wall centre)
 BRUSHES.append(
@@ -1264,8 +1268,37 @@ BRUSHES.append(
     )
 )
 
+# ── East-running iron gate along Ennis Drive (from brick wall end to ~halfway east) ──
+# Built as func_detail to avoid BSP portal overflow from pickets in open space.
+_ew_x1 = bwex2  # starts at east end of brick wall
+_ew_x2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
+_ew_fy1 = bw_ny + EP_WALL_T // 2 - 1  # Y centre of fence line
+_ew_fy2 = _ew_fy1 + 2
+_ew_fence_brushes = []
+# Top rail
+_ew_fence_brushes.append(
+    box(
+        _ew_x1,
+        _ew_fy1,
+        FZ2 + _g_fnc_h - 28,
+        _ew_x2,
+        _ew_fy2,
+        FZ2 + _g_fnc_h - 26,
+        _g_fnc_tex,
+    )
+)
+# Pickets — 2-wide every 16, 8-wide posts every 10th
+_ewpx = _ew_x1
+_ewpi = 0
+while _ewpx + 2 <= _ew_x2:
+    _ewpw = 8 if _ewpi % 10 == 0 else 2
+    _ew_fence_brushes.append(
+        box(_ewpx, _ew_fy1, FZ2, _ewpx + _ewpw, _ew_fy2, FZ2 + _g_fnc_h, _g_fnc_tex)
+    )
+    _ewpx += _g_fnc_spacing
+    _ewpi += 1
 
-# ── Abutment building dimensions (referenced by embankment split below) ────────
+
 RH_FLOORS = 3
 RH_H = RH_FLOORS * KH_FLOOR_H  # 384 units tall
 RH_DEPTH = 600  # building N-S depth (doubled)
@@ -3628,6 +3661,8 @@ ENTITIES = []
 # Letter brushes as func_detail — don't split vis BSP tree, keeps compile fast
 if letter_brushes:
     ENTITIES.append(brush_ent("func_detail", letter_brushes))
+# Ennis east fence as func_detail — pickets in open space overflow BSP portals as worldspawn
+ENTITIES.append(brush_ent("func_detail", _ew_fence_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FZ2 + 8
 
