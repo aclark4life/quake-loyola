@@ -36,7 +36,7 @@ Terms used when discussing the map's structure and the Python generator code.
 
 | Term | Description |
 |---|---|
-| **Arch span** | The curved section of the bridge deck (BRX1 to BRX2, 1050 units). The deck surface follows a parabolic arch rising 106 units at the centre. |
+| **Arch span** | The curved section of the bridge deck (PBX1 to PBX2, 1050 units). The deck surface follows a parabolic arch rising 106 units at the centre. |
 | **Flat approach** | Straight deck sections extending from each end of the arch span to the world boundary. Deck sits at constant Z. |
 | **Deck** | The walkable bridge surface. `dtop(x)` = top face Z; `dbot(x)` = bottom face Z. Deck slab thickness is 16 units. |
 | **Arch rise** | How far the deck centre is raised above the endpoints (`ARCH_RISE = 106` units ≈ 7 ft). |
@@ -110,12 +110,12 @@ World shell
 │   └── Iron fence (east face of west buildings)
 ├── Embankment (sloped ground ramp from road level up to bridge deck Z)
 ├── Bridge (E–W span over Charles Street, Z 208 → 320 at crown)
-│   ├── Arch deck (32 segments BRX1 → BRX2, parabolic rise)
+│   ├── Arch deck (32 segments PBX1 → PBX2, parabolic rise)
 │   ├── Parapet walls (N & S edges, full span)
 │   ├── Parapet blocks & handrails
 │   ├── Stone piers ×5 (at PXS[] positions)
 │   │   └── each: arch wall → voussoir ring → cap → pillar post
-│   ├── West teleport arch (X = BRX1 / west world wall)
+│   ├── West teleport arch (X = PBX1 / west world wall)
 │   └── East teleport arch (X = east world wall)
 ├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
 ├── Knott Hall (south campus tower, X 1266–1906)
@@ -147,13 +147,13 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 
 | Constant | Objects affected |
 |---|---|
-| `BRX1`, `BRX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
-| `BRY1`, `BRY2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
+| `PBX1`, `PBX2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
+| `PBY1`, `PBY2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
 | `DZ1`, `DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`DZ2 + ARCH_STILT`), walkway Z |
 | `ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
 | `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
-| `WORLD_X1/X2` | Derives `BRX1`; resizing the world changes the arch span and all wall-relative positions |
+| `WORLD_X1/X2` | Derives `PBX1`; resizing the world changes the arch span and all wall-relative positions |
 | `FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `_AB_FLOORS`, `_AB_D` | Abutment building floor count and N–S depth; shared with north/south building depth |
 | `_ABUTMENT_X` | Derived from `PXS[0]`; pins the abutment building X — move the west pier and the building moves too |
