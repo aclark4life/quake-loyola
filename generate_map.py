@@ -85,6 +85,7 @@ PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S 
 PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
 PB_PIL_BASE_RAMP_H = 40  # high side of ramped plinth — subtle incline, still jumpable
 PB_PIL_BASE_CAP_H = 6  # cement cap slab thickness on top of each plinth
+PB_PIL_BASE_CAP_OVH = 5  # cap overhang beyond plinth edges in X and Y (cornice)
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
@@ -460,6 +461,7 @@ def arch_wall(
     base_ramp=None,
     base_cap_h=0,
     base_cap_tex=None,
+    base_cap_ovh=0,
 ):
     """Stone wall with arched opening centred at Y=0.
 
@@ -472,6 +474,7 @@ def arch_wall(
                base_h is ignored when base_ramp is set.
     base_cap_h: thin slab placed on top of the plinth (flat or ramped) in base_cap_tex.
     base_cap_tex: texture for the cap slab (defaults to tex).
+    base_cap_ovh: how far the cap extends beyond the plinth in X and Y (cornice effect).
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
@@ -496,12 +499,14 @@ def arch_wall(
         brushes.append(ramp_slab(x1, x2, -rin, rin, floor_z, floor_z, zt1, zt2, tex))
         if base_cap_h > 0:
             cap_tex = base_cap_tex or tex
+            cx1, cx2 = x1 - base_cap_ovh, x2 + base_cap_ovh
+            crin = rin + base_cap_ovh
             brushes.append(
                 ramp_slab(
-                    x1,
-                    x2,
-                    -rin,
-                    rin,
+                    cx1,
+                    cx2,
+                    -crin,
+                    crin,
                     zt1,
                     zt2,
                     zt1 + base_cap_h,
@@ -513,13 +518,15 @@ def arch_wall(
         brushes.append(box(x1, -rin, floor_z, x2, rin, floor_z + base_h, tex))
         if base_cap_h > 0:
             cap_tex = base_cap_tex or tex
+            cx1, cx2 = x1 - base_cap_ovh, x2 + base_cap_ovh
+            crin = rin + base_cap_ovh
             brushes.append(
                 box(
-                    x1,
-                    -rin,
+                    cx1,
+                    -crin,
                     floor_z + base_h,
-                    x2,
-                    rin,
+                    cx2,
+                    crin,
                     floor_z + base_h + base_cap_h,
                     cap_tex,
                 )
@@ -1987,6 +1994,7 @@ if SHOW_SUPPORTS:
                     base_ramp=_base_ramp,
                     base_cap_h=PB_PIL_BASE_CAP_H,
                     base_cap_tex=TEX_CEMENT,
+                    base_cap_ovh=PB_PIL_BASE_CAP_OVH,
                 )
             )
 
