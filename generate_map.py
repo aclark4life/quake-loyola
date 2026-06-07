@@ -2084,8 +2084,12 @@ if SHOW_SUPPORTS:
                 )
             )
 
-        # Abutment pier (westernmost): arch teleport on west face
+        # Abutment pier (westernmost): solid cement fill + arch teleport on west face
         if px == min(PB_ARCH_X):
+            # Cement fill starts 16 units east of pier face to make room for arch
+            BRUSHES.append(
+                box(x1 + 16, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, TEX_CEMENT)
+            )
             # Arch-shaped teleport flush with the west face (recessed into pier)
             _tele_stilt = pier_top_z - FZ2 - a_rin - 8
             _abutment_tele_brush = arch_fill(
