@@ -2215,60 +2215,6 @@ if KH_WALKWAY_ENABLED:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# EAST-SIDE LANDSCAPE — iron fence + residential halls (east of Charles Street)
-# Reference: bridge03, bridge04, bridge06, bridge07 show iron fence close to road
-# then grass, then 3-story brick dorm buildings spanning full N-S extent.
-# ════════════════════════════════════════════════════════════════════════════════
-
-# Iron fence east of sidewalk/ramp — mirrors the west-side fence style
-EFNC_X1 = ROAD_X2 + CS_WALK_W + CS_RAMP_W + 16  # = 416, just east of ramp
-EFNC_X2 = EFNC_X1 + 2
-EFNC_H = 96
-EFNC_SPACING = 16
-EFNC_TEX = "metal4_4"
-
-# Top rail
-BRUSHES.append(
-    box(EFNC_X1, CS_Y1, FZ2 + EFNC_H - 28, EFNC_X2, CS_Y2, FZ2 + EFNC_H - 26, EFNC_TEX)
-)
-# Pickets with thicker posts every 10th
-_epy = CS_Y1
-_epi = 0
-while _epy + 2 <= CS_Y2:
-    _epw = 8 if _epi % 10 == 0 else 2
-    BRUSHES.append(
-        box(EFNC_X1, _epy, FZ2, EFNC_X2, _epy + _epw, FZ2 + EFNC_H, EFNC_TEX)
-    )
-    _epy += EFNC_SPACING
-    _epi += 1
-
-# East-side residential halls — solid 3-floor brick boxes with window trim
-# Split N-S around Ennis Road corridor (EP_Y ± EP_HW ± 150 gap)
-ED_X1 = EFNC_X1 + 128  # west face ≈ 544, ~19 ft east of fence
-ED_X2 = ED_X1 + 360  # east face ≈ 904, depth = 360 units
-ED_FLOORS = 3
-ED_H = ED_FLOORS * KH_FLOOR_H  # 384 units (3 floors)
-ED_ENNIS_GAP = 150  # clearance either side of Ennis Road carriageway
-
-ed_s_y1 = CS_Y1
-ed_s_y2 = EP_Y - EP_HW - ED_ENNIS_GAP  # south of Ennis Road
-ed_n_y1 = EP_Y + EP_HW + ED_ENNIS_GAP  # north of Ennis Road
-ed_n_y2 = CS_Y2
-
-# South residential hall
-BRUSHES.append(box(ED_X1, ed_s_y1, FZ2, ED_X2, ed_s_y2, FZ2 + ED_H, TEX_BRICK))
-BRUSHES.extend(
-    abutment_bldg_windows(ED_X1, ED_X2, ed_s_y1, ed_s_y2, FZ2, ED_FLOORS, skip_s=True)
-)
-
-# North residential hall
-BRUSHES.append(box(ED_X1, ed_n_y1, FZ2, ED_X2, ed_n_y2, FZ2 + ED_H, TEX_BRICK))
-BRUSHES.extend(
-    abutment_bldg_windows(ED_X1, ED_X2, ed_n_y1, ed_n_y2, FZ2, ED_FLOORS, skip_n=True)
-)
-
-
-# ════════════════════════════════════════════════════════════════════════════════
 # KNOTT HALL — south campus, 4-floor playable tower
 # Footprint: X=1186 to 1686, Y=-800 to -256, Z=0 to 512
 # North face faces the bridge; ground-level entrance at X=1372..1500
