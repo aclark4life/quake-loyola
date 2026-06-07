@@ -54,8 +54,8 @@ Terms used when discussing the map's structure and the Python generator code.
 | **Stilt height** | Straight vertical section below the arch spring point (`sprz`). Raises the arch opening above ground on tall piers. |
 | **Arch crown** | The topmost point of the arch ring (`sprz + rout`). Should be flush with the deck underside (`dbot`). |
 | **Cap** | Solid box filling the area above the arch inner crown and below the deck underside, bridging the gap in the centre of the opening. |
-| **Pillar post** | Stone column above the deck surface, extending `PIL_EXTRA` units above the parapet. |
-| **Overhang** | How far the pier stone extends beyond the bridge's N/S edges (`PIL_OVERHANG = 16` units). |
+| **Pillar post** | Stone column above the deck surface, extending `PB_PIL_EXTRA` units above the parapet. |
+| **Overhang** | How far the pier stone extends beyond the bridge's N/S edges (`PB_PIL_OVERHANG = 16` units). |
 
 ### Knott Hall
 
@@ -149,16 +149,16 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 |---|---|
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
-| `P_HW` | Pier post half-width; affects arch wall extents, cap size, overhang, and brick wall X positions |
-| `PAR_H`, `PAR_W` | Parapet height and width; affects spawn Z, handrail positions, and pillar post base |
+| `PB_PIL_HW` | Pier post half-width; affects arch wall extents, cap size, overhang, and brick wall X positions |
+| `PB_PAR_H`, `PB_PAR_W` | Parapet height and width; affects spawn Z, handrail positions, and pillar post base |
 | `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
 | `PB_ARCH_X[]` | Pier X positions; `PB_ARCH_X[0]` pins the abutment building X |
 | `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
 | `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
-| `PIL_CAP_H`, `PIL_PYR_H`, `PIL_PYR_W` | Pier cap and pyramid dimensions; purely visual, no gameplay cascade |
-| `PIL_EXTRA` | Extra pillar post height above parapet; affects how far piers protrude above deck |
-| `PIL_OVERHANG` | How far pier stone extends beyond bridge N/S edges; affects parapet wall Y alignment |
+| `PB_PIL_CAP_H`, `PB_PIL_PYR_H`, `PB_PIL_PYR_W` | Pier cap and pyramid dimensions; purely visual, no gameplay cascade |
+| `PB_PIL_EXTRA` | Extra pillar post height above parapet; affects how far piers protrude above deck |
+| `PB_PIL_OVERHANG` | How far pier stone extends beyond bridge N/S edges; affects parapet wall Y alignment |
 | `RH_DEPTH` | Residence hall N–S depth; shared by all four RH buildings — changing it shifts the south building stack |
 | `RH_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
 | `RH_FLOORS` | Residence hall floor count; shared by all four RH buildings |
