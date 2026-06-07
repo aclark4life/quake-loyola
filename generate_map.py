@@ -43,22 +43,22 @@ TEX_ROOF = "wgrnd1_5"  # street/road texture for roof
 # ── Bridge spine ──────────────────────────────────────────────────────────────
 # Blueprint: 1050-unit arched span (69.5 ft), 750-unit flat approaches (49 ft 1 in)
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
-BRY1, BRY2 = -136, 136  # N-S width = 272 units ≈ 18 ft
+PBY1, PBY2 = -136, 136  # N-S width = 272 units ≈ 18 ft
 DZ1, DZ2 = (
     208,
     224,
 )  # flat deck bottom / top — raised for realistic road clearance (~14 ft)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
-# BRX1/BRX2 set after world/building bounds are known (arch spans full world width)
+# PBX1/PBX2 set after world/building bounds are known (arch spans full world width)
 ARCH_RISE = 96  # centre rise — modest crown over flat approaches
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
 def arch_z(x):
     """Z offset above flat datum for parabolic arch at x."""
-    xc = (BRX1 + BRX2) / 2.0
-    half = (BRX2 - BRX1) / 2.0
+    xc = (PBX1 + PBX2) / 2.0
+    half = (PBX2 - PBX1) / 2.0
     return ARCH_RISE * max(0.0, 1.0 - ((x - xc) / half) ** 2)
 
 
@@ -93,7 +93,7 @@ FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 KH_WIDTH = 640
-WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
+WORLD_X1 = -1983  # west wall; PBX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
@@ -112,9 +112,9 @@ _ORIG_KH_CX = KH_X2 - 640 // 2  # = 1586
 # The pier stays at its original position (KH_X2 - 640 - 20 = 1246) regardless
 # of how wide the building is — the west wall now extends past it.
 _PIER_X = KH_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
-BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
-BRX2 = _PIER_X  # east arch terminus at fixed pier position
-SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
+PBX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
+PBX2 = _PIER_X  # east arch terminus at fixed pier position
+SEG_W = (PBX2 - PBX1) / ARCH_SEGS  # segment width for full-span arch
 PXS = [
     -1246,  # west abutment pier (top of embankment hill)
     -525,
@@ -620,14 +620,14 @@ _STRIPE_W = 6  # centre-line stripe half-width
 # ── Ennis Road (E-W, parallel to bridge, north side) ──
 # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
 # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-_ENNIS_Y = BRY2 + 400  # 536: centred 400 units north of bridge north edge
+_ENNIS_Y = PBY2 + 400  # 536: centred 400 units north of bridge north edge
 _ENNIS_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
 _ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 _ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 
 # Road surface (2-unit overlay so it textures differently from surrounding ground)
 BRUSHES.append(box(ROAD_X1, _ROAD_Y1, FZ2, ROAD_X2, _ROAD_Y2, FZ2 + 2, TEX_ROAD))
-_SWALK_START = BRY2 + 200  # sidewalk starts north of bridge
+_SWALK_START = PBY2 + 200  # sidewalk starts north of bridge
 # West sidewalk — north of bridge
 BRUSHES.append(
     box(
@@ -1056,11 +1056,11 @@ RH_SOUTH2_Y2 = RH_SOUTH2_Y1 + RH_DEPTH  # south building 2 north face = -832
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
 RH_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
 # Interpolate ramp top-Z at the building's west face so the slope is continuous
-_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (RH_X1 - BRX1) / (RH_EMB_X2 - BRX1))
+_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (RH_X1 - PBX1) / (RH_EMB_X2 - PBX1))
 # South segment — west of south buildings (through buildings' Y range)
 BRUSHES.append(
     ramp_slab(
-        BRX1,
+        PBX1,
         RH_X1,
         _ROAD_Y1,
         RH_SOUTH2_Y2,
@@ -1075,7 +1075,7 @@ BRUSHES.append(
 # South segment — full width between south buildings and north building
 BRUSHES.append(
     ramp_slab(
-        BRX1,
+        PBX1,
         RH_EMB_X2,
         RH_SOUTH2_Y2,
         RH_NORTH_Y1,
@@ -1090,7 +1090,7 @@ BRUSHES.append(
 # Middle segment — only west of north building
 BRUSHES.append(
     ramp_slab(
-        BRX1,
+        PBX1,
         RH_X1,
         RH_NORTH_Y1,
         RH_NORTH_Y2,
@@ -1105,7 +1105,7 @@ BRUSHES.append(
 # North of north building — restore original ramp
 BRUSHES.append(
     ramp_slab(
-        BRX1,
+        PBX1,
         RH_EMB_X2,
         RH_NORTH_Y2,
         _ROAD_Y2,
@@ -1120,8 +1120,8 @@ BRUSHES.append(
 
 # Wall extending north from the abutment pier, deck height, city2_1 texture
 # Door opening ~160 units north of the pier (visible in bridge10)
-_NORTH_WALL_Y1 = BRY2 + PIL_OVERHANG  # north face of pier = 152
-_SOUTH_WALL_Y2 = -(BRY2 + PIL_OVERHANG)  # south face of pier = -152
+_NORTH_WALL_Y1 = PBY2 + PIL_OVERHANG  # north face of pier = 152
+_SOUTH_WALL_Y2 = -(PBY2 + PIL_OVERHANG)  # south face of pier = -152
 _DOOR_W = 80  # door opening width (~5 ft)
 _DOOR_OFF = 160  # distance from pier face to door centre
 _DOOR_H = (
@@ -1537,11 +1537,11 @@ for _fy1, _fy2 in [(_ROAD_Y1, _ROAD_Y2)]:
 # East flat stub from arch terminus to building entrance
 BRUSHES.append(
     box(
-        BRX2,
-        BRY1,
+        PBX2,
+        PBY1,
         DZ1,
         WORLD_X2 - WALL_T,
-        BRY2,
+        PBY2,
         DZ2,
         TEX_STONE,
         tt=TEX_FLOOR,
@@ -1550,14 +1550,14 @@ BRUSHES.append(
 )
 
 for i in range(ARCH_SEGS):
-    sx1 = BRX1 + i * SEG_W
+    sx1 = PBX1 + i * SEG_W
     sx2 = sx1 + SEG_W
     BRUSHES.append(
         ramp_slab(
             sx1,
             sx2,
-            BRY1,
-            BRY2,
+            PBY1,
+            PBY2,
             dbot(sx1),
             dbot(sx2),
             dtop(sx1),
@@ -1570,27 +1570,27 @@ for i in range(ARCH_SEGS):
 
 # ── Parapet walls — west flat approach removed; east flat stub only ───────────
 BRUSHES.append(
-    box(BRX2, BRY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, BRY2, DZ2 + PAR_H, TEX_CEMENT)
+    box(PBX2, PBY2 - PAR_W, DZ2, WORLD_X2 - WALL_T, PBY2, DZ2 + PAR_H, TEX_CEMENT)
 )  # North east
 # South east — gap at WALK_X1..WALK_X2 for walkway connection to building
-BRUSHES.append(box(BRX2, BRY1, DZ2, WALK_X1, BRY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT))
+BRUSHES.append(box(PBX2, PBY1, DZ2, WALK_X1, PBY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT))
 BRUSHES.append(
-    box(WALK_X2, BRY1, DZ2, WORLD_X2 - WALL_T, BRY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT)
+    box(WALK_X2, PBY1, DZ2, WORLD_X2 - WALL_T, PBY1 + PAR_W, DZ2 + PAR_H, TEX_CEMENT)
 )
 
 for i in range(ARCH_SEGS):
-    sx1 = BRX1 + i * SEG_W
+    sx1 = PBX1 + i * SEG_W
     sx2 = sx1 + SEG_W
     pb1, pb2 = dtop(sx1), dtop(sx2)  # parapet base follows deck top
     pt1, pt2 = pb1 + PAR_H, pb2 + PAR_H  # parapet top = base + PAR_H
     # North parapet
     BRUSHES.append(
-        ramp_slab(sx1, sx2, BRY2 - PAR_W, BRY2, pb1, pb2, pt1, pt2, TEX_CEMENT)
+        ramp_slab(sx1, sx2, PBY2 - PAR_W, PBY2, pb1, pb2, pt1, pt2, TEX_CEMENT)
     )
     # South parapet — omit any segment that overlaps the walkway gap (X=WALK_X1..WALK_X2)
     if not (sx1 < WALK_X2 and sx2 > WALK_X1):
         BRUSHES.append(
-            ramp_slab(sx1, sx2, BRY1, BRY1 + PAR_W, pb1, pb2, pt1, pt2, TEX_CEMENT)
+            ramp_slab(sx1, sx2, PBY1, PBY1 + PAR_W, pb1, pb2, pt1, pt2, TEX_CEMENT)
         )
 
 # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
@@ -1629,10 +1629,10 @@ def _add_parapet_blocks(
         BRUSHES.append(
             box(
                 cx - _BLK_HW,
-                BRY2 - PAR_W,
+                PBY2 - PAR_W,
                 bz,
                 cx + _BLK_HW,
-                BRY2 + _BLK_OVH,
+                PBY2 + _BLK_OVH,
                 bz + _BLK_H,
                 TEX_CEMENT,
             )
@@ -1644,25 +1644,25 @@ def _add_parapet_blocks(
             BRUSHES.append(
                 box(
                     cx - _BLK_HW,
-                    BRY1 - _BLK_OVH,
+                    PBY1 - _BLK_OVH,
                     bz,
                     cx + _BLK_HW,
-                    BRY1 + PAR_W,
+                    PBY1 + PAR_W,
                     bz + _BLK_H,
                     TEX_CEMENT,
                 )
             )
 
 
-# Western span (BRX1 → PXS[0]): no blocks — open span
+# Western span (PBX1 → PXS[0]): no blocks — open span
 # Span 2 (PXS[0] → PXS[1]): eastern span 1, 3 blocks
 _add_parapet_blocks(PXS[0], PXS[1], 3)
 # Middle span (PXS[1] → PXS[2]): 4 blocks
 _add_parapet_blocks(PXS[1], PXS[2], 4)
 # Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
 _add_parapet_blocks(PXS[2], PXS[3], 3)
-# East flat span: west sub-span (BRX2→PXS[4]) gets 3 north blocks; east sub-span open (matches ref)
-_add_parapet_blocks(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
+# East flat span: west sub-span (PBX2→PXS[4]) gets 3 north blocks; east sub-span open (matches ref)
+_add_parapet_blocks(PBX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 
 # ── Decorative squares on parapet outer faces (one per block position) ────────
 _SQ_HW = 8  # half-width in X (16 units wide)
@@ -1697,10 +1697,10 @@ def _add_parapet_squares(
         BRUSHES.append(
             box(
                 cx - _SQ_HW,
-                BRY2,
+                PBY2,
                 bz - _SQ_HH,
                 cx + _SQ_HW,
-                BRY2 + _SQ_D,
+                PBY2 + _SQ_D,
                 bz + _SQ_HH,
                 TEX_RAIL,
             )
@@ -1716,10 +1716,10 @@ def _add_parapet_squares(
             BRUSHES.append(
                 box(
                     cx - _SQ_HW,
-                    BRY1 - _SQ_D,
+                    PBY1 - _SQ_D,
                     bz - _SQ_HH,
                     cx + _SQ_HW,
-                    BRY1,
+                    PBY1,
                     bz + _SQ_HH,
                     TEX_RAIL,
                 )
@@ -1729,17 +1729,17 @@ def _add_parapet_squares(
 _add_parapet_squares(PXS[0], PXS[1], 3)
 _add_parapet_squares(PXS[1], PXS[2], 4)
 _add_parapet_squares(PXS[2], PXS[3], 3)
-_add_parapet_squares(BRX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
+_add_parapet_squares(PBX2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 # South east of walkway: corner blocks only at each side of the opening
 # Corner block on east side of walkway opening (west face flush with WALK_X2)
 _cx_walk_e = WALK_X2 + _BLK_HW
 BRUSHES.append(
     box(
         _cx_walk_e - _BLK_HW,
-        BRY1 - _BLK_OVH,
+        PBY1 - _BLK_OVH,
         DZ2 + PAR_H,
         _cx_walk_e + _BLK_HW,
-        BRY1 + PAR_W,
+        PBY1 + PAR_W,
         DZ2 + PAR_H + _BLK_H,
         TEX_CEMENT,
     )
@@ -1749,10 +1749,10 @@ _cx_walk_w = WALK_X1 - _BLK_HW
 BRUSHES.append(
     box(
         _cx_walk_w - _BLK_HW,
-        BRY1 - _BLK_OVH,
+        PBY1 - _BLK_OVH,
         DZ2 + PAR_H,
         _cx_walk_w + _BLK_HW,
-        BRY1 + PAR_W,
+        PBY1 + PAR_W,
         DZ2 + PAR_H + _BLK_H,
         TEX_CEMENT,
     )
@@ -1763,14 +1763,14 @@ BRUSHES.append(
 _TUBE_HW = 2  # half-width of tube in Y and Z (4 units total)
 _TUBE_RISE = 10  # raise tubes above parapet top
 _TUBE_GAP = 12  # vertical gap between tube centres
-_TUBE_NY1 = BRY2 - PAR_W // 2 - _TUBE_HW
+_TUBE_NY1 = PBY2 - PAR_W // 2 - _TUBE_HW
 _TUBE_NY2 = _TUBE_NY1 + _TUBE_HW * 2
-_TUBE_SY1 = BRY1 + PAR_W // 2 - _TUBE_HW
+_TUBE_SY1 = PBY1 + PAR_W // 2 - _TUBE_HW
 _TUBE_SY2 = _TUBE_SY1 + _TUBE_HW * 2
 
 for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
     for _i in range(ARCH_SEGS):
-        _sx1 = BRX1 + _i * SEG_W
+        _sx1 = PBX1 + _i * SEG_W
         _sx2 = _sx1 + SEG_W
         _zb1 = dtop(_sx1) + PAR_H + _tube_z_extra
         _zb2 = dtop(_sx2) + PAR_H + _tube_z_extra
@@ -1806,11 +1806,11 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
     _x_east_end = WORLD_X2 - WALL_T
     BRUSHES.append(
         box(
-            BRX2, _TUBE_NY1, _tbz, _x_east_end, _TUBE_NY2, _tbz + _TUBE_HW * 2, TEX_RAIL
+            PBX2, _TUBE_NY1, _tbz, _x_east_end, _TUBE_NY2, _tbz + _TUBE_HW * 2, TEX_RAIL
         )
     )
     BRUSHES.append(
-        box(BRX2, _TUBE_SY1, _tbz, WALK_X1, _TUBE_SY2, _tbz + _TUBE_HW * 2, TEX_RAIL)
+        box(PBX2, _TUBE_SY1, _tbz, WALK_X1, _TUBE_SY2, _tbz + _TUBE_HW * 2, TEX_RAIL)
     )
     BRUSHES.append(
         box(
@@ -1827,7 +1827,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
 
 # ── Pillar posts (stone piers with arches) ───────────────────────────────────
 # Each pillar position now features a narrow arched pier supporting the deck.
-# Arch openings span most of the bridge N-S width (BRY2=136, bridge=272 units)
+# Arch openings span most of the bridge N-S width (PBY2=136, bridge=272 units)
 # rin = half-width of clear opening; rout = outer radius of arch ring
 _OUTER_R = (117, 80)  # narrower outer piers flanking road
 _INNER_R = (131, 90)  # slightly wider inner piers
@@ -1840,8 +1840,8 @@ if SHOW_SUPPORTS:
         ppar = pdeck + PAR_H  # parapet top
         ppil = ppar + PIL_EXTRA  # pillar post top
         pcap = ppil + PIL_CAP_H  # cap slab top
-        cy_n = BRY2 - PAR_W // 2  # north cap centre Y
-        cy_s = BRY1 + PAR_W // 2  # south cap centre Y
+        cy_n = PBY2 - PAR_W // 2  # north cap centre Y
+        cy_s = PBY1 + PAR_W // 2  # south cap centre Y
 
         # Width of the pier in X (matches pillar post width)
         x1, x2 = px - P_HW, px + P_HW
@@ -1862,18 +1862,18 @@ if SHOW_SUPPORTS:
 
         # Compute arch body overhang so the pier always extends PIL_OVERHANG units
         # past the bridge edges, regardless of a_rout (outer piers have small rout).
-        _arch_overhang = max(PIL_OVERHANG, BRY2 + PIL_OVERHANG - a_rout)
+        _arch_overhang = max(PIL_OVERHANG, PBY2 + PIL_OVERHANG - a_rout)
 
         # Add pier structure — easternmost pier gets a square opening, rest are arched
         if px == max(PXS):
-            # Overhang must reach BRY2+PIL_OVERHANG to match pillar tops above deck
-            _sq_overhang = BRY2 + PIL_OVERHANG - a_rin
+            # Overhang must reach PBY2+PIL_OVERHANG to match pillar tops above deck
+            _sq_overhang = PBY2 + PIL_OVERHANG - a_rin
             BRUSHES.extend(
                 square_wall(
                     x1,
                     x2,
-                    BRY1,
-                    BRY2,
+                    PBY1,
+                    PBY2,
                     FZ2,
                     int(pdeck) - 16,
                     a_rin,
@@ -1887,8 +1887,8 @@ if SHOW_SUPPORTS:
                 arch_wall(
                     x1,
                     x2,
-                    BRY1,
-                    BRY2,
+                    PBY1,
+                    PBY2,
                     FZ2,
                     int(pdeck) - 16,
                     a_rin,
@@ -1902,12 +1902,12 @@ if SHOW_SUPPORTS:
             )
 
         # Pillar tops (above deck, extend PIL_OVERHANG past bridge edges and inward)
-        _pil_out = BRY2 + PIL_OVERHANG  # always overhang past bridge edge
+        _pil_out = PBY2 + PIL_OVERHANG  # always overhang past bridge edge
         # North pillar top
         BRUSHES.append(
             box(
                 px - P_HW,
-                BRY2 - PAR_W - PIL_OVERHANG,
+                PBY2 - PAR_W - PIL_OVERHANG,
                 pdeck,
                 px + P_HW,
                 _pil_out,
@@ -1923,7 +1923,7 @@ if SHOW_SUPPORTS:
                 -_pil_out,
                 pdeck,
                 px + P_HW,
-                BRY1 + PAR_W + PIL_OVERHANG,
+                PBY1 + PAR_W + PIL_OVERHANG,
                 ppil,
                 TEX_PILLAR,
             )
@@ -1932,18 +1932,18 @@ if SHOW_SUPPORTS:
         # Fill gap between pier top and deck surface in the overhang zone
         pier_top_z = int(pdeck) - 16
         BRUSHES.append(
-            box(x1, BRY2, pier_top_z, x2, _pil_out, pdeck, TEX_PILLAR)
+            box(x1, PBY2, pier_top_z, x2, _pil_out, pdeck, TEX_PILLAR)
         )  # north
         BRUSHES.append(
-            box(x1, -_pil_out, pier_top_z, x2, BRY1, pdeck, TEX_PILLAR)
+            box(x1, -_pil_out, pier_top_z, x2, PBY1, pdeck, TEX_PILLAR)
         )  # south
 
         # Cement cap slab + pyramid on top of each stone pillar post
         _cap_x1, _cap_x2 = px - PIL_PYR_W, px + PIL_PYR_W
-        _n_cy1 = BRY2 - PAR_W - PIL_OVERHANG
-        _n_cy2 = BRY2 + PIL_OVERHANG
-        _s_cy1 = BRY1 - PIL_OVERHANG
-        _s_cy2 = BRY1 + PAR_W + PIL_OVERHANG
+        _n_cy1 = PBY2 - PAR_W - PIL_OVERHANG
+        _n_cy2 = PBY2 + PIL_OVERHANG
+        _s_cy1 = PBY1 - PIL_OVERHANG
+        _s_cy2 = PBY1 + PAR_W + PIL_OVERHANG
         # Cap slabs (flat cement base)
         BRUSHES.append(box(_cap_x1, _n_cy1, ppil, _cap_x2, _n_cy2, pcap, TEX_CEMENT))
         BRUSHES.append(box(_cap_x1, _s_cy1, ppil, _cap_x2, _s_cy2, pcap, TEX_CEMENT))
@@ -2000,7 +2000,7 @@ if SHOW_SUPPORTS:
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 TEX_ARCH_RIN = 96
-TEX_ARCH_ROUT = 136  # Fills the bridge width (updated to match BRY2=136)
+TEX_ARCH_ROUT = 136  # Fills the bridge width (updated to match PBY2=136)
 TEX_ARCH_STILT = 96  # Height of straight sides before arch springs
 TEX_ARCH_W = 32  # Thickness of the arch in X
 
@@ -2010,11 +2010,11 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
     _post_w = TEX_ARCH_ROUT - TEX_ARCH_RIN  # post thickness in Y
     # South post (extends to ground floor, with overhang)
     BRUSHES.append(
-        box(_xb, BRY1 - PIL_OVERHANG, FZ2, _xf, BRY1 + _post_w, _sprz, TEX_PILLAR)
+        box(_xb, PBY1 - PIL_OVERHANG, FZ2, _xf, PBY1 + _post_w, _sprz, TEX_PILLAR)
     )
     # North post (extends to ground floor, with overhang)
     BRUSHES.append(
-        box(_xb, BRY2 - _post_w, FZ2, _xf, BRY2 + PIL_OVERHANG, _sprz, TEX_PILLAR)
+        box(_xb, PBY2 - _post_w, FZ2, _xf, PBY2 + PIL_OVERHANG, _sprz, TEX_PILLAR)
     )
     # Arch ring segments (rounded top, with overhang)
     _seg = 180.0 / A_SEGS
@@ -2036,7 +2036,7 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
 
 # ════════════════════════════════════════════════════════════════════════════════
 # WALKWAY — flat bridge from south edge to building 2nd floor entrance
-# X=-64..64, Y=BRY1..KH_Y2; flat at WALK_ZT1 = WALK_ZT2
+# X=-64..64, Y=PBY1..KH_Y2; flat at WALK_ZT1 = WALK_ZT2
 # ════════════════════════════════════════════════════════════════════════════════
 _wk_zb1 = WALK_ZT1 - KH_WALL  # slab bottom at bridge end  = 192
 _wk_zb2 = WALK_ZT2 - KH_WALL  # slab bottom at building end = 128
@@ -2044,7 +2044,7 @@ BRUSHES.append(
     ramp_slab_y(
         WALK_X1,
         WALK_X2,
-        BRY1,
+        PBY1,
         KH_Y2,
         _wk_zb1,
         _wk_zb2,
@@ -2060,7 +2060,7 @@ BRUSHES.append(
     ramp_slab_y(
         WALK_X1 - _WALK_WALL,
         WALK_X1,
-        BRY1,
+        PBY1,
         KH_Y2,
         _wk_zb1,
         _wk_zb2,
@@ -2073,7 +2073,7 @@ BRUSHES.append(
     ramp_slab_y(
         WALK_X2,
         WALK_X2 + _WALK_WALL,
-        BRY1,
+        PBY1,
         KH_Y2,
         _wk_zb1,
         _wk_zb2,
@@ -2093,7 +2093,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
             KH_Y2,
             _tbz,
             WALK_X1 - _ww_cx + _TUBE_HW,
-            BRY1,
+            PBY1,
             _tbz + _TUBE_HW * 2,
             TEX_RAIL,
         )
@@ -2105,7 +2105,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
             KH_Y2,
             _tbz,
             WALK_X2 + _ww_cx + _TUBE_HW,
-            BRY1,
+            PBY1,
             _tbz + _TUBE_HW * 2,
             TEX_RAIL,
         )
@@ -3040,8 +3040,8 @@ DRAW_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
 # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
 # Fascia panel follows the arch: one box per character hanging from dbot(x)
-_FAS_Y1, _FAS_Y2 = BRY1 - 6, BRY1  # 6 units thick, flush with south face
-_FAS_Y3, _FAS_Y4 = BRY2, BRY2 + 6  # north face panel
+_FAS_Y1, _FAS_Y2 = PBY1 - 6, PBY1  # 6 units thick, flush with south face
+_FAS_Y3, _FAS_Y4 = PBY2, PBY2 + 6  # north face panel
 _FAS_X1, _FAS_X2 = -500, 500  # between the two road piers
 _PX_W, _PX_H = 4, 4
 _FONT_ROWS = 6
@@ -3111,7 +3111,7 @@ _letter_brushes = (
         _render_text_fascia(
             _TEXT,
             x0=_TEXT_X0,
-            y_face=BRY1,
+            y_face=PBY1,
             px_w=_PX_W,
             px_h=_PX_H,
             depth=1,
@@ -3120,7 +3120,7 @@ _letter_brushes = (
         + _render_text_fascia(
             _TEXT[::-1],
             x0=_TEXT_X0,
-            y_face=BRY2 + 1,
+            y_face=PBY2 + 1,
             px_w=_PX_W,
             px_h=_PX_H,
             depth=1,
@@ -3170,11 +3170,11 @@ for _lx in _LAMP_POST_XS:
 
 # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
 _SPAN_CENTRES = [
-    (BRX1 + PXS[0]) // 2,
+    (PBX1 + PXS[0]) // 2,
     (PXS[0] + PXS[1]) // 2,
     (PXS[1] + PXS[2]) // 2,
-    (PXS[2] + BRX2) // 2,
-    (BRX2 + PXS[4]) // 2,
+    (PXS[2] + PBX2) // 2,
+    (PBX2 + PXS[4]) // 2,
     (PXS[4] + WORLD_X2 - WALL_T) // 2,
 ]
 _PEND_XS = _SPAN_CENTRES
@@ -3471,7 +3471,7 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
 ENTITIES.append(
     ent(
         "info_player_start",
-        origin=f"{KH_CX} {BRY1 + PAR_W + 32} {int(DZ2 + 24)}",
+        origin=f"{KH_CX} {PBY1 + PAR_W + 32} {int(DZ2 + 24)}",
         angle="180",
     )
 )
@@ -3491,7 +3491,7 @@ for pos, angle in [
     ((-400, 0, int(dtop(-400) + 32)), 90),
     ((400, 0, int(dtop(400) + 32)), 270),
     # Walkway
-    ((KH_CX, (BRY1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180),
+    ((KH_CX, (PBY1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180),
     # Knott Hall — ground, mid, upper floors
     ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
     ((KH_CX - 100, _bcy, KH_GROUND_Z + FLOOR_H + 40), 270),
@@ -3604,8 +3604,8 @@ if SHOW_SUPPORTS:
             continue
         pbase = dtop(px)
         pcap = pbase + PAR_H + PIL_EXTRA + PIL_CAP_H + PIL_PYR_H  # top of pyramid
-        cy_n = BRY2 - PAR_W // 2  # centred on north pillar cap
-        cy_s = BRY1 + PAR_W // 2  # centred on south pillar cap
+        cy_n = PBY2 - PAR_W // 2  # centred on north pillar cap
+        cy_s = PBY1 + PAR_W // 2  # centred on south pillar cap
         # Flames on pillar tops — raised above pyramid apex so they visually sit on top
         ENTITIES.append(
             ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
@@ -3631,7 +3631,7 @@ if SHOW_SUPPORTS:
     for px in PXS:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
-        for _uy in [BRY2 + 30, BRY1 - 30]:
+        for _uy in [PBY2 + 30, PBY1 - 30]:
             ENTITIES.append(ent("light", origin=f"{px} {_uy} 16", light="200"))
 
 # Campus lamp post lights — flame above brick cup, matching bridge pillar torches
@@ -3662,8 +3662,8 @@ for _px in _PEND_XS:
     )
 
 # Light on underside of walkway slab illuminating the ramp below
-_walk_mid_y = (BRY1 + KH_Y2) // 2
-_walk_frac = (BRY1 - _walk_mid_y) / float(BRY1 - KH_Y2)
+_walk_mid_y = (PBY1 + KH_Y2) // 2
+_walk_frac = (PBY1 - _walk_mid_y) / float(PBY1 - KH_Y2)
 _walk_bot_mid = int(_wk_zb1 + _walk_frac * (_wk_zb2 - _wk_zb1))
 ENTITIES.append(
     ent("light", origin=f"{KH_CX} {_walk_mid_y} {_walk_bot_mid - 8}", light="300")
