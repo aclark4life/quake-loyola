@@ -18872,6 +18872,11 @@
 }
 {
 "classname" "light"
+"origin" "-1315 0 84"
+"light" "350"
+}
+{
+"classname" "light"
 "origin" "-1465 734 64"
 "light" "200"
 }
