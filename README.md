@@ -147,28 +147,47 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 
 | Constant | Objects affected |
 |---|---|
+| `CS_CRN_R`, `CS_CRN_SEGS` | Charles/Ennis and Knott back-road corner radii / arc tessellation; changing them reshapes both street junctions |
+| `CS_RAMP_W` | Charles Street sidewalk ramp width; affects the east/west curb ramps and their ground transitions |
+| `CS_SWALK_START` | West Charles Street sidewalk start north of the bridge; also sets the curb/ground split below it |
+| `CS_WALK_H`, `CS_WALK_W` | Charles Street sidewalk height/width; cascade into Ennis curbs, the Ennis wall setback, RH fence placement, Knott Hall terrain ramps, and the back-road sidewalks |
+| `CS_Y1`, `CS_Y2` | Charles Street south/north extents; anchor road surface, sidewalk/fence spans, embankment ends, and north/south street arch teleports |
 | `ENNIS_PIL_HW` | Ennis Drive entrance pillar half-width; also sets Y offsets for pillar placement relative to Ennis Road edges |
 | `ENNIS_PIL_POST_H`, `ENNIS_PIL_BELL2_H` | Entrance pillar heights; set flame/light Z above pillar tops |
 | `ENNIS_PIL_X1`, `ENNIS_PIL_X2` | Entrance pillar E–W extents; pinned to `PB_ARCH_X[2]` — move that pier and pillars move too |
+| `ENNIS_WALL_PIL_HW`, `ENNIS_WALL_PIL_H` | Boundary-wall corner pillar footprint/height; also set collar, cap, and pyramid extents |
+| `ENNIS_WALL_T`, `ENNIS_WALL_H` | L-shaped campus wall thickness/height; affect both wall legs and the pillar centering derived from them |
+| `KH_BR_CORRIDOR_X1/X2` | Gap left in the Ennis south curb for the Knott back-road corridor |
+| `KH_BR_HW`, `KH_BR_WALK_W` | Back-road carriageway and sidewalk widths; ripple through junction geometry, extension slab widths, and terrain fill east of the road |
+| `KH_BR_Y1/Y2`, `KH_BR_ZT_N/S` | Back-road span and slope anchors; changing them reshapes the sloped road, both sidewalks, and the extension up to Ennis |
+| `KH_ENT_X1/X2` | Knott Hall entrance opening; also pins the front platform, staircase, shaft, and north-facade doorway/window layout |
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
+| `KH_ORIG_CX` | Original Knott Hall centreline retained for the entrance, front window slot, and stairs even when `KH_WIDTH` changes |
+| `KH_PIER_X` | Fixed Knott Hall-side bridge pier; anchors `PB_X2`, `PB_ARCH_X[3]`, and east lamp placement |
+| `KH_RAIL_H` | Stair railing height; affects both sloped handrails and their end posts |
+| `KH_STAIR_OFFSET`, `KH_STEP_DEPTH`, `KH_STEP_N` | Entrance stair footprint and rise/run; changing them moves the landing, apron, and railing geometry |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
-| `PB_PIL_HW` | Pier post half-width; affects arch wall extents, cap size, overhang, and brick wall X positions |
-| `PB_PAR_H`, `PB_PAR_W` | Parapet height and width; affects spawn Z, handrail positions, and pillar post base |
 | `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
 | `PB_ARCH_X[]` | Pier X positions; `PB_ARCH_X[0]` pins the abutment building X |
 | `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
-| `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
-| `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
+| `PB_PAR_H`, `PB_PAR_W` | Parapet height and width; affects spawn Z, handrail positions, and pillar post base |
 | `PB_PIL_CAP_H`, `PB_PIL_PYR_H`, `PB_PIL_PYR_W` | Pier cap and pyramid dimensions; purely visual, no gameplay cascade |
 | `PB_PIL_EXTRA` | Extra pillar post height above parapet; affects how far piers protrude above deck |
+| `PB_PIL_HW` | Pier post half-width; affects arch wall extents, cap size, overhang, and brick wall X positions |
 | `PB_PIL_OVERHANG` | How far pier stone extends beyond bridge N/S edges; affects parapet wall Y alignment |
+| `PB_WALK_WALL` | Walkway side-wall thickness; also centres the bridge-to-Knott handrail tubes |
+| `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
+| `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
 | `RH_DEPTH` | Residence hall N–S depth; shared by all four RH buildings — changing it shifts the south building stack |
+| `RH_DOOR_OFF`, `RH_DOOR_W`, `RH_DOOR_H` | South abutment-wall door placement/size; changing them reshapes the wall opening and lintel fill |
 | `RH_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
 | `RH_FLOORS` | Residence hall floor count; shared by all four RH buildings |
 | `RH_NORTH_Y1`, `RH_NORTH_Y2` | North building Y extents; derived from `WORLD_Y2`, shifts south building stack indirectly |
 | `RH_PIER_X` | Derived from `PB_ARCH_X[0]`; pins the RH building X — move the west pier and the buildings move too |
+| `RH_SLAB_T` | Residence hall roof slab thickness at the eaves; shifts roof trim and upper wall termination |
 | `RH_SOUTH1_Y1/Y2`, `RH_SOUTH2_Y1/Y2` | South building 1 & 2 Y extents; stacked directly — changing `RH_DEPTH` shifts both |
 | `RH_WALL` | Wall thickness; used for all RH interior/exterior dimensions and window placement |
+| `RH_WALL_N_Y1`, `RH_WALL_S_Y2` | Abutment-wall extents from the bridge pier toward the RH building stack; moving them changes both north and south wall reaches |
 | `RH_WIN_HW`, `RH_WIN_HH` | Window half-width / half-height; shared across all RH building facades |
 | `RH_X1`, `RH_X2` | RH building E–W extents; also anchor the embankment ramp split and the brick wall positions |
 | `WORLD_X1/X2` | Derives `PB_X1`; resizing the world changes the arch span and all wall-relative positions |
