@@ -3830,11 +3830,25 @@ for _px in PB_ARCH_X:
     ENTITIES.append(ent("light", origin=f"{_px} {PB_Y2 // 2} {_pz}", light="250"))
     ENTITIES.append(ent("light", origin=f"{_px} {PB_Y1 // 2} {_pz}", light="250"))
 
-# Cement arch on west face of abutment pier (-1246) — light placed just west of pier
+# Cement arch on west face of abutment pier (-1246) — three lights for good coverage
 _ab_px = min(PB_ARCH_X)  # = -1246
 _ab_arch_z = FZ2 + PB_PIL_BASE_H + 60  # mid-height of arch opening
 ENTITIES.append(
-    ent("light", origin=f"{_ab_px - PB_PIL_HW - 32} 0 {_ab_arch_z}", light="350")
+    ent("light", origin=f"{_ab_px - PB_PIL_HW - 32} 0 {_ab_arch_z}", light="700")
+)
+ENTITIES.append(
+    ent(
+        "light",
+        origin=f"{_ab_px - PB_PIL_HW - 32} {PB_Y2 // 2} {_ab_arch_z}",
+        light="500",
+    )
+)
+ENTITIES.append(
+    ent(
+        "light",
+        origin=f"{_ab_px - PB_PIL_HW - 32} {PB_Y1 // 2} {_ab_arch_z}",
+        light="500",
+    )
 )
 
 # Light on underside of walkway slab illuminating the ramp below
