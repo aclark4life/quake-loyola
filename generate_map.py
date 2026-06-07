@@ -1299,6 +1299,86 @@ while _ewpx + 2 <= _ew_x2:
     _ewpi += 1
 
 
+# ── Cement parapet wall — east half of Ennis Drive (iron fence end to east world wall) ──
+_cw_x1 = _ew_x2  # starts where iron fence ends
+_cw_x2 = WORLD_X2 - WALL_T  # east world wall inner face
+_cw_fy1 = bw_ny  # south face
+_cw_fy2 = bw_ny + EP_WALL_T  # north face
+_cw_h = 48  # parapet height (shorter than iron fence)
+_cw_pil_hw = 14  # pillar half-width
+_cw_pil_h = _cw_h + 16  # pillar slightly taller than wall
+# Wall body
+BRUSHES.append(box(_cw_x1, _cw_fy1, FZ2, _cw_x2, _cw_fy2, FZ2 + _cw_h, TEX_CEMENT))
+# Cap slab (slightly proud on all sides)
+BRUSHES.append(
+    box(
+        _cw_x1,
+        _cw_fy1 - 2,
+        FZ2 + _cw_h,
+        _cw_x2,
+        _cw_fy2 + 2,
+        FZ2 + _cw_h + 6,
+        TEX_CEMENT,
+    )
+)
+# Pillars at each end
+_cw_lamp_posts = []
+for _px in (_cw_x1, _cw_x2):
+    _pcy = (_cw_fy1 + _cw_fy2) // 2
+    BRUSHES.append(
+        box(
+            _px - _cw_pil_hw,
+            _pcy - _cw_pil_hw,
+            FZ2,
+            _px + _cw_pil_hw,
+            _pcy + _cw_pil_hw,
+            FZ2 + _cw_pil_h,
+            TEX_CEMENT,
+        )
+    )
+    # Cap slab on pillar
+    BRUSHES.append(
+        box(
+            _px - _cw_pil_hw - 2,
+            _pcy - _cw_pil_hw - 2,
+            FZ2 + _cw_pil_h,
+            _px + _cw_pil_hw + 2,
+            _pcy + _cw_pil_hw + 2,
+            FZ2 + _cw_pil_h + 6,
+            TEX_CEMENT,
+        )
+    )
+    # Lamppost pole
+    _lp_base = FZ2 + _cw_pil_h + 6
+    BRUSHES.append(
+        box(_px - 3, _pcy - 3, _lp_base, _px + 3, _pcy + 3, _lp_base + 160, TEX_PILLAR)
+    )
+    # Lantern head — narrow shaft + wider cap
+    BRUSHES.append(
+        box(
+            _px - 4,
+            _pcy - 4,
+            _lp_base + 160,
+            _px + 4,
+            _pcy + 4,
+            _lp_base + 176,
+            TEX_CEMENT,
+        )
+    )
+    BRUSHES.append(
+        box(
+            _px - 7,
+            _pcy - 7,
+            _lp_base + 176,
+            _px + 7,
+            _pcy + 7,
+            _lp_base + 180,
+            TEX_CEMENT,
+        )
+    )
+    _cw_lamp_posts.append((_px, _pcy, _lp_base + 180))
+
+
 RH_FLOORS = 3
 RH_H = RH_FLOORS * KH_FLOOR_H  # 384 units tall
 RH_DEPTH = 600  # building N-S depth (doubled)
@@ -4095,6 +4175,11 @@ for _lx in CS_LAMP_POST_XS:
         ENTITIES.append(
             ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_flame_z + 4}")
         )
+
+# Ennis cement wall lamppost lights
+for _lx, _ly, _lz in _cw_lamp_posts:
+    ENTITIES.append(ent("light", origin=f"{_lx} {_ly} {_lz}", light="300"))
+    ENTITIES.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_lz + 4}"))
 
 # Ennis entrance pillar torches — flame above brick cup on each stone pillar
 ennis_pil_flame_z = EP_PIL_ZB + EP_PIL_POST_H + EP_PIL_CAP_H + EP_PIL_BELL2_H + 20
