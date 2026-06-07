@@ -84,6 +84,7 @@ PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
 PB_PIL_BASE_RAMP_H = 40  # high side of ramped plinth — subtle incline, still jumpable
+PB_PIL_BASE_CAP_H = 6  # cement cap slab thickness on top of each plinth
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
@@ -457,6 +458,8 @@ def arch_wall(
     overhang=0,
     base_h=0,
     base_ramp=None,
+    base_cap_h=0,
+    base_cap_tex=None,
 ):
     """Stone wall with arched opening centred at Y=0.
 
@@ -467,6 +470,8 @@ def arch_wall(
     base_ramp: if given, a (zt_x1, zt_x2) tuple — replaces the flat base_h box with a
                ramp_slab whose top slopes from zt_x1 at x=x1 to zt_x2 at x=x2.
                base_h is ignored when base_ramp is set.
+    base_cap_h: thin slab placed on top of the plinth (flat or ramped) in base_cap_tex.
+    base_cap_tex: texture for the cap slab (defaults to tex).
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
@@ -489,8 +494,36 @@ def arch_wall(
     if base_ramp is not None:
         zt1, zt2 = base_ramp
         brushes.append(ramp_slab(x1, x2, -rin, rin, floor_z, floor_z, zt1, zt2, tex))
+        if base_cap_h > 0:
+            cap_tex = base_cap_tex or tex
+            brushes.append(
+                ramp_slab(
+                    x1,
+                    x2,
+                    -rin,
+                    rin,
+                    zt1,
+                    zt2,
+                    zt1 + base_cap_h,
+                    zt2 + base_cap_h,
+                    cap_tex,
+                )
+            )
     elif base_h > 0:
         brushes.append(box(x1, -rin, floor_z, x2, rin, floor_z + base_h, tex))
+        if base_cap_h > 0:
+            cap_tex = base_cap_tex or tex
+            brushes.append(
+                box(
+                    x1,
+                    -rin,
+                    floor_z + base_h,
+                    x2,
+                    rin,
+                    floor_z + base_h + base_cap_h,
+                    cap_tex,
+                )
+            )
 
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
     # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
@@ -1952,6 +1985,8 @@ if SHOW_SUPPORTS:
                     overhang=_arch_overhang,
                     base_h=PB_PIL_BASE_H,
                     base_ramp=_base_ramp,
+                    base_cap_h=PB_PIL_BASE_CAP_H,
+                    base_cap_tex=TEX_CEMENT,
                 )
             )
 
