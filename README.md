@@ -154,7 +154,7 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `WORLD_X1/X2` | Derives `PBX1`; resizing the world changes the arch span and all wall-relative positions |
-| `FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
+| `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `RH_FLOORS`, `RH_DEPTH` | Residence hall floor count and N–S depth; shared by all four RH buildings |
 | `RH_PIER_X` | Derived from `PXS[0]`; pins the RH building X — move the west pier and the buildings move too |
 | `RH_X1`, `RH_X2` | RH building E–W extents; also anchor the embankment ramp split and the brick wall positions |
