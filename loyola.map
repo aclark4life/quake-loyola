@@ -20234,6 +20234,30 @@
 "origin" "0 0 392.0"
 }
 {
+"classname" "weapon_rocketlauncher"
+"origin" "-525 -184 392.0"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "1246 184 392.0"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "0 176 32"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "525 0 32"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "1110 660 24"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "2078 660 24"
+}
+{
 "classname" "weapon_supershotgun"
 "origin" "0 300 32"
 }
