@@ -340,6 +340,34 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
     )
 
 
+def make_tree(cx, cy, base_z):
+    """Cartoon tree: brown trunk + three stacked ground-texture pyramids."""
+    TEX_TRUNK = "bricka2_1"
+    TEX_FOLIAGE = TEX_GROUND
+    brushes = []
+    # Trunk — 10×10, 56 units tall
+    brushes.append(box(cx - 5, cy - 5, base_z, cx + 5, cy + 5, base_z + 56, TEX_TRUNK))
+    # Lower foliage pyramid — wide base
+    brushes.append(
+        pyramid(
+            cx - 40, cy - 40, base_z + 32, cx + 40, cy + 40, base_z + 80, TEX_FOLIAGE
+        )
+    )
+    # Middle foliage pyramid
+    brushes.append(
+        pyramid(
+            cx - 28, cy - 28, base_z + 64, cx + 28, cy + 28, base_z + 108, TEX_FOLIAGE
+        )
+    )
+    # Upper foliage pyramid — narrow tip
+    brushes.append(
+        pyramid(
+            cx - 16, cy - 16, base_z + 92, cx + 16, cy + 16, base_z + 128, TEX_FOLIAGE
+        )
+    )
+    return brushes
+
+
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
     Angles t1d..t2d in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
@@ -4069,6 +4097,12 @@ for _rl_origin in [
     f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
     f"{int(_ew_x1 + (_ew_x2 - _ew_x1) // 2)} {bw_ny - 80} {FZ2 + 24}",  # Ennis fence midpoint
     f"{int(_cw_x1 + (_cw_x2 - _cw_x1) // 2)} {bw_ny - 80} {FZ2 + 24}",  # Ennis wall midpoint
+    # Bridge deck — one per span
+    f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {DECK_Z}",  # span 1
+    f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {DECK_Z}",  # span 2 south edge
+    f"{(PB_ARCH_X[1] + PB_ARCH_X[2]) // 2} {PB_Y1 + 24} {DECK_Z}",  # span 3 north edge
+    f"{(PB_ARCH_X[2] + PB_X2) // 2} 0 {DECK_Z}",  # span 4
+    f"{(PB_X2 + PB_ARCH_X[4]) // 2} 0 {DECK_Z}",  # span 5 (east angled)
 ]:
     ENTITIES.append(ent("weapon_rocketlauncher", origin=_rl_origin))
 
@@ -4292,6 +4326,37 @@ if KH_ENABLED:
                 ENTITIES.append(
                     ent("light", origin=f"{_klx} {_kly} {_klz}", light="150")
                 )
+
+# ── Cartoon trees as func_detail ─────────────────────────────────────────────
+# Positions based on ref photos:
+# - Dense forest behind cement/iron wall north of Ennis (bridge13, bridge02)
+# - Large trees flanking Knott Hall on west side (bridge01, bridge10)
+# - Trees along Ennis Parallel campus road (bridge02)
+_tree_positions = [
+    # Dense forest behind the north Ennis wall (north of bw_ny)
+    (int(_ew_x1 + 100), bw_ny + 120),
+    (int(_ew_x1 + 280), bw_ny + 200),
+    (int(_ew_x1 + 460), bw_ny + 100),
+    (int(_ew_x1 + 620), bw_ny + 280),
+    (int(_ew_x1 + 800), bw_ny + 150),
+    (int(_ew_x2 + 100), bw_ny + 120),
+    (int(_ew_x2 + 320), bw_ny + 220),
+    (int(_ew_x2 + 560), bw_ny + 100),
+    (int(_ew_x2 + 780), bw_ny + 300),
+    # Trees flanking Knott Hall (west side — bridge01, bridge10)
+    (RH_X1 - 80, -600),
+    (RH_X1 - 200, -300),
+    (RH_X1 - 80, 200),
+    (RH_X1 - 200, 500),
+    # Along Ennis Parallel (campus side, west of Charles St — bridge02)
+    (ROAD_X1 - 200, bw_ny - 100),
+    (ROAD_X1 - 400, bw_ny - 80),
+    (ROAD_X1 - 600, bw_ny - 120),
+]
+_all_tree_brushes = []
+for _tx, _ty in _tree_positions:
+    _all_tree_brushes += make_tree(_tx, _ty, FZ2)
+ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
