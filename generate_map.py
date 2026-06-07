@@ -1040,30 +1040,30 @@ BRUSHES.append(
 
 
 # ── Abutment building dimensions (referenced by embankment split below) ────────
-_AB_FLOORS = 3
-_AB_H = _AB_FLOORS * FLOOR_H  # 384 units tall
-_AB_D = 600  # building N-S depth (doubled)
-_ABUTMENT_X = min(PXS)  # = -1100
-_AB_X2 = _ABUTMENT_X + P_HW + 32  # east face of building  = -1031
-_AB_X1 = _AB_X2 - 576  # west face of building (doubled width)
-_NB_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
-_NB_Y1 = _NB_Y2 - _AB_D  # north building south face
-_SB_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
-_SB_Y2 = _SB_Y1 + _AB_D  # south building 1 north face = -1432
-_SB2_Y1 = _SB_Y2  # south building 2 south face = -1432
-_SB2_Y2 = _SB2_Y1 + _AB_D  # south building 2 north face = -832
+RH_FLOORS = 3
+RH_H = RH_FLOORS * FLOOR_H  # 384 units tall
+RH_DEPTH = 600  # building N-S depth (doubled)
+RH_PIER_X = min(PXS)  # = -1100
+RH_X2 = RH_PIER_X + P_HW + 32  # east face of building  = -1031
+RH_X1 = RH_X2 - 576  # west face of building (doubled width)
+RH_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
+RH_NORTH_Y1 = RH_NORTH_Y2 - RH_DEPTH  # north building south face
+RH_SOUTH1_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
+RH_SOUTH1_Y2 = RH_SOUTH1_Y1 + RH_DEPTH  # south building 1 north face = -1432
+RH_SOUTH2_Y1 = RH_SOUTH1_Y2  # south building 2 south face = -1432
+RH_SOUTH2_Y2 = RH_SOUTH2_Y1 + RH_DEPTH  # south building 2 north face = -832
 
 # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
-_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
+RH_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
 # Interpolate ramp top-Z at the building's west face so the slope is continuous
-_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (_AB_X1 - BRX1) / (_EMB_X2 - BRX1))
+_emb_zt_at_ab_x1 = int(DZ2 + (FZ2 - DZ2) * (RH_X1 - BRX1) / (RH_EMB_X2 - BRX1))
 # South segment — west of south buildings (through buildings' Y range)
 BRUSHES.append(
     ramp_slab(
         BRX1,
-        _AB_X1,
+        RH_X1,
         _ROAD_Y1,
-        _SB2_Y2,
+        RH_SOUTH2_Y2,
         FZ1,
         FZ1,
         DZ2,
@@ -1075,16 +1075,25 @@ BRUSHES.append(
 # South segment — full width between south buildings and north building
 BRUSHES.append(
     ramp_slab(
-        BRX1, _EMB_X2, _SB2_Y2, _NB_Y1, FZ1, FZ1, DZ2, FZ2, TEX_GROUND, tt=TEX_GROUND
+        BRX1,
+        RH_EMB_X2,
+        RH_SOUTH2_Y2,
+        RH_NORTH_Y1,
+        FZ1,
+        FZ1,
+        DZ2,
+        FZ2,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 # Middle segment — only west of north building
 BRUSHES.append(
     ramp_slab(
         BRX1,
-        _AB_X1,
-        _NB_Y1,
-        _NB_Y2,
+        RH_X1,
+        RH_NORTH_Y1,
+        RH_NORTH_Y2,
         FZ1,
         FZ1,
         DZ2,
@@ -1096,7 +1105,16 @@ BRUSHES.append(
 # North of north building — restore original ramp
 BRUSHES.append(
     ramp_slab(
-        BRX1, _EMB_X2, _NB_Y2, _ROAD_Y2, FZ1, FZ1, DZ2, FZ2, TEX_GROUND, tt=TEX_GROUND
+        BRX1,
+        RH_EMB_X2,
+        RH_NORTH_Y2,
+        _ROAD_Y2,
+        FZ1,
+        FZ1,
+        DZ2,
+        FZ2,
+        TEX_GROUND,
+        tt=TEX_GROUND,
     )
 )
 
@@ -1112,13 +1130,13 @@ _DOOR_H = (
 # (Building dimensions already defined above)
 # South brick wall — from bridge pier south face to nearest south building, with door gap
 # Door centered 160 units north of the building (closer to buildings)
-_s_door_y = _SB2_Y2 + _DOOR_OFF  # door centre Y
+_s_door_y = RH_SOUTH2_Y2 + _DOOR_OFF  # door centre Y
 BRUSHES.append(
     box(
-        _ABUTMENT_X - P_HW,
-        _SB2_Y2,
+        RH_PIER_X - P_HW,
+        RH_SOUTH2_Y2,
         FZ2,
-        _ABUTMENT_X + P_HW,
+        RH_PIER_X + P_HW,
         _s_door_y - _DOOR_W // 2,
         DZ2,
         "city2_1",
@@ -1126,10 +1144,10 @@ BRUSHES.append(
 )
 BRUSHES.append(
     box(
-        _ABUTMENT_X - P_HW,
+        RH_PIER_X - P_HW,
         _s_door_y + _DOOR_W // 2,
         FZ2,
-        _ABUTMENT_X + P_HW,
+        RH_PIER_X + P_HW,
         _SOUTH_WALL_Y2,
         DZ2,
         "city2_1",
@@ -1137,10 +1155,10 @@ BRUSHES.append(
 )
 BRUSHES.append(
     box(
-        _ABUTMENT_X - P_HW,
+        RH_PIER_X - P_HW,
         _s_door_y - _DOOR_W // 2,
         FZ2 + _DOOR_H,
-        _ABUTMENT_X + P_HW,
+        RH_PIER_X + P_HW,
         _s_door_y + _DOOR_W // 2,
         DZ2,
         "city2_1",
@@ -1222,36 +1240,36 @@ def _abutment_bldg_windows(bx1, bx2, by1, by2, bz1, floors, skip_n=False, skip_s
 
 
 # ── North building — hollow shell with windows, entrance, and gable roof ───────
-_NB_WT = 16  # wall thickness
-_NB_WW = 36  # window half-width
-_NB_WH = 44  # window half-height
-_NB_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
-_NB_ENT_H = 100  # entrance height
+RH_WALL = 16  # wall thickness
+RH_WIN_HW = 36  # window half-width
+RH_WIN_HH = 44  # window half-height
+RH_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
+RH_ENT_H = 100  # entrance height
 
-_nb_cx = (_AB_X1 + _AB_X2) // 2  # building X center
-_nb_cy = (_NB_Y1 + _NB_Y2) // 2  # building Y center (gable ridge line)
+RH_CX = (RH_X1 + RH_X2) // 2  # building X center
+RH_NORTH_CY = (RH_NORTH_Y1 + RH_NORTH_Y2) // 2  # building Y center (gable ridge line)
 
 # Window X centers on south/north face: 2 left + 2 right of the entrance gap
-_nb_wx = [_AB_X1 + (_nb_cx - _NB_ENT_HW - _AB_X1) * k // 3 for k in [1, 2]] + [
-    (_nb_cx + _NB_ENT_HW) + (_AB_X2 - _nb_cx - _NB_ENT_HW) * k // 3 for k in [1, 2]
+_rh_wx = [RH_X1 + (RH_CX - RH_ENT_HW - RH_X1) * k // 3 for k in [1, 2]] + [
+    (RH_CX + RH_ENT_HW) + (RH_X2 - RH_CX - RH_ENT_HW) * k // 3 for k in [1, 2]
 ]
 # Window Y centers on east/west face: 3 evenly spaced
-_nb_wy = [_NB_Y1 + (_NB_Y2 - _NB_Y1) * k // 4 for k in [1, 2, 3]]
+_rh_wy = [RH_NORTH_Y1 + (RH_NORTH_Y2 - RH_NORTH_Y1) * k // 4 for k in [1, 2, 3]]
 
-_nb_wz_lo = (FLOOR_H - _NB_WH * 2) // 2  # window sill offset within a floor
-_nb_wz_hi = _nb_wz_lo + _NB_WH * 2  # window head offset within a floor
+_rh_wz_lo = (FLOOR_H - RH_WIN_HH * 2) // 2  # window sill offset within a floor
+_rh_wz_hi = _rh_wz_lo + RH_WIN_HH * 2  # window head offset within a floor
 
 
 def _nb_wins_xz(wx_list):
     """Window openings (all floors) for X-facing wall (south/north)."""
     return [
         (
-            wx - _NB_WW,
-            FZ2 + fl * FLOOR_H + _nb_wz_lo,
-            wx + _NB_WW,
-            FZ2 + fl * FLOOR_H + _nb_wz_hi,
+            wx - RH_WIN_HW,
+            FZ2 + fl * FLOOR_H + _rh_wz_lo,
+            wx + RH_WIN_HW,
+            FZ2 + fl * FLOOR_H + _rh_wz_hi,
         )
-        for fl in range(_AB_FLOORS)
+        for fl in range(RH_FLOORS)
         for wx in wx_list
     ]
 
@@ -1260,119 +1278,127 @@ def _nb_wins_yz(wy_list):
     """Window openings (all floors) for Y-facing wall (east/west)."""
     return [
         (
-            wy - _NB_WW,
-            FZ2 + fl * FLOOR_H + _nb_wz_lo,
-            wy + _NB_WW,
-            FZ2 + fl * FLOOR_H + _nb_wz_hi,
+            wy - RH_WIN_HW,
+            FZ2 + fl * FLOOR_H + _rh_wz_lo,
+            wy + RH_WIN_HW,
+            FZ2 + fl * FLOOR_H + _rh_wz_hi,
         )
-        for fl in range(_AB_FLOORS)
+        for fl in range(RH_FLOORS)
         for wy in wy_list
     ]
 
 
 # South wall (faces bridge) — windows + ground-level entrance
-_nb_s_openings = _nb_wins_xz(_nb_wx) + [
-    (_nb_cx - _NB_ENT_HW, FZ2, _nb_cx + _NB_ENT_HW, FZ2 + _NB_ENT_H)
+_rh_s_openings = _nb_wins_xz(_rh_wx) + [
+    (RH_CX - RH_ENT_HW, FZ2, RH_CX + RH_ENT_HW, FZ2 + RH_ENT_H)
 ]
 BRUSHES.extend(
     layered_wall(
-        _AB_X1,
-        _NB_Y1,
+        RH_X1,
+        RH_NORTH_Y1,
         FZ2,
-        _AB_X2,
-        _NB_Y1 + _NB_WT,
-        FZ2 + _AB_H,
-        _nb_s_openings,
+        RH_X2,
+        RH_NORTH_Y1 + RH_WALL,
+        FZ2 + RH_H,
+        _rh_s_openings,
         "city2_1",
     )
 )
 # North wall — windows only
 BRUSHES.extend(
     layered_wall(
-        _AB_X1,
-        _NB_Y2 - _NB_WT,
+        RH_X1,
+        RH_NORTH_Y2 - RH_WALL,
         FZ2,
-        _AB_X2,
-        _NB_Y2,
-        FZ2 + _AB_H,
-        _nb_wins_xz(_nb_wx),
+        RH_X2,
+        RH_NORTH_Y2,
+        FZ2 + RH_H,
+        _nb_wins_xz(_rh_wx),
         "city2_1",
     )
 )
 # East wall — windows + ground-level entrance (matches south buildings)
-_nb_e_openings = _nb_wins_yz(_nb_wy) + [
-    (_nb_cy - _NB_ENT_HW, FZ2, _nb_cy + _NB_ENT_HW, FZ2 + _NB_ENT_H)
+_rh_e_openings = _nb_wins_yz(_rh_wy) + [
+    (RH_NORTH_CY - RH_ENT_HW, FZ2, RH_NORTH_CY + RH_ENT_HW, FZ2 + RH_ENT_H)
 ]
 BRUSHES.extend(
     layered_wall_y(
-        _NB_Y1 + _NB_WT,
-        _AB_X2 - _NB_WT,
+        RH_NORTH_Y1 + RH_WALL,
+        RH_X2 - RH_WALL,
         FZ2,
-        _NB_Y2 - _NB_WT,
-        _AB_X2,
-        FZ2 + _AB_H,
-        _nb_e_openings,
+        RH_NORTH_Y2 - RH_WALL,
+        RH_X2,
+        FZ2 + RH_H,
+        _rh_e_openings,
         "city2_1",
     )
 )
 # West wall — windows
 BRUSHES.extend(
     layered_wall_y(
-        _NB_Y1 + _NB_WT,
-        _AB_X1,
+        RH_NORTH_Y1 + RH_WALL,
+        RH_X1,
         FZ2,
-        _NB_Y2 - _NB_WT,
-        _AB_X1 + _NB_WT,
-        FZ2 + _AB_H,
-        _nb_wins_yz(_nb_wy),
+        RH_NORTH_Y2 - RH_WALL,
+        RH_X1 + RH_WALL,
+        FZ2 + RH_H,
+        _nb_wins_yz(_rh_wy),
         "city2_1",
     )
 )
 # Ceiling slab
 BRUSHES.append(
-    box(_AB_X1, _NB_Y1, FZ2 + _AB_H, _AB_X2, _NB_Y2, FZ2 + _AB_H + _NB_WT, "city2_1")
+    box(
+        RH_X1,
+        RH_NORTH_Y1,
+        FZ2 + RH_H,
+        RH_X2,
+        RH_NORTH_Y2,
+        FZ2 + RH_H + RH_WALL,
+        "city2_1",
+    )
 )
 
 # Gable (A-frame) roof — ridge runs N-S at building X center, FLOOR_H above ceiling
-_nb_eave_z = FZ2 + _AB_H + _NB_WT  # top of ceiling slab = eave level
-_nb_ridge_z = _nb_eave_z + FLOOR_H  # ridge apex
-_nb_slab_t = 16  # roof slab thickness at eave
+RH_EAVE_Z = FZ2 + RH_H + RH_WALL  # top of ceiling slab = eave level
+RH_RIDGE_Z = RH_EAVE_Z + FLOOR_H  # ridge apex
+_rh_slab_t = 16  # roof slab thickness at eave
 # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
 BRUSHES.append(
     ramp_slab(
-        _AB_X1,
-        _nb_cx,
-        _NB_Y1,
-        _NB_Y2,
-        _nb_eave_z,
-        _nb_eave_z,
-        _nb_eave_z + _nb_slab_t,
-        _nb_ridge_z,
+        RH_X1,
+        RH_CX,
+        RH_NORTH_Y1,
+        RH_NORTH_Y2,
+        RH_EAVE_Z,
+        RH_EAVE_Z,
+        RH_EAVE_Z + _rh_slab_t,
+        RH_RIDGE_Z,
         TEX_ROOF,
     )
 )
 # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
 BRUSHES.append(
     ramp_slab(
-        _nb_cx,
-        _AB_X2,
-        _NB_Y1,
-        _NB_Y2,
-        _nb_eave_z,
-        _nb_eave_z,
-        _nb_ridge_z,
-        _nb_eave_z + _nb_slab_t,
+        RH_CX,
+        RH_X2,
+        RH_NORTH_Y1,
+        RH_NORTH_Y2,
+        RH_EAVE_Z,
+        RH_EAVE_Z,
+        RH_RIDGE_Z,
+        RH_EAVE_Z + _rh_slab_t,
         TEX_ROOF,
     )
 )
 # Interior floor — flat ground surface inside the building (covers the hill void)
 BRUSHES.append(
     box(
-        _AB_X1 + _NB_WT,
-        _NB_Y1 + _NB_WT,
+        RH_X1 + RH_WALL,
+        RH_NORTH_Y1 + RH_WALL,
         FZ1,
-        _AB_X2 - _NB_WT,
-        _NB_Y2 - _NB_WT,
+        RH_X2 - RH_WALL,
+        RH_NORTH_Y2 - RH_WALL,
         FZ2,
         TEX_GROUND,
         tt=TEX_ROAD,
@@ -1381,13 +1407,13 @@ BRUSHES.append(
 
 
 # ── Two south buildings — exact copies of north building, stacked N-S ──────────
-# Same X footprint (_AB_X1.._AB_X2), entrance on east face (faces Charles Street).
+# Same X footprint (RH_X1..RH_X2), entrance on east face (faces Charles Street).
 
 
 def _make_south_bldg(by1, by2):
     """Build the south abutment building geometry (walls, roof, windows, entrance)
     between Y positions by1 (south) and by2 (north)."""
-    bx1, bx2 = _AB_X1, _AB_X2
+    bx1, bx2 = RH_X1, RH_X2
     cx = (bx1 + bx2) // 2
     ent_hw, ent_h = 48, 100
     wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
@@ -1398,24 +1424,24 @@ def _make_south_bldg(by1, by2):
     def wxz():
         return [
             (
-                wx - _NB_WW,
-                FZ2 + fl * FLOOR_H + _nb_wz_lo,
-                wx + _NB_WW,
-                FZ2 + fl * FLOOR_H + _nb_wz_hi,
+                wx - RH_WIN_HW,
+                FZ2 + fl * FLOOR_H + _rh_wz_lo,
+                wx + RH_WIN_HW,
+                FZ2 + fl * FLOOR_H + _rh_wz_hi,
             )
-            for fl in range(_AB_FLOORS)
+            for fl in range(RH_FLOORS)
             for wx in wx_list
         ]
 
     def wyz():
         return [
             (
-                wy - _NB_WW,
-                FZ2 + fl * FLOOR_H + _nb_wz_lo,
-                wy + _NB_WW,
-                FZ2 + fl * FLOOR_H + _nb_wz_hi,
+                wy - RH_WIN_HW,
+                FZ2 + fl * FLOOR_H + _rh_wz_lo,
+                wy + RH_WIN_HW,
+                FZ2 + fl * FLOOR_H + _rh_wz_hi,
             )
-            for fl in range(_AB_FLOORS)
+            for fl in range(RH_FLOORS)
             for wy in wy_list
         ]
 
@@ -1423,30 +1449,30 @@ def _make_south_bldg(by1, by2):
     # Interior floor
     brushes.append(
         box(
-            bx1 + _NB_WT,
-            by1 + _NB_WT,
+            bx1 + RH_WALL,
+            by1 + RH_WALL,
             FZ1,
-            bx2 - _NB_WT,
-            by2 - _NB_WT,
+            bx2 - RH_WALL,
+            by2 - RH_WALL,
             FZ2,
             TEX_GROUND,
             tt=TEX_ROAD,
         )
     )
     brushes.extend(
-        layered_wall(bx1, by1, FZ2, bx2, by1 + _NB_WT, FZ2 + _AB_H, wxz(), "city2_1")
+        layered_wall(bx1, by1, FZ2, bx2, by1 + RH_WALL, FZ2 + RH_H, wxz(), "city2_1")
     )
     brushes.extend(
-        layered_wall(bx1, by2 - _NB_WT, FZ2, bx2, by2, FZ2 + _AB_H, wxz(), "city2_1")
+        layered_wall(bx1, by2 - RH_WALL, FZ2, bx2, by2, FZ2 + RH_H, wxz(), "city2_1")
     )
     brushes.extend(
         layered_wall_y(
-            by1 + _NB_WT,
+            by1 + RH_WALL,
             bx1,
             FZ2,
-            by2 - _NB_WT,
-            bx1 + _NB_WT,
-            FZ2 + _AB_H,
+            by2 - RH_WALL,
+            bx1 + RH_WALL,
+            FZ2 + RH_H,
             wyz(),
             "city2_1",
         )
@@ -1455,20 +1481,18 @@ def _make_south_bldg(by1, by2):
     east_openings = wyz() + [(cy - ent_hw, FZ2, cy + ent_hw, FZ2 + ent_h)]
     brushes.extend(
         layered_wall_y(
-            by1 + _NB_WT,
-            bx2 - _NB_WT,
+            by1 + RH_WALL,
+            bx2 - RH_WALL,
             FZ2,
-            by2 - _NB_WT,
+            by2 - RH_WALL,
             bx2,
-            FZ2 + _AB_H,
+            FZ2 + RH_H,
             east_openings,
             "city2_1",
         )
     )
-    brushes.append(
-        box(bx1, by1, FZ2 + _AB_H, bx2, by2, FZ2 + _AB_H + _NB_WT, "city2_1")
-    )
-    eave_z, ridge_z, slab_t = FZ2 + _AB_H + _NB_WT, FZ2 + _AB_H + _NB_WT + FLOOR_H, 16
+    brushes.append(box(bx1, by1, FZ2 + RH_H, bx2, by2, FZ2 + RH_H + RH_WALL, "city2_1"))
+    eave_z, ridge_z, slab_t = FZ2 + RH_H + RH_WALL, FZ2 + RH_H + RH_WALL + FLOOR_H, 16
     brushes.append(
         ramp_slab(bx1, cx, by1, by2, eave_z, eave_z, eave_z + slab_t, ridge_z, TEX_ROOF)
     )
@@ -1478,11 +1502,11 @@ def _make_south_bldg(by1, by2):
     return brushes
 
 
-BRUSHES.extend(_make_south_bldg(_SB_Y1, _SB_Y2))
-BRUSHES.extend(_make_south_bldg(_SB2_Y1, _SB2_Y2))
+BRUSHES.extend(_make_south_bldg(RH_SOUTH1_Y1, RH_SOUTH1_Y2))
+BRUSHES.extend(_make_south_bldg(RH_SOUTH2_Y1, RH_SOUTH2_Y2))
 
 # ── Iron fence along east face of west buildings ──────────────────────────
-_FNC_X1 = _AB_X2 + 96  # well clear of building face
+_FNC_X1 = RH_X2 + 96  # well clear of building face
 _FNC_X2 = _FNC_X1 + 2  # picket/rail thickness
 _FNC_H = 96  # fence height
 _FNC_SPACING = 16  # picket center-to-center
@@ -3320,7 +3344,7 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east",
-        origin=f"{(_AB_X1 + _AB_X2) // 2} {(_NB_Y1 + _NB_Y2) // 2} {int(_nb_ridge_z + 40)}",
+        origin=f"{(RH_X1 + RH_X2) // 2} {(RH_NORTH_Y1 + RH_NORTH_Y2) // 2} {int(RH_RIDGE_Z + 40)}",
         angle="270",  # facing south toward the bridge
     )
 )
@@ -3453,10 +3477,10 @@ ENTITIES.append(
 )
 
 _bcy = (KH_Y1 + KH_Y2) // 2  # Knott Hall center Y = -528
-_nb_cy_dm = (_NB_Y1 + _NB_Y2) // 2  # north building center Y
-_nb_cx_dm = (_AB_X1 + _AB_X2) // 2  # west buildings center X
-_sb1_cy = (_SB_Y1 + _SB_Y2) // 2  # south building 1 center Y
-_sb2_cy = (_SB2_Y1 + _SB2_Y2) // 2  # south building 2 center Y
+RH_NORTH_CY = (RH_NORTH_Y1 + RH_NORTH_Y2) // 2  # north building center Y
+RH_CX = (RH_X1 + RH_X2) // 2  # west buildings center X
+RH_SOUTH1_CY = (RH_SOUTH1_Y1 + RH_SOUTH1_Y2) // 2  # south building 1 center Y
+RH_SOUTH2_CY = (RH_SOUTH2_Y1 + RH_SOUTH2_Y2) // 2  # south building 2 center Y
 
 # ── Deathmatch spawns — spread across all areas ──────────────────────────
 for pos, angle in [
@@ -3479,15 +3503,15 @@ for pos, angle in [
     # Charles Street
     ((0, 300, ROAD_Z + 24), 180),
     ((0, -400, ROAD_Z + 24), 0),
-    ((0, _sb1_cy, ROAD_Z + 24), 270),
+    ((0, RH_SOUTH1_CY, ROAD_Z + 24), 270),
     # North building interior
-    ((_nb_cx_dm, _nb_cy_dm, FZ2 + 40), 90),
-    ((_nb_cx_dm, _nb_cy_dm, FZ2 + FLOOR_H + 40), 90),
+    ((RH_CX, RH_NORTH_CY, FZ2 + 40), 90),
+    ((RH_CX, RH_NORTH_CY, FZ2 + FLOOR_H + 40), 90),
     # North building roof ridge
-    ((_nb_cx_dm, _nb_cy_dm, int(_nb_ridge_z + 40)), 90),
+    ((RH_CX, RH_NORTH_CY, int(RH_RIDGE_Z + 40)), 90),
     # South buildings interiors
-    ((_nb_cx_dm, _sb1_cy, FZ2 + 40), 90),
-    ((_nb_cx_dm, _sb2_cy, FZ2 + 40), 90),
+    ((RH_CX, RH_SOUTH1_CY, FZ2 + 40), 90),
+    ((RH_CX, RH_SOUTH2_CY, FZ2 + 40), 90),
     # Ground east/west of bridge
     ((800, 0, ROAD_Z + 24), 270),
     ((-800, 0, ROAD_Z + 24), 90),
@@ -3516,7 +3540,7 @@ ENTITIES.append(
     ent("weapon_supershotgun", origin=f"{KH_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
 )
 ENTITIES.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
-ENTITIES.append(ent("weapon_supershotgun", origin=f"{_nb_cx_dm} {_sb1_cy} {FZ2 + 40}"))
+ENTITIES.append(ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FZ2 + 40}"))
 
 # Grenade launcher — Knott Hall floor 2, south building 2
 ENTITIES.append(
@@ -3526,7 +3550,7 @@ ENTITIES.append(
     )
 )
 ENTITIES.append(
-    ent("weapon_grenadelauncher", origin=f"{_nb_cx_dm} {_sb2_cy} {FZ2 + 40}")
+    ent("weapon_grenadelauncher", origin=f"{RH_CX} {RH_SOUTH2_CY} {FZ2 + 40}")
 )
 
 # Nailgun — bridge approaches, Charles Street
@@ -3550,7 +3574,7 @@ for _kf in range(1, KH_FLOORS):
         )
     )
 ENTITIES.append(ent("item_shells", origin=f"0 -300 {ROAD_Z + 24}"))
-ENTITIES.append(ent("item_shells", origin=f"{_nb_cx_dm} {_nb_cy_dm} {FZ2 + 40}"))
+ENTITIES.append(ent("item_shells", origin=f"{RH_CX} {RH_NORTH_CY} {FZ2 + 40}"))
 ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 
@@ -3563,14 +3587,14 @@ ENTITIES.append(
 )
 ENTITIES.append(ent("item_health", origin=f"0 400 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_health", origin=f"0 -600 {ROAD_Z + 24}"))
-ENTITIES.append(ent("item_health", origin=f"{_nb_cx_dm} {_sb2_cy} {FZ2 + 40}"))
+ENTITIES.append(ent("item_health", origin=f"{RH_CX} {RH_SOUTH2_CY} {FZ2 + 40}"))
 # Armor — contested locations
 ENTITIES.append(ent("item_armor1", origin=f"-200 0 {DECK_Z}"))  # yellow armor on bridge
 ENTITIES.append(
     ent("item_armor2", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 4 + 40}")
 )  # red armor top floor
 ENTITIES.append(
-    ent("item_armorInv", origin=f"{_nb_cx_dm} {_nb_cy_dm} {int(_nb_ridge_z + 40)}")
+    ent("item_armorInv", origin=f"{RH_CX} {RH_NORTH_CY} {int(RH_RIDGE_Z + 40)}")
 )  # mega armor on roof ridge (teleport reward)
 
 # Torch lights on pillar caps
@@ -3663,10 +3687,14 @@ ENTITIES.append(
 )
 
 # Interior lights for the three campus buildings (north + 2 south)
-_bldg_light_x = (_AB_X1 + _AB_X2) // 2
-for _bly1, _bly2 in [(_NB_Y1, _NB_Y2), (_SB_Y1, _SB_Y2), (_SB2_Y1, _SB2_Y2)]:
+_bldg_light_x = (RH_X1 + RH_X2) // 2
+for _bly1, _bly2 in [
+    (RH_NORTH_Y1, RH_NORTH_Y2),
+    (RH_SOUTH1_Y1, RH_SOUTH1_Y2),
+    (RH_SOUTH2_Y1, RH_SOUTH2_Y2),
+]:
     _bly = (_bly1 + _bly2) // 2
-    for _bfl in range(_AB_FLOORS):
+    for _bfl in range(RH_FLOORS):
         _blz = FZ2 + _bfl * FLOOR_H + FLOOR_H // 2
         ENTITIES.append(
             ent("light", origin=f"{_bldg_light_x} {_bly} {_blz}", light="200")
