@@ -83,7 +83,7 @@ PB_PIL_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
 PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
-PB_PIL_BASE_RAMP_H = 160  # high side of ramped plinth on outer piers (~10 ft)
+PB_PIL_BASE_RAMP_H = 40  # high side of ramped plinth — subtle incline, still jumpable
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
