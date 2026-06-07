@@ -871,100 +871,104 @@ BRUSHES.append(
 )
 
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
-_EPL_HW = 22  # pillar half-width (was 30, ×0.75)
-_EPL_OFFSET = _WALK_W + 20
-_EPL_X1 = PB_ARCH_X[2] - _EPL_HW  # align pillar centre with closest bridge pier (X=525)
-_EPL_X2 = PB_ARCH_X[2] + _EPL_HW
-_EPL_ZB = FZ2
-_EPL_POST_H = 81  # post height (was 108, ×0.75)
-_EPL_CAP_OVH = 1
-_EPL_CAP_H = 3
+ENNIS_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
+ENNIS_PIL_OFFSET = _WALK_W + 20
+ENNIS_PIL_X1 = (
+    PB_ARCH_X[2] - ENNIS_PIL_HW
+)  # align pillar centre with closest bridge pier (X=525)
+ENNIS_PIL_X2 = PB_ARCH_X[2] + ENNIS_PIL_HW
+ENNIS_PIL_ZB = FZ2
+ENNIS_PIL_POST_H = 81  # post height (was 108, ×0.75)
+ENNIS_PIL_CAP_OVH = 1
+ENNIS_PIL_CAP_H = 3
 
 # Bell shape — cap divider + single tapered step (no flare, no tip):
 #      |  |      step 2: hw=16, h=27
 #  ====+==+====  cap:    hw=23, h=1
 #      |  |      post:   hw=22, h=81
-_EPL_BELL2_HW = 19  # tapered top section half-width (wider than before, less than post)
-_EPL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
+ENNIS_PIL_BELL2_HW = (
+    19  # tapered top section half-width (wider than before, less than post)
+)
+ENNIS_PIL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
 
-for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
-    _epl_cx = _EPL_X1 + _EPL_HW  # pillar centre X
-    _cap_hw = _EPL_HW + _EPL_CAP_OVH  # = 40
+for _epy in (_ENNIS_Y - _ENNIS_HW - ENNIS_PIL_HW, _ENNIS_Y + _ENNIS_HW + ENNIS_PIL_HW):
+    _ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW  # pillar centre X
+    _cap_hw = ENNIS_PIL_HW + ENNIS_PIL_CAP_OVH  # = 40
 
     # Post
-    _base_h = _EPL_POST_H // 3  # bottom base = lower third of post
+    _base_h = ENNIS_PIL_POST_H // 3  # bottom base = lower third of post
     # Bottom base — same width as cap, gives plinth effect
     BRUSHES.append(
         box(
-            _epl_cx - _cap_hw,
+            _ennis_pil_cx - _cap_hw,
             _epy - _cap_hw,
-            _EPL_ZB,
-            _epl_cx + _cap_hw,
+            ENNIS_PIL_ZB,
+            _ennis_pil_cx + _cap_hw,
             _epy + _cap_hw,
-            _EPL_ZB + _base_h,
+            ENNIS_PIL_ZB + _base_h,
             TEX_WHITE_STONE,
         )
     )
     # Upper post — narrower, sits on bottom base
     BRUSHES.append(
         box(
-            _EPL_X1,
-            _epy - _EPL_HW,
-            _EPL_ZB + _base_h,
-            _EPL_X2,
-            _epy + _EPL_HW,
-            _EPL_ZB + _EPL_POST_H,
+            ENNIS_PIL_X1,
+            _epy - ENNIS_PIL_HW,
+            ENNIS_PIL_ZB + _base_h,
+            ENNIS_PIL_X2,
+            _epy + ENNIS_PIL_HW,
+            ENNIS_PIL_ZB + ENNIS_PIL_POST_H,
             TEX_WHITE_STONE,
         )
     )
     # Thin cap divider — overhangs post on all sides
-    _cap_z = _EPL_ZB + _EPL_POST_H
+    _cap_z = ENNIS_PIL_ZB + ENNIS_PIL_POST_H
     BRUSHES.append(
         box(
-            _epl_cx - _cap_hw,
+            _ennis_pil_cx - _cap_hw,
             _epy - _cap_hw,
             _cap_z,
-            _epl_cx + _cap_hw,
+            _ennis_pil_cx + _cap_hw,
             _epy + _cap_hw,
-            _cap_z + _EPL_CAP_H,
+            _cap_z + ENNIS_PIL_CAP_H,
             TEX_WHITE_STONE,
         )
     )
     # Bell step 2 — tapered top, narrower than post
-    _b2_z = _cap_z + _EPL_CAP_H
+    _b2_z = _cap_z + ENNIS_PIL_CAP_H
     BRUSHES.append(
         box(
-            _epl_cx - _EPL_BELL2_HW,
-            _epy - _EPL_BELL2_HW,
+            _ennis_pil_cx - ENNIS_PIL_BELL2_HW,
+            _epy - ENNIS_PIL_BELL2_HW,
             _b2_z,
-            _epl_cx + _EPL_BELL2_HW,
-            _epy + _EPL_BELL2_HW,
-            _b2_z + _EPL_BELL2_H,
+            _ennis_pil_cx + ENNIS_PIL_BELL2_HW,
+            _epy + ENNIS_PIL_BELL2_HW,
+            _b2_z + ENNIS_PIL_BELL2_H,
             TEX_WHITE_STONE,
         )
     )
     # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
-    _epl_apex = _b2_z + _EPL_BELL2_H
-    _epl_cx = _EPL_X1 + _EPL_HW
+    _ennis_pil_apex = _b2_z + ENNIS_PIL_BELL2_H
+    _ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
     BRUSHES.append(
         box(
-            _epl_cx - 3,
+            _ennis_pil_cx - 3,
             _epy - 3,
-            _epl_apex,
-            _epl_cx + 3,
+            _ennis_pil_apex,
+            _ennis_pil_cx + 3,
             _epy + 3,
-            _epl_apex + 16,
+            _ennis_pil_apex + 16,
             TEX_CEMENT,
         )
     )
     BRUSHES.append(
         box(
-            _epl_cx - 5,
+            _ennis_pil_cx - 5,
             _epy - 5,
-            _epl_apex + 16,
-            _epl_cx + 5,
+            _ennis_pil_apex + 16,
+            _ennis_pil_cx + 5,
             _epy + 5,
-            _epl_apex + 20,
+            _ennis_pil_apex + 20,
             TEX_BRICK,
         )
     )
@@ -974,9 +978,11 @@ for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
 # Starts with a small grass gap east of the sidewalk.
 _BW_T = 8  # wall thickness
 _BW_H = 48  # wall height ≈ 3 ft
-_BW_NY = _ENNIS_Y + _ENNIS_HW + _EPL_HW * 2  # south face Y (flush with north pillar)
+_BW_NY = (
+    _ENNIS_Y + _ENNIS_HW + ENNIS_PIL_HW * 2
+)  # south face Y (flush with north pillar)
 _BW_X1 = ROAD_X2 + _WALK_W + 48  # ~48u east of sidewalk (more grass)
-_BW_EX2 = PB_ARCH_X[2] + _EPL_HW + 80  # E-W wall extends past stone pillar
+_BW_EX2 = PB_ARCH_X[2] + ENNIS_PIL_HW + 80  # E-W wall extends past stone pillar
 _BW_NY2 = _BW_NY + 200  # north segment length
 # East-running segment (south base of L)
 BRUSHES.append(
@@ -3677,14 +3683,19 @@ for _lx in _LAMP_POST_XS:
         )
 
 # Ennis entrance pillar torches — flame above brick cup on each stone pillar
-_epl_flame_z = _EPL_ZB + _EPL_POST_H + _EPL_CAP_H + _EPL_BELL2_H + 20
-_epl_cx = _EPL_X1 + _EPL_HW
-for _epy in (_ENNIS_Y - _ENNIS_HW - _EPL_HW, _ENNIS_Y + _ENNIS_HW + _EPL_HW):
+_ennis_pil_flame_z = (
+    ENNIS_PIL_ZB + ENNIS_PIL_POST_H + ENNIS_PIL_CAP_H + ENNIS_PIL_BELL2_H + 20
+)
+_ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
+for _epy in (_ENNIS_Y - _ENNIS_HW - ENNIS_PIL_HW, _ENNIS_Y + _ENNIS_HW + ENNIS_PIL_HW):
     ENTITIES.append(
-        ent("light", origin=f"{_epl_cx} {_epy} {_epl_flame_z}", light="300")
+        ent("light", origin=f"{_ennis_pil_cx} {_epy} {_ennis_pil_flame_z}", light="300")
     )
     ENTITIES.append(
-        ent("light_flame_large_yellow", origin=f"{_epl_cx} {_epy} {_epl_flame_z + 4}")
+        ent(
+            "light_flame_large_yellow",
+            origin=f"{_ennis_pil_cx} {_epy} {_ennis_pil_flame_z + 4}",
+        )
     )
 
 # Under-bridge amber pendant lights — flicker style, hang below deck
