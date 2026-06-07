@@ -1941,8 +1941,14 @@ if SHOW_SUPPORTS:
             a_rout = int(pdeck) - FZ2 - 16
             a_stilt = 0
 
-        # Pin outer pier wall to exactly match the pillar tops above deck
-        _arch_overhang = max(0, PB_Y2 + PB_PIL_OVERHANG - a_rout)
+        # Pin outer pier wall to exactly match the pillar tops above deck.
+        # Cap a_rout so the arch ring never extends past PB_Y2 + PB_PIL_OVERHANG;
+        # if rout was trimmed, recompute stilt so the arch crown still meets the deck.
+        _max_rout = PB_Y2 + PB_PIL_OVERHANG
+        if a_rout > _max_rout:
+            a_rout = _max_rout
+            a_stilt = int(pdeck) - a_rout - FZ2 - 16
+        _arch_overhang = 0  # rout already reaches exactly the desired extent
 
         # Ramped plinth: outer piers ramp up on their outward face so players
         # can run up from outside. East piers: high east side; west piers: high west side.
