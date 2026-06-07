@@ -56,10 +56,17 @@ ARCH_SEGS = 32  # segments approximating the wider curve
 
 
 def arch_z(x):
-    """Z offset above flat datum for parabolic arch at x."""
-    xc = (PB_X1 + PB_X2) / 2.0
-    half = (PB_X2 - PB_X1) / 2.0
-    return PB_ARCH_RISE * max(0.0, 1.0 - ((x - xc) / half) ** 2)
+    """Z offset above flat datum for parabolic arch at x.
+
+    Crown is pinned at X=0 (Charles Street centreline). Uses an asymmetric
+    piecewise parabola so arch_z=0 at both span endpoints (PB_X1, PB_X2)
+    and peaks at PB_ARCH_RISE over the road centre.
+    """
+    if x <= 0:
+        half = abs(float(PB_X1))  # west half-span
+    else:
+        half = float(PB_X2)  # east half-span
+    return PB_ARCH_RISE * max(0.0, 1.0 - (x / half) ** 2)
 
 
 def dtop(x):
