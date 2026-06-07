@@ -150,10 +150,10 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `KH_FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `PB_ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
+| `PB_ARCH_X[]` | Pier X positions; `PB_ARCH_X[0]` pins the abutment building X |
 | `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
 | `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
-| `PB_ARCH_X[]` | Pier X positions; `PB_ARCH_X[0]` pins the abutment building X |
 | `RH_DEPTH` | Residence hall N–S depth; shared by all four RH buildings — changing it shifts the south building stack |
 | `RH_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
 | `RH_FLOORS` | Residence hall floor count; shared by all four RH buildings |
