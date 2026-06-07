@@ -152,7 +152,7 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `DZ1`, `DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`DZ2 + ARCH_STILT`), walkway Z |
 | `ARCH_RISE` | Deck crown height; shifts pier heights per X, deck spawn Z, parapet-top Z |
 | `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
-| `BLDG_X1/X2`, `BLDG_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
+| `KH_X1/X2`, `KH_Y1/Y2` | Knott Hall footprint; moving it requires updating walkway, back road, hill terrain, east-arch teleport destination |
 | `WORLD_X1/X2` | Derives `BRX1`; resizing the world changes the arch span and all wall-relative positions |
 | `FLOOR_H` | All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon placement |
 | `_AB_FLOORS`, `_AB_D` | Abutment building floor count and N–S depth; shared with north/south building depth |

@@ -29,7 +29,7 @@ TEX_FLOOR = "sfloor3_2"  # deck top surface
 TEX_CEMENT = "sfloor3_2"  # parapet / bridge walls
 TEX_ROAD = "azfloor1_1"  # road surface
 TEX_WALL = "city2_7"  # Knott Hall walls — city-style concrete wall
-TEX_FLOOR_BLDG = "sfloor3_2"  # Knott Hall floors and ceilings
+TEX_FLOOR_KH = "sfloor3_2"  # Knott Hall floors and ceilings
 TEX_METAL = "city2_7"  # elevator doors (matches walls)
 TEX_GROUND = "ground1_1"  # ground/terrain surface
 TEX_RAIL = "metal5_4"  # bridge and walkway railings
@@ -92,10 +92,10 @@ WALL_T = 16
 FZ1, FZ2 = -16, 0
 ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
-BLDG_WIDTH = 640
+KH_WIDTH = 640
 WORLD_X1 = -1983  # west wall; BRX1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
-WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of BLDG_WIDTH)
+WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
     -2432,
     1200,
@@ -103,15 +103,15 @@ WORLD_Y1, WORLD_Y2 = (
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # Flush against the east world wall
-BLDG_X2 = 1906  # fixed position regardless of world size
-BLDG_X1 = BLDG_X2 - BLDG_WIDTH
-BLDG_CX = (BLDG_X1 + BLDG_X2) // 2
-# Original building centre (BLDG_WIDTH=640) — entrance, walkway, stairs stay pinned here
-_ORIG_BLDG_CX = BLDG_X2 - 640 // 2  # = 1586
+KH_X2 = 1906  # fixed position regardless of world size
+KH_X1 = KH_X2 - KH_WIDTH
+KH_CX = (KH_X1 + KH_X2) // 2
+# Original building centre (KH_WIDTH=640) — entrance, walkway, stairs stay pinned here
+_ORIG_KH_CX = KH_X2 - 640 // 2  # = 1586
 # Arch spans from west world wall all the way to just west of Knott Hall pier.
-# The pier stays at its original position (BLDG_X2 - 640 - 20 = 1246) regardless
+# The pier stays at its original position (KH_X2 - 640 - 20 = 1246) regardless
 # of how wide the building is — the west wall now extends past it.
-_PIER_X = BLDG_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
+_PIER_X = KH_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
 BRX1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 BRX2 = _PIER_X  # east arch terminus at fixed pier position
 SEG_W = (BRX2 - BRX1) / ARCH_SEGS  # segment width for full-span arch
@@ -122,24 +122,24 @@ PXS = [
     _PIER_X,
     1938,  # east pillar at old world edge
 ]  # pillar X positions
-BLDG_Y1, BLDG_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
-BLDG_WALL = 16  # wall thickness
+KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
+KH_WALL = 16  # wall thickness
 FLOOR_H = 128  # floor-to-floor height
-BLDG_FLOORS = 5  # number of floors
+KH_FLOORS = 5  # number of floors
 # Knott Hall is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
-BLDG_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - BLDG_WALL)  # = 0 (no hill needed)
-BLDG_Z2 = BLDG_GROUND_Z + BLDG_FLOORS * FLOOR_H
+KH_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - KH_WALL)  # = 0 (no hill needed)
+KH_Z2 = KH_GROUND_Z + KH_FLOORS * FLOOR_H
 
 # Sky ceiling must clear Knott Hall
-WORLD_Z2 = max(640, BLDG_Z2 + 128)
+WORLD_Z2 = max(640, KH_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
 # Flat span at DZ2=144 (flat approach section); pinned to original building centre
-WALK_X1 = _ORIG_BLDG_CX - 64
-WALK_X2 = _ORIG_BLDG_CX + 64
-WALK_ZT1 = int(dtop(_ORIG_BLDG_CX))  # = DZ2 = 144 (flat approach, no arch rise)
-WALK_ZT2 = BLDG_GROUND_Z + FLOOR_H + BLDG_WALL  # = 144 = WALK_ZT1 (flat)
-# No ramp needed: BLDG_GROUND_Z = 0 = road level
+WALK_X1 = _ORIG_KH_CX - 64
+WALK_X2 = _ORIG_KH_CX + 64
+WALK_ZT1 = int(dtop(_ORIG_KH_CX))  # = DZ2 = 144 (flat approach, no arch rise)
+WALK_ZT2 = KH_GROUND_Z + FLOOR_H + KH_WALL  # = 144 = WALK_ZT1 (flat)
+# No ramp needed: KH_GROUND_Z = 0 = road level
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
 A_SEGS = 32
@@ -712,17 +712,17 @@ BRUSHES.append(
         ROAD_X2 + _WALK_W,
         _ENNIS_Y - _ENNIS_HW - _WALK_W,
         FZ2,
-        BLDG_X2,
+        KH_X2,
         _ENNIS_Y - _ENNIS_HW,
         FZ2 + _WALK_H,
         TEX_CEMENT,
     )
 )
 # East segment: back road east sidewalk east to world wall
-# _BR_ES_X2 = BLDG_X2 + _WALK_W + 2*128 + _WALK_W (computed inline to avoid forward-ref)
+# _BR_ES_X2 = KH_X2 + _WALK_W + 2*128 + _WALK_W (computed inline to avoid forward-ref)
 BRUSHES.append(
     box(
-        BLDG_X2 + _WALK_W + 2 * 128 + _WALK_W,
+        KH_X2 + _WALK_W + 2 * 128 + _WALK_W,
         _ENNIS_Y - _ENNIS_HW - _WALK_W,
         FZ2,
         _ENNIS_X2,
@@ -839,8 +839,8 @@ BRUSHES.append(
 )
 # Ennis south ramp — slopes from south curb edge down going south
 # Split into two segments to leave a gap for the back road corridor (X=1906..2322)
-_BR_CORRIDOR_X1 = BLDG_X2  # = 1906
-_BR_CORRIDOR_X2 = BLDG_X2 + _WALK_W + 2 * 128 + _WALK_W  # = 2322
+_BR_CORRIDOR_X1 = KH_X2  # = 1906
+_BR_CORRIDOR_X2 = KH_X2 + _WALK_W + 2 * 128 + _WALK_W  # = 2322
 BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + _WALK_W,
@@ -2012,16 +2012,16 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
 
 # ════════════════════════════════════════════════════════════════════════════════
 # WALKWAY — flat bridge from south edge to building 2nd floor entrance
-# X=-64..64, Y=BRY1..BLDG_Y2; flat at WALK_ZT1 = WALK_ZT2
+# X=-64..64, Y=BRY1..KH_Y2; flat at WALK_ZT1 = WALK_ZT2
 # ════════════════════════════════════════════════════════════════════════════════
-_wk_zb1 = WALK_ZT1 - BLDG_WALL  # slab bottom at bridge end  = 192
-_wk_zb2 = WALK_ZT2 - BLDG_WALL  # slab bottom at building end = 128
+_wk_zb1 = WALK_ZT1 - KH_WALL  # slab bottom at bridge end  = 192
+_wk_zb2 = WALK_ZT2 - KH_WALL  # slab bottom at building end = 128
 BRUSHES.append(
     ramp_slab_y(
         WALK_X1,
         WALK_X2,
         BRY1,
-        BLDG_Y2,
+        KH_Y2,
         _wk_zb1,
         _wk_zb2,
         WALK_ZT1,
@@ -2037,7 +2037,7 @@ BRUSHES.append(
         WALK_X1 - _WALK_WALL,
         WALK_X1,
         BRY1,
-        BLDG_Y2,
+        KH_Y2,
         _wk_zb1,
         _wk_zb2,
         WALK_ZT1 + PAR_H,
@@ -2050,7 +2050,7 @@ BRUSHES.append(
         WALK_X2,
         WALK_X2 + _WALK_WALL,
         BRY1,
-        BLDG_Y2,
+        KH_Y2,
         _wk_zb1,
         _wk_zb2,
         WALK_ZT1 + PAR_H,
@@ -2066,7 +2066,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
     BRUSHES.append(
         box(
             WALK_X1 - _ww_cx - _TUBE_HW,
-            BLDG_Y2,
+            KH_Y2,
             _tbz,
             WALK_X1 - _ww_cx + _TUBE_HW,
             BRY1,
@@ -2078,7 +2078,7 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
     BRUSHES.append(
         box(
             WALK_X2 + _ww_cx - _TUBE_HW,
-            BLDG_Y2,
+            KH_Y2,
             _tbz,
             WALK_X2 + _ww_cx + _TUBE_HW,
             BRY1,
@@ -2098,23 +2098,21 @@ for _tube_z_extra in [_TUBE_RISE, _TUBE_RISE + _TUBE_GAP]:
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
 _ENNIS_SW_EDGE = _ENNIS_Y - _ENNIS_HW - _WALK_W  # Ennis south sidewalk
-if BLDG_GROUND_Z > FZ2:
+if KH_GROUND_Z > FZ2:
     # Solid hill fill under the entire building footprint
-    BRUSHES.append(
-        box(BLDG_X1, BLDG_Y1, FZ2, BLDG_X2, BLDG_Y2, BLDG_GROUND_Z, TEX_GROUND)
-    )
+    BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
     # Sloped ramp on the north face — player can walk up from road to building entrance
-    _ramp_y1 = BLDG_Y2  # north face of building
+    _ramp_y1 = KH_Y2  # north face of building
     _ramp_y2 = _ENNIS_SW_EDGE  # extended north for a gentler slope
     BRUSHES.append(
         ramp_slab_y(
-            BLDG_X1,
-            BLDG_X2,
+            KH_X1,
+            KH_X2,
             _ramp_y1,
             _ramp_y2,
             FZ2,
             FZ2,
-            BLDG_GROUND_Z,
+            KH_GROUND_Z,
             FZ2,
             TEX_GROUND,
             tt=TEX_GROUND,
@@ -2122,17 +2120,17 @@ if BLDG_GROUND_Z > FZ2:
     )
     # Long ground ramp from east Charles Street sidewalk up to Knott Hall west wall
     _west_ramp_x1 = ROAD_X2 + _WALK_W  # east edge of east sidewalk = 336
-    _west_ramp_x2 = BLDG_X1  # Knott Hall west wall = 1266
+    _west_ramp_x2 = KH_X1  # Knott Hall west wall = 1266
     BRUSHES.append(
         ramp_slab(
             _west_ramp_x1,
             _west_ramp_x2,
             WORLD_Y1 + WALL_T,
-            BLDG_Y2,
+            KH_Y2,
             FZ2,
             FZ2,
             FZ2 + _WALK_H,
-            BLDG_GROUND_Z,
+            KH_GROUND_Z,
             TEX_GROUND,
             tt=TEX_GROUND,
         )
@@ -2140,12 +2138,12 @@ if BLDG_GROUND_Z > FZ2:
     # South terrain fill — flat ground at building level behind south wall to east world edge
     BRUSHES.append(
         box(
-            BLDG_X1,
+            KH_X1,
             WORLD_Y1 + WALL_T,
             FZ1,
             WORLD_X2 - WALL_T,
-            BLDG_Y1,
-            BLDG_GROUND_Z,
+            KH_Y1,
+            KH_GROUND_Z,
             TEX_GROUND,
         )
     )
@@ -2153,7 +2151,7 @@ if BLDG_GROUND_Z > FZ2:
 # ══════════════════════════════════════════════════════════════════════════════
 # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
 # Sidewalks with rounded north entrance corners (like Ennis Drive)
-# Road slopes from Z=0 at the north entrance to BLDG_GROUND_Z at the back.
+# Road slopes from Z=0 at the north entrance to KH_GROUND_Z at the back.
 # ══════════════════════════════════════════════════════════════════════════════
 _BR_HW = 128  # back road half-width (256-unit carriageway, like Ennis)
 _BR_WALK_W = _WALK_W  # sidewalk width = 80 units (matches Charles St sidewalks)
@@ -2161,20 +2159,20 @@ _BR_CRN_R = _WALK_W  # corner radius = sidewalk width
 _BR_CRN_SEGS = _CRN_SEGS  # 12 arc segments = 90°
 
 # ── X extents (road runs N-S, east of building east wall) ──
-_BR_WS_X1 = BLDG_X2  # west sidewalk west = building east wall = 1906
-_BR_WS_X2 = BLDG_X2 + _BR_WALK_W  # west sidewalk east = road west edge = 1986
+_BR_WS_X1 = KH_X2  # west sidewalk west = building east wall = 1906
+_BR_WS_X2 = KH_X2 + _BR_WALK_W  # west sidewalk east = road west edge = 1986
 _BR_RD_X1 = _BR_WS_X2  # road west edge = 1986
 _BR_RD_X2 = _BR_RD_X1 + 2 * _BR_HW  # road east edge = 2242
 _BR_ES_X1 = _BR_RD_X2  # east sidewalk west = 2242
 _BR_ES_X2 = _BR_RD_X2 + _BR_WALK_W  # east sidewalk east = 2322
 
 # ── Y extents (north entrance → south back-wall) ──
-_BR_Y1 = BLDG_Y1  # south end: back of building = -1888
-_BR_Y2 = BLDG_Y2  # north end: north face of building = -256
+_BR_Y1 = KH_Y1  # south end: back of building = -1888
+_BR_Y2 = KH_Y2  # north end: north face of building = -256
 
 # ── Elevation: road surface rises gradually from north (Z=0) to south (Z=hill top) ──
 _BR_ZT_N = FZ2  # road top at north entrance = 0
-_BR_ZT_S = BLDG_GROUND_Z  # road top at south/back     = 80
+_BR_ZT_S = KH_GROUND_Z  # road top at south/back     = 80
 
 # Road surface — 2-unit textured overlay riding on sloped fill
 BRUSHES.append(
@@ -2301,7 +2299,7 @@ BRUSHES.append(
 # ── South extension — road + east sidewalk behind Knott Hall to world edge ──
 BRUSHES.append(
     box(
-        BLDG_X1,
+        KH_X1,
         WORLD_Y1 + WALL_T,
         FZ1,
         _BR_ES_X1,
@@ -2409,17 +2407,17 @@ for _i in range(_BR_CRN_SEGS):
         )
     )
 
-_bix1 = BLDG_X1 + BLDG_WALL  # interior west
-_bix2 = BLDG_X2 - BLDG_WALL  # interior east
-_biy1 = BLDG_Y1 + BLDG_WALL  # interior south = -784
-_biy2 = BLDG_Y2 - BLDG_WALL  # interior north = -272
+_bix1 = KH_X1 + KH_WALL  # interior west
+_bix2 = KH_X2 - KH_WALL  # interior east
+_biy1 = KH_Y1 + KH_WALL  # interior south = -784
+_biy2 = KH_Y2 - KH_WALL  # interior north = -272
 
-# Entrance doorway — pinned to original building centre, not current BLDG_CX
-_ENT_X1, _ENT_X2 = _ORIG_BLDG_CX - 64, _ORIG_BLDG_CX + 64
+# Entrance doorway — pinned to original building centre, not current KH_CX
+_ENT_X1, _ENT_X2 = _ORIG_KH_CX - 64, _ORIG_KH_CX + 64
 
 # ── Entrance staircase ────────────────────────────────────────────────────────
 _STEP_N = 10
-_STEP_RISE = BLDG_GROUND_Z // _STEP_N  # 8 units per step
+_STEP_RISE = KH_GROUND_Z // _STEP_N  # 8 units per step
 _STEP_DEPTH = 16  # 16 units per tread
 _STAIR_OFFSET = 384  # distance from north wall to stair base
 
@@ -2427,16 +2425,16 @@ _STAIR_OFFSET = 384  # distance from north wall to stair base
 BRUSHES.append(
     box(
         _ENT_X1,
-        BLDG_Y2,
+        KH_Y2,
         FZ2,
         _ENT_X2,
-        BLDG_Y2 + _STAIR_OFFSET,
-        BLDG_GROUND_Z,
+        KH_Y2 + _STAIR_OFFSET,
+        KH_GROUND_Z,
         TEX_CEMENT,
     )
 )
 
-_STAIR_Y0 = BLDG_Y2 + _STAIR_OFFSET  # south edge of staircase
+_STAIR_Y0 = KH_Y2 + _STAIR_OFFSET  # south edge of staircase
 _STAIR_Y_END = _STAIR_Y0 + _STEP_N * _STEP_DEPTH  # north end of stairs (ground level)
 for _si in range(_STEP_N):
     _sz2 = FZ2 + (_si + 1) * _STEP_RISE
@@ -2458,7 +2456,7 @@ _RAIL_TEX = "metal4_4"
 _RAIL_SPACING = 16
 for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
     # Top rail - sloped section on stairs only
-    _z_top_plat = BLDG_GROUND_Z + _RAIL_H - 28
+    _z_top_plat = KH_GROUND_Z + _RAIL_H - 28
     _z_top_end = FZ2 + _RAIL_H - 28
     BRUSHES.append(
         ramp_slab_y(
@@ -2476,7 +2474,7 @@ for _rx_base, _is_west in [(_ENT_X1, True), (_ENT_X2, False)]:
 
     # Posts at top and bottom of stairs only
     for _ry, _gz in [
-        (_STAIR_Y0, BLDG_GROUND_Z),
+        (_STAIR_Y0, KH_GROUND_Z),
         (_STAIR_Y_END, FZ2),
     ]:
         _pw = 2
@@ -2503,71 +2501,71 @@ _fm_pro = 12  # mullion protrusion depth
 _s_wall_openings = [
     (
         _ENT_X1,
-        BLDG_GROUND_Z + fl * FLOOR_H + BLDG_WALL,
+        KH_GROUND_Z + fl * FLOOR_H + KH_WALL,
         _ENT_X2,
-        BLDG_GROUND_Z + (fl + 1) * FLOOR_H,
+        KH_GROUND_Z + (fl + 1) * FLOOR_H,
     )
-    for fl in range(BLDG_FLOORS)
+    for fl in range(KH_FLOORS)
 ]
 BRUSHES.extend(
     layered_wall(
-        BLDG_X1 + INDENT,
-        BLDG_Y1,
-        BLDG_GROUND_Z,
-        BLDG_X2 - INDENT,
-        BLDG_Y1 + BLDG_WALL,
-        BLDG_Z2,
+        KH_X1 + INDENT,
+        KH_Y1,
+        KH_GROUND_Z,
+        KH_X2 - INDENT,
+        KH_Y1 + KH_WALL,
+        KH_Z2,
         _s_wall_openings,
         TEX_WALL,
     )
 )
 # SW Indentation inner walls — recessed back wall with centered 48-unit window
-_sw_win_cx = BLDG_X1 + INDENT // 2  # = 1306
+_sw_win_cx = KH_X1 + INDENT // 2  # = 1306
 BRUSHES.extend(
     layered_wall(
-        BLDG_X1,
-        BLDG_Y1 + INDENT - BLDG_WALL,
-        BLDG_GROUND_Z,
-        BLDG_X1 + INDENT,
-        BLDG_Y1 + INDENT,
-        BLDG_Z2,
-        [(_sw_win_cx - _win_half, BLDG_GROUND_Z, _sw_win_cx + _win_half, BLDG_Z2)],
+        KH_X1,
+        KH_Y1 + INDENT - KH_WALL,
+        KH_GROUND_Z,
+        KH_X1 + INDENT,
+        KH_Y1 + INDENT,
+        KH_Z2,
+        [(_sw_win_cx - _win_half, KH_GROUND_Z, _sw_win_cx + _win_half, KH_Z2)],
         TEX_WALL,
     )
 )
 BRUSHES.append(
     box(
-        BLDG_X1 + INDENT - BLDG_WALL,
-        BLDG_Y1,
-        BLDG_GROUND_Z,
-        BLDG_X1 + INDENT,
-        BLDG_Y1 + INDENT,
-        BLDG_Z2,
+        KH_X1 + INDENT - KH_WALL,
+        KH_Y1,
+        KH_GROUND_Z,
+        KH_X1 + INDENT,
+        KH_Y1 + INDENT,
+        KH_Z2,
         TEX_WALL,
     )
 )
 # SE Indentation inner walls — recessed back wall with centered 48-unit window
-_se_win_cx = BLDG_X2 - INDENT // 2  # = 1866
+_se_win_cx = KH_X2 - INDENT // 2  # = 1866
 BRUSHES.extend(
     layered_wall(
-        BLDG_X2 - INDENT,
-        BLDG_Y1 + INDENT - BLDG_WALL,
-        BLDG_GROUND_Z,
-        BLDG_X2,
-        BLDG_Y1 + INDENT,
-        BLDG_Z2,
-        [(_se_win_cx - _win_half, BLDG_GROUND_Z, _se_win_cx + _win_half, BLDG_Z2)],
+        KH_X2 - INDENT,
+        KH_Y1 + INDENT - KH_WALL,
+        KH_GROUND_Z,
+        KH_X2,
+        KH_Y1 + INDENT,
+        KH_Z2,
+        [(_se_win_cx - _win_half, KH_GROUND_Z, _se_win_cx + _win_half, KH_Z2)],
         TEX_WALL,
     )
 )
 BRUSHES.append(
     box(
-        BLDG_X2 - INDENT,
-        BLDG_Y1,
-        BLDG_GROUND_Z,
-        BLDG_X2 - INDENT + BLDG_WALL,
-        BLDG_Y1 + INDENT,
-        BLDG_Z2,
+        KH_X2 - INDENT,
+        KH_Y1,
+        KH_GROUND_Z,
+        KH_X2 - INDENT + KH_WALL,
+        KH_Y1 + INDENT,
+        KH_Z2,
         TEX_WALL,
     )
 )
@@ -2576,11 +2574,11 @@ for _mx in [_sw_win_cx - _win_half - _fm_div, _sw_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
-            BLDG_Y1 + INDENT - BLDG_WALL,
-            BLDG_GROUND_Z,
+            KH_Y1 + INDENT - KH_WALL,
+            KH_GROUND_Z,
             _mx + _fm_div,
-            BLDG_Y1 + INDENT + _fm_pro,
-            BLDG_Z2,
+            KH_Y1 + INDENT + _fm_pro,
+            KH_Z2,
             TEX_CEMENT,
         )
     )
@@ -2588,86 +2586,82 @@ for _mx in [_se_win_cx - _win_half - _fm_div, _se_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
-            BLDG_Y1 + INDENT - BLDG_WALL,
-            BLDG_GROUND_Z,
+            KH_Y1 + INDENT - KH_WALL,
+            KH_GROUND_Z,
             _mx + _fm_div,
-            BLDG_Y1 + INDENT + _fm_pro,
-            BLDG_Z2,
+            KH_Y1 + INDENT + _fm_pro,
+            KH_Z2,
             TEX_CEMENT,
         )
     )
 # North-West Indentation (Corner Notch)
 # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
-_door_n = [
-    (_ENT_X1, BLDG_GROUND_Z, _ENT_X2, BLDG_GROUND_Z + FLOOR_H)
-]  # ground entrance
-_door_2 = [
-    (_ENT_X1, WALK_ZT2, _ENT_X2, BLDG_GROUND_Z + FLOOR_H * 2)
-]  # walkway entrance
+_door_n = [(_ENT_X1, KH_GROUND_Z, _ENT_X2, KH_GROUND_Z + FLOOR_H)]  # ground entrance
+_door_2 = [(_ENT_X1, WALK_ZT2, _ENT_X2, KH_GROUND_Z + FLOOR_H * 2)]  # walkway entrance
 _win_n = [
-    (_ORIG_BLDG_CX + 8, BLDG_GROUND_Z + FLOOR_H * 2, _ORIG_BLDG_CX + 56, BLDG_Z2)
+    (_ORIG_KH_CX + 8, KH_GROUND_Z + FLOOR_H * 2, _ORIG_KH_CX + 56, KH_Z2)
 ]  # narrow vertical window slot above walkway entrance up to roof
 BRUSHES.extend(
     layered_wall(
-        BLDG_X1 + INDENT,
-        BLDG_Y2 - BLDG_WALL,
-        BLDG_GROUND_Z,
-        BLDG_X2 - INDENT,
-        BLDG_Y2,
-        BLDG_Z2,
+        KH_X1 + INDENT,
+        KH_Y2 - KH_WALL,
+        KH_GROUND_Z,
+        KH_X2 - INDENT,
+        KH_Y2,
+        KH_Z2,
         _door_n + _door_2 + _win_n,
         TEX_WALL,
     )
 )
 
 # NW Indentation inner walls — recessed back wall has a centered 48-unit window
-_nw_win_cx = BLDG_X1 + INDENT // 2  # = 1306
+_nw_win_cx = KH_X1 + INDENT // 2  # = 1306
 BRUSHES.extend(
     layered_wall(
-        BLDG_X1,
-        BLDG_Y2 - INDENT,
-        BLDG_GROUND_Z,
-        BLDG_X1 + INDENT,
-        BLDG_Y2 - INDENT + BLDG_WALL,
-        BLDG_Z2,
-        [(_nw_win_cx - _win_half, BLDG_GROUND_Z, _nw_win_cx + _win_half, BLDG_Z2)],
+        KH_X1,
+        KH_Y2 - INDENT,
+        KH_GROUND_Z,
+        KH_X1 + INDENT,
+        KH_Y2 - INDENT + KH_WALL,
+        KH_Z2,
+        [(_nw_win_cx - _win_half, KH_GROUND_Z, _nw_win_cx + _win_half, KH_Z2)],
         TEX_WALL,
     )
 )
 BRUSHES.append(
     box(
-        BLDG_X1 + INDENT - BLDG_WALL,
-        BLDG_Y2 - INDENT,
-        BLDG_GROUND_Z,
-        BLDG_X1 + INDENT,
-        BLDG_Y2,
-        BLDG_Z2,
+        KH_X1 + INDENT - KH_WALL,
+        KH_Y2 - INDENT,
+        KH_GROUND_Z,
+        KH_X1 + INDENT,
+        KH_Y2,
+        KH_Z2,
         TEX_WALL,
     )
 )
 
 # NE Indentation inner walls (mirror of NW) — recessed back wall has a centered 48-unit window
-_ne_win_cx = BLDG_X2 - INDENT // 2  # = 1866
+_ne_win_cx = KH_X2 - INDENT // 2  # = 1866
 BRUSHES.extend(
     layered_wall(
-        BLDG_X2 - INDENT,
-        BLDG_Y2 - INDENT,
-        BLDG_GROUND_Z,
-        BLDG_X2,
-        BLDG_Y2 - INDENT + BLDG_WALL,
-        BLDG_Z2,
-        [(_ne_win_cx - _win_half, BLDG_GROUND_Z, _ne_win_cx + _win_half, BLDG_Z2)],
+        KH_X2 - INDENT,
+        KH_Y2 - INDENT,
+        KH_GROUND_Z,
+        KH_X2,
+        KH_Y2 - INDENT + KH_WALL,
+        KH_Z2,
+        [(_ne_win_cx - _win_half, KH_GROUND_Z, _ne_win_cx + _win_half, KH_Z2)],
         TEX_WALL,
     )
 )
 BRUSHES.append(
     box(
-        BLDG_X2 - INDENT,
-        BLDG_Y2 - INDENT,
-        BLDG_GROUND_Z,
-        BLDG_X2 - INDENT + BLDG_WALL,
-        BLDG_Y2,
-        BLDG_Z2,
+        KH_X2 - INDENT,
+        KH_Y2 - INDENT,
+        KH_GROUND_Z,
+        KH_X2 - INDENT + KH_WALL,
+        KH_Y2,
+        KH_Z2,
         TEX_WALL,
     )
 )
@@ -2679,11 +2673,11 @@ for _mx in [_nw_win_cx - _win_half - _fm_div, _nw_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
-            BLDG_Y2 - INDENT - _fm_pro,
-            BLDG_GROUND_Z,
+            KH_Y2 - INDENT - _fm_pro,
+            KH_GROUND_Z,
             _mx + _fm_div,
-            BLDG_Y2 - INDENT + BLDG_WALL,
-            BLDG_Z2,
+            KH_Y2 - INDENT + KH_WALL,
+            KH_Z2,
             TEX_CEMENT,
         )
     )
@@ -2692,25 +2686,25 @@ for _mx in [_ne_win_cx - _win_half - _fm_div, _ne_win_cx + _win_half]:
     BRUSHES.append(
         box(
             _mx,
-            BLDG_Y2 - INDENT - _fm_pro,
-            BLDG_GROUND_Z,
+            KH_Y2 - INDENT - _fm_pro,
+            KH_GROUND_Z,
             _mx + _fm_div,
-            BLDG_Y2 - INDENT + BLDG_WALL,
-            BLDG_Z2,
+            KH_Y2 - INDENT + KH_WALL,
+            KH_Z2,
             TEX_CEMENT,
         )
     )
 # Main front wall narrow window _win_n: mullions just outside the opening so player can fit through
-_win_n_x1, _win_n_x2 = _ORIG_BLDG_CX + 8, _ORIG_BLDG_CX + 56
+_win_n_x1, _win_n_x2 = _ORIG_KH_CX + 8, _ORIG_KH_CX + 56
 for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
     BRUSHES.append(
         box(
             _mx,
-            BLDG_Y2 - BLDG_WALL,
-            BLDG_GROUND_Z + FLOOR_H * 2,
+            KH_Y2 - KH_WALL,
+            KH_GROUND_Z + FLOOR_H * 2,
             _mx + _fm_div,
-            BLDG_Y2 + _fm_pro,
-            BLDG_Z2,
+            KH_Y2 + _fm_pro,
+            KH_Z2,
             TEX_CEMENT,
         )
     )
@@ -2720,7 +2714,7 @@ for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
 # East wall — three 120-unit wide floor-to-ceiling windows, matching west side
 # Shared window layout variables (used for both east and west walls)
 _ww_half = 120
-_ww_wall_y1, _ww_wall_y2 = BLDG_Y1, BLDG_Y2 - INDENT
+_ww_wall_y1, _ww_wall_y2 = KH_Y1, KH_Y2 - INDENT
 _ww_quarter = (_ww_wall_y2 - _ww_wall_y1) // 4
 _ww_c1 = _ww_wall_y1 + _ww_quarter
 _ww_c2 = _ww_wall_y1 + 2 * _ww_quarter
@@ -2730,15 +2724,15 @@ _ww_protrude = 12
 BRUSHES.extend(
     layered_wall_y(
         _ww_wall_y1,
-        BLDG_X2 - BLDG_WALL,
-        BLDG_GROUND_Z,
+        KH_X2 - KH_WALL,
+        KH_GROUND_Z,
         _ww_wall_y2,
-        BLDG_X2,
-        BLDG_Z2,
+        KH_X2,
+        KH_Z2,
         [
-            (_ww_c1 - _ww_half, BLDG_GROUND_Z, _ww_c1 + _ww_half, BLDG_Z2),
-            (_ww_c2 - _ww_half, BLDG_GROUND_Z, _ww_c2 + _ww_half, BLDG_Z2),
-            (_ww_c3 - _ww_half, BLDG_GROUND_Z, _ww_c3 + _ww_half, BLDG_Z2),
+            (_ww_c1 - _ww_half, KH_GROUND_Z, _ww_c1 + _ww_half, KH_Z2),
+            (_ww_c2 - _ww_half, KH_GROUND_Z, _ww_c2 + _ww_half, KH_Z2),
+            (_ww_c3 - _ww_half, KH_GROUND_Z, _ww_c3 + _ww_half, KH_Z2),
         ],
         TEX_WALL,
     )
@@ -2753,12 +2747,12 @@ for _wc in [_ww_c1, _ww_c2, _ww_c3]:
     ]:
         BRUSHES.append(
             box(
-                BLDG_X2 - BLDG_WALL,
+                KH_X2 - KH_WALL,
                 _dy,
-                BLDG_GROUND_Z,
-                BLDG_X2 + _ww_protrude,
+                KH_GROUND_Z,
+                KH_X2 + _ww_protrude,
                 _dy + _ww_div_w,
-                BLDG_Z2,
+                KH_Z2,
                 TEX_CEMENT,
             )
         )
@@ -2767,15 +2761,15 @@ for _wc in [_ww_c1, _ww_c2, _ww_c3]:
 BRUSHES.extend(
     layered_wall_y(
         _ww_wall_y1,
-        BLDG_X1,
-        BLDG_GROUND_Z,
+        KH_X1,
+        KH_GROUND_Z,
         _ww_wall_y2,
-        BLDG_X1 + BLDG_WALL,
-        BLDG_Z2,
+        KH_X1 + KH_WALL,
+        KH_Z2,
         [
-            (_ww_c1 - _ww_half, BLDG_GROUND_Z, _ww_c1 + _ww_half, BLDG_Z2),
-            (_ww_c2 - _ww_half, BLDG_GROUND_Z, _ww_c2 + _ww_half, BLDG_Z2),
-            (_ww_c3 - _ww_half, BLDG_GROUND_Z, _ww_c3 + _ww_half, BLDG_Z2),
+            (_ww_c1 - _ww_half, KH_GROUND_Z, _ww_c1 + _ww_half, KH_Z2),
+            (_ww_c2 - _ww_half, KH_GROUND_Z, _ww_c2 + _ww_half, KH_Z2),
+            (_ww_c3 - _ww_half, KH_GROUND_Z, _ww_c3 + _ww_half, KH_Z2),
         ],
         TEX_WALL,
     )
@@ -2791,12 +2785,12 @@ for _wc in [_ww_c1, _ww_c2, _ww_c3]:
     ]:
         BRUSHES.append(
             box(
-                BLDG_X1 - _ww_protrude,
+                KH_X1 - _ww_protrude,
                 _dy,
-                BLDG_GROUND_Z,
-                BLDG_X1 + BLDG_WALL,
+                KH_GROUND_Z,
+                KH_X1 + KH_WALL,
                 _dy + _ww_div_w,
-                BLDG_Z2,
+                KH_Z2,
                 TEX_CEMENT,
             )
         )
@@ -2804,88 +2798,86 @@ for _wc in [_ww_c1, _ww_c2, _ww_c3]:
 # Roof — open above lift shaft, clipped for NW indentation
 BRUSHES.append(
     box(
-        BLDG_X1,
-        BLDG_Y1,
-        BLDG_Z2,
+        KH_X1,
+        KH_Y1,
+        KH_Z2,
         _stx1,
-        BLDG_Y2 - INDENT,
-        BLDG_Z2 + BLDG_WALL,
-        TEX_FLOOR_BLDG,
+        KH_Y2 - INDENT,
+        KH_Z2 + KH_WALL,
+        TEX_FLOOR_KH,
     )
 )  # west bulk
 BRUSHES.append(
     box(
-        BLDG_X1 + INDENT,
-        BLDG_Y2 - INDENT,
-        BLDG_Z2,
+        KH_X1 + INDENT,
+        KH_Y2 - INDENT,
+        KH_Z2,
         _stx1,
-        BLDG_Y2,
-        BLDG_Z2 + BLDG_WALL,
-        TEX_FLOOR_BLDG,
+        KH_Y2,
+        KH_Z2 + KH_WALL,
+        TEX_FLOOR_KH,
     )
 )  # west north-strip
 BRUSHES.append(
     box(
         _stx2,
-        BLDG_Y1,
-        BLDG_Z2,
-        BLDG_X2,
-        BLDG_Y2 - INDENT,
-        BLDG_Z2 + BLDG_WALL,
-        TEX_FLOOR_BLDG,
+        KH_Y1,
+        KH_Z2,
+        KH_X2,
+        KH_Y2 - INDENT,
+        KH_Z2 + KH_WALL,
+        TEX_FLOOR_KH,
     )
 )  # east bulk
 BRUSHES.append(
     box(
         _stx2,
-        BLDG_Y2 - INDENT,
-        BLDG_Z2,
-        BLDG_X2 - INDENT,
-        BLDG_Y2,
-        BLDG_Z2 + BLDG_WALL,
-        TEX_FLOOR_BLDG,
+        KH_Y2 - INDENT,
+        KH_Z2,
+        KH_X2 - INDENT,
+        KH_Y2,
+        KH_Z2 + KH_WALL,
+        TEX_FLOOR_KH,
     )
 )  # east north-strip (NE cutout)
 BRUSHES.append(
-    box(_stx1, BLDG_Y1, BLDG_Z2, _stx2, _sty1, BLDG_Z2 + BLDG_WALL, TEX_FLOOR_BLDG)
+    box(_stx1, KH_Y1, KH_Z2, _stx2, _sty1, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
 )  # south of shaft
 BRUSHES.append(
-    box(_stx1, _sty2, BLDG_Z2, _stx2, BLDG_Y2, BLDG_Z2 + BLDG_WALL, TEX_FLOOR_BLDG)
+    box(_stx1, _sty2, KH_Z2, _stx2, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
 )  # north of shaft (closes roof over north wall above shaft)
 
 # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
 # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
-_sz0 = BLDG_GROUND_Z
-_st0 = _sz0 + BLDG_WALL
-BRUSHES.append(
-    box(BLDG_X1, BLDG_Y1, _sz0, BLDG_X2, BLDG_Y2 - INDENT, _st0, TEX_FLOOR_BLDG)
-)
+_sz0 = KH_GROUND_Z
+_st0 = _sz0 + KH_WALL
+BRUSHES.append(box(KH_X1, KH_Y1, _sz0, KH_X2, KH_Y2 - INDENT, _st0, TEX_FLOOR_KH))
 BRUSHES.append(
     box(
-        BLDG_X1 + INDENT,
-        BLDG_Y2 - INDENT,
+        KH_X1 + INDENT,
+        KH_Y2 - INDENT,
         _sz0,
-        BLDG_X2 - INDENT,
-        BLDG_Y2,
+        KH_X2 - INDENT,
+        KH_Y2,
         _st0,
-        TEX_FLOOR_BLDG,
+        TEX_FLOOR_KH,
     )
 )
 
-for _f in range(1, BLDG_FLOORS):
-    _sz = BLDG_GROUND_Z + _f * FLOOR_H
-    _st = _sz + BLDG_WALL
+for _f in range(1, KH_FLOORS):
+    _sz = KH_GROUND_Z + _f * FLOOR_H
+    _st = _sz + KH_WALL
     # South bulk
-    BRUSHES.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, TEX_FLOOR_BLDG))
+    BRUSHES.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, TEX_FLOOR_KH))
     # West of shaft, clipped for NW indentation
-    BRUSHES.append(box(_bix1, _sty1, _sz, _stx1, BLDG_Y2 - INDENT, _st, TEX_FLOOR_BLDG))
+    BRUSHES.append(box(_bix1, _sty1, _sz, _stx1, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(_bix1 + INDENT, BLDG_Y2 - INDENT, _sz, _stx1, _biy2, _st, TEX_FLOOR_BLDG)
+        box(_bix1 + INDENT, KH_Y2 - INDENT, _sz, _stx1, _biy2, _st, TEX_FLOOR_KH)
     )
     # East of shaft, clipped for NE indentation
-    BRUSHES.append(box(_stx2, _sty1, _sz, _bix2, BLDG_Y2 - INDENT, _st, TEX_FLOOR_BLDG))
+    BRUSHES.append(box(_stx2, _sty1, _sz, _bix2, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(_stx2, BLDG_Y2 - INDENT, _sz, _bix2 - INDENT, _biy2, _st, TEX_FLOOR_BLDG)
+        box(_stx2, KH_Y2 - INDENT, _sz, _bix2 - INDENT, _biy2, _st, TEX_FLOOR_KH)
     )
 
 # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
@@ -2896,58 +2888,58 @@ _shaft_door_h = 96  # door height
 _shaft_doors_w = [
     (
         _sty1 + 16,
-        BLDG_GROUND_Z + _f * FLOOR_H,
+        KH_GROUND_Z + _f * FLOOR_H,
         _sty2 - 16,
-        BLDG_GROUND_Z + _f * FLOOR_H + _shaft_door_h,
+        KH_GROUND_Z + _f * FLOOR_H + _shaft_door_h,
     )
-    for _f in range(BLDG_FLOORS)
+    for _f in range(KH_FLOORS)
 ]
 
 # Shaft North wall (internal, solid)
 BRUSHES.append(
-    box(_stx1, _sty2, BLDG_GROUND_Z, _stx2, _sty2 + _shaft_wall, BLDG_Z2, TEX_WALL)
+    box(_stx1, _sty2, KH_GROUND_Z, _stx2, _sty2 + _shaft_wall, KH_Z2, TEX_WALL)
 )
 # Shaft South wall (internal, solid)
 BRUSHES.append(
-    box(_stx1, _sty1 - _shaft_wall, BLDG_GROUND_Z, _stx2, _sty1, BLDG_Z2, TEX_WALL)
+    box(_stx1, _sty1 - _shaft_wall, KH_GROUND_Z, _stx2, _sty1, KH_Z2, TEX_WALL)
 )
 # Shaft West wall (internal, openings for each floor's door)
 BRUSHES.extend(
     layered_wall_y(
         _sty1,
         _stx1 - _shaft_wall,
-        BLDG_GROUND_Z,
+        KH_GROUND_Z,
         _sty2,
         _stx1,
-        BLDG_Z2,
+        KH_Z2,
         _shaft_doors_w,
         TEX_WALL,
     )
 )
 # Shaft East wall (internal)
 BRUSHES.append(
-    box(_stx2, _sty1, BLDG_GROUND_Z, _stx2 + _shaft_wall, _sty2, BLDG_Z2, TEX_WALL)
+    box(_stx2, _sty1, KH_GROUND_Z, _stx2 + _shaft_wall, _sty2, KH_Z2, TEX_WALL)
 )
 
 # ── Knott Hall hallway + rooms — 2 rooms per side per floor ──────────────────
 # Partition Y splits vary per floor so each floor has different room proportions.
 _room_splits = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
 
-_wx1, _wx2 = _bix1, _ENT_X1 - BLDG_WALL  # west room X extents (1282..1506)
-_ex1, _ex2 = _ENT_X2 + BLDG_WALL, _bix2  # east room X extents (1666..1890)
+_wx1, _wx2 = _bix1, _ENT_X1 - KH_WALL  # west room X extents (1282..1506)
+_ex1, _ex2 = _ENT_X2 + KH_WALL, _bix2  # east room X extents (1666..1890)
 _wxc = (_wx1 + _wx2) // 2  # west room X center = 1394
 _exc = (_ex1 + _ex2) // 2  # east room X center = 1778
 
 # Collect door openings in hallway walls across all floors
 _w_hall_openings = []
-_e_hall_openings = [(_sty1, BLDG_GROUND_Z, _sty2, BLDG_Z2)]  # shaft gap always open
+_e_hall_openings = [(_sty1, KH_GROUND_Z, _sty2, KH_Z2)]  # shaft gap always open
 
-for _fl in range(BLDG_FLOORS):
-    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
-    _fz_surf = _fz1 + BLDG_WALL  # top of floor slab
+for _fl in range(KH_FLOORS):
+    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _fz_surf = _fz1 + KH_WALL  # top of floor slab
     _split = _room_splits[_fl]
     _sr_yc = (_biy1 + _split) // 2  # south room Y center
-    _nr_yc = (_split + BLDG_WALL + _biy2) // 2  # north room Y center
+    _nr_yc = (_split + KH_WALL + _biy2) // 2  # north room Y center
     _dz2 = _fz_surf + 96  # door top
     _w_hall_openings += [
         (_sr_yc - 32, _fz_surf, _sr_yc + 32, _dz2),
@@ -2962,11 +2954,11 @@ for _fl in range(BLDG_FLOORS):
 BRUSHES.extend(
     layered_wall_y(
         _biy1,
-        _ENT_X1 - BLDG_WALL,
-        BLDG_GROUND_Z,
+        _ENT_X1 - KH_WALL,
+        KH_GROUND_Z,
         _biy2,
         _ENT_X1,
-        BLDG_Z2,
+        KH_Z2,
         _w_hall_openings,
         TEX_WALL,
     )
@@ -2976,22 +2968,22 @@ BRUSHES.extend(
     layered_wall_y(
         _biy1,
         _ENT_X2,
-        BLDG_GROUND_Z,
+        KH_GROUND_Z,
         _biy2,
-        _ENT_X2 + BLDG_WALL,
-        BLDG_Z2,
+        _ENT_X2 + KH_WALL,
+        KH_Z2,
         _e_hall_openings,
         TEX_WALL,
     )
 )
 
 # Partition walls per floor (divide each side into 2 rooms, with connecting door)
-for _fl in range(BLDG_FLOORS):
-    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
+for _fl in range(KH_FLOORS):
+    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
     _fz2 = _fz1 + FLOOR_H
-    _fz_surf = _fz1 + BLDG_WALL
+    _fz_surf = _fz1 + KH_WALL
     _split = _room_splits[_fl]
-    _sp_y2 = _split + BLDG_WALL
+    _sp_y2 = _split + KH_WALL
     _pdz2 = _fz_surf + 96
     # West side partition wall with connecting door
     BRUSHES.extend(
@@ -3241,13 +3233,13 @@ _room_goodies = [
     "item_spikes",
 ]
 _gi = 0
-for _fl in range(BLDG_FLOORS):
-    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
-    _item_z = _fz1 + BLDG_WALL + 24
+for _fl in range(KH_FLOORS):
+    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _item_z = _fz1 + KH_WALL + 24
     _light_z = _fz1 + FLOOR_H - 24  # near ceiling
     _split = _room_splits[_fl]
     _sr_yc = (_biy1 + _split) // 2
-    _nr_yc = (_split + BLDG_WALL + _biy2) // 2
+    _nr_yc = (_split + KH_WALL + _biy2) // 2
     for _side_xc in [_wxc, _exc]:
         for _ryc in [_sr_yc, _nr_yc]:
             ENTITIES.append(
@@ -3275,9 +3267,9 @@ _SHELF_W = 64  # width
 
 _shelf_offsets = [0, 0, 0, 0, 0]
 
-for _fl in range(BLDG_FLOORS):
-    _fz1 = BLDG_GROUND_Z + _fl * FLOOR_H
-    _fz_surf = _fz1 + BLDG_WALL
+for _fl in range(KH_FLOORS):
+    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _fz_surf = _fz1 + KH_WALL
     _split = _room_splits[_fl]
     _stex = "shelf_1"
     _xoff = _shelf_offsets[_fl]
@@ -3336,7 +3328,7 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_west",
-        origin=f"{BLDG_CX} {(BLDG_Y1 + BLDG_Y2) // 2} {int(BLDG_Z2 + 40)}",
+        origin=f"{KH_CX} {(KH_Y1 + KH_Y2) // 2} {int(KH_Z2 + 40)}",
         angle="180",  # facing south, on Knott Hall rooftop
     )
 )
@@ -3455,12 +3447,12 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
 ENTITIES.append(
     ent(
         "info_player_start",
-        origin=f"{BLDG_CX} {BRY1 + PAR_W + 32} {int(DZ2 + 24)}",
+        origin=f"{KH_CX} {BRY1 + PAR_W + 32} {int(DZ2 + 24)}",
         angle="180",
     )
 )
 
-_bcy = (BLDG_Y1 + BLDG_Y2) // 2  # Knott Hall center Y = -528
+_bcy = (KH_Y1 + KH_Y2) // 2  # Knott Hall center Y = -528
 _nb_cy_dm = (_NB_Y1 + _NB_Y2) // 2  # north building center Y
 _nb_cx_dm = (_AB_X1 + _AB_X2) // 2  # west buildings center X
 _sb1_cy = (_SB_Y1 + _SB_Y2) // 2  # south building 1 center Y
@@ -3475,15 +3467,15 @@ for pos, angle in [
     ((-400, 0, int(dtop(-400) + 32)), 90),
     ((400, 0, int(dtop(400) + 32)), 270),
     # Walkway
-    ((BLDG_CX, (BRY1 + BLDG_Y2) // 2, int(WALK_ZT1 + 32)), 180),
+    ((KH_CX, (BRY1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180),
     # Knott Hall — ground, mid, upper floors
-    ((BLDG_CX, BLDG_Y2 - 80, BLDG_GROUND_Z + 40), 180),
-    ((BLDG_CX - 100, _bcy, BLDG_GROUND_Z + FLOOR_H + 40), 270),
-    ((BLDG_CX + 100, _bcy, BLDG_GROUND_Z + FLOOR_H * 2 + 40), 90),
-    ((BLDG_CX, BLDG_Y1 + 100, BLDG_GROUND_Z + FLOOR_H * 3 + 40), 0),
-    ((BLDG_CX, _bcy, BLDG_GROUND_Z + FLOOR_H * 4 + 40), 180),
+    ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
+    ((KH_CX - 100, _bcy, KH_GROUND_Z + FLOOR_H + 40), 270),
+    ((KH_CX + 100, _bcy, KH_GROUND_Z + FLOOR_H * 2 + 40), 90),
+    ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + FLOOR_H * 3 + 40), 0),
+    ((KH_CX, _bcy, KH_GROUND_Z + FLOOR_H * 4 + 40), 180),
     # Knott Hall rooftop
-    ((BLDG_CX, _bcy, BLDG_Z2 + 40), 180),
+    ((KH_CX, _bcy, KH_Z2 + 40), 180),
     # Charles Street
     ((0, 300, ROAD_Z + 24), 180),
     ((0, -400, ROAD_Z + 24), 0),
@@ -3515,13 +3507,13 @@ ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
 ENTITIES.append(
     ent(
         "weapon_rocketlauncher",
-        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 3 + 40}",
+        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 3 + 40}",
     )
 )
 
 # Super shotgun — spread around mid-tier locations
 ENTITIES.append(
-    ent("weapon_supershotgun", origin=f"{BLDG_CX} {BLDG_Y2 - 80} {BLDG_GROUND_Z + 40}")
+    ent("weapon_supershotgun", origin=f"{KH_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
 )
 ENTITIES.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_supershotgun", origin=f"{_nb_cx_dm} {_sb1_cy} {FZ2 + 40}"))
@@ -3530,7 +3522,7 @@ ENTITIES.append(ent("weapon_supershotgun", origin=f"{_nb_cx_dm} {_sb1_cy} {FZ2 +
 ENTITIES.append(
     ent(
         "weapon_grenadelauncher",
-        origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}",
+        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 2 + 40}",
     )
 )
 ENTITIES.append(
@@ -3541,7 +3533,7 @@ ENTITIES.append(
 ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
 ENTITIES.append(
-    ent("weapon_nailgun", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H + 40}")
+    ent("weapon_nailgun", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H + 40}")
 )
 
 # ── Ammo ──────────────────────────────────────────────────────────────────
@@ -3550,11 +3542,11 @@ for ax in PXS:
 for rx in [400, 800]:
     ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
-for _kf in range(1, BLDG_FLOORS):
+for _kf in range(1, KH_FLOORS):
     ENTITIES.append(
         ent(
             "item_rockets",
-            origin=f"{BLDG_CX + 80} {_bcy} {BLDG_GROUND_Z + _kf * FLOOR_H + 40}",
+            origin=f"{KH_CX + 80} {_bcy} {KH_GROUND_Z + _kf * FLOOR_H + 40}",
         )
     )
 ENTITIES.append(ent("item_shells", origin=f"0 -300 {ROAD_Z + 24}"))
@@ -3565,11 +3557,9 @@ ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 # ── Health & Armor ────────────────────────────────────────────────────────
 # Health — scattered throughout
 ENTITIES.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
+ENTITIES.append(ent("item_health", origin=f"{KH_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
 ENTITIES.append(
-    ent("item_health", origin=f"{BLDG_CX} {BLDG_Y2 - 64} {BLDG_GROUND_Z + 40}")
-)
-ENTITIES.append(
-    ent("item_health", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 2 + 40}")
+    ent("item_health", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 2 + 40}")
 )
 ENTITIES.append(ent("item_health", origin=f"0 400 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_health", origin=f"0 -600 {ROAD_Z + 24}"))
@@ -3577,7 +3567,7 @@ ENTITIES.append(ent("item_health", origin=f"{_nb_cx_dm} {_sb2_cy} {FZ2 + 40}"))
 # Armor — contested locations
 ENTITIES.append(ent("item_armor1", origin=f"-200 0 {DECK_Z}"))  # yellow armor on bridge
 ENTITIES.append(
-    ent("item_armor2", origin=f"{BLDG_CX} {_bcy} {BLDG_GROUND_Z + FLOOR_H * 4 + 40}")
+    ent("item_armor2", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 4 + 40}")
 )  # red armor top floor
 ENTITIES.append(
     ent("item_armorInv", origin=f"{_nb_cx_dm} {_nb_cy_dm} {int(_nb_ridge_z + 40)}")
@@ -3648,24 +3638,24 @@ for _px in _PEND_XS:
     )
 
 # Light on underside of walkway slab illuminating the ramp below
-_walk_mid_y = (BRY1 + BLDG_Y2) // 2
-_walk_frac = (BRY1 - _walk_mid_y) / float(BRY1 - BLDG_Y2)
+_walk_mid_y = (BRY1 + KH_Y2) // 2
+_walk_frac = (BRY1 - _walk_mid_y) / float(BRY1 - KH_Y2)
 _walk_bot_mid = int(_wk_zb1 + _walk_frac * (_wk_zb2 - _wk_zb1))
 ENTITIES.append(
-    ent("light", origin=f"{BLDG_CX} {_walk_mid_y} {_walk_bot_mid - 8}", light="300")
+    ent("light", origin=f"{KH_CX} {_walk_mid_y} {_walk_bot_mid - 8}", light="300")
 )
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-_lift_travel = BLDG_Z2 - (BLDG_GROUND_Z + BLDG_WALL)
+_lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
 _lift_brush = [
     box(
         _stx1 + 2,
         _sty1 + 2,
-        BLDG_Z2 - 8,
+        KH_Z2 - 8,
         _stx2 - 2,
         _sty2 - 2,
-        BLDG_Z2,
-        TEX_FLOOR_BLDG,
+        KH_Z2,
+        TEX_FLOOR_KH,
     )
 ]
 ENTITIES.append(
@@ -3683,12 +3673,12 @@ for _bly1, _bly2 in [(_NB_Y1, _NB_Y2), (_SB_Y1, _SB_Y2), (_SB2_Y1, _SB2_Y2)]:
         )
 
 # Interior lights for Knott Hall — 3×4 grid per floor
-for _kfl in range(BLDG_FLOORS):
-    _klz = BLDG_GROUND_Z + _kfl * FLOOR_H + FLOOR_H // 2
+for _kfl in range(KH_FLOORS):
+    _klz = KH_GROUND_Z + _kfl * FLOOR_H + FLOOR_H // 2
     for _kxi in [1, 2, 3]:
-        _klx = BLDG_X1 + (BLDG_X2 - BLDG_X1) * _kxi // 4
+        _klx = KH_X1 + (KH_X2 - KH_X1) * _kxi // 4
         for _kyi in [1, 2, 3, 4]:
-            _kly = BLDG_Y1 + (BLDG_Y2 - BLDG_Y1) * _kyi // 5
+            _kly = KH_Y1 + (KH_Y2 - KH_Y1) * _kyi // 5
             ENTITIES.append(ent("light", origin=f"{_klx} {_kly} {_klz}", light="150"))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
