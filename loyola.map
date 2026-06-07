@@ -24557,53 +24557,53 @@
 }
 {
 "classname" "light"
-"origin" "-1246 68 362"
-"light" "250"
+"origin" "-1246 68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "-1246 -68 362"
-"light" "250"
+"origin" "-1246 -68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "-525 68 390"
-"light" "250"
+"origin" "-525 68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "-525 -68 390"
-"light" "250"
+"origin" "-525 -68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "525 68 362"
-"light" "250"
+"origin" "525 68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "525 -68 362"
-"light" "250"
+"origin" "525 -68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "1246 68 296"
-"light" "250"
+"origin" "1246 68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "1246 -68 296"
-"light" "250"
+"origin" "1246 -68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "1938 68 296"
-"light" "250"
+"origin" "1938 68 100"
+"light" "400"
 }
 {
 "classname" "light"
-"origin" "1938 -68 296"
-"light" "250"
+"origin" "1938 -68 100"
+"light" "400"
 }
 {
 "classname" "func_plat"
