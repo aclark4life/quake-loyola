@@ -124,11 +124,11 @@ PXS = [
 ]  # pillar X positions
 KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
-FLOOR_H = 128  # floor-to-floor height
+KH_FLOOR_H = 128  # floor-to-floor height
 KH_FLOORS = 5  # number of floors
 # Knott Hall is in flat approach: deck = DZ2 = 144; 2nd floor aligns automatically
-KH_GROUND_Z = max(FZ2, DZ2 - FLOOR_H - KH_WALL)  # = 0 (no hill needed)
-KH_Z2 = KH_GROUND_Z + KH_FLOORS * FLOOR_H
+KH_GROUND_Z = max(FZ2, DZ2 - KH_FLOOR_H - KH_WALL)  # = 0 (no hill needed)
+KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
 WORLD_Z2 = max(640, KH_Z2 + 128)
@@ -138,7 +138,7 @@ WORLD_Z2 = max(640, KH_Z2 + 128)
 WALK_X1 = _ORIG_KH_CX - 64
 WALK_X2 = _ORIG_KH_CX + 64
 WALK_ZT1 = int(dtop(_ORIG_KH_CX))  # = DZ2 = 144 (flat approach, no arch rise)
-WALK_ZT2 = KH_GROUND_Z + FLOOR_H + KH_WALL  # = 144 = WALK_ZT1 (flat)
+WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL  # = 144 = WALK_ZT1 (flat)
 # No ramp needed: KH_GROUND_Z = 0 = road level
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
@@ -1041,7 +1041,7 @@ BRUSHES.append(
 
 # ── Abutment building dimensions (referenced by embankment split below) ────────
 RH_FLOORS = 3
-RH_H = RH_FLOORS * FLOOR_H  # 384 units tall
+RH_H = RH_FLOORS * KH_FLOOR_H  # 384 units tall
 RH_DEPTH = 600  # building N-S depth (doubled)
 RH_PIER_X = min(PXS)  # = -1100
 RH_X2 = RH_PIER_X + P_HW + 32  # east face of building  = -1031
@@ -1185,7 +1185,7 @@ def _abutment_bldg_windows(bx1, bx2, by1, by2, bz1, floors, skip_n=False, skip_s
     nx = max(2, (bx2 - bx1) // 80)  # windows per floor along X
     ny = max(1, (by2 - by1) // 80)  # windows per floor along Y
     for fl in range(floors):
-        wz = bz1 + fl * FLOOR_H + FLOOR_H // 2
+        wz = bz1 + fl * KH_FLOOR_H + KH_FLOOR_H // 2
         if not skip_s:  # south face — protrude outward in -Y
             for wx in _win_row(nx, bx1 + 40, bx2 - 40):
                 brushes.append(
@@ -1256,7 +1256,7 @@ _rh_wx = [RH_X1 + (RH_CX - RH_ENT_HW - RH_X1) * k // 3 for k in [1, 2]] + [
 # Window Y centers on east/west face: 3 evenly spaced
 _rh_wy = [RH_NORTH_Y1 + (RH_NORTH_Y2 - RH_NORTH_Y1) * k // 4 for k in [1, 2, 3]]
 
-_rh_wz_lo = (FLOOR_H - RH_WIN_HH * 2) // 2  # window sill offset within a floor
+_rh_wz_lo = (KH_FLOOR_H - RH_WIN_HH * 2) // 2  # window sill offset within a floor
 _rh_wz_hi = _rh_wz_lo + RH_WIN_HH * 2  # window head offset within a floor
 
 
@@ -1265,9 +1265,9 @@ def _nb_wins_xz(wx_list):
     return [
         (
             wx - RH_WIN_HW,
-            FZ2 + fl * FLOOR_H + _rh_wz_lo,
+            FZ2 + fl * KH_FLOOR_H + _rh_wz_lo,
             wx + RH_WIN_HW,
-            FZ2 + fl * FLOOR_H + _rh_wz_hi,
+            FZ2 + fl * KH_FLOOR_H + _rh_wz_hi,
         )
         for fl in range(RH_FLOORS)
         for wx in wx_list
@@ -1279,9 +1279,9 @@ def _nb_wins_yz(wy_list):
     return [
         (
             wy - RH_WIN_HW,
-            FZ2 + fl * FLOOR_H + _rh_wz_lo,
+            FZ2 + fl * KH_FLOOR_H + _rh_wz_lo,
             wy + RH_WIN_HW,
-            FZ2 + fl * FLOOR_H + _rh_wz_hi,
+            FZ2 + fl * KH_FLOOR_H + _rh_wz_hi,
         )
         for fl in range(RH_FLOORS)
         for wy in wy_list
@@ -1359,9 +1359,9 @@ BRUSHES.append(
     )
 )
 
-# Gable (A-frame) roof — ridge runs N-S at building X center, FLOOR_H above ceiling
+# Gable (A-frame) roof — ridge runs N-S at building X center, KH_FLOOR_H above ceiling
 RH_EAVE_Z = FZ2 + RH_H + RH_WALL  # top of ceiling slab = eave level
-RH_RIDGE_Z = RH_EAVE_Z + FLOOR_H  # ridge apex
+RH_RIDGE_Z = RH_EAVE_Z + KH_FLOOR_H  # ridge apex
 _rh_slab_t = 16  # roof slab thickness at eave
 # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
 BRUSHES.append(
@@ -1425,9 +1425,9 @@ def _make_south_bldg(by1, by2):
         return [
             (
                 wx - RH_WIN_HW,
-                FZ2 + fl * FLOOR_H + _rh_wz_lo,
+                FZ2 + fl * KH_FLOOR_H + _rh_wz_lo,
                 wx + RH_WIN_HW,
-                FZ2 + fl * FLOOR_H + _rh_wz_hi,
+                FZ2 + fl * KH_FLOOR_H + _rh_wz_hi,
             )
             for fl in range(RH_FLOORS)
             for wx in wx_list
@@ -1437,9 +1437,9 @@ def _make_south_bldg(by1, by2):
         return [
             (
                 wy - RH_WIN_HW,
-                FZ2 + fl * FLOOR_H + _rh_wz_lo,
+                FZ2 + fl * KH_FLOOR_H + _rh_wz_lo,
                 wy + RH_WIN_HW,
-                FZ2 + fl * FLOOR_H + _rh_wz_hi,
+                FZ2 + fl * KH_FLOOR_H + _rh_wz_hi,
             )
             for fl in range(RH_FLOORS)
             for wy in wy_list
@@ -1492,7 +1492,11 @@ def _make_south_bldg(by1, by2):
         )
     )
     brushes.append(box(bx1, by1, FZ2 + RH_H, bx2, by2, FZ2 + RH_H + RH_WALL, "city2_1"))
-    eave_z, ridge_z, slab_t = FZ2 + RH_H + RH_WALL, FZ2 + RH_H + RH_WALL + FLOOR_H, 16
+    eave_z, ridge_z, slab_t = (
+        FZ2 + RH_H + RH_WALL,
+        FZ2 + RH_H + RH_WALL + KH_FLOOR_H,
+        16,
+    )
     brushes.append(
         ramp_slab(bx1, cx, by1, by2, eave_z, eave_z, eave_z + slab_t, ridge_z, TEX_ROOF)
     )
@@ -2525,9 +2529,9 @@ _fm_pro = 12  # mullion protrusion depth
 _s_wall_openings = [
     (
         _ENT_X1,
-        KH_GROUND_Z + fl * FLOOR_H + KH_WALL,
+        KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL,
         _ENT_X2,
-        KH_GROUND_Z + (fl + 1) * FLOOR_H,
+        KH_GROUND_Z + (fl + 1) * KH_FLOOR_H,
     )
     for fl in range(KH_FLOORS)
 ]
@@ -2620,10 +2624,12 @@ for _mx in [_se_win_cx - _win_half - _fm_div, _se_win_cx + _win_half]:
     )
 # North-West Indentation (Corner Notch)
 # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
-_door_n = [(_ENT_X1, KH_GROUND_Z, _ENT_X2, KH_GROUND_Z + FLOOR_H)]  # ground entrance
-_door_2 = [(_ENT_X1, WALK_ZT2, _ENT_X2, KH_GROUND_Z + FLOOR_H * 2)]  # walkway entrance
+_door_n = [(_ENT_X1, KH_GROUND_Z, _ENT_X2, KH_GROUND_Z + KH_FLOOR_H)]  # ground entrance
+_door_2 = [
+    (_ENT_X1, WALK_ZT2, _ENT_X2, KH_GROUND_Z + KH_FLOOR_H * 2)
+]  # walkway entrance
 _win_n = [
-    (_ORIG_KH_CX + 8, KH_GROUND_Z + FLOOR_H * 2, _ORIG_KH_CX + 56, KH_Z2)
+    (_ORIG_KH_CX + 8, KH_GROUND_Z + KH_FLOOR_H * 2, _ORIG_KH_CX + 56, KH_Z2)
 ]  # narrow vertical window slot above walkway entrance up to roof
 BRUSHES.extend(
     layered_wall(
@@ -2725,7 +2731,7 @@ for _mx in [_win_n_x1 - _fm_div, _win_n_x2]:
         box(
             _mx,
             KH_Y2 - KH_WALL,
-            KH_GROUND_Z + FLOOR_H * 2,
+            KH_GROUND_Z + KH_FLOOR_H * 2,
             _mx + _fm_div,
             KH_Y2 + _fm_pro,
             KH_Z2,
@@ -2889,7 +2895,7 @@ BRUSHES.append(
 )
 
 for _f in range(1, KH_FLOORS):
-    _sz = KH_GROUND_Z + _f * FLOOR_H
+    _sz = KH_GROUND_Z + _f * KH_FLOOR_H
     _st = _sz + KH_WALL
     # South bulk
     BRUSHES.append(box(_bix1, _biy1, _sz, _bix2, _sty1, _st, TEX_FLOOR_KH))
@@ -2912,9 +2918,9 @@ _shaft_door_h = 96  # door height
 _shaft_doors_w = [
     (
         _sty1 + 16,
-        KH_GROUND_Z + _f * FLOOR_H,
+        KH_GROUND_Z + _f * KH_FLOOR_H,
         _sty2 - 16,
-        KH_GROUND_Z + _f * FLOOR_H + _shaft_door_h,
+        KH_GROUND_Z + _f * KH_FLOOR_H + _shaft_door_h,
     )
     for _f in range(KH_FLOORS)
 ]
@@ -2959,7 +2965,7 @@ _w_hall_openings = []
 _e_hall_openings = [(_sty1, KH_GROUND_Z, _sty2, KH_Z2)]  # shaft gap always open
 
 for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
     _fz_surf = _fz1 + KH_WALL  # top of floor slab
     _split = _room_splits[_fl]
     _sr_yc = (_biy1 + _split) // 2  # south room Y center
@@ -3003,8 +3009,8 @@ BRUSHES.extend(
 
 # Partition walls per floor (divide each side into 2 rooms, with connecting door)
 for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
-    _fz2 = _fz1 + FLOOR_H
+    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
+    _fz2 = _fz1 + KH_FLOOR_H
     _fz_surf = _fz1 + KH_WALL
     _split = _room_splits[_fl]
     _sp_y2 = _split + KH_WALL
@@ -3258,9 +3264,9 @@ _room_goodies = [
 ]
 _gi = 0
 for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
     _item_z = _fz1 + KH_WALL + 24
-    _light_z = _fz1 + FLOOR_H - 24  # near ceiling
+    _light_z = _fz1 + KH_FLOOR_H - 24  # near ceiling
     _split = _room_splits[_fl]
     _sr_yc = (_biy1 + _split) // 2
     _nr_yc = (_split + KH_WALL + _biy2) // 2
@@ -3292,7 +3298,7 @@ _SHELF_W = 64  # width
 _shelf_offsets = [0, 0, 0, 0, 0]
 
 for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * FLOOR_H
+    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
     _fz_surf = _fz1 + KH_WALL
     _split = _room_splits[_fl]
     _stex = "shelf_1"
@@ -3494,10 +3500,10 @@ for pos, angle in [
     ((KH_CX, (PBY1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180),
     # Knott Hall — ground, mid, upper floors
     ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
-    ((KH_CX - 100, _bcy, KH_GROUND_Z + FLOOR_H + 40), 270),
-    ((KH_CX + 100, _bcy, KH_GROUND_Z + FLOOR_H * 2 + 40), 90),
-    ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + FLOOR_H * 3 + 40), 0),
-    ((KH_CX, _bcy, KH_GROUND_Z + FLOOR_H * 4 + 40), 180),
+    ((KH_CX - 100, _bcy, KH_GROUND_Z + KH_FLOOR_H + 40), 270),
+    ((KH_CX + 100, _bcy, KH_GROUND_Z + KH_FLOOR_H * 2 + 40), 90),
+    ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + KH_FLOOR_H * 3 + 40), 0),
+    ((KH_CX, _bcy, KH_GROUND_Z + KH_FLOOR_H * 4 + 40), 180),
     # Knott Hall rooftop
     ((KH_CX, _bcy, KH_Z2 + 40), 180),
     # Charles Street
@@ -3506,7 +3512,7 @@ for pos, angle in [
     ((0, RH_SOUTH1_CY, ROAD_Z + 24), 270),
     # North building interior
     ((RH_CX, RH_NORTH_CY, FZ2 + 40), 90),
-    ((RH_CX, RH_NORTH_CY, FZ2 + FLOOR_H + 40), 90),
+    ((RH_CX, RH_NORTH_CY, FZ2 + KH_FLOOR_H + 40), 90),
     # North building roof ridge
     ((RH_CX, RH_NORTH_CY, int(RH_RIDGE_Z + 40)), 90),
     # South buildings interiors
@@ -3531,7 +3537,7 @@ ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
 ENTITIES.append(
     ent(
         "weapon_rocketlauncher",
-        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 3 + 40}",
+        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + KH_FLOOR_H * 3 + 40}",
     )
 )
 
@@ -3546,7 +3552,7 @@ ENTITIES.append(ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FZ2 
 ENTITIES.append(
     ent(
         "weapon_grenadelauncher",
-        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 2 + 40}",
+        origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}",
     )
 )
 ENTITIES.append(
@@ -3557,7 +3563,7 @@ ENTITIES.append(
 ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
 ENTITIES.append(
-    ent("weapon_nailgun", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H + 40}")
+    ent("weapon_nailgun", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + KH_FLOOR_H + 40}")
 )
 
 # ── Ammo ──────────────────────────────────────────────────────────────────
@@ -3570,7 +3576,7 @@ for _kf in range(1, KH_FLOORS):
     ENTITIES.append(
         ent(
             "item_rockets",
-            origin=f"{KH_CX + 80} {_bcy} {KH_GROUND_Z + _kf * FLOOR_H + 40}",
+            origin=f"{KH_CX + 80} {_bcy} {KH_GROUND_Z + _kf * KH_FLOOR_H + 40}",
         )
     )
 ENTITIES.append(ent("item_shells", origin=f"0 -300 {ROAD_Z + 24}"))
@@ -3583,7 +3589,7 @@ ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
 ENTITIES.append(ent("item_health", origin=f"{KH_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
 ENTITIES.append(
-    ent("item_health", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 2 + 40}")
+    ent("item_health", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}")
 )
 ENTITIES.append(ent("item_health", origin=f"0 400 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_health", origin=f"0 -600 {ROAD_Z + 24}"))
@@ -3591,7 +3597,7 @@ ENTITIES.append(ent("item_health", origin=f"{RH_CX} {RH_SOUTH2_CY} {FZ2 + 40}"))
 # Armor — contested locations
 ENTITIES.append(ent("item_armor1", origin=f"-200 0 {DECK_Z}"))  # yellow armor on bridge
 ENTITIES.append(
-    ent("item_armor2", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + FLOOR_H * 4 + 40}")
+    ent("item_armor2", origin=f"{KH_CX} {_bcy} {KH_GROUND_Z + KH_FLOOR_H * 4 + 40}")
 )  # red armor top floor
 ENTITIES.append(
     ent("item_armorInv", origin=f"{RH_CX} {RH_NORTH_CY} {int(RH_RIDGE_Z + 40)}")
@@ -3695,14 +3701,14 @@ for _bly1, _bly2 in [
 ]:
     _bly = (_bly1 + _bly2) // 2
     for _bfl in range(RH_FLOORS):
-        _blz = FZ2 + _bfl * FLOOR_H + FLOOR_H // 2
+        _blz = FZ2 + _bfl * KH_FLOOR_H + KH_FLOOR_H // 2
         ENTITIES.append(
             ent("light", origin=f"{_bldg_light_x} {_bly} {_blz}", light="200")
         )
 
 # Interior lights for Knott Hall — 3×4 grid per floor
 for _kfl in range(KH_FLOORS):
-    _klz = KH_GROUND_Z + _kfl * FLOOR_H + FLOOR_H // 2
+    _klz = KH_GROUND_Z + _kfl * KH_FLOOR_H + KH_FLOOR_H // 2
     for _kxi in [1, 2, 3]:
         _klx = KH_X1 + (KH_X2 - KH_X1) * _kxi // 4
         for _kyi in [1, 2, 3, 4]:
