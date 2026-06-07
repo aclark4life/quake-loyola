@@ -58,12 +58,11 @@ ARCH_SEGS = 32  # segments approximating the wider curve
 def arch_z(x):
     """Z offset above flat datum for parabolic arch at x.
 
-    Crown pinned at X=0 (Charles Street centreline). Curve extends the full
-    span in both directions; west half uses |PB_X1| as half-span, east half
-    uses PB_X2, so arch_z reaches zero at both endpoints.
+    Symmetric parabola centred at X=0 (Charles Street). Both sides degrade
+    at the same rate, reaching zero at ±PB_X2 (1246 units). West of -1246
+    the value clamps to zero (flat approach to world wall).
     """
-    half = abs(float(PB_X1)) if x <= 0 else float(PB_X2)
-    return PB_ARCH_RISE * max(0.0, 1.0 - (x / half) ** 2)
+    return PB_ARCH_RISE * max(0.0, 1.0 - (x / float(PB_X2)) ** 2)
 
 
 def dtop(x):
