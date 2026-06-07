@@ -82,7 +82,7 @@ PB_PIL_PYR_W = 45  # pyramid base half-width — slightly wider than pillar (PB_
 PB_PIL_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
-PB_PIL_BASE_H = 96  # solid stone plinth at pier base below arch opening (~6 ft)
+PB_PIL_BASE_H = 24  # solid stone plinth at pier base below arch opening (~1.5 ft)
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
@@ -1862,9 +1862,9 @@ for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
 # Each pillar position now features a narrow arched pier supporting the deck.
 # Arch openings span most of the bridge N-S width (PB_Y2=136, bridge=272 units)
 # rin = half-width of clear opening; rout = outer radius of arch ring
-PB_PIL_OUTER_R = (117, 80)  # narrower outer piers flanking road
-PB_PIL_INNER_R = (131, 90)  # slightly wider inner piers
-PB_PIL_CENTR_R = (128, 100)  # widest opening at centre
+PB_PIL_OUTER_R = (140, 100)  # narrower outer piers flanking road
+PB_PIL_INNER_R = (160, 112)  # slightly wider inner piers
+PB_PIL_CENTR_R = (160, 120)  # widest opening at centre
 if SHOW_SUPPORTS:
     for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
