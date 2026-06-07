@@ -113,7 +113,7 @@ World shell
 │   ├── Arch deck (32 segments PB_X1 → PB_X2, parabolic rise)
 │   ├── Parapet walls (N & S edges, full span)
 │   ├── Parapet blocks & handrails
-│   ├── Stone piers ×5 (at PXS[] positions)
+│   ├── Stone piers ×5 (at PB_ARCH_X[] positions)
 │   │   └── each: arch wall → voussoir ring → cap → pillar post
 │   ├── West teleport arch (X = PB_X1 / west world wall)
 │   └── East teleport arch (X = east world wall)
@@ -153,12 +153,12 @@ These constants are "load-bearing" across multiple objects; changing one cascade
 | `PB_DZ1`, `PB_DZ2` | Flat deck Z, all pier heights, teleport arch spring height (`PB_DZ2 + ARCH_STILT`), walkway Z |
 | `PB_X1`, `PB_X2` | Deck arch shape & segment count, all pier X range, teleport arch X positions, embankment ramp extents |
 | `PB_Y1`, `PB_Y2` | Parapet N/S position, teleport arch Y opening size, walkway Y start, Ennis Road reference Y |
-| `PXS[]` | Pier X positions; `PXS[0]` pins the abutment building X |
+| `PB_ARCH_X[]` | Pier X positions; `PB_ARCH_X[0]` pins the abutment building X |
 | `RH_DEPTH` | Residence hall N–S depth; shared by all four RH buildings — changing it shifts the south building stack |
 | `RH_EMB_X2` | East edge of the embankment ramp; set to keep the abutment pier stone base visible |
 | `RH_FLOORS` | Residence hall floor count; shared by all four RH buildings |
 | `RH_NORTH_Y1`, `RH_NORTH_Y2` | North building Y extents; derived from `WORLD_Y2`, shifts south building stack indirectly |
-| `RH_PIER_X` | Derived from `PXS[0]`; pins the RH building X — move the west pier and the buildings move too |
+| `RH_PIER_X` | Derived from `PB_ARCH_X[0]`; pins the RH building X — move the west pier and the buildings move too |
 | `RH_SOUTH1_Y1/Y2`, `RH_SOUTH2_Y1/Y2` | South building 1 & 2 Y extents; stacked directly — changing `RH_DEPTH` shifts both |
 | `RH_WALL` | Wall thickness; used for all RH interior/exterior dimensions and window placement |
 | `RH_WIN_HW`, `RH_WIN_HH` | Window half-width / half-height; shared across all RH building facades |

@@ -94,7 +94,7 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 # Flat approach = 49 ft 1 in = 741 units per side of the 1050-unit arched span
 KH_WIDTH = 640
 WORLD_X1 = -1983  # west wall; PB_X1 = WORLD_X1+WALL_T = -1967, giving western span
-# of 721 units (= PXS[2]→PXS[3] eastern span) so block spacing matches
+# of 721 units (= PB_ARCH_X[2]→PB_ARCH_X[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
     -2432,
@@ -115,7 +115,7 @@ _PIER_X = KH_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = _PIER_X  # east arch terminus at fixed pier position
 SEG_W = (PB_X2 - PB_X1) / ARCH_SEGS  # segment width for full-span arch
-PXS = [
+PB_ARCH_X = [
     -1246,  # west abutment pier (top of embankment hill)
     -525,
     525,
@@ -873,8 +873,8 @@ BRUSHES.append(
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
 _EPL_HW = 22  # pillar half-width (was 30, ×0.75)
 _EPL_OFFSET = _WALK_W + 20
-_EPL_X1 = PXS[2] - _EPL_HW  # align pillar centre with closest bridge pier (X=525)
-_EPL_X2 = PXS[2] + _EPL_HW
+_EPL_X1 = PB_ARCH_X[2] - _EPL_HW  # align pillar centre with closest bridge pier (X=525)
+_EPL_X2 = PB_ARCH_X[2] + _EPL_HW
 _EPL_ZB = FZ2
 _EPL_POST_H = 81  # post height (was 108, ×0.75)
 _EPL_CAP_OVH = 1
@@ -976,7 +976,7 @@ _BW_T = 8  # wall thickness
 _BW_H = 48  # wall height ≈ 3 ft
 _BW_NY = _ENNIS_Y + _ENNIS_HW + _EPL_HW * 2  # south face Y (flush with north pillar)
 _BW_X1 = ROAD_X2 + _WALK_W + 48  # ~48u east of sidewalk (more grass)
-_BW_EX2 = PXS[2] + _EPL_HW + 80  # E-W wall extends past stone pillar
+_BW_EX2 = PB_ARCH_X[2] + _EPL_HW + 80  # E-W wall extends past stone pillar
 _BW_NY2 = _BW_NY + 200  # north segment length
 # East-running segment (south base of L)
 BRUSHES.append(
@@ -1043,7 +1043,7 @@ BRUSHES.append(
 RH_FLOORS = 3
 RH_H = RH_FLOORS * KH_FLOOR_H  # 384 units tall
 RH_DEPTH = 600  # building N-S depth (doubled)
-RH_PIER_X = min(PXS)  # = -1100
+RH_PIER_X = min(PB_ARCH_X)  # = -1100
 RH_X2 = RH_PIER_X + P_HW + 32  # east face of building  = -1031
 RH_X1 = RH_X2 - 576  # west face of building (doubled width)
 RH_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
@@ -1676,15 +1676,15 @@ def _add_parapet_blocks(
             )
 
 
-# Western span (PB_X1 → PXS[0]): no blocks — open span
-# Span 2 (PXS[0] → PXS[1]): eastern span 1, 3 blocks
-_add_parapet_blocks(PXS[0], PXS[1], 3)
-# Middle span (PXS[1] → PXS[2]): 4 blocks
-_add_parapet_blocks(PXS[1], PXS[2], 4)
-# Eastern span 2 (PXS[2] → PXS[3]): 3 blocks
-_add_parapet_blocks(PXS[2], PXS[3], 3)
-# East flat span: west sub-span (PB_X2→PXS[4]) gets 3 north blocks; east sub-span open (matches ref)
-_add_parapet_blocks(PB_X2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
+# Western span (PB_X1 → PB_ARCH_X[0]): no blocks — open span
+# Span 2 (PB_ARCH_X[0] → PB_ARCH_X[1]): eastern span 1, 3 blocks
+_add_parapet_blocks(PB_ARCH_X[0], PB_ARCH_X[1], 3)
+# Middle span (PB_ARCH_X[1] → PB_ARCH_X[2]): 4 blocks
+_add_parapet_blocks(PB_ARCH_X[1], PB_ARCH_X[2], 4)
+# Eastern span 2 (PB_ARCH_X[2] → PB_ARCH_X[3]): 3 blocks
+_add_parapet_blocks(PB_ARCH_X[2], PB_ARCH_X[3], 3)
+# East flat span: west sub-span (PB_X2→PB_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
+_add_parapet_blocks(PB_X2, PB_ARCH_X[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 
 # ── Decorative squares on parapet outer faces (one per block position) ────────
 _SQ_HW = 8  # half-width in X (16 units wide)
@@ -1748,10 +1748,10 @@ def _add_parapet_squares(
             )
 
 
-_add_parapet_squares(PXS[0], PXS[1], 3)
-_add_parapet_squares(PXS[1], PXS[2], 4)
-_add_parapet_squares(PXS[2], PXS[3], 3)
-_add_parapet_squares(PB_X2, PXS[4], 3, west_margin=_BLK_HW + 8, n_south=0)
+_add_parapet_squares(PB_ARCH_X[0], PB_ARCH_X[1], 3)
+_add_parapet_squares(PB_ARCH_X[1], PB_ARCH_X[2], 4)
+_add_parapet_squares(PB_ARCH_X[2], PB_ARCH_X[3], 3)
+_add_parapet_squares(PB_X2, PB_ARCH_X[4], 3, west_margin=_BLK_HW + 8, n_south=0)
 # South east of walkway: corner blocks only at each side of the opening
 # Corner block on east side of walkway opening (west face flush with WALK_X2)
 _cx_walk_e = WALK_X2 + _BLK_HW
@@ -1861,7 +1861,7 @@ _OUTER_R = (117, 80)  # narrower outer piers flanking road
 _INNER_R = (131, 90)  # slightly wider inner piers
 _CENTR_R = (128, 100)  # widest opening at centre
 if SHOW_SUPPORTS:
-    for px in PXS:
+    for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
         pdeck = dtop(px)  # deck surface at this X
@@ -1877,7 +1877,7 @@ if SHOW_SUPPORTS:
         # Arch opening varies by pillar type (outer / inner / centre)
         if px == 0:
             a_rout, a_rin = _CENTR_R
-        elif abs(px) == max(abs(p) for p in PXS):
+        elif abs(px) == max(abs(p) for p in PB_ARCH_X):
             a_rout, a_rin = _OUTER_R
         else:
             a_rout, a_rin = _INNER_R
@@ -1893,7 +1893,7 @@ if SHOW_SUPPORTS:
         _arch_overhang = max(PIL_OVERHANG, PB_Y2 + PIL_OVERHANG - a_rout)
 
         # Add pier structure — easternmost pier gets a square opening, rest are arched
-        if px == max(PXS):
+        if px == max(PB_ARCH_X):
             # Overhang must reach PB_Y2+PIL_OVERHANG to match pillar tops above deck
             _sq_overhang = PB_Y2 + PIL_OVERHANG - a_rin
             BRUSHES.extend(
@@ -2007,7 +2007,7 @@ if SHOW_SUPPORTS:
             )
 
         # Abutment pier (westernmost): solid cement fill + arch teleport on west face
-        if px == min(PXS):
+        if px == min(PB_ARCH_X):
             # Cement fill starts 16 units east of pier face to make room for arch
             BRUSHES.append(
                 box(x1 + 16, -a_rin, FZ2, x2, a_rin, int(pdeck) - 16, TEX_CEMENT)
@@ -3200,12 +3200,12 @@ for _lx in _LAMP_POST_XS:
 
 # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
 _SPAN_CENTRES = [
-    (PB_X1 + PXS[0]) // 2,
-    (PXS[0] + PXS[1]) // 2,
-    (PXS[1] + PXS[2]) // 2,
-    (PXS[2] + PB_X2) // 2,
-    (PB_X2 + PXS[4]) // 2,
-    (PXS[4] + WORLD_X2 - WALL_T) // 2,
+    (PB_X1 + PB_ARCH_X[0]) // 2,
+    (PB_ARCH_X[0] + PB_ARCH_X[1]) // 2,
+    (PB_ARCH_X[1] + PB_ARCH_X[2]) // 2,
+    (PB_ARCH_X[2] + PB_X2) // 2,
+    (PB_X2 + PB_ARCH_X[4]) // 2,
+    (PB_ARCH_X[4] + WORLD_X2 - WALL_T) // 2,
 ]
 _PEND_XS = _SPAN_CENTRES
 
@@ -3360,7 +3360,7 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_abutment_deck",
-        origin=f"{min(PXS)} 0 {_abutment_tele_dest_z}",
+        origin=f"{min(PB_ARCH_X)} 0 {_abutment_tele_dest_z}",
         angle="0",
     )
 )
@@ -3591,7 +3591,7 @@ ENTITIES.append(
 )
 
 # ── Ammo ──────────────────────────────────────────────────────────────────
-for ax in PXS:
+for ax in PB_ARCH_X:
     ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
 for rx in [400, 800]:
     ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
@@ -3629,7 +3629,7 @@ ENTITIES.append(
 
 # Torch lights on pillar caps
 if SHOW_SUPPORTS:
-    for px in PXS:
+    for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
         pbase = dtop(px)
@@ -3658,7 +3658,7 @@ if SHOW_SUPPORTS:
 
 # Pillar base uplights — ground-level spots wash light up the pier faces
 if SHOW_SUPPORTS:
-    for px in PXS:
+    for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
         for _uy in [PB_Y2 + 30, PB_Y1 - 30]:
