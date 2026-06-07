@@ -51,7 +51,7 @@ PB_DZ1, PB_DZ2 = (
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # PB_X1/PB_X2 set after world/building bounds are known (arch spans full world width)
-PB_ARCH_RISE = 96  # centre rise — modest crown over flat approaches
+PB_ARCH_RISE = 144  # centre rise — matches reference photo arch crown (bridge08)
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
@@ -73,7 +73,7 @@ def dbot(x):
 
 
 # ── Parapet + pillar dimensions (above deck surface) ─────────────────────────
-PB_PAR_H = 36  # parapet wall height above deck — at jump limit (~40 units)
+PB_PAR_H = 48  # parapet wall height above deck — ~3 ft, matches reference photos
 PB_PAR_W = ft(2, 6)  # parapet wall N-S width = 2 ft 6 in = 38 units
 PB_PIL_EXTRA = 64  # extra pillar post height above parapet (gameplay)
 PB_PIL_CAP_H = 12  # cap slab height
@@ -671,7 +671,7 @@ CS_STRIPE_W = 6  # centre-line stripe half-width
 # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
 # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
 EP_Y = PB_Y2 + 400  # 536: centred 400 units north of bridge north edge
-EP_HW = 128  # road half-width → 256-unit carriageway (half of Charles St's 512)
+EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 
