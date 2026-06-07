@@ -45,9 +45,9 @@ TEX_ROOF = "wgrnd1_5"  # street/road texture for roof
 # Scale: 1 ft ≈ 15.1 units  (derived from 1050 units = 69.5 ft)
 PB_Y1, PB_Y2 = -136, 136  # N-S width = 272 units ≈ 18 ft
 PB_DZ1, PB_DZ2 = (
-    208,
-    224,
-)  # flat deck bottom / top — raised for realistic road clearance (~14 ft)
+    336,
+    352,
+)  # flat deck bottom / top — raised for realistic road clearance (~22 ft)
 
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # PB_X1/PB_X2 set after world/building bounds are known (arch spans full world width)
@@ -82,6 +82,7 @@ PB_PIL_PYR_W = 45  # pyramid base half-width — slightly wider than pillar (PB_
 PB_PIL_HW = ft(2, 5.5)  # pillar post half-width = half of 4 ft 11 in = 37 units
 PB_PIL_CE = 17  # cap overhang each side = (7 ft 2 in - 4 ft 11 in) / 2
 PB_PIL_OVERHANG = 16  # how far above-deck pillar tops extend beyond bridge N/S edges
+PB_PIL_BASE_H = 96  # solid stone plinth at pier base below arch opening (~6 ft)
 
 # ── Pillar X positions — 2 pillars at the start of the curve + 1 east of Knott Hall
 # Bridge support visibility: False = none, set of X positions = those piers only, True = all
@@ -126,20 +127,20 @@ KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
 KH_FLOOR_H = 128  # floor-to-floor height
 KH_FLOORS = 5  # number of floors
-# Knott Hall is in flat approach: deck = PB_DZ2 = 144; 2nd floor aligns automatically
-KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 0 (no hill needed)
+# Knott Hall sits at ground level regardless of bridge deck height
+KH_GROUND_Z = FZ2  # = 0
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
 WORLD_Z2 = max(640, KH_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
-# Flat span at PB_DZ2=144 (flat approach section); pinned to original building centre
+KH_WALKWAY_ENABLED = False  # set True to re-connect walkway to Knott Hall 2nd floor
+# Flat span at PB_DZ2 (flat approach section); pinned to original building centre
 WALK_X1 = KH_ORIG_CX - 64
 WALK_X2 = KH_ORIG_CX + 64
-WALK_ZT1 = int(dtop(KH_ORIG_CX))  # = PB_DZ2 = 144 (flat approach, no arch rise)
-WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL  # = 144 = WALK_ZT1 (flat)
-# No ramp needed: KH_GROUND_Z = 0 = road level
+WALK_ZT1 = int(dtop(KH_ORIG_CX))  # deck surface Z at walkway X
+WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL  # 2nd floor entrance Z
 
 # ── Arch segments ─────────────────────────────────────────────────────────────
 A_SEGS = 32
@@ -1911,7 +1912,7 @@ if SHOW_SUPPORTS:
                     a_rin,
                     TEX_PILLAR,
                     overhang=_sq_overhang,
-                    base_h=32,
+                    base_h=PB_PIL_BASE_H,
                 )
             )
         else:
@@ -1929,7 +1930,7 @@ if SHOW_SUPPORTS:
                     TEX_PILLAR,
                     stilt_h=a_stilt,
                     overhang=_arch_overhang,
-                    base_h=32,
+                    base_h=PB_PIL_BASE_H,
                 )
             )
 
@@ -2070,78 +2071,77 @@ for _ex in [WORLD_X1 + WALL_T, WORLD_X2 - WALL_T - TEX_ARCH_W]:
 # WALKWAY — flat bridge from south edge to building 2nd floor entrance
 # X=-64..64, Y=PB_Y1..KH_Y2; flat at WALK_ZT1 = WALK_ZT2
 # ════════════════════════════════════════════════════════════════════════════════
-wk_zb1 = WALK_ZT1 - KH_WALL  # slab bottom at bridge end  = 192
-wk_zb2 = WALK_ZT2 - KH_WALL  # slab bottom at building end = 128
-BRUSHES.append(
-    ramp_slab_y(
-        WALK_X1,
-        WALK_X2,
-        PB_Y1,
-        KH_Y2,
-        wk_zb1,
-        wk_zb2,
-        WALK_ZT1,
-        WALK_ZT2,
-        TEX_CEMENT,
-        tt=TEX_FLOOR,
-    )
-)
-# Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
-PBCS_WALK_WALL = 32
-BRUSHES.append(
-    ramp_slab_y(
-        WALK_X1 - PBCS_WALK_WALL,
-        WALK_X1,
-        PB_Y1,
-        KH_Y2,
-        wk_zb1,
-        wk_zb2,
-        WALK_ZT1 + PB_PAR_H,
-        WALK_ZT2 + PB_PAR_H,
-        TEX_CEMENT,
-    )
-)
-BRUSHES.append(
-    ramp_slab_y(
-        WALK_X2,
-        WALK_X2 + PBCS_WALK_WALL,
-        PB_Y1,
-        KH_Y2,
-        wk_zb1,
-        wk_zb2,
-        WALK_ZT1 + PB_PAR_H,
-        WALK_ZT2 + PB_PAR_H,
-        TEX_CEMENT,
-    )
-)
-# Handrail tubes along walkway sides, centred in the wall thickness
-for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
-    _tbz = WALK_ZT1 + PB_PAR_H + _tube_z_extra
-    _ww_cx = PBCS_WALK_WALL // 2  # offset from inner face to wall centre
-    # West railing (centred in west wall)
+if KH_WALKWAY_ENABLED:
+    wk_zb1 = WALK_ZT1 - KH_WALL  # slab bottom at bridge end
+    wk_zb2 = WALK_ZT2 - KH_WALL  # slab bottom at building end
     BRUSHES.append(
-        box(
-            WALK_X1 - _ww_cx - PB_TUBE_HW,
-            KH_Y2,
-            _tbz,
-            WALK_X1 - _ww_cx + PB_TUBE_HW,
+        ramp_slab_y(
+            WALK_X1,
+            WALK_X2,
             PB_Y1,
-            _tbz + PB_TUBE_HW * 2,
-            TEX_RAIL,
+            KH_Y2,
+            wk_zb1,
+            wk_zb2,
+            WALK_ZT1,
+            WALK_ZT2,
+            TEX_CEMENT,
+            tt=TEX_FLOOR,
         )
     )
-    # East railing (centred in east wall)
+    # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
+    PBCS_WALK_WALL = 32
     BRUSHES.append(
-        box(
-            WALK_X2 + _ww_cx - PB_TUBE_HW,
-            KH_Y2,
-            _tbz,
-            WALK_X2 + _ww_cx + PB_TUBE_HW,
+        ramp_slab_y(
+            WALK_X1 - PBCS_WALK_WALL,
+            WALK_X1,
             PB_Y1,
-            _tbz + PB_TUBE_HW * 2,
-            TEX_RAIL,
+            KH_Y2,
+            wk_zb1,
+            wk_zb2,
+            WALK_ZT1 + PB_PAR_H,
+            WALK_ZT2 + PB_PAR_H,
+            TEX_CEMENT,
         )
     )
+    BRUSHES.append(
+        ramp_slab_y(
+            WALK_X2,
+            WALK_X2 + PBCS_WALK_WALL,
+            PB_Y1,
+            KH_Y2,
+            wk_zb1,
+            wk_zb2,
+            WALK_ZT1 + PB_PAR_H,
+            WALK_ZT2 + PB_PAR_H,
+            TEX_CEMENT,
+        )
+    )
+    # Handrail tubes along walkway sides, centred in the wall thickness
+    for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
+        _tbz = WALK_ZT1 + PB_PAR_H + _tube_z_extra
+        _ww_cx = PBCS_WALK_WALL // 2
+        BRUSHES.append(
+            box(
+                WALK_X1 - _ww_cx - PB_TUBE_HW,
+                KH_Y2,
+                _tbz,
+                WALK_X1 - _ww_cx + PB_TUBE_HW,
+                PB_Y1,
+                _tbz + PB_TUBE_HW * 2,
+                TEX_RAIL,
+            )
+        )
+        BRUSHES.append(
+            box(
+                WALK_X2 + _ww_cx - PB_TUBE_HW,
+                KH_Y2,
+                _tbz,
+                WALK_X2 + _ww_cx + PB_TUBE_HW,
+                PB_Y1,
+                _tbz + PB_TUBE_HW * 2,
+                TEX_RAIL,
+            )
+        )
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -3733,12 +3733,15 @@ for _px in PB_PEND_XS:
     )
 
 # Light on underside of walkway slab illuminating the ramp below
-walk_mid_y = (PB_Y1 + KH_Y2) // 2
-walk_frac = (PB_Y1 - walk_mid_y) / float(PB_Y1 - KH_Y2)
-walk_bot_mid = int(wk_zb1 + walk_frac * (wk_zb2 - wk_zb1))
-ENTITIES.append(
-    ent("light", origin=f"{KH_CX} {walk_mid_y} {walk_bot_mid - 8}", light="300")
-)
+if KH_WALKWAY_ENABLED:
+    walk_mid_y = (PB_Y1 + KH_Y2) // 2
+    walk_frac = (PB_Y1 - walk_mid_y) / float(PB_Y1 - KH_Y2)
+    wk_zb1 = WALK_ZT1 - KH_WALL
+    wk_zb2 = WALK_ZT2 - KH_WALL
+    walk_bot_mid = int(wk_zb1 + walk_frac * (wk_zb2 - wk_zb1))
+    ENTITIES.append(
+        ent("light", origin=f"{KH_CX} {walk_mid_y} {walk_bot_mid - 8}", light="300")
+    )
 
 # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
 lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
