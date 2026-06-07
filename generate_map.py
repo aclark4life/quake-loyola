@@ -52,18 +52,18 @@ PB_DZ1, PB_DZ2 = (
 # ── Arch profile ──────────────────────────────────────────────────────────────
 # PB_X1/PB_X2 set after world/building bounds are known (arch spans full world width)
 PB_ARCH_RISE = 144  # centre rise — matches reference photo arch crown (bridge08)
-ARCH_HALF_SPAN = 525  # half the 1050-unit arched span between inner piers (±525)
 ARCH_SEGS = 32  # segments approximating the wider curve
 
 
 def arch_z(x):
     """Z offset above flat datum for parabolic arch at x.
 
-    Symmetric about X=0 (Charles Street centreline). Crown = PB_ARCH_RISE at
-    X=0, falls to zero at the inner pier bases (±ARCH_HALF_SPAN), and stays
-    zero on the flat approach sections outside that span.
+    Crown pinned at X=0 (Charles Street centreline). Curve extends the full
+    span in both directions; west half uses |PB_X1| as half-span, east half
+    uses PB_X2, so arch_z reaches zero at both endpoints.
     """
-    return PB_ARCH_RISE * max(0.0, 1.0 - (x / ARCH_HALF_SPAN) ** 2)
+    half = abs(float(PB_X1)) if x <= 0 else float(PB_X2)
+    return PB_ARCH_RISE * max(0.0, 1.0 - (x / half) ** 2)
 
 
 def dtop(x):
