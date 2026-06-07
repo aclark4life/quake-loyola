@@ -368,6 +368,26 @@ def make_tree(cx, cy, base_z):
     return brushes
 
 
+def make_bush(cx, cy, base_z, size=24):
+    """Cartoon bush: squat box base + low pyramid cap, all ground texture."""
+    brushes = []
+    brushes.append(
+        box(cx - size, cy - size, base_z, cx + size, cy + size, base_z + 16, TEX_GROUND)
+    )
+    brushes.append(
+        pyramid(
+            cx - size,
+            cy - size,
+            base_z + 12,
+            cx + size,
+            cy + size,
+            base_z + size + 8,
+            TEX_GROUND,
+        )
+    )
+    return brushes
+
+
 def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
     Angles t1d..t2d in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
@@ -4357,6 +4377,40 @@ _all_tree_brushes = []
 for _tx, _ty in _tree_positions:
     _all_tree_brushes += make_tree(_tx, _ty, FZ2)
 ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
+
+# ── Cartoon bushes as func_detail ────────────────────────────────────────────
+_bush_positions = [
+    # Along south face of Ennis brick wall
+    (bw_x1 + 60, bw_ny - 40),
+    (bw_x1 + 160, bw_ny - 40),
+    (bw_x1 + 260, bw_ny - 40),
+    (bw_x1 + 360, bw_ny - 40),
+    # Along south face of iron fence
+    (int(_ew_x1 + 120), bw_ny - 40),
+    (int(_ew_x1 + 300), bw_ny - 40),
+    (int(_ew_x1 + 500), bw_ny - 40),
+    (int(_ew_x1 + 700), bw_ny - 40),
+    # Along south face of cement parapet wall
+    (int(_cw_x1 + 120), bw_ny - 40),
+    (int(_cw_x1 + 320), bw_ny - 40),
+    (int(_cw_x1 + 560), bw_ny - 40),
+    # Along Knott Hall east face
+    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2 - 200),
+    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2),
+    (KH_X1 + 48, (KH_Y1 + KH_Y2) // 2 + 200),
+    # Along west building east face (RH_X2)
+    (RH_X2 - 48, -200),
+    (RH_X2 - 48, 200),
+    (RH_X2 - 48, 500),
+    # Charles St sidewalk east edge
+    (ROAD_X2 + 60, -400),
+    (ROAD_X2 + 60, -700),
+    (ROAD_X2 + 60, -1000),
+]
+_all_bush_brushes = []
+for _bx, _by in _bush_positions:
+    _all_bush_brushes += make_bush(_bx, _by, FZ2)
+ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
