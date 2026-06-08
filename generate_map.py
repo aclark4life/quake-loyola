@@ -3318,6 +3318,29 @@ for _mx in [win_n_x1 - KH_MULLION_W, win_n_x2]:
         )
     )
 
+# ── "Marion Burk Knott Hall" sign plaque — north face, 2nd floor level ───────
+# Protruding cement slab, sized to fit pixel-font lettering
+_sign_text = "MARION BURK KNOTT HALL"
+_sign_px_w, _sign_px_h = 2, 4
+_sign_char_w = (4 + 1) * _sign_px_w
+_sign_total_w = len(_sign_text) * _sign_char_w - _sign_px_w  # = 436
+_sign_hw = _sign_total_w // 2 + 4  # 4 unit padding each side = 222
+_sign_cx = 1858 - _sign_hw  # east edge flush with wall end = 1636
+_sign_zb = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
+_sign_zt = _sign_zb + 48  # 48 units tall
+BRUSHES.append(
+    box(
+        _sign_cx - _sign_hw,
+        KH_Y2,
+        _sign_zb,
+        _sign_cx + _sign_hw,
+        KH_Y2 + 6,
+        _sign_zt,
+        TEX_CEMENT,
+    )
+)
+# Letter brushes deferred — render_text_flat defined below
+
 # ── Brutalist Fins (All Exposed Facades) — currently disabled ─────────────────
 
 # East wall — three 120-unit wide floor-to-ceiling windows, matching west side
@@ -3687,6 +3710,43 @@ def render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
                     )
     return brushes
 
+
+def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=False):
+    """Render text as pixel-font raised boxes on a flat north-facing wall surface."""
+    cols = 4
+    rows = 6
+    char_w_f = (cols + 1) * px_w
+    brushes = []
+    for ci, ch in enumerate(text):
+        bitmap = KH_FASCIA_FONT.get(ch, KH_FASCIA_FONT[" "])
+        cx = x0 + ci * char_w_f
+        for row_i, row_bits in enumerate(bitmap):
+            z = z_base + (rows - 1 - row_i) * px_h
+            for col_i in range(cols):
+                src_col = (cols - 1 - col_i) if mirror else col_i
+                if row_bits & (1 << (cols - 1 - src_col)):
+                    px = cx + col_i * px_w
+                    brushes.append(
+                        box(px, y_face, z, px + px_w, y_face + depth, z + px_h, tex)
+                    )
+    return brushes
+
+
+# Raised pixel-font letters on the Knott Hall sign plaque
+# Text reversed + mirrored so it reads correctly when viewed from north (facing south)
+BRUSHES.extend(
+    render_text_flat(
+        _sign_text[::-1],
+        x0=_sign_cx - _sign_total_w // 2,
+        y_face=KH_Y2 + 6,
+        z_base=_sign_zb + 14,  # centered: (48-20)//2 = 14
+        px_w=_sign_px_w,
+        px_h=_sign_px_h,
+        depth=2,
+        tex=TEX_RAIL,
+        mirror=True,
+    )
+)
 
 letter_brushes = (
     (
