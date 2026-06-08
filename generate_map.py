@@ -170,12 +170,12 @@ def pt(x, y, z):
     return f"( {fv(x)} {fv(y)} {fv(z)} )"
 
 
-def face(p1, p2, p3, tex):
+def face(p1, p2, p3, tex, params="0 0 0 1 1"):
     """Return a Quake MAP brush face string from 3 coplanar points and a texture name."""
-    return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} 0 0 0 1 1"
+    return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} {params}"
 
 
-def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
+def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
     """Axis-aligned rectangular brush. tex=sides, tt=top, tb=bottom (default to tex)."""
     tt = tt or tex
     tb = tb or tex
@@ -188,7 +188,7 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None):
                 face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),
                 face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
                 face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
-                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt),
+                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
             ]
         )
         + "\n}"
@@ -828,8 +828,11 @@ EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches referen
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 
-# Road surface (2-unit overlay so it textures differently from surrounding ground)
-BRUSHES.append(box(ROAD_X1, CS_Y1, FZ2, ROAD_X2, CS_Y2, FZ2 + 2, TEX_ROAD))
+# Road surface — split either side of centre divider slot (_div_hw wide)
+_div_hw = 4  # half-width of Charles St divider slot
+_div_ep_hw = 16  # half-width of Ennis divider slot (wider for rune1_lig2 white)
+BRUSHES.append(box(ROAD_X1, CS_Y1, FZ2, -_div_hw, CS_Y2, FZ2 + 2, TEX_ROAD))
+BRUSHES.append(box(_div_hw, CS_Y1, FZ2, ROAD_X2, CS_Y2, FZ2 + 2, TEX_ROAD))
 CS_SWALK_START = PB_Y2 + 200  # sidewalk starts north of bridge
 # West sidewalk — north of bridge
 BRUSHES.append(
@@ -884,18 +887,11 @@ BRUSHES.append(
 )
 
 # ── Ennis Road brushes ──
-# Road surface (full length including intersection with Charles Street)
+# Road surface — split around centre divider slot (_div_ep_hw wide, south half)
 BRUSHES.append(
-    box(
-        EP_X1,
-        EP_Y - EP_HW,
-        FZ2,
-        EP_X2,
-        EP_Y + EP_HW,
-        FZ2 + 2,
-        TEX_ROAD,
-    )
+    box(EP_X1, EP_Y - EP_HW, FZ2, EP_X2, EP_Y - _div_ep_hw, FZ2 + 2, TEX_ROAD)
 )
+BRUSHES.append(box(EP_X1, EP_Y, FZ2, EP_X2, EP_Y + EP_HW, FZ2 + 2, TEX_ROAD))
 # North curb — offset east by CS_WALK_W to cut corner square
 BRUSHES.append(
     box(
@@ -932,6 +928,26 @@ BRUSHES.append(
         EP_Y - EP_HW,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
+    )
+)
+
+# ── Lane dividers — rune1_lig2 flush inserts in carved road slots ─────────────
+TEX_DIVIDER = "rune1_lig2"
+# _div_hw already defined above in road split; _div_ep_hw likewise
+# Charles Street — flush in carved slot, skip bridge zone (PB_Y1..PB_Y2)
+BRUSHES.append(box(-_div_hw, CS_Y1, FZ2, _div_hw, PB_Y1, FZ2 + 2, TEX_DIVIDER))
+BRUSHES.append(box(-_div_hw, PB_Y2, FZ2, _div_hw, CS_Y2, FZ2 + 2, TEX_DIVIDER))
+# Ennis Road — flush in carved slot (south half, white faces up)
+BRUSHES.append(
+    box(
+        ROAD_X2,
+        EP_Y - _div_ep_hw,
+        FZ2,
+        EP_X2,
+        EP_Y,
+        FZ2 + 2,
+        TEX_DIVIDER,
+        tt_params="0 0 90 1 1",
     )
 )
 
@@ -3231,6 +3247,36 @@ for _mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]
             TEX_CEMENT,
         )
     )
+# Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
+for _wx in [sw_win_cx, se_win_cx]:
+    for _fl in range(KH_FLOORS):
+        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        BRUSHES.append(
+            box(
+                _wx - KHRH_WIN_HALF,
+                KH_Y1 + INDENT - KH_WALL,
+                _mz,
+                _wx + KHRH_WIN_HALF,
+                KH_Y1 + INDENT + KH_MULLION_PRO,
+                _mz + 4,
+                TEX_RAIL,
+            )
+        )
+# Floor-level mullions — SW and SE south-face windows
+for _wx in [sw_win_cx, se_win_cx]:
+    for _fl in range(KH_FLOORS + 1):
+        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+        BRUSHES.append(
+            box(
+                _wx - KHRH_WIN_HALF,
+                KH_Y1 + INDENT - KH_WALL,
+                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                _wx + KHRH_WIN_HALF,
+                KH_Y1 + INDENT + KH_MULLION_PRO,
+                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                TEX_RAIL,
+            )
+        )
 # North-West Indentation (Corner Notch)
 # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
 door_n = [
@@ -3456,6 +3502,21 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
                 TEX_RAIL,
             )
         )
+# Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
+for _wc in [ww_c1, ww_c2, ww_c3]:
+    for _fl in range(KH_FLOORS + 1):
+        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+        BRUSHES.append(
+            box(
+                KH_X2 - KH_WALL,
+                _wc - ww_half,
+                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                KH_X2 + ww_protrude,
+                _wc + ww_half,
+                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                TEX_RAIL,
+            )
+        )
 
 # West wall — three 120-unit wide floor-to-ceiling windows, evenly spread
 BRUSHES.extend(
@@ -3510,6 +3571,21 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
                 TEX_RAIL,
             )
         )
+# Floor-level mullions — west wall
+for _wc in [ww_c1, ww_c2, ww_c3]:
+    for _fl in range(KH_FLOORS + 1):
+        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+        BRUSHES.append(
+            box(
+                KH_X1 - ww_protrude,
+                _wc - ww_half,
+                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                KH_X1 + KH_WALL,
+                _wc + ww_half,
+                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                TEX_RAIL,
+            )
+        )
 
 # Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
 for _fl in range(2, KH_FLOORS):
@@ -3525,6 +3601,21 @@ for _fl in range(2, KH_FLOORS):
             TEX_RAIL,
         )
     )
+# Floor-level mullions — win_n
+for _fl in range(2, KH_FLOORS + 1):
+    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+    if _fz <= KH_Z2:
+        BRUSHES.append(
+            box(
+                win_n_x1,
+                KH_Y2 - KH_WALL,
+                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                win_n_x2,
+                KH_Y2 + KH_MULLION_PRO,
+                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                TEX_RAIL,
+            )
+        )
 for _wx, _wh in [
     (nw_win_cx1, KHRH_WIN_HALF),
     (nw_win_cx2, KHRH_WIN_HALF),
@@ -3540,6 +3631,25 @@ for _wx, _wh in [
                 _wx + _wh,
                 KH_Y2 - INDENT + KH_WALL,
                 _mz + 4,
+                TEX_RAIL,
+            )
+        )
+# Floor-level mullions — NW/NE recessed north-face windows
+for _wx, _wh in [
+    (nw_win_cx1, KHRH_WIN_HALF),
+    (nw_win_cx2, KHRH_WIN_HALF),
+    (ne_win_cx, KHRH_WIN_HALF),
+]:
+    for _fl in range(KH_FLOORS + 1):
+        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+        BRUSHES.append(
+            box(
+                _wx - _wh,
+                KH_Y2 - INDENT - KH_MULLION_PRO,
+                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                _wx + _wh,
+                KH_Y2 - INDENT + KH_WALL,
+                (_fz if _fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
@@ -4578,17 +4688,21 @@ for _tx, _ty in _tree_positions:
 ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
 
 # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
-# Spaced ~280 units apart on both sidewalks; Y range matches KH_Y1..KH_Y2.
+# 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
 # Tree height matches Knott Hall (KH_Z2).
 _cs_tree_h = KH_Z2
-_cs_tree_wx = ROAD_X1 - CS_WALK_W - 160  # further from street, west side
-_cs_tree_ex = ROAD_X2 + CS_WALK_W + 160  # further from street, east side (closer to KH)
-# 3 trees evenly spread across Knott Hall's Y span
 _kh_tree_span = KH_Y2 - KH_Y1
-_cs_tree_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.2, 0.5, 0.8)]
+_cs_row_near = ROAD_X2 + CS_WALK_W + 300  # closer to Charles St
+_cs_row_far = ROAD_X2 + CS_WALK_W + 560  # closer to KH
+# Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
+_cs_row2_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.25, 0.75)]
+# Row of 3 — far row, 3 trees at 15%, 50%, 85%
+_cs_row3_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.15, 0.5, 0.85)]
 _cs_giant_brushes = []
-for _ty in _cs_tree_ys:
-    _cs_giant_brushes += make_giant_tree(_cs_tree_ex, _ty, FZ2, _cs_tree_h)
+for _ty in _cs_row2_ys:
+    _cs_giant_brushes += make_giant_tree(_cs_row_near, _ty, FZ2, _cs_tree_h)
+for _ty in _cs_row3_ys:
+    _cs_giant_brushes += make_giant_tree(_cs_row_far, _ty, FZ2, _cs_tree_h)
 ENTITIES.append(brush_ent("func_detail", _cs_giant_brushes))
 
 
