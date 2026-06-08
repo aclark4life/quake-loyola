@@ -134,8 +134,10 @@ PB_ARCH_X = [
 ]  # pillar X positions
 KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
-KH_FLOOR_H = 128  # floor-to-floor height
-KH_FLOORS = 5  # number of floors
+KH_FLOOR_H = (
+    171  # floor-to-floor height (4 floors ≈ same total height as original 5×128)
+)
+KH_FLOORS = 4  # number of floors
 # Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
 KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
