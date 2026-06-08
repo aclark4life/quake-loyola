@@ -137,8 +137,8 @@ KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
 KH_FLOOR_H = 128  # floor-to-floor height
 KH_FLOORS = 5  # number of floors
-# Knott Hall sits at ground level regardless of bridge deck height
-KH_GROUND_Z = FZ2  # = 0
+# Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
+KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
@@ -2652,34 +2652,24 @@ if KH_WALKWAY_ENABLED:
 # Lift shaft at center-north rises from ground to rooftop
 # ════════════════════════════════════════════════════════════════════════════════
 
-_kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
-
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
 EP_SW_EDGE = EP_Y - EP_HW - CS_WALK_W  # Ennis south sidewalk
 if KH_GROUND_Z > FZ2:
+    _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
+    _west_ramp_x2 = KH_X1 - 128  # flat hilltop starts 128 units west of building = 1138
+    _east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
     # Solid hill fill under the entire building footprint
     BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
-    # Sloped ramp on the north face — player can walk up from road to building entrance
-    _ramp_y1 = KH_Y2  # north face of building
-    _ramp_y2 = EP_SW_EDGE  # extended north for a gentler slope
+    # Flat hilltop extension — 128 units west of building west wall
     BRUSHES.append(
-        ramp_slab_y(
-            KH_X1,
-            KH_X2,
-            _ramp_y1,
-            _ramp_y2,
-            FZ2,
-            FZ2,
-            KH_GROUND_Z,
-            FZ2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
-        )
+        box(_west_ramp_x2, KH_Y1, FZ2, KH_X1, KH_Y2, KH_GROUND_Z, TEX_GROUND)
     )
-    # Long ground ramp from east Charles Street sidewalk up to Knott Hall west wall
-    _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
-    _west_ramp_x2 = KH_X1  # Knott Hall west wall = 1266
+    # Flat hilltop extension — 128 units east of building east wall
+    BRUSHES.append(
+        box(KH_X2, KH_Y1, FZ2, _east_flat_x2, KH_Y2, KH_GROUND_Z, TEX_GROUND)
+    )
+    # Long ground ramp from east Charles Street sidewalk up to flat hilltop
     BRUSHES.append(
         ramp_slab(
             _west_ramp_x1,
@@ -2706,6 +2696,8 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
+
+_kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
