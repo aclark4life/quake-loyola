@@ -4463,10 +4463,12 @@ if KH_ENABLED:
             origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 3 + 40}",
         )
     )
-# Extra rocket launchers spread across the map
+# Rocket launcher — west arch, north side
+ENTITIES.append(
+    ent("weapon_rocketlauncher", origin=f"{PB_ARCH_X[1]} {PB_Y1 - 48} {DECK_Z}")
+)
+# Remaining rocket launchers
 for _rl_origin in [
-    f"{PB_ARCH_X[1]} {PB_Y1 - 48} {DECK_Z}",  # west arch, north side
-    f"{PB_ARCH_X[3]} {PB_Y2 + 48} {DECK_Z}",  # east arch, south side
     f"0 {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # Charles St, south of Ennis
     f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
     f"{int(_ew_x1 + (_ew_x2 - _ew_x1) // 2)} {bw_ny - 80} {FZ2 + 24}",  # Ennis fence midpoint
