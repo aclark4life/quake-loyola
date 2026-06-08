@@ -134,10 +134,8 @@ PB_ARCH_X = [
 ]  # pillar X positions
 KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
-KH_FLOOR_H = (
-    171  # floor-to-floor height (4 floors ≈ same total height as original 5×128)
-)
-KH_FLOORS = 4  # number of floors
+KH_FLOOR_H = 160  # floor-to-floor height
+KH_FLOORS = 5  # ground floor + 4 upper floors
 # Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
 KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
@@ -2716,6 +2714,49 @@ if KH_WALKWAY_ENABLED:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# WALKWAY SUPPORT STRUCTURE — cement crossbeam + 5 piers under south end of walkway
+# Mirrors real-life support visible under the KH bridge approach (ref: bridge01)
+# ════════════════════════════════════════════════════════════════════════════════
+if KH_WALKWAY_ENABLED:
+    # Position just under the south edge of the bridge deck
+    _sup_yc = PB_Y1  # south edge of bridge = -136
+    _sup_hw = 16  # half-depth of beam/piers (N-S)
+    _sup_y1 = _sup_yc - _sup_hw
+    _sup_y2 = _sup_yc + _sup_hw
+    # Beam sits just below the walkway slab bottom
+    _beam_zt = WALK_ZT1 - KH_WALL  # bottom of walkway slab at bridge end
+    _beam_h = 20
+    _beam_zb = _beam_zt - _beam_h
+    # Span between the two bridge arch piers flanking the walkway (east span)
+    _beam_x1 = PB_ARCH_X[3]  # = 1246 (KH_PIER_X)
+    _beam_x2 = PB_ARCH_X[4]  # = 1938
+    # Horizontal crossbeam
+    BRUSHES.append(
+        box(_beam_x1, _sup_y1, _beam_zb, _beam_x2, _sup_y2, _beam_zt, TEX_CEMENT)
+    )
+    # 6 piers — 3 evenly spaced on each side of the walkway opening
+    _rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge = 1488
+    _rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge = 1680
+    _west_piers = [int(_beam_x1 + (_rail_x1 - 4 - _beam_x1) * i / 2) for i in range(3)]
+    _east_piers = [
+        int(_rail_x2 + 4 + (_beam_x2 - _rail_x2 - 4) * i / 2) for i in range(3)
+    ]
+    _pier_xs = _west_piers + _east_piers
+    _pier_hw = 14
+    for _px in _pier_xs:
+        BRUSHES.append(
+            box(
+                _px - _pier_hw,
+                _sup_y1,
+                FZ2,
+                _px + _pier_hw,
+                _sup_y2,
+                _beam_zb,
+                TEX_CEMENT,
+            )
+        )
+
+# ════════════════════════════════════════════════════════════════════════════════
 # KNOTT HALL — south campus, 4-floor playable tower
 # Footprint: X=1186 to 1686, Y=-800 to -256, Z=0 to 512
 # North face faces the bridge; ground-level entrance at X=1372..1500
@@ -3065,9 +3106,9 @@ biy2 = KH_Y2 - KH_WALL  # interior north = -272
 KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
 
 # ── Entrance staircase ────────────────────────────────────────────────────────
-KH_STEP_N = 10
-step_rise = KH_GROUND_Z // KH_STEP_N  # 8 units per step
-KH_STEP_DEPTH = 16  # 16 units per tread
+KH_STEP_N = 5
+step_rise = KH_GROUND_Z // KH_STEP_N  # ~12 units per step
+KH_STEP_DEPTH = 32  # 32 units per tread (doubled — fewer, wider steps)
 KH_STAIR_OFFSET = 384  # distance from north wall to stair base
 
 # Flat cement platform between building and stairs
