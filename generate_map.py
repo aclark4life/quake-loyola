@@ -111,14 +111,14 @@ WORLD_Y1, WORLD_Y2 = (
 )  # extended south by 64 for landing area behind Knott Hall
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
-# West wall aligns with arch pier at X=1246; east wall aligns with east arch pillar at X=1938
+KH_OFFSET = 32  # eastward shift applied to entire building + walkway
 KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
-KH_X1 = KH_PIER_X - 120  # extended west for wider north face west bulk = 1126
-KH_X2 = 1938  # building east wall at east arch pillar
+KH_X1 = KH_PIER_X - 130 + KH_OFFSET  # = 1148
+KH_X2 = 1938 + KH_OFFSET  # = 1970
 KH_WIDTH = KH_X2 - KH_X1
 KH_CX = (KH_X1 + KH_X2) // 2
 # Entrance, walkway, stairs pinned near east side to keep west bulk dominant
-KH_ORIG_CX = 1552  # fixed — entrance stays in place regardless of KH_X1
+KH_ORIG_CX = 1552 + KH_OFFSET  # = 1584
 # Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at west pier
@@ -3327,7 +3327,7 @@ _sign_px_w, _sign_px_h = 2, 4
 _sign_char_w = (4 + 1) * _sign_px_w
 _sign_total_w = len(_sign_text) * _sign_char_w - _sign_px_w  # = 436
 _sign_hw = _sign_total_w // 2 + 4  # 4 unit padding each side = 222
-_sign_cx = 1858 - _sign_hw  # east edge flush with wall end = 1636
+_sign_cx = KH_X2 - INDENT - _sign_hw  # east edge flush with wall end
 _sign_zb = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
 _sign_zt = _sign_zb + 48  # 48 units tall
 BRUSHES.append(
