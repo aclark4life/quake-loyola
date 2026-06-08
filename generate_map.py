@@ -369,6 +369,55 @@ def make_tree(cx, cy, base_z):
     return brushes
 
 
+def make_giant_tree(cx, cy, base_z, total_h=700):
+    """Giant cartoon tree scaled to total_h units — trunk + three stacked foliage layers."""
+    TEX_TRUNK = "bricka2_1"
+    TEX_FOLIAGE = TEX_GROUND
+    brushes = []
+    trunk_h = int(total_h * 0.45)
+    # Trunk — wider than small trees
+    brushes.append(
+        box(cx - 12, cy - 12, base_z, cx + 12, cy + 12, base_z + trunk_h, TEX_TRUNK)
+    )
+    # Lower foliage — wide base, starts halfway up trunk
+    l0 = int(trunk_h * 0.5)
+    l1 = int(total_h * 0.57)
+    brushes.append(
+        pyramid(
+            cx - 160,
+            cy - 160,
+            base_z + l0,
+            cx + 160,
+            cy + 160,
+            base_z + l1,
+            TEX_FOLIAGE,
+        )
+    )
+    # Middle foliage
+    m0 = int(total_h * 0.48)
+    m1 = int(total_h * 0.78)
+    brushes.append(
+        pyramid(
+            cx - 110,
+            cy - 110,
+            base_z + m0,
+            cx + 110,
+            cy + 110,
+            base_z + m1,
+            TEX_FOLIAGE,
+        )
+    )
+    # Upper foliage — narrow tip
+    u0 = int(total_h * 0.70)
+    u1 = total_h
+    brushes.append(
+        pyramid(
+            cx - 60, cy - 60, base_z + u0, cx + 60, cy + 60, base_z + u1, TEX_FOLIAGE
+        )
+    )
+    return brushes
+
+
 def make_bush(cx, cy, base_z, size=24):
     """Cartoon bush: raised rectangular body with a small pyramid cap."""
     brushes = []
@@ -4528,7 +4577,21 @@ for _tx, _ty in _tree_positions:
     _all_tree_brushes += make_tree(_tx, _ty, FZ2)
 ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
 
-# ── Cartoon bushes as func_detail ────────────────────────────────────────────
+# ── Giant trees along Charles Street — in front of Knott Hall only ───────────
+# Spaced ~280 units apart on both sidewalks; Y range matches KH_Y1..KH_Y2.
+# Tree height matches Knott Hall (KH_Z2).
+_cs_tree_h = KH_Z2
+_cs_tree_wx = ROAD_X1 - CS_WALK_W - 160  # further from street, west side
+_cs_tree_ex = ROAD_X2 + CS_WALK_W + 160  # further from street, east side (closer to KH)
+# 3 trees evenly spread across Knott Hall's Y span
+_kh_tree_span = KH_Y2 - KH_Y1
+_cs_tree_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.2, 0.5, 0.8)]
+_cs_giant_brushes = []
+for _ty in _cs_tree_ys:
+    _cs_giant_brushes += make_giant_tree(_cs_tree_ex, _ty, FZ2, _cs_tree_h)
+ENTITIES.append(brush_ent("func_detail", _cs_giant_brushes))
+
+
 _bush_positions = [
     # Along north face of Ennis brick wall (campus grass side, not sidewalk)
     (bw_x1 + 60, bw_ny + EP_WALL_T + 40),
