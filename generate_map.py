@@ -113,12 +113,12 @@ WORLD_Y1, WORLD_Y2 = (
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # West wall aligns with arch pier at X=1246; east wall aligns with east arch pillar at X=1938
 KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
-KH_X1 = KH_PIER_X - 80  # extended west by one indent for double NW windows = 1166
+KH_X1 = KH_PIER_X - 120  # extended west for wider north face west bulk = 1126
 KH_X2 = 1938  # building east wall at east arch pillar
-KH_WIDTH = KH_X2 - KH_X1  # = 692
-KH_CX = (KH_X1 + KH_X2) // 2  # = 1592
-# Entrance, walkway, stairs pinned to building centre
-KH_ORIG_CX = KH_CX  # = 1592
+KH_WIDTH = KH_X2 - KH_X1
+KH_CX = (KH_X1 + KH_X2) // 2
+# Entrance, walkway, stairs pinned near east side to keep west bulk dominant
+KH_ORIG_CX = 1552  # fixed — entrance stays in place regardless of KH_X1
 # Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at west pier
@@ -3391,6 +3391,23 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
             )
         )
 
+# Horizontal mullions — centered in each floor span for contrast, players still fit through
+# Mid-floor Z leaves ~85 units clearance each side (player height = 56)
+for _wc in [ww_c1, ww_c2, ww_c3]:
+    for _fl in range(KH_FLOORS):
+        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        BRUSHES.append(
+            box(
+                KH_X2 - KH_WALL,
+                _wc - ww_half,
+                _mz,
+                KH_X2 + ww_protrude,
+                _wc + ww_half,
+                _mz + 4,
+                TEX_RAIL,
+            )
+        )
+
 # West wall — three 120-unit wide floor-to-ceiling windows, evenly spread
 BRUSHES.extend(
     layered_wall_y(
@@ -3426,6 +3443,55 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
                 _dy + ww_div_w,
                 KH_Z2,
                 TEX_CEMENT,
+            )
+        )
+
+# Horizontal mullions — west wall, matching east
+for _wc in [ww_c1, ww_c2, ww_c3]:
+    for _fl in range(KH_FLOORS):
+        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        BRUSHES.append(
+            box(
+                KH_X1 - ww_protrude,
+                _wc - ww_half,
+                _mz,
+                KH_X1 + KH_WALL,
+                _wc + ww_half,
+                _mz + 4,
+                TEX_RAIL,
+            )
+        )
+
+# Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
+for _fl in range(2, KH_FLOORS):
+    _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+    BRUSHES.append(
+        box(
+            win_n_x1,
+            KH_Y2 - KH_WALL,
+            _mz,
+            win_n_x2,
+            KH_Y2 + KH_MULLION_PRO,
+            _mz + 4,
+            TEX_RAIL,
+        )
+    )
+for _wx, _wh in [
+    (nw_win_cx1, KHRH_WIN_HALF),
+    (nw_win_cx2, KHRH_WIN_HALF),
+    (ne_win_cx, KHRH_WIN_HALF),
+]:
+    for _fl in range(KH_FLOORS):
+        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        BRUSHES.append(
+            box(
+                _wx - _wh,
+                KH_Y2 - INDENT - KH_MULLION_PRO,
+                _mz,
+                _wx + _wh,
+                KH_Y2 - INDENT + KH_WALL,
+                _mz + 4,
+                TEX_RAIL,
             )
         )
 
