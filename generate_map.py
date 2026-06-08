@@ -113,7 +113,7 @@ WORLD_Y1, WORLD_Y2 = (
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # West wall aligns with arch pier at X=1246; east wall aligns with east arch pillar at X=1938
 KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
-KH_X1 = KH_PIER_X  # building west wall at west pier = 1246
+KH_X1 = KH_PIER_X - 80  # extended west by one indent for double NW windows = 1166
 KH_X2 = 1938  # building east wall at east arch pillar
 KH_WIDTH = KH_X2 - KH_X1  # = 692
 KH_CX = (KH_X1 + KH_X2) // 2  # = 1592
@@ -3193,7 +3193,7 @@ win_n = [
 ]  # narrow vertical window slot above walkway entrance up to roof
 BRUSHES.extend(
     layered_wall(
-        KH_X1 + INDENT,
+        KH_X1 + 2 * INDENT,
         KH_Y2 - KH_WALL,
         KH_GROUND_Z,
         KH_X2 - INDENT,
@@ -3204,26 +3204,40 @@ BRUSHES.extend(
     )
 )
 
-# NW Indentation inner walls — recessed back wall has a centered 48-unit window
-nw_win_cx = KH_X1 + INDENT // 2  # = 1306
+# NW Indentation — 2×INDENT wide (extends west to KH_X1), two windows side by side
+nw_win_cx1 = KH_X1 + INDENT // 2  # west window = 1206
+nw_win_cx2 = KH_X1 + INDENT + INDENT // 2  # east window = 1286 (pier-aligned)
 BRUSHES.extend(
     layered_wall(
         KH_X1,
         KH_Y2 - INDENT,
         KH_GROUND_Z,
-        KH_X1 + INDENT,
+        KH_X1 + 2 * INDENT,
         KH_Y2 - INDENT + KH_WALL,
         KH_Z2,
-        [(nw_win_cx - KHRH_WIN_HALF, KH_GROUND_Z, nw_win_cx + KHRH_WIN_HALF, KH_Z2)],
+        [
+            (
+                nw_win_cx1 - KHRH_WIN_HALF,
+                KH_GROUND_Z,
+                nw_win_cx1 + KHRH_WIN_HALF,
+                KH_Z2,
+            ),
+            (
+                nw_win_cx2 - KHRH_WIN_HALF,
+                KH_GROUND_Z,
+                nw_win_cx2 + KHRH_WIN_HALF,
+                KH_Z2,
+            ),
+        ],
         TEX_WALL,
     )
 )
 BRUSHES.append(
     box(
-        KH_X1 + INDENT - KH_WALL,
+        KH_X1 + 2 * INDENT - KH_WALL,
         KH_Y2 - INDENT,
         KH_GROUND_Z,
-        KH_X1 + INDENT,
+        KH_X1 + 2 * INDENT,
         KH_Y2,
         KH_Z2,
         TEX_WALL,
@@ -3258,8 +3272,13 @@ BRUSHES.append(
 
 # Front mullions — protruding sfloor3_2 posts on each side of the recessed windows
 # and the narrow vertical window on the main north face. All protrude 12 units outward.
-# NW recessed window: mullions just outside the opening so player can fit through
-for _mx in [nw_win_cx - KHRH_WIN_HALF - KH_MULLION_W, nw_win_cx + KHRH_WIN_HALF]:
+# NW recessed windows: mullions for both (west and east window in the wide NW indentation)
+for _mx in [
+    nw_win_cx1 - KHRH_WIN_HALF - KH_MULLION_W,
+    nw_win_cx1 + KHRH_WIN_HALF,
+    nw_win_cx2 - KHRH_WIN_HALF - KH_MULLION_W,
+    nw_win_cx2 + KHRH_WIN_HALF,
+]:
     BRUSHES.append(
         box(
             _mx,
@@ -3399,7 +3418,7 @@ BRUSHES.append(
 )  # west bulk
 BRUSHES.append(
     box(
-        KH_X1 + INDENT,
+        KH_X1 + 2 * INDENT,
         KH_Y2 - INDENT,
         KH_Z2,
         stx1,
@@ -3444,7 +3463,7 @@ st0 = sz0 + KH_WALL
 BRUSHES.append(box(KH_X1, KH_Y1, sz0, KH_X2, KH_Y2 - INDENT, st0, TEX_FLOOR_KH))
 BRUSHES.append(
     box(
-        KH_X1 + INDENT,
+        KH_X1 + 2 * INDENT,
         KH_Y2 - INDENT,
         sz0,
         KH_X2 - INDENT,
@@ -3459,10 +3478,10 @@ for _f in range(1, KH_FLOORS):
     _st = _sz + KH_WALL
     # South bulk
     BRUSHES.append(box(bix1, biy1, _sz, bix2, sty1, _st, TEX_FLOOR_KH))
-    # West of shaft, clipped for NW indentation
+    # West of shaft, clipped for NW indentation (2×INDENT wide)
     BRUSHES.append(box(bix1, sty1, _sz, stx1, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(bix1 + INDENT, KH_Y2 - INDENT, _sz, stx1, biy2, _st, TEX_FLOOR_KH)
+        box(bix1 + 2 * INDENT, KH_Y2 - INDENT, _sz, stx1, biy2, _st, TEX_FLOOR_KH)
     )
     # East of shaft, clipped for NE indentation
     BRUSHES.append(box(stx2, sty1, _sz, bix2, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
