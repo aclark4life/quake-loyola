@@ -106,9 +106,9 @@ WORLD_X1 = -1983  # west wall; PB_X1 = WORLD_X1+WALL_T = -1967, giving western s
 # of 721 units (= PB_ARCH_X[2]→PB_ARCH_X[3] eastern span) so block spacing matches
 WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
 WORLD_Y1, WORLD_Y2 = (
-    -1920,
+    -1984,
     1712,
-)  # full world N-S extent (expanded north for Ennis wall)
+)  # extended south by 64 for landing area behind Knott Hall
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
 # West wall aligns with arch pier at X=1246; east wall aligns with east arch pillar at X=1938
