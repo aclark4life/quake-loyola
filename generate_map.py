@@ -111,18 +111,17 @@ WORLD_Y1, WORLD_Y2 = (
 )  # full world N-S extent (expanded north for Ennis wall)
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
-# Flush against the east world wall
-KH_X2 = 1906  # fixed position regardless of world size
-KH_X1 = KH_X2 - KH_WIDTH
-KH_CX = (KH_X1 + KH_X2) // 2
-# Original building centre (KH_WIDTH=640) — entrance, walkway, stairs stay pinned here
-KH_ORIG_CX = KH_X2 - 640 // 2  # = 1586
-# Arch spans from west world wall all the way to just west of Knott Hall pier.
-# The pier stays at its original position (KH_X2 - 640 - 20 = 1246) regardless
-# of how wide the building is — the west wall now extends past it.
-KH_PIER_X = KH_X2 - 640 - 20  # = 1246, fixed pier/arch terminus
+# West wall aligns with arch pier at X=1246; east wall aligns with east arch pillar at X=1938
+KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
+KH_X1 = KH_PIER_X  # building west wall at west pier = 1246
+KH_X2 = 1938  # building east wall at east arch pillar
+KH_WIDTH = KH_X2 - KH_X1  # = 692
+KH_CX = (KH_X1 + KH_X2) // 2  # = 1592
+# Entrance, walkway, stairs pinned to building centre
+KH_ORIG_CX = KH_CX  # = 1592
+# Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
-PB_X2 = KH_PIER_X  # east arch terminus at fixed pier position
+PB_X2 = KH_PIER_X  # east arch terminus at west pier
 # Eastern flat span angles southward to match the real-life path curve (10–15°)
 EAST_SPAN_ANGLE = 12.0  # degrees; pivot at x=PB_X2, east end shifts south
 SEG_W = (PB_X2 - PB_X1) / ARCH_SEGS  # segment width for full-span arch
@@ -145,8 +144,8 @@ KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 WORLD_Z2 = max(640, KH_Z2 + 128)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
-KH_ENABLED = False  # set True to re-enable Knott Hall building
-KH_WALKWAY_ENABLED = False  # set True to re-connect walkway to Knott Hall 2nd floor
+KH_ENABLED = True  # re-enabled with pier-aligned north face windows
+KH_WALKWAY_ENABLED = True  # re-connect walkway to Knott Hall 2nd floor
 # Flat span at PB_DZ2 (flat approach section); pinned to original building centre
 WALK_X1 = KH_ORIG_CX - 64
 WALK_X2 = KH_ORIG_CX + 64
