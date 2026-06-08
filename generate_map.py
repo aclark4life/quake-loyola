@@ -931,25 +931,29 @@ BRUSHES.append(
     )
 )
 
-# ── Lane dividers — rune1_lig2 flush inserts in carved road slots ─────────────
-TEX_DIVIDER = "rune1_lig2"
-# _div_hw already defined above in road split; _div_ep_hw likewise
-# Charles Street — flush in carved slot, skip bridge zone (PB_Y1..PB_Y2)
-BRUSHES.append(box(-_div_hw, CS_Y1, FZ2, _div_hw, PB_Y1, FZ2 + 2, TEX_DIVIDER))
-BRUSHES.append(box(-_div_hw, PB_Y2, FZ2, _div_hw, CS_Y2, FZ2 + 2, TEX_DIVIDER))
-# Ennis Road — flush in carved slot (south half, white faces up)
-BRUSHES.append(
-    box(
-        ROAD_X2,
-        EP_Y - _div_ep_hw,
-        FZ2,
-        EP_X2,
-        EP_Y,
-        FZ2 + 2,
-        TEX_DIVIDER,
-        tt_params="0 0 90 1 1",
-    )
-)
+# ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
+TEX_DIVIDER = "sfloor3_2"
+_DASH = 64  # dash length
+_GAP = 64  # gap length (filled with road tex)
+# Charles Street — dashed N-S, two sections either side of bridge
+for _sec_y1, _sec_y2 in [(CS_Y1, PB_Y1), (PB_Y2, CS_Y2)]:
+    _y = _sec_y1
+    _dash_on = True
+    while _y < _sec_y2:
+        _y2 = min(_y + (_DASH if _dash_on else _GAP), _sec_y2)
+        _tex = TEX_DIVIDER if _dash_on else TEX_ROAD
+        BRUSHES.append(box(-_div_hw, _y, FZ2, _div_hw, _y2, FZ2 + 2, _tex))
+        _y = _y2
+        _dash_on = not _dash_on
+# Ennis Road — dashed E-W from Charles St east to world wall
+_x = ROAD_X2
+_dash_on = True
+while _x < EP_X2:
+    _x2 = min(_x + (_DASH if _dash_on else _GAP), EP_X2)
+    _tex = TEX_DIVIDER if _dash_on else TEX_ROAD
+    BRUSHES.append(box(_x, EP_Y - _div_ep_hw, FZ2, _x2, EP_Y, FZ2 + 2, _tex))
+    _x = _x2
+    _dash_on = not _dash_on
 
 # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
 # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
@@ -3743,7 +3747,7 @@ for _f in range(1, KH_FLOORS):
 # Walls around the lift shaft (stx1..stx2, sty1..sty2)
 shaft_wall = 8
 # Door opening dimensions per floor (used for both wall openings and func_door entities)
-shaft_door_h = 96  # door height
+shaft_door_h = KH_FLOOR_H  # door height matches floor-to-floor height
 shaft_doors_w = [
     (
         sty1 + 16,
