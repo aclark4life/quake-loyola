@@ -10,7 +10,7 @@ map_name  := "loyola"
 
 # Show available recipes
 default:
-    @just --list
+    @just all
 
 # Default task: setup, generate, compile, and deploy
 all: setup generate compile-fast deploy
