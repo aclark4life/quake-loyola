@@ -104,21 +104,22 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 KH_WIDTH = 640
 WORLD_X1 = -1983  # west wall; PB_X1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PB_ARCH_X[2]→PB_ARCH_X[3] eastern span) so block spacing matches
-WORLD_X2 = 525 + 741 + 640 + 32 + 640  # fixed east extent (independent of KH_WIDTH)
+WORLD_X2 = 2720  # east world wall; expanded to fit KH back road with NE pier at 2206
 WORLD_Y1, WORLD_Y2 = (
     -1984,
     1712,
 )  # extended south by 64 for landing area behind Knott Hall
 
 # ── Knott Hall (south campus tower) ──────────────────────────────────────────
-KH_OFFSET = 32  # eastward shift applied to entire building + walkway
+KH_OFFSET = 90  # eastward shift applied to entire building + walkway (aligns west window with west pier)
 KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
-KH_X1 = KH_PIER_X - 130 + KH_OFFSET  # = 1148
-KH_X2 = 1938 + KH_OFFSET  # = 1970
+KH_NE_PIER_X = 2206  # easternmost bridge pier; span 1246→2206 = 960 units = 6×160, 5 even sub-piers
+KH_X1 = KH_PIER_X - 130 + KH_OFFSET  # = 1206
+KH_X2 = KH_NE_PIER_X + 32  # = 2028 (east face = NE pier + original 32-unit gap)
 KH_WIDTH = KH_X2 - KH_X1
 KH_CX = (KH_X1 + KH_X2) // 2
 # Entrance, walkway, stairs pinned near east side to keep west bulk dominant
-KH_ORIG_CX = 1552 + KH_OFFSET  # = 1584
+KH_ORIG_CX = 1552 + KH_OFFSET  # = 1642
 # Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at west pier
@@ -130,7 +131,7 @@ PB_ARCH_X = [
     -525,
     525,
     KH_PIER_X,
-    1938,  # east pillar at old world edge
+    KH_NE_PIER_X,  # east pillar (aligned with KH east face)
 ]  # pillar X positions
 KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
@@ -195,7 +196,7 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
 
 def east_y_shift(x):
     """Southward Y shift (negative = south) for a given X east of the easternmost pier.
-    Pivots at PB_ARCH_X[4] (= 1938); zero for x <= that pier."""
+    Pivots at PB_ARCH_X[4] (= 2206); zero for x <= that pier."""
     pivot = PB_ARCH_X[4]
     if x <= pivot:
         return 0.0
@@ -2729,19 +2730,14 @@ if KH_WALKWAY_ENABLED:
     _beam_zb = _beam_zt - _beam_h
     # Span between the two bridge arch piers flanking the walkway (east span)
     _beam_x1 = PB_ARCH_X[3]  # = 1246 (KH_PIER_X)
-    _beam_x2 = PB_ARCH_X[4]  # = 1938
+    _beam_x2 = PB_ARCH_X[4]  # = 2206
     # Horizontal crossbeam
     BRUSHES.append(
         box(_beam_x1, _sup_y1, _beam_zb, _beam_x2, _sup_y2, _beam_zt, TEX_CEMENT)
     )
-    # 6 piers — 3 evenly spaced on each side of the walkway opening
-    _rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge = 1488
-    _rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge = 1680
-    _west_piers = [int(_beam_x1 + (_rail_x1 - 4 - _beam_x1) * i / 2) for i in range(3)]
-    _east_piers = [
-        int(_rail_x2 + 4 + (_beam_x2 - _rail_x2 - 4) * i / 2) for i in range(3)
-    ]
-    _pier_xs = _west_piers + _east_piers
+    # 5 evenly spaced sub-piers (spacing = span/6 = 160); piers 2 and 3 straddle the walkway gap
+    _pier_spacing = (_beam_x2 - _beam_x1) // 6  # = 160
+    _pier_xs = [_beam_x1 + _pier_spacing * k for k in range(1, 6)]
     _pier_hw = 14
     for _px in _pier_xs:
         BRUSHES.append(
@@ -3347,8 +3343,8 @@ BRUSHES.extend(
 )
 
 # NW Indentation — 2×INDENT wide (extends west to KH_X1), two windows side by side
-nw_win_cx1 = KH_X1 + INDENT // 2  # west window = 1206
-nw_win_cx2 = KH_X1 + INDENT + INDENT // 2  # east window = 1286 (pier-aligned)
+nw_win_cx1 = KH_X1 + INDENT // 2  # west window = 1246 (pier-aligned)
+nw_win_cx2 = KH_X1 + INDENT + INDENT // 2  # east window = 1326
 BRUSHES.extend(
     layered_wall(
         KH_X1,
@@ -4049,7 +4045,10 @@ letter_brushes = (
 # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
 CS_LAMP_POST_H = PB_DZ2 - 32  # pole height (~12 ft)
 # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
-CS_LAMP_POST_XS = [1890, 1246]  # east sidewalk near Ennis, and next pier west
+CS_LAMP_POST_XS = [
+    2158,
+    1246,
+]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
 lamp_post_ys = [EP_Y - EP_HW - 160]
 for _lx in CS_LAMP_POST_XS:
     for _ly in lamp_post_ys:
