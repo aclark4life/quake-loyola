@@ -6,7 +6,7 @@ Layout:
   - Road runs N-S under the bridge (like Charles Street at Loyola Maryland)
   - Bridge spans E-W at deck height ~144; arched stone pillars over the road
   - Knott Hall on south campus (X=1186 to 1686, Y=-800 to -256, 4 floors)
-    North face faces bridge; ground-level entrance at X=1372..1500
+    North face faces bridge; ground-level entrance at X=1308..1436
     Lift shaft at center-north rises from ground through roof opening to rooftop
   - West arch teleports to east; east arch teleports to west
 """
@@ -119,7 +119,7 @@ KH_X2 = KH_NE_PIER_X + 32  # = 2028 (east face = NE pier + original 32-unit gap)
 KH_WIDTH = KH_X2 - KH_X1
 KH_CX = (KH_X1 + KH_X2) // 2
 # Entrance, walkway, stairs pinned near east side to keep west bulk dominant
-KH_ORIG_CX = 1552 + KH_OFFSET  # = 1642
+KH_ORIG_CX = 1740 + KH_OFFSET  # = 1830 (shifted 64 units west from original 1894)
 # Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at west pier
@@ -2735,9 +2735,12 @@ if KH_WALKWAY_ENABLED:
     BRUSHES.append(
         box(_beam_x1, _sup_y1, _beam_zb, _beam_x2, _sup_y2, _beam_zt, TEX_CEMENT)
     )
-    # 5 evenly spaced sub-piers (spacing = span/6 = 160); piers 2 and 3 straddle the walkway gap
-    _pier_spacing = (_beam_x2 - _beam_x1) // 6  # = 160
-    _pier_xs = [_beam_x1 + _pier_spacing * k for k in range(1, 6)]
+    # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
+    _rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge
+    _rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge
+    _west_piers = [int(_beam_x1 + (_rail_x1 - _beam_x1) * k / 4) for k in range(1, 4)]
+    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * k / 3) for k in range(1, 3)]
+    _pier_xs = _west_piers + _east_piers
     _pier_hw = 14
     for _px in _pier_xs:
         BRUSHES.append(
@@ -3327,8 +3330,9 @@ door_2 = [
     (KH_ENT_X1, WALK_ZT2, KH_ENT_X2, KH_GROUND_Z + KH_FLOOR_H * 2)
 ]  # walkway entrance
 win_n = [
-    (KH_ORIG_CX + 8, KH_GROUND_Z + KH_FLOOR_H * 2, KH_ORIG_CX + 56, KH_Z2)
-]  # narrow vertical window slot above walkway entrance up to roof
+    (KH_ORIG_CX - 48, KH_GROUND_Z + KH_FLOOR_H * 2, KH_ORIG_CX - 6, KH_Z2),
+    (KH_ORIG_CX + 6, KH_GROUND_Z + KH_FLOOR_H * 2, KH_ORIG_CX + 48, KH_Z2),
+]  # two window slots centered over entrance doorway, split by center mullion
 BRUSHES.extend(
     layered_wall(
         KH_X1 + 2 * INDENT,
@@ -3441,9 +3445,10 @@ for _mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]
             TEX_CEMENT,
         )
     )
-# Main front wall narrow window win_n: mullions just outside the opening so player can fit through
-win_n_x1, win_n_x2 = KH_ORIG_CX + 8, KH_ORIG_CX + 56
-for _mx in [win_n_x1 - KH_MULLION_W, win_n_x2]:
+# Main front wall window win_n: mullions on each side and center post
+win_n_x1, win_n_x2 = KH_ORIG_CX - 48, KH_ORIG_CX + 48
+win_n_mid = KH_ORIG_CX - 6  # left edge of center mullion
+for _mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
     BRUSHES.append(
         box(
             _mx,
