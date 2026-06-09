@@ -821,7 +821,7 @@ CS_STRIPE_W = 6  # centre-line stripe half-width
 # ── Ennis Road (E-W, parallel to bridge, north side) ──
 # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
 # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-EP_Y = PB_Y2 + 400  # 536: centred 400 units north of bridge north edge
+EP_Y = PB_Y2 + 800  # 936: centred 800 units north of bridge north edge
 EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
