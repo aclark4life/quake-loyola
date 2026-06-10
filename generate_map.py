@@ -5073,7 +5073,7 @@ ENTITIES.append(
         [_cs_plt_brush],
         target="cs_pc1",
         speed=str(_CS_PLT_SPEED),
-        _minlight="96",
+        _minlight="144",
     )
 )
 
