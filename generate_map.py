@@ -1107,6 +1107,24 @@ for _vx1, _vx2 in [
         )
     )
 
+# Thin cement curb along Ennis road south edge (where old sidewalk inner edge was)
+_EP_CURB_W = 8  # curb width (N-S)
+for _vx1, _vx2 in [
+    (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
+    (KH_BR_CORRIDOR_X2, EP_X2),
+]:
+    BRUSHES.append(
+        box(
+            _vx1,
+            EP_Y - EP_HW - _EP_CURB_W,
+            FZ1,
+            _vx2,
+            EP_Y - EP_HW,
+            FZ2 + CS_WALK_H,
+            TEX_CEMENT,
+        )
+    )
+
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
 EP_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
 EP_PIL_OFFSET = CS_WALK_W + 20
