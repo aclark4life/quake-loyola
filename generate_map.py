@@ -5049,13 +5049,13 @@ ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 # Quad damage hovers at the east turnaround — reward for riding the full loop.
 _CS_PLT_W = 128  # platform width and depth
 _CS_PLT_H = 12  # platform slab thickness
-_CS_PLT_X = ROAD_X2 // 2  # right lane on Charles St (east lane, X=+128)
+_CS_PLT_X = ROAD_X2 // 4  # right lane on Charles St (modest offset, X=+64)
 _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
 _CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround (Charles St south end)
 _CS_PLT_Y_JN = EP_Y - EP_HW // 2  # right lane on Ennis (south lane heading east)
-_CS_PLT_X_E = EP_X2 - 128  # east turnaround on Ennis (leave margin)
+_CS_PLT_X_E = EP_X2 - 64  # east turnaround on Ennis (further east)
 
 # Platform brush — built at south start position (pc1)
 _cs_plt_brush = box(
