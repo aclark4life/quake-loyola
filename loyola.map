@@ -32204,33 +32204,51 @@
 "classname" "path_corner"
 "targetname" "cs_pc2"
 "target" "cs_pc3"
-"origin" "64 792 14"
+"origin" "64 792 8"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc3"
 "target" "cs_pc4"
-"origin" "2640 792 14"
+"origin" "2382 792 8"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc4"
 "target" "cs_pc5"
-"origin" "2640 956 14"
+"origin" "2382 -256 8"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc5"
 "target" "cs_pc6"
-"origin" "-192 956 14"
+"origin" "2382 -1888 72"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc6"
+"target" "cs_pc7"
+"origin" "2382 -256 8"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc7"
+"target" "cs_pc8"
+"origin" "2382 956 8"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc8"
+"target" "cs_pc9"
+"origin" "-192 956 8"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc9"
 "target" "cs_pc1"
 "origin" "-192 -1856 14"
 }
 {
 "classname" "item_artifact_super_damage"
-"origin" "2640 792 44"
+"origin" "2382 -1888 102"
 }
