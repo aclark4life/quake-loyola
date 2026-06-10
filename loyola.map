@@ -32193,27 +32193,39 @@
 "target" "cs_pc1"
 "speed" "180"
 {
-( -64 636 8 ) ( -64 764 8 ) ( -64 636 20 ) sfloor3_2 0 0 0 1 1
-( 64 636 8 ) ( 64 636 20 ) ( 64 764 8 ) sfloor3_2 0 0 0 1 1
-( -64 636 8 ) ( -64 636 20 ) ( 64 636 8 ) sfloor3_2 0 0 0 1 1
-( -64 764 8 ) ( 64 764 8 ) ( -64 764 20 ) sfloor3_2 0 0 0 1 1
-( -64 636 8 ) ( 64 636 8 ) ( -64 764 8 ) sfloor3_2 0 0 0 1 1
-( -64 636 20 ) ( -64 764 20 ) ( 64 636 20 ) sfloor3_2 0 0 0 1 1
+( -64 -764 8 ) ( -64 -636 8 ) ( -64 -764 20 ) sfloor3_2 0 0 0 1 1
+( 64 -764 8 ) ( 64 -764 20 ) ( 64 -636 8 ) sfloor3_2 0 0 0 1 1
+( -64 -764 8 ) ( -64 -764 20 ) ( 64 -764 8 ) sfloor3_2 0 0 0 1 1
+( -64 -636 8 ) ( 64 -636 8 ) ( -64 -636 20 ) sfloor3_2 0 0 0 1 1
+( -64 -764 8 ) ( 64 -764 8 ) ( -64 -636 8 ) sfloor3_2 0 0 0 1 1
+( -64 -764 20 ) ( -64 -636 20 ) ( 64 -764 20 ) sfloor3_2 0 0 0 1 1
 }
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc1"
 "target" "cs_pc2"
-"origin" "0 700 14"
+"origin" "0 -700 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc2"
+"target" "cs_pc3"
+"origin" "0 936 14"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc3"
+"target" "cs_pc4"
+"origin" "2576 936 14"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc4"
 "target" "cs_pc1"
-"origin" "0 -700 14"
+"origin" "0 936 14"
 }
 {
 "classname" "item_artifact_super_damage"
-"origin" "0 700 44"
+"origin" "2576 936 44"
 }
