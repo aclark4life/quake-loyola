@@ -5053,7 +5053,7 @@ _CS_PLT_X = 0  # Charles Street centre line
 _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
-_CS_PLT_Y_S = -700  # south turnaround (Charles St)
+_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround (Charles St south end)
 _CS_PLT_Y_JN = EP_Y  # Charles/Ennis junction Y
 _CS_PLT_X_E = EP_X2 - 128  # east turnaround on Ennis (leave margin)
 
