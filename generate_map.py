@@ -908,10 +908,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2 + CS_WALK_W,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W,
         FZ2,
         KH_X2,
-        EP_Y - EP_HW,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -921,10 +921,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W,
         FZ2,
         EP_X2,
-        EP_Y - EP_HW,
+        EP_Y - EP_HW - CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -1016,7 +1016,7 @@ BRUSHES.append(
         ROAD_X2 + CS_WALK_W,
         ROAD_X2 + CS_WALK_W + CS_RAMP_W,
         CS_Y1,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W,
         FZ1,
         FZ1,
         FZ2 + CS_WALK_H,
@@ -1063,8 +1063,8 @@ BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + CS_WALK_W,
         KH_BR_CORRIDOR_X1,
-        EP_Y - EP_HW - CS_WALK_W - CS_RAMP_W,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W - CS_RAMP_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W,
         FZ1,
         FZ1,
         FZ2,
@@ -1077,8 +1077,8 @@ BRUSHES.append(
     ramp_slab_y(
         KH_BR_CORRIDOR_X2,
         EP_X2,
-        EP_Y - EP_HW - CS_WALK_W - CS_RAMP_W,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W - CS_RAMP_W,
+        EP_Y - EP_HW - 2 * CS_WALK_W,
         FZ1,
         FZ1,
         FZ2,
@@ -2766,7 +2766,9 @@ if KH_WALKWAY_ENABLED:
 
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
-EP_SW_EDGE = EP_Y - EP_HW - CS_WALK_W  # Ennis south sidewalk
+EP_SW_EDGE = (
+    EP_Y - EP_HW - 2 * CS_WALK_W
+)  # Ennis south sidewalk (outer edge, at lamp posts)
 if KH_GROUND_Z > FZ2:
     _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
     _west_ramp_x2 = KH_X1 - 128  # flat hilltop starts 128 units west of building = 1138
