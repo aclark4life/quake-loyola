@@ -2777,10 +2777,7 @@ if KH_GROUND_Z > FZ2:
     BRUSHES.append(
         box(_west_ramp_x2, KH_Y1, FZ2, KH_X1, KH_Y2, KH_GROUND_Z, TEX_GROUND)
     )
-    # Flat hilltop extension — 128 units east of building east wall
-    BRUSHES.append(
-        box(KH_X2, KH_Y1, FZ2, _east_flat_x2, KH_Y2, KH_GROUND_Z, TEX_GROUND)
-    )
+    # (No flat east fill — the back road section provides its own sloped fill there)
     # Long ground ramp from east Charles Street sidewalk up to flat hilltop
     BRUSHES.append(
         ramp_slab(
