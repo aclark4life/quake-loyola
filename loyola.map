@@ -32224,13 +32224,13 @@
 "classname" "path_corner"
 "targetname" "cs_pc4"
 "target" "cs_pc5"
-"origin" "2640 976 14"
+"origin" "2640 956 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc5"
 "target" "cs_pc6"
-"origin" "-192 976 14"
+"origin" "-192 956 14"
 }
 {
 "classname" "path_corner"
