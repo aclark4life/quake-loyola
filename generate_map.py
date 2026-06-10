@@ -1133,7 +1133,7 @@ BRUSHES.append(
 # SE corner (east of back road) uses gravel3c (mulch bed)
 for _vx1, _vx2, _vtex in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1, TEX_GROUND),
-    (KH_BR_CORRIDOR_X2, EP_X2, "gravel3c"),
+    (KH_BR_CORRIDOR_X2, EP_X2, "grave13c"),
 ]:
     BRUSHES.append(
         box(
