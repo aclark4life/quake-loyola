@@ -3955,14 +3955,14 @@ shaft_doors_w = [
 BRUSHES.append(box(stx1, sty2, KH_GROUND_Z, stx2, sty2 + shaft_wall, KH_Z2, TEX_WALL))
 # Shaft South wall (internal, solid)
 BRUSHES.append(box(stx1, sty1 - shaft_wall, KH_GROUND_Z, stx2, sty1, KH_Z2, TEX_WALL))
-# Shaft West wall (internal, openings for each floor's door)
+# Shaft West wall (internal, openings for each floor's door — flush with hallway east wall)
 BRUSHES.extend(
     layered_wall_y(
         sty1,
-        stx1 - shaft_wall,
+        KH_ENT_X2,
         KH_GROUND_Z,
         sty2,
-        stx1,
+        KH_ENT_X2 + shaft_wall,
         KH_Z2,
         shaft_doors_w,
         TEX_WALL,
@@ -3991,14 +3991,14 @@ BRUSHES.append(
 BRUSHES.append(
     box(wstx1, wsty1 - shaft_wall, KH_GROUND_Z, wstx2, wsty1, KH_Z2, TEX_WALL)
 )
-# West stairwell East wall (internal, openings for each floor's door — faces hallway)
+# West stairwell East wall (internal, openings for each floor's door — flush with hallway west wall)
 BRUSHES.extend(
     layered_wall_y(
         wsty1,
-        wstx2,
+        KH_ENT_X1 - shaft_wall,
         KH_GROUND_Z,
         wsty2,
-        wstx2 + shaft_wall,
+        KH_ENT_X1,
         KH_Z2,
         west_shaft_doors_w,
         TEX_WALL,
