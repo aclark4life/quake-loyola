@@ -2850,8 +2850,12 @@ if KH_GROUND_Z > FZ2:
         )
     )
     # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
+    # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show
+    _kh_ent_x1 = KH_ORIG_CX - 64
+    _kh_ent_x2 = KH_ORIG_CX + 64
     for _fx1, _fx2 in [
-        (_west_ramp_x1, KH_BR_CORRIDOR_X1),
+        (_west_ramp_x1, _kh_ent_x1),
+        (_kh_ent_x2, KH_BR_CORRIDOR_X1),
         (KH_BR_CORRIDOR_X2, WORLD_X2 - WALL_T),
     ]:
         BRUSHES.append(
