@@ -904,7 +904,7 @@ BRUSHES.append(
         TEX_ROAD,
     )
 )
-# Main east sections — trimmed south by _EP_CURB_W to leave room for flush curb
+# Main east sections — full south extent to road edge
 for _rx1, _rx2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
     (KH_BR_CORRIDOR_X2, EP_X2),
@@ -912,7 +912,7 @@ for _rx1, _rx2 in [
     BRUSHES.append(
         box(
             _rx1,
-            EP_Y - EP_HW + _EP_CURB_W,
+            EP_Y - EP_HW,
             FZ2,
             _rx2,
             EP_Y - _div_ep_hw,
