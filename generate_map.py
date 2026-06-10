@@ -827,6 +827,10 @@ EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches referen
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
 EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W - 32  # Ennis south sidewalk outer edge
+# Back road corridor X extents — defined here for road/curb brush splits below
+KH_BR_CORRIDOR_X1 = KH_X2  # west edge of corridor gap
+KH_BR_CORRIDOR_X2 = KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W  # east edge
+_EP_CURB_W = 8  # south Ennis curb strip width (N-S)
 
 # Road surface — split either side of centre divider slot (_div_hw wide)
 _div_hw = 4  # half-width of Charles St divider slot
@@ -887,9 +891,46 @@ BRUSHES.append(
 )
 
 # ── Ennis Road brushes ──
-# Road surface — split around centre divider slot (_div_ep_hw wide, south half)
+# Road surface — split around centre divider slot and south curb strip (Y=776–784)
+# West section (near Charles St, no curb strip here)
 BRUSHES.append(
-    box(EP_X1, EP_Y - EP_HW, FZ2, EP_X2, EP_Y - _div_ep_hw, FZ2 + 2, TEX_ROAD)
+    box(
+        EP_X1,
+        EP_Y - EP_HW,
+        FZ2,
+        ROAD_X2 + CS_WALK_W,
+        EP_Y - _div_ep_hw,
+        FZ2 + 2,
+        TEX_ROAD,
+    )
+)
+# Main east sections — trimmed south by _EP_CURB_W to leave room for flush curb
+for _rx1, _rx2 in [
+    (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
+    (KH_BR_CORRIDOR_X2, EP_X2),
+]:
+    BRUSHES.append(
+        box(
+            _rx1,
+            EP_Y - EP_HW + _EP_CURB_W,
+            FZ2,
+            _rx2,
+            EP_Y - _div_ep_hw,
+            FZ2 + 2,
+            TEX_ROAD,
+        )
+    )
+# Corridor gap section (back road entrance, no curb strip)
+BRUSHES.append(
+    box(
+        KH_BR_CORRIDOR_X1,
+        EP_Y - EP_HW,
+        FZ2,
+        KH_BR_CORRIDOR_X2,
+        EP_Y - _div_ep_hw,
+        FZ2 + 2,
+        TEX_ROAD,
+    )
 )
 BRUSHES.append(box(EP_X1, EP_Y, FZ2, EP_X2, EP_Y + EP_HW, FZ2 + 2, TEX_ROAD))
 # North curb — offset east by CS_WALK_W to cut corner square
@@ -1057,9 +1098,7 @@ BRUSHES.append(
     )
 )
 # Ennis south ramp — slopes from south curb edge down going south
-# Split into two segments to leave a gap for the back road corridor (X=1906..2322)
-KH_BR_CORRIDOR_X1 = KH_X2  # = 1906
-KH_BR_CORRIDOR_X2 = KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W  # = 2322
+# Split into two segments to leave a gap for the back road corridor
 BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + CS_WALK_W,
@@ -1108,7 +1147,6 @@ for _vx1, _vx2 in [
     )
 
 # Thin cement curb along Ennis road south edge (sticks into road at verge edge)
-_EP_CURB_W = 8  # curb width (N-S)
 for _vx1, _vx2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
     (KH_BR_CORRIDOR_X2, EP_X2),
@@ -1120,7 +1158,7 @@ for _vx1, _vx2 in [
             FZ1,
             _vx2,
             EP_Y - EP_HW + _EP_CURB_W,
-            FZ2 + CS_WALK_H,
+            FZ2 + 2,
             TEX_CEMENT,
         )
     )
