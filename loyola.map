@@ -32223,8 +32223,20 @@
 {
 "classname" "path_corner"
 "targetname" "cs_pc4"
+"target" "cs_pc5"
+"origin" "2640 1080 14"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc5"
+"target" "cs_pc6"
+"origin" "-64 1080 14"
+}
+{
+"classname" "path_corner"
+"targetname" "cs_pc6"
 "target" "cs_pc1"
-"origin" "64 792 14"
+"origin" "-64 -1888 14"
 }
 {
 "classname" "item_artifact_super_damage"
