@@ -4410,20 +4410,24 @@ for _fl in range(KH_FLOORS):
     _nr_yc = (_split + KH_WALL + biy2) // 2
     for _side_xc in [wxc, exc]:
         for _ryc in [_sr_yc, _nr_yc]:
+            # If west room north items land within 64 units of stairwell south wall, push south
+            _safe_ryc = _ryc
+            if _side_xc == wxc and _ryc == _nr_yc and _nr_yc > wsty1 - 64:
+                _safe_ryc = wsty1 - 80
             ENTITIES.append(
-                ent("light", origin=f"{_side_xc} {_ryc} {_light_z}", light="250")
+                ent("light", origin=f"{_side_xc} {_safe_ryc} {_light_z}", light="250")
             )
             ENTITIES.append(
                 ent(
                     room_goodies[gi % len(room_goodies)],
-                    origin=f"{_side_xc - 40} {_ryc} {_item_z}",
+                    origin=f"{_side_xc - 40} {_safe_ryc} {_item_z}",
                 )
             )
             gi += 1
             ENTITIES.append(
                 ent(
                     room_goodies[gi % len(room_goodies)],
-                    origin=f"{_side_xc + 40} {_ryc} {_item_z}",
+                    origin=f"{_side_xc + 40} {_safe_ryc} {_item_z}",
                 )
             )
             gi += 1

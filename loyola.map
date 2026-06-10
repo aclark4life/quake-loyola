@@ -27745,16 +27745,16 @@
 }
 {
 "classname" "light"
-"origin" "1486 -553 680"
+"origin" "1486 -608 680"
 "light" "250"
 }
 {
 "classname" "weapon_grenadelauncher"
-"origin" "1446 -553 584"
+"origin" "1446 -608 584"
 }
 {
 "classname" "item_health"
-"origin" "1526 -553 584"
+"origin" "1526 -608 584"
 }
 {
 "classname" "light"
