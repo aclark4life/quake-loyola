@@ -2853,19 +2853,16 @@ if KH_GROUND_Z > FZ2:
         box(_west_ramp_x2, KH_Y1, FZ2, KH_X1, KH_Y2, KH_GROUND_Z, TEX_GROUND)
     )
     # (No flat east fill — the back road section provides its own sloped fill there)
-    # Long ground ramp from east Charles Street sidewalk up to flat hilltop
+    # Flat ground from east Charles St sidewalk to hilltop — no slope
     BRUSHES.append(
-        ramp_slab(
+        box(
             _west_ramp_x1,
-            _west_ramp_x2,
             WORLD_Y1 + WALL_T,
+            FZ1,
+            _west_ramp_x2,
             KH_Y2,
-            FZ2,
-            FZ2,
             FZ2 + CS_WALK_H,
-            KH_GROUND_Z,
             TEX_GROUND,
-            tt=TEX_GROUND,
         )
     )
     # South terrain fill — flat ground at building level behind south wall to east world edge
