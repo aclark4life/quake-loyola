@@ -32459,3 +32459,203 @@
 "classname" "weapon_rocketlauncher"
 "origin" "-192 -747 76"
 }
+{
+"classname" "monster_grunt"
+"origin" "-192 -1200 32"
+"angle" "90"
+}
+{
+"classname" "monster_grunt"
+"origin" "192 -800 32"
+"angle" "270"
+}
+{
+"classname" "monster_grunt"
+"origin" "-192 -300 32"
+"angle" "90"
+}
+{
+"classname" "monster_grunt"
+"origin" "192 200 32"
+"angle" "270"
+}
+{
+"classname" "monster_grunt"
+"origin" "0 -1600 32"
+"angle" "90"
+}
+{
+"classname" "monster_grunt"
+"origin" "500 816 32"
+"angle" "0"
+}
+{
+"classname" "monster_grunt"
+"origin" "1200 1056 32"
+"angle" "180"
+}
+{
+"classname" "monster_grunt"
+"origin" "1800 816 32"
+"angle" "0"
+}
+{
+"classname" "monster_ogre"
+"origin" "2446 -600 39"
+"angle" "90"
+}
+{
+"classname" "monster_ogre"
+"origin" "2446 -1200 63"
+"angle" "90"
+}
+{
+"classname" "monster_ogre"
+"origin" "2446 -1824 90"
+"angle" "90"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -1472 104"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -664 104"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -1472 104"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -664 104"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -1411 264"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -603 264"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -1411 264"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -603 264"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -1536 424"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -728 424"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -1536 424"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -728 424"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -1361 584"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -553 584"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -1361 584"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -553 584"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -1586 744"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "1486 -778 744"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -1586 744"
+"angle" "270"
+}
+{
+"classname" "monster_knight"
+"origin" "2066 -778 744"
+"angle" "270"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1830 -1072 104"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1830 -1072 264"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1830 -1072 424"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1830 -1072 584"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1830 -1072 744"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1486 -336 888"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "2066 -336 888"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1722 -1808 888"
+"angle" "180"
+}
+{
+"classname" "monster_enforcer"
+"origin" "1486 -1808 888"
+"angle" "180"
+}
