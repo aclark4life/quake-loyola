@@ -1107,7 +1107,7 @@ for _vx1, _vx2 in [
         )
     )
 
-# Thin cement curb along Ennis road south edge (where old sidewalk inner edge was)
+# Thin cement curb along Ennis road south edge (sticks into road at verge edge)
 _EP_CURB_W = 8  # curb width (N-S)
 for _vx1, _vx2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
@@ -1116,10 +1116,10 @@ for _vx1, _vx2 in [
     BRUSHES.append(
         box(
             _vx1,
-            EP_Y - EP_HW - _EP_CURB_W,
+            EP_Y - EP_HW,
             FZ1,
             _vx2,
-            EP_Y - EP_HW,
+            EP_Y - EP_HW + _EP_CURB_W,
             FZ2 + CS_WALK_H,
             TEX_CEMENT,
         )
