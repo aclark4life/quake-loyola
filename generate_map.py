@@ -5043,27 +5043,33 @@ ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 # ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
 # Outbound: east lane north on Charles → south lane east on Ennis → east end
 # Return:   west lane south on Charles ← north lane west on Ennis ← east end
-# Lane switch happens at the east turnaround and the south turnaround.
+# ── Charles Street platform — via back road, no Ennis lane switch ─────────────
+# Route: Charles outbound (north) → right on Ennis → right onto back road →
+#        south down hill → back up north → left on Ennis → Charles return (south)
 _CS_PLT_W = 128  # platform width and depth
 _CS_PLT_H = 12  # platform slab thickness
-_CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
-_CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,  X=+64)
-_CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,  X=-192)
-_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 48  # south turnaround (clear of world wall)
-_CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south, Y≈792)
-_CS_PLT_Y_RET = EP_Y + EP_HW // 8  # return  Ennis lane (north, Y≈956)
-_CS_PLT_X_E = EP_X2 - 64  # east turnaround
+_CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
+_CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
+_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 48  # south turnaround
+_CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south Y≈792)
+_CS_PLT_Y_RET = EP_Y + EP_HW // 8  # return  Ennis lane  (north Y≈956)
+_CS_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
 
-# Platform brush — built at pc1 (south, outbound lane)
+# Z origin at each road surface (platform bottom + half thickness)
+_oz_cs = ROAD_Z + _CS_PLT_H // 2  # Charles St   (= 14)
+_oz_flat = FZ2 + 2 + _CS_PLT_H // 2  # Ennis / back road flat (= 8)
+_oz_br_s = KH_BR_ZT_S + 2 + _CS_PLT_H // 2  # back road south / hill top (= 72)
+
+# Platform brush — placed at pc1 (south end of outbound Charles lane)
 _cs_plt_brush = box(
     _CS_PLT_X_OUT - _CS_PLT_W // 2,
     _CS_PLT_Y_S - _CS_PLT_W // 2,
-    _CS_PLT_Z,
+    ROAD_Z,
     _CS_PLT_X_OUT + _CS_PLT_W // 2,
     _CS_PLT_Y_S + _CS_PLT_W // 2,
-    _CS_PLT_Z + _CS_PLT_H,
+    ROAD_Z + _CS_PLT_H,
     TEX_FLOOR,
 )
 ENTITIES.append(
@@ -5076,33 +5082,35 @@ ENTITIES.append(
     )
 )
 
-# path_corners — 6-point loop with proper lane switching
-# pc1 (+64, south) → pc2 (+64, Ennis south) → pc3 (east, Ennis south) [outbound]
-# pc4 (east, Ennis north) → pc5 (-64, Ennis north) → pc6 (-64, south) [return]
-# lane switch at east end (pc3→pc4) and south end (pc6→pc1)
-_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2
-for _pcn, _tx, _ty, _target in [
-    ("cs_pc1", _CS_PLT_X_OUT, _CS_PLT_Y_S, "cs_pc2"),  # south, outbound lane
-    ("cs_pc2", _CS_PLT_X_OUT, _CS_PLT_Y_OUT, "cs_pc3"),  # Charles/Ennis, south lane
-    ("cs_pc3", _CS_PLT_X_E, _CS_PLT_Y_OUT, "cs_pc4"),  # east end, south lane
-    ("cs_pc4", _CS_PLT_X_E, _CS_PLT_Y_RET, "cs_pc5"),  # east end, north lane
-    ("cs_pc5", _CS_PLT_X_RET, _CS_PLT_Y_RET, "cs_pc6"),  # Charles/Ennis, north lane
-    ("cs_pc6", _CS_PLT_X_RET, _CS_PLT_Y_S, "cs_pc1"),  # south, return lane
+# 9-corner loop:
+# pc1 Charles south (out) → pc2 Ennis junction → pc3 back-road junction
+# → pc4 top of slope → pc5 hill bottom (turn) → pc6 top of slope (return)
+# → pc7 Ennis junction return → pc8 Charles/Ennis return → pc9 Charles south (ret) → pc1
+for _pcn, _tx, _ty, _oz, _target in [
+    ("cs_pc1", _CS_PLT_X_OUT, _CS_PLT_Y_S, _oz_cs, "cs_pc2"),
+    ("cs_pc2", _CS_PLT_X_OUT, _CS_PLT_Y_OUT, _oz_flat, "cs_pc3"),
+    ("cs_pc3", _CS_PLT_BR_X, _CS_PLT_Y_OUT, _oz_flat, "cs_pc4"),
+    ("cs_pc4", _CS_PLT_BR_X, KH_BR_Y2, _oz_flat, "cs_pc5"),
+    ("cs_pc5", _CS_PLT_BR_X, KH_BR_Y1, _oz_br_s, "cs_pc6"),
+    ("cs_pc6", _CS_PLT_BR_X, KH_BR_Y2, _oz_flat, "cs_pc7"),
+    ("cs_pc7", _CS_PLT_BR_X, _CS_PLT_Y_RET, _oz_flat, "cs_pc8"),
+    ("cs_pc8", _CS_PLT_X_RET, _CS_PLT_Y_RET, _oz_flat, "cs_pc9"),
+    ("cs_pc9", _CS_PLT_X_RET, _CS_PLT_Y_S, _oz_cs, "cs_pc1"),
 ]:
     ENTITIES.append(
         ent(
             "path_corner",
             targetname=_pcn,
             target=_target,
-            origin=f"{_tx} {_ty} {_cs_plt_oz}",
+            origin=f"{_tx} {_ty} {_oz}",
         )
     )
 
-# Quad damage — hovers above east turnaround (south lane); ride the full loop
+# Quad damage at the hill top (south end of back road) — reward for the full loop
 ENTITIES.append(
     ent(
         "item_artifact_super_damage",
-        origin=f"{_CS_PLT_X_E} {_CS_PLT_Y_OUT} {_CS_PLT_Z + _CS_PLT_H + 24}",
+        origin=f"{_CS_PLT_BR_X} {KH_BR_Y1} {_oz_br_s + _CS_PLT_H + 18}",
     )
 )
 
