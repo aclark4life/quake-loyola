@@ -1097,34 +1097,27 @@ BRUSHES.append(
         tt=TEX_GROUND,
     )
 )
-# Ennis south ramp — slopes from south curb edge down going south
-# Split into two segments to leave a gap for the back road corridor
+# Ennis south — flat ground fill from ramp zone to sidewalk outer edge
 BRUSHES.append(
-    ramp_slab_y(
+    box(
         ROAD_X2 + CS_WALK_W,
         KH_BR_CORRIDOR_X1,
         EP_SW_EDGE - CS_RAMP_W,
         EP_SW_EDGE,
         FZ1,
-        FZ1,
-        FZ2,
         FZ2 + CS_WALK_H,
         TEX_GROUND,
-        tt=TEX_GROUND,
     )
 )
 BRUSHES.append(
-    ramp_slab_y(
+    box(
         KH_BR_CORRIDOR_X2,
         EP_X2,
         EP_SW_EDGE - CS_RAMP_W,
         EP_SW_EDGE,
         FZ1,
-        FZ1,
-        FZ2,
         FZ2 + CS_WALK_H,
         TEX_GROUND,
-        tt=TEX_GROUND,
     )
 )
 
