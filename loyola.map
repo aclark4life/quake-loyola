@@ -32429,33 +32429,33 @@
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "64 -1358 44"
+"origin" "64 -1358 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "64 -747 44"
+"origin" "64 -747 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "815 792 38"
+"origin" "815 792 70"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1630 792 38"
+"origin" "1630 792 70"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "2382 -1072 70"
+"origin" "2382 -1072 102"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1095 956 38"
+"origin" "1095 956 70"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "-192 -1358 44"
+"origin" "-192 -1358 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "-192 -747 44"
+"origin" "-192 -747 76"
 }
