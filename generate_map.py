@@ -3253,19 +3253,23 @@ for _cx1, _cx2 in [
     )
 
 # ── Stair railings ────────────────────────────────────────────────────────────
-# Matching the iron fence style on the west side (metal4_4, pickets, thick posts)
-# Lowered to handrail height (top of rail at ~3 feet = 46 units)
 KH_RAIL_H = 72  # stair handrail height
 KH_RAIL_TEX = "metal4_4"
 KH_RAIL_SPACING = 16
+_post_w = 8  # post face width (X) — wide flat-facing
+_post_d = 2  # post depth (Y)
+_horiz_ext = 20  # length of level rail extension at top and bottom
 for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
-    # Top rail - sloped section on stairs only
     _z_top_plat = KH_GROUND_Z + KH_RAIL_H - 28
     _z_top_end = _step_base_z + KH_RAIL_H - 28
+    _rx1 = _rx_base - _post_w if _is_west else _rx_base
+    _rx2 = _rx_base if _is_west else _rx_base + _post_w
+
+    # Sloped cross rail
     BRUSHES.append(
         ramp_slab_y(
-            _rx_base - 2 if _is_west else _rx_base,
-            _rx_base if _is_west else _rx_base + 2,
+            _rx1,
+            _rx2,
             stair_y0,
             stair_y_end,
             _z_top_plat,
@@ -3276,18 +3280,38 @@ for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
         )
     )
 
-    # Posts at top and bottom of stairs only
+    # Horizontal extension at top (level with platform floor)
+    BRUSHES.append(
+        box(
+            _rx1,
+            stair_y0 - _horiz_ext,
+            _z_top_plat,
+            _rx2,
+            stair_y0,
+            _z_top_plat + 2,
+            KH_RAIL_TEX,
+        )
+    )
+    # Horizontal extension at bottom (level with apron floor)
+    BRUSHES.append(
+        box(
+            _rx1,
+            stair_y_end,
+            _z_top_end,
+            _rx2,
+            stair_y_end + _horiz_ext,
+            _z_top_end + 2,
+            KH_RAIL_TEX,
+        )
+    )
+
+    # Posts — wide flat-facing
     for _ry, _gz in [
         (stair_y0, KH_GROUND_Z),
         (stair_y_end, _step_base_z),
     ]:
-        _pw = 2
-        if _is_west:
-            _px1, _px2 = _rx_base - _pw, _rx_base
-        else:
-            _px1, _px2 = _rx_base, _rx_base + _pw
         BRUSHES.append(
-            box(_px1, _ry, _gz, _px2, _ry + _pw, _gz + KH_RAIL_H - 26, KH_RAIL_TEX)
+            box(_rx1, _ry, _gz, _rx2, _ry + _post_d, _gz + KH_RAIL_H - 26, KH_RAIL_TEX)
         )
 
 # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
