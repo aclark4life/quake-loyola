@@ -5043,26 +5043,28 @@ for _bx, _by in _bush_positions:
     _all_bush_brushes += make_bush(_bx, _by, FZ2)
 ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 
-# ── Charles Street scrolling platform — L-shaped route with quad damage ───────
-# Route: south Charles (Y=-700) → north to Ennis junction (Y=EP_Y) →
-#        east along Ennis (X≈2600) → back west to junction → south again.
-# Quad damage hovers at the east turnaround — reward for riding the full loop.
+# ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
+# Outbound: east lane north on Charles → south lane east on Ennis → east end
+# Return:   west lane south on Charles ← north lane west on Ennis ← east end
+# Lane switch happens at the east turnaround and the south turnaround.
 _CS_PLT_W = 128  # platform width and depth
 _CS_PLT_H = 12  # platform slab thickness
-_CS_PLT_X = ROAD_X2 // 4  # right lane on Charles St (modest offset, X=+64)
 _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
-_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround (Charles St south end)
-_CS_PLT_Y_JN = EP_Y - EP_HW + 16  # deep south lane on Ennis (~Y=792)
-_CS_PLT_X_E = EP_X2 - 64  # east turnaround on Ennis (further east)
+_CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,  X=+64)
+_CS_PLT_X_RET = -(ROAD_X2 // 4)  # return  Charles lane   (west,  X=-64)
+_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround
+_CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south, Y≈792)
+_CS_PLT_Y_RET = EP_Y + EP_HW - 16  # return  Ennis lane (north, Y≈1080)
+_CS_PLT_X_E = EP_X2 - 64  # east turnaround
 
-# Platform brush — built at south start position (pc1)
+# Platform brush — built at pc1 (south, outbound lane)
 _cs_plt_brush = box(
-    _CS_PLT_X - _CS_PLT_W // 2,
+    _CS_PLT_X_OUT - _CS_PLT_W // 2,
     _CS_PLT_Y_S - _CS_PLT_W // 2,
     _CS_PLT_Z,
-    _CS_PLT_X + _CS_PLT_W // 2,
+    _CS_PLT_X_OUT + _CS_PLT_W // 2,
     _CS_PLT_Y_S + _CS_PLT_W // 2,
     _CS_PLT_Z + _CS_PLT_H,
     TEX_FLOOR,
@@ -5077,14 +5079,18 @@ ENTITIES.append(
     )
 )
 
-# path_corners — L-shaped loop
-# pc1 (south) → pc2 (junction) → pc3 (east end) → pc4 (junction again) → pc1
-_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2  # Z of path_corner origins
+# path_corners — 6-point loop with proper lane switching
+# pc1 (+64, south) → pc2 (+64, Ennis south) → pc3 (east, Ennis south) [outbound]
+# pc4 (east, Ennis north) → pc5 (-64, Ennis north) → pc6 (-64, south) [return]
+# lane switch at east end (pc3→pc4) and south end (pc6→pc1)
+_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2
 for _pcn, _tx, _ty, _target in [
-    ("cs_pc1", _CS_PLT_X, _CS_PLT_Y_S, "cs_pc2"),
-    ("cs_pc2", _CS_PLT_X, _CS_PLT_Y_JN, "cs_pc3"),
-    ("cs_pc3", _CS_PLT_X_E, _CS_PLT_Y_JN, "cs_pc4"),
-    ("cs_pc4", _CS_PLT_X, _CS_PLT_Y_JN, "cs_pc1"),
+    ("cs_pc1", _CS_PLT_X_OUT, _CS_PLT_Y_S, "cs_pc2"),  # south, outbound lane
+    ("cs_pc2", _CS_PLT_X_OUT, _CS_PLT_Y_OUT, "cs_pc3"),  # Charles/Ennis, south lane
+    ("cs_pc3", _CS_PLT_X_E, _CS_PLT_Y_OUT, "cs_pc4"),  # east end, south lane
+    ("cs_pc4", _CS_PLT_X_E, _CS_PLT_Y_RET, "cs_pc5"),  # east end, north lane
+    ("cs_pc5", _CS_PLT_X_RET, _CS_PLT_Y_RET, "cs_pc6"),  # Charles/Ennis, north lane
+    ("cs_pc6", _CS_PLT_X_RET, _CS_PLT_Y_S, "cs_pc1"),  # south, return lane
 ]:
     ENTITIES.append(
         ent(
@@ -5095,11 +5101,11 @@ for _pcn, _tx, _ty, _target in [
         )
     )
 
-# Quad damage — hovers above east turnaround; ride the full loop to grab it
+# Quad damage — hovers above east turnaround (south lane); ride the full loop
 ENTITIES.append(
     ent(
         "item_artifact_super_damage",
-        origin=f"{_CS_PLT_X_E} {_CS_PLT_Y_JN} {_CS_PLT_Z + _CS_PLT_H + 24}",
+        origin=f"{_CS_PLT_X_E} {_CS_PLT_Y_OUT} {_CS_PLT_Z + _CS_PLT_H + 24}",
     )
 )
 
