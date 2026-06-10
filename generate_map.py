@@ -5170,7 +5170,7 @@ for _mx, _my, _mangle in [
     (0, -1600, 90),  # far south Charles, centre
 ]:
     ENTITIES.append(
-        ent("monster_grunt", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent("monster_army", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
     )
 
 # Grunts on Ennis
@@ -5180,7 +5180,7 @@ for _mx, _my, _mangle in [
     (1800, EP_Y - EP_HW + 40, 0),  # Ennis further east
 ]:
     ENTITIES.append(
-        ent("monster_grunt", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent("monster_army", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
     )
 
 # Ogres on the back road hill — like guards on the slope
