@@ -65,6 +65,12 @@ Terms used when discussing the map's structure and the Python generator code.
 | **Recessed window** | Window set back in the NW or NE indented corner of the north facade. Each opening is 48 units wide, framed by mullions on the outer edges. |
 | **Indentation** | 80-unit corner notch cut from the NW and NE corners of the north face, creating a recessed alcove with its own back wall and window. |
 
+### Street / road
+
+| Term | Description |
+|---|---|
+| **Verge** | The strip of land between the road edge and the sidewalk. In the real world this is often grass; here it is a raised ground-textured slab flush with the sidewalk height. The south side of Ennis Road has a verge running from the sidewalk inner edge to the road edge, with a thin cement curb strip at the road boundary. |
+
 
 | Term | Description |
 |---|---|
