@@ -1101,10 +1101,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2 + CS_WALK_W,
-        KH_BR_CORRIDOR_X1,
         EP_SW_EDGE - CS_RAMP_W,
-        EP_SW_EDGE,
         FZ1,
+        KH_BR_CORRIDOR_X1,
+        EP_SW_EDGE,
         FZ2 + CS_WALK_H,
         TEX_GROUND,
     )
@@ -1112,10 +1112,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         KH_BR_CORRIDOR_X2,
-        EP_X2,
         EP_SW_EDGE - CS_RAMP_W,
-        EP_SW_EDGE,
         FZ1,
+        EP_X2,
+        EP_SW_EDGE,
         FZ2 + CS_WALK_H,
         TEX_GROUND,
     )
