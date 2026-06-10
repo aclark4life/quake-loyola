@@ -5135,7 +5135,7 @@ ENTITIES.append(
 )
 
 # ── Rocket launchers along the platform route ─────────────────────────────────
-_rl_h = _CS_PLT_H + 24  # hover height above road surface
+_rl_h = _CS_PLT_H + 56  # hover height above road — clear of platform top + item bbox
 _br_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
 _br_mid_z = (
     FZ2
