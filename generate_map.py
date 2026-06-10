@@ -5170,7 +5170,7 @@ for _mx, _my, _mangle in [
     (0, -1600, 90),  # far south Charles, centre
 ]:
     ENTITIES.append(
-        ent("monster_army", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent("monster_knight", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
     )
 
 # Grunts on Ennis
@@ -5180,7 +5180,7 @@ for _mx, _my, _mangle in [
     (1800, EP_Y - EP_HW + 40, 0),  # Ennis further east
 ]:
     ENTITIES.append(
-        ent("monster_army", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent("monster_knight", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
     )
 
 # Ogres on the back road hill — like guards on the slope
@@ -5190,7 +5190,7 @@ for _my, _mz in [
     (-1200, FZ2 + 2 + (64 * ((-1200) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
     (KH_BR_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
 ]:
-    ENTITIES.append(ent("monster_ogre", origin=f"{_br_cx} {_my} {_mz}", angle="90"))
+    ENTITIES.append(ent("monster_knight", origin=f"{_br_cx} {_my} {_mz}", angle="90"))
 
 # Knights inside KH rooms — one per floor in each room
 for _fl in range(KH_FLOORS):
@@ -5210,7 +5210,7 @@ for _fl in range(KH_FLOORS):
     _fz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL + 24
     _hall_yc = (biy1 + biy2) // 2
     ENTITIES.append(
-        ent("monster_enforcer", origin=f"{_hall_xc} {_hall_yc} {_fz}", angle="180")
+        ent("monster_knight", origin=f"{_hall_xc} {_hall_yc} {_fz}", angle="180")
     )
 
 # Enforcers on rooftop
@@ -5221,7 +5221,7 @@ for _rx, _ry in [
     (wxc, KH_Y1 + 80),
 ]:
     ENTITIES.append(
-        ent("monster_enforcer", origin=f"{_rx} {_ry} {KH_Z2 + 24}", angle="180")
+        ent("monster_knight", origin=f"{_rx} {_ry} {KH_Z2 + 24}", angle="180")
     )
 
 # ── Write ─────────────────────────────────────────────────────────────────────

@@ -32460,57 +32460,57 @@
 "origin" "-192 -747 76"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "-192 -1200 32"
 "angle" "90"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "192 -800 32"
 "angle" "270"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "-192 -300 32"
 "angle" "90"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "192 200 32"
 "angle" "270"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "0 -1600 32"
 "angle" "90"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "500 816 32"
 "angle" "0"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "1200 1056 32"
 "angle" "180"
 }
 {
-"classname" "monster_army"
+"classname" "monster_knight"
 "origin" "1800 816 32"
 "angle" "0"
 }
 {
-"classname" "monster_ogre"
+"classname" "monster_knight"
 "origin" "2446 -600 39"
 "angle" "90"
 }
 {
-"classname" "monster_ogre"
+"classname" "monster_knight"
 "origin" "2446 -1200 63"
 "angle" "90"
 }
 {
-"classname" "monster_ogre"
+"classname" "monster_knight"
 "origin" "2446 -1824 90"
 "angle" "90"
 }
@@ -32615,47 +32615,47 @@
 "angle" "270"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1830 -1072 104"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1830 -1072 264"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1830 -1072 424"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1830 -1072 584"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1830 -1072 744"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1486 -336 888"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "2066 -336 888"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1722 -1808 888"
 "angle" "180"
 }
 {
-"classname" "monster_enforcer"
+"classname" "monster_knight"
 "origin" "1486 -1808 888"
 "angle" "180"
 }
