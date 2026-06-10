@@ -3239,7 +3239,7 @@ KH_RAIL_SPACING = 16
 for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
     # Top rail - sloped section on stairs only
     _z_top_plat = KH_GROUND_Z + KH_RAIL_H - 28
-    _z_top_end = FZ2 + KH_RAIL_H - 28
+    _z_top_end = _step_base_z + KH_RAIL_H - 28
     BRUSHES.append(
         ramp_slab_y(
             _rx_base - 2 if _is_west else _rx_base,
