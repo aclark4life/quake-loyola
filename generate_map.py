@@ -826,7 +826,7 @@ EP_Y = PB_Y2 + 800  # 936: centred 800 units north of bridge north edge
 EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
-EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W  # Ennis south sidewalk outer edge
+EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W - 32  # Ennis south sidewalk outer edge
 
 # Road surface — split either side of centre divider slot (_div_hw wide)
 _div_hw = 4  # half-width of Charles St divider slot
