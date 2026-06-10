@@ -4432,18 +4432,32 @@ for _fl in range(KH_FLOORS):
             )
             gi += 1
 
-# ── West stairwell lights — one per lane per floor, near ceiling ─────────────
+# ── West stairwell lights — ceiling + mid-flight per lane per floor ──────────
 _wst_xc = (wstx1 + wstx2) // 2  # X centre of shaft
 _wst_north_yc = (wst_midY + wsty2) // 2  # Y centre of north lane
 _wst_south_yc = (wsty1 + wst_midY) // 2  # Y centre of south lane
 for _fl in range(KH_FLOORS):
     _wst_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24  # near ceiling
-    ENTITIES.append(
-        ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_wst_lz}", light="220")
-    )
-    ENTITIES.append(
-        ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_wst_lz}", light="220")
-    )
+    _wst_mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2  # mid-flight
+    for _lz in [_wst_lz, _wst_mz]:
+        ENTITIES.append(
+            ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_lz}", light="180")
+        )
+        ENTITIES.append(
+            ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_lz}", light="180")
+        )
+
+# ── Central hallway lights — 3 per floor along N-S corridor ─────────────────
+_hall_xc = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
+_hall_y1 = (biy1 + biy2) // 2 - 160  # south third
+_hall_y2 = (biy1 + biy2) // 2  # centre
+_hall_y3 = (biy1 + biy2) // 2 + 160  # north third
+for _fl in range(KH_FLOORS):
+    _hall_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24
+    for _ly in [_hall_y1, _hall_y2, _hall_y3]:
+        ENTITIES.append(
+            ent("light", origin=f"{_hall_xc} {_ly} {_hall_lz}", light="200")
+        )
 
 # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
 KH_SHELF_H = 64  # height of shelf stack
@@ -5028,6 +5042,63 @@ _all_bush_brushes = []
 for _bx, _by in _bush_positions:
     _all_bush_brushes += make_bush(_bx, _by, FZ2)
 ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
+
+# ── Charles Street scrolling platform — travels N→S and back, quad damage ────
+# Platform oscillates: north (Y=700) → south (Y=-700) → north, continuously.
+# Quad damage floats above the north start — grab it then ride south.
+_CS_PLT_Y_N = 700  # north turnaround Y
+_CS_PLT_Y_S = -700  # south turnaround Y
+_CS_PLT_W = 128  # platform width (E-W) and depth (N-S)
+_CS_PLT_H = 12  # platform slab thickness
+_CS_PLT_X = 0  # on the street centre line
+_CS_PLT_Z = ROAD_Z  # flush with road surface
+_CS_PLT_SPEED = 180  # units per second
+
+# Platform brush — built at north start position
+_cs_plt_brush = box(
+    _CS_PLT_X - _CS_PLT_W // 2,
+    _CS_PLT_Y_N - _CS_PLT_W // 2,
+    _CS_PLT_Z,
+    _CS_PLT_X + _CS_PLT_W // 2,
+    _CS_PLT_Y_N + _CS_PLT_W // 2,
+    _CS_PLT_Z + _CS_PLT_H,
+    TEX_FLOOR,
+)
+ENTITIES.append(
+    brush_ent(
+        "func_train",
+        [_cs_plt_brush],
+        target="cs_pc1",
+        speed=str(_CS_PLT_SPEED),
+    )
+)
+
+# path_corners — north ↔ south loop
+_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2  # origin Z = centre of slab
+ENTITIES.append(
+    ent(
+        "path_corner",
+        targetname="cs_pc1",
+        target="cs_pc2",
+        origin=f"{_CS_PLT_X} {_CS_PLT_Y_N} {_cs_plt_oz}",
+    )
+)
+ENTITIES.append(
+    ent(
+        "path_corner",
+        targetname="cs_pc2",
+        target="cs_pc1",
+        origin=f"{_CS_PLT_X} {_CS_PLT_Y_S} {_cs_plt_oz}",
+    )
+)
+
+# Quad damage — hovers above the platform at its north start
+ENTITIES.append(
+    ent(
+        "item_artifact_super_damage",
+        origin=f"{_CS_PLT_X} {_CS_PLT_Y_N} {_CS_PLT_Z + _CS_PLT_H + 24}",
+    )
+)
 
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
