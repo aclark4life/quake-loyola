@@ -4414,6 +4414,14 @@ for _fl in range(KH_FLOORS):
             ENTITIES.append(
                 ent("light", origin=f"{_side_xc} {_safe_ryc} {_light_z}", light="250")
             )
+            # Extra fill light at lower mid-height to reduce dark corners
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=f"{_side_xc} {_safe_ryc} {_fz1 + KH_FLOOR_H // 2}",
+                    light="150",
+                )
+            )
             ENTITIES.append(
                 ent(
                     room_goodies[gi % len(room_goodies)],
@@ -4444,17 +4452,28 @@ for _fl in range(KH_FLOORS):
             ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_lz}", light="180")
         )
 
-# ── Central hallway lights — 3 per floor along N-S corridor ─────────────────
+# ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
 _hall_xc = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
-_hall_y1 = (biy1 + biy2) // 2 - 160  # south third
-_hall_y2 = (biy1 + biy2) // 2  # centre
-_hall_y3 = (biy1 + biy2) // 2 + 160  # north third
+_hall_ys = [
+    biy1 + (biy2 - biy1) * i // 4
+    for i in range(1, 4)  # quarters: 25%, 50%, 75%
+] + [
+    biy1 + (biy2 - biy1) // 8,  # 12.5% (near south end)
+    biy1 + (biy2 - biy1) * 7 // 8,  # 87.5% (near north end)
+]
 for _fl in range(KH_FLOORS):
     _hall_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24
-    for _ly in [_hall_y1, _hall_y2, _hall_y3]:
+    for _ly in _hall_ys:
         ENTITIES.append(
             ent("light", origin=f"{_hall_xc} {_ly} {_hall_lz}", light="200")
         )
+
+# ── Entrance corridor lights — one per floor in each doorway ─────────────────
+_ent_xc = KH_ENT_X2 + 64  # east entrance corridor mid-X
+_ent_yc = KH_Y2 - 48  # just inside north face
+for _fl in range(KH_FLOORS):
+    _ent_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24
+    ENTITIES.append(ent("light", origin=f"{_hall_xc} {_ent_yc} {_ent_lz}", light="220"))
 
 # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
 KH_SHELF_H = 64  # height of shelf stack
