@@ -104,7 +104,7 @@ ROAD_X1, ROAD_X2 = -256, 256  # road channel E-W bounds (under bridge)
 KH_WIDTH = 640
 WORLD_X1 = -1983  # west wall; PB_X1 = WORLD_X1+WALL_T = -1967, giving western span
 # of 721 units (= PB_ARCH_X[2]→PB_ARCH_X[3] eastern span) so block spacing matches
-WORLD_X2 = 2720  # east world wall; expanded to fit KH back road with NE pier at 2206
+WORLD_X2 = 2976  # east world wall; expanded to fit KH back road with NE pier at 2206
 WORLD_Y1, WORLD_Y2 = (
     -1984,
     1712,
