@@ -1140,13 +1140,13 @@ for _vx1, _vx2 in [
             EP_SW_EDGE + CS_WALK_W,
             FZ1,
             _vx2,
-            EP_Y - EP_HW,
+            EP_Y - EP_HW - _EP_CURB_W,
             FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
     )
 
-# Thin cement curb along Ennis road south edge (sticks into road at verge edge)
+# Cement curb strip — last 8 units of verge at road edge, flush with verge surface
 for _vx1, _vx2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
     (KH_BR_CORRIDOR_X2, EP_X2),
@@ -1154,10 +1154,10 @@ for _vx1, _vx2 in [
     BRUSHES.append(
         box(
             _vx1,
-            EP_Y - EP_HW,
+            EP_Y - EP_HW - _EP_CURB_W,
             FZ1,
             _vx2,
-            EP_Y - EP_HW + _EP_CURB_W,
+            EP_Y - EP_HW,
             FZ2 + CS_WALK_H,
             TEX_CEMENT,
         )
