@@ -3181,9 +3181,10 @@ KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
 
 # ── Entrance staircase ────────────────────────────────────────────────────────
 KH_STEP_N = 5
-step_rise = KH_GROUND_Z // KH_STEP_N  # ~12 units per step
 KH_STEP_DEPTH = 32  # 32 units per tread (doubled — fewer, wider steps)
 KH_STAIR_OFFSET = 384  # distance from north wall to stair base
+_step_base_z = FZ2 + CS_WALK_H  # steps start at apron surface height (8)
+step_rise = (KH_GROUND_Z - _step_base_z) * 1 // KH_STEP_N  # distributed rise per step
 
 # Flat cement platform between building and stairs
 BRUSHES.append(
@@ -3201,10 +3202,19 @@ BRUSHES.append(
 stair_y0 = KH_Y2 + KH_STAIR_OFFSET  # south edge of staircase
 stair_y_end = stair_y0 + KH_STEP_N * KH_STEP_DEPTH  # north end of stairs (ground level)
 for _si in range(KH_STEP_N):
-    _sz2 = FZ2 + (_si + 1) * step_rise
+    _sz2 = _step_base_z + (KH_GROUND_Z - _step_base_z) * (_si + 1) // KH_STEP_N
     _sy_n = stair_y0 + (KH_STEP_N - _si) * KH_STEP_DEPTH
     BRUSHES.append(
-        box(KH_ENT_X1, stair_y0, FZ2, KH_ENT_X2, _sy_n, _sz2, TEX_CEMENT, tt=TEX_CEMENT)
+        box(
+            KH_ENT_X1,
+            stair_y0,
+            _step_base_z,
+            KH_ENT_X2,
+            _sy_n,
+            _sz2,
+            TEX_CEMENT,
+            tt=TEX_CEMENT,
+        )
     )
 
 # Small cement apron from stair base to Ennis south sidewalk
@@ -3247,7 +3257,7 @@ for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
     # Posts at top and bottom of stairs only
     for _ry, _gz in [
         (stair_y0, KH_GROUND_Z),
-        (stair_y_end, FZ2),
+        (stair_y_end, _step_base_z),
     ]:
         _pw = 2
         if _is_west:
