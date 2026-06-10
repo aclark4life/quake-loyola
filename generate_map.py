@@ -2849,6 +2849,14 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
+    # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
+    for _fx1, _fx2 in [
+        (_west_ramp_x1, KH_BR_CORRIDOR_X1),
+        (KH_BR_CORRIDOR_X2, WORLD_X2 - WALL_T),
+    ]:
+        BRUSHES.append(
+            box(_fx1, KH_Y2, FZ1, _fx2, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
+        )
 
 _kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
