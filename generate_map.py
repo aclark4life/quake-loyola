@@ -3181,7 +3181,7 @@ KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
 
 # ── Entrance staircase ────────────────────────────────────────────────────────
 KH_STEP_N = 5
-KH_STEP_DEPTH = 32  # 32 units per tread (doubled — fewer, wider steps)
+KH_STEP_DEPTH = 24  # tread depth
 KH_STAIR_OFFSET = 384  # distance from north wall to stair base
 _step_base_z = FZ2 + CS_WALK_H  # steps start at apron surface height (8)
 step_rise = (KH_GROUND_Z - _step_base_z) * 1 // KH_STEP_N  # distributed rise per step
