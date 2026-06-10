@@ -142,7 +142,7 @@ KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
-WORLD_Z2 = max(640, KH_Z2 + 128)
+WORLD_Z2 = max(640, KH_Z2 + 512)
 
 # ── Walkway from bridge to Knott Hall 2nd floor ──────────────────────────────
 KH_ENABLED = True  # re-enabled with pier-aligned north face windows
