@@ -1089,6 +1089,24 @@ BRUSHES.append(
     )
 )
 
+# Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
+# Split around back road corridor gap (KH_BR_CORRIDOR_X1..KH_BR_CORRIDOR_X2)
+for _vx1, _vx2 in [
+    (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
+    (KH_BR_CORRIDOR_X2, EP_X2),
+]:
+    BRUSHES.append(
+        box(
+            _vx1,
+            EP_SW_EDGE + CS_WALK_W,
+            FZ1,
+            _vx2,
+            EP_Y - EP_HW,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+
 # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
 EP_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
 EP_PIL_OFFSET = CS_WALK_W + 20
