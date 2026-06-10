@@ -2794,9 +2794,10 @@ if KH_GROUND_Z > FZ2:
         )
     )
     # South terrain fill — flat ground at building level behind south wall to east world edge
+    # Starts at _west_ramp_x2 to cover the SW corner gap
     BRUSHES.append(
         box(
-            KH_X1,
+            _west_ramp_x2,
             WORLD_Y1 + WALL_T,
             FZ1,
             WORLD_X2 - WALL_T,
