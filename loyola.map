@@ -32460,42 +32460,42 @@
 "origin" "-192 -747 76"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "-192 -1200 32"
 "angle" "90"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "192 -800 32"
 "angle" "270"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "-192 -300 32"
 "angle" "90"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "192 200 32"
 "angle" "270"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "0 -1600 32"
 "angle" "90"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "500 816 32"
 "angle" "0"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "1200 1056 32"
 "angle" "180"
 }
 {
-"classname" "monster_grunt"
+"classname" "monster_army"
 "origin" "1800 816 32"
 "angle" "0"
 }
