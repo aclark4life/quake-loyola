@@ -3193,15 +3193,15 @@ for _si in range(KH_STEP_N):
         )
     )
 
-# Cement sidewalk from stair base to Ennis south sidewalk — 2 units above ground fill
+# Cement sidewalk from stair base to Ennis south sidewalk — flush with ground fill
 BRUSHES.append(
     box(
         KH_ENT_X1,
         stair_y_end,
-        FZ2 + CS_WALK_H,
+        FZ1,
         KH_ENT_X2,
         EP_SW_EDGE,
-        FZ2 + CS_WALK_H + 2,
+        FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
 )
