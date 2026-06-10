@@ -826,6 +826,7 @@ EP_Y = PB_Y2 + 800  # 936: centred 800 units north of bridge north edge
 EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
 EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
 EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
+EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W  # Ennis south sidewalk outer edge
 
 # Road surface — split either side of centre divider slot (_div_hw wide)
 _div_hw = 4  # half-width of Charles St divider slot
@@ -908,10 +909,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         ROAD_X2 + CS_WALK_W,
-        EP_Y - EP_HW - 2 * CS_WALK_W,
+        EP_SW_EDGE,
         FZ2,
         KH_X2,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_SW_EDGE + CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -921,10 +922,10 @@ BRUSHES.append(
 BRUSHES.append(
     box(
         KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W,
-        EP_Y - EP_HW - 2 * CS_WALK_W,
+        EP_SW_EDGE,
         FZ2,
         EP_X2,
-        EP_Y - EP_HW - CS_WALK_W,
+        EP_SW_EDGE + CS_WALK_W,
         FZ2 + CS_WALK_H,
         TEX_CEMENT,
     )
@@ -1016,7 +1017,7 @@ BRUSHES.append(
         ROAD_X2 + CS_WALK_W,
         ROAD_X2 + CS_WALK_W + CS_RAMP_W,
         CS_Y1,
-        EP_Y - EP_HW - 2 * CS_WALK_W,
+        EP_SW_EDGE,
         FZ1,
         FZ1,
         FZ2 + CS_WALK_H,
@@ -1063,8 +1064,8 @@ BRUSHES.append(
     ramp_slab_y(
         ROAD_X2 + CS_WALK_W,
         KH_BR_CORRIDOR_X1,
-        EP_Y - EP_HW - 2 * CS_WALK_W - CS_RAMP_W,
-        EP_Y - EP_HW - 2 * CS_WALK_W,
+        EP_SW_EDGE - CS_RAMP_W,
+        EP_SW_EDGE,
         FZ1,
         FZ1,
         FZ2,
@@ -1077,8 +1078,8 @@ BRUSHES.append(
     ramp_slab_y(
         KH_BR_CORRIDOR_X2,
         EP_X2,
-        EP_Y - EP_HW - 2 * CS_WALK_W - CS_RAMP_W,
-        EP_Y - EP_HW - 2 * CS_WALK_W,
+        EP_SW_EDGE - CS_RAMP_W,
+        EP_SW_EDGE,
         FZ1,
         FZ1,
         FZ2,
@@ -2766,9 +2767,6 @@ if KH_WALKWAY_ENABLED:
 
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
-EP_SW_EDGE = (
-    EP_Y - EP_HW - 2 * CS_WALK_W
-)  # Ennis south sidewalk (outer edge, at lamp posts)
 if KH_GROUND_Z > FZ2:
     _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
     _west_ramp_x2 = KH_X1 - 128  # flat hilltop starts 128 units west of building = 1138
