@@ -5134,6 +5134,31 @@ ENTITIES.append(
     )
 )
 
+# ── Rocket launchers along the platform route ─────────────────────────────────
+_rl_h = _CS_PLT_H + 24  # hover height above road surface
+_br_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
+_br_mid_z = (
+    FZ2
+    + 2
+    + (KH_BR_ZT_S - KH_BR_ZT_N) * (_br_mid_y - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)
+)
+for _rx, _ry, _rz in [
+    # Charles outbound (south third, north third)
+    (_CS_PLT_X_OUT, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
+    (_CS_PLT_X_OUT, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+    # Ennis outbound (quarter, three-quarter)
+    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) // 3, _CS_PLT_Y_OUT, FZ2 + 2 + _rl_h),
+    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) * 2 // 3, _CS_PLT_Y_OUT, FZ2 + 2 + _rl_h),
+    # Back road going south (midpoint)
+    (_CS_PLT_BR_X, _br_mid_y, _br_mid_z + _rl_h),
+    # Ennis return (midpoint)
+    ((_CS_PLT_X_RET + _CS_PLT_BR_X) // 2, _CS_PLT_Y_RET, FZ2 + 2 + _rl_h),
+    # Charles return (south third, north third)
+    (_CS_PLT_X_RET, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
+    (_CS_PLT_X_RET, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+]:
+    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"{_rx} {_ry} {_rz}"))
+
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
 with open("loyola.map", "w") as fh:
