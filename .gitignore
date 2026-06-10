@@ -13,6 +13,7 @@
 test_*
 ref_test.*
 loyola.lit
+loyola.texinfo
 loyola.vis
 *.pyc
 __pycache__/
