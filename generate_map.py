@@ -1158,7 +1158,7 @@ for _vx1, _vx2 in [
             FZ1,
             _vx2,
             EP_Y - EP_HW + _EP_CURB_W,
-            FZ2 + 2,
+            FZ2 + CS_WALK_H,
             TEX_CEMENT,
         )
     )
