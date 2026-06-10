@@ -5053,10 +5053,10 @@ _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
 _CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,  X=+64)
-_CS_PLT_X_RET = -(ROAD_X2 // 4)  # return  Charles lane   (west,  X=-64)
-_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround
+_CS_PLT_X_RET = -(ROAD_X2 // 2)  # return  Charles lane   (west,  X=-128)
+_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 48  # south turnaround (clear of world wall)
 _CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south, Y≈792)
-_CS_PLT_Y_RET = EP_Y + EP_HW - 16  # return  Ennis lane (north, Y≈1080)
+_CS_PLT_Y_RET = EP_Y + EP_HW // 2  # return  Ennis lane (north, Y≈1016)
 _CS_PLT_X_E = EP_X2 - 64  # east turnaround
 
 # Platform brush — built at pc1 (south, outbound lane)
