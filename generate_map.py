@@ -3976,11 +3976,20 @@ wst_midY = (wsty1 + wsty2) // 2  # Y lane divider = -400
 for _fl in range(KH_FLOORS):
     _z0 = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL  # floor surface Z
     _z_mid = _z0 + WST_HALF_N * WST_STEP_R  # half-floor Z (_z0 + 80)
+    _z_top = _z0 + KH_FLOOR_H  # next floor surface Z (= exit level)
+
+    # Entrance landing — flush with hallway floor, east of stair band (north lane).
+    BRUSHES.append(
+        box(stair_x2, wst_midY, _z0 - PLAT_H, wstx2, wsty2, _z0, TEX_FLOOR_KH)
+    )
+    # Exit landing — flush with next floor, east of stair band (south lane).
+    BRUSHES.append(
+        box(stair_x2, wsty1, _z_top - PLAT_H, wstx2, wst_midY, _z_top, TEX_FLOOR_KH)
+    )
 
     # North lane: individual treads ascending westward (stair_x2 → stair_x1).
-    # Tread 0 (lowest) extends east to wstx2 as the door-level entrance landing.
     for _i in range(WST_HALF_N):
-        _sx_e = wstx2 if _i == 0 else stair_x2 - _i * WST_TREAD_X
+        _sx_e = stair_x2 - _i * WST_TREAD_X
         _sx_w = stair_x2 - (_i + 1) * WST_TREAD_X
         _sz1 = _z0 + _i * WST_STEP_R
         BRUSHES.append(
@@ -4002,10 +4011,9 @@ for _fl in range(KH_FLOORS):
     )
 
     # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
-    # Tread 7 (highest) extends east to wstx2 as the exit landing to door above.
     for _i in range(WST_HALF_N):
         _sx_w = stair_x1 + _i * WST_TREAD_X
-        _sx_e = wstx2 if _i == WST_HALF_N - 1 else _sx_w + WST_TREAD_X
+        _sx_e = _sx_w + WST_TREAD_X
         _sz1 = _z_mid + _i * WST_STEP_R
         BRUSHES.append(
             box(
