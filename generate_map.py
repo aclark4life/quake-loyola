@@ -4513,19 +4513,20 @@ for _fl in range(KH_FLOORS):
             )
             gi += 1
 
-# ── West stairwell lights — ceiling + mid-flight per lane per floor ──────────
+# ── West stairwell lights — ceiling + mid-flight + low fill per lane per floor ──────────
 _wst_xc = (wstx1 + wstx2) // 2  # X centre of shaft
 _wst_north_yc = (wst_midY + wsty2) // 2  # Y centre of north lane
 _wst_south_yc = (wsty1 + wst_midY) // 2  # Y centre of south lane
 for _fl in range(KH_FLOORS):
     _wst_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24  # near ceiling
     _wst_mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2  # mid-flight
-    for _lz in [_wst_lz, _wst_mz]:
+    _wst_loz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 4  # low fill
+    for _lz in [_wst_lz, _wst_mz, _wst_loz]:
         ENTITIES.append(
-            ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_lz}", light="180")
+            ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_lz}", light="220")
         )
         ENTITIES.append(
-            ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_lz}", light="180")
+            ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_lz}", light="220")
         )
 
 # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────

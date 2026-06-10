@@ -28081,102 +28081,152 @@
 {
 "classname" "light"
 "origin" "1566 -336 200"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 200"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 144"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 144"
-"light" "180"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -336 104"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -464 104"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 360"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 360"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 304"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 304"
-"light" "180"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -336 264"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -464 264"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 520"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 520"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 464"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 464"
-"light" "180"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -336 424"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -464 424"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 680"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 680"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 624"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 624"
-"light" "180"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -336 584"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -464 584"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 840"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 840"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -336 784"
-"light" "180"
+"light" "220"
 }
 {
 "classname" "light"
 "origin" "1566 -464 784"
-"light" "180"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -336 744"
+"light" "220"
+}
+{
+"classname" "light"
+"origin" "1566 -464 744"
+"light" "220"
 }
 {
 "classname" "light"
