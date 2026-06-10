@@ -32224,19 +32224,19 @@
 "classname" "path_corner"
 "targetname" "cs_pc4"
 "target" "cs_pc5"
-"origin" "2640 1016 14"
+"origin" "2640 976 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc5"
 "target" "cs_pc6"
-"origin" "-128 1016 14"
+"origin" "-192 976 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc6"
 "target" "cs_pc1"
-"origin" "-128 -1856 14"
+"origin" "-192 -1856 14"
 }
 {
 "classname" "item_artifact_super_damage"
