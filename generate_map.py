@@ -3188,12 +3188,18 @@ for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
 # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
 stx1, stx2 = KH_ENT_X2 + 16, KH_ENT_X2 + 16 + 128  # = 1516, 1644
 sty1, sty2 = biy2 - 128, biy2  # Y: -400 to -272
+# West stairwell extents defined after INDENT below
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
 INDENT = 80  # corner indentation depth
 KHRH_WIN_HALF = 24  # half-width of recessed corner windows
 KH_MULLION_W = 12  # mullion width
 KH_MULLION_PRO = 12  # mullion protrusion depth
+
+wstx2 = KH_ENT_X1 - 16  # west stairwell east edge
+wstx1 = bix1 + 2 * INDENT  # west stairwell west edge — flush with NW indent corner
+wsty2 = sty2  # stairwell north edge (same as east shaft)
+wsty1 = biy2 - 256  # stairwell south edge — double depth (256 vs 128)
 
 # South wall — mirrors north wall: indented SW/SE corners with recessed windows
 # Main south face — hallway openings cut through at each floor level
@@ -3708,23 +3714,32 @@ BRUSHES.append(
         KH_X1,
         KH_Y1,
         KH_Z2,
-        stx1,
+        wstx1,
         KH_Y2 - INDENT,
         KH_Z2 + KH_WALL,
         TEX_FLOOR_KH,
     )
-)  # west bulk
+)  # far-west bulk
 BRUSHES.append(
     box(
         KH_X1 + 2 * INDENT,
         KH_Y2 - INDENT,
         KH_Z2,
-        stx1,
+        wstx1,
         KH_Y2,
         KH_Z2 + KH_WALL,
         TEX_FLOOR_KH,
     )
-)  # west north-strip
+)  # far-west north-strip
+BRUSHES.append(
+    box(wstx1, KH_Y1, KH_Z2, wstx2, wsty1, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+)  # south of west stairwell
+BRUSHES.append(
+    box(wstx1, wsty2, KH_Z2, wstx2, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+)  # north of west stairwell
+BRUSHES.append(
+    box(wstx2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+)  # between shafts (no indent — interior)
 BRUSHES.append(
     box(
         stx2,
@@ -3774,13 +3789,18 @@ BRUSHES.append(
 for _f in range(1, KH_FLOORS):
     _sz = KH_GROUND_Z + _f * KH_FLOOR_H
     _st = _sz + KH_WALL
-    # South bulk
-    BRUSHES.append(box(bix1, biy1, _sz, bix2, sty1, _st, TEX_FLOOR_KH))
-    # West of shaft, clipped for NW indentation (2×INDENT wide)
-    BRUSHES.append(box(bix1, sty1, _sz, stx1, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
+    # South bulk — full width up to stairwell's south wall
+    BRUSHES.append(box(bix1, biy1, _sz, bix2, wsty1, _st, TEX_FLOOR_KH))
+    # Stairwell south extension (wsty1..sty1): floor on either side, stairwell open
+    BRUSHES.append(box(bix1, wsty1, _sz, wstx1, sty1, _st, TEX_FLOOR_KH))
+    BRUSHES.append(box(wstx2, wsty1, _sz, bix2, sty1, _st, TEX_FLOOR_KH))
+    # North zone (sty1..biy2): west of stairwell, clipped for NW indentation
+    BRUSHES.append(box(bix1, sty1, _sz, wstx1, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(bix1 + 2 * INDENT, KH_Y2 - INDENT, _sz, stx1, biy2, _st, TEX_FLOOR_KH)
+        box(bix1 + 2 * INDENT, KH_Y2 - INDENT, _sz, wstx1, biy2, _st, TEX_FLOOR_KH)
     )
+    # Between west stairwell and east shaft
+    BRUSHES.append(box(wstx2, sty1, _sz, stx1, biy2, _st, TEX_FLOOR_KH))
     # East of shaft, clipped for NE indentation
     BRUSHES.append(box(stx2, sty1, _sz, bix2, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
@@ -3822,7 +3842,45 @@ BRUSHES.extend(
 # Shaft East wall (internal)
 BRUSHES.append(box(stx2, sty1, KH_GROUND_Z, stx2 + shaft_wall, sty2, KH_Z2, TEX_WALL))
 
-# ── Knott Hall hallway + rooms — 2 rooms per side per floor ──────────────────
+# ── West Stairwell Enclosure ──────────────────────────────────────────────────
+# Walls around the west stairwell (wstx1..wstx2, wsty1..wsty2)
+west_shaft_doors_w = [
+    (
+        sty1 + 16,  # same Y extents as east shaft doorway
+        KH_GROUND_Z + _f * KH_FLOOR_H,
+        sty2 - 16,
+        KH_GROUND_Z + _f * KH_FLOOR_H + shaft_door_h,
+    )
+    for _f in range(KH_FLOORS)
+]
+
+# West stairwell North wall (internal, solid)
+BRUSHES.append(
+    box(wstx1, wsty2, KH_GROUND_Z, wstx2, wsty2 + shaft_wall, KH_Z2, TEX_WALL)
+)
+# West stairwell South wall (internal, solid)
+BRUSHES.append(
+    box(wstx1, wsty1 - shaft_wall, KH_GROUND_Z, wstx2, wsty1, KH_Z2, TEX_WALL)
+)
+# West stairwell East wall (internal, openings for each floor's door — faces hallway)
+BRUSHES.extend(
+    layered_wall_y(
+        wsty1,
+        wstx2,
+        KH_GROUND_Z,
+        wsty2,
+        wstx2 + shaft_wall,
+        KH_Z2,
+        west_shaft_doors_w,
+        TEX_WALL,
+    )
+)
+# West stairwell West wall (internal, solid)
+BRUSHES.append(
+    box(wstx1 - shaft_wall, wsty1, KH_GROUND_Z, wstx1, wsty2, KH_Z2, TEX_WALL)
+)
+
+
 # Partition Y splits vary per floor so each floor has different room proportions.
 room_splits = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
 
@@ -3832,7 +3890,9 @@ wxc = (wx1 + wx2) // 2  # west room X center = 1394
 exc = (ex1 + ex2) // 2  # east room X center = 1778
 
 # Collect door openings in hallway walls across all floors
-w_hall_openings = []
+w_hall_openings = [
+    (sty1, KH_GROUND_Z, sty2, KH_Z2)
+]  # west stairwell gap — doorway size
 e_hall_openings = [(sty1, KH_GROUND_Z, sty2, KH_Z2)]  # shaft gap always open
 
 for _fl in range(KH_FLOORS):
