@@ -5043,24 +5043,27 @@ for _bx, _by in _bush_positions:
     _all_bush_brushes += make_bush(_bx, _by, FZ2)
 ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 
-# ── Charles Street scrolling platform — travels N→S and back, quad damage ────
-# Platform oscillates: north (Y=700) → south (Y=-700) → north, continuously.
-# Quad damage floats above the north start — grab it then ride south.
-_CS_PLT_Y_N = 700  # north turnaround Y
-_CS_PLT_Y_S = -700  # south turnaround Y
-_CS_PLT_W = 128  # platform width (E-W) and depth (N-S)
+# ── Charles Street scrolling platform — L-shaped route with quad damage ───────
+# Route: south Charles (Y=-700) → north to Ennis junction (Y=EP_Y) →
+#        east along Ennis (X≈2600) → back west to junction → south again.
+# Quad damage hovers at the east turnaround — reward for riding the full loop.
+_CS_PLT_W = 128  # platform width and depth
 _CS_PLT_H = 12  # platform slab thickness
-_CS_PLT_X = 0  # on the street centre line
+_CS_PLT_X = 0  # Charles Street centre line
 _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
-# Platform brush — built at north start position
+_CS_PLT_Y_S = -700  # south turnaround (Charles St)
+_CS_PLT_Y_JN = EP_Y  # Charles/Ennis junction Y
+_CS_PLT_X_E = EP_X2 - 128  # east turnaround on Ennis (leave margin)
+
+# Platform brush — built at south start position (pc1)
 _cs_plt_brush = box(
     _CS_PLT_X - _CS_PLT_W // 2,
-    _CS_PLT_Y_N - _CS_PLT_W // 2,
+    _CS_PLT_Y_S - _CS_PLT_W // 2,
     _CS_PLT_Z,
     _CS_PLT_X + _CS_PLT_W // 2,
-    _CS_PLT_Y_N + _CS_PLT_W // 2,
+    _CS_PLT_Y_S + _CS_PLT_W // 2,
     _CS_PLT_Z + _CS_PLT_H,
     TEX_FLOOR,
 )
@@ -5073,30 +5076,29 @@ ENTITIES.append(
     )
 )
 
-# path_corners — north ↔ south loop
-_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2  # origin Z = centre of slab
-ENTITIES.append(
-    ent(
-        "path_corner",
-        targetname="cs_pc1",
-        target="cs_pc2",
-        origin=f"{_CS_PLT_X} {_CS_PLT_Y_N} {_cs_plt_oz}",
+# path_corners — L-shaped loop
+# pc1 (south) → pc2 (junction) → pc3 (east end) → pc4 (junction again) → pc1
+_cs_plt_oz = _CS_PLT_Z + _CS_PLT_H // 2  # Z of path_corner origins
+for _pcn, _tx, _ty, _target in [
+    ("cs_pc1", _CS_PLT_X, _CS_PLT_Y_S, "cs_pc2"),
+    ("cs_pc2", _CS_PLT_X, _CS_PLT_Y_JN, "cs_pc3"),
+    ("cs_pc3", _CS_PLT_X_E, _CS_PLT_Y_JN, "cs_pc4"),
+    ("cs_pc4", _CS_PLT_X, _CS_PLT_Y_JN, "cs_pc1"),
+]:
+    ENTITIES.append(
+        ent(
+            "path_corner",
+            targetname=_pcn,
+            target=_target,
+            origin=f"{_tx} {_ty} {_cs_plt_oz}",
+        )
     )
-)
-ENTITIES.append(
-    ent(
-        "path_corner",
-        targetname="cs_pc2",
-        target="cs_pc1",
-        origin=f"{_CS_PLT_X} {_CS_PLT_Y_S} {_cs_plt_oz}",
-    )
-)
 
-# Quad damage — hovers above the platform at its north start
+# Quad damage — hovers above east turnaround; ride the full loop to grab it
 ENTITIES.append(
     ent(
         "item_artifact_super_damage",
-        origin=f"{_CS_PLT_X} {_CS_PLT_Y_N} {_CS_PLT_Z + _CS_PLT_H + 24}",
+        origin=f"{_CS_PLT_X_E} {_CS_PLT_Y_JN} {_CS_PLT_Z + _CS_PLT_H + 24}",
     )
 )
 
