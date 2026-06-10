@@ -1130,9 +1130,10 @@ BRUSHES.append(
 
 # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
 # Split around back road corridor gap (KH_BR_CORRIDOR_X1..KH_BR_CORRIDOR_X2)
-for _vx1, _vx2 in [
-    (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
-    (KH_BR_CORRIDOR_X2, EP_X2),
+# SE corner (east of back road) uses gravel3c (mulch bed)
+for _vx1, _vx2, _vtex in [
+    (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1, TEX_GROUND),
+    (KH_BR_CORRIDOR_X2, EP_X2, "gravel3c"),
 ]:
     BRUSHES.append(
         box(
@@ -1142,7 +1143,7 @@ for _vx1, _vx2 in [
             _vx2,
             EP_Y - EP_HW - _EP_CURB_W,
             FZ2 + CS_WALK_H,
-            TEX_GROUND,
+            _vtex,
         )
     )
 
