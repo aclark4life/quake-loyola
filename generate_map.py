@@ -3880,6 +3880,167 @@ BRUSHES.append(
     box(wstx1 - shaft_wall, wsty1, KH_GROUND_Z, wstx1, wsty2, KH_Z2, TEX_WALL)
 )
 
+# ── West Stairwell — Switchback Staircase ─────────────────────────────────────
+# Stairs compressed to the shaft centre (192 u wide), leaving 88-unit flanks for
+# half-floor platforms on the east and west sides.
+#
+# North lane (wst_midY..wsty2): enter east door, walk WEST, rise z0 → z_mid.
+# West platform at z_mid (full shaft Y, 88 u wide) — turn-around landing.
+# South lane (wsty1..wst_midY): walk EAST, rise z_mid → z_top.
+#
+# Step 0 of north lane and step 7 of south lane extend east to wstx2 so the
+# door at each floor connects directly to the staircase.
+# Loop runs KH_FLOORS times (fl 0→4) — top flight exits onto building roof.
+WST_HALF_N = 8
+WST_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
+WST_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
+PLAT_H = 8  # platform slab thickness
+stair_cx = (wstx1 + wstx2) // 2  # shaft X centre
+stair_x1 = stair_cx - WST_HALF_N * WST_TREAD_X // 2  # west edge of stairs
+stair_x2 = stair_x1 + WST_HALF_N * WST_TREAD_X  # east edge of stairs
+wst_midY = (wsty1 + wsty2) // 2  # Y lane divider = -400
+
+for _fl in range(KH_FLOORS):
+    _z0 = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL  # floor surface Z
+    _z_mid = _z0 + WST_HALF_N * WST_STEP_R  # half-floor Z (_z0 + 80)
+
+    # North lane: individual treads ascending westward (stair_x2 → stair_x1).
+    # Tread 0 (lowest) extends east to wstx2 as the door-level entrance landing.
+    for _i in range(WST_HALF_N):
+        _sx_e = wstx2 if _i == 0 else stair_x2 - _i * WST_TREAD_X
+        _sx_w = stair_x2 - (_i + 1) * WST_TREAD_X
+        _sz1 = _z0 + _i * WST_STEP_R
+        BRUSHES.append(
+            box(
+                _sx_w,
+                wst_midY,
+                _sz1,
+                _sx_e,
+                wsty2,
+                _sz1 + WST_STEP_R,
+                TEX_WALL,
+                tt=TEX_FLOOR_KH,
+            )
+        )
+
+    # Half-floor west platform: turn-around landing, full shaft Y depth.
+    BRUSHES.append(
+        box(wstx1, wsty1, _z_mid - PLAT_H, stair_x1, wsty2, _z_mid, TEX_FLOOR_KH)
+    )
+
+    # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
+    # Tread 7 (highest) extends east to wstx2 as the exit landing to door above.
+    for _i in range(WST_HALF_N):
+        _sx_w = stair_x1 + _i * WST_TREAD_X
+        _sx_e = wstx2 if _i == WST_HALF_N - 1 else _sx_w + WST_TREAD_X
+        _sz1 = _z_mid + _i * WST_STEP_R
+        BRUSHES.append(
+            box(
+                _sx_w,
+                wsty1,
+                _sz1,
+                _sx_e,
+                wst_midY,
+                _sz1 + WST_STEP_R,
+                TEX_WALL,
+                tt=TEX_FLOOR_KH,
+            )
+        )
+
+
+# ── West Stairwell — Iron Railings ────────────────────────────────────────────
+# 2 end posts + 1 sloped cross rail per half-flight, central divider (wst_midY).
+# Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
+# they never land on a tread.  Cross rail spans the full stair band between them.
+WST_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
+WST_POST_W = 4  # square post cross-section
+WST_RAIL_T = 4  # cross-rail bar thickness
+
+for _fl in range(KH_FLOORS):
+    _z0 = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL
+    _z_mid = _z0 + WST_HALF_N * WST_STEP_R
+    _z_top = _z_mid + WST_HALF_N * WST_STEP_R
+
+    # ── North lane — south face (wst_midY) ────────────────────────────────
+    # Lower post: east of stair band, in the entrance area
+    BRUSHES.append(
+        box(
+            stair_x2,
+            wst_midY,
+            _z0,
+            stair_x2 + WST_POST_W,
+            wst_midY + WST_POST_W,
+            _z0 + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+    # Upper post: west of stair band, on the west platform
+    BRUSHES.append(
+        box(
+            stair_x1 - WST_POST_W,
+            wst_midY,
+            _z_mid,
+            stair_x1,
+            wst_midY + WST_POST_W,
+            _z_mid + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+    # Sloped cross rail along center divider (high at west, low at east)
+    BRUSHES.append(
+        ramp_slab(
+            stair_x1,
+            stair_x2,
+            wst_midY,
+            wst_midY + WST_RAIL_T,
+            _z_mid + WST_RAIL_H - WST_RAIL_T,
+            _z0 + WST_RAIL_H - WST_RAIL_T,
+            _z_mid + WST_RAIL_H,
+            _z0 + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+
+    # ── South lane — north face (wst_midY) ────────────────────────────────
+    # Lower post: west of stair band, on the west platform
+    BRUSHES.append(
+        box(
+            stair_x1 - WST_POST_W,
+            wst_midY - WST_POST_W,
+            _z_mid,
+            stair_x1,
+            wst_midY,
+            _z_mid + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+    # Upper post: east of stair band, in the entrance area
+    BRUSHES.append(
+        box(
+            stair_x2,
+            wst_midY - WST_POST_W,
+            _z_top,
+            stair_x2 + WST_POST_W,
+            wst_midY,
+            _z_top + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+    # Sloped cross rail along center divider (low at west, high at east)
+    BRUSHES.append(
+        ramp_slab(
+            stair_x1,
+            stair_x2,
+            wst_midY - WST_RAIL_T,
+            wst_midY,
+            _z_mid + WST_RAIL_H - WST_RAIL_T,
+            _z_top + WST_RAIL_H - WST_RAIL_T,
+            _z_mid + WST_RAIL_H,
+            _z_top + WST_RAIL_H,
+            TEX_RAIL,
+        )
+    )
+
 
 # Partition Y splits vary per floor so each floor has different room proportions.
 room_splits = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
@@ -4267,6 +4428,19 @@ for _fl in range(KH_FLOORS):
             )
             gi += 1
 
+# ── West stairwell lights — one per lane per floor, near ceiling ─────────────
+_wst_xc = (wstx1 + wstx2) // 2  # X centre of shaft
+_wst_north_yc = (wst_midY + wsty2) // 2  # Y centre of north lane
+_wst_south_yc = (wsty1 + wst_midY) // 2  # Y centre of south lane
+for _fl in range(KH_FLOORS):
+    _wst_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24  # near ceiling
+    ENTITIES.append(
+        ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_wst_lz}", light="220")
+    )
+    ENTITIES.append(
+        ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_wst_lz}", light="220")
+    )
+
 # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
 KH_SHELF_H = 64  # height of shelf stack
 KH_SHELF_D = 16  # depth (one wall-thickness)
@@ -4483,7 +4657,10 @@ for pos, angle in [
     # Knott Hall — ground, mid, upper floors
     *(
         [
-            ((KH_CX, KH_Y2 - 80, KH_GROUND_Z + 40), 180),
+            (
+                ((KH_ENT_X1 + KH_ENT_X2) // 2, KH_Y2 - 80, KH_GROUND_Z + 40),
+                180,
+            ),  # entrance hallway, north
             ((KH_CX - 100, bcy, KH_GROUND_Z + KH_FLOOR_H + 40), 270),
             ((KH_CX + 100, bcy, KH_GROUND_Z + KH_FLOOR_H * 2 + 40), 90),
             ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + KH_FLOOR_H * 3 + 40), 0),
@@ -4551,7 +4728,7 @@ for _rl_origin in [
 # Super shotgun — spread around mid-tier locations
 if KH_ENABLED:
     ENTITIES.append(
-        ent("weapon_supershotgun", origin=f"{KH_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
+        ent("weapon_supershotgun", origin=f"{exc} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
     )
 ENTITIES.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
 ENTITIES.append(ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FZ2 + 40}"))
@@ -4597,7 +4774,7 @@ ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 # ── Health & Armor ────────────────────────────────────────────────────────
 # Health — scattered throughout
 ENTITIES.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
-ENTITIES.append(ent("item_health", origin=f"{KH_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
+ENTITIES.append(ent("item_health", origin=f"{exc} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
 ENTITIES.append(
     ent("item_health", origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}")
 )
