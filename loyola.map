@@ -32427,3 +32427,35 @@
 "classname" "item_artifact_super_damage"
 "origin" "2382 -1888 102"
 }
+{
+"classname" "weapon_rocketlauncher"
+"origin" "64 -1358 44"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "64 -747 44"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "815 792 38"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "1630 792 38"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "2382 -1072 70"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "1095 956 38"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "-192 -1358 44"
+}
+{
+"classname" "weapon_rocketlauncher"
+"origin" "-192 -747 44"
+}
