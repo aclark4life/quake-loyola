@@ -5159,6 +5159,71 @@ for _rx, _ry, _rz in [
 ]:
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"{_rx} {_ry} {_rz}"))
 
+# ── Monsters ──────────────────────────────────────────────────────────────────
+# Grunts patrol Charles Street and Ennis
+_stand_z = ROAD_Z + 24
+for _mx, _my, _mangle in [
+    (ROAD_X1 + 64, -1200, 90),  # south Charles, west side heading north
+    (ROAD_X2 - 64, -800, 270),  # south Charles, east side heading south
+    (ROAD_X1 + 64, -300, 90),  # mid Charles, west side
+    (ROAD_X2 - 64, 200, 270),  # mid Charles, east side
+    (0, -1600, 90),  # far south Charles, centre
+]:
+    ENTITIES.append(
+        ent("monster_grunt", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+    )
+
+# Grunts on Ennis
+for _mx, _my, _mangle in [
+    (500, EP_Y - EP_HW + 40, 0),  # Ennis east, south lane
+    (1200, EP_Y + EP_HW - 40, 180),  # Ennis east, north lane
+    (1800, EP_Y - EP_HW + 40, 0),  # Ennis further east
+]:
+    ENTITIES.append(
+        ent("monster_grunt", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+    )
+
+# Ogres on the back road hill — like guards on the slope
+_br_cx = (KH_BR_RD_X1 + KH_BR_RD_X2) // 2
+for _my, _mz in [
+    (-600, FZ2 + 2 + (64 * ((-600) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
+    (-1200, FZ2 + 2 + (64 * ((-1200) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
+    (KH_BR_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
+]:
+    ENTITIES.append(ent("monster_ogre", origin=f"{_br_cx} {_my} {_mz}", angle="90"))
+
+# Knights inside KH rooms — one per floor in each room
+for _fl in range(KH_FLOORS):
+    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL + 24
+    _split = room_splits[_fl]
+    _sr_yc = (biy1 + _split) // 2
+    _nr_yc = (_split + KH_WALL + biy2) // 2
+    for _rxc in [wxc, exc]:
+        for _ryc in [_sr_yc, _nr_yc]:
+            ENTITIES.append(
+                ent("monster_knight", origin=f"{_rxc} {_ryc} {_fz}", angle="270")
+            )
+
+# Enforcers in the hallway — one per floor
+_hall_xc = (KH_ENT_X1 + KH_ENT_X2) // 2
+for _fl in range(KH_FLOORS):
+    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL + 24
+    _hall_yc = (biy1 + biy2) // 2
+    ENTITIES.append(
+        ent("monster_enforcer", origin=f"{_hall_xc} {_hall_yc} {_fz}", angle="180")
+    )
+
+# Enforcers on rooftop
+for _rx, _ry in [
+    (wxc, KH_Y2 - 80),
+    (exc, KH_Y2 - 80),
+    (KH_CX, KH_Y1 + 80),
+    (wxc, KH_Y1 + 80),
+]:
+    ENTITIES.append(
+        ent("monster_enforcer", origin=f"{_rx} {_ry} {KH_Z2 + 24}", angle="180")
+    )
+
 # ── Write ─────────────────────────────────────────────────────────────────────
 map_text = worldspawn + "\n" + "\n".join(ENTITIES) + "\n"
 with open("loyola.map", "w") as fh:
