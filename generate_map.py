@@ -2738,10 +2738,12 @@ if KH_WALKWAY_ENABLED:
     # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
     _rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge
     _rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge
-    _west_piers = [int(_beam_x1 + (_rail_x1 - _beam_x1) * k / 4) for k in range(1, 4)]
-    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * k / 3) for k in range(1, 3)]
+    _west_piers = [
+        int(_beam_x1 + (_rail_x1 - _beam_x1) * f) for f in (0.28, 0.63, 0.93)
+    ]
+    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * f) for f in (0.25, 0.75)]
     _pier_xs = _west_piers + _east_piers
-    _pier_hw = 14
+    _pier_hw = 20
     for _px in _pier_xs:
         BRUSHES.append(
             box(
