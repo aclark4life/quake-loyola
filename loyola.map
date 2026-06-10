@@ -32212,21 +32212,21 @@
 "classname" "path_corner"
 "targetname" "cs_pc2"
 "target" "cs_pc3"
-"origin" "64 816 14"
+"origin" "64 792 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc3"
 "target" "cs_pc4"
-"origin" "2640 816 14"
+"origin" "2640 792 14"
 }
 {
 "classname" "path_corner"
 "targetname" "cs_pc4"
 "target" "cs_pc1"
-"origin" "64 816 14"
+"origin" "64 792 14"
 }
 {
 "classname" "item_artifact_super_damage"
-"origin" "2640 816 44"
+"origin" "2640 792 44"
 }

@@ -5054,7 +5054,7 @@ _CS_PLT_Z = ROAD_Z  # flush with road surface
 _CS_PLT_SPEED = 180  # units per second
 
 _CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 16  # south turnaround (Charles St south end)
-_CS_PLT_Y_JN = EP_Y - EP_HW * 3 // 4  # further into south lane on Ennis (~Y=816)
+_CS_PLT_Y_JN = EP_Y - EP_HW + 16  # deep south lane on Ennis (~Y=792)
 _CS_PLT_X_E = EP_X2 - 64  # east turnaround on Ennis (further east)
 
 # Platform brush — built at south start position (pc1)
