@@ -1097,29 +1097,7 @@ BRUSHES.append(
         tt=TEX_GROUND,
     )
 )
-# Ennis south — flat ground fill from ramp zone to sidewalk outer edge
-BRUSHES.append(
-    box(
-        ROAD_X2 + CS_WALK_W,
-        EP_SW_EDGE - CS_RAMP_W,
-        FZ1,
-        KH_BR_CORRIDOR_X1,
-        EP_SW_EDGE,
-        FZ2 + CS_WALK_H,
-        TEX_GROUND,
-    )
-)
-BRUSHES.append(
-    box(
-        KH_BR_CORRIDOR_X2,
-        EP_SW_EDGE - CS_RAMP_W,
-        FZ1,
-        EP_X2,
-        EP_SW_EDGE,
-        FZ2 + CS_WALK_H,
-        TEX_GROUND,
-    )
-)
+# (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)
 
 # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
 # Split around back road corridor gap (KH_BR_CORRIDOR_X1..KH_BR_CORRIDOR_X2)
