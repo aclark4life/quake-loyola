@@ -3233,7 +3233,7 @@ BRUSHES.append(
 # ── Stair side caps (cement cheek walls) ─────────────────────────────────────
 # Solid sloped cement walls on each side of the staircase, top follows stair slope.
 _cap_w = 24  # cheek wall thickness (X)
-_cap_raise = 32  # extra height above stair slope
+_cap_raise = 16  # extra height above stair slope
 for _cx1, _cx2 in [
     (KH_ENT_X1 - _cap_w, KH_ENT_X1),  # west cheek
     (KH_ENT_X2, KH_ENT_X2 + _cap_w),  # east cheek
