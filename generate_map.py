@@ -2840,7 +2840,7 @@ if KH_GROUND_Z > FZ2:
     )
     # (No flat east fill — the back road section provides its own sloped fill there)
     # West hill — ramp from sidewalk height at Charles St up to building ground level
-    _west_ramp_north = KH_Y2 - INDENT // 2
+    _west_ramp_north = KH_Y2 - INDENT * 3 // 4
     BRUSHES.append(
         ramp_slab(
             _west_ramp_x1,
