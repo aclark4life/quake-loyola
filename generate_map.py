@@ -2890,15 +2890,26 @@ if KH_GROUND_Z > FZ2:
     _east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
     _east_ramp_depth = 128  # N-S length of sloped sidewalk
     _ep_plat_depth = 96  # N-S depth of side-step platform — slope must not cover this
-    # West section of seg1 — stays at sidewalk height
+    # West section of seg1 — stays at sidewalk height (up to NW indent of KH)
+    _seg1_split = (
+        KH_X1 + 2 * INDENT
+    )  # = NW indent X, aligns raised ground with NW corner
     BRUSHES.append(
-        box(_west_ramp_x1, KH_Y2, FZ1, PIER4_X, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
+        box(
+            _west_ramp_x1,
+            KH_Y2,
+            FZ1,
+            _seg1_split,
+            EP_SW_EDGE,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
     )
-    # East section of seg1 (Pier 4 → entrance) — slopes from KH_GROUND_Z at KH face to
+    # East section of seg1 (NW indent → entrance) — slopes from KH_GROUND_Z at KH face to
     # sidewalk height at Ennis sidewalk
     BRUSHES.append(
         ramp_slab_y(
-            PIER4_X,
+            _seg1_split,
             _kh_ent_x1,
             KH_Y2,
             EP_SW_EDGE,
