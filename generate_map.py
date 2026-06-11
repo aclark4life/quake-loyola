@@ -2824,6 +2824,7 @@ if KH_GROUND_Z > FZ2:
         (KH_X1 + INDENT, KH_Y1, KH_X2 - INDENT, KH_Y1 + INDENT),  # south strip
         (KH_X1, KH_Y1 + INDENT, KH_X2, KH_Y2 - INDENT),  # middle strip
         (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
+        (KH_X1, KH_Y2 - INDENT, KH_X1 + 2 * INDENT, KH_Y2),  # NW indent floor
     ]:
         BRUSHES.append(box(_px1, _py1, FZ2, _px2, _py2, KH_GROUND_Z, TEX_WALL))
     # (No flat east fill — the back road section provides its own sloped fill there)
