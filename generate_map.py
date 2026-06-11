@@ -2893,21 +2893,23 @@ if KH_GROUND_Z > FZ2:
         BRUSHES.append(
             box(_fx1, KH_Y2, FZ1, _fx2, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
         )
-    # Sloped cement sidewalk east of entrance — slopes W→E from KH ground level
-    # at the entrance down to sidewalk level at the east wall
+    # East of entrance: flat platform at walkway level + steps down to sidewalk
+    _ep_x1 = _east_ramp_x1  # KH_ENT_X2
+    _ep_x2 = KH_X2
+    _ep_plat_depth = 64  # flat platform depth before steps
+    _ep_n_steps = 4
+    _ep_step_rise = (KH_GROUND_Z - (FZ2 + CS_WALK_H)) // _ep_n_steps  # = 22
+    _ep_step_depth = 24
+    # Flat platform at KH_GROUND_Z
     BRUSHES.append(
-        ramp_slab(
-            _east_ramp_x1,
-            KH_X2,
-            KH_Y2,
-            KH_Y2 + _east_ramp_depth,
-            FZ1,
-            FZ1,
-            KH_GROUND_Z,
-            FZ2 + CS_WALK_H,
-            TEX_CEMENT,
-        )
+        box(_ep_x1, KH_Y2, FZ1, _ep_x2, KH_Y2 + _ep_plat_depth, KH_GROUND_Z, TEX_CEMENT)
     )
+    # Steps going north (downhill)
+    for _si in range(_ep_n_steps):
+        _sz = KH_GROUND_Z - _si * _ep_step_rise
+        _sy1 = KH_Y2 + _ep_plat_depth + _si * _ep_step_depth
+        _sy2 = _sy1 + _ep_step_depth
+        BRUSHES.append(box(_ep_x1, _sy1, FZ1, _ep_x2, _sy2, _sz, TEX_CEMENT))
 
 _kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
