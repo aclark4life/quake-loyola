@@ -2840,15 +2840,28 @@ if KH_GROUND_Z > FZ2:
     )
     # (No flat east fill — the back road section provides its own sloped fill there)
     # West hill — ramp from sidewalk height at Charles St up to building ground level
+    _west_ramp_north = KH_Y2 - INDENT // 2
     BRUSHES.append(
         ramp_slab(
             _west_ramp_x1,
             _west_ramp_x2,
             WORLD_Y1 + WALL_T,
-            KH_Y2 - INDENT,
+            _west_ramp_north,
             FZ1,
             FZ1,
             FZ2 + CS_WALK_H,
+            KH_GROUND_Z,
+            TEX_GROUND,
+        )
+    )
+    # Flat ground from ramp north edge to building face (west of KH_X1)
+    BRUSHES.append(
+        box(
+            _west_ramp_x1,
+            _west_ramp_north,
+            FZ1,
+            _west_ramp_x2,
+            KH_Y2,
             KH_GROUND_Z,
             TEX_GROUND,
         )
