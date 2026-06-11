@@ -3663,7 +3663,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
             box(
                 KH_X2 - KH_WALL,
                 _dy,
-                KH_GROUND_Z,
+                KH_GROUND_Z + KH_FLOOR_H,
                 KH_X2 + ww_protrude,
                 _dy + ww_div_w,
                 KH_Z2,
@@ -3733,7 +3733,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
             box(
                 KH_X1 - ww_protrude,
                 _dy,
-                KH_GROUND_Z,
+                KH_GROUND_Z + KH_FLOOR_H,
                 KH_X1 + KH_WALL,
                 _dy + ww_div_w,
                 KH_Z2,
