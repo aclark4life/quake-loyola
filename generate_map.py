@@ -2889,6 +2889,7 @@ if KH_GROUND_Z > FZ2:
     _east_ramp_x1 = _kh_ent_x2  # east of entrance opening
     _east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
     _east_ramp_depth = 128  # N-S length of sloped sidewalk
+    _ep_plat_depth = 96  # N-S depth of side-step platform — slope must not cover this
     # West section of seg1 — stays at sidewalk height
     BRUSHES.append(
         box(_west_ramp_x1, KH_Y2, FZ1, PIER4_X, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
@@ -2908,12 +2909,13 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # Seg2 (east of entrance to back-road corridor) — same slope
+    # Seg2 (east of entrance to back-road corridor) — same slope, but starts north of the
+    # side-step platform so it doesn't bury the steps (platform depth = _ep_plat_depth)
     BRUSHES.append(
         ramp_slab_y(
             _kh_ent_x2,
             KH_BR_CORRIDOR_X1,
-            KH_Y2,
+            KH_Y2 + _ep_plat_depth,
             EP_SW_EDGE,
             FZ1,
             FZ1,
@@ -2937,7 +2939,6 @@ if KH_GROUND_Z > FZ2:
     # East of entrance: flat platform at walkway level + steps going east down to ground
     _ep_x1 = _east_ramp_x1  # KH_ENT_X2
     _ep_x2 = KH_X2
-    _ep_plat_depth = 96  # N-S platform depth (wider)
     _ep_n_steps = 4
     _ep_step_rise = (KH_GROUND_Z - (FZ2 + CS_WALK_H)) // _ep_n_steps  # = 22
     _ep_step_depth = 24
