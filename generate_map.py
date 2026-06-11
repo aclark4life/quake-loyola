@@ -2893,12 +2893,12 @@ if KH_GROUND_Z > FZ2:
         BRUSHES.append(
             box(_fx1, KH_Y2, FZ1, _fx2, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
         )
-    # Sloped cement sidewalk on east side of entrance — ramps from KH ground level
-    # at the building face down to sidewalk level over _east_ramp_depth units
+    # Sloped cement sidewalk east of entrance — slopes W→E from KH ground level
+    # at the entrance down to sidewalk level at the east wall
     BRUSHES.append(
-        ramp_slab_y(
+        ramp_slab(
             _east_ramp_x1,
-            _east_ramp_x2,
+            KH_X2,
             KH_Y2,
             KH_Y2 + _east_ramp_depth,
             FZ1,
