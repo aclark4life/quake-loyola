@@ -137,6 +137,7 @@ KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
 KH_FLOOR_H = 160  # floor-to-floor height
 KH_FLOORS = 5  # ground floor + 4 upper floors
+INDENT = 80  # corner indentation depth
 # Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
 KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
@@ -2817,8 +2818,14 @@ if KH_GROUND_Z > FZ2:
     _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
     _west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
     _east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
-    # Solid hill fill under the entire building footprint
-    BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_WALL))
+    # Solid hill fill under the entire building footprint — split to exclude indent pockets
+    # so indents are recessed at all heights down to ground level
+    for _px1, _py1, _px2, _py2 in [
+        (KH_X1 + INDENT, KH_Y1, KH_X2 - INDENT, KH_Y1 + INDENT),  # south strip
+        (KH_X1, KH_Y1 + INDENT, KH_X2, KH_Y2 - INDENT),  # middle strip
+        (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
+    ]:
+        BRUSHES.append(box(_px1, _py1, FZ2, _px2, _py2, KH_GROUND_Z, TEX_WALL))
     # (No flat east fill — the back road section provides its own sloped fill there)
     # West hill — flat at ground/sidewalk level
     BRUSHES.append(
@@ -3295,7 +3302,6 @@ sty1, sty2 = biy2 - 128, biy2  # Y: -400 to -272
 # West stairwell extents defined after INDENT below
 
 # ── Outer walls ──────────────────────────────────────────────────────────────
-INDENT = 80  # corner indentation depth
 KHRH_WIN_HALF = 24  # half-width of recessed corner windows
 KH_MULLION_W = 12  # mullion width
 KH_MULLION_PRO = 12  # mullion protrusion depth
@@ -3334,7 +3340,7 @@ BRUSHES.extend(
     layered_wall(
         KH_X1,
         KH_Y1 + INDENT - KH_WALL,
-        KH_GROUND_Z,
+        FZ1,
         KH_X1 + INDENT,
         KH_Y1 + INDENT,
         KH_Z2,
@@ -3346,7 +3352,7 @@ BRUSHES.append(
     box(
         KH_X1 + INDENT - KH_WALL,
         KH_Y1,
-        KH_GROUND_Z,
+        FZ1,
         KH_X1 + INDENT,
         KH_Y1 + INDENT,
         KH_Z2,
@@ -3359,7 +3365,7 @@ BRUSHES.extend(
     layered_wall(
         KH_X2 - INDENT,
         KH_Y1 + INDENT - KH_WALL,
-        KH_GROUND_Z,
+        FZ1,
         KH_X2,
         KH_Y1 + INDENT,
         KH_Z2,
@@ -3371,7 +3377,7 @@ BRUSHES.append(
     box(
         KH_X2 - INDENT,
         KH_Y1,
-        KH_GROUND_Z,
+        FZ1,
         KH_X2 - INDENT + KH_WALL,
         KH_Y1 + INDENT,
         KH_Z2,
@@ -3465,7 +3471,7 @@ BRUSHES.extend(
     layered_wall(
         KH_X1,
         KH_Y2 - INDENT,
-        KH_GROUND_Z,
+        FZ1,
         KH_X1 + 2 * INDENT,
         KH_Y2 - INDENT + KH_WALL,
         KH_Z2,
@@ -3490,7 +3496,7 @@ BRUSHES.append(
     box(
         KH_X1 + 2 * INDENT - KH_WALL,
         KH_Y2 - INDENT,
-        KH_GROUND_Z,
+        FZ1,
         KH_X1 + 2 * INDENT,
         KH_Y2,
         KH_Z2,
@@ -3504,7 +3510,7 @@ BRUSHES.extend(
     layered_wall(
         KH_X2 - INDENT,
         KH_Y2 - INDENT,
-        KH_GROUND_Z,
+        FZ1,
         KH_X2,
         KH_Y2 - INDENT + KH_WALL,
         KH_Z2,
@@ -3516,7 +3522,7 @@ BRUSHES.append(
     box(
         KH_X2 - INDENT,
         KH_Y2 - INDENT,
-        KH_GROUND_Z,
+        FZ1,
         KH_X2 - INDENT + KH_WALL,
         KH_Y2,
         KH_Z2,
