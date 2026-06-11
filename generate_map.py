@@ -5344,6 +5344,29 @@ _bush_positions = [
 _all_bush_brushes = []
 for _bx, _by in _bush_positions:
     _all_bush_brushes += make_bush(_bx, _by, FZ2)
+
+# ── Bushes along verge in front of KH north face (south of Ennis sidewalk) ───
+# Line of bushes just south of EP_SW_EDGE, spanning the raised/sloped ground
+# between the NW indent and the back-road corridor, skipping the entrance.
+_kh_verge_y = EP_Y - EP_HW - 100  # north side of Ennis south sidewalk
+_kh_bush_spacing = 120
+_kh_bush_buf = 60
+_kh_bush_size = 40
+_kh_bush_jitter_x = 40
+_kh_bush_jitter_y = 30
+_kh_verge_brushes = []
+for _vx1, _vx2 in [
+    (ROAD_X2 + CS_WALK_W + _kh_bush_buf, KH_ORIG_CX - 64 - _kh_bush_buf),
+    (KH_ORIG_CX + 64 + _kh_bush_buf, KH_BR_CORRIDOR_X1 - _kh_bush_buf),
+]:
+    _bx = _vx1
+    while _bx <= _vx2:
+        _jx = _bx + _rng.randint(-_kh_bush_jitter_x, _kh_bush_jitter_x)
+        _jy = _kh_verge_y + _rng.randint(-_kh_bush_jitter_y, _kh_bush_jitter_y)
+        _kh_verge_brushes += make_bush(_jx, _jy, FZ2, size=_kh_bush_size)
+        _bx += _kh_bush_spacing
+_all_bush_brushes += _kh_verge_brushes
+
 ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 
 # ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
