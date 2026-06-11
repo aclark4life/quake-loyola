@@ -3425,7 +3425,7 @@ for _mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]
     )
 # Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
 for _wx in [sw_win_cx, se_win_cx]:
-    for _fl in range(KH_FLOORS):
+    for _fl in range(1, KH_FLOORS):
         _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
@@ -3674,7 +3674,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
 # Horizontal mullions — centered in each floor span for contrast, players still fit through
 # Mid-floor Z leaves ~85 units clearance each side (player height = 56)
 for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(KH_FLOORS):
+    for _fl in range(1, KH_FLOORS):
         _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
@@ -3743,7 +3743,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
 
 # Horizontal mullions — west wall, matching east
 for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(KH_FLOORS):
+    for _fl in range(1, KH_FLOORS):
         _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
@@ -3806,7 +3806,7 @@ for _wx, _wh in [
     (nw_win_cx2, KHRH_WIN_HALF),
     (ne_win_cx, KHRH_WIN_HALF),
 ]:
-    for _fl in range(KH_FLOORS):
+    for _fl in range(1, KH_FLOORS):
         _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
