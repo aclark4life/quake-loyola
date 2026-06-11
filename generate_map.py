@@ -2815,32 +2815,29 @@ if KH_WALKWAY_ENABLED:
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
 if KH_GROUND_Z > FZ2:
     _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
-    _west_ramp_x2 = KH_X1 - 128  # flat hilltop starts 128 units west of building = 1138
+    _west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
     _east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
     # Solid hill fill under the entire building footprint
     BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
-    # Flat hilltop extension — 128 units west of building west wall
-    BRUSHES.append(
-        box(_west_ramp_x2, KH_Y1, FZ2, KH_X1, KH_Y2, KH_GROUND_Z, TEX_GROUND)
-    )
     # (No flat east fill — the back road section provides its own sloped fill there)
-    # Flat ground from east Charles St sidewalk to hilltop — no slope
+    # West hill — ramp slopes from sidewalk height at Charles St up to building ground level
     BRUSHES.append(
-        box(
+        ramp_slab(
             _west_ramp_x1,
-            WORLD_Y1 + WALL_T,
-            FZ1,
             _west_ramp_x2,
+            WORLD_Y1 + WALL_T,
             KH_Y2,
+            FZ1,
+            FZ1,
             FZ2 + CS_WALK_H,
+            KH_GROUND_Z,
             TEX_GROUND,
         )
     )
     # South terrain fill — flat ground at building level behind south wall to east world edge
-    # Starts at _west_ramp_x2 to cover the SW corner gap
     BRUSHES.append(
         box(
-            _west_ramp_x2,
+            KH_X1,
             WORLD_Y1 + WALL_T,
             FZ1,
             WORLD_X2 - WALL_T,
