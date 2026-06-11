@@ -2818,7 +2818,7 @@ if KH_GROUND_Z > FZ2:
     _west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
     _east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
     # Solid hill fill under the entire building footprint
-    BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
+    BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_WALL))
     # (No flat east fill — the back road section provides its own sloped fill there)
     # West hill — flat at ground/sidewalk level
     BRUSHES.append(
@@ -2841,7 +2841,7 @@ if KH_GROUND_Z > FZ2:
             WORLD_X2 - WALL_T,
             KH_Y1,
             KH_GROUND_Z,
-            TEX_GROUND,
+            TEX_WALL,
         )
     )
     # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
