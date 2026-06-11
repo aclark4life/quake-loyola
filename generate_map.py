@@ -2922,6 +2922,18 @@ if KH_GROUND_Z > FZ2:
         BRUSHES.append(
             box(_sx1, KH_Y2, FZ1, _sx2, KH_Y2 + _ep_plat_depth, _sz, TEX_CEMENT)
         )
+    # Small cement connector from step bottom to east sidewalk (across back road corridor)
+    BRUSHES.append(
+        box(
+            KH_X2,
+            KH_Y2,
+            FZ1,
+            KH_BR_CORRIDOR_X2,
+            KH_Y2 + _ep_plat_depth,
+            FZ2 + CS_WALK_H,
+            TEX_CEMENT,
+        )
+    )
 
 _kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
