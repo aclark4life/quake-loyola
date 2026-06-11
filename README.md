@@ -42,6 +42,18 @@ Terms used when discussing the map's structure and the Python generator code.
 | **Arch rise** | How far the deck centre is raised above the endpoints (`PB_ARCH_RISE = 106` units ≈ 7 ft). |
 | **Parapet** | Low stone wall running along the north and south edges of the deck, 32 units tall. Players can jump onto it. |
 
+### Pier numbering
+
+The bridge has five piers, numbered west to east. This naming is used consistently in the code (`PIER1_X` … `PIER5_X`) and in discussions.
+
+| Pier | Code constant | X position | Notes |
+|---|---|---|---|
+| **Pier 1** | `PIER1_X` | −1246 | West abutment pier — embedded in the embankment hill; flanked by the abutment building |
+| **Pier 2** | `PIER2_X` | −525 | Second pier west of centre |
+| **Pier 3** | `PIER3_X` | 525 | Centre-east pier — anchors the Ennis Drive entrance pillars |
+| **Pier 4** | `PIER4_X` | 1246 | West KH pier — marks the eastern end of the main arch span (`PB_X2 = KH_PIER_X`) |
+| **Pier 5** | `PIER5_X` | 2206 | East KH / NE pier — easternmost pier, aligned with the Knott Hall east face; the bridge deck angles south from here |
+
 ### Pier / pillar
 
 | Term | Description |

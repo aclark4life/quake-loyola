@@ -127,12 +127,14 @@ PB_X2 = KH_PIER_X  # east arch terminus at west pier
 EAST_SPAN_ANGLE = 12.0  # degrees; pivot at x=PB_X2, east end shifts south
 SEG_W = (PB_X2 - PB_X1) / ARCH_SEGS  # segment width for full-span arch
 PB_ARCH_X = [
-    -1246,  # west abutment pier (top of embankment hill)
-    -525,
-    525,
-    KH_PIER_X,
-    KH_NE_PIER_X,  # east pillar (aligned with KH east face)
+    -1246,  # Pier 1 — west abutment pier (top of embankment hill)
+    -525,  # Pier 2
+    525,  # Pier 3 (anchors Ennis Drive entrance pillars)
+    KH_PIER_X,  # Pier 4 — west KH pier (arch span terminus)
+    KH_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
 ]  # pillar X positions
+# Named pier references for readability
+PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X = PB_ARCH_X
 KH_Y1, KH_Y2 = -1888, -256  # south of bridge south edge (3× north-south depth)
 KH_WALL = 16  # wall thickness
 KH_FLOOR_H = 160  # floor-to-floor height
@@ -5234,34 +5236,31 @@ for _ty in _cs_row3_ys:
 ENTITIES.append(brush_ent("func_detail", _cs_giant_brushes))
 
 # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
-# Grid of giant trees at ~350-unit spacing across the full east ground,
-# skipping over: Ennis road band, KH building footprint, back-road corridor,
-# and a buffer around Charles St sidewalk / KH west walkway.
+# Scattered grid: base spacing ~350 units with per-tree random jitter up to
+# ±120 units in X and Y so the forest looks natural, not uniform.
 _eg_tree_h = KH_Z2
 _eg_spacing = 350
-_eg_buf = 120  # clearance buffer around roads/buildings
+_eg_jitter = 120
+_eg_buf = 120  # clearance buffer from world edges / wall
 _eg_x1 = ROAD_X2 + CS_WALK_W + _eg_buf
 _eg_x2 = WORLD_X2 - WALL_T - _eg_buf
 _eg_y1 = bw_ny + EP_WALL_T + _eg_buf  # start just north of the Ennis wall
 _eg_y2 = WORLD_Y2 - WALL_T - _eg_buf
-# No exclusion zones needed — area is purely the open ground north of the wall
-_eg_excl = []
 
+import random as _rng
 
-def _eg_excluded(tx, ty):
-    for ex1, ey1, ex2, ey2 in _eg_excl:
-        if ex1 <= tx <= ex2 and ey1 <= ty <= ey2:
-            return True
-    return False
-
+_rng.seed(42)  # fixed seed for reproducible layout
 
 _eg_giant_brushes = []
 _gx = _eg_x1
 while _gx <= _eg_x2:
     _gy = _eg_y1
     while _gy <= _eg_y2:
-        if not _eg_excluded(_gx, _gy):
-            _eg_giant_brushes += make_giant_tree(_gx, _gy, FZ2, _eg_tree_h)
+        _tx = _gx + _rng.randint(-_eg_jitter, _eg_jitter)
+        _ty = _gy + _rng.randint(-_eg_jitter, _eg_jitter)
+        _tx = max(_eg_x1, min(_eg_x2, _tx))
+        _ty = max(_eg_y1, min(_eg_y2, _ty))
+        _eg_giant_brushes += make_giant_tree(_tx, _ty, FZ2, _eg_tree_h)
         _gy += _eg_spacing
     _gx += _eg_spacing
 ENTITIES.append(brush_ent("func_detail", _eg_giant_brushes))
