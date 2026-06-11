@@ -3344,7 +3344,14 @@ BRUSHES.extend(
         KH_X1 + INDENT,
         KH_Y1 + INDENT,
         KH_Z2,
-        [(sw_win_cx - KHRH_WIN_HALF, KH_GROUND_Z, sw_win_cx + KHRH_WIN_HALF, KH_Z2)],
+        [
+            (
+                sw_win_cx - KHRH_WIN_HALF,
+                KH_GROUND_Z + KH_FLOOR_H,
+                sw_win_cx + KHRH_WIN_HALF,
+                KH_Z2,
+            )
+        ],
         TEX_WALL,
     )
 )
@@ -3369,7 +3376,14 @@ BRUSHES.extend(
         KH_X2,
         KH_Y1 + INDENT,
         KH_Z2,
-        [(se_win_cx - KHRH_WIN_HALF, KH_GROUND_Z, se_win_cx + KHRH_WIN_HALF, KH_Z2)],
+        [
+            (
+                se_win_cx - KHRH_WIN_HALF,
+                KH_GROUND_Z + KH_FLOOR_H,
+                se_win_cx + KHRH_WIN_HALF,
+                KH_Z2,
+            )
+        ],
         TEX_WALL,
     )
 )
@@ -3478,13 +3492,13 @@ BRUSHES.extend(
         [
             (
                 nw_win_cx1 - KHRH_WIN_HALF,
-                KH_GROUND_Z,
+                KH_GROUND_Z + KH_FLOOR_H,
                 nw_win_cx1 + KHRH_WIN_HALF,
                 KH_Z2,
             ),
             (
                 nw_win_cx2 - KHRH_WIN_HALF,
-                KH_GROUND_Z,
+                KH_GROUND_Z + KH_FLOOR_H,
                 nw_win_cx2 + KHRH_WIN_HALF,
                 KH_Z2,
             ),
@@ -3514,7 +3528,14 @@ BRUSHES.extend(
         KH_X2,
         KH_Y2 - INDENT + KH_WALL,
         KH_Z2,
-        [(ne_win_cx - KHRH_WIN_HALF, KH_GROUND_Z, ne_win_cx + KHRH_WIN_HALF, KH_Z2)],
+        [
+            (
+                ne_win_cx - KHRH_WIN_HALF,
+                KH_GROUND_Z + KH_FLOOR_H,
+                ne_win_cx + KHRH_WIN_HALF,
+                KH_Z2,
+            )
+        ],
         TEX_WALL,
     )
 )
@@ -3623,9 +3644,9 @@ BRUSHES.extend(
         KH_X2,
         KH_Z2,
         [
-            (ww_c1 - ww_half, KH_GROUND_Z, ww_c1 + ww_half, KH_Z2),
-            (ww_c2 - ww_half, KH_GROUND_Z, ww_c2 + ww_half, KH_Z2),
-            (ww_c3 - ww_half, KH_GROUND_Z, ww_c3 + ww_half, KH_Z2),
+            (ww_c1 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c1 + ww_half, KH_Z2),
+            (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
+            (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
         ],
         TEX_WALL,
     )
@@ -3692,9 +3713,9 @@ BRUSHES.extend(
         KH_X1 + KH_WALL,
         KH_Z2,
         [
-            (ww_c1 - ww_half, KH_GROUND_Z, ww_c1 + ww_half, KH_Z2),
-            (ww_c2 - ww_half, KH_GROUND_Z, ww_c2 + ww_half, KH_Z2),
-            (ww_c3 - ww_half, KH_GROUND_Z, ww_c3 + ww_half, KH_Z2),
+            (ww_c1 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c1 + ww_half, KH_Z2),
+            (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
+            (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
         ],
         TEX_WALL,
     )
