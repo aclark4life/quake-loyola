@@ -2845,7 +2845,7 @@ if KH_GROUND_Z > FZ2:
             _west_ramp_x1,
             _west_ramp_x2,
             WORLD_Y1 + WALL_T,
-            KH_Y2,
+            KH_Y2 - INDENT,
             FZ1,
             FZ1,
             FZ2 + CS_WALK_H,
