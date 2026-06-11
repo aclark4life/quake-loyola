@@ -2862,7 +2862,7 @@ if KH_GROUND_Z > FZ2:
             FZ1,
             _west_ramp_x2,
             KH_Y2,
-            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
     )
