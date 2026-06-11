@@ -2820,7 +2820,7 @@ if KH_GROUND_Z > FZ2:
     # Solid hill fill under the entire building footprint
     BRUSHES.append(box(KH_X1, KH_Y1, FZ2, KH_X2, KH_Y2, KH_GROUND_Z, TEX_GROUND))
     # (No flat east fill — the back road section provides its own sloped fill there)
-    # West hill — flat at building ground level from Charles St to building west wall
+    # West hill — flat at ground/sidewalk level
     BRUSHES.append(
         box(
             _west_ramp_x1,
@@ -2828,7 +2828,7 @@ if KH_GROUND_Z > FZ2:
             FZ1,
             _west_ramp_x2,
             KH_Y2,
-            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
     )
