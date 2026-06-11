@@ -3404,7 +3404,7 @@ for _mx in [sw_win_cx - KHRH_WIN_HALF - KH_MULLION_W, sw_win_cx + KHRH_WIN_HALF]
         box(
             _mx,
             KH_Y1 + INDENT - KH_WALL,
-            KH_GROUND_Z,
+            KH_GROUND_Z + KH_FLOOR_H,
             _mx + KH_MULLION_W,
             KH_Y1 + INDENT + KH_MULLION_PRO,
             KH_Z2,
@@ -3416,7 +3416,7 @@ for _mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]
         box(
             _mx,
             KH_Y1 + INDENT - KH_WALL,
-            KH_GROUND_Z,
+            KH_GROUND_Z + KH_FLOOR_H,
             _mx + KH_MULLION_W,
             KH_Y1 + INDENT + KH_MULLION_PRO,
             KH_Z2,
@@ -3564,7 +3564,7 @@ for _mx in [
         box(
             _mx,
             KH_Y2 - INDENT - KH_MULLION_PRO,
-            KH_GROUND_Z,
+            KH_GROUND_Z + KH_FLOOR_H,
             _mx + KH_MULLION_W,
             KH_Y2 - INDENT + KH_WALL,
             KH_Z2,
@@ -3577,7 +3577,7 @@ for _mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]
         box(
             _mx,
             KH_Y2 - INDENT - KH_MULLION_PRO,
-            KH_GROUND_Z,
+            KH_GROUND_Z + KH_FLOOR_H,
             _mx + KH_MULLION_W,
             KH_Y2 - INDENT + KH_WALL,
             KH_Z2,
