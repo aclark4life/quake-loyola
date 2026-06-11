@@ -2881,20 +2881,59 @@ if KH_GROUND_Z > FZ2:
         )
     )
     # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
-    # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show
+    # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show.
+    # Between Pier 4 (PIER4_X) and Pier 5 (PIER5_X): gradual slope from KH_GROUND_Z
+    # at the north KH face (KH_Y2) down to sidewalk height at the Ennis sidewalk (EP_SW_EDGE).
     _kh_ent_x1 = KH_ORIG_CX - 64
     _kh_ent_x2 = KH_ORIG_CX + 64
     _east_ramp_x1 = _kh_ent_x2  # east of entrance opening
     _east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
     _east_ramp_depth = 128  # N-S length of sloped sidewalk
-    for _fx1, _fx2 in [
-        (_west_ramp_x1, _kh_ent_x1),
-        (_kh_ent_x2, KH_BR_CORRIDOR_X1),
-        (KH_BR_CORRIDOR_X2, WORLD_X2 - WALL_T),
-    ]:
-        BRUSHES.append(
-            box(_fx1, KH_Y2, FZ1, _fx2, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
+    # West section of seg1 — stays at sidewalk height
+    BRUSHES.append(
+        box(_west_ramp_x1, KH_Y2, FZ1, PIER4_X, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
+    )
+    # East section of seg1 (Pier 4 → entrance) — slopes from KH_GROUND_Z at KH face to
+    # sidewalk height at Ennis sidewalk
+    BRUSHES.append(
+        ramp_slab_y(
+            PIER4_X,
+            _kh_ent_x1,
+            KH_Y2,
+            EP_SW_EDGE,
+            FZ1,
+            FZ1,
+            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
         )
+    )
+    # Seg2 (east of entrance to back-road corridor) — same slope
+    BRUSHES.append(
+        ramp_slab_y(
+            _kh_ent_x2,
+            KH_BR_CORRIDOR_X1,
+            KH_Y2,
+            EP_SW_EDGE,
+            FZ1,
+            FZ1,
+            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # Seg3 (east of back-road corridor to world wall) — beyond Pier 5, stays at sidewalk height
+    BRUSHES.append(
+        box(
+            KH_BR_CORRIDOR_X2,
+            KH_Y2,
+            FZ1,
+            WORLD_X2 - WALL_T,
+            EP_SW_EDGE,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
     # East of entrance: flat platform at walkway level + steps going east down to ground
     _ep_x1 = _east_ramp_x1  # KH_ENT_X2
     _ep_x2 = KH_X2
