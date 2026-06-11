@@ -3440,7 +3440,7 @@ for _wx in [sw_win_cx, se_win_cx]:
         )
 # Floor-level mullions — SW and SE south-face windows
 for _wx in [sw_win_cx, se_win_cx]:
-    for _fl in range(KH_FLOORS + 1):
+    for _fl in range(1, KH_FLOORS + 1):
         _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
         BRUSHES.append(
             box(
@@ -3689,7 +3689,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
         )
 # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
 for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(KH_FLOORS + 1):
+    for _fl in range(1, KH_FLOORS + 1):
         _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
         BRUSHES.append(
             box(
@@ -3758,7 +3758,7 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
         )
 # Floor-level mullions — west wall
 for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(KH_FLOORS + 1):
+    for _fl in range(1, KH_FLOORS + 1):
         _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
         BRUSHES.append(
             box(
@@ -3825,7 +3825,7 @@ for _wx, _wh in [
     (nw_win_cx2, KHRH_WIN_HALF),
     (ne_win_cx, KHRH_WIN_HALF),
 ]:
-    for _fl in range(KH_FLOORS + 1):
+    for _fl in range(1, KH_FLOORS + 1):
         _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
         BRUSHES.append(
             box(
