@@ -2882,6 +2882,9 @@ if KH_GROUND_Z > FZ2:
     # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show
     _kh_ent_x1 = KH_ORIG_CX - 64
     _kh_ent_x2 = KH_ORIG_CX + 64
+    _east_ramp_x1 = _kh_ent_x2  # east of entrance opening
+    _east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
+    _east_ramp_depth = 128  # N-S length of sloped sidewalk
     for _fx1, _fx2 in [
         (_west_ramp_x1, _kh_ent_x1),
         (_kh_ent_x2, KH_BR_CORRIDOR_X1),
@@ -2890,6 +2893,21 @@ if KH_GROUND_Z > FZ2:
         BRUSHES.append(
             box(_fx1, KH_Y2, FZ1, _fx2, EP_SW_EDGE, FZ2 + CS_WALK_H, TEX_GROUND)
         )
+    # Sloped cement sidewalk on east side of entrance — ramps from KH ground level
+    # at the building face down to sidewalk level over _east_ramp_depth units
+    BRUSHES.append(
+        ramp_slab_y(
+            _east_ramp_x1,
+            _east_ramp_x2,
+            KH_Y2,
+            KH_Y2 + _east_ramp_depth,
+            FZ1,
+            FZ1,
+            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
+            TEX_CEMENT,
+        )
+    )
 
 _kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
