@@ -2896,18 +2896,28 @@ if KH_GROUND_Z > FZ2:
     # East of entrance: flat platform at walkway level + steps going east down to ground
     _ep_x1 = _east_ramp_x1  # KH_ENT_X2
     _ep_x2 = KH_X2
-    _ep_plat_depth = 64  # N-S platform depth
+    _ep_plat_depth = 96  # N-S platform depth (wider)
     _ep_n_steps = 4
     _ep_step_rise = (KH_GROUND_Z - (FZ2 + CS_WALK_H)) // _ep_n_steps  # = 22
     _ep_step_depth = 24
-    # Flat platform at KH_GROUND_Z
+    _ep_steps_w = _ep_n_steps * _ep_step_depth  # = 96
+    _ep_step_x1 = _ep_x2 - _ep_steps_w  # steps recessed, end flush with east wall
+    # Flat platform at KH_GROUND_Z (west of steps)
     BRUSHES.append(
-        box(_ep_x1, KH_Y2, FZ1, _ep_x2, KH_Y2 + _ep_plat_depth, KH_GROUND_Z, TEX_CEMENT)
+        box(
+            _ep_x1,
+            KH_Y2,
+            FZ1,
+            _ep_step_x1,
+            KH_Y2 + _ep_plat_depth,
+            KH_GROUND_Z,
+            TEX_CEMENT,
+        )
     )
-    # Steps going east (downhill in X) from building east face to ground level
+    # Steps going east (downhill in X), flush with KH east wall
     for _si in range(_ep_n_steps):
         _sz = KH_GROUND_Z - (_si + 1) * _ep_step_rise
-        _sx1 = KH_X2 + _si * _ep_step_depth
+        _sx1 = _ep_step_x1 + _si * _ep_step_depth
         _sx2 = _sx1 + _ep_step_depth
         BRUSHES.append(
             box(_sx1, KH_Y2, FZ1, _sx2, KH_Y2 + _ep_plat_depth, _sz, TEX_CEMENT)
