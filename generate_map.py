@@ -2826,7 +2826,7 @@ if KH_GROUND_Z > FZ2:
         (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
     ]:
         BRUSHES.append(box(_px1, _py1, FZ2, _px2, _py2, KH_GROUND_Z, TEX_WALL))
-    # NW indent floor — flush with building sidewalk level
+    # NW indent floor — flush with exterior ground
     BRUSHES.append(
         box(
             KH_X1,
@@ -2834,7 +2834,7 @@ if KH_GROUND_Z > FZ2:
             FZ1,
             KH_X1 + 2 * INDENT,
             KH_Y2,
-            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
     )
@@ -2922,7 +2922,7 @@ if KH_GROUND_Z > FZ2:
         BRUSHES.append(
             box(_sx1, KH_Y2, FZ1, _sx2, KH_Y2 + _ep_plat_depth, _sz, TEX_CEMENT)
         )
-    # Small cement connector at step bottom — bridges to back road west sidewalk (KH_X2..KH_BR_WS_X2)
+    # Small cement connector — bridges step bottom to back road west sidewalk (32 units wide)
     BRUSHES.append(
         box(
             KH_X2,
@@ -2930,7 +2930,7 @@ if KH_GROUND_Z > FZ2:
             FZ1,
             KH_X2 + CS_WALK_W,
             KH_Y2 + _ep_plat_depth,
-            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
             TEX_CEMENT,
         )
     )
