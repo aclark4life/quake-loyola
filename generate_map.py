@@ -5200,16 +5200,6 @@ if KH_ENABLED:
 # - Large trees flanking Knott Hall on west side (bridge01, bridge10)
 # - Trees along Ennis Parallel campus road (bridge02)
 _tree_positions = [
-    # Dense forest behind the north Ennis wall (north of bw_ny)
-    (int(_ew_x1 + 100), bw_ny + 120),
-    (int(_ew_x1 + 280), bw_ny + 200),
-    (int(_ew_x1 + 460), bw_ny + 100),
-    (int(_ew_x1 + 620), bw_ny + 280),
-    (int(_ew_x1 + 800), bw_ny + 150),
-    (int(_ew_x2 + 100), bw_ny + 120),
-    (int(_ew_x2 + 320), bw_ny + 220),
-    (int(_ew_x2 + 560), bw_ny + 100),
-    (int(_ew_x2 + 780), bw_ny + 300),
     # Trees flanking Knott Hall (west side — bridge01, bridge10)
     (RH_X1 - 80, -600),
     (RH_X1 - 200, -300),
@@ -5242,6 +5232,39 @@ for _ty in _cs_row2_ys:
 for _ty in _cs_row3_ys:
     _cs_giant_brushes += make_giant_tree(_cs_row_far, _ty, FZ2, _cs_tree_h)
 ENTITIES.append(brush_ent("func_detail", _cs_giant_brushes))
+
+# ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
+# Grid of giant trees at ~350-unit spacing across the full east ground,
+# skipping over: Ennis road band, KH building footprint, back-road corridor,
+# and a buffer around Charles St sidewalk / KH west walkway.
+_eg_tree_h = KH_Z2
+_eg_spacing = 350
+_eg_buf = 120  # clearance buffer around roads/buildings
+_eg_x1 = ROAD_X2 + CS_WALK_W + _eg_buf
+_eg_x2 = WORLD_X2 - WALL_T - _eg_buf
+_eg_y1 = bw_ny + EP_WALL_T + _eg_buf  # start just north of the Ennis wall
+_eg_y2 = WORLD_Y2 - WALL_T - _eg_buf
+# No exclusion zones needed — area is purely the open ground north of the wall
+_eg_excl = []
+
+
+def _eg_excluded(tx, ty):
+    for ex1, ey1, ex2, ey2 in _eg_excl:
+        if ex1 <= tx <= ex2 and ey1 <= ty <= ey2:
+            return True
+    return False
+
+
+_eg_giant_brushes = []
+_gx = _eg_x1
+while _gx <= _eg_x2:
+    _gy = _eg_y1
+    while _gy <= _eg_y2:
+        if not _eg_excluded(_gx, _gy):
+            _eg_giant_brushes += make_giant_tree(_gx, _gy, FZ2, _eg_tree_h)
+        _gy += _eg_spacing
+    _gx += _eg_spacing
+ENTITIES.append(brush_ent("func_detail", _eg_giant_brushes))
 
 
 _bush_positions = [
