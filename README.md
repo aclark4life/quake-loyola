@@ -76,6 +76,7 @@ The bridge has five piers, numbered west to east. This naming is used consistent
 | **Mullion** | Vertical protruding cement post flanking a window opening on Knott Hall's north facade. Mullions sit just outside each window opening (not inside) so players can pass through. Width = 12 units, protrusion = 12 units. |
 | **Recessed window** | Window set back in the NW or NE indented corner of the north facade. Each opening is 48 units wide, framed by mullions on the outer edges. |
 | **Indentation** | 80-unit corner notch cut from the NW and NE corners of the north face, creating a recessed alcove with its own back wall and window. |
+| **Walkway bent** | The cement support structure under the bridge approach in front of Knott Hall. Consists of a horizontal cap beam running along the south bridge edge (Pier 4 → Pier 5) with 5 vertical drop piers reaching to ground level — 3 west of the walkway gap and 2 east of it. Mirrors the real-life concrete bent visible beneath the KH approach. Only present when `KH_WALKWAY_ENABLED = True`. |
 
 ### Street / road
 
@@ -136,6 +137,7 @@ World shell
 │   ├── West teleport arch (X = PB_X1 / west world wall)
 │   └── East teleport arch (X = east world wall)
 ├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
+│   └── Walkway bent (cap beam + 5 drop piers, south bridge edge, Pier 4 → Pier 5)
 ├── Knott Hall (south campus tower, X 1266–1906)
 │   ├── Outer walls (5 floors + roof)
 │   ├── Interior floors, hallway & rooms
