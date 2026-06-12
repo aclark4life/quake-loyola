@@ -2124,8 +2124,8 @@ BRUSHES.append(
         TEX_CEMENT,
     )
 )  # North east
-# South east — gap at WALK_X1..WALK_X2 for walkway connection to building
-# West piece (PB_X2→WALK_X1): entirely before pier, straight
+# South east — gaps at WALK_X1..WALK_X2 and _ewk_x1.._ewk_x2 for walkway connections
+# West piece (PB_X2→WALK_X1): entirely before main walkway gap
 BRUSHES.append(
     box(PB_X2, PB_Y1, PB_DZ2, WALK_X1, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
 )
@@ -2765,6 +2765,70 @@ if KH_WALKWAY_ENABLED:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
+# EAST WALKWAY — N-S slab at KH ground floor level (Z=KH_GROUND_Z), parallel to
+# main walkway, between the east walkway bent pier and Pier 5.
+# Spans Y=KH_Y2..PB_Y1 (KH north face → bridge south edge).
+# ════════════════════════════════════════════════════════════════════════════════
+if KH_WALKWAY_ENABLED:
+    _ewk_cx = 2120
+    _ewk_hw = 32
+    _ewk_x1 = _ewk_cx - _ewk_hw  # 2088 — path position unchanged
+    _ewk_x2 = _ewk_cx + _ewk_hw  # 2152
+    _ewk_y1 = KH_Y2  # south: Knott Hall north face (-256)
+    _ewk_y2 = PB_Y2 + PB_PIL_OVERHANG + 96  # north: well past the pier north side
+    _ewk_zt = KH_GROUND_Z + KH_WALL
+    _tz1 = KH_GROUND_Z  # flat at hilltop from KH face to slope start
+    _tz2 = int(
+        KH_GROUND_Z
+        + (FZ2 + CS_WALK_H - KH_GROUND_Z)
+        * (_ewk_y2 - (KH_Y2 + 96))
+        / (EP_SW_EDGE - (KH_Y2 + 96))
+    )
+    # N-S slab: flat section from KH face to slope start, then ramp matching terrain
+    BRUSHES.append(
+        box(_ewk_x1, _ewk_y1, FZ1, _ewk_x2, KH_Y2 + 96, _tz1, TEX_CEMENT, tt=TEX_FLOOR)
+    )
+    BRUSHES.append(
+        ramp_slab_y(
+            _ewk_x1,
+            _ewk_x2,
+            KH_Y2 + 96,
+            _ewk_y2,
+            FZ1,
+            FZ1,
+            _tz1,
+            _tz2,
+            TEX_CEMENT,
+            tt=TEX_FLOOR,
+        )
+    )
+    # E-W extension — slopes east from N-S path level down to back road sidewalk (Z=8) at KH_X2
+    _ewk_ext_y1 = _ewk_y2 - (_ewk_hw * 2)
+    _ewk_ext_y2 = _ewk_y2
+    _ext_tz1 = int(
+        KH_GROUND_Z
+        + (FZ2 + CS_WALK_H - KH_GROUND_Z)
+        * (_ewk_ext_y1 - (KH_Y2 + 96))
+        / (EP_SW_EDGE - (KH_Y2 + 96))
+    )
+    _ext_tz2 = _tz2
+    _ext_tz_west = (_ext_tz1 + _ext_tz2) // 2  # Z at west end (N-S path side)
+    BRUSHES.append(
+        ramp_slab(
+            _ewk_x2,
+            KH_X2,
+            _ewk_ext_y1,
+            _ewk_ext_y2,
+            FZ1,
+            FZ1,
+            _ext_tz_west,
+            FZ2 + CS_WALK_H,
+            TEX_CEMENT,
+            tt=TEX_FLOOR,
+        )
+    )
+
+# ════════════════════════════════════════════════════════════════════════════════
 # WALKWAY BENT — cement cap beam + 5 drop piers under the south edge of the bridge
 # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
 # visible under the KH bridge approach (ref: bridge01).
@@ -2792,7 +2856,7 @@ if KH_WALKWAY_ENABLED:
     _west_piers = [
         int(_beam_x1 + (_rail_x1 - _beam_x1) * f) for f in (0.28, 0.63, 0.93)
     ]
-    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * f) for f in (0.25, 0.75)]
+    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * f) for f in (0.0, 0.45)]
     _pier_xs = _west_piers + _east_piers
     _pier_hw = 20
     for _px in _pier_xs:
@@ -2921,13 +2985,29 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # Seg2 (east of entrance to NE indent) — same slope, but starts north of the
-    # side-step platform so it doesn't bury the steps (platform depth = _ep_plat_depth).
-    # Ends at _east_ramp_x2 (= KH_X2 - INDENT, west edge of NE indent) so it doesn't
-    # interfere with Pier 5.
+    # Seg2 (east of entrance to NE indent) — split around east walkway path (X=_ewk_x1.._ewk_x2)
+    # West piece: entrance east edge → terrain cut west of path
+    _ewk_terrain_cut_w = (
+        _ewk_x1  # terrain cut matches path west edge (no gap west of path)
+    )
+    _ewk_terrain_cut_e = _ewk_x2 + 32  # cut terrain 32 units east of path edge (= 2184)
     BRUSHES.append(
         ramp_slab_y(
             _kh_ent_x2,
+            _ewk_terrain_cut_w,
+            KH_Y2 + _ep_plat_depth,
+            EP_SW_EDGE,
+            FZ1,
+            FZ1,
+            KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # East piece: path east clearance → NE indent
+    BRUSHES.append(
+        ramp_slab_y(
+            _ewk_terrain_cut_e,
             _east_ramp_x2,
             KH_Y2 + _ep_plat_depth,
             EP_SW_EDGE,
@@ -2938,14 +3018,55 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # NE indent ground — flat at sidewalk height (seg2 stops here; fills gap to back-road corridor)
+    # Restore ground north of path end
+    BRUSHES.append(
+        ramp_slab_y(
+            _ewk_x1,
+            _ewk_terrain_cut_e,
+            PB_Y2 + PB_PIL_OVERHANG + 96,
+            EP_SW_EDGE,
+            FZ1,
+            FZ1,
+            30,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # NE indent ground — split around E-W extension (X=2152..KH_X2, Y=_ewk_ext_y1.._ewk_ext_y2)
+    _ewk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 - 64
+    _ewk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96
+    # South of E-W extension
     BRUSHES.append(
         box(
             _east_ramp_x2,
             KH_Y2 + _ep_plat_depth,
             FZ1,
             KH_BR_CORRIDOR_X1,
+            _ewk_ext_y1_val,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # North of E-W extension (restore ground fully)
+    BRUSHES.append(
+        box(
+            _east_ramp_x2,
+            _ewk_ext_y2_val,
+            FZ1,
+            KH_BR_CORRIDOR_X1,
             EP_SW_EDGE,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # East of E-W extension only (in the gap row, east of path)
+    BRUSHES.append(
+        box(
+            KH_X2,
+            _ewk_ext_y1_val,
+            FZ1,
+            KH_BR_CORRIDOR_X1,
+            _ewk_ext_y2_val,
             FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
