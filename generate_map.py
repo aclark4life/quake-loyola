@@ -2455,6 +2455,10 @@ if SHOW_SUPPORTS:
         # Width of the pier in X (matches pillar post width)
         x1, x2 = px - PB_PIL_HW, px + PB_PIL_HW
 
+        # Ceiling Z — use the higher of the two pier face deck-bottoms so stone
+        # is flush with the bridge underside across the full pier X extent.
+        _pier_ceil_z = max(int(dbot(x1)), int(dbot(x2)))
+
         # Arch opening varies by pillar type (outer / inner / centre)
         if px == 0:
             a_rout, a_rin = PB_PIL_CENTR_R
@@ -2462,11 +2466,11 @@ if SHOW_SUPPORTS:
             a_rout, a_rin = PB_PIL_OUTER_R
         else:
             a_rout, a_rin = PB_PIL_INNER_R
-        a_stilt = int(pdeck) - a_rout - FZ2 - 16
+        a_stilt = _pier_ceil_z - a_rout - FZ2
         if a_stilt < 0:
             # Arch would overshoot the bridge bottom; cap rout so the crown
             # lands exactly at ceil_z (bridge deck underside).
-            a_rout = int(pdeck) - FZ2 - 16
+            a_rout = _pier_ceil_z - FZ2
             a_stilt = 0
 
         # Pin outer pier wall to exactly match the pillar tops above deck.
@@ -2475,7 +2479,7 @@ if SHOW_SUPPORTS:
         _max_rout = PB_Y2 + PB_PIL_OVERHANG
         if a_rout > _max_rout:
             a_rout = _max_rout
-            a_stilt = int(pdeck) - a_rout - FZ2 - 16
+            a_stilt = _pier_ceil_z - a_rout - FZ2
         _arch_overhang = 0  # rout already reaches exactly the desired extent
 
         # Ramped plinth: outer piers ramp up on their outward face so players
@@ -2501,7 +2505,7 @@ if SHOW_SUPPORTS:
                     PB_Y1,
                     PB_Y2,
                     FZ2,
-                    int(pdeck) - 16,
+                    _pier_ceil_z,
                     a_rin,
                     TEX_PILLAR,
                     overhang=_sq_overhang,
@@ -2516,7 +2520,7 @@ if SHOW_SUPPORTS:
                     PB_Y1,
                     PB_Y2,
                     FZ2,
-                    int(pdeck) - 16,
+                    _pier_ceil_z,
                     a_rin,
                     a_rout,
                     A_SEGS,
