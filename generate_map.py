@@ -2781,7 +2781,9 @@ if KH_WALKWAY_ENABLED:
     _ewk_x1 = _ewk_cx - _ewk_hw  # 2088 — path position unchanged
     _ewk_x2 = _ewk_cx + _ewk_hw  # 2152
     _ewk_y1 = KH_Y2  # south: Knott Hall north face (-256)
-    _ewk_y2 = PB_Y2 + PB_PIL_OVERHANG + 96  # north: well past the pier north side
+    _ewk_y2 = (
+        PB_Y2 + PB_PIL_OVERHANG + 96 + 80
+    )  # north anchor: ramp moved 80 units north
     _ewk_zt = KH_GROUND_Z + KH_WALL
     _tz1 = KH_GROUND_Z  # flat at hilltop from KH face to slope start
     _tz2 = int(
@@ -2790,25 +2792,7 @@ if KH_WALKWAY_ENABLED:
         * (_ewk_y2 - (KH_Y2 + 96))
         / (EP_SW_EDGE - (KH_Y2 + 96))
     )
-    # N-S slab: flat section from KH face to slope start, then ramp matching terrain
-    BRUSHES.append(
-        box(_ewk_x1, _ewk_y1, FZ1, _ewk_x2, KH_Y2 + 96, _tz1, TEX_CEMENT, tt=TEX_FLOOR)
-    )
-    BRUSHES.append(
-        ramp_slab_y(
-            _ewk_x1,
-            _ewk_x2,
-            KH_Y2 + 96,
-            _ewk_y2,
-            FZ1,
-            FZ1,
-            _tz1,
-            _tz2,
-            TEX_CEMENT,
-            tt=TEX_FLOOR,
-        )
-    )
-    # E-W extension — slopes east from N-S path level down to back road sidewalk (Z=8) at KH_X2
+    # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KH_X2
     _ewk_ext_y1 = _ewk_y2 - (_ewk_hw * 2)
     _ewk_ext_y2 = _ewk_y2
     _ext_tz1 = int(
@@ -2991,57 +2975,62 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # Seg2 (east of entrance to NE indent) — split around accessible walkway path (X=_ewk_x1.._ewk_x2)
-    # West piece: entrance east edge → terrain cut west of path
-    _ewk_terrain_cut_w = (
-        _ewk_x1  # terrain cut matches path west edge (no gap west of path)
+    # Seg2 (east of entrance to NE indent)
+    # _ewk_ext_y1_val / _ewk_ext_y2_val bracket the E-W ramp (Y=264..328)
+    _ewk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80 - 64  # 264
+    _ewk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80  # 328
+    # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
+    _terrain_z_at = lambda y: int(
+        KH_GROUND_Z
+        + (FZ2 + CS_WALK_H - KH_GROUND_Z)
+        * (y - (KH_Y2 + 96))
+        / (EP_SW_EDGE - (KH_Y2 + 96))
     )
-    _ewk_terrain_cut_e = _ewk_x2 + 32  # cut terrain 32 units east of path edge (= 2184)
+    _ext_tz_west = (
+        _terrain_z_at(_ewk_ext_y1_val) + _terrain_z_at(_ewk_ext_y2_val)
+    ) // 2
+    # Full sloped terrain Y=-160..264 (path zone starts at ramp south edge)
     BRUSHES.append(
         ramp_slab_y(
             _kh_ent_x2,
-            _ewk_terrain_cut_w,
-            KH_Y2 + _ep_plat_depth,
-            EP_SW_EDGE,
-            FZ1,
-            FZ1,
-            KH_GROUND_Z,
-            FZ2 + CS_WALK_H,
-            TEX_GROUND,
-        )
-    )
-    # East piece: path east clearance → NE indent
-    BRUSHES.append(
-        ramp_slab_y(
-            _ewk_terrain_cut_e,
             _east_ramp_x2,
             KH_Y2 + _ep_plat_depth,
-            EP_SW_EDGE,
+            _ewk_ext_y1_val,
             FZ1,
             FZ1,
             KH_GROUND_Z,
-            FZ2 + CS_WALK_H,
+            _terrain_z_at(_ewk_ext_y1_val),
             TEX_GROUND,
         )
     )
-    # Restore ground north of path end
+    # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=_ext_tz_west)
+    BRUSHES.append(
+        box(
+            _kh_ent_x2,
+            _ewk_ext_y1_val,
+            FZ1,
+            _east_ramp_x2,
+            _ewk_ext_y2_val,
+            _ext_tz_west,
+            TEX_CEMENT,
+            tt=TEX_FLOOR,
+        )
+    )
+    # North section (Y=328..504): sloped terrain continues
     BRUSHES.append(
         ramp_slab_y(
-            _ewk_x1,
-            _ewk_terrain_cut_e,
-            PB_Y2 + PB_PIL_OVERHANG + 96,
+            _kh_ent_x2,
+            _east_ramp_x2,
+            _ewk_ext_y2_val,
             EP_SW_EDGE,
             FZ1,
             FZ1,
-            30,
+            _terrain_z_at(_ewk_ext_y2_val),
             FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
     )
-    # NE indent ground — split around E-W extension (X=2152..KH_X2, Y=_ewk_ext_y1.._ewk_ext_y2)
-    _ewk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 - 64
-    _ewk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96
-    # South of E-W extension
+    # NE indent ground — south of ramp (Y=-160..264): full ground, no cement needed
     BRUSHES.append(
         box(
             _east_ramp_x2,
