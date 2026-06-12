@@ -52,7 +52,7 @@ The bridge has five piers, numbered west to east. This naming is used consistent
 | **Pier 2** | `PIER2_X` | −525 | Second pier west of centre |
 | **Pier 3** | `PIER3_X` | 525 | Centre-east pier — anchors the Ennis Drive entrance pillars |
 | **Pier 4** | `PIER4_X` | 1246 | West KH pier — marks the eastern end of the main arch span (`PB_X2 = KH_PIER_X`) |
-| **Pier 5** | `PIER5_X` | 2206 | East KH / NE pier — easternmost pier, aligned with the Knott Hall east face; the bridge deck angles south from here |
+| **Pier 5** | `PIER5_X` | 2206 | East KH / NE pier — easternmost pier, aligned with the Knott Hall east face; the bridge deck angles south from here. The accessible walkway runs along its west face. |
 
 ### Pier / pillar
 
@@ -77,6 +77,7 @@ The bridge has five piers, numbered west to east. This naming is used consistent
 | **Recessed window** | Window set back in the NW or NE indented corner of the north facade. Each opening is 48 units wide, framed by mullions on the outer edges. |
 | **Indentation** | 80-unit corner notch cut from the NW and NE corners of the north face, creating a recessed alcove with its own back wall and window. |
 | **Walkway bent** | The cement support structure under the bridge approach in front of Knott Hall. Consists of a horizontal cap beam running along the south bridge edge (Pier 4 → Pier 5) with 5 vertical drop piers reaching to ground level — 3 west of the walkway gap and 2 east of it. Mirrors the real-life concrete bent visible beneath the KH approach. Only present when `KH_WALKWAY_ENABLED = True`. |
+| **Accessible walkway** | The small N-S cement path running along the west face of Pier 5, from the Knott Hall north face up to the bridge south edge. A short E-W ramp at the north end wraps around Pier 5 and connects down to the back-road west sidewalk, providing step-free ground-level access. Generated alongside the main walkway when `KH_WALKWAY_ENABLED = True`. |
 
 ### Street / road
 
@@ -137,7 +138,8 @@ World shell
 │   ├── West teleport arch (X = PB_X1 / west world wall)
 │   └── East teleport arch (X = east world wall)
 ├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
-│   └── Walkway bent (cap beam + 5 drop piers, south bridge edge, Pier 4 → Pier 5)
+│   ├── Walkway bent (cap beam + 5 drop piers, south bridge edge, Pier 4 → Pier 5)
+│   └── Accessible walkway (N-S cement path along Pier 5 west face + E-W ramp to back road)
 ├── Knott Hall (south campus tower, X 1266–1906)
 │   ├── Outer walls (5 floors + roof)
 │   ├── Interior floors, hallway & rooms
@@ -222,6 +224,7 @@ Charles Street  ──[north arch]──┘
 Bridge west end ──[walk through arch]──→  West campus rooftop  ──(drop down)──→  ground
 Bridge east end ──[walk through arch]──→  Knott Hall rooftop
 Bridge east end ──[walkway]──────────→  Knott Hall 2nd floor
+Bridge east end ──[accessible walkway]─→  Back road (ground level, wraps Pier 5)
 Knott Hall                            ──[lift (func_plat)]──→  Floors 1–5
 ```
 

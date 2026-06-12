@@ -30978,7 +30978,7 @@
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "0 576 32"
+"origin" "296 576 32"
 }
 {
 "classname" "weapon_rocketlauncher"
@@ -31018,7 +31018,7 @@
 }
 {
 "classname" "weapon_supershotgun"
-"origin" "0 300 32"
+"origin" "300 300 32"
 }
 {
 "classname" "weapon_supershotgun"
@@ -31098,7 +31098,7 @@
 }
 {
 "classname" "item_shells"
-"origin" "0 -300 32"
+"origin" "-300 -300 32"
 }
 {
 "classname" "item_shells"
@@ -31126,11 +31126,11 @@
 }
 {
 "classname" "item_health"
-"origin" "0 400 32"
+"origin" "-300 400 32"
 }
 {
 "classname" "item_health"
-"origin" "0 -600 32"
+"origin" "300 -600 32"
 }
 {
 "classname" "item_health"
@@ -33203,19 +33203,19 @@
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "64 -1358 76"
+"origin" "296 -1358 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "64 -747 76"
+"origin" "296 -747 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "815 792 70"
+"origin" "815 736 70"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1630 792 70"
+"origin" "1630 736 70"
 }
 {
 "classname" "weapon_rocketlauncher"
@@ -33223,15 +33223,15 @@
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "1095 956 70"
+"origin" "1095 1136 70"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "-192 -1358 76"
+"origin" "-296 -1358 76"
 }
 {
 "classname" "weapon_rocketlauncher"
-"origin" "-192 -747 76"
+"origin" "-296 -747 76"
 }
 {
 "classname" "monster_knight"
@@ -33432,4 +33432,29 @@
 "classname" "monster_knight"
 "origin" "1486 -1808 888"
 "angle" "180"
+}
+{
+"classname" "monster_hell_knight"
+"origin" "0 0 408"
+"angle" "180"
+}
+{
+"classname" "monster_hell_knight"
+"origin" "525 0 382"
+"angle" "0"
+}
+{
+"classname" "monster_hell_knight"
+"origin" "1506 0 264"
+"angle" "180"
+}
+{
+"classname" "monster_hell_knight"
+"origin" "2120 -128 88"
+"angle" "90"
+}
+{
+"classname" "monster_hell_knight"
+"origin" "2120 180 88"
+"angle" "270"
 }
