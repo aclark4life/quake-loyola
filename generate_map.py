@@ -2124,7 +2124,7 @@ BRUSHES.append(
         TEX_CEMENT,
     )
 )  # North east
-# South east — gaps at WALK_X1..WALK_X2 and _ewk_x1.._ewk_x2 for walkway connections
+# South east — gaps at WALK_X1..WALK_X2 and _ewk_x1.._ewk_x2 for walkway/accessible-walkway connections
 # West piece (PB_X2→WALK_X1): entirely before main walkway gap
 BRUSHES.append(
     box(PB_X2, PB_Y1, PB_DZ2, WALK_X1, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
@@ -2765,8 +2765,10 @@ if KH_WALKWAY_ENABLED:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# EAST WALKWAY — N-S slab at KH ground floor level (Z=KH_GROUND_Z), parallel to
-# main walkway, between the east walkway bent pier and Pier 5.
+# ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KH_GROUND_Z),
+# running alongside Pier 5 (west face).  Connects Knott Hall north face to the
+# bridge south edge, then wraps east via a short E-W ramp to the back-road west
+# sidewalk.  Provides ground-level access around Pier 5 without steps.
 # Spans Y=KH_Y2..PB_Y1 (KH north face → bridge south edge).
 # ════════════════════════════════════════════════════════════════════════════════
 if KH_WALKWAY_ENABLED:
@@ -2985,7 +2987,7 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # Seg2 (east of entrance to NE indent) — split around east walkway path (X=_ewk_x1.._ewk_x2)
+    # Seg2 (east of entrance to NE indent) — split around accessible walkway path (X=_ewk_x1.._ewk_x2)
     # West piece: entrance east edge → terrain cut west of path
     _ewk_terrain_cut_w = (
         _ewk_x1  # terrain cut matches path west edge (no gap west of path)
@@ -5149,7 +5151,7 @@ ENTITIES.append(
 )
 # Remaining rocket launchers
 for _rl_origin in [
-    f"0 {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # Charles St, south of Ennis
+    f"{ROAD_X2 + 40} {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
     f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
     f"{int(_ew_x1 + (_ew_x2 - _ew_x1) // 2)} {bw_ny - 80} {FZ2 + 24}",  # Ennis fence midpoint
     f"{int(_cw_x1 + (_cw_x2 - _cw_x1) // 2)} {bw_ny - 80} {FZ2 + 24}",  # Ennis wall midpoint
@@ -5167,7 +5169,9 @@ if KH_ENABLED:
     ENTITIES.append(
         ent("weapon_supershotgun", origin=f"{exc} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
     )
-ENTITIES.append(ent("weapon_supershotgun", origin=f"0 300 {ROAD_Z + 24}"))
+ENTITIES.append(
+    ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}")
+)  # east sidewalk
 ENTITIES.append(ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FZ2 + 40}"))
 
 # Grenade launcher — Knott Hall floor 2, south building 2
@@ -5203,7 +5207,7 @@ for _kf in range(1, KH_FLOORS):
             origin=f"{KH_CX + 80} {bcy} {KH_GROUND_Z + _kf * KH_FLOOR_H + 40}",
         )
     )
-ENTITIES.append(ent("item_shells", origin=f"0 -300 {ROAD_Z + 24}"))
+ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))  # west sidewalk
 ENTITIES.append(ent("item_shells", origin=f"{RH_CX} {RH_NORTH_CY} {FZ2 + 40}"))
 ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
 ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
@@ -5215,8 +5219,8 @@ ENTITIES.append(ent("item_health", origin=f"{exc} {KH_Y2 - 64} {KH_GROUND_Z + 40
 ENTITIES.append(
     ent("item_health", origin=f"{KH_CX} {bcy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}")
 )
-ENTITIES.append(ent("item_health", origin=f"0 400 {ROAD_Z + 24}"))
-ENTITIES.append(ent("item_health", origin=f"0 -600 {ROAD_Z + 24}"))
+ENTITIES.append(ent("item_health", origin=f"-300 400 {ROAD_Z + 24}"))  # west sidewalk
+ENTITIES.append(ent("item_health", origin=f"300 -600 {ROAD_Z + 24}"))  # east sidewalk
 ENTITIES.append(ent("item_health", origin=f"{RH_CX} {RH_SOUTH2_CY} {FZ2 + 40}"))
 # Armor — contested locations
 ENTITIES.append(ent("item_armor1", origin=f"-200 0 {DECK_Z}"))  # yellow armor on bridge
@@ -5590,19 +5594,19 @@ _br_mid_z = (
     + (KH_BR_ZT_S - KH_BR_ZT_N) * (_br_mid_y - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)
 )
 for _rx, _ry, _rz in [
-    # Charles outbound (south third, north third)
-    (_CS_PLT_X_OUT, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
-    (_CS_PLT_X_OUT, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
-    # Ennis outbound (quarter, three-quarter)
-    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) // 3, _CS_PLT_Y_OUT, FZ2 + 2 + _rl_h),
-    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) * 2 // 3, _CS_PLT_Y_OUT, FZ2 + 2 + _rl_h),
+    # Charles outbound (south third, north third) — east sidewalk
+    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
+    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+    # Ennis outbound (quarter, three-quarter) — south verge
+    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) // 3, EP_Y - EP_HW - 40, FZ2 + 2 + _rl_h),
+    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) * 2 // 3, EP_Y - EP_HW - 40, FZ2 + 2 + _rl_h),
     # Back road going south (midpoint)
     (_CS_PLT_BR_X, _br_mid_y, _br_mid_z + _rl_h),
-    # Ennis return (midpoint)
-    ((_CS_PLT_X_RET + _CS_PLT_BR_X) // 2, _CS_PLT_Y_RET, FZ2 + 2 + _rl_h),
-    # Charles return (south third, north third)
-    (_CS_PLT_X_RET, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
-    (_CS_PLT_X_RET, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+    # Ennis return (midpoint) — north verge
+    ((_CS_PLT_X_RET + _CS_PLT_BR_X) // 2, EP_Y + EP_HW + 40, FZ2 + 2 + _rl_h),
+    # Charles return (south third, north third) — west sidewalk
+    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
+    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
 ]:
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"{_rx} {_ry} {_rz}"))
 
@@ -5669,6 +5673,38 @@ for _rx, _ry in [
 ]:
     ENTITIES.append(
         ent("monster_knight", origin=f"{_rx} {_ry} {KH_Z2 + 24}", angle="180")
+    )
+
+# ── Demon knights (monster_hell_knight) ───────────────────────────────────────
+# Two on the bridge arch span — guard the crown and Pier 3 approach
+_deck_cx_z = int(dtop(0)) + 24  # standing height at arch crown
+_deck_p3_z = int(dtop(525)) + 24  # standing height near Pier 3
+for _mx, _my, _mz, _mangle in [
+    (0, 0, _deck_cx_z, 180),  # arch crown, facing west
+    (525, 0, _deck_p3_z, 0),  # Pier 3 approach, facing east
+]:
+    ENTITIES.append(
+        ent("monster_hell_knight", origin=f"{_mx} {_my} {_mz}", angle=str(_mangle))
+    )
+
+# One on the elevated walkway — guards the bridge → KH 2nd floor approach
+_wk_mid_x = (PB_X2 + WALK_X1) // 2  # midpoint of walkway span
+ENTITIES.append(
+    ent("monster_hell_knight", origin=f"{_wk_mid_x} 0 {WALK_ZT1 + 24}", angle="180")
+)
+
+# Two on the accessible walkway alongside Pier 5
+_awk_z = KH_GROUND_Z + 24  # walkway surface + standing height
+for _awk_y, _awk_angle in [
+    (-128, 90),  # mid-path, facing north toward bridge
+    (180, 270),  # north end near bridge south edge, facing south
+]:
+    ENTITIES.append(
+        ent(
+            "monster_hell_knight",
+            origin=f"2120 {_awk_y} {_awk_z}",
+            angle=str(_awk_angle),
+        )
     )
 
 # ── Write ─────────────────────────────────────────────────────────────────────
