@@ -2765,8 +2765,9 @@ if KH_WALKWAY_ENABLED:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# WALKWAY SUPPORT STRUCTURE — cement crossbeam + 5 piers under south end of walkway
-# Mirrors real-life support visible under the KH bridge approach (ref: bridge01)
+# WALKWAY BENT — cement cap beam + 5 drop piers under the south edge of the bridge
+# approach in front of Knott Hall.  Mirrors the real-life concrete support bent
+# visible under the KH bridge approach (ref: bridge01).
 # ════════════════════════════════════════════════════════════════════════════════
 if KH_WALKWAY_ENABLED:
     # Position just under the south edge of the bridge deck
