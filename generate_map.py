@@ -2920,17 +2920,31 @@ if KH_GROUND_Z > FZ2:
             TEX_GROUND,
         )
     )
-    # Seg2 (east of entrance to back-road corridor) — same slope, but starts north of the
-    # side-step platform so it doesn't bury the steps (platform depth = _ep_plat_depth)
+    # Seg2 (east of entrance to NE indent) — same slope, but starts north of the
+    # side-step platform so it doesn't bury the steps (platform depth = _ep_plat_depth).
+    # Ends at _east_ramp_x2 (= KH_X2 - INDENT, west edge of NE indent) so it doesn't
+    # interfere with Pier 5.
     BRUSHES.append(
         ramp_slab_y(
             _kh_ent_x2,
-            KH_BR_CORRIDOR_X1,
+            _east_ramp_x2,
             KH_Y2 + _ep_plat_depth,
             EP_SW_EDGE,
             FZ1,
             FZ1,
             KH_GROUND_Z,
+            FZ2 + CS_WALK_H,
+            TEX_GROUND,
+        )
+    )
+    # NE indent ground — flat at sidewalk height (seg2 stops here; fills gap to back-road corridor)
+    BRUSHES.append(
+        box(
+            _east_ramp_x2,
+            KH_Y2 + _ep_plat_depth,
+            FZ1,
+            KH_BR_CORRIDOR_X1,
+            EP_SW_EDGE,
             FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
@@ -5295,7 +5309,9 @@ _eg_jitter = 120
 _eg_buf = 120  # clearance buffer from world edges / wall
 _eg_x1 = ROAD_X2 + CS_WALK_W + _eg_buf
 _eg_x2 = WORLD_X2 - WALL_T - _eg_buf
-_eg_y1 = bw_ny + EP_WALL_T + _eg_buf  # start just north of the Ennis wall
+_eg_y1 = (
+    bw_ny + EP_WALL_T + 200
+)  # centered in north space (fence=1148, world=1696, mid≈1422)
 _eg_y2 = WORLD_Y2 - WALL_T - _eg_buf
 
 import random as _rng
