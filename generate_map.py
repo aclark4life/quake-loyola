@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+from quake_loyola import bridge, entities, knott_hall, streets, west_campus
 from quake_loyola.constants import Textures
 from quake_loyola.mapdata import MapBuilder
-from quake_loyola import bridge, entities, knott_hall, streets, west_campus
 
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad",

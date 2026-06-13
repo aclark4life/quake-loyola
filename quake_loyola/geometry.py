@@ -1,7 +1,8 @@
 import math
+
 from .constants import (
-    BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_ARCH_X,
+    BRIDGE_EAST_SPAN_ANGLE,
     Textures,
 )
 from .mapdata import Brush, Entity, Face
