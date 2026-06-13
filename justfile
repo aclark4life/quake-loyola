@@ -69,3 +69,7 @@ deploy:
 # Clean up temporary build files
 clean:
     rm -f {{map_name}}.bsp {{map_name}}.lit {{map_name}}.prt {{map_name}}.pts {{map_name}}.log
+
+# Alpha-sort constants.py (topological order, alphabetical tie-breaking)
+sort-constants:
+    python3 sort_constants.py
