@@ -330,15 +330,13 @@ def deck_top_z(x):
     return BRIDGE_DZ2 + arch_z_at(x)
 
 
-BRIDGE_DECK_Z = deck_top_z(0) + 8
-WALK_ZT1 = int(deck_top_z(KH_ORIG_CX))
-
-
 def ft_to_units(feet, inches=0):
     """Convert real-world feet (+ optional inches) to Quake units."""
     return round((feet + inches / 12) * SCALE)
 
 
+BRIDGE_DECK_Z = deck_top_z(0) + 8
+WALK_ZT1 = int(deck_top_z(KH_ORIG_CX))
 BRIDGE_PAR_W = ft_to_units(2, 6)
 BRIDGE_PIL_HW = ft_to_units(2, 5.5)
 BRIDGE_BLK_PIR_M = BRIDGE_PIL_HW + BRIDGE_BLK_HW + 4
