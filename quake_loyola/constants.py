@@ -361,6 +361,8 @@ def ft_to_units(feet, inches=0):
     return round((feet + inches / 12) * SCALE)
 
 
+# ── Function-Derived Constants ────────────────────────────────────────────────
+# Constants computed from the helper functions above (must follow their defs).
 BRIDGE_DECK_Z = deck_top_z(0) + 8
 WALK_ZT1 = int(deck_top_z(KNOTT_ORIG_CX))
 BRIDGE_PAR_W = ft_to_units(2, 6)
