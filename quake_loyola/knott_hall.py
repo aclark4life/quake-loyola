@@ -17,6 +17,23 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
+    KH_BR_ES_X1,
+    KH_BR_ES_X2,
+    KH_BR_EXT_Y1,
+    KH_BR_EXT_Y2,
+    KH_BR_JCX_E,
+    KH_BR_JCX_W,
+    KH_BR_JCY,
+    KH_BR_RD_X1,
+    KH_BR_RD_X2,
+    KH_BR_WS_X1,
+    KH_BR_WS_X2,
+    KH_BR_Y1,
+    KH_BR_Y2,
+    KH_BR_ZT_N,
+    KH_BR_ZT_S,
+    KH_BRCS_CRN_R,
+    KH_BRCS_CRN_SEGS,
     KH_ENABLED,
     KH_FLOOR_H,
     KH_FLOORS,
@@ -65,31 +82,6 @@ def build():
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
     # Sidewalks with rounded north entrance corners (like Ennis Drive)
-    # Road slopes from Z=0 at the north entrance to KH_GROUND_Z at the back.
-    # ══════════════════════════════════════════════════════════════════════════════
-    KH_BR_HW = 128  # back road half-width (256-unit carriageway, like Ennis)
-    KH_BRCS_WALK_W = (
-        CHARLES_WALK_W  # sidewalk width = 80 units (matches Charles St sidewalks)
-    )
-    KH_BRCS_CRN_R = CHARLES_WALK_W  # corner radius = sidewalk width
-    KH_BRCS_CRN_SEGS = CHARLES_CRN_SEGS  # 12 arc segments = 90°
-
-    # ── X extents (road runs N-S, east of building east wall) ──
-    KH_BR_WS_X1 = KH_X2  # west sidewalk west = building east wall = 1906
-    KH_BR_WS_X2 = KH_X2 + KH_BRCS_WALK_W  # west sidewalk east = road west edge = 1986
-    KH_BR_RD_X1 = KH_BR_WS_X2  # road west edge = 1986
-    KH_BR_RD_X2 = KH_BR_RD_X1 + 2 * KH_BR_HW  # road east edge = 2242
-    KH_BR_ES_X1 = KH_BR_RD_X2  # east sidewalk west = 2242
-    KH_BR_ES_X2 = KH_BR_RD_X2 + KH_BRCS_WALK_W  # east sidewalk east = 2322
-
-    # ── Y extents (north entrance → south back-wall) ──
-    KH_BR_Y1 = KH_Y1  # south end: back of building = -1888
-    KH_BR_Y2 = KH_Y2  # north end: north face of building = -256
-
-    # ── Elevation: road surface rises gradually from north (Z=0) to south (Z=hill top) ──
-    KH_BR_ZT_N = FLOOR_Z2  # road top at north entrance = 0
-    KH_BR_ZT_S = KH_GROUND_Z  # road top at south/back     = 80
-
     # Road surface — 2-unit textured overlay riding on sloped fill
     BRUSHES.append(
         ramp_slab_y(
@@ -237,9 +229,6 @@ def build():
     )
 
     # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
-    KH_BR_EXT_Y1 = KH_BR_Y2  # = -256 (north face of building)
-    KH_BR_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
-
     # Flat road surface
     BRUSHES.append(
         box(
@@ -307,8 +296,6 @@ def build():
     # Centers at the back-road-facing (south) corners so the curved face points toward
     # the back road — matching the Charles/Ennis corner style.
     # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
-    KH_BR_JCX_W = KH_BR_WS_X1
-    KH_BR_JCY = ENNIS_Y - ENNIS_HW
     BRUSHES.append(
         box(
             KH_BR_WS_X1,
@@ -342,7 +329,6 @@ def build():
         )
 
     # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
-    KH_BR_JCX_E = KH_BR_ES_X2
     BRUSHES.append(
         box(
             KH_BR_ES_X1,
