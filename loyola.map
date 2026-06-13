@@ -33109,7 +33109,7 @@
 "classname" "func_train"
 "target" "cs_pc1"
 "speed" "180"
-"_minlight" "255"
+"minlight" "255"
 {
 ( 0 -1920 8 ) ( 0 -1792 8 ) ( 0 -1920 20 ) sfloor3_2 0 0 0 1 1
 ( 128 -1920 8 ) ( 128 -1920 20 ) ( 128 -1792 8 ) sfloor3_2 0 0 0 1 1
