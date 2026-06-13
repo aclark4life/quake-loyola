@@ -80,31 +80,30 @@ from constants import (
     WORLD_X1,
     WORLD_X2,
     WORLD_Y2,
-    biy1,
-    biy2,
-    bw_ny,
-    bw_x1,
-    cement_wall_lamp_posts,
-    cement_wall_x1,
-    cement_wall_x2,
+    KH_BIY1,
+    KH_BIY2,
+    EP_WALL_NY,
+    EP_CEMENT_LAMP_POSTS,
+    EP_CEMENT_X1,
+    EP_CEMENT_X2,
     dbot,
     dtop,
-    east_gate_x1,
-    east_gate_x2,
-    east_shift_end,
-    exc,
-    lamp_post_ys,
-    room_splits,
+    EP_GATE_X1,
+    EP_GATE_X2,
+    PB_EAST_SHIFT_END,
+    KH_EAST_ROOM_CX,
+    CS_LAMP_POST_YS,
+    KH_ROOM_SPLITS,
     stx1,
     stx2,
     sty1,
     sty2,
-    wst_midY,
-    wstx1,
-    wstx2,
-    wsty1,
-    wsty2,
-    wxc,
+    KH_STAIRS_MID_Y,
+    KH_STAIRS_X1,
+    KH_STAIRS_X2,
+    KH_STAIRS_Y1,
+    KH_STAIRS_Y2,
+    KH_WEST_ROOM_CX,
 )
 from geometry import (
     arch_fill,
@@ -153,15 +152,19 @@ def build():
         fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
         item_z = fz1 + KH_WALL + 24
         light_z = fz1 + KH_FLOOR_H - 24  # near ceiling
-        split = room_splits[floor_index]
-        sr_yc = (biy1 + split) // 2
-        nr_yc = (split + KH_WALL + biy2) // 2
-        for side_xc in [wxc, exc]:
+        split = KH_ROOM_SPLITS[floor_index]
+        sr_yc = (KH_BIY1 + split) // 2
+        nr_yc = (split + KH_WALL + KH_BIY2) // 2
+        for side_xc in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
             for ryc in [sr_yc, nr_yc]:
                 # If west room north items land within 64 units of stairwell south wall, push south
                 safe_ryc = ryc
-                if side_xc == wxc and ryc == nr_yc and nr_yc > wsty1 - 64:
-                    safe_ryc = wsty1 - 80
+                if (
+                    side_xc == KH_WEST_ROOM_CX
+                    and ryc == nr_yc
+                    and nr_yc > KH_STAIRS_Y1 - 64
+                ):
+                    safe_ryc = KH_STAIRS_Y1 - 80
                 ENTITIES.append(
                     ent("light", origin=f"{side_xc} {safe_ryc} {light_z}", light="250")
                 )
@@ -189,9 +192,9 @@ def build():
                 gi += 1
 
     # ── West stairwell lights — ceiling + mid-flight + low fill per lane per floor ──────────
-    west_stair_center_x = (wstx1 + wstx2) // 2  # X centre of shaft
-    west_stair_north_y = (wst_midY + wsty2) // 2  # Y centre of north lane
-    west_stair_south_y = (wsty1 + wst_midY) // 2  # Y centre of south lane
+    west_stair_center_x = (KH_STAIRS_X1 + KH_STAIRS_X2) // 2  # X centre of shaft
+    west_stair_north_y = (KH_STAIRS_MID_Y + KH_STAIRS_Y2) // 2  # Y centre of north lane
+    west_stair_south_y = (KH_STAIRS_Y1 + KH_STAIRS_MID_Y) // 2  # Y centre of south lane
     for floor_index in range(KH_FLOORS):
         west_stair_light_z = (
             KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
@@ -221,11 +224,11 @@ def build():
     # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
     hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
     hall_light_ys = [
-        biy1 + (biy2 - biy1) * i // 4
+        KH_BIY1 + (KH_BIY2 - KH_BIY1) * i // 4
         for i in range(1, 4)  # quarters: 25%, 50%, 75%
     ] + [
-        biy1 + (biy2 - biy1) // 8,  # 12.5% (near south end)
-        biy1 + (biy2 - biy1) * 7 // 8,  # 87.5% (near north end)
+        KH_BIY1 + (KH_BIY2 - KH_BIY1) // 8,  # 12.5% (near south end)
+        KH_BIY1 + (KH_BIY2 - KH_BIY1) * 7 // 8,  # 87.5% (near north end)
     ]
     for floor_index in range(KH_FLOORS):
         hall_light_z = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
@@ -262,10 +265,10 @@ def build():
     for floor_index in range(KH_FLOORS):
         fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
         fz_surf = fz1 + KH_WALL
-        split = room_splits[floor_index]
+        split = KH_ROOM_SPLITS[floor_index]
         shelf_x_offset = shelf_offsets[floor_index]
 
-        for shelf_center_x in [wxc, exc]:
+        for shelf_center_x in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
             # South room: shelf against south wall — front faces south (-Y)
             shelf_x = shelf_center_x + shelf_x_offset
             ENTITIES.append(
@@ -274,10 +277,10 @@ def build():
                     [
                         box(
                             shelf_x - KH_SHELF_W // 2,
-                            biy1,
+                            KH_BIY1,
                             fz_surf,
                             shelf_x + KH_SHELF_W // 2,
-                            biy1 + KH_SHELF_D,
+                            KH_BIY1 + KH_SHELF_D,
                             fz_surf + KH_SHELF_H,
                             "shelf_1",
                         )
@@ -287,7 +290,7 @@ def build():
             ENTITIES.append(
                 ent(
                     "light",
-                    origin=f"{shelf_x} {biy1 + 32} {fz_surf + KH_SHELF_H + 24}",
+                    origin=f"{shelf_x} {KH_BIY1 + 32} {fz_surf + KH_SHELF_H + 24}",
                     light="180",
                 )
             )
@@ -338,7 +341,7 @@ def build():
     east_brushes = arch_fill(
         WORLD_X2 - WALL_T - ARCH_SLAB_W,
         WORLD_X2 - WALL_T,
-        east_shift_end,
+        PB_EAST_SHIFT_END,
         PB_DZ2,
         ARCH_RIN,
         A_SEGS,
@@ -356,17 +359,17 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_east_deck",
-            origin=f"{east_lower_deck_x} {int(east_shift_end)} {int(PB_DZ2 + 40)}",
+            origin=f"{east_lower_deck_x} {int(PB_EAST_SHIFT_END)} {int(PB_DZ2 + 40)}",
             angle="180",
         )
     )
     east_lower = [
         box(
             elx1,
-            east_shift_end - ARCH_RIN,
+            PB_EAST_SHIFT_END - ARCH_RIN,
             FLOOR_Z2,
             elx2,
-            east_shift_end + ARCH_RIN,
+            PB_EAST_SHIFT_END + ARCH_RIN,
             PB_DZ2,
             TEX_TELEPORT,
         )
@@ -523,8 +526,8 @@ def build():
     for rl_origin in [
         f"{ROAD_X2 + 40} {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
         f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
-        f"{int(east_gate_x1 + (east_gate_x2 - east_gate_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
-        f"{int(cement_wall_x1 + (cement_wall_x2 - cement_wall_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
+        f"{int(EP_GATE_X1 + (EP_GATE_X2 - EP_GATE_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
+        f"{int(EP_CEMENT_X1 + (EP_CEMENT_X2 - EP_CEMENT_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
         f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {PB_DECK_Z}",  # span 1
         f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {PB_DECK_Z}",  # span 2 south edge
@@ -537,7 +540,10 @@ def build():
     # Super shotgun — spread around mid-tier locations
     if KH_ENABLED:
         ENTITIES.append(
-            ent("weapon_supershotgun", origin=f"{exc} {KH_Y2 - 80} {KH_GROUND_Z + 40}")
+            ent(
+                "weapon_supershotgun",
+                origin=f"{KH_EAST_ROOM_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}",
+            )
         )
     ENTITIES.append(
         ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}")
@@ -592,7 +598,9 @@ def build():
     # ── Health & Armor ────────────────────────────────────────────────────────
     # Health — scattered throughout
     ENTITIES.append(ent("item_health", origin=f"0 0 {PB_DECK_Z}"))
-    ENTITIES.append(ent("item_health", origin=f"{exc} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
+    ENTITIES.append(
+        ent("item_health", origin=f"{KH_EAST_ROOM_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}")
+    )
     ENTITIES.append(
         ent(
             "item_health", origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}"
@@ -663,7 +671,7 @@ def build():
 
     # Campus lamp post lights — flame above brick cup, matching bridge pillar torches
     for lamp_x in CS_LAMP_POST_XS:
-        for lamp_y in lamp_post_ys:
+        for lamp_y in CS_LAMP_POST_YS:
             pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
             flame_z = pole_top_z + 20
             ENTITIES.append(
@@ -677,7 +685,7 @@ def build():
             )
 
     # Ennis cement wall lamppost lights
-    for lamp_x, lamp_y, lamp_z in cement_wall_lamp_posts:
+    for lamp_x, lamp_y, lamp_z in EP_CEMENT_LAMP_POSTS:
         ENTITIES.append(ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300"))
         ENTITIES.append(
             ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {lamp_z + 4}")
@@ -826,9 +834,9 @@ def build():
         (RH_X1 - 80, 200),
         (RH_X1 - 200, 500),
         # Along Ennis Parallel (campus side, west of Charles St — bridge02)
-        (ROAD_X1 - 200, bw_ny - 100),
-        (ROAD_X1 - 400, bw_ny - 80),
-        (ROAD_X1 - 600, bw_ny - 120),
+        (ROAD_X1 - 200, EP_WALL_NY - 100),
+        (ROAD_X1 - 400, EP_WALL_NY - 80),
+        (ROAD_X1 - 600, EP_WALL_NY - 120),
     ]
     all_tree_brushes = []
     for tree_x, tree_y in tree_positions:
@@ -867,7 +875,7 @@ def build():
     east_ground_x1 = ROAD_X2 + CS_WALK_W + east_ground_buffer
     east_ground_x2 = WORLD_X2 - WALL_T - east_ground_buffer
     east_ground_y1 = (
-        bw_ny + EP_WALL_T + 200
+        EP_WALL_NY + EP_WALL_T + 200
     )  # centered in north space (fence=1148, world=1696, mid≈1422)
     east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 
@@ -893,19 +901,19 @@ def build():
 
     bush_positions = [
         # Along north face of Ennis brick wall (campus grass side, not sidewalk)
-        (bw_x1 + 60, bw_ny + EP_WALL_T + 40),
-        (bw_x1 + 160, bw_ny + EP_WALL_T + 40),
-        (bw_x1 + 260, bw_ny + EP_WALL_T + 40),
-        (bw_x1 + 360, bw_ny + EP_WALL_T + 40),
+        ((ROAD_X2 + CS_WALK_W + 48) + 60, EP_WALL_NY + EP_WALL_T + 40),
+        ((ROAD_X2 + CS_WALK_W + 48) + 160, EP_WALL_NY + EP_WALL_T + 40),
+        ((ROAD_X2 + CS_WALK_W + 48) + 260, EP_WALL_NY + EP_WALL_T + 40),
+        ((ROAD_X2 + CS_WALK_W + 48) + 360, EP_WALL_NY + EP_WALL_T + 40),
         # Along north face of iron fence
-        (int(east_gate_x1 + 120), bw_ny + EP_WALL_T + 40),
-        (int(east_gate_x1 + 300), bw_ny + EP_WALL_T + 40),
-        (int(east_gate_x1 + 500), bw_ny + EP_WALL_T + 40),
-        (int(east_gate_x1 + 700), bw_ny + EP_WALL_T + 40),
+        (int(EP_GATE_X1 + 120), EP_WALL_NY + EP_WALL_T + 40),
+        (int(EP_GATE_X1 + 300), EP_WALL_NY + EP_WALL_T + 40),
+        (int(EP_GATE_X1 + 500), EP_WALL_NY + EP_WALL_T + 40),
+        (int(EP_GATE_X1 + 700), EP_WALL_NY + EP_WALL_T + 40),
         # Along north face of cement parapet wall
-        (int(cement_wall_x1 + 120), bw_ny + EP_WALL_T + 40),
-        (int(cement_wall_x1 + 320), bw_ny + EP_WALL_T + 40),
-        (int(cement_wall_x1 + 560), bw_ny + EP_WALL_T + 40),
+        (int(EP_CEMENT_X1 + 120), EP_WALL_NY + EP_WALL_T + 40),
+        (int(EP_CEMENT_X1 + 320), EP_WALL_NY + EP_WALL_T + 40),
+        (int(EP_CEMENT_X1 + 560), EP_WALL_NY + EP_WALL_T + 40),
         # Along Knott Hall west face (outside building)
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 - 200),
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
@@ -1119,10 +1127,10 @@ def build():
     # Knights inside KH rooms — one per floor in each room
     for fl in range(KH_FLOORS):
         fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
-        split = room_splits[fl]
-        sr_yc = (biy1 + split) // 2
-        nr_yc = (split + KH_WALL + biy2) // 2
-        for rxc in [wxc, exc]:
+        split = KH_ROOM_SPLITS[fl]
+        sr_yc = (KH_BIY1 + split) // 2
+        nr_yc = (split + KH_WALL + KH_BIY2) // 2
+        for rxc in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
             for ryc in [sr_yc, nr_yc]:
                 ENTITIES.append(
                     ent("monster_knight", origin=f"{rxc} {ryc} {fz}", angle="270")
@@ -1132,17 +1140,17 @@ def build():
     hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2
     for fl in range(KH_FLOORS):
         fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
-        hall_yc = (biy1 + biy2) // 2
+        hall_yc = (KH_BIY1 + KH_BIY2) // 2
         ENTITIES.append(
             ent("monster_knight", origin=f"{hall_center_x} {hall_yc} {fz}", angle="180")
         )
 
     # Enforcers on rooftop
     for roof_enemy_x, roof_enemy_y in [
-        (wxc, KH_Y2 - 80),
-        (exc, KH_Y2 - 80),
+        (KH_WEST_ROOM_CX, KH_Y2 - 80),
+        (KH_EAST_ROOM_CX, KH_Y2 - 80),
         (KH_CX, KH_Y1 + 80),
-        (wxc, KH_Y1 + 80),
+        (KH_WEST_ROOM_CX, KH_Y1 + 80),
     ]:
         ENTITIES.append(
             ent(

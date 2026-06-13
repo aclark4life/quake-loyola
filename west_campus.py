@@ -391,18 +391,18 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # West flat approach removed — arch now starts at world edge
     # East flat stub from arch terminus to building entrance — angled southward
-    east_shift_start = 0.0  # no shift at the pier (pivot)
-    east_shift_end = east_y_shift(
+    PB_EAST_SHIFT_START = 0.0  # no shift at the pier (pivot)
+    PB_EAST_SHIFT_END = east_y_shift(
         WORLD_X2 - WALL_T
     )  # full southward shift at east world wall
-    east_pivot_x = PB_ARCH_X[4]  # easternmost pier — where the angle begins
+    PB_EAST_PIVOT_X = PB_ARCH_X[4]  # easternmost pier — where the angle begins
     # Straight section: arch terminus → easternmost pier
     BRUSHES.append(
         box(
             PB_X2,
             PB_Y1,
             PB_DZ1,
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y2,
             PB_DZ2,
             TEX_STONE,
@@ -413,14 +413,14 @@ def build():
     # Angled section: easternmost pier → east world wall
     BRUSHES.append(
         shear_box_y(
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y1,
             PB_DZ1,
             WORLD_X2 - WALL_T,
             PB_Y2,
             PB_DZ2,
-            east_shift_start,
-            east_shift_end,
+            PB_EAST_SHIFT_START,
+            PB_EAST_SHIFT_END,
             TEX_STONE,
             tt=TEX_FLOOR,
             tb=TEX_FLOOR,

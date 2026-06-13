@@ -571,36 +571,38 @@ def build():
     # Starts with a small grass gap east of the sidewalk.
     EP_WALL_T = 8  # wall thickness
     EP_WALL_H = 96  # wall height — matches iron fence
-    bw_ny = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
-    bw_x1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
+    EP_WALL_NY = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
+    EP_WALL_X1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
     bwex2 = PB_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
     # East-running segment (south base of L)
     BRUSHES.append(
         box(
-            bw_x1,
-            bw_ny,
+            EP_WALL_X1,
+            EP_WALL_NY,
             FLOOR_Z2,
             bwex2,
-            bw_ny + EP_WALL_T,
+            EP_WALL_NY + EP_WALL_T,
             FLOOR_Z2 + EP_WALL_H,
             "city2_1",
         )
     )
     # North-turning segment — south half brick, north half iron fence
-    bw_mid_y = (bw_ny + WORLD_Y2 - WALL_T) // 2  # midpoint of north segment
+    bw_mid_y = (EP_WALL_NY + WORLD_Y2 - WALL_T) // 2  # midpoint of north segment
     BRUSHES.append(
         box(
-            bw_x1,
-            bw_ny,
+            EP_WALL_X1,
+            EP_WALL_NY,
             FLOOR_Z2,
-            bw_x1 + EP_WALL_T,
+            EP_WALL_X1 + EP_WALL_T,
             bw_mid_y,
             FLOOR_Z2 + EP_WALL_H,
             "city2_1",
         )
     )
     # North half — iron fence matching west-side style (FENCE_* constants defined later)
-    gate_fence_x1 = bw_x1 + EP_WALL_T // 2 - 1  # centre the pickets on the wall line
+    gate_fence_x1 = (
+        EP_WALL_X1 + EP_WALL_T // 2 - 1
+    )  # centre the pickets on the wall line
     gate_fence_x2 = gate_fence_x1 + 2
     gate_fence_height = 96
     gate_fence_spacing = 16
@@ -638,8 +640,8 @@ def build():
 
     # ── Decorative iron panels on west face of brick wall, sitting ON TOP of wall ──
     # Panels protrude above wall top; rectangles are horizontal (wider than tall).
-    panel_x1 = bw_x1 - 2  # protrude 2 units from west face
-    panel_x2 = bw_x1
+    panel_x1 = EP_WALL_X1 - 2  # protrude 2 units from west face
+    panel_x2 = EP_WALL_X1
     panel_bar_thickness = 2  # bar thickness
     panel_outer_width = 48  # outer frame Y width (wide = horizontal)
     panel_outer_height = 28  # outer frame Z height (shorter than wide)
@@ -650,7 +652,7 @@ def build():
     panel_spacing = panel_outer_width + 16  # centre-to-centre spacing
 
     # Snap bw_mid_y to the north edge of the last full panel that fits in the original half-space
-    panel_available_span = bw_mid_y - bw_ny
+    panel_available_span = bw_mid_y - EP_WALL_NY
     panel_count = max(
         1, (panel_available_span + panel_outer_width) // (panel_outer_width + 8)
     )  # at least 8-unit gap between panels
@@ -658,8 +660,8 @@ def build():
         panel_available_span // panel_count
     )  # evenly distribute N panels across the brick space
 
-    # Start first panel so its south edge aligns exactly with bw_ny (no overhang)
-    panel_center_y = bw_ny + panel_spacing // 2
+    # Start first panel so its south edge aligns exactly with EP_WALL_NY (no overhang)
+    panel_center_y = EP_WALL_NY + panel_spacing // 2
     panels_drawn = 0
     while panels_drawn < panel_count:
         panel_width = panel_outer_width
@@ -836,8 +838,8 @@ def build():
     # Corner pillar — square brick post at the L junction, wider than wall
     EP_WALL_PIL_HW = 14  # pillar half-width (28 units square)
     EP_WALL_PIL_H = 120  # pillar height — taller than wall
-    bw_cx = bw_x1 + EP_WALL_T // 2  # pillar centre X (wall centre)
-    bw_cy = bw_ny + EP_WALL_T // 2  # pillar centre Y (wall centre)
+    bw_cx = EP_WALL_X1 + EP_WALL_T // 2  # pillar centre X (wall centre)
+    bw_cy = EP_WALL_NY + EP_WALL_T // 2  # pillar centre Y (wall centre)
     BRUSHES.append(
         box(
             bw_cx - EP_WALL_PIL_HW,
@@ -887,27 +889,27 @@ def build():
 
     # ── East-running iron gate along Ennis Drive (from brick wall end to ~halfway east) ──
     # Built as func_detail to avoid BSP portal overflow from pickets in open space.
-    east_gate_x1 = bwex2  # starts at east end of brick wall
-    east_gate_x2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
-    east_gate_y1 = bw_ny + EP_WALL_T // 2 - 1  # Y centre of fence line
+    EP_GATE_X1 = bwex2  # starts at east end of brick wall
+    EP_GATE_X2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
+    east_gate_y1 = EP_WALL_NY + EP_WALL_T // 2 - 1  # Y centre of fence line
     east_gate_y2 = east_gate_y1 + 2
     east_gate_brushes = []
     # Top rail
     east_gate_brushes.append(
         box(
-            east_gate_x1,
+            EP_GATE_X1,
             east_gate_y1,
             FLOOR_Z2 + gate_fence_height - 28,
-            east_gate_x2,
+            EP_GATE_X2,
             east_gate_y2,
             FLOOR_Z2 + gate_fence_height - 26,
             gate_fence_tex,
         )
     )
     # Pickets — 2-wide every 16, 8-wide posts every 10th
-    east_gate_picket_x = east_gate_x1
+    east_gate_picket_x = EP_GATE_X1
     east_gate_picket_index = 0
-    while east_gate_picket_x + 2 <= east_gate_x2:
+    while east_gate_picket_x + 2 <= EP_GATE_X2:
         east_gate_picket_width = 8 if east_gate_picket_index % 10 == 0 else 2
         east_gate_brushes.append(
             box(
@@ -924,10 +926,10 @@ def build():
         east_gate_picket_index += 1
 
     # ── Cement parapet wall — east half of Ennis Drive (iron fence end to east world wall) ──
-    cement_wall_x1 = east_gate_x2  # starts where iron fence ends
-    cement_wall_x2 = WORLD_X2 - WALL_T  # east world wall inner face
-    cement_wall_y1 = bw_ny  # south face
-    cement_wall_y2 = bw_ny + EP_WALL_T  # north face
+    EP_CEMENT_X1 = EP_GATE_X2  # starts where iron fence ends
+    EP_CEMENT_X2 = WORLD_X2 - WALL_T  # east world wall inner face
+    cement_wall_y1 = EP_WALL_NY  # south face
+    cement_wall_y2 = EP_WALL_NY + EP_WALL_T  # north face
     cement_wall_height = 32  # parapet height — low enough to jump over
     cement_wall_pillar_half_width = 14  # pillar half-width
     cement_wall_pillar_height = (
@@ -936,10 +938,10 @@ def build():
     # Wall body
     BRUSHES.append(
         box(
-            cement_wall_x1,
+            EP_CEMENT_X1,
             cement_wall_y1,
             FLOOR_Z2,
-            cement_wall_x2,
+            EP_CEMENT_X2,
             cement_wall_y2,
             FLOOR_Z2 + cement_wall_height,
             TEX_CEMENT,
@@ -948,18 +950,18 @@ def build():
     # Cap slab (slightly proud on all sides)
     BRUSHES.append(
         box(
-            cement_wall_x1,
+            EP_CEMENT_X1,
             cement_wall_y1 - 2,
             FLOOR_Z2 + cement_wall_height,
-            cement_wall_x2,
+            EP_CEMENT_X2,
             cement_wall_y2 + 2,
             FLOOR_Z2 + cement_wall_height + 6,
             TEX_CEMENT,
         )
     )
     # Pillars at each end
-    cement_wall_lamp_posts = []
-    for pillar_x in (cement_wall_x1, cement_wall_x2):
+    EP_CEMENT_LAMP_POSTS = []
+    for pillar_x in (EP_CEMENT_X1, EP_CEMENT_X2):
         pillar_center_y = (cement_wall_y1 + cement_wall_y2) // 2
         BRUSHES.append(
             box(
@@ -1020,9 +1022,7 @@ def build():
                 TEX_CEMENT,
             )
         )
-        cement_wall_lamp_posts.append(
-            (pillar_x, pillar_center_y, lamppost_base_z + 180)
-        )
+        EP_CEMENT_LAMP_POSTS.append((pillar_x, pillar_center_y, lamppost_base_z + 180))
 
     RH_DEPTH = 600  # building N-S depth (doubled)
     RH_PIER_X = min(PB_ARCH_X)  # = -1100

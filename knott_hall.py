@@ -375,8 +375,8 @@ def build():
 
     bix1 = KH_X1 + KH_WALL  # interior west
     bix2 = KH_X2 - KH_WALL  # interior east
-    biy1 = KH_Y1 + KH_WALL  # interior south = -784
-    biy2 = KH_Y2 - KH_WALL  # interior north = -272
+    KH_BIY1 = KH_Y1 + KH_WALL  # interior south = -784
+    KH_BIY2 = KH_Y2 - KH_WALL  # interior north = -272
 
     # Entrance doorway — pinned to original building centre, not current KH_CX
     KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
@@ -528,7 +528,7 @@ def build():
 
     # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
     stx1, stx2 = KH_ENT_X2 + 16, KH_ENT_X2 + 16 + 128
-    sty1, sty2 = biy2 - 128, biy2  # Y: -400 to -272
+    sty1, sty2 = KH_BIY2 - 128, KH_BIY2  # Y: -400 to -272
     # West stairwell extents defined after INDENT below
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
@@ -536,10 +536,12 @@ def build():
     KH_MULLION_W = 12  # mullion width
     KH_MULLION_PRO = 12  # mullion protrusion depth
 
-    wstx2 = KH_ENT_X1 - 16  # west stairwell east edge
-    wstx1 = bix1 + 2 * INDENT  # west stairwell west edge — flush with NW indent corner
-    wsty2 = sty2  # stairwell north edge (same as east shaft)
-    wsty1 = biy2 - 256  # stairwell south edge — double depth (256 vs 128)
+    KH_STAIRS_X2 = KH_ENT_X1 - 16  # west stairwell east edge
+    KH_STAIRS_X1 = (
+        bix1 + 2 * INDENT
+    )  # west stairwell west edge — flush with NW indent corner
+    KH_STAIRS_Y2 = sty2  # stairwell north edge (same as east shaft)
+    KH_STAIRS_Y1 = KH_BIY2 - 256  # stairwell south edge — double depth (256 vs 128)
 
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
     # Main south face — hallway openings cut through at each floor level
@@ -1075,7 +1077,7 @@ def build():
             KH_X1,
             KH_Y1,
             KH_Z2,
-            wstx1,
+            KH_STAIRS_X1,
             KH_Y2 - INDENT,
             KH_Z2 + KH_WALL,
             TEX_FLOOR_KH,
@@ -1086,20 +1088,36 @@ def build():
             KH_X1 + 2 * INDENT,
             KH_Y2 - INDENT,
             KH_Z2,
-            wstx1,
+            KH_STAIRS_X1,
             KH_Y2,
             KH_Z2 + KH_WALL,
             TEX_FLOOR_KH,
         )
     )  # far-west north-strip
     BRUSHES.append(
-        box(wstx1, KH_Y1, KH_Z2, wstx2, wsty1, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(
+            KH_STAIRS_X1,
+            KH_Y1,
+            KH_Z2,
+            KH_STAIRS_X2,
+            KH_STAIRS_Y1,
+            KH_Z2 + KH_WALL,
+            TEX_FLOOR_KH,
+        )
     )  # south of west stairwell
     BRUSHES.append(
-        box(wstx1, wsty2, KH_Z2, wstx2, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(
+            KH_STAIRS_X1,
+            KH_STAIRS_Y2,
+            KH_Z2,
+            KH_STAIRS_X2,
+            KH_Y2,
+            KH_Z2 + KH_WALL,
+            TEX_FLOOR_KH,
+        )
     )  # north of west stairwell
     BRUSHES.append(
-        box(wstx2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(KH_STAIRS_X2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
     )  # between shafts (no indent — interior)
     BRUSHES.append(
         box(
@@ -1151,27 +1169,47 @@ def build():
         floor_z1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
         floor_z2 = floor_z1 + KH_WALL
         # South bulk — full width up to stairwell's south wall
-        BRUSHES.append(box(bix1, biy1, floor_z1, bix2, wsty1, floor_z2, TEX_FLOOR_KH))
-        # Stairwell south extension (wsty1..sty1): floor on either side, stairwell open
-        BRUSHES.append(box(bix1, wsty1, floor_z1, wstx1, sty1, floor_z2, TEX_FLOOR_KH))
-        BRUSHES.append(box(wstx2, wsty1, floor_z1, bix2, sty1, floor_z2, TEX_FLOOR_KH))
-        # North zone (sty1..biy2): west of stairwell, clipped for NW indentation
         BRUSHES.append(
-            box(bix1, sty1, floor_z1, wstx1, KH_Y2 - INDENT, floor_z2, TEX_FLOOR_KH)
+            box(bix1, KH_BIY1, floor_z1, bix2, KH_STAIRS_Y1, floor_z2, TEX_FLOOR_KH)
+        )
+        # Stairwell south extension (KH_STAIRS_Y1..sty1): floor on either side, stairwell open
+        BRUSHES.append(
+            box(
+                bix1, KH_STAIRS_Y1, floor_z1, KH_STAIRS_X1, sty1, floor_z2, TEX_FLOOR_KH
+            )
+        )
+        BRUSHES.append(
+            box(
+                KH_STAIRS_X2, KH_STAIRS_Y1, floor_z1, bix2, sty1, floor_z2, TEX_FLOOR_KH
+            )
+        )
+        # North zone (sty1..KH_BIY2): west of stairwell, clipped for NW indentation
+        BRUSHES.append(
+            box(
+                bix1,
+                sty1,
+                floor_z1,
+                KH_STAIRS_X1,
+                KH_Y2 - INDENT,
+                floor_z2,
+                TEX_FLOOR_KH,
+            )
         )
         BRUSHES.append(
             box(
                 bix1 + 2 * INDENT,
                 KH_Y2 - INDENT,
                 floor_z1,
-                wstx1,
-                biy2,
+                KH_STAIRS_X1,
+                KH_BIY2,
                 floor_z2,
                 TEX_FLOOR_KH,
             )
         )
         # Between west stairwell and east shaft
-        BRUSHES.append(box(wstx2, sty1, floor_z1, stx1, biy2, floor_z2, TEX_FLOOR_KH))
+        BRUSHES.append(
+            box(KH_STAIRS_X2, sty1, floor_z1, stx1, KH_BIY2, floor_z2, TEX_FLOOR_KH)
+        )
         # East of shaft, clipped for NE indentation
         BRUSHES.append(
             box(stx2, sty1, floor_z1, bix2, KH_Y2 - INDENT, floor_z2, TEX_FLOOR_KH)
@@ -1182,7 +1220,7 @@ def build():
                 KH_Y2 - INDENT,
                 floor_z1,
                 bix2 - INDENT,
-                biy2,
+                KH_BIY2,
                 floor_z2,
                 TEX_FLOOR_KH,
             )
@@ -1230,7 +1268,7 @@ def build():
     )
 
     # ── West Stairwell Enclosure ──────────────────────────────────────────────────
-    # Walls around the west stairwell (wstx1..wstx2, wsty1..wsty2)
+    # Walls around the west stairwell (KH_STAIRS_X1..KH_STAIRS_X2, KH_STAIRS_Y1..KH_STAIRS_Y2)
     west_shaft_door_openings = [
         (
             sty1 + 16,  # same Y extents as east shaft doorway
@@ -1243,19 +1281,35 @@ def build():
 
     # West stairwell North wall (internal, solid)
     BRUSHES.append(
-        box(wstx1, wsty2, KH_GROUND_Z, wstx2, wsty2 + shaft_wall, KH_Z2, TEX_WALL)
+        box(
+            KH_STAIRS_X1,
+            KH_STAIRS_Y2,
+            KH_GROUND_Z,
+            KH_STAIRS_X2,
+            KH_STAIRS_Y2 + shaft_wall,
+            KH_Z2,
+            TEX_WALL,
+        )
     )
     # West stairwell South wall (internal, solid)
     BRUSHES.append(
-        box(wstx1, wsty1 - shaft_wall, KH_GROUND_Z, wstx2, wsty1, KH_Z2, TEX_WALL)
+        box(
+            KH_STAIRS_X1,
+            KH_STAIRS_Y1 - shaft_wall,
+            KH_GROUND_Z,
+            KH_STAIRS_X2,
+            KH_STAIRS_Y1,
+            KH_Z2,
+            TEX_WALL,
+        )
     )
     # West stairwell East wall (internal, openings for each floor's door — flush both sides)
     BRUSHES.extend(
         layered_wall_y(
-            wsty1,
-            wstx2,
+            KH_STAIRS_Y1,
+            KH_STAIRS_X2,
             KH_GROUND_Z,
-            wsty2,
+            KH_STAIRS_Y2,
             KH_ENT_X1,
             KH_Z2,
             west_shaft_door_openings,
@@ -1264,30 +1318,38 @@ def build():
     )
     # West stairwell West wall (internal, solid)
     BRUSHES.append(
-        box(wstx1 - shaft_wall, wsty1, KH_GROUND_Z, wstx1, wsty2, KH_Z2, TEX_WALL)
+        box(
+            KH_STAIRS_X1 - shaft_wall,
+            KH_STAIRS_Y1,
+            KH_GROUND_Z,
+            KH_STAIRS_X1,
+            KH_STAIRS_Y2,
+            KH_Z2,
+            TEX_WALL,
+        )
     )
 
     # ── West Stairwell — Switchback Staircase ─────────────────────────────────────
     # Stairs compressed to the shaft centre (192 u wide), leaving 88-unit flanks for
     # half-floor platforms on the east and west sides.
     #
-    # North lane (wst_midY..wsty2): enter east door, walk WEST, rise z0 → z_mid.
+    # North lane (KH_STAIRS_MID_Y..KH_STAIRS_Y2): enter east door, walk WEST, rise z0 → z_mid.
     # West platform at z_mid (full shaft Y, 88 u wide) — turn-around landing.
-    # South lane (wsty1..wst_midY): walk EAST, rise z_mid → z_top.
+    # South lane (KH_STAIRS_Y1..KH_STAIRS_MID_Y): walk EAST, rise z_mid → z_top.
     #
-    # Step 0 of north lane and step 7 of south lane extend east to wstx2 so the
+    # Step 0 of north lane and step 7 of south lane extend east to KH_STAIRS_X2 so the
     # door at each floor connects directly to the staircase.
     # Loop runs KH_FLOORS times (fl 0→4) — top flight exits onto building roof.
     KH_STAIRS_HALF_N = 8
     KH_STAIRS_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
     KH_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
     PLAT_H = 8  # platform slab thickness
-    stair_cx = (wstx1 + wstx2) // 2  # shaft X centre
+    stair_cx = (KH_STAIRS_X1 + KH_STAIRS_X2) // 2  # shaft X centre
     stair_x1 = (
         stair_cx - KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X // 2
     )  # west edge of stairs
     stair_x2 = stair_x1 + KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X  # east edge of stairs
-    wst_midY = (wsty1 + wsty2) // 2  # Y lane divider = -400
+    KH_STAIRS_MID_Y = (KH_STAIRS_Y1 + KH_STAIRS_Y2) // 2  # Y lane divider = -400
 
     for floor_index in range(KH_FLOORS):
         floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL  # floor surface Z
@@ -1300,10 +1362,10 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                wst_midY,
+                KH_STAIRS_MID_Y,
                 floor_z0 - PLAT_H,
-                wstx2,
-                wsty2,
+                KH_STAIRS_X2,
+                KH_STAIRS_Y2,
                 floor_z0,
                 TEX_FLOOR_KH,
             )
@@ -1312,10 +1374,10 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                wsty1,
+                KH_STAIRS_Y1,
                 top_flight_z - PLAT_H,
-                wstx2,
-                wst_midY,
+                KH_STAIRS_X2,
+                KH_STAIRS_MID_Y,
                 top_flight_z,
                 TEX_FLOOR_KH,
             )
@@ -1329,10 +1391,10 @@ def build():
             BRUSHES.append(
                 box(
                     step_x_west,
-                    wst_midY,
+                    KH_STAIRS_MID_Y,
                     step_z1,
                     step_x_east,
-                    wsty2,
+                    KH_STAIRS_Y2,
                     step_z1 + KH_STAIRS_STEP_R,
                     TEX_WALL,
                     tt=TEX_FLOOR_KH,
@@ -1342,11 +1404,11 @@ def build():
         # Half-floor west platform: turn-around landing, full shaft Y depth.
         BRUSHES.append(
             box(
-                wstx1,
-                wsty1,
+                KH_STAIRS_X1,
+                KH_STAIRS_Y1,
                 half_flight_z - PLAT_H,
                 stair_x1,
-                wsty2,
+                KH_STAIRS_Y2,
                 half_flight_z,
                 TEX_FLOOR_KH,
             )
@@ -1360,10 +1422,10 @@ def build():
             BRUSHES.append(
                 box(
                     step_x_west,
-                    wsty1,
+                    KH_STAIRS_Y1,
                     step_z1,
                     step_x_east,
-                    wst_midY,
+                    KH_STAIRS_MID_Y,
                     step_z1 + KH_STAIRS_STEP_R,
                     TEX_WALL,
                     tt=TEX_FLOOR_KH,
@@ -1371,7 +1433,7 @@ def build():
             )
 
     # ── West Stairwell — Iron Railings ────────────────────────────────────────────
-    # 2 end posts + 1 sloped cross rail per half-flight, central divider (wst_midY).
+    # 2 end posts + 1 sloped cross rail per half-flight, central divider (KH_STAIRS_MID_Y).
     # Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
     # they never land on a tread.  Cross rail spans the full stair band between them.
     KH_STAIRS_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
@@ -1383,15 +1445,15 @@ def build():
         half_flight_z = floor_z0 + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
         top_flight_z = half_flight_z + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
 
-        # ── North lane — south face (wst_midY) ────────────────────────────────
+        # ── North lane — south face (KH_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: east of stair band, in the entrance area
         BRUSHES.append(
             box(
                 stair_x2,
-                wst_midY,
+                KH_STAIRS_MID_Y,
                 floor_z0,
                 stair_x2 + KH_STAIRS_POST_W,
-                wst_midY + KH_STAIRS_POST_W,
+                KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
                 floor_z0 + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
@@ -1400,10 +1462,10 @@ def build():
         BRUSHES.append(
             box(
                 stair_x1 - KH_STAIRS_POST_W,
-                wst_midY,
+                KH_STAIRS_MID_Y,
                 half_flight_z,
                 stair_x1,
-                wst_midY + KH_STAIRS_POST_W,
+                KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
                 half_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
@@ -1413,8 +1475,8 @@ def build():
             ramp_slab(
                 stair_x1,
                 stair_x2,
-                wst_midY,
-                wst_midY + KH_STAIRS_RAIL_T,
+                KH_STAIRS_MID_Y,
+                KH_STAIRS_MID_Y + KH_STAIRS_RAIL_T,
                 half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 floor_z0 + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 half_flight_z + KH_STAIRS_RAIL_H,
@@ -1423,15 +1485,15 @@ def build():
             )
         )
 
-        # ── South lane — north face (wst_midY) ────────────────────────────────
+        # ── South lane — north face (KH_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: west of stair band, on the west platform
         BRUSHES.append(
             box(
                 stair_x1 - KH_STAIRS_POST_W,
-                wst_midY - KH_STAIRS_POST_W,
+                KH_STAIRS_MID_Y - KH_STAIRS_POST_W,
                 half_flight_z,
                 stair_x1,
-                wst_midY,
+                KH_STAIRS_MID_Y,
                 half_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
@@ -1440,10 +1502,10 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                wst_midY - KH_STAIRS_POST_W,
+                KH_STAIRS_MID_Y - KH_STAIRS_POST_W,
                 top_flight_z,
                 stair_x2 + KH_STAIRS_POST_W,
-                wst_midY,
+                KH_STAIRS_MID_Y,
                 top_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
@@ -1453,8 +1515,8 @@ def build():
             ramp_slab(
                 stair_x1,
                 stair_x2,
-                wst_midY - KH_STAIRS_RAIL_T,
-                wst_midY,
+                KH_STAIRS_MID_Y - KH_STAIRS_RAIL_T,
+                KH_STAIRS_MID_Y,
                 half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 top_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 half_flight_z + KH_STAIRS_RAIL_H,
@@ -1464,12 +1526,12 @@ def build():
         )
 
     # Partition Y splits vary per floor so each floor has different room proportions.
-    room_splits = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
+    KH_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
 
     wx1, wx2 = bix1, KH_ENT_X1 - KH_WALL  # west room X extents (1282..1506)
     ex1, ex2 = KH_ENT_X2 + KH_WALL, bix2  # east room X extents (1666..1890)
-    wxc = (wx1 + wx2) // 2  # west room X center = 1394
-    exc = (ex1 + ex2) // 2  # east room X center = 1778
+    KH_WEST_ROOM_CX = (wx1 + wx2) // 2  # west room X center = 1394
+    KH_EAST_ROOM_CX = (ex1 + ex2) // 2  # east room X center = 1778
 
     # Collect door openings in hallway walls across all floors
     w_hall_openings = [
@@ -1480,9 +1542,9 @@ def build():
     for floor_index in range(KH_FLOORS):
         fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
         fz_surf = fz1 + KH_WALL  # top of floor slab
-        split = room_splits[floor_index]
-        sr_yc = (biy1 + split) // 2  # south room Y center
-        nr_yc = (split + KH_WALL + biy2) // 2  # north room Y center
+        split = KH_ROOM_SPLITS[floor_index]
+        sr_yc = (KH_BIY1 + split) // 2  # south room Y center
+        nr_yc = (split + KH_WALL + KH_BIY2) // 2  # north room Y center
         dz2 = fz_surf + 96  # door top
         w_hall_openings += [
             (sr_yc - 32, fz_surf, sr_yc + 32, dz2),
@@ -1496,10 +1558,10 @@ def build():
     # West hallway wall with room door openings
     BRUSHES.extend(
         layered_wall_y(
-            biy1,
+            KH_BIY1,
             KH_ENT_X1 - KH_WALL,
             KH_GROUND_Z,
-            biy2,
+            KH_BIY2,
             KH_ENT_X1,
             KH_Z2,
             w_hall_openings,
@@ -1509,10 +1571,10 @@ def build():
     # East hallway wall with room door openings + shaft opening
     BRUSHES.extend(
         layered_wall_y(
-            biy1,
+            KH_BIY1,
             KH_ENT_X2,
             KH_GROUND_Z,
-            biy2,
+            KH_BIY2,
             KH_ENT_X2 + KH_WALL,
             KH_Z2,
             e_hall_openings,
@@ -1525,7 +1587,7 @@ def build():
         fz1 = KH_GROUND_Z + fl * KH_FLOOR_H
         fz2 = fz1 + KH_FLOOR_H
         fz_surf = fz1 + KH_WALL
-        split = room_splits[fl]
+        split = KH_ROOM_SPLITS[fl]
         sp_y2 = split + KH_WALL
         pdz2 = fz_surf + 96
         # West side partition wall with connecting door
@@ -1537,7 +1599,7 @@ def build():
                 wx2,
                 sp_y2,
                 fz2,
-                [(wxc - 32, fz_surf, wxc + 32, pdz2)],
+                [(KH_WEST_ROOM_CX - 32, fz_surf, KH_WEST_ROOM_CX + 32, pdz2)],
                 TEX_WALL,
             )
         )
@@ -1550,7 +1612,7 @@ def build():
                 ex2,
                 sp_y2,
                 fz2,
-                [(exc - 32, fz_surf, exc + 32, pdz2)],
+                [(KH_EAST_ROOM_CX - 32, fz_surf, KH_EAST_ROOM_CX + 32, pdz2)],
                 TEX_WALL,
             )
         )
@@ -1692,9 +1754,9 @@ def build():
         2158,
         1246,
     ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
-    lamp_post_ys = [EP_Y - EP_HW - 160]
+    CS_LAMP_POST_YS = [EP_Y - EP_HW - 160]
     for lamp_x in CS_LAMP_POST_XS:
-        for lamp_y in lamp_post_ys:
+        for lamp_y in CS_LAMP_POST_YS:
             pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
             # Narrow shaft
             BRUSHES.append(
