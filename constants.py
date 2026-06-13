@@ -6,13 +6,13 @@ import math
 #   ARCH_        pedestrian bridge arch profile dimensions (rin, rout, stilt, slab)
 #   CS_          Charles Street (the N-S road running under the bridge)
 #   DRAW_        boolean feature-flag (enables/disables a drawn element)
-#   EAST_        geometry on the east approach of the bridge span
+#   PB_EAST_        geometry on the east approach of the bridge span
 #   EP_          Ennis Place / Ennis Drive entrance (pillars, boundary wall, curbs)
 #   FENCE_       iron fence (pickets, rails, spacing)
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
 #   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
-#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths)
+#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths, east approach)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
@@ -55,7 +55,6 @@ CS_WALK_H = 8
 CS_WALK_W = 80
 CS_CRN_R = CS_WALK_W
 DRAW_KH_FASCIA_TEXT = True
-EAST_SPAN_ANGLE = 12.0
 EP_CURB_W = 8
 EP_HW = 160
 EP_PIL_BELL2_H = 27
@@ -179,6 +178,7 @@ CS_LAMP_POST_H = PB_DZ2 - 32
 KH_GROUND_Z = max(FLOOR_Z2, PB_DZ2 - KH_FLOOR_H - KH_WALL)
 KH_BR_ZT_S = KH_GROUND_Z
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
+PB_EAST_SPAN_ANGLE = 12.0
 PB_PAR_H = 40
 PB_PIL_BASE_CAP_H = 6
 PB_PIL_BASE_CAP_OVH = 5
@@ -404,7 +404,7 @@ east_ground_x2 = WORLD_X2 - WALL_T - east_ground_buffer
 east_ground_y1 = bw_ny + EP_WALL_T + 200
 east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 east_shift_end = -((WORLD_X2 - WALL_T) - PB_ARCH_X[4]) * math.tan(
-    math.radians(EAST_SPAN_ANGLE)
+    math.radians(PB_EAST_SPAN_ANGLE)
 )
 east_shift_start = 0.0
 elx1 = WORLD_X2 - WALL_T - ARCH_SLAB_W

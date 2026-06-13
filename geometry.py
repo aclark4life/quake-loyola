@@ -1,6 +1,6 @@
 import math
 from constants import (
-    EAST_SPAN_ANGLE,
+    PB_EAST_SPAN_ANGLE,
     KH_FLOOR_H,
     PB_ARCH_X,
     RH_WIN_H,
@@ -53,7 +53,7 @@ def east_y_shift(x):
     pivot = PB_ARCH_X[4]
     if x <= pivot:
         return 0.0
-    return -(x - pivot) * math.tan(math.radians(EAST_SPAN_ANGLE))
+    return -(x - pivot) * math.tan(math.radians(PB_EAST_SPAN_ANGLE))
 
 
 def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
