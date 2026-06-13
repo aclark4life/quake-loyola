@@ -15,7 +15,7 @@ import math
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
 #   SHOW_        boolean feature-flag (shows/hides a map element)
-#   TEX_         texture name string
+#   Textures     texture name palette (class — Textures.BRICK, Textures.ROAD, …)
 #   WALK_        walkway connecting the bridge east end to Knott Hall 2nd floor
 #   WALL_        structural wall thickness (generic)
 #   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
@@ -243,21 +243,26 @@ ENNIS_X1 = ROAD_X1
 ROAD_Z = FLOOR_Z2 + 8
 SCALE = 15.108
 SHOW_SUPPORTS = True
-TEX_BRICK = "bricka2_1"
-TEX_CEMENT = "sfloor3_2"
-TEX_DIVIDER = "sfloor3_2"
-TEX_FLOOR = "sfloor3_2"
-TEX_FLOOR_KH = "sfloor3_2"
-TEX_GROUND = "ground1_1"
-TEX_PILLAR = "city2_7"
-TEX_RAIL = "metal5_4"
-TEX_ROAD = "azfloor1_1"
-TEX_ROOF = "wgrnd1_5"
-TEX_SKY = "sky1"
-TEX_STONE = "sfloor3_2"
-TEX_TELEPORT = "*teleport"
-TEX_WALL = "city2_7"
-TEX_WHITE_STONE = "sfloor3_2"
+
+
+class Textures:
+    BRICK = "bricka2_1"
+    CEMENT = "sfloor3_2"
+    DIVIDER = "sfloor3_2"
+    FLOOR = "sfloor3_2"
+    FLOOR_KH = "sfloor3_2"
+    GROUND = "ground1_1"
+    PILLAR = "city2_7"
+    RAIL = "metal5_4"
+    ROAD = "azfloor1_1"
+    ROOF = "wgrnd1_5"
+    SKY = "sky1"
+    STONE = "sfloor3_2"
+    TELEPORT = "*teleport"
+    WALL = "city2_7"
+    WHITE_STONE = "sfloor3_2"
+
+
 WALK_X1 = KH_ORIG_CX - 64
 WALK_X2 = KH_ORIG_CX + 64
 WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from constants import TEX_SKY
+from constants import Textures
 from mapdata import MapBuilder
 
 import streets
@@ -11,7 +11,7 @@ import entities
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad",
     "message": "Loyola Bridge & Knott Hall",
-    "sky": TEX_SKY,
+    "sky": Textures.SKY,
     "ambient": "60",
     "_sunlight": "220",
     "_sunlight_color": "255 245 210",

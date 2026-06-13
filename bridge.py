@@ -40,14 +40,7 @@ from constants import (
     BRIDGE_SEG_SPAN_W,
     BRIDGE_SEG_W,
     SHOW_SUPPORTS,
-    TEX_BRICK,
-    TEX_CEMENT,
-    TEX_FLOOR,
-    TEX_GROUND,
-    TEX_PILLAR,
-    TEX_RAIL,
-    TEX_TELEPORT,
-    TEX_WALL,
+    Textures,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -91,7 +84,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y2,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     BRUSHES.append(
@@ -104,7 +97,7 @@ def build():
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
             BRIDGE_EAST_SHIFT_END,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )  # North east
     # South east — gaps at WALK_X1..WALK_X2 and east_walk_x1..east_walk_x2 for walkway/accessible-walkway connections
@@ -117,7 +110,7 @@ def build():
             WALK_X1,
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # East piece (WALK_X2→world wall): straight to pier, then angled
@@ -129,7 +122,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     BRUSHES.append(
@@ -142,7 +135,7 @@ def build():
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
             BRIDGE_EAST_SHIFT_END,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -165,7 +158,7 @@ def build():
                 pb2,
                 pt1,
                 pt2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # South parapet — omit any segment that overlaps the walkway gap (X=WALK_X1..WALK_X2)
@@ -180,7 +173,7 @@ def build():
                     pb2,
                     pt1,
                     pt2,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
 
@@ -232,7 +225,7 @@ def build():
                     cx + BRIDGE_BLK_HW,
                     BRIDGE_Y2 + BRIDGE_BLK_OVH + sy,
                     bz + BRIDGE_BLK_H,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
         for k in range(n_s):
@@ -251,7 +244,7 @@ def build():
                         cx + BRIDGE_BLK_HW,
                         BRIDGE_Y1 + BRIDGE_PAR_W + sy,
                         bz + BRIDGE_BLK_H,
-                        TEX_CEMENT,
+                        Textures.CEMENT,
                     )
                 )
 
@@ -311,7 +304,7 @@ def build():
                     cx + BRIDGE_SQ_HW,
                     BRIDGE_Y2 + BRIDGE_SQ_D + sy,
                     bz + BRIDGE_SQ_HH,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
         for k in range(n_s):
@@ -331,7 +324,7 @@ def build():
                         cx + BRIDGE_SQ_HW,
                         BRIDGE_Y1 + sy,
                         bz + BRIDGE_SQ_HH,
-                        TEX_RAIL,
+                        Textures.RAIL,
                     )
                 )
 
@@ -357,7 +350,7 @@ def build():
             cx_walk_e + BRIDGE_BLK_HW,
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H + BRIDGE_BLK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Extra block on west side of walkway opening (east face flush with WALK_X1)
@@ -370,7 +363,7 @@ def build():
             cx_walk_w + BRIDGE_BLK_HW,
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H + BRIDGE_BLK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -399,7 +392,7 @@ def build():
                     tube_z2,
                     tube_z1 + BRIDGE_TUBE_HW * 2,
                     tube_z2 + BRIDGE_TUBE_HW * 2,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
             if not (span_x1 < WALK_X2 and span_x2 > WALK_X1):
@@ -413,7 +406,7 @@ def build():
                         tube_z2,
                         tube_z1 + BRIDGE_TUBE_HW * 2,
                         tube_z2 + BRIDGE_TUBE_HW * 2,
-                        TEX_RAIL,
+                        Textures.RAIL,
                     )
                 )
         # East flat section — straight BRIDGE_X2→pier, angled pier→world wall
@@ -428,7 +421,7 @@ def build():
                 BRIDGE_EAST_PIVOT_X,
                 tube_ny2,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         BRUSHES.append(
@@ -441,7 +434,7 @@ def build():
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 BRIDGE_EAST_SHIFT_START,
                 BRIDGE_EAST_SHIFT_END,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # South tube west piece (BRIDGE_X2→WALK_X1): before pier, straight
@@ -453,7 +446,7 @@ def build():
                 WALK_X1,
                 tube_sy2,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # South tube east piece (WALK_X2→world wall): straight to pier, then angled
@@ -465,7 +458,7 @@ def build():
                 BRIDGE_EAST_PIVOT_X,
                 tube_sy2,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         BRUSHES.append(
@@ -478,7 +471,7 @@ def build():
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 BRIDGE_EAST_SHIFT_START,
                 BRIDGE_EAST_SHIFT_END,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
 
@@ -561,7 +554,7 @@ def build():
                         FLOOR_Z2,
                         pier_ceiling_z,
                         a_rin,
-                        TEX_PILLAR,
+                        Textures.PILLAR,
                         overhang=sq_overhang,
                         base_h=BRIDGE_PIL_BASE_H,
                     )
@@ -578,7 +571,7 @@ def build():
                         a_rin,
                         a_rout,
                         A_SEGS,
-                        TEX_PILLAR,
+                        Textures.PILLAR,
                         stilt_h=a_stilt,
                         overhang=arch_overhang,
                         base_h=BRIDGE_PIL_BASE_H,
@@ -586,7 +579,7 @@ def build():
                         base_cap_h=0
                         if px == min(BRIDGE_ARCH_X)
                         else BRIDGE_PIL_BASE_CAP_H,
-                        base_cap_tex=TEX_CEMENT,
+                        base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PIL_BASE_CAP_OVH,
                     )
                 )
@@ -604,7 +597,7 @@ def build():
                     px + BRIDGE_PIL_HW,
                     pier_outer_y,
                     ppil,
-                    TEX_PILLAR,
+                    Textures.PILLAR,
                 )
             )
 
@@ -617,17 +610,19 @@ def build():
                     px + BRIDGE_PIL_HW,
                     BRIDGE_Y1 + BRIDGE_PAR_W + BRIDGE_PIL_OVERHANG,
                     ppil,
-                    TEX_PILLAR,
+                    Textures.PILLAR,
                 )
             )
 
             # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - 16
             BRUSHES.append(
-                box(x1, BRIDGE_Y2, pier_top_z, x2, pier_outer_y, pdeck, TEX_PILLAR)
+                box(x1, BRIDGE_Y2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
             )  # north
             BRUSHES.append(
-                box(x1, -pier_outer_y, pier_top_z, x2, BRIDGE_Y1, pdeck, TEX_PILLAR)
+                box(
+                    x1, -pier_outer_y, pier_top_z, x2, BRIDGE_Y1, pdeck, Textures.PILLAR
+                )
             )  # south
 
             # Cement cap slab + pyramid on top of each stone pillar post
@@ -646,10 +641,26 @@ def build():
             )  # inward past pillar post
             # Cap slabs (flat cement base)
             BRUSHES.append(
-                box(cap_x1, north_cap_y1, ppil, cap_x2, north_cap_y2, pcap, TEX_CEMENT)
+                box(
+                    cap_x1,
+                    north_cap_y1,
+                    ppil,
+                    cap_x2,
+                    north_cap_y2,
+                    pcap,
+                    Textures.CEMENT,
+                )
             )
             BRUSHES.append(
-                box(cap_x1, south_cap_y1, ppil, cap_x2, south_cap_y2, pcap, TEX_CEMENT)
+                box(
+                    cap_x1,
+                    south_cap_y1,
+                    ppil,
+                    cap_x2,
+                    south_cap_y2,
+                    pcap,
+                    Textures.CEMENT,
+                )
             )
             # Pyramids on top of cap slabs
             BRUSHES.append(
@@ -660,7 +671,7 @@ def build():
                     cap_x2,
                     north_cap_y2,
                     pcap + BRIDGE_PIL_PYR_H,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
             BRUSHES.append(
@@ -671,7 +682,7 @@ def build():
                     cap_x2,
                     south_cap_y2,
                     pcap + BRIDGE_PIL_PYR_H,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
             # Torch bases above pyramid apex — narrow post + wide cup
@@ -686,7 +697,7 @@ def build():
                         px + 3,
                         torch_center_y + 3,
                         pyramid_apex_z + 16,
-                        TEX_CEMENT,
+                        Textures.CEMENT,
                     )
                 )
                 # Wider brick cup/bracket at top holds the flame
@@ -698,7 +709,7 @@ def build():
                         px + 5,
                         torch_center_y + 5,
                         pyramid_apex_z + 20,
-                        TEX_BRICK,
+                        Textures.BRICK,
                     )
                 )
 
@@ -713,7 +724,7 @@ def build():
                         x2,
                         a_rin,
                         int(pdeck) - 16,
-                        TEX_CEMENT,
+                        Textures.CEMENT,
                     )
                 )
                 # Arch-shaped teleport flush with the west face (recessed into pier)
@@ -725,7 +736,7 @@ def build():
                     FLOOR_Z2,
                     a_rin,
                     A_SEGS,
-                    TEX_TELEPORT,
+                    Textures.TELEPORT,
                     stilt_h=teleport_stilt_height,
                 )
                 abutment_teleport_dest_z = int(pdeck) + 40  # spawn height above deck
@@ -755,7 +766,7 @@ def build():
                 arch_x2,
                 BRIDGE_Y1 + arch_post_width + arch_center_y,
                 arch_spring_z,
-                TEX_PILLAR,
+                Textures.PILLAR,
             )
         )
         # North post (extends to ground floor, with overhang)
@@ -767,7 +778,7 @@ def build():
                 arch_x2,
                 BRIDGE_Y2 + BRIDGE_PIL_OVERHANG + arch_center_y,
                 arch_spring_z,
-                TEX_PILLAR,
+                Textures.PILLAR,
             )
         )
         # Arch ring segments (rounded top, with overhang)
@@ -783,7 +794,7 @@ def build():
                     ARCH_ROUT + BRIDGE_PIL_OVERHANG,
                     i * arch_segment_angle,
                     (i + 1) * arch_segment_angle,
-                    TEX_PILLAR,
+                    Textures.PILLAR,
                 )
             )
 
@@ -804,8 +815,8 @@ def build():
                 wk_zb2,
                 WALK_ZT1,
                 WALK_ZT2,
-                TEX_CEMENT,
-                tt=TEX_FLOOR,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
             )
         )
         # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
@@ -820,7 +831,7 @@ def build():
                 wk_zb2,
                 WALK_ZT1 + BRIDGE_PAR_H,
                 WALK_ZT2 + BRIDGE_PAR_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         BRUSHES.append(
@@ -833,7 +844,7 @@ def build():
                 wk_zb2,
                 WALK_ZT1 + BRIDGE_PAR_H,
                 WALK_ZT2 + BRIDGE_PAR_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # Handrail tubes along walkway sides, centred in the wall thickness
@@ -848,7 +859,7 @@ def build():
                     WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
                     BRIDGE_Y1,
                     tube_base_z + BRIDGE_TUBE_HW * 2,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
             BRUSHES.append(
@@ -859,7 +870,7 @@ def build():
                     WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
                     BRIDGE_Y1,
                     tube_base_z + BRIDGE_TUBE_HW * 2,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
 
@@ -906,8 +917,8 @@ def build():
                 FLOOR_Z1,
                 extension_terrain_z_west,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
-                tt=TEX_FLOOR,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
             )
         )
 
@@ -938,7 +949,7 @@ def build():
                 beam_x2,
                 support_y2,
                 beam_top_z,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
@@ -961,7 +972,7 @@ def build():
                     pier_x + support_pier_half_width,
                     support_y2,
                     beam_bottom_z,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
 
@@ -985,7 +996,15 @@ def build():
             (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
         ]:
             BRUSHES.append(
-                box(fill_x1, fill_y1, FLOOR_Z2, fill_x2, fill_y2, KH_GROUND_Z, TEX_WALL)
+                box(
+                    fill_x1,
+                    fill_y1,
+                    FLOOR_Z2,
+                    fill_x2,
+                    fill_y2,
+                    KH_GROUND_Z,
+                    Textures.WALL,
+                )
             )
         # NW indent floor — flush with exterior ground
         BRUSHES.append(
@@ -996,7 +1015,7 @@ def build():
                 KH_X1 + 2 * INDENT,
                 KH_Y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # (No flat east fill — the back road section provides its own sloped fill there)
@@ -1012,7 +1031,7 @@ def build():
                 FLOOR_Z1,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 KH_GROUND_Z,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # Flat ground from ramp north edge to building face (west of KH_X1)
@@ -1024,7 +1043,7 @@ def build():
                 west_ramp_x2,
                 KH_Y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # South terrain fill — flat ground at building level behind south wall to east world edge
@@ -1036,7 +1055,7 @@ def build():
                 WORLD_X2 - WALL_T,
                 KH_Y1,
                 KH_GROUND_Z,
-                TEX_WALL,
+                Textures.WALL,
             )
         )
         # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
@@ -1062,7 +1081,7 @@ def build():
                 segment1_split_x,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # East section of seg1 (NW indent → entrance) — slopes from KH_GROUND_Z at KH face to
@@ -1077,7 +1096,7 @@ def build():
                 FLOOR_Z1,
                 KH_GROUND_Z,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # Seg2 (east of entrance to NE indent)
@@ -1108,7 +1127,7 @@ def build():
                 FLOOR_Z1,
                 KH_GROUND_Z,
                 terrain_z_at(east_walk_ext_y1_val),
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=extension_terrain_z_west)
@@ -1120,8 +1139,8 @@ def build():
                 east_ramp_x2,
                 east_walk_ext_y2_val,
                 extension_terrain_z_west,
-                TEX_CEMENT,
-                tt=TEX_FLOOR,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
             )
         )
         # North section (Y=328..504): sloped terrain continues
@@ -1135,7 +1154,7 @@ def build():
                 FLOOR_Z1,
                 terrain_z_at(east_walk_ext_y2_val),
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # NE indent ground — south of ramp (Y=-160..264): full ground, no cement needed
@@ -1147,7 +1166,7 @@ def build():
                 KH_BR_CORRIDOR_X1,
                 east_walk_ext_y1_val,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # North of E-W extension (restore ground fully)
@@ -1159,7 +1178,7 @@ def build():
                 KH_BR_CORRIDOR_X1,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # Seg3 (east of back-road corridor to world wall) — beyond Pier 5, stays at sidewalk height
@@ -1171,7 +1190,7 @@ def build():
                 WORLD_X2 - WALL_T,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_GROUND,
+                Textures.GROUND,
             )
         )
         # East of entrance: flat platform at walkway level + steps going east down to ground
@@ -1193,7 +1212,7 @@ def build():
                 east_steps_x1,
                 KH_Y2 + east_platform_depth,
                 KH_GROUND_Z,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # Steps going east (downhill in X), flush with KH east wall
@@ -1209,7 +1228,7 @@ def build():
                     step_x2,
                     KH_Y2 + east_platform_depth,
                     step_z,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
         # Small cement connector — bridges step bottom to back road west sidewalk (32 units wide)
@@ -1221,7 +1240,7 @@ def build():
                 KH_X2 + CHARLES_WALK_W,
                 KH_Y2 + east_platform_depth,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
     if "abutment_teleport_brush" in locals():

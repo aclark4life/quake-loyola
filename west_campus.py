@@ -23,11 +23,7 @@ from constants import (
     RH_X2,
     BRIDGE_SEG_SPAN_W,
     BRIDGE_SEG_W,
-    TEX_FLOOR,
-    TEX_GROUND,
-    TEX_ROAD,
-    TEX_ROOF,
-    TEX_STONE,
+    Textures,
     WALL_T,
     WORLD_X2,
     dbot,
@@ -185,7 +181,7 @@ def build():
             RH_EAVE_Z,
             RH_EAVE_Z + RH_SLAB_T,
             RH_RIDGE_Z,
-            TEX_ROOF,
+            Textures.ROOF,
         )
     )
     # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
@@ -199,7 +195,7 @@ def build():
             RH_EAVE_Z,
             RH_RIDGE_Z,
             RH_EAVE_Z + RH_SLAB_T,
-            TEX_ROOF,
+            Textures.ROOF,
         )
     )
     # Interior floor — flat ground surface inside the building (covers the hill void)
@@ -211,8 +207,8 @@ def build():
             RH_X2 - RH_WALL,
             RH_NORTH_Y2 - RH_WALL,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_ROAD,
+            Textures.GROUND,
+            tt=Textures.ROAD,
         )
     )
 
@@ -264,8 +260,8 @@ def build():
                 bx2 - RH_WALL,
                 by2 - RH_WALL,
                 FLOOR_Z2,
-                TEX_GROUND,
-                tt=TEX_ROAD,
+                Textures.GROUND,
+                tt=Textures.ROAD,
             )
         )
         brushes.extend(
@@ -336,12 +332,28 @@ def build():
         )
         brushes.append(
             ramp_slab(
-                bx1, cx, by1, by2, eave_z, eave_z, eave_z + slab_t, ridge_z, TEX_ROOF
+                bx1,
+                cx,
+                by1,
+                by2,
+                eave_z,
+                eave_z,
+                eave_z + slab_t,
+                ridge_z,
+                Textures.ROOF,
             )
         )
         brushes.append(
             ramp_slab(
-                cx, bx2, by1, by2, eave_z, eave_z, ridge_z, eave_z + slab_t, TEX_ROOF
+                cx,
+                bx2,
+                by1,
+                by2,
+                eave_z,
+                eave_z,
+                ridge_z,
+                eave_z + slab_t,
+                Textures.ROOF,
             )
         )
         return brushes
@@ -405,9 +417,9 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y2,
             BRIDGE_DZ2,
-            TEX_STONE,
-            tt=TEX_FLOOR,
-            tb=TEX_FLOOR,
+            Textures.STONE,
+            tt=Textures.FLOOR,
+            tb=Textures.FLOOR,
         )
     )
     # Angled section: easternmost pier → east world wall
@@ -421,9 +433,9 @@ def build():
             BRIDGE_DZ2,
             BRIDGE_EAST_SHIFT_START,
             BRIDGE_EAST_SHIFT_END,
-            TEX_STONE,
-            tt=TEX_FLOOR,
-            tb=TEX_FLOOR,
+            Textures.STONE,
+            tt=Textures.FLOOR,
+            tb=Textures.FLOOR,
         )
     )
 
@@ -440,9 +452,9 @@ def build():
                 dbot(sx2),
                 dtop(sx1),
                 dtop(sx2),
-                TEX_STONE,
-                tt=TEX_FLOOR,
-                tb=TEX_FLOOR,
+                Textures.STONE,
+                tt=Textures.FLOOR,
+                tb=Textures.FLOOR,
             )
         )
     return BRUSHES, ENTITIES

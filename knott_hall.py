@@ -27,15 +27,7 @@ from constants import (
     BRIDGE_PAR_H,
     BRIDGE_Y1,
     BRIDGE_Y2,
-    TEX_BRICK,
-    TEX_CEMENT,
-    TEX_FLOOR_KH,
-    TEX_GROUND,
-    TEX_PILLAR,
-    TEX_RAIL,
-    TEX_ROAD,
-    TEX_STONE,
-    TEX_WALL,
+    Textures,
     WALK_ZT2,
     WALL_T,
     WORLD_X1,
@@ -99,8 +91,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S + 2,
             KH_BR_ZT_N + 2,
-            TEX_ROAD,
-            tt=TEX_ROAD,
+            Textures.ROAD,
+            tt=Textures.ROAD,
         )
     )
     # Road fill — solid ground under road surface
@@ -114,8 +106,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S,
             KH_BR_ZT_N,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
 
@@ -130,8 +122,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S + CHARLES_WALK_H,
             KH_BR_ZT_N + CHARLES_WALK_H,
-            TEX_CEMENT,
-            tt=TEX_CEMENT,
+            Textures.CEMENT,
+            tt=Textures.CEMENT,
         )
     )
     # West sidewalk fill
@@ -145,8 +137,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S,
             KH_BR_ZT_N,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
 
@@ -161,8 +153,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S + CHARLES_WALK_H,
             KH_BR_ZT_N + CHARLES_WALK_H,
-            TEX_CEMENT,
-            tt=TEX_CEMENT,
+            Textures.CEMENT,
+            tt=Textures.CEMENT,
         )
     )
     # East sidewalk fill
@@ -176,8 +168,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S,
             KH_BR_ZT_N,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
 
@@ -191,7 +183,7 @@ def build():
             WORLD_X2 - WALL_T,
             KH_BR_Y1,
             KH_BR_ZT_S + CHARLES_WALK_H,
-            TEX_GROUND,
+            Textures.GROUND,
         )
     )
     # Main back road section: slopes with the sidewalk (88 at south → 8 at north)
@@ -205,8 +197,8 @@ def build():
             FLOOR_Z1,
             KH_BR_ZT_S + CHARLES_WALK_H,
             KH_BR_ZT_N + CHARLES_WALK_H,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
 
@@ -219,7 +211,7 @@ def build():
             KH_BR_ES_X1,
             KH_BR_Y1,
             KH_BR_ZT_S + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     BRUSHES.append(
@@ -230,7 +222,7 @@ def build():
             KH_BR_ES_X2,
             KH_BR_Y1,
             KH_BR_ZT_S + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -247,7 +239,7 @@ def build():
             KH_BR_RD_X2,
             KH_BR_EXT_Y2,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     # West sidewalk
@@ -259,7 +251,7 @@ def build():
             KH_BR_WS_X2,
             KH_BR_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # East sidewalk
@@ -271,7 +263,7 @@ def build():
             KH_BR_ES_X2,
             KH_BR_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Terrain east of east sidewalk — flush with sidewalk top
@@ -283,7 +275,7 @@ def build():
             WORLD_X2 - WALL_T,
             KH_BR_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_GROUND,
+            Textures.GROUND,
         )
     )
 
@@ -297,7 +289,7 @@ def build():
             KH_BR_RD_X2,
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
 
@@ -315,7 +307,7 @@ def build():
             KH_BR_RD_X1,
             KH_BR_JCY,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     for corner_index in range(KH_BRCS_CRN_SEGS):
@@ -335,7 +327,7 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -349,7 +341,7 @@ def build():
             KH_BR_ES_X2,
             KH_BR_JCY,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     for corner_index in range(KH_BRCS_CRN_SEGS):
@@ -369,7 +361,7 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -396,7 +388,7 @@ def build():
             KH_ENT_X2,
             KH_Y2 + KH_STAIR_OFFSET,
             KH_GROUND_Z,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -417,8 +409,8 @@ def build():
                 KH_ENT_X2,
                 step_north_y,
                 step_top_z,
-                TEX_CEMENT,
-                tt=TEX_CEMENT,
+                Textures.CEMENT,
+                tt=Textures.CEMENT,
             )
         )
 
@@ -431,7 +423,7 @@ def build():
             KH_ENT_X2,
             ENNIS_SW_EDGE,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -453,7 +445,7 @@ def build():
                 FLOOR_Z1,
                 KH_GROUND_Z + cap_raise,
                 stair_base_z + cap_raise,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -563,7 +555,7 @@ def build():
             KH_Y1 + KH_WALL,
             KH_Z2,
             s_wall_openings,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
@@ -584,7 +576,7 @@ def build():
                     KH_Z2,
                 )
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     BRUSHES.append(
@@ -595,7 +587,7 @@ def build():
             KH_X1 + INDENT,
             KH_Y1 + INDENT,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
@@ -616,7 +608,7 @@ def build():
                     KH_Z2,
                 )
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     BRUSHES.append(
@@ -627,7 +619,7 @@ def build():
             KH_X2 - INDENT + KH_WALL,
             KH_Y1 + INDENT,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # South mullions — protrude outward (south, -Y)
@@ -640,7 +632,7 @@ def build():
                 mx + KH_MULLION_W,
                 KH_Y1 + INDENT + KH_MULLION_PRO,
                 KH_Z2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
     for mx in [se_win_cx - WIN_HALF - KH_MULLION_W, se_win_cx + WIN_HALF]:
@@ -652,7 +644,7 @@ def build():
                 mx + KH_MULLION_W,
                 KH_Y1 + INDENT + KH_MULLION_PRO,
                 KH_Z2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
     # Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
@@ -667,7 +659,7 @@ def build():
                     wx + WIN_HALF,
                     KH_Y1 + INDENT + KH_MULLION_PRO,
                     mz + 4,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     # Floor-level mullions — SW and SE south-face windows
@@ -682,7 +674,7 @@ def build():
                     wx + WIN_HALF,
                     KH_Y1 + INDENT + KH_MULLION_PRO,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     # North-West Indentation (Corner Notch)
@@ -706,7 +698,7 @@ def build():
             KH_Y2,
             KH_Z2,
             door_ground + door_upper + win_n,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
 
@@ -735,7 +727,7 @@ def build():
                     KH_Z2,
                 ),
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     BRUSHES.append(
@@ -746,7 +738,7 @@ def build():
             KH_X1 + 2 * INDENT,
             KH_Y2,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
 
@@ -768,7 +760,7 @@ def build():
                     KH_Z2,
                 )
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     BRUSHES.append(
@@ -779,7 +771,7 @@ def build():
             KH_X2 - INDENT + KH_WALL,
             KH_Y2,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
 
@@ -800,7 +792,7 @@ def build():
                 mx + KH_MULLION_W,
                 KH_Y2 - INDENT + KH_WALL,
                 KH_Z2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
     # NE recessed window: mullions just outside the opening so player can fit through
@@ -813,7 +805,7 @@ def build():
                 mx + KH_MULLION_W,
                 KH_Y2 - INDENT + KH_WALL,
                 KH_Z2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
     # Main front wall window win_n: mullions on each side and center post
@@ -828,7 +820,7 @@ def build():
                 mx + KH_MULLION_W,
                 KH_Y2 + KH_MULLION_PRO,
                 KH_Z2,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -850,7 +842,7 @@ def build():
             sign_center_x + sign_half_width,
             KH_Y2 + 6,
             sign_z2,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Letter brushes deferred — render_text_flat defined below
@@ -880,7 +872,7 @@ def build():
                 (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
                 (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # Vertical mullions — protrude 12 units east of wall face
@@ -899,7 +891,7 @@ def build():
                     KH_X2 + ww_protrude,
                     mullion_y + ww_div_w,
                     KH_Z2,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
 
@@ -916,7 +908,7 @@ def build():
                     KH_X2 + ww_protrude,
                     window_center_y + ww_half,
                     mz + 4,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
@@ -931,7 +923,7 @@ def build():
                     KH_X2 + ww_protrude,
                     window_center_y + ww_half,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
 
@@ -949,7 +941,7 @@ def build():
                 (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
                 (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
             ],
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # Vertical mullions — protrude 12 units west of wall face
@@ -969,7 +961,7 @@ def build():
                     KH_X1 + KH_WALL,
                     mullion_y + ww_div_w,
                     KH_Z2,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
 
@@ -985,7 +977,7 @@ def build():
                     KH_X1 + KH_WALL,
                     window_center_y + ww_half,
                     mz + 4,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     # Floor-level mullions — west wall
@@ -1000,7 +992,7 @@ def build():
                     KH_X1 + KH_WALL,
                     window_center_y + ww_half,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
 
@@ -1015,7 +1007,7 @@ def build():
                 win_n_x2,
                 KH_Y2 + KH_MULLION_PRO,
                 mz + 4,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
     # Floor-level mullions — win_n
@@ -1030,7 +1022,7 @@ def build():
                     win_n_x2,
                     KH_Y2 + KH_MULLION_PRO,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     for window_center_x, window_half_width in [
@@ -1048,7 +1040,7 @@ def build():
                     window_center_x + window_half_width,
                     KH_Y2 - INDENT + KH_WALL,
                     mz + 4,
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
     # Floor-level mullions — NW/NE recessed north-face windows
@@ -1067,7 +1059,7 @@ def build():
                     window_center_x + window_half_width,
                     KH_Y2 - INDENT + KH_WALL,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
-                    TEX_RAIL,
+                    Textures.RAIL,
                 )
             )
 
@@ -1080,7 +1072,7 @@ def build():
             KH_STAIRS_X1,
             KH_Y2 - INDENT,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # far-west bulk
     BRUSHES.append(
@@ -1091,7 +1083,7 @@ def build():
             KH_STAIRS_X1,
             KH_Y2,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # far-west north-strip
     BRUSHES.append(
@@ -1102,7 +1094,7 @@ def build():
             KH_STAIRS_X2,
             KH_STAIRS_Y1,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # south of west stairwell
     BRUSHES.append(
@@ -1113,11 +1105,11 @@ def build():
             KH_STAIRS_X2,
             KH_Y2,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # north of west stairwell
     BRUSHES.append(
-        box(KH_STAIRS_X2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(KH_STAIRS_X2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
     )  # between shafts (no indent — interior)
     BRUSHES.append(
         box(
@@ -1127,7 +1119,7 @@ def build():
             KH_X2,
             KH_Y2 - INDENT,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # east bulk
     BRUSHES.append(
@@ -1138,21 +1130,23 @@ def build():
             KH_X2 - INDENT,
             KH_Y2,
             KH_Z2 + KH_WALL,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )  # east north-strip (NE cutout)
     BRUSHES.append(
-        box(stx1, KH_Y1, KH_Z2, stx2, sty1, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(stx1, KH_Y1, KH_Z2, stx2, sty1, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
     )  # south of shaft
     BRUSHES.append(
-        box(stx1, sty2, KH_Z2, stx2, KH_Y2, KH_Z2 + KH_WALL, TEX_FLOOR_KH)
+        box(stx1, sty2, KH_Z2, stx2, KH_Y2, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
     )  # north of shaft (closes roof over north wall above shaft)
 
     # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
     # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
     sz0 = KH_GROUND_Z
     st0 = sz0 + KH_WALL
-    BRUSHES.append(box(KH_X1, KH_Y1, sz0, KH_X2, KH_Y2 - INDENT, st0, TEX_FLOOR_KH))
+    BRUSHES.append(
+        box(KH_X1, KH_Y1, sz0, KH_X2, KH_Y2 - INDENT, st0, Textures.FLOOR_KH)
+    )
     BRUSHES.append(
         box(
             KH_X1 + 2 * INDENT,
@@ -1161,7 +1155,7 @@ def build():
             KH_X2 - INDENT,
             KH_Y2,
             st0,
-            TEX_FLOOR_KH,
+            Textures.FLOOR_KH,
         )
     )
 
@@ -1170,17 +1164,31 @@ def build():
         floor_z2 = floor_z1 + KH_WALL
         # South bulk — full width up to stairwell's south wall
         BRUSHES.append(
-            box(bix1, KH_BIY1, floor_z1, bix2, KH_STAIRS_Y1, floor_z2, TEX_FLOOR_KH)
+            box(
+                bix1, KH_BIY1, floor_z1, bix2, KH_STAIRS_Y1, floor_z2, Textures.FLOOR_KH
+            )
         )
         # Stairwell south extension (KH_STAIRS_Y1..sty1): floor on either side, stairwell open
         BRUSHES.append(
             box(
-                bix1, KH_STAIRS_Y1, floor_z1, KH_STAIRS_X1, sty1, floor_z2, TEX_FLOOR_KH
+                bix1,
+                KH_STAIRS_Y1,
+                floor_z1,
+                KH_STAIRS_X1,
+                sty1,
+                floor_z2,
+                Textures.FLOOR_KH,
             )
         )
         BRUSHES.append(
             box(
-                KH_STAIRS_X2, KH_STAIRS_Y1, floor_z1, bix2, sty1, floor_z2, TEX_FLOOR_KH
+                KH_STAIRS_X2,
+                KH_STAIRS_Y1,
+                floor_z1,
+                bix2,
+                sty1,
+                floor_z2,
+                Textures.FLOOR_KH,
             )
         )
         # North zone (sty1..KH_BIY2): west of stairwell, clipped for NW indentation
@@ -1192,16 +1200,18 @@ def build():
                 KH_STAIRS_X1,
                 KH_Y2 - INDENT,
                 floor_z2,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         )
         # Between west stairwell and east shaft
         BRUSHES.append(
-            box(KH_STAIRS_X2, sty1, floor_z1, stx1, KH_BIY2, floor_z2, TEX_FLOOR_KH)
+            box(
+                KH_STAIRS_X2, sty1, floor_z1, stx1, KH_BIY2, floor_z2, Textures.FLOOR_KH
+            )
         )
         # East of shaft, clipped for NE indentation
         BRUSHES.append(
-            box(stx2, sty1, floor_z1, bix2, KH_Y2 - INDENT, floor_z2, TEX_FLOOR_KH)
+            box(stx2, sty1, floor_z1, bix2, KH_Y2 - INDENT, floor_z2, Textures.FLOOR_KH)
         )
         BRUSHES.append(
             box(
@@ -1211,7 +1221,7 @@ def build():
                 bix2 - INDENT,
                 KH_BIY2,
                 floor_z2,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         )
 
@@ -1232,11 +1242,11 @@ def build():
 
     # Shaft North wall (internal, solid)
     BRUSHES.append(
-        box(stx1, sty2, KH_GROUND_Z, stx2, sty2 + shaft_wall, KH_Z2, TEX_WALL)
+        box(stx1, sty2, KH_GROUND_Z, stx2, sty2 + shaft_wall, KH_Z2, Textures.WALL)
     )
     # Shaft South wall (internal, solid)
     BRUSHES.append(
-        box(stx1, sty1 - shaft_wall, KH_GROUND_Z, stx2, sty1, KH_Z2, TEX_WALL)
+        box(stx1, sty1 - shaft_wall, KH_GROUND_Z, stx2, sty1, KH_Z2, Textures.WALL)
     )
     # Shaft West wall (internal, openings for each floor's door — flush with hallway east wall and shaft interior)
     BRUSHES.extend(
@@ -1248,12 +1258,12 @@ def build():
             stx1,
             KH_Z2,
             shaft_door_openings,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # Shaft East wall (internal)
     BRUSHES.append(
-        box(stx2, sty1, KH_GROUND_Z, stx2 + shaft_wall, sty2, KH_Z2, TEX_WALL)
+        box(stx2, sty1, KH_GROUND_Z, stx2 + shaft_wall, sty2, KH_Z2, Textures.WALL)
     )
 
     # ── West Stairwell Enclosure ──────────────────────────────────────────────────
@@ -1277,7 +1287,7 @@ def build():
             KH_STAIRS_X2,
             KH_STAIRS_Y2 + shaft_wall,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # West stairwell South wall (internal, solid)
@@ -1289,7 +1299,7 @@ def build():
             KH_STAIRS_X2,
             KH_STAIRS_Y1,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # West stairwell East wall (internal, openings for each floor's door — flush both sides)
@@ -1302,7 +1312,7 @@ def build():
             KH_ENT_X1,
             KH_Z2,
             west_shaft_door_openings,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # West stairwell West wall (internal, solid)
@@ -1314,7 +1324,7 @@ def build():
             KH_STAIRS_X1,
             KH_STAIRS_Y2,
             KH_Z2,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
 
@@ -1356,7 +1366,7 @@ def build():
                 KH_STAIRS_X2,
                 KH_STAIRS_Y2,
                 floor_z0,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         )
         # Exit landing — flush with next floor, east of stair band (south lane).
@@ -1368,7 +1378,7 @@ def build():
                 KH_STAIRS_X2,
                 KH_STAIRS_MID_Y,
                 top_flight_z,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         )
 
@@ -1385,8 +1395,8 @@ def build():
                     step_x_east,
                     KH_STAIRS_Y2,
                     step_z1 + KH_STAIRS_STEP_R,
-                    TEX_WALL,
-                    tt=TEX_FLOOR_KH,
+                    Textures.WALL,
+                    tt=Textures.FLOOR_KH,
                 )
             )
 
@@ -1399,7 +1409,7 @@ def build():
                 stair_x1,
                 KH_STAIRS_Y2,
                 half_flight_z,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         )
 
@@ -1416,8 +1426,8 @@ def build():
                     step_x_east,
                     KH_STAIRS_MID_Y,
                     step_z1 + KH_STAIRS_STEP_R,
-                    TEX_WALL,
-                    tt=TEX_FLOOR_KH,
+                    Textures.WALL,
+                    tt=Textures.FLOOR_KH,
                 )
             )
 
@@ -1444,7 +1454,7 @@ def build():
                 stair_x2 + KH_STAIRS_POST_W,
                 KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
                 floor_z0 + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # Upper post: west of stair band, on the west platform
@@ -1456,7 +1466,7 @@ def build():
                 stair_x1,
                 KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
                 half_flight_z + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # Sloped cross rail along center divider (high at west, low at east)
@@ -1470,7 +1480,7 @@ def build():
                 floor_z0 + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 half_flight_z + KH_STAIRS_RAIL_H,
                 floor_z0 + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
 
@@ -1484,7 +1494,7 @@ def build():
                 stair_x1,
                 KH_STAIRS_MID_Y,
                 half_flight_z + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # Upper post: east of stair band, in the entrance area
@@ -1496,7 +1506,7 @@ def build():
                 stair_x2 + KH_STAIRS_POST_W,
                 KH_STAIRS_MID_Y,
                 top_flight_z + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
         # Sloped cross rail along center divider (low at west, high at east)
@@ -1510,7 +1520,7 @@ def build():
                 top_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
                 half_flight_z + KH_STAIRS_RAIL_H,
                 top_flight_z + KH_STAIRS_RAIL_H,
-                TEX_RAIL,
+                Textures.RAIL,
             )
         )
 
@@ -1554,7 +1564,7 @@ def build():
             KH_ENT_X1,
             KH_Z2,
             w_hall_openings,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
     # East hallway wall with room door openings + shaft opening
@@ -1567,7 +1577,7 @@ def build():
             KH_ENT_X2 + KH_WALL,
             KH_Z2,
             e_hall_openings,
-            TEX_WALL,
+            Textures.WALL,
         )
     )
 
@@ -1589,7 +1599,7 @@ def build():
                 sp_y2,
                 fz2,
                 [(KH_WEST_ROOM_CX - 32, fz_surf, KH_WEST_ROOM_CX + 32, pdz2)],
-                TEX_WALL,
+                Textures.WALL,
             )
         )
         # East side partition wall with connecting door
@@ -1602,7 +1612,7 @@ def build():
                 sp_y2,
                 fz2,
                 [(KH_EAST_ROOM_CX - 32, fz_surf, KH_EAST_ROOM_CX + 32, pdz2)],
-                TEX_WALL,
+                Textures.WALL,
             )
         )
 
@@ -1705,7 +1715,7 @@ def build():
             px_w=sign_pixel_width,
             px_h=sign_pixel_height,
             depth=2,
-            tex=TEX_RAIL,
+            tex=Textures.RAIL,
             mirror=True,
         )
     )
@@ -1719,7 +1729,7 @@ def build():
                 px_w=KH_FASCIA_PX_W,
                 px_h=KH_FASCIA_PX_H,
                 depth=1,
-                tex=TEX_RAIL,
+                tex=Textures.RAIL,
             )
             + render_text_fascia(
                 KH_FASCIA_TEXT[::-1],
@@ -1728,7 +1738,7 @@ def build():
                 px_w=KH_FASCIA_PX_W,
                 px_h=KH_FASCIA_PX_H,
                 depth=1,
-                tex=TEX_RAIL,
+                tex=Textures.RAIL,
                 mirror=True,
             )
         )
@@ -1756,7 +1766,7 @@ def build():
                     lamp_x + 2,
                     lamp_y + 2,
                     pole_top_z,
-                    TEX_PILLAR,
+                    Textures.PILLAR,
                 )
             )
             # Torch top — narrow post + brick cup (matches bridge pillar torches)
@@ -1768,7 +1778,7 @@ def build():
                     lamp_x + 3,
                     lamp_y + 3,
                     pole_top_z + 16,
-                    TEX_CEMENT,
+                    Textures.CEMENT,
                 )
             )
             BRUSHES.append(
@@ -1779,7 +1789,7 @@ def build():
                     lamp_x + 5,
                     lamp_y + 5,
                     pole_top_z + 20,
-                    TEX_BRICK,
+                    Textures.BRICK,
                 )
             )
 
@@ -1807,7 +1817,7 @@ def build():
                 CHARLES_ARCH_RIN_PRE,
                 CHARLES_ARCH_ROUT_PRE,
                 A_SEGS,
-                TEX_STONE,
+                Textures.STONE,
                 stilt_h=CHARLES_ARCH_STILT_PRE,
             )
         )
