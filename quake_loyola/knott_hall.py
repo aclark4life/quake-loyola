@@ -1,5 +1,5 @@
 import math
-from constants import (
+from .constants import (
     A_SEGS,
     CHARLES_CRN_SEGS,
     CHARLES_WALK_H,
@@ -35,7 +35,7 @@ from constants import (
     WORLD_Y1,
     dtop,
 )
-from geometry import (
+from .geometry import (
     arch_wall_y,
     box,
     brush_ent,

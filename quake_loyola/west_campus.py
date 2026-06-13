@@ -1,4 +1,4 @@
-from constants import (
+from .constants import (
     CHARLES_Y1,
     CHARLES_Y2,
     FLOOR_Z1,
@@ -29,7 +29,7 @@ from constants import (
     dbot,
     dtop,
 )
-from geometry import (
+from .geometry import (
     box,
     east_y_shift,
     layered_wall,
