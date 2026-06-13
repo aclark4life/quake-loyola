@@ -252,10 +252,10 @@ def make_bush(cx, cy, base_z, size=24):
     return brushes
 
 
-def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
+def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
-    Angles t1d..t2d in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
-    t1, t2 = math.radians(t1d), math.radians(t2d)
+    Angles angle_start_deg..angle_end_deg in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
+    t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
@@ -274,10 +274,10 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     )
 
 
-def arch_pie_seg(xb, xf, yc, zc, rad, t1d, t2d, tex):
+def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Solid pie-slice brush for filling the interior of an arch (no inner hole).
     Used to create func_illusionary teleport glows and solid arch infill."""
-    t1, t2 = math.radians(t1d), math.radians(t2d)
+    t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
@@ -302,22 +302,35 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     seg = 180.0 / segs
     brushes = []
     brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, sprz, tex))
-    for i in range(segs):
+    for seg_index in range(segs):
         brushes.append(
-            arch_pie_seg(x1, x2, yc, float(sprz), rin, i * seg, (i + 1) * seg, tex)
+            arch_pie_seg(
+                x1,
+                x2,
+                yc,
+                float(sprz),
+                rin,
+                seg_index * seg,
+                (seg_index + 1) * seg,
+                tex,
+            )
         )
     return brushes
 
 
-def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
+def arch_seg_y(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (Y-aligned span).
     Derived from arch_seg via XY swap."""
-    return _swap_xy(arch_seg(yb, yf, xc, zc, rin, rout, t1d, t2d, tex))
+    return _swap_xy(
+        arch_seg(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex)
+    )
 
 
-def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
+def arch_pie_seg_y(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Solid pie-slice brush for a Y-aligned arch interior. Derived from arch_pie_seg via XY swap."""
-    return _swap_xy(arch_pie_seg(yb, yf, xc, zc, rad, t1d, t2d, tex))
+    return _swap_xy(
+        arch_pie_seg(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex)
+    )
 
 
 def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
@@ -445,9 +458,19 @@ def arch_wall(
         # North-top corner
         brushes.append(box(x1, h_side, sprz + h_side, x2, rin, sprz + rin, tex))
 
-    for i in range(segs):
+    for seg_index in range(segs):
         brushes.append(
-            arch_seg(x1, x2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
+            arch_seg(
+                x1,
+                x2,
+                0.0,
+                float(sprz),
+                rin,
+                rout,
+                seg_index * seg,
+                (seg_index + 1) * seg,
+                tex,
+            )
         )
     return brushes
 
@@ -466,9 +489,19 @@ def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=N
     #     brushes.append(box(rout, y1, floor_z, x2, y2, ceil_z, tex))
     brushes.append(box(-rout, y1, floor_z, -rin, y2, sprz, tex))
     brushes.append(box(rin, y1, floor_z, rout, y2, sprz, tex))
-    for i in range(segs):
+    for seg_index in range(segs):
         brushes.append(
-            arch_seg_y(y1, y2, 0.0, float(sprz), rin, rout, i * seg, (i + 1) * seg, tex)
+            arch_seg_y(
+                y1,
+                y2,
+                0.0,
+                float(sprz),
+                rin,
+                rout,
+                seg_index * seg,
+                (seg_index + 1) * seg,
+                tex,
+            )
         )
     return brushes
 
@@ -492,10 +525,10 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
     xs = sorted({x1, x2} | {o[0] for o in openings} | {o[2] for o in openings})
     zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
     brushes = []
-    for xi in range(len(xs) - 1):
-        for zi in range(len(zs) - 1):
-            cx1, cx2 = xs[xi], xs[xi + 1]
-            cz1, cz2 = zs[zi], zs[zi + 1]
+    for x_index in range(len(xs) - 1):
+        for z_index in range(len(zs) - 1):
+            cx1, cx2 = xs[x_index], xs[x_index + 1]
+            cz1, cz2 = zs[z_index], zs[z_index + 1]
             covered = any(
                 o[0] <= cx1 and cx2 <= o[2] and o[1] <= cz1 and cz2 <= o[3]
                 for o in openings

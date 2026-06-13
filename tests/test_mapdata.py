@@ -1,22 +1,22 @@
 import unittest
 
-from mapdata import Brush, Entity, Face, MapBuilder, fv, pt
+from mapdata import Brush, Entity, Face, MapBuilder, format_value, format_point
 
 
 class FormattingTests(unittest.TestCase):
-    def test_fv_whole_numbers_render_as_ints(self):
-        self.assertEqual(fv(5), "5")
-        self.assertEqual(fv(5.0), "5")
-        self.assertEqual(fv(-16), "-16")
-        self.assertEqual(fv(0), "0")
+    def test_format_value_whole_numbers_render_as_ints(self):
+        self.assertEqual(format_value(5), "5")
+        self.assertEqual(format_value(5.0), "5")
+        self.assertEqual(format_value(-16), "-16")
+        self.assertEqual(format_value(0), "0")
 
-    def test_fv_fractions_use_six_sig_figs(self):
-        self.assertEqual(fv(2.5), "2.5")
-        self.assertEqual(fv(1.0 / 3.0), "0.333333")
+    def test_format_value_fractions_use_six_sig_figs(self):
+        self.assertEqual(format_value(2.5), "2.5")
+        self.assertEqual(format_value(1.0 / 3.0), "0.333333")
 
-    def test_pt(self):
-        self.assertEqual(pt(1, 2, 3), "( 1 2 3 )")
-        self.assertEqual(pt(-16, 0, 2.5), "( -16 0 2.5 )")
+    def test_format_point(self):
+        self.assertEqual(format_point(1, 2, 3), "( 1 2 3 )")
+        self.assertEqual(format_point(-16, 0, 2.5), "( -16 0 2.5 )")
 
 
 class FaceTests(unittest.TestCase):

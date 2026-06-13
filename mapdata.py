@@ -8,15 +8,15 @@ modules build these objects; generate_map.py assembles them through MapBuilder.
 from dataclasses import dataclass, field
 
 
-def fv(v):
+def format_value(v):
     """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
     f = float(v)
     return str(int(f)) if f == int(f) else f"{f:.6g}"
 
 
-def pt(x, y, z):
+def format_point(x, y, z):
     """Return a Quake map point literal string '( x y z )'."""
-    return f"( {fv(x)} {fv(y)} {fv(z)} )"
+    return f"( {format_value(x)} {format_value(y)} {format_value(z)} )"
 
 
 @dataclass
@@ -30,7 +30,7 @@ class Face:
     params: str = "0 0 0 1 1"
 
     def to_map(self) -> str:
-        return f"{pt(*self.p1)} {pt(*self.p2)} {pt(*self.p3)} {self.tex} {self.params}"
+        return f"{format_point(*self.p1)} {format_point(*self.p2)} {format_point(*self.p3)} {self.tex} {self.params}"
 
     def translated(self, dx, dy, dz):
         """Return a copy shifted by (dx, dy, dz)."""
