@@ -1,7 +1,14 @@
 import unittest
 
-from geometry import box, brush_ent, ent, make_tree, ramp_slab_y, square_wall
-from mapdata import Brush, Entity
+from quake_loyola.geometry import (
+    box,
+    brush_ent,
+    ent,
+    make_tree,
+    ramp_slab_y,
+    square_wall,
+)
+from quake_loyola.mapdata import Brush, Entity
 
 
 class BoxTests(unittest.TestCase):

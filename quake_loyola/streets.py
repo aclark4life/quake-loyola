@@ -1,5 +1,5 @@
 import math
-from constants import (
+from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KH_X2,
@@ -20,7 +20,7 @@ from constants import (
     WORLD_Y2,
     WORLD_Z2,
 )
-from geometry import (
+from .geometry import (
     box,
     brush_ent,
     pyramid,

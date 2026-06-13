@@ -1,10 +1,10 @@
 import math
-from constants import (
+from .constants import (
     BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_ARCH_X,
     Textures,
 )
-from mapdata import Brush, Entity, Face
+from .mapdata import Brush, Entity, Face
 
 
 def _swap_xy(src):

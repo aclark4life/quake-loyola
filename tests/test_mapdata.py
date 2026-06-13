@@ -1,6 +1,13 @@
 import unittest
 
-from mapdata import Brush, Entity, Face, MapBuilder, format_value, format_point
+from quake_loyola.mapdata import (
+    Brush,
+    Entity,
+    Face,
+    MapBuilder,
+    format_value,
+    format_point,
+)
 
 
 class FormattingTests(unittest.TestCase):

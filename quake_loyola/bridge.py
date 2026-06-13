@@ -1,4 +1,4 @@
-from constants import (
+from .constants import (
     A_SEGS,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -55,7 +55,7 @@ from constants import (
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_EAST_SHIFT_START,
 )
-from geometry import (
+from .geometry import (
     arch_fill,
     arch_seg,
     arch_wall,

@@ -1,4 +1,4 @@
-from constants import (
+from .constants import (
     ARCH_RIN,
     ARCH_SLAB_W,
     ARCH_STILT_H,
@@ -102,7 +102,7 @@ from constants import (
     KH_STAIRS_Y2,
     KH_WEST_ROOM_CX,
 )
-from geometry import (
+from .geometry import (
     arch_fill,
     arch_fill_y,
     box,
