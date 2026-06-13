@@ -7,16 +7,7 @@ modules build these objects; generate_map.py assembles them through MapBuilder.
 
 from dataclasses import dataclass, field
 
-
-def format_value(v):
-    """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
-    f = float(v)
-    return str(int(f)) if f == int(f) else f"{f:.6g}"
-
-
-def format_point(x, y, z):
-    """Return a Quake map point literal string '( x y z )'."""
-    return f"( {format_value(x)} {format_value(y)} {format_value(z)} )"
+from .utils import format_point
 
 
 @dataclass
