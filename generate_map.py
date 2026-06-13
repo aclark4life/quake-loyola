@@ -114,12 +114,12 @@ WORLD_Y1, WORLD_Y2 = (
 KH_OFFSET = 90  # eastward shift applied to entire building + walkway (aligns west window with west pier)
 KH_PIER_X = 1246  # fixed pier/arch terminus (independent of building width)
 KH_NE_PIER_X = 2206  # easternmost bridge pier; span 1246→2206 = 960 units = 6×160, 5 even sub-piers
-KH_X1 = KH_PIER_X - 130 + KH_OFFSET  # = 1206
-KH_X2 = KH_NE_PIER_X + 32  # = 2028 (east face = NE pier + original 32-unit gap)
+KH_X1 = KH_PIER_X - 130 + KH_OFFSET
+KH_X2 = KH_NE_PIER_X + 32
 KH_WIDTH = KH_X2 - KH_X1
 KH_CX = (KH_X1 + KH_X2) // 2
 # Entrance, walkway, stairs pinned near east side to keep west bulk dominant
-KH_ORIG_CX = 1740 + KH_OFFSET  # = 1830 (shifted 64 units west from original 1894)
+KH_ORIG_CX = 1740 + KH_OFFSET
 # Arch spans from west world wall to just west of Knott Hall west wall.
 PB_X1 = WORLD_X1 + WALL_T  # west arch terminus at world edge
 PB_X2 = KH_PIER_X  # east arch terminus at west pier
@@ -141,7 +141,7 @@ KH_FLOOR_H = 160  # floor-to-floor height
 KH_FLOORS = 5  # ground floor + 4 upper floors
 INDENT = 80  # corner indentation depth
 # Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
-KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 64
+KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
@@ -1161,7 +1161,7 @@ EP_PIL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
 
 for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
     ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW  # pillar centre X
-    _cap_hw = EP_PIL_HW + EP_PIL_CAP_OVH  # = 40
+    _cap_hw = EP_PIL_HW + EP_PIL_CAP_OVH
 
     # Post
     _base_h = EP_PIL_POST_H // 3  # bottom base = lower third of post
@@ -2834,8 +2834,8 @@ if KH_WALKWAY_ENABLED:
     _beam_h = 20
     _beam_zb = _beam_zt - _beam_h
     # Span between the two bridge arch piers flanking the walkway (east span)
-    _beam_x1 = PB_ARCH_X[3]  # = 1246 (KH_PIER_X)
-    _beam_x2 = PB_ARCH_X[4]  # = 2206
+    _beam_x1 = PB_ARCH_X[3]
+    _beam_x2 = PB_ARCH_X[4]
     # Horizontal crossbeam
     BRUSHES.append(
         box(_beam_x1, _sup_y1, _beam_zb, _beam_x2, _sup_y2, _beam_zt, TEX_CEMENT)
@@ -3070,9 +3070,9 @@ if KH_GROUND_Z > FZ2:
     _ep_x1 = _east_ramp_x1  # KH_ENT_X2
     _ep_x2 = KH_X2
     _ep_n_steps = 4
-    _ep_step_rise = (KH_GROUND_Z - (FZ2 + CS_WALK_H)) // _ep_n_steps  # = 22
+    _ep_step_rise = (KH_GROUND_Z - (FZ2 + CS_WALK_H)) // _ep_n_steps
     _ep_step_depth = 24
-    _ep_steps_w = _ep_n_steps * _ep_step_depth  # = 96
+    _ep_steps_w = _ep_n_steps * _ep_step_depth
     _ep_step_x1 = _ep_x2 - _ep_steps_w  # steps recessed, end flush with east wall
     # Flat platform at KH_GROUND_Z (west of steps)
     BRUSHES.append(
@@ -3283,7 +3283,7 @@ BRUSHES.append(
 
 # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
 KH_BR_EXT_Y1 = KH_BR_Y2  # = -256 (north face of building)
-KH_BR_EXT_Y2 = EP_Y - EP_HW - CS_WALK_W  # = 328 (Ennis south sidewalk edge)
+KH_BR_EXT_Y2 = EP_Y - EP_HW - CS_WALK_W
 
 # Flat road surface
 BRUSHES.append(
@@ -3344,8 +3344,8 @@ BRUSHES.append(
 # Centers at the back-road-facing (south) corners so the curved face points toward
 # the back road — matching the Charles/Ennis corner style.
 # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
-KH_BR_JCX_W = KH_BR_WS_X1  # = 1906 (SW corner of cut square)
-KH_BR_JCY = EP_Y - EP_HW  # = 408 (Ennis south road edge)
+KH_BR_JCX_W = KH_BR_WS_X1
+KH_BR_JCY = EP_Y - EP_HW
 BRUSHES.append(
     box(KH_BR_WS_X1, KH_BR_EXT_Y2, FZ2, KH_BR_RD_X1, KH_BR_JCY, FZ2 + 2, TEX_ROAD)
 )
@@ -3371,7 +3371,7 @@ for _i in range(KH_BRCS_CRN_SEGS):
     )
 
 # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
-KH_BR_JCX_E = KH_BR_ES_X2  # = 2322 (SE corner of cut square)
+KH_BR_JCX_E = KH_BR_ES_X2
 BRUSHES.append(
     box(KH_BR_ES_X1, KH_BR_EXT_Y2, FZ2, KH_BR_ES_X2, KH_BR_JCY, FZ2 + 2, TEX_ROAD)
 )
@@ -3540,7 +3540,7 @@ for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
         )
 
 # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
-stx1, stx2 = KH_ENT_X2 + 16, KH_ENT_X2 + 16 + 128  # = 1516, 1644
+stx1, stx2 = KH_ENT_X2 + 16, KH_ENT_X2 + 16 + 128
 sty1, sty2 = biy2 - 128, biy2  # Y: -400 to -272
 # West stairwell extents defined after INDENT below
 
@@ -3578,7 +3578,7 @@ BRUSHES.extend(
     )
 )
 # SW Indentation inner walls — recessed back wall with centered 48-unit window
-sw_win_cx = KH_X1 + INDENT // 2  # = 1306
+sw_win_cx = KH_X1 + INDENT // 2
 BRUSHES.extend(
     layered_wall(
         KH_X1,
@@ -3610,7 +3610,7 @@ BRUSHES.append(
     )
 )
 # SE Indentation inner walls — recessed back wall with centered 48-unit window
-se_win_cx = KH_X2 - INDENT // 2  # = 1866
+se_win_cx = KH_X2 - INDENT // 2
 BRUSHES.extend(
     layered_wall(
         KH_X2 - INDENT,
@@ -3762,7 +3762,7 @@ BRUSHES.append(
 )
 
 # NE Indentation inner walls (mirror of NW) — recessed back wall has a centered 48-unit window
-ne_win_cx = KH_X2 - INDENT // 2  # = 1866
+ne_win_cx = KH_X2 - INDENT // 2
 BRUSHES.extend(
     layered_wall(
         KH_X2 - INDENT,
@@ -3848,7 +3848,7 @@ for _mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
 _sign_text = "MARION BURK KNOTT HALL"
 _sign_px_w, _sign_px_h = 2, 4
 _sign_char_w = (4 + 1) * _sign_px_w
-_sign_total_w = len(_sign_text) * _sign_char_w - _sign_px_w  # = 436
+_sign_total_w = len(_sign_text) * _sign_char_w - _sign_px_w
 _sign_hw = _sign_total_w // 2 + 4  # 4 unit padding each side = 222
 _sign_cx = KH_X2 - INDENT - _sign_hw  # east edge flush with wall end
 _sign_zb = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
@@ -4708,7 +4708,7 @@ CS_ARCH_ROUT_PRE = 312  # outer radius
 CS_ARCH_STILT_PRE = 96  # stilt height
 CS_ARCH_W_PRE = 48  # arch thickness in Y
 CS_ARCH_WALL_W_PRE = 320  # stone wall width flanking road
-cs_arch_top_pre = FZ2 + CS_ARCH_STILT_PRE + CS_ARCH_RIN_PRE  # = 352
+cs_arch_top_pre = FZ2 + CS_ARCH_STILT_PRE + CS_ARCH_RIN_PRE
 
 for _pre_syb, _pre_syf in [
     (CS_Y1, CS_Y1 + CS_ARCH_W_PRE),
