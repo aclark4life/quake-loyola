@@ -313,7 +313,6 @@ def build():
     FNC_X2 = FNC_X1 + 2  # picket/rail thickness
     FNC_H = 96  # fence height
     FNC_SPACING = 16  # picket center-to-center
-    FNC_RAIL = 8  # rail thickness
     FNC_TEX = "metal4_4"
 
     for fence_y1, fence_y2 in [(CS_Y1, CS_Y2)]:

@@ -1,0 +1,4 @@
+[tool.ruff.lint]
+# F403/F405: star imports from constants.py and geometry.py are intentional —
+# all build modules share those namespaces (script-style, not a library).
+per-file-ignores = { "geometry.py" = ["F403", "F405"], "bridge.py" = ["F403", "F405"], "streets.py" = ["F403", "F405"], "west_campus.py" = ["F403", "F405"], "knott_hall.py" = ["F403", "F405"], "entities.py" = ["F403", "F405"], "generate_map.py" = ["F403", "F405"] }

@@ -45,7 +45,6 @@ def build():
     CS_Y2 = WORLD_Y2 - WALL_T
     CS_WALK_W = 80  # sidewalk width (E-W)
     CS_WALK_H = 8  # sidewalk + curb height above road
-    CS_STRIPE_W = 6  # centre-line stripe half-width
 
     # ── Ennis Road (E-W, parallel to bridge, north side) ──
     # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
@@ -431,7 +430,6 @@ def build():
 
     # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
     EP_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
-    EP_PIL_OFFSET = CS_WALK_W + 20
     EP_PIL_X1 = (
         PB_ARCH_X[2] - EP_PIL_HW
     )  # align pillar centre with closest bridge pier (X=525)
@@ -540,7 +538,6 @@ def build():
     bw_ny = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
     bw_x1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
     bwex2 = PB_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
-    bw_ny2 = bw_ny + 200  # north segment length
     # East-running segment (south base of L)
     BRUSHES.append(
         box(
@@ -991,8 +988,6 @@ def build():
             (pillar_x, pillar_center_y, lamppost_base_z + 180)
         )
 
-    RH_FLOORS = 3
-    RH_H = RH_FLOORS * KH_FLOOR_H  # 384 units tall
     RH_DEPTH = 600  # building N-S depth (doubled)
     RH_PIER_X = min(PB_ARCH_X)  # = -1100
     RH_X2 = RH_PIER_X + PB_PIL_HW + 32  # east face of building  = -1031
@@ -1073,7 +1068,6 @@ def build():
 
     # Wall extending north from the abutment pier, deck height, city2_1 texture
     # Door opening ~160 units north of the pier (visible in bridge10)
-    RH_WALL_N_Y1 = PB_Y2 + PB_PIL_OVERHANG  # north face of pier = 152
     RH_WALL_S_Y2 = -(PB_Y2 + PB_PIL_OVERHANG)  # south face of pier = -152
     RH_DOOR_W = 80  # door opening width (~5 ft)
     RH_DOOR_OFF = 160  # distance from pier face to door centre
