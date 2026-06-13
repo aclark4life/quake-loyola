@@ -26,6 +26,11 @@ from .constants import (
     KH_SHAFT_X2,
     KH_SHAFT_Y1,
     KH_SHAFT_Y2,
+    KH_STAIRS_MID_Y,
+    KH_STAIRS_X1,
+    KH_STAIRS_X2,
+    KH_STAIRS_Y1,
+    KH_STAIRS_Y2,
     KH_WALL,
     KH_X1,
     KH_X2,
@@ -529,13 +534,6 @@ def build():
     WIN_HALF = 24  # half-width of recessed corner windows
     KH_MULLION_W = 12  # mullion width
     KH_MULLION_PRO = 12  # mullion protrusion depth
-
-    KH_STAIRS_X2 = KH_ENT_X1 - 16  # west stairwell east edge
-    KH_STAIRS_X1 = (
-        bix1 + 2 * INDENT
-    )  # west stairwell west edge — flush with NW indent corner
-    KH_STAIRS_Y2 = KH_SHAFT_Y2  # stairwell north edge (same as east shaft)
-    KH_STAIRS_Y1 = KH_BIY2 - 256  # stairwell south edge — double depth (256 vs 128)
 
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
     # Main south face — hallway openings cut through at each floor level
@@ -1412,8 +1410,6 @@ def build():
         stair_cx - KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X // 2
     )  # west edge of stairs
     stair_x2 = stair_x1 + KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X  # east edge of stairs
-    KH_STAIRS_MID_Y = (KH_STAIRS_Y1 + KH_STAIRS_Y2) // 2  # Y lane divider = -400
-
     for floor_index in range(KH_FLOORS):
         floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL  # floor surface Z
         half_flight_z = (
