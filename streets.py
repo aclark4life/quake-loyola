@@ -1,5 +1,39 @@
-from constants import *
-from geometry import *
+import math
+from constants import (
+    FLOOR_Z1,
+    FLOOR_Z2,
+    KH_X2,
+    PB_ARCH_X,
+    PB_DZ2,
+    PB_PIL_HW,
+    PB_PIL_OVERHANG,
+    PB_X1,
+    PB_Y1,
+    PB_Y2,
+    ROAD_X1,
+    ROAD_X2,
+    TEX_BRICK,
+    TEX_CEMENT,
+    TEX_GROUND,
+    TEX_PILLAR,
+    TEX_ROAD,
+    TEX_SKY,
+    TEX_WHITE_STONE,
+    WALL_T,
+    WORLD_X1,
+    WORLD_X2,
+    WORLD_Y1,
+    WORLD_Y2,
+    WORLD_Z2,
+)
+from geometry import (
+    box,
+    brush_ent,
+    pyramid,
+    ramp_slab,
+    ramp_slab_y,
+    tri_prism,
+)
 
 
 def build():

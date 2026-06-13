@@ -1,5 +1,14 @@
 import math
-from constants import *
+from constants import (
+    EAST_SPAN_ANGLE,
+    KH_FLOOR_H,
+    PB_ARCH_X,
+    RH_WIN_H,
+    RH_WIN_T,
+    RH_WIN_W,
+    TEX_CEMENT,
+    TEX_GROUND,
+)
 
 
 def fv(v):
