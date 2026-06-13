@@ -3,6 +3,9 @@ import math
 from .constants import (
     A_SEGS,
     BRIDGE_DZ2,
+    BRIDGE_FASCIA_PX_H,
+    BRIDGE_FASCIA_PX_W,
+    BRIDGE_FASCIA_TEXT,
     BRIDGE_PAR_H,
     BRIDGE_Y1,
     BRIDGE_Y2,
@@ -11,9 +14,11 @@ from .constants import (
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
+    DRAW_BRIDGE_FASCIA_TEXT,
     ENNIS_HW,
     ENNIS_SW_EDGE,
     ENNIS_Y,
+    FASCIA_FONT,
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
@@ -1736,44 +1741,13 @@ def build():
     if not KNOTT_ENABLED:
         del BRUSHES[knott_brush_start:]
 
-    DRAW_KH_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
-
-    # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
+    # ── "LOYOLA UNIVERSITY MARYLAND" bridge fascia lettering ─────────────────────
     # Fascia panel follows the arch: one box per character hanging from deck_bot_z(x)
-    KNOTT_FASCIA_PX_W, KNOTT_FASCIA_PX_H = 4, 4
-    KNOTT_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
-    char_w = (4 + 1) * KNOTT_FASCIA_PX_W  # 4 cols + 1 gap
-    total_w = len(KNOTT_FASCIA_TEXT) * char_w - KNOTT_FASCIA_PX_W
+    char_w = (4 + 1) * BRIDGE_FASCIA_PX_W  # 4 cols + 1 gap
+    total_w = len(BRIDGE_FASCIA_TEXT) * char_w - BRIDGE_FASCIA_PX_W
     text_x0 = 0 - total_w // 2
 
     # No separate background fascia boxes — parapet wall face is the backdrop
-
-    KNOTT_FASCIA_FONT = {
-        "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
-        "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],
-        "C": [0b0111, 0b1000, 0b1000, 0b1000, 0b0111, 0b0000],
-        "D": [0b1110, 0b1001, 0b1001, 0b1001, 0b1110, 0b0000],
-        "E": [0b1111, 0b1000, 0b1110, 0b1000, 0b1111, 0b0000],
-        "F": [0b1111, 0b1000, 0b1110, 0b1000, 0b1000, 0b0000],
-        "G": [0b0111, 0b1000, 0b1011, 0b1001, 0b0111, 0b0000],
-        "H": [0b1001, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
-        "I": [0b1110, 0b0100, 0b0100, 0b0100, 0b1110, 0b0000],
-        "J": [0b0011, 0b0001, 0b0001, 0b1001, 0b0110, 0b0000],
-        "K": [0b1001, 0b1010, 0b1100, 0b1010, 0b1001, 0b0000],
-        "L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1111, 0b0000],
-        "M": [0b1001, 0b1111, 0b1111, 0b1001, 0b1001, 0b0000],
-        "N": [0b1001, 0b1101, 0b1011, 0b1001, 0b1001, 0b0000],
-        "O": [0b0110, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
-        "P": [0b1110, 0b1001, 0b1110, 0b1000, 0b1000, 0b0000],
-        "R": [0b1110, 0b1001, 0b1110, 0b1010, 0b1001, 0b0000],
-        "S": [0b0111, 0b1000, 0b0110, 0b0001, 0b1110, 0b0000],
-        "T": [0b1111, 0b0100, 0b0100, 0b0100, 0b0100, 0b0000],
-        "U": [0b1001, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
-        "V": [0b1001, 0b1001, 0b1001, 0b0110, 0b0110, 0b0000],
-        "W": [0b1001, 0b1001, 0b1111, 0b1111, 0b1001, 0b0000],
-        "Y": [0b1001, 0b0110, 0b0100, 0b0100, 0b0100, 0b0000],
-        " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
-    }
 
     def render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
         """Render text as pixel-font raised boxes on a fascia face.
@@ -1784,7 +1758,7 @@ def build():
 
         brushes = []
         for ci, ch in enumerate(text):
-            bitmap = KNOTT_FASCIA_FONT.get(ch, KNOTT_FASCIA_FONT[" "])
+            bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
             cx = x0 + ci * char_w
             x_mid = cx + (cols * px_w) / 2
             z_top = (
@@ -1810,7 +1784,7 @@ def build():
         char_w_f = (cols + 1) * px_w
         brushes = []
         for ci, ch in enumerate(text):
-            bitmap = KNOTT_FASCIA_FONT.get(ch, KNOTT_FASCIA_FONT[" "])
+            bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
             cx = x0 + ci * char_w_f
             for row_i, row_bits in enumerate(bitmap):
                 z = z_base + (rows - 1 - row_i) * px_h
@@ -1842,26 +1816,26 @@ def build():
     letter_brushes = (
         (
             render_text_fascia(
-                KNOTT_FASCIA_TEXT,
+                BRIDGE_FASCIA_TEXT,
                 x0=text_x0,
                 y_face=BRIDGE_Y1,
-                px_w=KNOTT_FASCIA_PX_W,
-                px_h=KNOTT_FASCIA_PX_H,
+                px_w=BRIDGE_FASCIA_PX_W,
+                px_h=BRIDGE_FASCIA_PX_H,
                 depth=1,
                 tex=Textures.RAIL,
             )
             + render_text_fascia(
-                KNOTT_FASCIA_TEXT[::-1],
+                BRIDGE_FASCIA_TEXT[::-1],
                 x0=text_x0,
                 y_face=BRIDGE_Y2 + 1,
-                px_w=KNOTT_FASCIA_PX_W,
-                px_h=KNOTT_FASCIA_PX_H,
+                px_w=BRIDGE_FASCIA_PX_W,
+                px_h=BRIDGE_FASCIA_PX_H,
                 depth=1,
                 tex=Textures.RAIL,
                 mirror=True,
             )
         )
-        if DRAW_KH_FASCIA_TEXT
+        if DRAW_BRIDGE_FASCIA_TEXT
         else []
     )
 
