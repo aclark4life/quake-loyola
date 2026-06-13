@@ -265,25 +265,6 @@ CHARLES_PLT_X_RET = -(ROAD_X2 * 3 // 4)
 ENNIS_X1 = ROAD_X1
 ROAD_Z = FLOOR_Z2 + 8
 
-
-class Textures:
-    BRICK = "bricka2_1"
-    CEMENT = "sfloor3_2"
-    DIVIDER = "sfloor3_2"
-    FLOOR = "sfloor3_2"
-    FLOOR_KH = "sfloor3_2"
-    GROUND = "ground1_1"
-    PILLAR = "city2_7"
-    RAIL = "metal5_4"
-    ROAD = "azfloor1_1"
-    ROOF = "wgrnd1_5"
-    SKY = "sky1"
-    STONE = "sfloor3_2"
-    TELEPORT = "*teleport"
-    WALL = "city2_7"
-    WHITE_STONE = "sfloor3_2"
-
-
 WALK_X1 = KNOTT_ORIG_CX - 64
 WALK_X2 = KNOTT_ORIG_CX + 64
 WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL
@@ -335,6 +316,24 @@ KNOTT_STAIRS_Y2 = KNOTT_SHAFT_Y2
 KNOTT_STAIRS_MID_Y = (KNOTT_STAIRS_Y1 + KNOTT_STAIRS_Y2) // 2
 DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2
 BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]
+
+
+class Textures:
+    BRICK = "bricka2_1"
+    CEMENT = "sfloor3_2"
+    DIVIDER = "sfloor3_2"
+    FLOOR = "sfloor3_2"
+    FLOOR_KH = "sfloor3_2"
+    GROUND = "ground1_1"
+    PILLAR = "city2_7"
+    RAIL = "metal5_4"
+    ROAD = "azfloor1_1"
+    ROOF = "wgrnd1_5"
+    SKY = "sky1"
+    STONE = "sfloor3_2"
+    TELEPORT = "*teleport"
+    WALL = "city2_7"
+    WHITE_STONE = "sfloor3_2"
 
 
 def arch_z_at(x):
