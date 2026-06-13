@@ -22,7 +22,7 @@ from .constants import (
     DORM_X2,
     FLOOR_Z1,
     FLOOR_Z2,
-    KH_FLOOR_H,
+    KNOTT_FLOOR_H,
     WALL_T,
     WORLD_X2,
     Textures,
@@ -65,7 +65,7 @@ def build():
     ]
 
     dorm_wz_lo = (
-        KH_FLOOR_H - DORM_WIN_HH * 2
+        KNOTT_FLOOR_H - DORM_WIN_HH * 2
     ) // 2  # window sill offset within a floor
     dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2  # window head offset within a floor
 
@@ -74,9 +74,9 @@ def build():
         return [
             (
                 wx - DORM_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_lo,
                 wx + DORM_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
+                FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_hi,
             )
             for fl in range(DORM_FLOORS)
             for wx in wx_list
@@ -87,9 +87,9 @@ def build():
         return [
             (
                 wy - DORM_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_lo,
                 wy + DORM_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
+                FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_hi,
             )
             for fl in range(DORM_FLOORS)
             for wy in wy_list
@@ -171,9 +171,9 @@ def build():
         )
     )
 
-    # Gable (A-frame) roof — ridge runs N-S at building X center, KH_FLOOR_H above ceiling
+    # Gable (A-frame) roof — ridge runs N-S at building X center, KNOTT_FLOOR_H above ceiling
     DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
-    DORM_RIDGE_Z = DORM_EAVE_Z + KH_FLOOR_H  # ridge apex
+    DORM_RIDGE_Z = DORM_EAVE_Z + KNOTT_FLOOR_H  # ridge apex
     DORM_SLAB_T = 16  # roof slab thickness at eave
     # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
     BRUSHES.append(
@@ -235,9 +235,9 @@ def build():
             return [
                 (
                     wx - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                    FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_lo,
                     wx + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
+                    FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_hi,
                 )
                 for fl in range(DORM_FLOORS)
                 for wx in wx_list
@@ -247,9 +247,9 @@ def build():
             return [
                 (
                     wy - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                    FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_lo,
                     wy + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
+                    FLOOR_Z2 + fl * KNOTT_FLOOR_H + dorm_wz_hi,
                 )
                 for fl in range(DORM_FLOORS)
                 for wy in wy_list
@@ -332,7 +332,7 @@ def build():
         )
         eave_z, ridge_z, slab_t = (
             FLOOR_Z2 + DORM_H + DORM_WALL,
-            FLOOR_Z2 + DORM_H + DORM_WALL + KH_FLOOR_H,
+            FLOOR_Z2 + DORM_H + DORM_WALL + KNOTT_FLOOR_H,
             16,
         )
         brushes.append(

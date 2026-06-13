@@ -31,16 +31,16 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
-    KH_DRIVEWAY_CORRIDOR_X1,
-    KH_DRIVEWAY_CORRIDOR_X2,
-    KH_GROUND_Z,
-    KH_ORIG_CX,
-    KH_WALKWAY_ENABLED,
-    KH_WALL,
-    KH_X1,
-    KH_X2,
-    KH_Y1,
-    KH_Y2,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
+    KNOTT_GROUND_Z,
+    KNOTT_ORIG_CX,
+    KNOTT_WALKWAY_ENABLED,
+    KNOTT_WALL,
+    KNOTT_X1,
+    KNOTT_X2,
+    KNOTT_Y1,
+    KNOTT_Y2,
     ROAD_X2,
     SHOW_SUPPORTS,
     WALK_X1,
@@ -820,17 +820,17 @@ def build():
 
     # ════════════════════════════════════════════════════════════════════════════════
     # WALKWAY — flat bridge from south edge to building 2nd floor entrance
-    # X=-64..64, Y=BRIDGE_Y1..KH_Y2; flat at WALK_ZT1 = WALK_ZT2
+    # X=-64..64, Y=BRIDGE_Y1..KNOTT_Y2; flat at WALK_ZT1 = WALK_ZT2
     # ════════════════════════════════════════════════════════════════════════════════
-    if KH_WALKWAY_ENABLED:
-        wk_zb1 = WALK_ZT1 - KH_WALL  # slab bottom at bridge end
-        wk_zb2 = WALK_ZT2 - KH_WALL  # slab bottom at building end
+    if KNOTT_WALKWAY_ENABLED:
+        wk_zb1 = WALK_ZT1 - KNOTT_WALL  # slab bottom at bridge end
+        wk_zb2 = WALK_ZT2 - KNOTT_WALL  # slab bottom at building end
         BRUSHES.append(
             ramp_slab_y(
                 WALK_X1,
                 WALK_X2,
                 BRIDGE_Y1,
-                KH_Y2,
+                KNOTT_Y2,
                 wk_zb1,
                 wk_zb2,
                 WALK_ZT1,
@@ -846,7 +846,7 @@ def build():
                 WALK_X1 - PBCS_WALK_WALL,
                 WALK_X1,
                 BRIDGE_Y1,
-                KH_Y2,
+                KNOTT_Y2,
                 wk_zb1,
                 wk_zb2,
                 WALK_ZT1 + BRIDGE_PAR_H,
@@ -859,7 +859,7 @@ def build():
                 WALK_X2,
                 WALK_X2 + PBCS_WALK_WALL,
                 BRIDGE_Y1,
-                KH_Y2,
+                KNOTT_Y2,
                 wk_zb1,
                 wk_zb2,
                 WALK_ZT1 + BRIDGE_PAR_H,
@@ -874,7 +874,7 @@ def build():
             BRUSHES.append(
                 box(
                     WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
-                    KH_Y2,
+                    KNOTT_Y2,
                     tube_base_z,
                     WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
                     BRIDGE_Y1,
@@ -885,7 +885,7 @@ def build():
             BRUSHES.append(
                 box(
                     WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
-                    KH_Y2,
+                    KNOTT_Y2,
                     tube_base_z,
                     WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
                     BRIDGE_Y1,
@@ -895,13 +895,13 @@ def build():
             )
 
     # ════════════════════════════════════════════════════════════════════════════════
-    # ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KH_GROUND_Z),
+    # ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KNOTT_GROUND_Z),
     # running alongside Pier 5 (west face).  Connects Knott Hall north face to the
     # bridge south edge, then wraps east via a short E-W ramp to the back-road west
     # sidewalk.  Provides ground-level access around Pier 5 without steps.
-    # Spans Y=KH_Y2..BRIDGE_Y1 (KH north face → bridge south edge).
+    # Spans Y=KNOTT_Y2..BRIDGE_Y1 (KH north face → bridge south edge).
     # ════════════════════════════════════════════════════════════════════════════════
-    if KH_WALKWAY_ENABLED:
+    if KNOTT_WALKWAY_ENABLED:
         east_walk_center_x = 2120
         east_walk_half_width = 32
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
@@ -909,19 +909,19 @@ def build():
             BRIDGE_Y2 + BRIDGE_PIL_OVERHANG + 96 + 80
         )  # north anchor: ramp moved 80 units north
         terrain_z2 = int(
-            KH_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
-            * (east_walk_y2 - (KH_Y2 + 96))
-            / (ENNIS_SW_EDGE - (KH_Y2 + 96))
+            KNOTT_GROUND_Z
+            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
+            * (east_walk_y2 - (KNOTT_Y2 + 96))
+            / (ENNIS_SW_EDGE - (KNOTT_Y2 + 96))
         )
-        # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KH_X2
+        # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KNOTT_X2
         east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
         east_walk_ext_y2 = east_walk_y2
         extension_terrain_z1 = int(
-            KH_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
-            * (east_walk_ext_y1 - (KH_Y2 + 96))
-            / (ENNIS_SW_EDGE - (KH_Y2 + 96))
+            KNOTT_GROUND_Z
+            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
+            * (east_walk_ext_y1 - (KNOTT_Y2 + 96))
+            / (ENNIS_SW_EDGE - (KNOTT_Y2 + 96))
         )
         extension_terrain_z2 = terrain_z2
         extension_terrain_z_west = (
@@ -930,7 +930,7 @@ def build():
         BRUSHES.append(
             ramp_slab(
                 east_walk_x2,
-                KH_X2,
+                KNOTT_X2,
                 east_walk_ext_y1,
                 east_walk_ext_y2,
                 FLOOR_Z1,
@@ -947,14 +947,14 @@ def build():
     # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
     # visible under the KH bridge approach (ref: bridge01).
     # ════════════════════════════════════════════════════════════════════════════════
-    if KH_WALKWAY_ENABLED:
+    if KNOTT_WALKWAY_ENABLED:
         # Position just under the south edge of the bridge deck
         support_y_center = BRIDGE_Y1  # south edge of bridge = -136
         support_half_width = 16  # half-depth of beam/piers (N-S)
         support_y1 = support_y_center - support_half_width
         support_y2 = support_y_center + support_half_width
         # Beam sits just below the walkway slab bottom
-        beam_top_z = WALK_ZT1 - KH_WALL  # bottom of walkway slab at bridge end
+        beam_top_z = WALK_ZT1 - KNOTT_WALL  # bottom of walkway slab at bridge end
         beam_height = 20
         beam_bottom_z = beam_top_z - beam_height
         # Span between the two bridge arch piers flanking the walkway (east span)
@@ -1005,15 +1005,25 @@ def build():
 
     # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
     # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
-    if KH_GROUND_Z > FLOOR_Z2:
+    if KNOTT_GROUND_Z > FLOOR_Z2:
         west_ramp_x1 = ROAD_X2 + CHARLES_WALK_W  # east edge of east sidewalk = 336
-        west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
+        west_ramp_x2 = KNOTT_X1  # ramp rises all the way to building west face
         # Solid hill fill under the entire building footprint — split to exclude indent pockets
         # so indents are recessed at all heights down to ground level
         for fill_x1, fill_y1, fill_x2, fill_y2 in [
-            (KH_X1 + INDENT, KH_Y1, KH_X2 - INDENT, KH_Y1 + INDENT),  # south strip
-            (KH_X1, KH_Y1 + INDENT, KH_X2, KH_Y2 - INDENT),  # middle strip
-            (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
+            (
+                KNOTT_X1 + INDENT,
+                KNOTT_Y1,
+                KNOTT_X2 - INDENT,
+                KNOTT_Y1 + INDENT,
+            ),  # south strip
+            (KNOTT_X1, KNOTT_Y1 + INDENT, KNOTT_X2, KNOTT_Y2 - INDENT),  # middle strip
+            (
+                KNOTT_X1 + 2 * INDENT,
+                KNOTT_Y2 - INDENT,
+                KNOTT_X2 - INDENT,
+                KNOTT_Y2,
+            ),  # north strip
         ]:
             BRUSHES.append(
                 box(
@@ -1022,25 +1032,25 @@ def build():
                     FLOOR_Z2,
                     fill_x2,
                     fill_y2,
-                    KH_GROUND_Z,
+                    KNOTT_GROUND_Z,
                     Textures.WALL,
                 )
             )
         # NW indent floor — flush with exterior ground
         BRUSHES.append(
             box(
-                KH_X1,
-                KH_Y2 - INDENT,
+                KNOTT_X1,
+                KNOTT_Y2 - INDENT,
                 FLOOR_Z1,
-                KH_X1 + 2 * INDENT,
-                KH_Y2,
+                KNOTT_X1 + 2 * INDENT,
+                KNOTT_Y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
             )
         )
         # (No flat east fill — the back road section provides its own sloped fill there)
         # West hill — ramp from sidewalk height at Charles St up to building ground level
-        west_ramp_north_y = KH_Y2 - INDENT * 3 // 4
+        west_ramp_north_y = KNOTT_Y2 - INDENT * 3 // 4
         BRUSHES.append(
             ramp_slab(
                 west_ramp_x1,
@@ -1050,18 +1060,18 @@ def build():
                 FLOOR_Z1,
                 FLOOR_Z1,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                KH_GROUND_Z,
+                KNOTT_GROUND_Z,
                 Textures.GROUND,
             )
         )
-        # Flat ground from ramp north edge to building face (west of KH_X1)
+        # Flat ground from ramp north edge to building face (west of KNOTT_X1)
         BRUSHES.append(
             box(
                 west_ramp_x1,
                 west_ramp_north_y,
                 FLOOR_Z1,
                 west_ramp_x2,
-                KH_Y2,
+                KNOTT_Y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
             )
@@ -1069,34 +1079,34 @@ def build():
         # South terrain fill — flat ground at building level behind south wall to east world edge
         BRUSHES.append(
             box(
-                KH_X1,
+                KNOTT_X1,
                 WORLD_Y1 + WALL_T,
                 FLOOR_Z1,
                 WORLD_X2 - WALL_T,
-                KH_Y1,
-                KH_GROUND_Z,
+                KNOTT_Y1,
+                KNOTT_GROUND_Z,
                 Textures.WALL,
             )
         )
         # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
-        # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show.
-        # Between Pier 4 (PIER4_X) and Pier 5 (PIER5_X): gradual slope from KH_GROUND_Z
-        # at the north KH face (KH_Y2) down to sidewalk height at the Ennis sidewalk (ENNIS_SW_EDGE).
-        kh_entry_x1 = KH_ORIG_CX - 64
-        kh_entry_x2 = KH_ORIG_CX + 64
-        east_ramp_x1 = kh_entry_x2  # east of entrance opening
-        east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
+        # Split around KH entrance strip (KNOTT_ENT_X1..KNOTT_ENT_X2) to let cement apron show.
+        # Between Pier 4 (PIER4_X) and Pier 5 (PIER5_X): gradual slope from KNOTT_GROUND_Z
+        # at the north KH face (KNOTT_Y2) down to sidewalk height at the Ennis sidewalk (ENNIS_SW_EDGE).
+        knott_entry_x1 = KNOTT_ORIG_CX - 64
+        knott_entry_x2 = KNOTT_ORIG_CX + 64
+        east_ramp_x1 = knott_entry_x2  # east of entrance opening
+        east_ramp_x2 = KNOTT_X2 - INDENT  # west edge of NE indent
         east_platform_depth = (
             96  # N-S depth of side-step platform — slope must not cover this
         )
         # West section of seg1 — stays at sidewalk height (up to NW indent of KH)
         segment1_split_x = (
-            KH_X1 + 2 * INDENT
+            KNOTT_X1 + 2 * INDENT
         )  # = NW indent X, aligns raised ground with NW corner
         BRUSHES.append(
             box(
                 west_ramp_x1,
-                KH_Y2,
+                KNOTT_Y2,
                 FLOOR_Z1,
                 segment1_split_x,
                 ENNIS_SW_EDGE,
@@ -1104,17 +1114,17 @@ def build():
                 Textures.GROUND,
             )
         )
-        # East section of seg1 (NW indent → entrance) — slopes from KH_GROUND_Z at KH face to
+        # East section of seg1 (NW indent → entrance) — slopes from KNOTT_GROUND_Z at KH face to
         # sidewalk height at Ennis sidewalk
         BRUSHES.append(
             ramp_slab_y(
                 segment1_split_x,
-                kh_entry_x1,
-                KH_Y2,
+                knott_entry_x1,
+                KNOTT_Y2,
                 ENNIS_SW_EDGE,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                KH_GROUND_Z,
+                KNOTT_GROUND_Z,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
             )
@@ -1127,10 +1137,10 @@ def build():
         # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
         def terrain_z_at(y):
             return int(
-                KH_GROUND_Z
-                + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
-                * (y - (KH_Y2 + 96))
-                / (ENNIS_SW_EDGE - (KH_Y2 + 96))
+                KNOTT_GROUND_Z
+                + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
+                * (y - (KNOTT_Y2 + 96))
+                / (ENNIS_SW_EDGE - (KNOTT_Y2 + 96))
             )
 
         extension_terrain_z_west = (
@@ -1139,13 +1149,13 @@ def build():
         # Full sloped terrain Y=-160..264 (path zone starts at ramp south edge)
         BRUSHES.append(
             ramp_slab_y(
-                kh_entry_x2,
+                knott_entry_x2,
                 east_ramp_x2,
-                KH_Y2 + east_platform_depth,
+                KNOTT_Y2 + east_platform_depth,
                 east_walk_ext_y1_val,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                KH_GROUND_Z,
+                KNOTT_GROUND_Z,
                 terrain_z_at(east_walk_ext_y1_val),
                 Textures.GROUND,
             )
@@ -1153,7 +1163,7 @@ def build():
         # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=extension_terrain_z_west)
         BRUSHES.append(
             box(
-                kh_entry_x2,
+                knott_entry_x2,
                 east_walk_ext_y1_val,
                 FLOOR_Z1,
                 east_ramp_x2,
@@ -1166,7 +1176,7 @@ def build():
         # North section (Y=328..504): sloped terrain continues
         BRUSHES.append(
             ramp_slab_y(
-                kh_entry_x2,
+                knott_entry_x2,
                 east_ramp_x2,
                 east_walk_ext_y2_val,
                 ENNIS_SW_EDGE,
@@ -1181,9 +1191,9 @@ def build():
         BRUSHES.append(
             box(
                 east_ramp_x2,
-                KH_Y2 + east_platform_depth,
+                KNOTT_Y2 + east_platform_depth,
                 FLOOR_Z1,
-                KH_DRIVEWAY_CORRIDOR_X1,
+                KNOTT_DRIVEWAY_CORRIDOR_X1,
                 east_walk_ext_y1_val,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
@@ -1195,7 +1205,7 @@ def build():
                 east_ramp_x2,
                 east_walk_ext_y2_val,
                 FLOOR_Z1,
-                KH_DRIVEWAY_CORRIDOR_X1,
+                KNOTT_DRIVEWAY_CORRIDOR_X1,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
@@ -1204,8 +1214,8 @@ def build():
         # Seg3 (east of back-road corridor to world wall) — beyond Pier 5, stays at sidewalk height
         BRUSHES.append(
             box(
-                KH_DRIVEWAY_CORRIDOR_X2,
-                KH_Y2,
+                KNOTT_DRIVEWAY_CORRIDOR_X2,
+                KNOTT_Y2,
                 FLOOR_Z1,
                 WORLD_X2 - WALL_T,
                 ENNIS_SW_EDGE,
@@ -1214,39 +1224,41 @@ def build():
             )
         )
         # East of entrance: flat platform at walkway level + steps going east down to ground
-        east_platform_x1 = east_ramp_x1  # KH_ENT_X2
-        east_platform_x2 = KH_X2
+        east_platform_x1 = east_ramp_x1  # KNOTT_ENT_X2
+        east_platform_x2 = KNOTT_X2
         east_step_count = 4
-        east_step_rise = (KH_GROUND_Z - (FLOOR_Z2 + CHARLES_WALK_H)) // east_step_count
+        east_step_rise = (
+            KNOTT_GROUND_Z - (FLOOR_Z2 + CHARLES_WALK_H)
+        ) // east_step_count
         east_step_depth = 24
         east_steps_width = east_step_count * east_step_depth
         east_steps_x1 = (
             east_platform_x2 - east_steps_width
         )  # steps recessed, end flush with east wall
-        # Flat platform at KH_GROUND_Z (west of steps)
+        # Flat platform at KNOTT_GROUND_Z (west of steps)
         BRUSHES.append(
             box(
                 east_platform_x1,
-                KH_Y2,
+                KNOTT_Y2,
                 FLOOR_Z1,
                 east_steps_x1,
-                KH_Y2 + east_platform_depth,
-                KH_GROUND_Z,
+                KNOTT_Y2 + east_platform_depth,
+                KNOTT_GROUND_Z,
                 Textures.CEMENT,
             )
         )
         # Steps going east (downhill in X), flush with KH east wall
         for step_index in range(east_step_count):
-            step_z = KH_GROUND_Z - (step_index + 1) * east_step_rise
+            step_z = KNOTT_GROUND_Z - (step_index + 1) * east_step_rise
             step_x1 = east_steps_x1 + step_index * east_step_depth
             step_x2 = step_x1 + east_step_depth
             BRUSHES.append(
                 box(
                     step_x1,
-                    KH_Y2,
+                    KNOTT_Y2,
                     FLOOR_Z1,
                     step_x2,
-                    KH_Y2 + east_platform_depth,
+                    KNOTT_Y2 + east_platform_depth,
                     step_z,
                     Textures.CEMENT,
                 )
@@ -1254,11 +1266,11 @@ def build():
         # Small cement connector — bridges step bottom to back road west sidewalk (32 units wide)
         BRUSHES.append(
             box(
-                KH_X2,
-                KH_Y2,
+                KNOTT_X2,
+                KNOTT_Y2,
                 FLOOR_Z1,
-                KH_X2 + CHARLES_WALK_W,
-                KH_Y2 + east_platform_depth,
+                KNOTT_X2 + CHARLES_WALK_W,
+                KNOTT_Y2 + east_platform_depth,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.CEMENT,
             )

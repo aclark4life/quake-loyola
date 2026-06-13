@@ -10,7 +10,7 @@ from .constants import (
     BRIDGE_Y2,
     FLOOR_Z1,
     FLOOR_Z2,
-    KH_X2,
+    KNOTT_X2,
     ROAD_X1,
     ROAD_X2,
     WALL_T,
@@ -116,9 +116,9 @@ def build():
         ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - 32
     )  # Ennis south sidewalk outer edge
     # Back road corridor X extents — defined here for road/curb brush splits below
-    KH_DRIVEWAY_CORRIDOR_X1 = KH_X2  # west edge of corridor gap
-    KH_DRIVEWAY_CORRIDOR_X2 = (
-        KH_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W
+    KNOTT_DRIVEWAY_CORRIDOR_X1 = KNOTT_X2  # west edge of corridor gap
+    KNOTT_DRIVEWAY_CORRIDOR_X2 = (
+        KNOTT_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W
     )  # east edge
     ENNIS_CURB_W = 8  # south Ennis curb strip width (N-S)
 
@@ -224,8 +224,8 @@ def build():
     )
     # Main east sections — full south extent to road edge
     for road_x1, road_x2 in [
-        (ROAD_X2 + CHARLES_WALK_W, KH_DRIVEWAY_CORRIDOR_X1),
-        (KH_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
+        (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
     ]:
         BRUSHES.append(
             box(
@@ -241,10 +241,10 @@ def build():
     # Corridor gap section (back road entrance, no curb strip)
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_CORRIDOR_X1,
+            KNOTT_DRIVEWAY_CORRIDOR_X1,
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2,
-            KH_DRIVEWAY_CORRIDOR_X2,
+            KNOTT_DRIVEWAY_CORRIDOR_X2,
             ENNIS_Y - div_ep_hw,
             FLOOR_Z2 + 2,
             Textures.ROAD,
@@ -280,17 +280,17 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_SW_EDGE,
             FLOOR_Z2,
-            KH_X2,
+            KNOTT_X2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
     )
     # East segment: back road east sidewalk east to world wall
-    # KH_DRIVEWAY_ES_X2 = KH_X2 + CHARLES_WALK_W + 2*128 + CHARLES_WALK_W (computed inline to avoid forward-ref)
+    # KNOTT_DRIVEWAY_ES_X2 = KNOTT_X2 + CHARLES_WALK_W + 2*128 + CHARLES_WALK_W (computed inline to avoid forward-ref)
     BRUSHES.append(
         box(
-            KH_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W,
+            KNOTT_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W,
             ENNIS_SW_EDGE,
             FLOOR_Z2,
             ENNIS_X2,
@@ -500,11 +500,11 @@ def build():
     # (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)
 
     # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
-    # Split around back road corridor gap (KH_DRIVEWAY_CORRIDOR_X1..KH_DRIVEWAY_CORRIDOR_X2)
+    # Split around back road corridor gap (KNOTT_DRIVEWAY_CORRIDOR_X1..KNOTT_DRIVEWAY_CORRIDOR_X2)
     # SE corner (east of back road) uses gravel3c (mulch bed)
     for vx1, vx2, vtex in [
-        (ROAD_X2 + CHARLES_WALK_W, KH_DRIVEWAY_CORRIDOR_X1, Textures.GROUND),
-        (KH_DRIVEWAY_CORRIDOR_X2, ENNIS_X2, "grave13c"),
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, Textures.GROUND),
+        (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2, "grave13c"),
     ]:
         BRUSHES.append(
             box(
@@ -520,8 +520,8 @@ def build():
 
     # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
     for vx1, vx2 in [
-        (ROAD_X2 + CHARLES_WALK_W, KH_DRIVEWAY_CORRIDOR_X1),
-        (KH_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
+        (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
     ]:
         BRUSHES.append(
             box(

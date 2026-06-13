@@ -17,43 +17,43 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
-    KH_DRIVEWAY_CURB_CRN_R,
-    KH_DRIVEWAY_CURB_CRN_SEGS,
-    KH_DRIVEWAY_ES_X1,
-    KH_DRIVEWAY_ES_X2,
-    KH_DRIVEWAY_EXT_Y1,
-    KH_DRIVEWAY_EXT_Y2,
-    KH_DRIVEWAY_JCX_E,
-    KH_DRIVEWAY_JCX_W,
-    KH_DRIVEWAY_JCY,
-    KH_DRIVEWAY_RD_X1,
-    KH_DRIVEWAY_RD_X2,
-    KH_DRIVEWAY_WS_X1,
-    KH_DRIVEWAY_WS_X2,
-    KH_DRIVEWAY_Y1,
-    KH_DRIVEWAY_Y2,
-    KH_DRIVEWAY_ZT_N,
-    KH_DRIVEWAY_ZT_S,
-    KH_ENABLED,
-    KH_FLOOR_H,
-    KH_FLOORS,
-    KH_GROUND_Z,
-    KH_ORIG_CX,
-    KH_SHAFT_X1,
-    KH_SHAFT_X2,
-    KH_SHAFT_Y1,
-    KH_SHAFT_Y2,
-    KH_STAIRS_MID_Y,
-    KH_STAIRS_X1,
-    KH_STAIRS_X2,
-    KH_STAIRS_Y1,
-    KH_STAIRS_Y2,
-    KH_WALL,
-    KH_X1,
-    KH_X2,
-    KH_Y1,
-    KH_Y2,
-    KH_Z2,
+    KNOTT_DRIVEWAY_CURB_CRN_R,
+    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
+    KNOTT_DRIVEWAY_ES_X1,
+    KNOTT_DRIVEWAY_ES_X2,
+    KNOTT_DRIVEWAY_EXT_Y1,
+    KNOTT_DRIVEWAY_EXT_Y2,
+    KNOTT_DRIVEWAY_JCX_E,
+    KNOTT_DRIVEWAY_JCX_W,
+    KNOTT_DRIVEWAY_JCY,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
+    KNOTT_DRIVEWAY_WS_X1,
+    KNOTT_DRIVEWAY_WS_X2,
+    KNOTT_DRIVEWAY_Y1,
+    KNOTT_DRIVEWAY_Y2,
+    KNOTT_DRIVEWAY_ZT_N,
+    KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_ENABLED,
+    KNOTT_FLOOR_H,
+    KNOTT_FLOORS,
+    KNOTT_GROUND_Z,
+    KNOTT_ORIG_CX,
+    KNOTT_SHAFT_X1,
+    KNOTT_SHAFT_X2,
+    KNOTT_SHAFT_Y1,
+    KNOTT_SHAFT_Y2,
+    KNOTT_STAIRS_MID_Y,
+    KNOTT_STAIRS_X1,
+    KNOTT_STAIRS_X2,
+    KNOTT_STAIRS_Y1,
+    KNOTT_STAIRS_Y2,
+    KNOTT_WALL,
+    KNOTT_X1,
+    KNOTT_X2,
+    KNOTT_Y1,
+    KNOTT_Y2,
+    KNOTT_Z2,
     WALK_ZT2,
     WALL_T,
     WORLD_X1,
@@ -77,7 +77,9 @@ from .geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
-    kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
+    knott_brush_start = len(
+        BRUSHES
+    )  # checkpoint — trimmed below if KNOTT_ENABLED is False
 
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
@@ -85,14 +87,14 @@ def build():
     # Road surface — 2-unit textured overlay riding on sloped fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_RD_X1,
-            KH_DRIVEWAY_RD_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_RD_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S + 2,
-            KH_DRIVEWAY_ZT_N + 2,
+            KNOTT_DRIVEWAY_ZT_S + 2,
+            KNOTT_DRIVEWAY_ZT_N + 2,
             Textures.ROAD,
             tt=Textures.ROAD,
         )
@@ -100,14 +102,14 @@ def build():
     # Road fill — solid ground under road surface
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_RD_X1,
-            KH_DRIVEWAY_RD_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_RD_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S,
-            KH_DRIVEWAY_ZT_N,
+            KNOTT_DRIVEWAY_ZT_S,
+            KNOTT_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -116,14 +118,14 @@ def build():
     # West sidewalk (strip between building east wall and road) — slopes with road
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_WS_X1,
-            KH_DRIVEWAY_WS_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.CEMENT,
             tt=Textures.CEMENT,
         )
@@ -131,14 +133,14 @@ def build():
     # West sidewalk fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_WS_X1,
-            KH_DRIVEWAY_WS_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S,
-            KH_DRIVEWAY_ZT_N,
+            KNOTT_DRIVEWAY_ZT_S,
+            KNOTT_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -147,14 +149,14 @@ def build():
     # East sidewalk — slopes with road
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_ES_X1,
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.CEMENT,
             tt=Textures.CEMENT,
         )
@@ -162,14 +164,14 @@ def build():
     # East sidewalk fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_ES_X1,
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S,
-            KH_DRIVEWAY_ZT_N,
+            KNOTT_DRIVEWAY_ZT_S,
+            KNOTT_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -179,26 +181,26 @@ def build():
     # South extension: flat at hill level
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_ES_X2,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )
     # Main back road section: slopes with the sidewalk (88 at south → 8 at north)
     BRUSHES.append(
         ramp_slab_y(
-            KH_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_ES_X2,
             WORLD_X2 - WALL_T,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -207,23 +209,23 @@ def build():
     # ── South extension — road + east sidewalk behind Knott Hall to world edge ──
     BRUSHES.append(
         box(
-            KH_X1,
+            KNOTT_X1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KH_DRIVEWAY_ES_X1,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_ZT_S + 2,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_ZT_S + 2,
             Textures.ROAD,
         )
     )
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_ES_X1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_Y1,
-            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
             Textures.CEMENT,
         )
     )
@@ -232,11 +234,11 @@ def build():
     # Flat road surface
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_RD_X1,
-            KH_DRIVEWAY_EXT_Y1,
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_DRIVEWAY_RD_X2,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_RD_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
@@ -244,11 +246,11 @@ def build():
     # West sidewalk
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_WS_X1,
-            KH_DRIVEWAY_EXT_Y1,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_DRIVEWAY_WS_X2,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -256,11 +258,11 @@ def build():
     # East sidewalk
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_ES_X1,
-            KH_DRIVEWAY_EXT_Y1,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -268,11 +270,11 @@ def build():
     # Terrain east of east sidewalk — flush with sidewalk top
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_EXT_Y1,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
@@ -282,10 +284,10 @@ def build():
     # (This was previously the Ennis south sidewalk; now it's part of the road junction)
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_RD_X1,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_DRIVEWAY_RD_X2,
+            KNOTT_DRIVEWAY_RD_X2,
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2 + 2,
             Textures.ROAD,
@@ -298,28 +300,32 @@ def build():
     # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_WS_X1,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_DRIVEWAY_RD_X1,
-            KH_DRIVEWAY_JCY,
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_JCY,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
     )
-    for corner_index in range(KH_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(0 + corner_index * 90 / KH_DRIVEWAY_CURB_CRN_SEGS)
+    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+        angle_start = math.radians(0 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS)
         angle_end = math.radians(
-            0 + (corner_index + 1) * 90 / KH_DRIVEWAY_CURB_CRN_SEGS
+            0 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
         )
-        arc_x0 = KH_DRIVEWAY_JCX_W + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_start)
-        arc_y0 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_start)
-        arc_x1 = KH_DRIVEWAY_JCX_W + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
+        arc_x0 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
+            angle_start
+        )
+        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
+            angle_start
+        )
+        arc_x1 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
+        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
         BRUSHES.append(
             tri_prism(
-                KH_DRIVEWAY_JCX_W,
-                KH_DRIVEWAY_EXT_Y2,
+                KNOTT_DRIVEWAY_JCX_W,
+                KNOTT_DRIVEWAY_EXT_Y2,
                 arc_x0,
                 arc_y0,
                 arc_x1,
@@ -333,28 +339,34 @@ def build():
     # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
     BRUSHES.append(
         box(
-            KH_DRIVEWAY_ES_X1,
-            KH_DRIVEWAY_EXT_Y2,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_DRIVEWAY_ES_X2,
-            KH_DRIVEWAY_JCY,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_JCY,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
     )
-    for corner_index in range(KH_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(90 + corner_index * 90 / KH_DRIVEWAY_CURB_CRN_SEGS)
-        angle_end = math.radians(
-            90 + (corner_index + 1) * 90 / KH_DRIVEWAY_CURB_CRN_SEGS
+    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+        angle_start = math.radians(
+            90 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
         )
-        arc_x0 = KH_DRIVEWAY_JCX_E + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_start)
-        arc_y0 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_start)
-        arc_x1 = KH_DRIVEWAY_JCX_E + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
+        angle_end = math.radians(
+            90 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
+        )
+        arc_x0 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
+            angle_start
+        )
+        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
+            angle_start
+        )
+        arc_x1 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
+        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
         BRUSHES.append(
             tri_prism(
-                KH_DRIVEWAY_JCX_E,
-                KH_DRIVEWAY_EXT_Y2,
+                KNOTT_DRIVEWAY_JCX_E,
+                KNOTT_DRIVEWAY_EXT_Y2,
                 arc_x0,
                 arc_y0,
                 arc_x1,
@@ -365,48 +377,49 @@ def build():
             )
         )
 
-    bix1 = KH_X1 + KH_WALL  # interior west
-    bix2 = KH_X2 - KH_WALL  # interior east
-    KH_BIY1 = KH_Y1 + KH_WALL  # interior south = -784
-    KH_BIY2 = KH_Y2 - KH_WALL  # interior north = -272
+    bix1 = KNOTT_X1 + KNOTT_WALL  # interior west
+    bix2 = KNOTT_X2 - KNOTT_WALL  # interior east
+    KNOTT_BIY1 = KNOTT_Y1 + KNOTT_WALL  # interior south = -784
+    KNOTT_BIY2 = KNOTT_Y2 - KNOTT_WALL  # interior north = -272
 
-    # Entrance doorway — pinned to original building centre, not current KH_CX
-    KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
+    # Entrance doorway — pinned to original building centre, not current KNOTT_CX
+    KNOTT_ENT_X1, KNOTT_ENT_X2 = KNOTT_ORIG_CX - 64, KNOTT_ORIG_CX + 64
 
     # ── Entrance staircase ────────────────────────────────────────────────────────
-    KH_STEP_N = 5
-    KH_STEP_DEPTH = 24  # tread depth
-    KH_STAIR_OFFSET = 384  # distance from north wall to stair base
+    KNOTT_STEP_N = 5
+    KNOTT_STEP_DEPTH = 24  # tread depth
+    KNOTT_STAIR_OFFSET = 384  # distance from north wall to stair base
     stair_base_z = FLOOR_Z2 + CHARLES_WALK_H  # steps start at apron surface height (8)
 
     # Flat cement platform between building and stairs
     BRUSHES.append(
         box(
-            KH_ENT_X1,
-            KH_Y2,
+            KNOTT_ENT_X1,
+            KNOTT_Y2,
             FLOOR_Z2,
-            KH_ENT_X2,
-            KH_Y2 + KH_STAIR_OFFSET,
-            KH_GROUND_Z,
+            KNOTT_ENT_X2,
+            KNOTT_Y2 + KNOTT_STAIR_OFFSET,
+            KNOTT_GROUND_Z,
             Textures.CEMENT,
         )
     )
 
-    stair_y0 = KH_Y2 + KH_STAIR_OFFSET  # south edge of staircase
+    stair_y0 = KNOTT_Y2 + KNOTT_STAIR_OFFSET  # south edge of staircase
     stair_y_end = (
-        stair_y0 + KH_STEP_N * KH_STEP_DEPTH
+        stair_y0 + KNOTT_STEP_N * KNOTT_STEP_DEPTH
     )  # north end of stairs (ground level)
-    for stair_index in range(KH_STEP_N):
+    for stair_index in range(KNOTT_STEP_N):
         step_top_z = (
-            stair_base_z + (KH_GROUND_Z - stair_base_z) * (stair_index + 1) // KH_STEP_N
+            stair_base_z
+            + (KNOTT_GROUND_Z - stair_base_z) * (stair_index + 1) // KNOTT_STEP_N
         )
-        step_north_y = stair_y0 + (KH_STEP_N - stair_index) * KH_STEP_DEPTH
+        step_north_y = stair_y0 + (KNOTT_STEP_N - stair_index) * KNOTT_STEP_DEPTH
         BRUSHES.append(
             box(
-                KH_ENT_X1,
+                KNOTT_ENT_X1,
                 stair_y0,
                 stair_base_z,
-                KH_ENT_X2,
+                KNOTT_ENT_X2,
                 step_north_y,
                 step_top_z,
                 Textures.CEMENT,
@@ -417,10 +430,10 @@ def build():
     # Cement sidewalk from stair base to Ennis south sidewalk — flush with ground fill
     BRUSHES.append(
         box(
-            KH_ENT_X1,
+            KNOTT_ENT_X1,
             stair_y_end,
             FLOOR_Z1,
-            KH_ENT_X2,
+            KNOTT_ENT_X2,
             ENNIS_SW_EDGE,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
@@ -432,8 +445,8 @@ def build():
     cap_width = 24  # cheek wall thickness (X)
     cap_raise = 16  # extra height above stair slope
     for cap_x1, cap_x2 in [
-        (KH_ENT_X1 - cap_width, KH_ENT_X1),  # west cheek
-        (KH_ENT_X2, KH_ENT_X2 + cap_width),  # east cheek
+        (KNOTT_ENT_X1 - cap_width, KNOTT_ENT_X1),  # west cheek
+        (KNOTT_ENT_X2, KNOTT_ENT_X2 + cap_width),  # east cheek
     ]:
         BRUSHES.append(
             ramp_slab_y(
@@ -443,21 +456,21 @@ def build():
                 stair_y_end,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                KH_GROUND_Z + cap_raise,
+                KNOTT_GROUND_Z + cap_raise,
                 stair_base_z + cap_raise,
                 Textures.CEMENT,
             )
         )
 
     # ── Stair railings ────────────────────────────────────────────────────────────
-    KH_RAIL_H = 72  # stair handrail height
-    KH_RAIL_TEX = "metal4_4"
+    KNOTT_RAIL_H = 72  # stair handrail height
+    KNOTT_RAIL_TEX = "metal4_4"
     post_width = 8  # post face width (X) — wide flat-facing
     post_depth = 2  # post depth (Y)
     level_extension = 20  # length of level rail extension at top and bottom
-    for rail_x_base, is_west_side in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
-        rail_top_z_at_platform = KH_GROUND_Z + KH_RAIL_H - 28
-        rail_top_z_at_apron = stair_base_z + KH_RAIL_H - 28
+    for rail_x_base, is_west_side in [(KNOTT_ENT_X1, True), (KNOTT_ENT_X2, False)]:
+        rail_top_z_at_platform = KNOTT_GROUND_Z + KNOTT_RAIL_H - 28
+        rail_top_z_at_apron = stair_base_z + KNOTT_RAIL_H - 28
         rail_x1 = rail_x_base - post_width if is_west_side else rail_x_base
         rail_x2 = rail_x_base if is_west_side else rail_x_base + post_width
 
@@ -472,7 +485,7 @@ def build():
                 rail_top_z_at_apron,
                 rail_top_z_at_platform + 2,
                 rail_top_z_at_apron + 2,
-                KH_RAIL_TEX,
+                KNOTT_RAIL_TEX,
             )
         )
 
@@ -485,7 +498,7 @@ def build():
                 rail_x2,
                 stair_y0,
                 rail_top_z_at_platform + 2,
-                KH_RAIL_TEX,
+                KNOTT_RAIL_TEX,
             )
         )
         # Horizontal extension at bottom (level with apron floor)
@@ -497,13 +510,13 @@ def build():
                 rail_x2,
                 stair_y_end + level_extension,
                 rail_top_z_at_apron + 2,
-                KH_RAIL_TEX,
+                KNOTT_RAIL_TEX,
             )
         )
 
         # Posts — wide flat-facing
         for post_y, post_z in [
-            (stair_y0, KH_GROUND_Z),
+            (stair_y0, KNOTT_GROUND_Z),
             (stair_y_end, stair_base_z),
         ]:
             BRUSHES.append(
@@ -513,8 +526,8 @@ def build():
                     post_z,
                     rail_x2,
                     post_y + post_depth,
-                    post_z + KH_RAIL_H - 26,
-                    KH_RAIL_TEX,
+                    post_z + KNOTT_RAIL_H - 26,
+                    KNOTT_RAIL_TEX,
                 )
             )
 
@@ -522,48 +535,48 @@ def build():
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
     WIN_HALF = 24  # half-width of recessed corner windows
-    KH_MULLION_W = 12  # mullion width
-    KH_MULLION_PRO = 12  # mullion protrusion depth
+    KNOTT_MULLION_W = 12  # mullion width
+    KNOTT_MULLION_PRO = 12  # mullion protrusion depth
 
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
     # Main south face — hallway openings cut through at each floor level
     s_wall_openings = [
         (
-            KH_ENT_X1,
-            KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL,
-            KH_ENT_X2,
-            KH_GROUND_Z + (fl + 1) * KH_FLOOR_H,
+            KNOTT_ENT_X1,
+            KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_WALL,
+            KNOTT_ENT_X2,
+            KNOTT_GROUND_Z + (fl + 1) * KNOTT_FLOOR_H,
         )
-        for fl in range(KH_FLOORS)
+        for fl in range(KNOTT_FLOORS)
     ]
     BRUSHES.extend(
         layered_wall(
-            KH_X1 + INDENT,
-            KH_Y1,
-            KH_GROUND_Z,
-            KH_X2 - INDENT,
-            KH_Y1 + KH_WALL,
-            KH_Z2,
+            KNOTT_X1 + INDENT,
+            KNOTT_Y1,
+            KNOTT_GROUND_Z,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y1 + KNOTT_WALL,
+            KNOTT_Z2,
             s_wall_openings,
             Textures.WALL,
         )
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
-    sw_win_cx = KH_X1 + INDENT // 2
+    sw_win_cx = KNOTT_X1 + INDENT // 2
     BRUSHES.extend(
         layered_wall(
-            KH_X1,
-            KH_Y1 + INDENT - KH_WALL,
+            KNOTT_X1,
+            KNOTT_Y1 + INDENT - KNOTT_WALL,
             FLOOR_Z1,
-            KH_X1 + INDENT,
-            KH_Y1 + INDENT,
-            KH_Z2,
+            KNOTT_X1 + INDENT,
+            KNOTT_Y1 + INDENT,
+            KNOTT_Z2,
             [
                 (
                     sw_win_cx - WIN_HALF,
-                    KH_GROUND_Z + KH_FLOOR_H,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
                     sw_win_cx + WIN_HALF,
-                    KH_Z2,
+                    KNOTT_Z2,
                 )
             ],
             Textures.WALL,
@@ -571,31 +584,31 @@ def build():
     )
     BRUSHES.append(
         box(
-            KH_X1 + INDENT - KH_WALL,
-            KH_Y1,
+            KNOTT_X1 + INDENT - KNOTT_WALL,
+            KNOTT_Y1,
             FLOOR_Z1,
-            KH_X1 + INDENT,
-            KH_Y1 + INDENT,
-            KH_Z2,
+            KNOTT_X1 + INDENT,
+            KNOTT_Y1 + INDENT,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
-    se_win_cx = KH_X2 - INDENT // 2
+    se_win_cx = KNOTT_X2 - INDENT // 2
     BRUSHES.extend(
         layered_wall(
-            KH_X2 - INDENT,
-            KH_Y1 + INDENT - KH_WALL,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y1 + INDENT - KNOTT_WALL,
             FLOOR_Z1,
-            KH_X2,
-            KH_Y1 + INDENT,
-            KH_Z2,
+            KNOTT_X2,
+            KNOTT_Y1 + INDENT,
+            KNOTT_Z2,
             [
                 (
                     se_win_cx - WIN_HALF,
-                    KH_GROUND_Z + KH_FLOOR_H,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
                     se_win_cx + WIN_HALF,
-                    KH_Z2,
+                    KNOTT_Z2,
                 )
             ],
             Textures.WALL,
@@ -603,118 +616,128 @@ def build():
     )
     BRUSHES.append(
         box(
-            KH_X2 - INDENT,
-            KH_Y1,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y1,
             FLOOR_Z1,
-            KH_X2 - INDENT + KH_WALL,
-            KH_Y1 + INDENT,
-            KH_Z2,
+            KNOTT_X2 - INDENT + KNOTT_WALL,
+            KNOTT_Y1 + INDENT,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # South mullions — protrude outward (south, -Y)
-    for mx in [sw_win_cx - WIN_HALF - KH_MULLION_W, sw_win_cx + WIN_HALF]:
+    for mx in [sw_win_cx - WIN_HALF - KNOTT_MULLION_W, sw_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
-                KH_Y1 + INDENT - KH_WALL,
-                KH_GROUND_Z + KH_FLOOR_H,
-                mx + KH_MULLION_W,
-                KH_Y1 + INDENT + KH_MULLION_PRO,
-                KH_Z2,
+                KNOTT_Y1 + INDENT - KNOTT_WALL,
+                KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                mx + KNOTT_MULLION_W,
+                KNOTT_Y1 + INDENT + KNOTT_MULLION_PRO,
+                KNOTT_Z2,
                 Textures.CEMENT,
             )
         )
-    for mx in [se_win_cx - WIN_HALF - KH_MULLION_W, se_win_cx + WIN_HALF]:
+    for mx in [se_win_cx - WIN_HALF - KNOTT_MULLION_W, se_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
-                KH_Y1 + INDENT - KH_WALL,
-                KH_GROUND_Z + KH_FLOOR_H,
-                mx + KH_MULLION_W,
-                KH_Y1 + INDENT + KH_MULLION_PRO,
-                KH_Z2,
+                KNOTT_Y1 + INDENT - KNOTT_WALL,
+                KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                mx + KNOTT_MULLION_W,
+                KNOTT_Y1 + INDENT + KNOTT_MULLION_PRO,
+                KNOTT_Z2,
                 Textures.CEMENT,
             )
         )
     # Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
     for wx in [sw_win_cx, se_win_cx]:
-        for fl in range(1, KH_FLOORS):
-            mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        for fl in range(1, KNOTT_FLOORS):
+            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
             BRUSHES.append(
                 box(
                     wx - WIN_HALF,
-                    KH_Y1 + INDENT - KH_WALL,
+                    KNOTT_Y1 + INDENT - KNOTT_WALL,
                     mz,
                     wx + WIN_HALF,
-                    KH_Y1 + INDENT + KH_MULLION_PRO,
+                    KNOTT_Y1 + INDENT + KNOTT_MULLION_PRO,
                     mz + 4,
                     Textures.RAIL,
                 )
             )
     # Floor-level mullions — SW and SE south-face windows
     for wx in [sw_win_cx, se_win_cx]:
-        for fl in range(1, KH_FLOORS + 1):
-            fz = KH_GROUND_Z + fl * KH_FLOOR_H
+        for fl in range(1, KNOTT_FLOORS + 1):
+            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
             BRUSHES.append(
                 box(
                     wx - WIN_HALF,
-                    KH_Y1 + INDENT - KH_WALL,
-                    fz - 4 if fl > 0 else KH_GROUND_Z,
+                    KNOTT_Y1 + INDENT - KNOTT_WALL,
+                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
                     wx + WIN_HALF,
-                    KH_Y1 + INDENT + KH_MULLION_PRO,
-                    (fz if fl > 0 else KH_GROUND_Z + 4),
+                    KNOTT_Y1 + INDENT + KNOTT_MULLION_PRO,
+                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
                     Textures.RAIL,
                 )
             )
     # North-West Indentation (Corner Notch)
     # North wall — faces bridge; ground entrance + 2nd-floor walkway opening
     door_ground = [
-        (KH_ENT_X1, KH_GROUND_Z, KH_ENT_X2, KH_GROUND_Z + KH_FLOOR_H)
+        (KNOTT_ENT_X1, KNOTT_GROUND_Z, KNOTT_ENT_X2, KNOTT_GROUND_Z + KNOTT_FLOOR_H)
     ]  # ground entrance
     door_upper = [
-        (KH_ENT_X1, WALK_ZT2, KH_ENT_X2, KH_GROUND_Z + KH_FLOOR_H * 2)
+        (KNOTT_ENT_X1, WALK_ZT2, KNOTT_ENT_X2, KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2)
     ]  # walkway entrance
     win_n = [
-        (KH_ORIG_CX - 48, KH_GROUND_Z + KH_FLOOR_H * 2, KH_ORIG_CX - 6, KH_Z2),
-        (KH_ORIG_CX + 6, KH_GROUND_Z + KH_FLOOR_H * 2, KH_ORIG_CX + 48, KH_Z2),
+        (
+            KNOTT_ORIG_CX - 48,
+            KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2,
+            KNOTT_ORIG_CX - 6,
+            KNOTT_Z2,
+        ),
+        (
+            KNOTT_ORIG_CX + 6,
+            KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2,
+            KNOTT_ORIG_CX + 48,
+            KNOTT_Z2,
+        ),
     ]  # two window slots centered over entrance doorway, split by center mullion
     BRUSHES.extend(
         layered_wall(
-            KH_X1 + 2 * INDENT,
-            KH_Y2 - KH_WALL,
-            KH_GROUND_Z,
-            KH_X2 - INDENT,
-            KH_Y2,
-            KH_Z2,
+            KNOTT_X1 + 2 * INDENT,
+            KNOTT_Y2 - KNOTT_WALL,
+            KNOTT_GROUND_Z,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y2,
+            KNOTT_Z2,
             door_ground + door_upper + win_n,
             Textures.WALL,
         )
     )
 
-    # NW Indentation — 2×INDENT wide (extends west to KH_X1), two windows side by side
-    nw_win_cx1 = KH_X1 + INDENT // 2  # west window = 1246 (pier-aligned)
-    nw_win_cx2 = KH_X1 + INDENT + INDENT // 2  # east window = 1326
+    # NW Indentation — 2×INDENT wide (extends west to KNOTT_X1), two windows side by side
+    nw_win_cx1 = KNOTT_X1 + INDENT // 2  # west window = 1246 (pier-aligned)
+    nw_win_cx2 = KNOTT_X1 + INDENT + INDENT // 2  # east window = 1326
     BRUSHES.extend(
         layered_wall(
-            KH_X1,
-            KH_Y2 - INDENT,
+            KNOTT_X1,
+            KNOTT_Y2 - INDENT,
             FLOOR_Z1,
-            KH_X1 + 2 * INDENT,
-            KH_Y2 - INDENT + KH_WALL,
-            KH_Z2,
+            KNOTT_X1 + 2 * INDENT,
+            KNOTT_Y2 - INDENT + KNOTT_WALL,
+            KNOTT_Z2,
             [
                 (
                     nw_win_cx1 - WIN_HALF,
-                    KH_GROUND_Z + KH_FLOOR_H,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
                     nw_win_cx1 + WIN_HALF,
-                    KH_Z2,
+                    KNOTT_Z2,
                 ),
                 (
                     nw_win_cx2 - WIN_HALF,
-                    KH_GROUND_Z + KH_FLOOR_H,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
                     nw_win_cx2 + WIN_HALF,
-                    KH_Z2,
+                    KNOTT_Z2,
                 ),
             ],
             Textures.WALL,
@@ -722,32 +745,32 @@ def build():
     )
     BRUSHES.append(
         box(
-            KH_X1 + 2 * INDENT - KH_WALL,
-            KH_Y2 - INDENT,
+            KNOTT_X1 + 2 * INDENT - KNOTT_WALL,
+            KNOTT_Y2 - INDENT,
             FLOOR_Z1,
-            KH_X1 + 2 * INDENT,
-            KH_Y2,
-            KH_Z2,
+            KNOTT_X1 + 2 * INDENT,
+            KNOTT_Y2,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
 
     # NE Indentation inner walls (mirror of NW) — recessed back wall has a centered 48-unit window
-    ne_win_cx = KH_X2 - INDENT // 2
+    ne_win_cx = KNOTT_X2 - INDENT // 2
     BRUSHES.extend(
         layered_wall(
-            KH_X2 - INDENT,
-            KH_Y2 - INDENT,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y2 - INDENT,
             FLOOR_Z1,
-            KH_X2,
-            KH_Y2 - INDENT + KH_WALL,
-            KH_Z2,
+            KNOTT_X2,
+            KNOTT_Y2 - INDENT + KNOTT_WALL,
+            KNOTT_Z2,
             [
                 (
                     ne_win_cx - WIN_HALF,
-                    KH_GROUND_Z + KH_FLOOR_H,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
                     ne_win_cx + WIN_HALF,
-                    KH_Z2,
+                    KNOTT_Z2,
                 )
             ],
             Textures.WALL,
@@ -755,12 +778,12 @@ def build():
     )
     BRUSHES.append(
         box(
-            KH_X2 - INDENT,
-            KH_Y2 - INDENT,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y2 - INDENT,
             FLOOR_Z1,
-            KH_X2 - INDENT + KH_WALL,
-            KH_Y2,
-            KH_Z2,
+            KNOTT_X2 - INDENT + KNOTT_WALL,
+            KNOTT_Y2,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
@@ -769,47 +792,47 @@ def build():
     # and the narrow vertical window on the main north face. All protrude 12 units outward.
     # NW recessed windows: mullions for both (west and east window in the wide NW indentation)
     for mx in [
-        nw_win_cx1 - WIN_HALF - KH_MULLION_W,
+        nw_win_cx1 - WIN_HALF - KNOTT_MULLION_W,
         nw_win_cx1 + WIN_HALF,
-        nw_win_cx2 - WIN_HALF - KH_MULLION_W,
+        nw_win_cx2 - WIN_HALF - KNOTT_MULLION_W,
         nw_win_cx2 + WIN_HALF,
     ]:
         BRUSHES.append(
             box(
                 mx,
-                KH_Y2 - INDENT - KH_MULLION_PRO,
-                KH_GROUND_Z + KH_FLOOR_H,
-                mx + KH_MULLION_W,
-                KH_Y2 - INDENT + KH_WALL,
-                KH_Z2,
+                KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
+                KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                mx + KNOTT_MULLION_W,
+                KNOTT_Y2 - INDENT + KNOTT_WALL,
+                KNOTT_Z2,
                 Textures.CEMENT,
             )
         )
     # NE recessed window: mullions just outside the opening so player can fit through
-    for mx in [ne_win_cx - WIN_HALF - KH_MULLION_W, ne_win_cx + WIN_HALF]:
+    for mx in [ne_win_cx - WIN_HALF - KNOTT_MULLION_W, ne_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
-                KH_Y2 - INDENT - KH_MULLION_PRO,
-                KH_GROUND_Z + KH_FLOOR_H,
-                mx + KH_MULLION_W,
-                KH_Y2 - INDENT + KH_WALL,
-                KH_Z2,
+                KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
+                KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                mx + KNOTT_MULLION_W,
+                KNOTT_Y2 - INDENT + KNOTT_WALL,
+                KNOTT_Z2,
                 Textures.CEMENT,
             )
         )
     # Main front wall window win_n: mullions on each side and center post
-    win_n_x1, win_n_x2 = KH_ORIG_CX - 48, KH_ORIG_CX + 48
-    win_n_mid = KH_ORIG_CX - 6  # left edge of center mullion
-    for mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
+    win_n_x1, win_n_x2 = KNOTT_ORIG_CX - 48, KNOTT_ORIG_CX + 48
+    win_n_mid = KNOTT_ORIG_CX - 6  # left edge of center mullion
+    for mx in [win_n_x1 - KNOTT_MULLION_W, win_n_mid, win_n_x2]:
         BRUSHES.append(
             box(
                 mx,
-                KH_Y2 - KH_WALL,
-                KH_GROUND_Z + KH_FLOOR_H * 2,
-                mx + KH_MULLION_W,
-                KH_Y2 + KH_MULLION_PRO,
-                KH_Z2,
+                KNOTT_Y2 - KNOTT_WALL,
+                KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2,
+                mx + KNOTT_MULLION_W,
+                KNOTT_Y2 + KNOTT_MULLION_PRO,
+                KNOTT_Z2,
                 Textures.CEMENT,
             )
         )
@@ -821,16 +844,16 @@ def build():
     sign_char_width = (4 + 1) * sign_pixel_width
     sign_total_width = len(sign_text) * sign_char_width - sign_pixel_width
     sign_half_width = sign_total_width // 2 + 4  # 4 unit padding each side = 222
-    sign_center_x = KH_X2 - INDENT - sign_half_width  # east edge flush with wall end
-    sign_z1 = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
+    sign_center_x = KNOTT_X2 - INDENT - sign_half_width  # east edge flush with wall end
+    sign_z1 = KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 20  # just above 2nd floor line
     sign_z2 = sign_z1 + 48  # 48 units tall
     BRUSHES.append(
         box(
             sign_center_x - sign_half_width,
-            KH_Y2,
+            KNOTT_Y2,
             sign_z1,
             sign_center_x + sign_half_width,
-            KH_Y2 + 6,
+            KNOTT_Y2 + 6,
             sign_z2,
             Textures.CEMENT,
         )
@@ -842,7 +865,7 @@ def build():
     # East wall — three 120-unit wide floor-to-ceiling windows, matching west side
     # Shared window layout variables (used for both east and west walls)
     ww_half = 120
-    ww_wall_y1, ww_wall_y2 = KH_Y1, KH_Y2 - INDENT
+    ww_wall_y1, ww_wall_y2 = KNOTT_Y1, KNOTT_Y2 - INDENT
     ww_quarter = (ww_wall_y2 - ww_wall_y1) // 4
     ww_c1 = ww_wall_y1 + ww_quarter
     ww_c2 = ww_wall_y1 + 2 * ww_quarter
@@ -852,15 +875,30 @@ def build():
     BRUSHES.extend(
         layered_wall_y(
             ww_wall_y1,
-            KH_X2 - KH_WALL,
-            KH_GROUND_Z,
+            KNOTT_X2 - KNOTT_WALL,
+            KNOTT_GROUND_Z,
             ww_wall_y2,
-            KH_X2,
-            KH_Z2,
+            KNOTT_X2,
+            KNOTT_Z2,
             [
-                (ww_c1 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c1 + ww_half, KH_Z2),
-                (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
-                (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
+                (
+                    ww_c1 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c1 + ww_half,
+                    KNOTT_Z2,
+                ),
+                (
+                    ww_c2 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c2 + ww_half,
+                    KNOTT_Z2,
+                ),
+                (
+                    ww_c3 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c3 + ww_half,
+                    KNOTT_Z2,
+                ),
             ],
             Textures.WALL,
         )
@@ -875,12 +913,12 @@ def build():
         ]:
             BRUSHES.append(
                 box(
-                    KH_X2 - KH_WALL,
+                    KNOTT_X2 - KNOTT_WALL,
                     mullion_y,
-                    KH_GROUND_Z + KH_FLOOR_H,
-                    KH_X2 + ww_protrude,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    KNOTT_X2 + ww_protrude,
                     mullion_y + ww_div_w,
-                    KH_Z2,
+                    KNOTT_Z2,
                     Textures.CEMENT,
                 )
             )
@@ -888,14 +926,14 @@ def build():
     # Horizontal mullions — centered in each floor span for contrast, players still fit through
     # Mid-floor Z leaves ~85 units clearance each side (player height = 56)
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KH_FLOORS):
-            mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        for fl in range(1, KNOTT_FLOORS):
+            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
             BRUSHES.append(
                 box(
-                    KH_X2 - KH_WALL,
+                    KNOTT_X2 - KNOTT_WALL,
                     window_center_y - ww_half,
                     mz,
-                    KH_X2 + ww_protrude,
+                    KNOTT_X2 + ww_protrude,
                     window_center_y + ww_half,
                     mz + 4,
                     Textures.RAIL,
@@ -903,16 +941,16 @@ def build():
             )
     # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KH_FLOORS + 1):
-            fz = KH_GROUND_Z + fl * KH_FLOOR_H
+        for fl in range(1, KNOTT_FLOORS + 1):
+            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
             BRUSHES.append(
                 box(
-                    KH_X2 - KH_WALL,
+                    KNOTT_X2 - KNOTT_WALL,
                     window_center_y - ww_half,
-                    fz - 4 if fl > 0 else KH_GROUND_Z,
-                    KH_X2 + ww_protrude,
+                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    KNOTT_X2 + ww_protrude,
                     window_center_y + ww_half,
-                    (fz if fl > 0 else KH_GROUND_Z + 4),
+                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
                     Textures.RAIL,
                 )
             )
@@ -921,15 +959,30 @@ def build():
     BRUSHES.extend(
         layered_wall_y(
             ww_wall_y1,
-            KH_X1,
-            KH_GROUND_Z,
+            KNOTT_X1,
+            KNOTT_GROUND_Z,
             ww_wall_y2,
-            KH_X1 + KH_WALL,
-            KH_Z2,
+            KNOTT_X1 + KNOTT_WALL,
+            KNOTT_Z2,
             [
-                (ww_c1 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c1 + ww_half, KH_Z2),
-                (ww_c2 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c2 + ww_half, KH_Z2),
-                (ww_c3 - ww_half, KH_GROUND_Z + KH_FLOOR_H, ww_c3 + ww_half, KH_Z2),
+                (
+                    ww_c1 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c1 + ww_half,
+                    KNOTT_Z2,
+                ),
+                (
+                    ww_c2 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c2 + ww_half,
+                    KNOTT_Z2,
+                ),
+                (
+                    ww_c3 - ww_half,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    ww_c3 + ww_half,
+                    KNOTT_Z2,
+                ),
             ],
             Textures.WALL,
         )
@@ -945,26 +998,26 @@ def build():
         ]:
             BRUSHES.append(
                 box(
-                    KH_X1 - ww_protrude,
+                    KNOTT_X1 - ww_protrude,
                     mullion_y,
-                    KH_GROUND_Z + KH_FLOOR_H,
-                    KH_X1 + KH_WALL,
+                    KNOTT_GROUND_Z + KNOTT_FLOOR_H,
+                    KNOTT_X1 + KNOTT_WALL,
                     mullion_y + ww_div_w,
-                    KH_Z2,
+                    KNOTT_Z2,
                     Textures.CEMENT,
                 )
             )
 
     # Horizontal mullions — west wall, matching east
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KH_FLOORS):
-            mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        for fl in range(1, KNOTT_FLOORS):
+            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
             BRUSHES.append(
                 box(
-                    KH_X1 - ww_protrude,
+                    KNOTT_X1 - ww_protrude,
                     window_center_y - ww_half,
                     mz,
-                    KH_X1 + KH_WALL,
+                    KNOTT_X1 + KNOTT_WALL,
                     window_center_y + ww_half,
                     mz + 4,
                     Textures.RAIL,
@@ -972,46 +1025,46 @@ def build():
             )
     # Floor-level mullions — west wall
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KH_FLOORS + 1):
-            fz = KH_GROUND_Z + fl * KH_FLOOR_H
+        for fl in range(1, KNOTT_FLOORS + 1):
+            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
             BRUSHES.append(
                 box(
-                    KH_X1 - ww_protrude,
+                    KNOTT_X1 - ww_protrude,
                     window_center_y - ww_half,
-                    fz - 4 if fl > 0 else KH_GROUND_Z,
-                    KH_X1 + KH_WALL,
+                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    KNOTT_X1 + KNOTT_WALL,
                     window_center_y + ww_half,
-                    (fz if fl > 0 else KH_GROUND_Z + 4),
+                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
                     Textures.RAIL,
                 )
             )
 
     # Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
-    for fl in range(2, KH_FLOORS):
-        mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
+    for fl in range(2, KNOTT_FLOORS):
+        mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
         BRUSHES.append(
             box(
                 win_n_x1,
-                KH_Y2 - KH_WALL,
+                KNOTT_Y2 - KNOTT_WALL,
                 mz,
                 win_n_x2,
-                KH_Y2 + KH_MULLION_PRO,
+                KNOTT_Y2 + KNOTT_MULLION_PRO,
                 mz + 4,
                 Textures.RAIL,
             )
         )
     # Floor-level mullions — win_n
-    for fl in range(2, KH_FLOORS + 1):
-        fz = KH_GROUND_Z + fl * KH_FLOOR_H
-        if fz <= KH_Z2:
+    for fl in range(2, KNOTT_FLOORS + 1):
+        fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        if fz <= KNOTT_Z2:
             BRUSHES.append(
                 box(
                     win_n_x1,
-                    KH_Y2 - KH_WALL,
-                    fz - 4 if fl > 0 else KH_GROUND_Z,
+                    KNOTT_Y2 - KNOTT_WALL,
+                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
                     win_n_x2,
-                    KH_Y2 + KH_MULLION_PRO,
-                    (fz if fl > 0 else KH_GROUND_Z + 4),
+                    KNOTT_Y2 + KNOTT_MULLION_PRO,
+                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
                     Textures.RAIL,
                 )
             )
@@ -1020,15 +1073,15 @@ def build():
         (nw_win_cx2, WIN_HALF),
         (ne_win_cx, WIN_HALF),
     ]:
-        for fl in range(1, KH_FLOORS):
-            mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
+        for fl in range(1, KNOTT_FLOORS):
+            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
             BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
-                    KH_Y2 - INDENT - KH_MULLION_PRO,
+                    KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
                     mz,
                     window_center_x + window_half_width,
-                    KH_Y2 - INDENT + KH_WALL,
+                    KNOTT_Y2 - INDENT + KNOTT_WALL,
                     mz + 4,
                     Textures.RAIL,
                 )
@@ -1039,16 +1092,16 @@ def build():
         (nw_win_cx2, WIN_HALF),
         (ne_win_cx, WIN_HALF),
     ]:
-        for fl in range(1, KH_FLOORS + 1):
-            fz = KH_GROUND_Z + fl * KH_FLOOR_H
+        for fl in range(1, KNOTT_FLOORS + 1):
+            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
             BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
-                    KH_Y2 - INDENT - KH_MULLION_PRO,
-                    fz - 4 if fl > 0 else KH_GROUND_Z,
+                    KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
+                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
                     window_center_x + window_half_width,
-                    KH_Y2 - INDENT + KH_WALL,
-                    (fz if fl > 0 else KH_GROUND_Z + 4),
+                    KNOTT_Y2 - INDENT + KNOTT_WALL,
+                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
                     Textures.RAIL,
                 )
             )
@@ -1056,163 +1109,171 @@ def build():
     # Roof — open above lift shaft, clipped for NW indentation
     BRUSHES.append(
         box(
-            KH_X1,
-            KH_Y1,
-            KH_Z2,
-            KH_STAIRS_X1,
-            KH_Y2 - INDENT,
-            KH_Z2 + KH_WALL,
+            KNOTT_X1,
+            KNOTT_Y1,
+            KNOTT_Z2,
+            KNOTT_STAIRS_X1,
+            KNOTT_Y2 - INDENT,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # far-west bulk
     BRUSHES.append(
         box(
-            KH_X1 + 2 * INDENT,
-            KH_Y2 - INDENT,
-            KH_Z2,
-            KH_STAIRS_X1,
-            KH_Y2,
-            KH_Z2 + KH_WALL,
+            KNOTT_X1 + 2 * INDENT,
+            KNOTT_Y2 - INDENT,
+            KNOTT_Z2,
+            KNOTT_STAIRS_X1,
+            KNOTT_Y2,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # far-west north-strip
     BRUSHES.append(
         box(
-            KH_STAIRS_X1,
-            KH_Y1,
-            KH_Z2,
-            KH_STAIRS_X2,
-            KH_STAIRS_Y1,
-            KH_Z2 + KH_WALL,
+            KNOTT_STAIRS_X1,
+            KNOTT_Y1,
+            KNOTT_Z2,
+            KNOTT_STAIRS_X2,
+            KNOTT_STAIRS_Y1,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # south of west stairwell
     BRUSHES.append(
         box(
-            KH_STAIRS_X1,
-            KH_STAIRS_Y2,
-            KH_Z2,
-            KH_STAIRS_X2,
-            KH_Y2,
-            KH_Z2 + KH_WALL,
+            KNOTT_STAIRS_X1,
+            KNOTT_STAIRS_Y2,
+            KNOTT_Z2,
+            KNOTT_STAIRS_X2,
+            KNOTT_Y2,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # north of west stairwell
     BRUSHES.append(
         box(
-            KH_STAIRS_X2,
-            KH_Y1,
-            KH_Z2,
-            KH_SHAFT_X1,
-            KH_Y2,
-            KH_Z2 + KH_WALL,
+            KNOTT_STAIRS_X2,
+            KNOTT_Y1,
+            KNOTT_Z2,
+            KNOTT_SHAFT_X1,
+            KNOTT_Y2,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # between shafts (no indent — interior)
     BRUSHES.append(
         box(
-            KH_SHAFT_X2,
-            KH_Y1,
-            KH_Z2,
-            KH_X2,
-            KH_Y2 - INDENT,
-            KH_Z2 + KH_WALL,
+            KNOTT_SHAFT_X2,
+            KNOTT_Y1,
+            KNOTT_Z2,
+            KNOTT_X2,
+            KNOTT_Y2 - INDENT,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # east bulk
     BRUSHES.append(
         box(
-            KH_SHAFT_X2,
-            KH_Y2 - INDENT,
-            KH_Z2,
-            KH_X2 - INDENT,
-            KH_Y2,
-            KH_Z2 + KH_WALL,
+            KNOTT_SHAFT_X2,
+            KNOTT_Y2 - INDENT,
+            KNOTT_Z2,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y2,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # east north-strip (NE cutout)
     BRUSHES.append(
         box(
-            KH_SHAFT_X1,
-            KH_Y1,
-            KH_Z2,
-            KH_SHAFT_X2,
-            KH_SHAFT_Y1,
-            KH_Z2 + KH_WALL,
+            KNOTT_SHAFT_X1,
+            KNOTT_Y1,
+            KNOTT_Z2,
+            KNOTT_SHAFT_X2,
+            KNOTT_SHAFT_Y1,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # south of shaft
     BRUSHES.append(
         box(
-            KH_SHAFT_X1,
-            KH_SHAFT_Y2,
-            KH_Z2,
-            KH_SHAFT_X2,
-            KH_Y2,
-            KH_Z2 + KH_WALL,
+            KNOTT_SHAFT_X1,
+            KNOTT_SHAFT_Y2,
+            KNOTT_Z2,
+            KNOTT_SHAFT_X2,
+            KNOTT_Y2,
+            KNOTT_Z2 + KNOTT_WALL,
             Textures.FLOOR_KH,
         )
     )  # north of shaft (closes roof over north wall above shaft)
 
     # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
     # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
-    sz0 = KH_GROUND_Z
-    st0 = sz0 + KH_WALL
+    sz0 = KNOTT_GROUND_Z
+    st0 = sz0 + KNOTT_WALL
     BRUSHES.append(
-        box(KH_X1, KH_Y1, sz0, KH_X2, KH_Y2 - INDENT, st0, Textures.FLOOR_KH)
+        box(
+            KNOTT_X1, KNOTT_Y1, sz0, KNOTT_X2, KNOTT_Y2 - INDENT, st0, Textures.FLOOR_KH
+        )
     )
     BRUSHES.append(
         box(
-            KH_X1 + 2 * INDENT,
-            KH_Y2 - INDENT,
+            KNOTT_X1 + 2 * INDENT,
+            KNOTT_Y2 - INDENT,
             sz0,
-            KH_X2 - INDENT,
-            KH_Y2,
+            KNOTT_X2 - INDENT,
+            KNOTT_Y2,
             st0,
             Textures.FLOOR_KH,
         )
     )
 
-    for floor_index in range(1, KH_FLOORS):
-        floor_z1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
-        floor_z2 = floor_z1 + KH_WALL
+    for floor_index in range(1, KNOTT_FLOORS):
+        floor_z1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
+        floor_z2 = floor_z1 + KNOTT_WALL
         # South bulk — full width up to stairwell's south wall
         BRUSHES.append(
             box(
-                bix1, KH_BIY1, floor_z1, bix2, KH_STAIRS_Y1, floor_z2, Textures.FLOOR_KH
-            )
-        )
-        # Stairwell south extension (KH_STAIRS_Y1..KH_SHAFT_Y1): floor on either side, stairwell open
-        BRUSHES.append(
-            box(
                 bix1,
-                KH_STAIRS_Y1,
-                floor_z1,
-                KH_STAIRS_X1,
-                KH_SHAFT_Y1,
-                floor_z2,
-                Textures.FLOOR_KH,
-            )
-        )
-        BRUSHES.append(
-            box(
-                KH_STAIRS_X2,
-                KH_STAIRS_Y1,
+                KNOTT_BIY1,
                 floor_z1,
                 bix2,
-                KH_SHAFT_Y1,
+                KNOTT_STAIRS_Y1,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
         )
-        # North zone (KH_SHAFT_Y1..KH_BIY2): west of stairwell, clipped for NW indentation
+        # Stairwell south extension (KNOTT_STAIRS_Y1..KNOTT_SHAFT_Y1): floor on either side, stairwell open
         BRUSHES.append(
             box(
                 bix1,
-                KH_SHAFT_Y1,
+                KNOTT_STAIRS_Y1,
                 floor_z1,
-                KH_STAIRS_X1,
-                KH_Y2 - INDENT,
+                KNOTT_STAIRS_X1,
+                KNOTT_SHAFT_Y1,
+                floor_z2,
+                Textures.FLOOR_KH,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_STAIRS_X2,
+                KNOTT_STAIRS_Y1,
+                floor_z1,
+                bix2,
+                KNOTT_SHAFT_Y1,
+                floor_z2,
+                Textures.FLOOR_KH,
+            )
+        )
+        # North zone (KNOTT_SHAFT_Y1..KNOTT_BIY2): west of stairwell, clipped for NW indentation
+        BRUSHES.append(
+            box(
+                bix1,
+                KNOTT_SHAFT_Y1,
+                floor_z1,
+                KNOTT_STAIRS_X1,
+                KNOTT_Y2 - INDENT,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
@@ -1220,11 +1281,11 @@ def build():
         # Between west stairwell and east shaft
         BRUSHES.append(
             box(
-                KH_STAIRS_X2,
-                KH_SHAFT_Y1,
+                KNOTT_STAIRS_X2,
+                KNOTT_SHAFT_Y1,
                 floor_z1,
-                KH_SHAFT_X1,
-                KH_BIY2,
+                KNOTT_SHAFT_X1,
+                KNOTT_BIY2,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
@@ -1232,75 +1293,75 @@ def build():
         # East of shaft, clipped for NE indentation
         BRUSHES.append(
             box(
-                KH_SHAFT_X2,
-                KH_SHAFT_Y1,
+                KNOTT_SHAFT_X2,
+                KNOTT_SHAFT_Y1,
                 floor_z1,
                 bix2,
-                KH_Y2 - INDENT,
+                KNOTT_Y2 - INDENT,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
         )
         BRUSHES.append(
             box(
-                KH_SHAFT_X2,
-                KH_Y2 - INDENT,
+                KNOTT_SHAFT_X2,
+                KNOTT_Y2 - INDENT,
                 floor_z1,
                 bix2 - INDENT,
-                KH_BIY2,
+                KNOTT_BIY2,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
         )
 
     # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
-    # Walls around the lift shaft (KH_SHAFT_X1..KH_SHAFT_X2, KH_SHAFT_Y1..KH_SHAFT_Y2)
+    # Walls around the lift shaft (KNOTT_SHAFT_X1..KNOTT_SHAFT_X2, KNOTT_SHAFT_Y1..KNOTT_SHAFT_Y2)
     shaft_wall = 8
     # Door opening dimensions per floor (used for both wall openings and func_door entities)
-    shaft_door_h = KH_FLOOR_H  # door height matches floor-to-floor height
+    shaft_door_h = KNOTT_FLOOR_H  # door height matches floor-to-floor height
     shaft_door_openings = [
         (
-            KH_SHAFT_Y1 + 16,
-            KH_GROUND_Z + floor_index * KH_FLOOR_H,
-            KH_SHAFT_Y2 - 16,
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
+            KNOTT_SHAFT_Y1 + 16,
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H,
+            KNOTT_SHAFT_Y2 - 16,
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + shaft_door_h,
         )
-        for floor_index in range(KH_FLOORS)
+        for floor_index in range(KNOTT_FLOORS)
     ]
 
     # Shaft North wall (internal, solid)
     BRUSHES.append(
         box(
-            KH_SHAFT_X1,
-            KH_SHAFT_Y2,
-            KH_GROUND_Z,
-            KH_SHAFT_X2,
-            KH_SHAFT_Y2 + shaft_wall,
-            KH_Z2,
+            KNOTT_SHAFT_X1,
+            KNOTT_SHAFT_Y2,
+            KNOTT_GROUND_Z,
+            KNOTT_SHAFT_X2,
+            KNOTT_SHAFT_Y2 + shaft_wall,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # Shaft South wall (internal, solid)
     BRUSHES.append(
         box(
-            KH_SHAFT_X1,
-            KH_SHAFT_Y1 - shaft_wall,
-            KH_GROUND_Z,
-            KH_SHAFT_X2,
-            KH_SHAFT_Y1,
-            KH_Z2,
+            KNOTT_SHAFT_X1,
+            KNOTT_SHAFT_Y1 - shaft_wall,
+            KNOTT_GROUND_Z,
+            KNOTT_SHAFT_X2,
+            KNOTT_SHAFT_Y1,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # Shaft West wall (internal, openings for each floor's door — flush with hallway east wall and shaft interior)
     BRUSHES.extend(
         layered_wall_y(
-            KH_SHAFT_Y1,
-            KH_ENT_X2,
-            KH_GROUND_Z,
-            KH_SHAFT_Y2,
-            KH_SHAFT_X1,
-            KH_Z2,
+            KNOTT_SHAFT_Y1,
+            KNOTT_ENT_X2,
+            KNOTT_GROUND_Z,
+            KNOTT_SHAFT_Y2,
+            KNOTT_SHAFT_X1,
+            KNOTT_Z2,
             shaft_door_openings,
             Textures.WALL,
         )
@@ -1308,61 +1369,61 @@ def build():
     # Shaft East wall (internal)
     BRUSHES.append(
         box(
-            KH_SHAFT_X2,
-            KH_SHAFT_Y1,
-            KH_GROUND_Z,
-            KH_SHAFT_X2 + shaft_wall,
-            KH_SHAFT_Y2,
-            KH_Z2,
+            KNOTT_SHAFT_X2,
+            KNOTT_SHAFT_Y1,
+            KNOTT_GROUND_Z,
+            KNOTT_SHAFT_X2 + shaft_wall,
+            KNOTT_SHAFT_Y2,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
 
     # ── West Stairwell Enclosure ──────────────────────────────────────────────────
-    # Walls around the west stairwell (KH_STAIRS_X1..KH_STAIRS_X2, KH_STAIRS_Y1..KH_STAIRS_Y2)
+    # Walls around the west stairwell (KNOTT_STAIRS_X1..KNOTT_STAIRS_X2, KNOTT_STAIRS_Y1..KNOTT_STAIRS_Y2)
     west_shaft_door_openings = [
         (
-            KH_SHAFT_Y1 + 16,  # same Y extents as east shaft doorway
-            KH_GROUND_Z + floor_index * KH_FLOOR_H,
-            KH_SHAFT_Y2 - 16,
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
+            KNOTT_SHAFT_Y1 + 16,  # same Y extents as east shaft doorway
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H,
+            KNOTT_SHAFT_Y2 - 16,
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + shaft_door_h,
         )
-        for floor_index in range(KH_FLOORS)
+        for floor_index in range(KNOTT_FLOORS)
     ]
 
     # West stairwell North wall (internal, solid)
     BRUSHES.append(
         box(
-            KH_STAIRS_X1,
-            KH_STAIRS_Y2,
-            KH_GROUND_Z,
-            KH_STAIRS_X2,
-            KH_STAIRS_Y2 + shaft_wall,
-            KH_Z2,
+            KNOTT_STAIRS_X1,
+            KNOTT_STAIRS_Y2,
+            KNOTT_GROUND_Z,
+            KNOTT_STAIRS_X2,
+            KNOTT_STAIRS_Y2 + shaft_wall,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # West stairwell South wall (internal, solid)
     BRUSHES.append(
         box(
-            KH_STAIRS_X1,
-            KH_STAIRS_Y1 - shaft_wall,
-            KH_GROUND_Z,
-            KH_STAIRS_X2,
-            KH_STAIRS_Y1,
-            KH_Z2,
+            KNOTT_STAIRS_X1,
+            KNOTT_STAIRS_Y1 - shaft_wall,
+            KNOTT_GROUND_Z,
+            KNOTT_STAIRS_X2,
+            KNOTT_STAIRS_Y1,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
     # West stairwell East wall (internal, openings for each floor's door — flush both sides)
     BRUSHES.extend(
         layered_wall_y(
-            KH_STAIRS_Y1,
-            KH_STAIRS_X2,
-            KH_GROUND_Z,
-            KH_STAIRS_Y2,
-            KH_ENT_X1,
-            KH_Z2,
+            KNOTT_STAIRS_Y1,
+            KNOTT_STAIRS_X2,
+            KNOTT_GROUND_Z,
+            KNOTT_STAIRS_Y2,
+            KNOTT_ENT_X1,
+            KNOTT_Z2,
             west_shaft_door_openings,
             Textures.WALL,
         )
@@ -1370,12 +1431,12 @@ def build():
     # West stairwell West wall (internal, solid)
     BRUSHES.append(
         box(
-            KH_STAIRS_X1 - shaft_wall,
-            KH_STAIRS_Y1,
-            KH_GROUND_Z,
-            KH_STAIRS_X1,
-            KH_STAIRS_Y2,
-            KH_Z2,
+            KNOTT_STAIRS_X1 - shaft_wall,
+            KNOTT_STAIRS_Y1,
+            KNOTT_GROUND_Z,
+            KNOTT_STAIRS_X1,
+            KNOTT_STAIRS_Y2,
+            KNOTT_Z2,
             Textures.WALL,
         )
     )
@@ -1384,37 +1445,41 @@ def build():
     # Stairs compressed to the shaft centre (192 u wide), leaving 88-unit flanks for
     # half-floor platforms on the east and west sides.
     #
-    # North lane (KH_STAIRS_MID_Y..KH_STAIRS_Y2): enter east door, walk WEST, rise z0 → z_mid.
+    # North lane (KNOTT_STAIRS_MID_Y..KNOTT_STAIRS_Y2): enter east door, walk WEST, rise z0 → z_mid.
     # West platform at z_mid (full shaft Y, 88 u wide) — turn-around landing.
-    # South lane (KH_STAIRS_Y1..KH_STAIRS_MID_Y): walk EAST, rise z_mid → z_top.
+    # South lane (KNOTT_STAIRS_Y1..KNOTT_STAIRS_MID_Y): walk EAST, rise z_mid → z_top.
     #
-    # Step 0 of north lane and step 7 of south lane extend east to KH_STAIRS_X2 so the
+    # Step 0 of north lane and step 7 of south lane extend east to KNOTT_STAIRS_X2 so the
     # door at each floor connects directly to the staircase.
-    # Loop runs KH_FLOORS times (fl 0→4) — top flight exits onto building roof.
-    KH_STAIRS_HALF_N = 8
-    KH_STAIRS_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
-    KH_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
+    # Loop runs KNOTT_FLOORS times (fl 0→4) — top flight exits onto building roof.
+    KNOTT_STAIRS_HALF_N = 8
+    KNOTT_STAIRS_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
+    KNOTT_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
     PLAT_H = 8  # platform slab thickness
-    stair_cx = (KH_STAIRS_X1 + KH_STAIRS_X2) // 2  # shaft X centre
+    stair_cx = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # shaft X centre
     stair_x1 = (
-        stair_cx - KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X // 2
+        stair_cx - KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_TREAD_X // 2
     )  # west edge of stairs
-    stair_x2 = stair_x1 + KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X  # east edge of stairs
-    for floor_index in range(KH_FLOORS):
-        floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL  # floor surface Z
+    stair_x2 = (
+        stair_x1 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_TREAD_X
+    )  # east edge of stairs
+    for floor_index in range(KNOTT_FLOORS):
+        floor_z0 = (
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_WALL
+        )  # floor surface Z
         half_flight_z = (
-            floor_z0 + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
+            floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
         )  # half-floor Z (floor_z0 + 80)
-        top_flight_z = floor_z0 + KH_FLOOR_H  # next floor surface Z (= exit level)
+        top_flight_z = floor_z0 + KNOTT_FLOOR_H  # next floor surface Z (= exit level)
 
         # Entrance landing — flush with hallway floor, east of stair band (north lane).
         BRUSHES.append(
             box(
                 stair_x2,
-                KH_STAIRS_MID_Y,
+                KNOTT_STAIRS_MID_Y,
                 floor_z0 - PLAT_H,
-                KH_STAIRS_X2,
-                KH_STAIRS_Y2,
+                KNOTT_STAIRS_X2,
+                KNOTT_STAIRS_Y2,
                 floor_z0,
                 Textures.FLOOR_KH,
             )
@@ -1423,28 +1488,28 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                KH_STAIRS_Y1,
+                KNOTT_STAIRS_Y1,
                 top_flight_z - PLAT_H,
-                KH_STAIRS_X2,
-                KH_STAIRS_MID_Y,
+                KNOTT_STAIRS_X2,
+                KNOTT_STAIRS_MID_Y,
                 top_flight_z,
                 Textures.FLOOR_KH,
             )
         )
 
         # North lane: individual treads ascending westward (stair_x2 → stair_x1).
-        for tread_index in range(KH_STAIRS_HALF_N):
-            step_x_east = stair_x2 - tread_index * KH_STAIRS_TREAD_X
-            step_x_west = stair_x2 - (tread_index + 1) * KH_STAIRS_TREAD_X
-            step_z1 = floor_z0 + tread_index * KH_STAIRS_STEP_R
+        for tread_index in range(KNOTT_STAIRS_HALF_N):
+            step_x_east = stair_x2 - tread_index * KNOTT_STAIRS_TREAD_X
+            step_x_west = stair_x2 - (tread_index + 1) * KNOTT_STAIRS_TREAD_X
+            step_z1 = floor_z0 + tread_index * KNOTT_STAIRS_STEP_R
             BRUSHES.append(
                 box(
                     step_x_west,
-                    KH_STAIRS_MID_Y,
+                    KNOTT_STAIRS_MID_Y,
                     step_z1,
                     step_x_east,
-                    KH_STAIRS_Y2,
-                    step_z1 + KH_STAIRS_STEP_R,
+                    KNOTT_STAIRS_Y2,
+                    step_z1 + KNOTT_STAIRS_STEP_R,
                     Textures.WALL,
                     tt=Textures.FLOOR_KH,
                 )
@@ -1453,69 +1518,69 @@ def build():
         # Half-floor west platform: turn-around landing, full shaft Y depth.
         BRUSHES.append(
             box(
-                KH_STAIRS_X1,
-                KH_STAIRS_Y1,
+                KNOTT_STAIRS_X1,
+                KNOTT_STAIRS_Y1,
                 half_flight_z - PLAT_H,
                 stair_x1,
-                KH_STAIRS_Y2,
+                KNOTT_STAIRS_Y2,
                 half_flight_z,
                 Textures.FLOOR_KH,
             )
         )
 
         # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
-        for tread_index in range(KH_STAIRS_HALF_N):
-            step_x_west = stair_x1 + tread_index * KH_STAIRS_TREAD_X
-            step_x_east = step_x_west + KH_STAIRS_TREAD_X
-            step_z1 = half_flight_z + tread_index * KH_STAIRS_STEP_R
+        for tread_index in range(KNOTT_STAIRS_HALF_N):
+            step_x_west = stair_x1 + tread_index * KNOTT_STAIRS_TREAD_X
+            step_x_east = step_x_west + KNOTT_STAIRS_TREAD_X
+            step_z1 = half_flight_z + tread_index * KNOTT_STAIRS_STEP_R
             BRUSHES.append(
                 box(
                     step_x_west,
-                    KH_STAIRS_Y1,
+                    KNOTT_STAIRS_Y1,
                     step_z1,
                     step_x_east,
-                    KH_STAIRS_MID_Y,
-                    step_z1 + KH_STAIRS_STEP_R,
+                    KNOTT_STAIRS_MID_Y,
+                    step_z1 + KNOTT_STAIRS_STEP_R,
                     Textures.WALL,
                     tt=Textures.FLOOR_KH,
                 )
             )
 
     # ── West Stairwell — Iron Railings ────────────────────────────────────────────
-    # 2 end posts + 1 sloped cross rail per half-flight, central divider (KH_STAIRS_MID_Y).
+    # 2 end posts + 1 sloped cross rail per half-flight, central divider (KNOTT_STAIRS_MID_Y).
     # Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
     # they never land on a tread.  Cross rail spans the full stair band between them.
-    KH_STAIRS_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
-    KH_STAIRS_POST_W = 4  # square post cross-section
-    KH_STAIRS_RAIL_T = 4  # cross-rail bar thickness
+    KNOTT_STAIRS_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
+    KNOTT_STAIRS_POST_W = 4  # square post cross-section
+    KNOTT_STAIRS_RAIL_T = 4  # cross-rail bar thickness
 
-    for floor_index in range(KH_FLOORS):
-        floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL
-        half_flight_z = floor_z0 + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
-        top_flight_z = half_flight_z + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
+    for floor_index in range(KNOTT_FLOORS):
+        floor_z0 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_WALL
+        half_flight_z = floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
+        top_flight_z = half_flight_z + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
 
-        # ── North lane — south face (KH_STAIRS_MID_Y) ────────────────────────────────
+        # ── North lane — south face (KNOTT_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: east of stair band, in the entrance area
         BRUSHES.append(
             box(
                 stair_x2,
-                KH_STAIRS_MID_Y,
+                KNOTT_STAIRS_MID_Y,
                 floor_z0,
-                stair_x2 + KH_STAIRS_POST_W,
-                KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
-                floor_z0 + KH_STAIRS_RAIL_H,
+                stair_x2 + KNOTT_STAIRS_POST_W,
+                KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_POST_W,
+                floor_z0 + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
         # Upper post: west of stair band, on the west platform
         BRUSHES.append(
             box(
-                stair_x1 - KH_STAIRS_POST_W,
-                KH_STAIRS_MID_Y,
+                stair_x1 - KNOTT_STAIRS_POST_W,
+                KNOTT_STAIRS_MID_Y,
                 half_flight_z,
                 stair_x1,
-                KH_STAIRS_MID_Y + KH_STAIRS_POST_W,
-                half_flight_z + KH_STAIRS_RAIL_H,
+                KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_POST_W,
+                half_flight_z + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
@@ -1524,26 +1589,26 @@ def build():
             ramp_slab(
                 stair_x1,
                 stair_x2,
-                KH_STAIRS_MID_Y,
-                KH_STAIRS_MID_Y + KH_STAIRS_RAIL_T,
-                half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
-                floor_z0 + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
-                half_flight_z + KH_STAIRS_RAIL_H,
-                floor_z0 + KH_STAIRS_RAIL_H,
+                KNOTT_STAIRS_MID_Y,
+                KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_RAIL_T,
+                half_flight_z + KNOTT_STAIRS_RAIL_H - KNOTT_STAIRS_RAIL_T,
+                floor_z0 + KNOTT_STAIRS_RAIL_H - KNOTT_STAIRS_RAIL_T,
+                half_flight_z + KNOTT_STAIRS_RAIL_H,
+                floor_z0 + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
 
-        # ── South lane — north face (KH_STAIRS_MID_Y) ────────────────────────────────
+        # ── South lane — north face (KNOTT_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: west of stair band, on the west platform
         BRUSHES.append(
             box(
-                stair_x1 - KH_STAIRS_POST_W,
-                KH_STAIRS_MID_Y - KH_STAIRS_POST_W,
+                stair_x1 - KNOTT_STAIRS_POST_W,
+                KNOTT_STAIRS_MID_Y - KNOTT_STAIRS_POST_W,
                 half_flight_z,
                 stair_x1,
-                KH_STAIRS_MID_Y,
-                half_flight_z + KH_STAIRS_RAIL_H,
+                KNOTT_STAIRS_MID_Y,
+                half_flight_z + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
@@ -1551,11 +1616,11 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                KH_STAIRS_MID_Y - KH_STAIRS_POST_W,
+                KNOTT_STAIRS_MID_Y - KNOTT_STAIRS_POST_W,
                 top_flight_z,
-                stair_x2 + KH_STAIRS_POST_W,
-                KH_STAIRS_MID_Y,
-                top_flight_z + KH_STAIRS_RAIL_H,
+                stair_x2 + KNOTT_STAIRS_POST_W,
+                KNOTT_STAIRS_MID_Y,
+                top_flight_z + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
@@ -1564,38 +1629,38 @@ def build():
             ramp_slab(
                 stair_x1,
                 stair_x2,
-                KH_STAIRS_MID_Y - KH_STAIRS_RAIL_T,
-                KH_STAIRS_MID_Y,
-                half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
-                top_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
-                half_flight_z + KH_STAIRS_RAIL_H,
-                top_flight_z + KH_STAIRS_RAIL_H,
+                KNOTT_STAIRS_MID_Y - KNOTT_STAIRS_RAIL_T,
+                KNOTT_STAIRS_MID_Y,
+                half_flight_z + KNOTT_STAIRS_RAIL_H - KNOTT_STAIRS_RAIL_T,
+                top_flight_z + KNOTT_STAIRS_RAIL_H - KNOTT_STAIRS_RAIL_T,
+                half_flight_z + KNOTT_STAIRS_RAIL_H,
+                top_flight_z + KNOTT_STAIRS_RAIL_H,
                 Textures.RAIL,
             )
         )
 
     # Partition Y splits vary per floor so each floor has different room proportions.
-    KH_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
+    KNOTT_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
 
-    wx1, wx2 = bix1, KH_ENT_X1 - KH_WALL  # west room X extents (1282..1506)
-    ex1, ex2 = KH_ENT_X2 + KH_WALL, bix2  # east room X extents (1666..1890)
-    KH_WEST_ROOM_CX = (wx1 + wx2) // 2  # west room X center = 1394
-    KH_EAST_ROOM_CX = (ex1 + ex2) // 2  # east room X center = 1778
+    wx1, wx2 = bix1, KNOTT_ENT_X1 - KNOTT_WALL  # west room X extents (1282..1506)
+    ex1, ex2 = KNOTT_ENT_X2 + KNOTT_WALL, bix2  # east room X extents (1666..1890)
+    KNOTT_WEST_ROOM_CX = (wx1 + wx2) // 2  # west room X center = 1394
+    KNOTT_EAST_ROOM_CX = (ex1 + ex2) // 2  # east room X center = 1778
 
     # Collect door openings in hallway walls across all floors
     w_hall_openings = [
-        (KH_SHAFT_Y1, KH_GROUND_Z, KH_SHAFT_Y2, KH_Z2)
+        (KNOTT_SHAFT_Y1, KNOTT_GROUND_Z, KNOTT_SHAFT_Y2, KNOTT_Z2)
     ]  # west stairwell gap — doorway size
     e_hall_openings = [
-        (KH_SHAFT_Y1, KH_GROUND_Z, KH_SHAFT_Y2, KH_Z2)
+        (KNOTT_SHAFT_Y1, KNOTT_GROUND_Z, KNOTT_SHAFT_Y2, KNOTT_Z2)
     ]  # shaft gap always open
 
-    for floor_index in range(KH_FLOORS):
-        fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
-        fz_surf = fz1 + KH_WALL  # top of floor slab
-        split = KH_ROOM_SPLITS[floor_index]
-        sr_yc = (KH_BIY1 + split) // 2  # south room Y center
-        nr_yc = (split + KH_WALL + KH_BIY2) // 2  # north room Y center
+    for floor_index in range(KNOTT_FLOORS):
+        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
+        fz_surf = fz1 + KNOTT_WALL  # top of floor slab
+        split = KNOTT_ROOM_SPLITS[floor_index]
+        sr_yc = (KNOTT_BIY1 + split) // 2  # south room Y center
+        nr_yc = (split + KNOTT_WALL + KNOTT_BIY2) // 2  # north room Y center
         dz2 = fz_surf + 96  # door top
         w_hall_openings += [
             (sr_yc - 32, fz_surf, sr_yc + 32, dz2),
@@ -1609,12 +1674,12 @@ def build():
     # West hallway wall with room door openings
     BRUSHES.extend(
         layered_wall_y(
-            KH_BIY1,
-            KH_ENT_X1 - KH_WALL,
-            KH_GROUND_Z,
-            KH_BIY2,
-            KH_ENT_X1,
-            KH_Z2,
+            KNOTT_BIY1,
+            KNOTT_ENT_X1 - KNOTT_WALL,
+            KNOTT_GROUND_Z,
+            KNOTT_BIY2,
+            KNOTT_ENT_X1,
+            KNOTT_Z2,
             w_hall_openings,
             Textures.WALL,
         )
@@ -1622,24 +1687,24 @@ def build():
     # East hallway wall with room door openings + shaft opening
     BRUSHES.extend(
         layered_wall_y(
-            KH_BIY1,
-            KH_ENT_X2,
-            KH_GROUND_Z,
-            KH_BIY2,
-            KH_ENT_X2 + KH_WALL,
-            KH_Z2,
+            KNOTT_BIY1,
+            KNOTT_ENT_X2,
+            KNOTT_GROUND_Z,
+            KNOTT_BIY2,
+            KNOTT_ENT_X2 + KNOTT_WALL,
+            KNOTT_Z2,
             e_hall_openings,
             Textures.WALL,
         )
     )
 
     # Partition walls per floor (divide each side into 2 rooms, with connecting door)
-    for fl in range(KH_FLOORS):
-        fz1 = KH_GROUND_Z + fl * KH_FLOOR_H
-        fz2 = fz1 + KH_FLOOR_H
-        fz_surf = fz1 + KH_WALL
-        split = KH_ROOM_SPLITS[fl]
-        sp_y2 = split + KH_WALL
+    for fl in range(KNOTT_FLOORS):
+        fz1 = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        fz2 = fz1 + KNOTT_FLOOR_H
+        fz_surf = fz1 + KNOTT_WALL
+        split = KNOTT_ROOM_SPLITS[fl]
+        sp_y2 = split + KNOTT_WALL
         pdz2 = fz_surf + 96
         # West side partition wall with connecting door
         BRUSHES.extend(
@@ -1650,7 +1715,7 @@ def build():
                 wx2,
                 sp_y2,
                 fz2,
-                [(KH_WEST_ROOM_CX - 32, fz_surf, KH_WEST_ROOM_CX + 32, pdz2)],
+                [(KNOTT_WEST_ROOM_CX - 32, fz_surf, KNOTT_WEST_ROOM_CX + 32, pdz2)],
                 Textures.WALL,
             )
         )
@@ -1663,27 +1728,27 @@ def build():
                 ex2,
                 sp_y2,
                 fz2,
-                [(KH_EAST_ROOM_CX - 32, fz_surf, KH_EAST_ROOM_CX + 32, pdz2)],
+                [(KNOTT_EAST_ROOM_CX - 32, fz_surf, KNOTT_EAST_ROOM_CX + 32, pdz2)],
                 Textures.WALL,
             )
         )
 
-    if not KH_ENABLED:
-        del BRUSHES[kh_brush_start:]
+    if not KNOTT_ENABLED:
+        del BRUSHES[knott_brush_start:]
 
     DRAW_KH_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
     # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
     # Fascia panel follows the arch: one box per character hanging from deck_bot_z(x)
-    KH_FASCIA_PX_W, KH_FASCIA_PX_H = 4, 4
-    KH_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
-    char_w = (4 + 1) * KH_FASCIA_PX_W  # 4 cols + 1 gap
-    total_w = len(KH_FASCIA_TEXT) * char_w - KH_FASCIA_PX_W
+    KNOTT_FASCIA_PX_W, KNOTT_FASCIA_PX_H = 4, 4
+    KNOTT_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
+    char_w = (4 + 1) * KNOTT_FASCIA_PX_W  # 4 cols + 1 gap
+    total_w = len(KNOTT_FASCIA_TEXT) * char_w - KNOTT_FASCIA_PX_W
     text_x0 = 0 - total_w // 2
 
     # No separate background fascia boxes — parapet wall face is the backdrop
 
-    KH_FASCIA_FONT = {
+    KNOTT_FASCIA_FONT = {
         "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
         "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],
         "C": [0b0111, 0b1000, 0b1000, 0b1000, 0b0111, 0b0000],
@@ -1719,7 +1784,7 @@ def build():
 
         brushes = []
         for ci, ch in enumerate(text):
-            bitmap = KH_FASCIA_FONT.get(ch, KH_FASCIA_FONT[" "])
+            bitmap = KNOTT_FASCIA_FONT.get(ch, KNOTT_FASCIA_FONT[" "])
             cx = x0 + ci * char_w
             x_mid = cx + (cols * px_w) / 2
             z_top = (
@@ -1745,7 +1810,7 @@ def build():
         char_w_f = (cols + 1) * px_w
         brushes = []
         for ci, ch in enumerate(text):
-            bitmap = KH_FASCIA_FONT.get(ch, KH_FASCIA_FONT[" "])
+            bitmap = KNOTT_FASCIA_FONT.get(ch, KNOTT_FASCIA_FONT[" "])
             cx = x0 + ci * char_w_f
             for row_i, row_bits in enumerate(bitmap):
                 z = z_base + (rows - 1 - row_i) * px_h
@@ -1764,7 +1829,7 @@ def build():
         render_text_flat(
             sign_text[::-1],
             x0=sign_center_x - sign_total_width // 2,
-            y_face=KH_Y2 + 6,
+            y_face=KNOTT_Y2 + 6,
             z_base=sign_z1 + 14,  # centered: (48-20)//2 = 14
             px_w=sign_pixel_width,
             px_h=sign_pixel_height,
@@ -1777,20 +1842,20 @@ def build():
     letter_brushes = (
         (
             render_text_fascia(
-                KH_FASCIA_TEXT,
+                KNOTT_FASCIA_TEXT,
                 x0=text_x0,
                 y_face=BRIDGE_Y1,
-                px_w=KH_FASCIA_PX_W,
-                px_h=KH_FASCIA_PX_H,
+                px_w=KNOTT_FASCIA_PX_W,
+                px_h=KNOTT_FASCIA_PX_H,
                 depth=1,
                 tex=Textures.RAIL,
             )
             + render_text_fascia(
-                KH_FASCIA_TEXT[::-1],
+                KNOTT_FASCIA_TEXT[::-1],
                 x0=text_x0,
                 y_face=BRIDGE_Y2 + 1,
-                px_w=KH_FASCIA_PX_W,
-                px_h=KH_FASCIA_PX_H,
+                px_w=KNOTT_FASCIA_PX_W,
+                px_h=KNOTT_FASCIA_PX_H,
                 depth=1,
                 tex=Textures.RAIL,
                 mirror=True,
