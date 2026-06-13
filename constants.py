@@ -14,11 +14,10 @@ import math
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
 #   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
 #   KHRH_        Knott Hall / Residence Hall shared window geometry
-#   PB_          Pedestrian Bridge (span, deck, piers, parapet)
+#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
-#   SEG_         bridge span segment width
 #   SHOW_        boolean feature-flag (shows/hides a map element)
 #   TEX_         texture name string
 #   WALK_        walkway connecting the bridge east end to Knott Hall 2nd floor
@@ -198,6 +197,7 @@ PB_PIL_OUTER_R = (140, 72)
 PB_PIL_OVERHANG = 16
 PB_PIL_PYR_H = 20
 PB_PIL_PYR_W = 45
+PB_SEG_SPAN_W = 32
 PB_SQ_D = 1
 PB_SQ_HH = 6
 PB_SQ_HW = 8
@@ -244,7 +244,6 @@ CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)
 EP_X1 = ROAD_X1
 ROAD_Z = FLOOR_Z2 + 8
 SCALE = 15.108
-SEG_SPAN_W = 32
 SHOW_SUPPORTS = True
 TEX_BRICK = "bricka2_1"
 TEX_CEMENT = "sfloor3_2"
@@ -269,7 +268,7 @@ WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL
 WALL_T = 16
 WORLD_X1 = -1983
 PB_X1 = WORLD_X1 + WALL_T
-SEG_W = (PB_X2 - PB_X1) / SEG_SPAN_W
+PB_SEG_W = (PB_X2 - PB_X1) / PB_SEG_SPAN_W
 WORLD_X2 = 2976
 EP_X2 = WORLD_X2 - WALL_T
 PB_SPAN_CENTRES = [

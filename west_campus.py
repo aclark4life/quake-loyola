@@ -21,8 +21,8 @@ from constants import (
     RH_SOUTH2_Y2,
     RH_X1,
     RH_X2,
-    SEG_SPAN_W,
-    SEG_W,
+    PB_SEG_SPAN_W,
+    PB_SEG_W,
     TEX_FLOOR,
     TEX_GROUND,
     TEX_ROAD,
@@ -427,9 +427,9 @@ def build():
         )
     )
 
-    for i in range(SEG_SPAN_W):
-        sx1 = PB_X1 + i * SEG_W
-        sx2 = sx1 + SEG_W
+    for i in range(PB_SEG_SPAN_W):
+        sx1 = PB_X1 + i * PB_SEG_W
+        sx2 = sx1 + PB_SEG_W
         BRUSHES.append(
             ramp_slab(
                 sx1,
