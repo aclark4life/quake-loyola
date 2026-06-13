@@ -532,7 +532,7 @@ def build():
     # West stairwell extents defined after INDENT below
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
-    KHRH_WIN_HALF = 24  # half-width of recessed corner windows
+    WIN_HALF = 24  # half-width of recessed corner windows
     KH_MULLION_W = 12  # mullion width
     KH_MULLION_PRO = 12  # mullion protrusion depth
 
@@ -576,9 +576,9 @@ def build():
             KH_Z2,
             [
                 (
-                    sw_win_cx - KHRH_WIN_HALF,
+                    sw_win_cx - WIN_HALF,
                     KH_GROUND_Z + KH_FLOOR_H,
-                    sw_win_cx + KHRH_WIN_HALF,
+                    sw_win_cx + WIN_HALF,
                     KH_Z2,
                 )
             ],
@@ -608,9 +608,9 @@ def build():
             KH_Z2,
             [
                 (
-                    se_win_cx - KHRH_WIN_HALF,
+                    se_win_cx - WIN_HALF,
                     KH_GROUND_Z + KH_FLOOR_H,
-                    se_win_cx + KHRH_WIN_HALF,
+                    se_win_cx + WIN_HALF,
                     KH_Z2,
                 )
             ],
@@ -629,7 +629,7 @@ def build():
         )
     )
     # South mullions — protrude outward (south, -Y)
-    for mx in [sw_win_cx - KHRH_WIN_HALF - KH_MULLION_W, sw_win_cx + KHRH_WIN_HALF]:
+    for mx in [sw_win_cx - WIN_HALF - KH_MULLION_W, sw_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
@@ -641,7 +641,7 @@ def build():
                 TEX_CEMENT,
             )
         )
-    for mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]:
+    for mx in [se_win_cx - WIN_HALF - KH_MULLION_W, se_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
@@ -659,10 +659,10 @@ def build():
             mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
             BRUSHES.append(
                 box(
-                    wx - KHRH_WIN_HALF,
+                    wx - WIN_HALF,
                     KH_Y1 + INDENT - KH_WALL,
                     mz,
-                    wx + KHRH_WIN_HALF,
+                    wx + WIN_HALF,
                     KH_Y1 + INDENT + KH_MULLION_PRO,
                     mz + 4,
                     TEX_RAIL,
@@ -674,10 +674,10 @@ def build():
             fz = KH_GROUND_Z + fl * KH_FLOOR_H
             BRUSHES.append(
                 box(
-                    wx - KHRH_WIN_HALF,
+                    wx - WIN_HALF,
                     KH_Y1 + INDENT - KH_WALL,
                     fz - 4 if fl > 0 else KH_GROUND_Z,
-                    wx + KHRH_WIN_HALF,
+                    wx + WIN_HALF,
                     KH_Y1 + INDENT + KH_MULLION_PRO,
                     (fz if fl > 0 else KH_GROUND_Z + 4),
                     TEX_RAIL,
@@ -721,15 +721,15 @@ def build():
             KH_Z2,
             [
                 (
-                    nw_win_cx1 - KHRH_WIN_HALF,
+                    nw_win_cx1 - WIN_HALF,
                     KH_GROUND_Z + KH_FLOOR_H,
-                    nw_win_cx1 + KHRH_WIN_HALF,
+                    nw_win_cx1 + WIN_HALF,
                     KH_Z2,
                 ),
                 (
-                    nw_win_cx2 - KHRH_WIN_HALF,
+                    nw_win_cx2 - WIN_HALF,
                     KH_GROUND_Z + KH_FLOOR_H,
-                    nw_win_cx2 + KHRH_WIN_HALF,
+                    nw_win_cx2 + WIN_HALF,
                     KH_Z2,
                 ),
             ],
@@ -760,9 +760,9 @@ def build():
             KH_Z2,
             [
                 (
-                    ne_win_cx - KHRH_WIN_HALF,
+                    ne_win_cx - WIN_HALF,
                     KH_GROUND_Z + KH_FLOOR_H,
-                    ne_win_cx + KHRH_WIN_HALF,
+                    ne_win_cx + WIN_HALF,
                     KH_Z2,
                 )
             ],
@@ -785,10 +785,10 @@ def build():
     # and the narrow vertical window on the main north face. All protrude 12 units outward.
     # NW recessed windows: mullions for both (west and east window in the wide NW indentation)
     for mx in [
-        nw_win_cx1 - KHRH_WIN_HALF - KH_MULLION_W,
-        nw_win_cx1 + KHRH_WIN_HALF,
-        nw_win_cx2 - KHRH_WIN_HALF - KH_MULLION_W,
-        nw_win_cx2 + KHRH_WIN_HALF,
+        nw_win_cx1 - WIN_HALF - KH_MULLION_W,
+        nw_win_cx1 + WIN_HALF,
+        nw_win_cx2 - WIN_HALF - KH_MULLION_W,
+        nw_win_cx2 + WIN_HALF,
     ]:
         BRUSHES.append(
             box(
@@ -802,7 +802,7 @@ def build():
             )
         )
     # NE recessed window: mullions just outside the opening so player can fit through
-    for mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]:
+    for mx in [ne_win_cx - WIN_HALF - KH_MULLION_W, ne_win_cx + WIN_HALF]:
         BRUSHES.append(
             box(
                 mx,
@@ -1032,9 +1032,9 @@ def build():
                 )
             )
     for window_center_x, window_half_width in [
-        (nw_win_cx1, KHRH_WIN_HALF),
-        (nw_win_cx2, KHRH_WIN_HALF),
-        (ne_win_cx, KHRH_WIN_HALF),
+        (nw_win_cx1, WIN_HALF),
+        (nw_win_cx2, WIN_HALF),
+        (ne_win_cx, WIN_HALF),
     ]:
         for fl in range(1, KH_FLOORS):
             mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
@@ -1051,9 +1051,9 @@ def build():
             )
     # Floor-level mullions — NW/NE recessed north-face windows
     for window_center_x, window_half_width in [
-        (nw_win_cx1, KHRH_WIN_HALF),
-        (nw_win_cx2, KHRH_WIN_HALF),
-        (ne_win_cx, KHRH_WIN_HALF),
+        (nw_win_cx1, WIN_HALF),
+        (nw_win_cx2, WIN_HALF),
+        (ne_win_cx, WIN_HALF),
     ]:
         for fl in range(1, KH_FLOORS + 1):
             fz = KH_GROUND_Z + fl * KH_FLOOR_H

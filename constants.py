@@ -13,7 +13,7 @@ import math
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
 #   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
-#   KHRH_        Knott Hall / Residence Hall shared window geometry
+#   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
 #   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
@@ -79,7 +79,6 @@ FENCE_TEX = "metal4_4"
 FLOOR_Z1, FLOOR_Z2 = -16, 0
 EP_PIL_ZB = FLOOR_Z2
 INDENT = 80
-KHRH_WIN_HALF = 24
 KH_BRCS_CRN_R = CS_WALK_W
 KH_BRCS_CRN_SEGS = CS_CRN_SEGS
 KH_BRCS_WALK_W = CS_WALK_W
@@ -266,6 +265,7 @@ WALK_X1 = KH_ORIG_CX - 64
 WALK_X2 = KH_ORIG_CX + 64
 WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL
 WALL_T = 16
+WIN_HALF = 24
 WORLD_X1 = -1983
 PB_X1 = WORLD_X1 + WALL_T
 PB_SEG_W = (PB_X2 - PB_X1) / PB_SEG_SPAN_W
