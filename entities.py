@@ -123,7 +123,6 @@ def build():
             )
 
     # ── Entrance corridor lights — one per floor in each doorway ─────────────────
-    entry_corridor_x = KH_ENT_X2 + 64  # east entrance corridor mid-X
     entry_corridor_y = KH_Y2 - 48  # just inside north face
     for floor_index in range(KH_FLOORS):
         entry_corridor_light_z = (
@@ -148,7 +147,6 @@ def build():
         fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
         fz_surf = fz1 + KH_WALL
         split = room_splits[floor_index]
-        shelf_tex = "shelf_1"
         shelf_x_offset = shelf_offsets[floor_index]
 
         for shelf_center_x in [wxc, exc]:
@@ -262,7 +260,6 @@ def build():
 
     # ── North & South Charles Street arch teleports → bridge deck centre ─────────
     CS_ARCH_RIN = 256  # inner radius = road half-width
-    CS_ARCH_ROUT = 312  # outer radius (post thickness = 56, more substantial)
     CS_ARCH_STILT = 96  # straight post height before arch springs
     CS_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
 
@@ -276,7 +273,6 @@ def build():
     )
 
     CS_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
-    CS_ARCH_WALL_W = 320  # stone wall extends this far out from road edge on each side
 
     for arch_y1, arch_y2, trigger_y1, trigger_y2 in [
         (

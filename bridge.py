@@ -983,13 +983,16 @@ def build():
         # east_walk_ext_y1_val / east_walk_ext_y2_val bracket the E-W ramp (Y=264..328)
         east_walk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80 - 64  # 264
         east_walk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80  # 328
+
         # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
-        terrain_z_at = lambda y: int(
-            KH_GROUND_Z
-            + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
-            * (y - (KH_Y2 + 96))
-            / (EP_SW_EDGE - (KH_Y2 + 96))
-        )
+        def terrain_z_at(y):
+            return int(
+                KH_GROUND_Z
+                + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
+                * (y - (KH_Y2 + 96))
+                / (EP_SW_EDGE - (KH_Y2 + 96))
+            )
+
         extension_terrain_z_west = (
             terrain_z_at(east_walk_ext_y1_val) + terrain_z_at(east_walk_ext_y2_val)
         ) // 2

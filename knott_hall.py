@@ -333,9 +333,6 @@ def build():
     KH_STEP_DEPTH = 24  # tread depth
     KH_STAIR_OFFSET = 384  # distance from north wall to stair base
     stair_base_z = FLOOR_Z2 + CS_WALK_H  # steps start at apron surface height (8)
-    step_rise = (
-        (KH_GROUND_Z - stair_base_z) * 1 // KH_STEP_N
-    )  # distributed rise per step
 
     # Flat cement platform between building and stairs
     BRUSHES.append(
@@ -410,7 +407,6 @@ def build():
     # ── Stair railings ────────────────────────────────────────────────────────────
     KH_RAIL_H = 72  # stair handrail height
     KH_RAIL_TEX = "metal4_4"
-    KH_RAIL_SPACING = 16
     post_width = 8  # post face width (X) — wide flat-facing
     post_depth = 2  # post depth (Y)
     level_extension = 20  # length of level rail extension at top and bottom
@@ -1511,11 +1507,7 @@ def build():
 
     # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
     # Fascia panel follows the arch: one box per character hanging from dbot(x)
-    fas_y1, fas_y2 = PB_Y1 - 6, PB_Y1  # 6 units thick, flush with south face
-    fas_y3, fas_y4 = PB_Y2, PB_Y2 + 6  # north face panel
-    fas_x1, fas_x2 = -500, 500  # between the two road piers
     KH_FASCIA_PX_W, KH_FASCIA_PX_H = 4, 4
-    KH_FASCIAKH_FASCIA_FONT_ROWS = 6
     KH_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
     char_w = (4 + 1) * KH_FASCIA_PX_W  # 4 cols + 1 gap
     total_w = len(KH_FASCIA_TEXT) * char_w - KH_FASCIA_PX_W
@@ -1555,7 +1547,6 @@ def build():
         Each character's Z is computed from dtop(x) so letters follow the arch curve.
         mirror=True flips each glyph horizontally (needed for north-facing surface)."""
         cols = 4
-        rows = 6
         char_w = (cols + 1) * px_w  # 4 cols + 1 gap
 
         brushes = []
@@ -1687,22 +1678,11 @@ def build():
             )
 
     # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
-    PB_SPAN_CENTRES = [
-        (PB_X1 + PB_ARCH_X[0]) // 2,
-        (PB_ARCH_X[0] + PB_ARCH_X[1]) // 2,
-        (PB_ARCH_X[1] + PB_ARCH_X[2]) // 2,
-        (PB_ARCH_X[2] + PB_X2) // 2,
-        (PB_X2 + PB_ARCH_X[4]) // 2,
-        (PB_ARCH_X[4] + WORLD_X2 - WALL_T) // 2,
-    ]
-    PB_PEND_XS = PB_SPAN_CENTRES
-
     # ── N/S arch stone wall panels (must be added to B before worldspawn assembly) ──
     CS_ARCH_RIN_PRE = 256  # inner radius = road half-width
     CS_ARCH_ROUT_PRE = 312  # outer radius
     CS_ARCH_STILT_PRE = 96  # stilt height
     CS_ARCH_W_PRE = 48  # arch thickness in Y
-    CS_ARCH_WALL_W_PRE = 320  # stone wall width flanking road
     cs_arch_top_pre = FLOOR_Z2 + CS_ARCH_STILT_PRE + CS_ARCH_RIN_PRE
 
     for pre_syb, pre_syf in [
