@@ -195,6 +195,25 @@ SCALE = 15.108
 
 SHOW_SUPPORTS = True
 
+
+class Textures:
+    BRICK = "bricka2_1"
+    CEMENT = "sfloor3_2"
+    DIVIDER = "sfloor3_2"
+    FLOOR = "sfloor3_2"
+    FLOOR_KH = "sfloor3_2"
+    GROUND = "ground1_1"
+    PILLAR = "city2_7"
+    RAIL = "metal5_4"
+    ROAD = "azfloor1_1"
+    ROOF = "wgrnd1_5"
+    SKY = "sky1"
+    STONE = "sfloor3_2"
+    TELEPORT = "*teleport"
+    WALL = "city2_7"
+    WHITE_STONE = "sfloor3_2"
+
+
 # ── Derived / Dependent Constants ─────────────────────────────────────────────
 CHARLES_CRN_R = CHARLES_WALK_W
 ENNIS_PIL_ZB = FLOOR_Z2
@@ -318,24 +337,8 @@ DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2
 BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]
 
 
-class Textures:
-    BRICK = "bricka2_1"
-    CEMENT = "sfloor3_2"
-    DIVIDER = "sfloor3_2"
-    FLOOR = "sfloor3_2"
-    FLOOR_KH = "sfloor3_2"
-    GROUND = "ground1_1"
-    PILLAR = "city2_7"
-    RAIL = "metal5_4"
-    ROAD = "azfloor1_1"
-    ROOF = "wgrnd1_5"
-    SKY = "sky1"
-    STONE = "sfloor3_2"
-    TELEPORT = "*teleport"
-    WALL = "city2_7"
-    WHITE_STONE = "sfloor3_2"
-
-
+# ── Function-Derived Constants ────────────────────────────────────────────────
+# Helper functions below; the constants computed from them follow at the end.
 def arch_z_at(x):
     """Z offset above flat datum for parabolic arch at x.
 
@@ -361,8 +364,6 @@ def ft_to_units(feet, inches=0):
     return round((feet + inches / 12) * SCALE)
 
 
-# ── Function-Derived Constants ────────────────────────────────────────────────
-# Constants computed from the helper functions above (must follow their defs).
 BRIDGE_DECK_Z = deck_top_z(0) + 8
 WALK_ZT1 = int(deck_top_z(KNOTT_ORIG_CX))
 BRIDGE_PAR_W = ft_to_units(2, 6)
