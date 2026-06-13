@@ -10,19 +10,19 @@ from .constants import (
     BRIDGE_Y2,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM_FLOORS,
+    DORM_H,
+    DORM_NORTH_Y1,
+    DORM_NORTH_Y2,
+    DORM_SOUTH1_Y1,
+    DORM_SOUTH1_Y2,
+    DORM_SOUTH2_Y1,
+    DORM_SOUTH2_Y2,
+    DORM_X1,
+    DORM_X2,
     FLOOR_Z1,
     FLOOR_Z2,
     KH_FLOOR_H,
-    RH_FLOORS,
-    RH_H,
-    RH_NORTH_Y1,
-    RH_NORTH_Y2,
-    RH_SOUTH1_Y1,
-    RH_SOUTH1_Y2,
-    RH_SOUTH2_Y1,
-    RH_SOUTH2_Y2,
-    RH_X1,
-    RH_X2,
     WALL_T,
     WORLD_X2,
     Textures,
@@ -43,37 +43,42 @@ def build():
     BRUSHES = []
     ENTITIES = []
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
-    RH_WALL = 16  # wall thickness
-    RH_WIN_HW = 36  # window half-width
-    RH_WIN_HH = 44  # window half-height
-    RH_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
-    RH_ENT_H = 100  # entrance height
+    DORM_WALL = 16  # wall thickness
+    DORM_WIN_HW = 36  # window half-width
+    DORM_WIN_HH = 44  # window half-height
+    DORM_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
+    DORM_ENT_H = 100  # entrance height
 
-    RH_CX = (RH_X1 + RH_X2) // 2  # building X center
-    RH_NORTH_CY = (
-        RH_NORTH_Y1 + RH_NORTH_Y2
+    DORM_CX = (DORM_X1 + DORM_X2) // 2  # building X center
+    DORM_NORTH_CY = (
+        DORM_NORTH_Y1 + DORM_NORTH_Y2
     ) // 2  # building Y center (gable ridge line)
 
     # Window X centers on south/north face: 2 left + 2 right of the entrance gap
-    rh_wx = [RH_X1 + (RH_CX - RH_ENT_HW - RH_X1) * k // 3 for k in [1, 2]] + [
-        (RH_CX + RH_ENT_HW) + (RH_X2 - RH_CX - RH_ENT_HW) * k // 3 for k in [1, 2]
+    dorm_wx = [DORM_X1 + (DORM_CX - DORM_ENT_HW - DORM_X1) * k // 3 for k in [1, 2]] + [
+        (DORM_CX + DORM_ENT_HW) + (DORM_X2 - DORM_CX - DORM_ENT_HW) * k // 3
+        for k in [1, 2]
     ]
     # Window Y centers on east/west face: 3 evenly spaced
-    rh_wy = [RH_NORTH_Y1 + (RH_NORTH_Y2 - RH_NORTH_Y1) * k // 4 for k in [1, 2, 3]]
+    dorm_wy = [
+        DORM_NORTH_Y1 + (DORM_NORTH_Y2 - DORM_NORTH_Y1) * k // 4 for k in [1, 2, 3]
+    ]
 
-    rh_wz_lo = (KH_FLOOR_H - RH_WIN_HH * 2) // 2  # window sill offset within a floor
-    rh_wz_hi = rh_wz_lo + RH_WIN_HH * 2  # window head offset within a floor
+    dorm_wz_lo = (
+        KH_FLOOR_H - DORM_WIN_HH * 2
+    ) // 2  # window sill offset within a floor
+    dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2  # window head offset within a floor
 
     def nb_wins_xz(wx_list):
         """Window openings (all floors) for X-facing wall (south/north)."""
         return [
             (
-                wx - RH_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_lo,
-                wx + RH_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_hi,
+                wx - DORM_WIN_HW,
+                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                wx + DORM_WIN_HW,
+                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
             )
-            for fl in range(RH_FLOORS)
+            for fl in range(DORM_FLOORS)
             for wx in wx_list
         ]
 
@@ -81,131 +86,131 @@ def build():
         """Window openings (all floors) for Y-facing wall (east/west)."""
         return [
             (
-                wy - RH_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_lo,
-                wy + RH_WIN_HW,
-                FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_hi,
+                wy - DORM_WIN_HW,
+                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                wy + DORM_WIN_HW,
+                FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
             )
-            for fl in range(RH_FLOORS)
+            for fl in range(DORM_FLOORS)
             for wy in wy_list
         ]
 
     # South wall (faces bridge) — windows + ground-level entrance
-    rh_s_openings = nb_wins_xz(rh_wx) + [
-        (RH_CX - RH_ENT_HW, FLOOR_Z2, RH_CX + RH_ENT_HW, FLOOR_Z2 + RH_ENT_H)
+    dorm_s_openings = nb_wins_xz(dorm_wx) + [
+        (DORM_CX - DORM_ENT_HW, FLOOR_Z2, DORM_CX + DORM_ENT_HW, FLOOR_Z2 + DORM_ENT_H)
     ]
     BRUSHES.extend(
         layered_wall(
-            RH_X1,
-            RH_NORTH_Y1,
+            DORM_X1,
+            DORM_NORTH_Y1,
             FLOOR_Z2,
-            RH_X2,
-            RH_NORTH_Y1 + RH_WALL,
-            FLOOR_Z2 + RH_H,
-            rh_s_openings,
+            DORM_X2,
+            DORM_NORTH_Y1 + DORM_WALL,
+            FLOOR_Z2 + DORM_H,
+            dorm_s_openings,
             "city2_1",
         )
     )
     # North wall — windows only
     BRUSHES.extend(
         layered_wall(
-            RH_X1,
-            RH_NORTH_Y2 - RH_WALL,
+            DORM_X1,
+            DORM_NORTH_Y2 - DORM_WALL,
             FLOOR_Z2,
-            RH_X2,
-            RH_NORTH_Y2,
-            FLOOR_Z2 + RH_H,
-            nb_wins_xz(rh_wx),
+            DORM_X2,
+            DORM_NORTH_Y2,
+            FLOOR_Z2 + DORM_H,
+            nb_wins_xz(dorm_wx),
             "city2_1",
         )
     )
     # East wall — windows + ground-level entrance (matches south buildings)
-    rh_e_openings = nb_wins_yz(rh_wy) + [
+    dorm_e_openings = nb_wins_yz(dorm_wy) + [
         (
-            RH_NORTH_CY - RH_ENT_HW,
+            DORM_NORTH_CY - DORM_ENT_HW,
             FLOOR_Z2,
-            RH_NORTH_CY + RH_ENT_HW,
-            FLOOR_Z2 + RH_ENT_H,
+            DORM_NORTH_CY + DORM_ENT_HW,
+            FLOOR_Z2 + DORM_ENT_H,
         )
     ]
     BRUSHES.extend(
         layered_wall_y(
-            RH_NORTH_Y1 + RH_WALL,
-            RH_X2 - RH_WALL,
+            DORM_NORTH_Y1 + DORM_WALL,
+            DORM_X2 - DORM_WALL,
             FLOOR_Z2,
-            RH_NORTH_Y2 - RH_WALL,
-            RH_X2,
-            FLOOR_Z2 + RH_H,
-            rh_e_openings,
+            DORM_NORTH_Y2 - DORM_WALL,
+            DORM_X2,
+            FLOOR_Z2 + DORM_H,
+            dorm_e_openings,
             "city2_1",
         )
     )
     # West wall — windows
     BRUSHES.extend(
         layered_wall_y(
-            RH_NORTH_Y1 + RH_WALL,
-            RH_X1,
+            DORM_NORTH_Y1 + DORM_WALL,
+            DORM_X1,
             FLOOR_Z2,
-            RH_NORTH_Y2 - RH_WALL,
-            RH_X1 + RH_WALL,
-            FLOOR_Z2 + RH_H,
-            nb_wins_yz(rh_wy),
+            DORM_NORTH_Y2 - DORM_WALL,
+            DORM_X1 + DORM_WALL,
+            FLOOR_Z2 + DORM_H,
+            nb_wins_yz(dorm_wy),
             "city2_1",
         )
     )
     # Ceiling slab
     BRUSHES.append(
         box(
-            RH_X1,
-            RH_NORTH_Y1,
-            FLOOR_Z2 + RH_H,
-            RH_X2,
-            RH_NORTH_Y2,
-            FLOOR_Z2 + RH_H + RH_WALL,
+            DORM_X1,
+            DORM_NORTH_Y1,
+            FLOOR_Z2 + DORM_H,
+            DORM_X2,
+            DORM_NORTH_Y2,
+            FLOOR_Z2 + DORM_H + DORM_WALL,
             "city2_1",
         )
     )
 
     # Gable (A-frame) roof — ridge runs N-S at building X center, KH_FLOOR_H above ceiling
-    RH_EAVE_Z = FLOOR_Z2 + RH_H + RH_WALL  # top of ceiling slab = eave level
-    RH_RIDGE_Z = RH_EAVE_Z + KH_FLOOR_H  # ridge apex
-    RH_SLAB_T = 16  # roof slab thickness at eave
+    DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
+    DORM_RIDGE_Z = DORM_EAVE_Z + KH_FLOOR_H  # ridge apex
+    DORM_SLAB_T = 16  # roof slab thickness at eave
     # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
     BRUSHES.append(
         ramp_slab(
-            RH_X1,
-            RH_CX,
-            RH_NORTH_Y1,
-            RH_NORTH_Y2,
-            RH_EAVE_Z,
-            RH_EAVE_Z,
-            RH_EAVE_Z + RH_SLAB_T,
-            RH_RIDGE_Z,
+            DORM_X1,
+            DORM_CX,
+            DORM_NORTH_Y1,
+            DORM_NORTH_Y2,
+            DORM_EAVE_Z,
+            DORM_EAVE_Z,
+            DORM_EAVE_Z + DORM_SLAB_T,
+            DORM_RIDGE_Z,
             Textures.ROOF,
         )
     )
     # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
     BRUSHES.append(
         ramp_slab(
-            RH_CX,
-            RH_X2,
-            RH_NORTH_Y1,
-            RH_NORTH_Y2,
-            RH_EAVE_Z,
-            RH_EAVE_Z,
-            RH_RIDGE_Z,
-            RH_EAVE_Z + RH_SLAB_T,
+            DORM_CX,
+            DORM_X2,
+            DORM_NORTH_Y1,
+            DORM_NORTH_Y2,
+            DORM_EAVE_Z,
+            DORM_EAVE_Z,
+            DORM_RIDGE_Z,
+            DORM_EAVE_Z + DORM_SLAB_T,
             Textures.ROOF,
         )
     )
     # Interior floor — flat ground surface inside the building (covers the hill void)
     BRUSHES.append(
         box(
-            RH_X1 + RH_WALL,
-            RH_NORTH_Y1 + RH_WALL,
+            DORM_X1 + DORM_WALL,
+            DORM_NORTH_Y1 + DORM_WALL,
             FLOOR_Z1,
-            RH_X2 - RH_WALL,
-            RH_NORTH_Y2 - RH_WALL,
+            DORM_X2 - DORM_WALL,
+            DORM_NORTH_Y2 - DORM_WALL,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.ROAD,
@@ -213,12 +218,12 @@ def build():
     )
 
     # ── Two south buildings — exact copies of north building, stacked N-S ──────────
-    # Same X footprint (RH_X1..RH_X2), entrance on east face (faces Charles Street).
+    # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
 
     def make_south_bldg(by1, by2):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north)."""
-        bx1, bx2 = RH_X1, RH_X2
+        bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 100
         wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
@@ -229,24 +234,24 @@ def build():
         def wxz():
             return [
                 (
-                    wx - RH_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_lo,
-                    wx + RH_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_hi,
+                    wx - DORM_WIN_HW,
+                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                    wx + DORM_WIN_HW,
+                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
                 )
-                for fl in range(RH_FLOORS)
+                for fl in range(DORM_FLOORS)
                 for wx in wx_list
             ]
 
         def wyz():
             return [
                 (
-                    wy - RH_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_lo,
-                    wy + RH_WIN_HW,
-                    FLOOR_Z2 + fl * KH_FLOOR_H + rh_wz_hi,
+                    wy - DORM_WIN_HW,
+                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_lo,
+                    wy + DORM_WIN_HW,
+                    FLOOR_Z2 + fl * KH_FLOOR_H + dorm_wz_hi,
                 )
-                for fl in range(RH_FLOORS)
+                for fl in range(DORM_FLOORS)
                 for wy in wy_list
             ]
 
@@ -254,11 +259,11 @@ def build():
         # Interior floor
         brushes.append(
             box(
-                bx1 + RH_WALL,
-                by1 + RH_WALL,
+                bx1 + DORM_WALL,
+                by1 + DORM_WALL,
                 FLOOR_Z1,
-                bx2 - RH_WALL,
-                by2 - RH_WALL,
+                bx2 - DORM_WALL,
+                by2 - DORM_WALL,
                 FLOOR_Z2,
                 Textures.GROUND,
                 tt=Textures.ROAD,
@@ -270,8 +275,8 @@ def build():
                 by1,
                 FLOOR_Z2,
                 bx2,
-                by1 + RH_WALL,
-                FLOOR_Z2 + RH_H,
+                by1 + DORM_WALL,
+                FLOOR_Z2 + DORM_H,
                 wxz(),
                 "city2_1",
             )
@@ -279,23 +284,23 @@ def build():
         brushes.extend(
             layered_wall(
                 bx1,
-                by2 - RH_WALL,
+                by2 - DORM_WALL,
                 FLOOR_Z2,
                 bx2,
                 by2,
-                FLOOR_Z2 + RH_H,
+                FLOOR_Z2 + DORM_H,
                 wxz(),
                 "city2_1",
             )
         )
         brushes.extend(
             layered_wall_y(
-                by1 + RH_WALL,
+                by1 + DORM_WALL,
                 bx1,
                 FLOOR_Z2,
-                by2 - RH_WALL,
-                bx1 + RH_WALL,
-                FLOOR_Z2 + RH_H,
+                by2 - DORM_WALL,
+                bx1 + DORM_WALL,
+                FLOOR_Z2 + DORM_H,
                 wyz(),
                 "city2_1",
             )
@@ -304,12 +309,12 @@ def build():
         east_openings = wyz() + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
         brushes.extend(
             layered_wall_y(
-                by1 + RH_WALL,
-                bx2 - RH_WALL,
+                by1 + DORM_WALL,
+                bx2 - DORM_WALL,
                 FLOOR_Z2,
-                by2 - RH_WALL,
+                by2 - DORM_WALL,
                 bx2,
-                FLOOR_Z2 + RH_H,
+                FLOOR_Z2 + DORM_H,
                 east_openings,
                 "city2_1",
             )
@@ -318,16 +323,16 @@ def build():
             box(
                 bx1,
                 by1,
-                FLOOR_Z2 + RH_H,
+                FLOOR_Z2 + DORM_H,
                 bx2,
                 by2,
-                FLOOR_Z2 + RH_H + RH_WALL,
+                FLOOR_Z2 + DORM_H + DORM_WALL,
                 "city2_1",
             )
         )
         eave_z, ridge_z, slab_t = (
-            FLOOR_Z2 + RH_H + RH_WALL,
-            FLOOR_Z2 + RH_H + RH_WALL + KH_FLOOR_H,
+            FLOOR_Z2 + DORM_H + DORM_WALL,
+            FLOOR_Z2 + DORM_H + DORM_WALL + KH_FLOOR_H,
             16,
         )
         brushes.append(
@@ -358,11 +363,11 @@ def build():
         )
         return brushes
 
-    BRUSHES.extend(make_south_bldg(RH_SOUTH1_Y1, RH_SOUTH1_Y2))
-    BRUSHES.extend(make_south_bldg(RH_SOUTH2_Y1, RH_SOUTH2_Y2))
+    BRUSHES.extend(make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2))
+    BRUSHES.extend(make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2))
 
     # ── Iron fence along east face of west buildings ──────────────────────────
-    FENCE_X1 = RH_X2 + 96  # well clear of building face
+    FENCE_X1 = DORM_X2 + 96  # well clear of building face
     FENCE_X2 = FENCE_X1 + 2  # picket/rail thickness
     FENCE_H = 96  # fence height
     FENCE_SPACING = 16  # picket center-to-center

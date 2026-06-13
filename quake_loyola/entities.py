@@ -25,6 +25,16 @@ from .constants import (
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM_FLOORS,
+    DORM_NORTH_Y1,
+    DORM_NORTH_Y2,
+    DORM_RIDGE_Z,
+    DORM_SOUTH1_Y1,
+    DORM_SOUTH1_Y2,
+    DORM_SOUTH2_Y1,
+    DORM_SOUTH2_Y2,
+    DORM_X1,
+    DORM_X2,
     ENNIS_CEMENT_LAMP_POSTS,
     ENNIS_CEMENT_X1,
     ENNIS_CEMENT_X2,
@@ -78,16 +88,6 @@ from .constants import (
     KH_Y1,
     KH_Y2,
     KH_Z2,
-    RH_FLOORS,
-    RH_NORTH_Y1,
-    RH_NORTH_Y2,
-    RH_RIDGE_Z,
-    RH_SOUTH1_Y1,
-    RH_SOUTH1_Y2,
-    RH_SOUTH2_Y1,
-    RH_SOUTH2_Y2,
-    RH_X1,
-    RH_X2,
     ROAD_X1,
     ROAD_X2,
     SHOW_SUPPORTS,
@@ -302,7 +302,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_east",
-            origin=f"{(RH_X1 + RH_X2) // 2} {(RH_NORTH_Y1 + RH_NORTH_Y2) // 2} {int(RH_RIDGE_Z + 40)}",
+            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
             angle="270",  # facing south toward the bridge
         )
     )
@@ -448,10 +448,10 @@ def build():
     )
 
     kh_cy = (KH_Y1 + KH_Y2) // 2  # Knott Hall center Y = -528
-    RH_NORTH_CY = (RH_NORTH_Y1 + RH_NORTH_Y2) // 2  # north building center Y
-    RH_CX = (RH_X1 + RH_X2) // 2  # west buildings center X
-    RH_SOUTH1_CY = (RH_SOUTH1_Y1 + RH_SOUTH1_Y2) // 2  # south building 1 center Y
-    RH_SOUTH2_CY = (RH_SOUTH2_Y1 + RH_SOUTH2_Y2) // 2  # south building 2 center Y
+    DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2  # north building center Y
+    DORM_CX = (DORM_X1 + DORM_X2) // 2  # west buildings center X
+    DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2  # south building 1 center Y
+    DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2  # south building 2 center Y
 
     # ── Deathmatch spawns — spread across all areas ──────────────────────────
     for pos, angle in [
@@ -487,15 +487,15 @@ def build():
         # Charles Street
         ((0, 300, ROAD_Z + 24), 180),
         ((0, -400, ROAD_Z + 24), 0),
-        ((0, RH_SOUTH1_CY, ROAD_Z + 24), 270),
+        ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
         # North building interior
-        ((RH_CX, RH_NORTH_CY, FLOOR_Z2 + 40), 90),
-        ((RH_CX, RH_NORTH_CY, FLOOR_Z2 + KH_FLOOR_H + 40), 90),
+        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
+        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + KH_FLOOR_H + 40), 90),
         # North building roof ridge
-        ((RH_CX, RH_NORTH_CY, int(RH_RIDGE_Z + 40)), 90),
+        ((DORM_CX, DORM_NORTH_CY, int(DORM_RIDGE_Z + 40)), 90),
         # South buildings interiors
-        ((RH_CX, RH_SOUTH1_CY, FLOOR_Z2 + 40), 90),
-        ((RH_CX, RH_SOUTH2_CY, FLOOR_Z2 + 40), 90),
+        ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + 40), 90),
+        ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + 40), 90),
         # Ground east/west of bridge
         ((800, 0, ROAD_Z + 24), 270),
         ((-800, 0, ROAD_Z + 24), 90),
@@ -553,7 +553,7 @@ def build():
         ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}")
     )  # east sidewalk
     ENTITIES.append(
-        ent("weapon_supershotgun", origin=f"{RH_CX} {RH_SOUTH1_CY} {FLOOR_Z2 + 40}")
+        ent("weapon_supershotgun", origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + 40}")
     )
 
     # Grenade launcher — Knott Hall floor 2, south building 2
@@ -565,7 +565,10 @@ def build():
             )
         )
     ENTITIES.append(
-        ent("weapon_grenadelauncher", origin=f"{RH_CX} {RH_SOUTH2_CY} {FLOOR_Z2 + 40}")
+        ent(
+            "weapon_grenadelauncher",
+            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + 40}",
+        )
     )
 
     # Nailgun — bridge approaches, Charles Street
@@ -595,7 +598,9 @@ def build():
     ENTITIES.append(
         ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}")
     )  # west sidewalk
-    ENTITIES.append(ent("item_shells", origin=f"{RH_CX} {RH_NORTH_CY} {FLOOR_Z2 + 40}"))
+    ENTITIES.append(
+        ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
+    )
     ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 
@@ -617,7 +622,7 @@ def build():
         ent("item_health", origin=f"300 -600 {ROAD_Z + 24}")
     )  # east sidewalk
     ENTITIES.append(
-        ent("item_health", origin=f"{RH_CX} {RH_SOUTH2_CY} {FLOOR_Z2 + 40}")
+        ent("item_health", origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + 40}")
     )
     # Armor — contested locations
     ENTITIES.append(
@@ -629,7 +634,10 @@ def build():
         )
     )  # red armor top floor
     ENTITIES.append(
-        ent("item_armorInv", origin=f"{RH_CX} {RH_NORTH_CY} {int(RH_RIDGE_Z + 40)}")
+        ent(
+            "item_armorInv",
+            origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
+        )
     )  # mega armor on roof ridge (teleport reward)
 
     # Torch lights on pillar caps
@@ -817,14 +825,14 @@ def build():
         )
 
     # Interior lights for the three campus buildings (north + 2 south)
-    bldg_light_x = (RH_X1 + RH_X2) // 2
+    bldg_light_x = (DORM_X1 + DORM_X2) // 2
     for building_y1, building_y2 in [
-        (RH_NORTH_Y1, RH_NORTH_Y2),
-        (RH_SOUTH1_Y1, RH_SOUTH1_Y2),
-        (RH_SOUTH2_Y1, RH_SOUTH2_Y2),
+        (DORM_NORTH_Y1, DORM_NORTH_Y2),
+        (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2),
+        (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2),
     ]:
         building_y = (building_y1 + building_y2) // 2
-        for building_floor_index in range(RH_FLOORS):
+        for building_floor_index in range(DORM_FLOORS):
             building_light_z = (
                 FLOOR_Z2 + building_floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
             )
@@ -859,10 +867,10 @@ def build():
     # - Trees along Ennis Parallel campus road (bridge02)
     tree_positions = [
         # Trees flanking Knott Hall (west side — bridge01, bridge10)
-        (RH_X1 - 80, -600),
-        (RH_X1 - 200, -300),
-        (RH_X1 - 80, 200),
-        (RH_X1 - 200, 500),
+        (DORM_X1 - 80, -600),
+        (DORM_X1 - 200, -300),
+        (DORM_X1 - 80, 200),
+        (DORM_X1 - 200, 500),
         # Along Ennis Parallel (campus side, west of Charles St — bridge02)
         (ROAD_X1 - 200, ENNIS_WALL_NY - 100),
         (ROAD_X1 - 400, ENNIS_WALL_NY - 80),
@@ -949,9 +957,9 @@ def build():
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 + 200),
         # Along west building east face (outside building)
-        (RH_X2 + 48, -200),
-        (RH_X2 + 48, 200),
-        (RH_X2 + 48, 500),
+        (DORM_X2 + 48, -200),
+        (DORM_X2 + 48, 200),
+        (DORM_X2 + 48, 500),
     ]
     all_bush_brushes = []
     for bush_x, bush_y in bush_positions:
