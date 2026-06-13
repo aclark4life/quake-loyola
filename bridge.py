@@ -840,16 +840,10 @@ def build():
     if KH_WALKWAY_ENABLED:
         east_walk_center_x = 2120
         east_walk_half_width = 32
-        east_walk_x1 = (
-            east_walk_center_x - east_walk_half_width
-        )  # 2088 — path position unchanged
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
-        east_walk_y1 = KH_Y2  # south: Knott Hall north face (-256)
         east_walk_y2 = (
             PB_Y2 + PB_PIL_OVERHANG + 96 + 80
         )  # north anchor: ramp moved 80 units north
-        east_walk_top_z = KH_GROUND_Z + KH_WALL
-        terrain_z1 = KH_GROUND_Z  # flat at hilltop from KH face to slope start
         terrain_z2 = int(
             KH_GROUND_Z
             + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
@@ -950,7 +944,6 @@ def build():
     if KH_GROUND_Z > FLOOR_Z2:
         west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
         west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
-        east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
         # Solid hill fill under the entire building footprint — split to exclude indent pockets
         # so indents are recessed at all heights down to ground level
         for fill_x1, fill_y1, fill_x2, fill_y2 in [
@@ -1021,7 +1014,6 @@ def build():
         kh_entry_x2 = KH_ORIG_CX + 64
         east_ramp_x1 = kh_entry_x2  # east of entrance opening
         east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
-        east_ramp_depth = 128  # N-S length of sloped sidewalk
         east_platform_depth = (
             96  # N-S depth of side-step platform — slope must not cover this
         )
