@@ -58,9 +58,9 @@ from constants import (
     WORLD_Y1,
     dbot,
     dtop,
-    east_pivot_x,
-    east_shift_end,
-    east_shift_start,
+    PB_EAST_PIVOT_X,
+    PB_EAST_SHIFT_END,
+    PB_EAST_SHIFT_START,
 )
 from geometry import (
     arch_fill,
@@ -88,7 +88,7 @@ def build():
             PB_X2,
             PB_Y2 - PB_PAR_W,
             PB_DZ2,
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y2,
             PB_DZ2 + PB_PAR_H,
             TEX_CEMENT,
@@ -96,14 +96,14 @@ def build():
     )
     BRUSHES.append(
         shear_box_y(
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y2 - PB_PAR_W,
             PB_DZ2,
             WORLD_X2 - WALL_T,
             PB_Y2,
             PB_DZ2 + PB_PAR_H,
-            east_shift_start,
-            east_shift_end,
+            PB_EAST_SHIFT_START,
+            PB_EAST_SHIFT_END,
             TEX_CEMENT,
         )
     )  # North east
@@ -126,7 +126,7 @@ def build():
             WALK_X2,
             PB_Y1,
             PB_DZ2,
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y1 + PB_PAR_W,
             PB_DZ2 + PB_PAR_H,
             TEX_CEMENT,
@@ -134,14 +134,14 @@ def build():
     )
     BRUSHES.append(
         shear_box_y(
-            east_pivot_x,
+            PB_EAST_PIVOT_X,
             PB_Y1,
             PB_DZ2,
             WORLD_X2 - WALL_T,
             PB_Y1 + PB_PAR_W,
             PB_DZ2 + PB_PAR_H,
-            east_shift_start,
-            east_shift_end,
+            PB_EAST_SHIFT_START,
+            PB_EAST_SHIFT_END,
             TEX_CEMENT,
         )
     )
@@ -402,7 +402,7 @@ def build():
                 PB_X2,
                 tube_ny1,
                 tube_base_z,
-                east_pivot_x,
+                PB_EAST_PIVOT_X,
                 tube_ny2,
                 tube_base_z + PB_TUBE_HW * 2,
                 TEX_RAIL,
@@ -410,14 +410,14 @@ def build():
         )
         BRUSHES.append(
             shear_box_y(
-                east_pivot_x,
+                PB_EAST_PIVOT_X,
                 tube_ny1,
                 tube_base_z,
                 east_end_x,
                 tube_ny2,
                 tube_base_z + PB_TUBE_HW * 2,
-                east_shift_start,
-                east_shift_end,
+                PB_EAST_SHIFT_START,
+                PB_EAST_SHIFT_END,
                 TEX_RAIL,
             )
         )
@@ -439,7 +439,7 @@ def build():
                 WALK_X2,
                 tube_sy1,
                 tube_base_z,
-                east_pivot_x,
+                PB_EAST_PIVOT_X,
                 tube_sy2,
                 tube_base_z + PB_TUBE_HW * 2,
                 TEX_RAIL,
@@ -447,14 +447,14 @@ def build():
         )
         BRUSHES.append(
             shear_box_y(
-                east_pivot_x,
+                PB_EAST_PIVOT_X,
                 tube_sy1,
                 tube_base_z,
                 east_end_x,
                 tube_sy2,
                 tube_base_z + PB_TUBE_HW * 2,
-                east_shift_start,
-                east_shift_end,
+                PB_EAST_SHIFT_START,
+                PB_EAST_SHIFT_END,
                 TEX_RAIL,
             )
         )
@@ -707,7 +707,7 @@ def build():
         (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
         (
             WORLD_X2 - WALL_T - ARCH_SLAB_W,
-            east_shift_end,
+            PB_EAST_SHIFT_END,
         ),  # east arch — shifted south with span
     ]:
         arch_x1, arch_x2 = arch_x_start, arch_x_start + ARCH_SLAB_W
