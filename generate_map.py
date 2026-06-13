@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from constants import *
-from geometry import *
+from constants import TEX_SKY
+
 import streets
 import west_campus
 import bridge
