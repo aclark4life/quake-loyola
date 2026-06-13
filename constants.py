@@ -10,7 +10,6 @@ import math
 #   FENCE_       iron fence (pickets, rails, spacing)
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
-#   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
 #   PB_          Pedestrian Bridge (span, deck, piers, parapet, east approach)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
