@@ -141,7 +141,7 @@ KH_FLOOR_H = 160  # floor-to-floor height
 KH_FLOORS = 5  # ground floor + 4 upper floors
 INDENT = 80  # corner indentation depth
 # Knott Hall sits on a hill so its 2nd floor aligns with the bridge walkway
-KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 96
+KH_GROUND_Z = max(FZ2, PB_DZ2 - KH_FLOOR_H - KH_WALL)  # = 64
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
 
 # Sky ceiling must clear Knott Hall
@@ -3050,18 +3050,6 @@ if KH_GROUND_Z > FZ2:
             FZ1,
             KH_BR_CORRIDOR_X1,
             EP_SW_EDGE,
-            FZ2 + CS_WALK_H,
-            TEX_GROUND,
-        )
-    )
-    # East of E-W extension only (in the gap row, east of path)
-    BRUSHES.append(
-        box(
-            KH_X2,
-            _ewk_ext_y1_val,
-            FZ1,
-            KH_BR_CORRIDOR_X1,
-            _ewk_ext_y2_val,
             FZ2 + CS_WALK_H,
             TEX_GROUND,
         )
