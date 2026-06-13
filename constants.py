@@ -6,7 +6,7 @@ import math
 #   ARCH_        pedestrian bridge arch profile dimensions (rin, rout, stilt, slab)
 #   CS_          Charles Street (the N-S road running under the bridge)
 #   DRAW_        boolean feature-flag (enables/disables a drawn element)
-#   EP_          Ennis Place / Ennis Drive entrance (pillars, boundary wall, curbs)
+#   EP_          Ennis Parallel entrance (pillars, boundary wall, curbs)
 #   FENCE_       iron fence (pickets, rails, spacing)
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
