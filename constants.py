@@ -25,7 +25,7 @@ import math
 #   WALK_    walkway connecting the bridge east end to Knott Hall 2nd floor
 #   WALL_    structural wall thickness (generic)
 #   WORLD_   world bounding-box extents
-#   WST_     West Stairwell inside Knott Hall (railings, posts)
+#   KH_STAIRS_     West Stairwell inside Knott Hall (railings, posts)
 #
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -512,17 +512,17 @@ RH_SOUTH2_CY = (RH_SOUTH2_Y1 + RH_SOUTH2_Y2) // 2
 
 WORLD_Z2 = max(640, KH_Z2 + 512)
 
-WST_HALF_N = 8
+KH_STAIRS_HALF_N = 8
 
-WST_POST_W = 4
+KH_STAIRS_POST_W = 4
 
-WST_RAIL_H = 72
+KH_STAIRS_RAIL_H = 72
 
-WST_RAIL_T = 4
+KH_STAIRS_RAIL_T = 4
 
-WST_STEP_R = 10
+KH_STAIRS_STEP_R = 10
 
-WST_TREAD_X = 24
+KH_STAIRS_TREAD_X = 24
 
 abutment_arch_z = FLOOR_Z2 + PB_PIL_BASE_H + 60
 
@@ -1055,9 +1055,9 @@ wstx2 = KH_ENT_X1 - 16
 
 stair_cx = (wstx1 + wstx2) // 2
 
-stair_x1 = stair_cx - WST_HALF_N * WST_TREAD_X // 2
+stair_x1 = stair_cx - KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X // 2
 
-stair_x2 = stair_x1 + WST_HALF_N * WST_TREAD_X
+stair_x2 = stair_x1 + KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X
 
 west_stair_center_x = (wstx1 + wstx2) // 2
 
