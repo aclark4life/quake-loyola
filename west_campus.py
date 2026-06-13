@@ -350,23 +350,23 @@ def build():
     BRUSHES.extend(make_south_bldg(RH_SOUTH2_Y1, RH_SOUTH2_Y2))
 
     # ── Iron fence along east face of west buildings ──────────────────────────
-    FNC_X1 = RH_X2 + 96  # well clear of building face
-    FNC_X2 = FNC_X1 + 2  # picket/rail thickness
-    FNC_H = 96  # fence height
-    FNC_SPACING = 16  # picket center-to-center
-    FNC_TEX = "metal4_4"
+    FENCE_X1 = RH_X2 + 96  # well clear of building face
+    FENCE_X2 = FENCE_X1 + 2  # picket/rail thickness
+    FENCE_H = 96  # fence height
+    FENCE_SPACING = 16  # picket center-to-center
+    FENCE_TEX = "metal4_4"
 
     for fence_y1, fence_y2 in [(CS_Y1, CS_Y2)]:
         # Top rail — thin, dropped so pickets extend above it
         BRUSHES.append(
             box(
-                FNC_X1,
+                FENCE_X1,
                 fence_y1,
-                FLOOR_Z2 + FNC_H - 28,
-                FNC_X2,
+                FLOOR_Z2 + FENCE_H - 28,
+                FENCE_X2,
                 fence_y2,
-                FLOOR_Z2 + FNC_H - 26,
-                FNC_TEX,
+                FLOOR_Z2 + FENCE_H - 26,
+                FENCE_TEX,
             )
         )
         # Pickets — thin (2 wide) with thick posts (8 wide) every 10th
@@ -376,16 +376,16 @@ def build():
             picket_width = 8 if picket_index % 10 == 0 else 2
             BRUSHES.append(
                 box(
-                    FNC_X1,
+                    FENCE_X1,
                     picket_y,
                     FLOOR_Z2,
-                    FNC_X2,
+                    FENCE_X2,
                     picket_y + picket_width,
-                    FLOOR_Z2 + FNC_H,
-                    FNC_TEX,
+                    FLOOR_Z2 + FENCE_H,
+                    FENCE_TEX,
                 )
             )
-            picket_y += FNC_SPACING
+            picket_y += FENCE_SPACING
             picket_index += 1
 
     # ════════════════════════════════════════════════════════════════════════════════

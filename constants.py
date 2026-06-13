@@ -11,7 +11,7 @@ import math
 #   EAST_    geometry on the east approach of the bridge span
 #   EP_      Ennis Place / Ennis Drive entrance (pillars, boundary wall, curbs)
 #   FLOOR_   world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
-#   FNC_     iron fence (pickets, rails, spacing)
+#   FENCE_     iron fence (pickets, rails, spacing)
 #   GAP_     road-marking gap geometry
 #   KH_      Knott Hall (the main campus building south-east of the bridge)
 #   KHRH_    Knott Hall / Residence Hall shared window geometry
@@ -122,13 +122,13 @@ FLOOR_Z1, FLOOR_Z2 = -16, 0
 
 EP_PIL_ZB = FLOOR_Z2
 
-FNC_H = 96
+FENCE_H = 96
 
-FNC_RAIL = 8
+FENCE_RAIL = 8
 
-FNC_SPACING = 16
+FENCE_SPACING = 16
 
-FNC_TEX = "metal4_4"
+FENCE_TEX = "metal4_4"
 
 GAP_LEN = 64
 
@@ -748,9 +748,9 @@ PB_BLK_PIR_M = PB_PIL_HW + PBPB_BLK_HW + 4
 
 RH_X2 = RH_PIER_X + PB_PIL_HW + 32
 
-FNC_X1 = RH_X2 + 96
+FENCE_X1 = RH_X2 + 96
 
-FNC_X2 = FNC_X1 + 2
+FENCE_X2 = FENCE_X1 + 2
 
 RH_X1 = RH_X2 - 576
 
