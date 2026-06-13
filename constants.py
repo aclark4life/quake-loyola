@@ -5,7 +5,7 @@ import math
 #   A_           arch ring (generic — voussoir segments, radius, segment count)
 #   ARCH_        pedestrian bridge arch profile dimensions (rin, rout, stilt, slab)
 #   CS_          Charles Street (the N-S road running under the bridge)
-#   DECK_        bridge deck surface (top Z, thickness)
+#   PB_DECK_        bridge deck surface (top Z, thickness)
 #   DRAW_        boolean feature-flag (enables/disables a drawn element)
 #   EAST_        geometry on the east approach of the bridge span
 #   EP_          Ennis Place / Ennis Drive entrance (pillars, boundary wall, curbs)
@@ -14,7 +14,7 @@ import math
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
 #   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
 #   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
-#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths)
+#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths, deck Z)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
@@ -371,7 +371,7 @@ def dtop(x):
     return PB_DZ2 + arch_z(x)
 
 
-DECK_Z = dtop(0) + 8
+PB_DECK_Z = dtop(0) + 8
 WALK_ZT1 = int(dtop(KH_ORIG_CX))
 deck_center_z = int(dtop(0)) + 24
 deck_p3_z = int(dtop(525)) + 24
