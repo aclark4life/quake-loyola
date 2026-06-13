@@ -7,7 +7,7 @@ from constants import (
 from mapdata import Brush, Entity, Face
 
 
-def _swap_xy(brush):
+def _swap_xy(src):
     """Return a new Brush with X and Y coordinates swapped on every face.
 
     Swapping two coordinates is a reflection, which flips the handedness of the
@@ -15,16 +15,21 @@ def _swap_xy(brush):
     p2 and p3 are also swapped so that the winding order — and therefore the
     outward normal direction — is preserved.
     """
+
+    def swap(p):
+        """Swap the X and Y components of a point, leaving Z unchanged."""
+        return (p[1], p[0], p[2])
+
     return Brush(
         [
             Face(
-                (f.p1[1], f.p1[0], f.p1[2]),
-                (f.p3[1], f.p3[0], f.p3[2]),  # p3 before p2 cancels the reflection flip
-                (f.p2[1], f.p2[0], f.p2[2]),
-                f.tex,
-                f.params,
+                swap(face.p1),
+                swap(face.p3),  # p3 before p2 cancels the reflection flip
+                swap(face.p2),
+                face.tex,
+                face.params,
             )
-            for f in brush.faces
+            for face in src.faces
         ]
     )
 
