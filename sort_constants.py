@@ -149,7 +149,27 @@ def topo_alpha_sort(entries: list[dict]) -> list[dict]:
     return result
 
 
+def sort_legend(header: str) -> str:
+    """Alpha-sort the prefix legend lines inside the header comment block."""
+    lines = header.splitlines(keepends=True)
+    legend_start = legend_end = None
+    for i, line in enumerate(lines):
+        if line.strip().startswith("#   ") and legend_start is None:
+            legend_start = i
+        elif legend_start is not None and not line.strip().startswith("#   "):
+            legend_end = i
+            break
+    if legend_start is None or legend_end is None:
+        return header
+    legend_lines = lines[legend_start:legend_end]
+    sorted_lines = sorted(
+        legend_lines, key=lambda ln: ln.strip().lstrip("#").strip().lower()
+    )
+    return "".join(lines[:legend_start] + sorted_lines + lines[legend_end:])
+
+
 def sorted_source(header: str, entries: list[dict]) -> str:
+    header = sort_legend(header)
     sorted_entries = topo_alpha_sort(entries)
     body = "\n".join(e["code"].rstrip("\n") for e in sorted_entries)
     return header + body + "\n"
