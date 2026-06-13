@@ -1,4 +1,5 @@
 [tool.ruff.lint]
+select = ["I"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

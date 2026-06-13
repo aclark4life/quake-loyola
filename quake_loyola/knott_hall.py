@@ -1,6 +1,11 @@
 import math
+
 from .constants import (
     A_SEGS,
+    BRIDGE_DZ2,
+    BRIDGE_PAR_H,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     CHARLES_CRN_SEGS,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -13,8 +18,8 @@ from .constants import (
     FLOOR_Z2,
     INDENT,
     KH_ENABLED,
-    KH_FLOORS,
     KH_FLOOR_H,
+    KH_FLOORS,
     KH_GROUND_Z,
     KH_ORIG_CX,
     KH_WALL,
@@ -23,17 +28,13 @@ from .constants import (
     KH_Y1,
     KH_Y2,
     KH_Z2,
-    BRIDGE_DZ2,
-    BRIDGE_PAR_H,
-    BRIDGE_Y1,
-    BRIDGE_Y2,
-    Textures,
     WALK_ZT2,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
     WORLD_Y1,
-    dtop,
+    Textures,
+    deck_top_z,
 )
 from .geometry import (
     arch_wall_y,
@@ -1622,7 +1623,7 @@ def build():
     DRAW_KH_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
     # ── "LOYOLA UNIVERSITY MARYLAND" fascia lettering ────────────────────────────
-    # Fascia panel follows the arch: one box per character hanging from dbot(x)
+    # Fascia panel follows the arch: one box per character hanging from deck_bot_z(x)
     KH_FASCIA_PX_W, KH_FASCIA_PX_H = 4, 4
     KH_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
     char_w = (4 + 1) * KH_FASCIA_PX_W  # 4 cols + 1 gap
@@ -1660,7 +1661,7 @@ def build():
 
     def render_text_fascia(text, x0, y_face, px_w, px_h, depth, tex, mirror=False):
         """Render text as pixel-font raised boxes on a fascia face.
-        Each character's Z is computed from dtop(x) so letters follow the arch curve.
+        Each character's Z is computed from deck_top_z(x) so letters follow the arch curve.
         mirror=True flips each glyph horizontally (needed for north-facing surface)."""
         cols = 4
         char_w = (cols + 1) * px_w  # 4 cols + 1 gap
@@ -1670,7 +1671,9 @@ def build():
             bitmap = KH_FASCIA_FONT.get(ch, KH_FASCIA_FONT[" "])
             cx = x0 + ci * char_w
             x_mid = cx + (cols * px_w) / 2
-            z_top = int(dtop(x_mid)) + BRIDGE_PAR_H - 14  # centred in parapet height
+            z_top = (
+                int(deck_top_z(x_mid)) + BRIDGE_PAR_H - 14
+            )  # centred in parapet height
             for row_i, row_bits in enumerate(bitmap):
                 z = z_top - row_i * px_h
                 for col_i in range(cols):

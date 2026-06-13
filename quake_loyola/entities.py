@@ -1,48 +1,11 @@
 from .constants import (
+    A_SEGS,
     ARCH_RIN,
     ARCH_SLAB_W,
     ARCH_STILT_H,
-    A_SEGS,
-    CHARLES_LAMP_POST_H,
-    CHARLES_LAMP_POST_XS,
-    CHARLES_WALK_W,
-    CHARLES_Y1,
-    CHARLES_Y2,
-    ENNIS_HW,
-    ENNIS_PIL_BELL2_H,
-    ENNIS_PIL_CAP_H,
-    ENNIS_PIL_HW,
-    ENNIS_PIL_POST_H,
-    ENNIS_PIL_X1,
-    ENNIS_PIL_ZB,
-    ENNIS_WALL_T,
-    ENNIS_Y,
-    FLOOR_Z2,
-    KH_BR_CORRIDOR_X1,
-    KH_BR_HW,
-    KH_BR_RD_X1,
-    KH_BR_RD_X2,
-    KH_BR_Y1,
-    KH_BR_Y2,
-    KH_BR_ZT_N,
-    KH_BR_ZT_S,
-    KH_CX,
-    KH_ENABLED,
-    KH_ENT_X1,
-    KH_ENT_X2,
-    KH_FLOORS,
-    KH_FLOOR_H,
-    KH_GROUND_Z,
-    KH_ORIG_CX,
-    KH_WALKWAY_ENABLED,
-    KH_WALL,
-    KH_X1,
-    KH_X2,
-    KH_Y1,
-    KH_Y2,
-    KH_Z2,
     BRIDGE_ARCH_X,
     BRIDGE_DZ2,
+    BRIDGE_EAST_SHIFT_END,
     BRIDGE_PAR_H,
     BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
@@ -56,6 +19,61 @@ from .constants import (
     BRIDGE_X2,
     BRIDGE_Y1,
     BRIDGE_Y2,
+    CHARLES_LAMP_POST_H,
+    CHARLES_LAMP_POST_XS,
+    CHARLES_LAMP_POST_YS,
+    CHARLES_WALK_W,
+    CHARLES_Y1,
+    CHARLES_Y2,
+    ENNIS_CEMENT_LAMP_POSTS,
+    ENNIS_CEMENT_X1,
+    ENNIS_CEMENT_X2,
+    ENNIS_GATE_X1,
+    ENNIS_GATE_X2,
+    ENNIS_HW,
+    ENNIS_PIL_BELL2_H,
+    ENNIS_PIL_CAP_H,
+    ENNIS_PIL_HW,
+    ENNIS_PIL_POST_H,
+    ENNIS_PIL_X1,
+    ENNIS_PIL_ZB,
+    ENNIS_WALL_NY,
+    ENNIS_WALL_T,
+    ENNIS_Y,
+    FLOOR_Z2,
+    KH_BIY1,
+    KH_BIY2,
+    KH_BR_CORRIDOR_X1,
+    KH_BR_HW,
+    KH_BR_RD_X1,
+    KH_BR_RD_X2,
+    KH_BR_Y1,
+    KH_BR_Y2,
+    KH_BR_ZT_N,
+    KH_BR_ZT_S,
+    KH_CX,
+    KH_EAST_ROOM_CX,
+    KH_ENABLED,
+    KH_ENT_X1,
+    KH_ENT_X2,
+    KH_FLOOR_H,
+    KH_FLOORS,
+    KH_GROUND_Z,
+    KH_ORIG_CX,
+    KH_ROOM_SPLITS,
+    KH_STAIRS_MID_Y,
+    KH_STAIRS_X1,
+    KH_STAIRS_X2,
+    KH_STAIRS_Y1,
+    KH_STAIRS_Y2,
+    KH_WALKWAY_ENABLED,
+    KH_WALL,
+    KH_WEST_ROOM_CX,
+    KH_X1,
+    KH_X2,
+    KH_Y1,
+    KH_Y2,
+    KH_Z2,
     RH_FLOORS,
     RH_NORTH_Y1,
     RH_NORTH_Y2,
@@ -69,7 +87,6 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SHOW_SUPPORTS,
-    Textures,
     WALK_X1,
     WALK_ZT1,
     WALK_ZT2,
@@ -77,30 +94,13 @@ from .constants import (
     WORLD_X1,
     WORLD_X2,
     WORLD_Y2,
-    KH_BIY1,
-    KH_BIY2,
-    ENNIS_WALL_NY,
-    ENNIS_CEMENT_LAMP_POSTS,
-    ENNIS_CEMENT_X1,
-    ENNIS_CEMENT_X2,
-    dbot,
-    dtop,
-    ENNIS_GATE_X1,
-    ENNIS_GATE_X2,
-    BRIDGE_EAST_SHIFT_END,
-    KH_EAST_ROOM_CX,
-    CHARLES_LAMP_POST_YS,
-    KH_ROOM_SPLITS,
+    Textures,
+    deck_bot_z,
+    deck_top_z,
     stx1,
     stx2,
     sty1,
     sty2,
-    KH_STAIRS_MID_Y,
-    KH_STAIRS_X1,
-    KH_STAIRS_X2,
-    KH_STAIRS_Y1,
-    KH_STAIRS_Y2,
-    KH_WEST_ROOM_CX,
 )
 from .geometry import (
     arch_fill,
@@ -117,7 +117,7 @@ from .geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
-    BRIDGE_DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
+    BRIDGE_DECK_Z = deck_top_z(0) + 8  # centre of arch deck + a bit (spawn/item height)
     ROAD_Z = FLOOR_Z2 + 8
 
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
@@ -387,7 +387,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_bridge_mid",
-            origin=f"0 0 {int(dtop(0) + 56)}",
+            origin=f"0 0 {int(deck_top_z(0) + 56)}",
             angle="0",
         )
     )
@@ -456,11 +456,11 @@ def build():
     # ── Deathmatch spawns — spread across all areas ──────────────────────────
     for pos, angle in [
         # Bridge deck
-        ((0, 0, int(dtop(0) + 32)), 180),
-        ((-200, 0, int(dtop(-200) + 32)), 90),
-        ((200, 0, int(dtop(200) + 32)), 270),
-        ((-400, 0, int(dtop(-400) + 32)), 90),
-        ((400, 0, int(dtop(400) + 32)), 270),
+        ((0, 0, int(deck_top_z(0) + 32)), 180),
+        ((-200, 0, int(deck_top_z(-200) + 32)), 90),
+        ((200, 0, int(deck_top_z(200) + 32)), 270),
+        ((-400, 0, int(deck_top_z(-400) + 32)), 90),
+        ((400, 0, int(deck_top_z(400) + 32)), 270),
         # Walkway
         *(
             [((KH_CX, (BRIDGE_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180)]
@@ -581,7 +581,7 @@ def build():
 
     # ── Ammo ──────────────────────────────────────────────────────────────────
     for ax in BRIDGE_ARCH_X:
-        ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
+        ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(deck_top_z(ax) + 8)}"))
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
@@ -637,7 +637,7 @@ def build():
         for px in BRIDGE_ARCH_X:
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
                 continue
-            pbase = dtop(px)
+            pbase = deck_top_z(px)
             pcap = (
                 pbase
                 + BRIDGE_PAR_H
@@ -737,7 +737,7 @@ def build():
         ENTITIES.append(
             ent(
                 "light",
-                origin=f"{pier_x} 0 {int(dbot(pier_x)) - 20}",
+                origin=f"{pier_x} 0 {int(deck_bot_z(pier_x)) - 20}",
                 light="350",
                 style="1",
             )
@@ -1208,8 +1208,8 @@ def build():
 
     # ── Demon knights (monster_hell_knight) ───────────────────────────────────────
     # Two on the bridge arch span — guard the crown and Pier 3 approach
-    deck_center_z = int(dtop(0)) + 24  # standing height at arch crown
-    deck_p3_z = int(dtop(525)) + 24  # standing height near Pier 3
+    deck_center_z = int(deck_top_z(0)) + 24  # standing height at arch crown
+    deck_p3_z = int(deck_top_z(525)) + 24  # standing height near Pier 3
     for monster_x, monster_y, monster_z, monster_angle in [
         (0, 0, deck_center_z, 180),  # arch crown, facing west
         (525, 0, deck_p3_z, 0),  # Pier 3 approach, facing east
