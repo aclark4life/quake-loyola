@@ -587,13 +587,13 @@ def square_wall(x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_
     base_h: solid plinth height at ground level.
     """
     brushes = []
-    _ext = open_hw + overhang
-    if y1 < -_ext:
-        brushes.append(box(x1, y1, floor_z, x2, -_ext, ceil_z, tex))
-    if y2 > _ext:
-        brushes.append(box(x1, _ext, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(box(x1, -_ext, floor_z, x2, -open_hw, ceil_z, tex))  # south pillar
-    brushes.append(box(x1, open_hw, floor_z, x2, _ext, ceil_z, tex))  # north pillar
+    ext = open_hw + overhang
+    if y1 < -ext:
+        brushes.append(box(x1, y1, floor_z, x2, -ext, ceil_z, tex))
+    if y2 > ext:
+        brushes.append(box(x1, ext, floor_z, x2, y2, ceil_z, tex))
+    brushes.append(box(x1, -ext, floor_z, x2, -open_hw, ceil_z, tex))  # south pillar
+    brushes.append(box(x1, open_hw, floor_z, x2, ext, ceil_z, tex))  # north pillar
     brushes.append(box(x1, -open_hw, ceil_z - 16, x2, open_hw, ceil_z, tex))  # lintel
     if base_h > 0:
         brushes.append(box(x1, -open_hw, floor_z, x2, open_hw, floor_z + base_h, tex))
@@ -833,13 +833,13 @@ EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W - 32  # Ennis south sidewalk outer edg
 # Back road corridor X extents — defined here for road/curb brush splits below
 KH_BR_CORRIDOR_X1 = KH_X2  # west edge of corridor gap
 KH_BR_CORRIDOR_X2 = KH_X2 + CS_WALK_W + 2 * 128 + CS_WALK_W  # east edge
-_EP_CURB_W = 8  # south Ennis curb strip width (N-S)
+EP_CURB_W = 8  # south Ennis curb strip width (N-S)
 
-# Road surface — split either side of centre divider slot (_div_hw wide)
-_div_hw = 4  # half-width of Charles St divider slot
-_div_ep_hw = 16  # half-width of Ennis divider slot (wider for rune1_lig2 white)
-BRUSHES.append(box(ROAD_X1, CS_Y1, FLOOR_Z2, -_div_hw, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD))
-BRUSHES.append(box(_div_hw, CS_Y1, FLOOR_Z2, ROAD_X2, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD))
+# Road surface — split either side of centre divider slot (div_hw wide)
+div_hw = 4  # half-width of Charles St divider slot
+div_ep_hw = 16  # half-width of Ennis divider slot (wider for rune1_lig2 white)
+BRUSHES.append(box(ROAD_X1, CS_Y1, FLOOR_Z2, -div_hw, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD))
+BRUSHES.append(box(div_hw, CS_Y1, FLOOR_Z2, ROAD_X2, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD))
 CS_SWALK_START = PB_Y2 + 200  # sidewalk starts north of bridge
 # West sidewalk — north of bridge
 BRUSHES.append(
@@ -910,23 +910,23 @@ BRUSHES.append(
         EP_Y - EP_HW,
         FLOOR_Z2,
         ROAD_X2 + CS_WALK_W,
-        EP_Y - _div_ep_hw,
+        EP_Y - div_ep_hw,
         FLOOR_Z2 + 2,
         TEX_ROAD,
     )
 )
 # Main east sections — full south extent to road edge
-for _rx1, _rx2 in [
+for road_x1, road_x2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
     (KH_BR_CORRIDOR_X2, EP_X2),
 ]:
     BRUSHES.append(
         box(
-            _rx1,
+            road_x1,
             EP_Y - EP_HW,
             FLOOR_Z2,
-            _rx2,
-            EP_Y - _div_ep_hw,
+            road_x2,
+            EP_Y - div_ep_hw,
             FLOOR_Z2 + 2,
             TEX_ROAD,
         )
@@ -938,7 +938,7 @@ BRUSHES.append(
         EP_Y - EP_HW,
         FLOOR_Z2,
         KH_BR_CORRIDOR_X2,
-        EP_Y - _div_ep_hw,
+        EP_Y - div_ep_hw,
         FLOOR_Z2 + 2,
         TEX_ROAD,
     )
@@ -985,27 +985,47 @@ BRUSHES.append(
 
 # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
 TEX_DIVIDER = "sfloor3_2"
-_DASH = 64  # dash length
-_GAP = 64  # gap length (filled with road tex)
+DASH_LEN = 64  # dash length
+GAP_LEN = 64  # gap length (filled with road tex)
 # Charles Street — dashed N-S, two sections either side of bridge
-for _sec_y1, _sec_y2 in [(CS_Y1, PB_Y1), (PB_Y2, CS_Y2)]:
-    _y = _sec_y1
-    _dash_on = True
-    while _y < _sec_y2:
-        _y2 = min(_y + (_DASH if _dash_on else _GAP), _sec_y2)
-        _tex = TEX_DIVIDER if _dash_on else TEX_ROAD
-        BRUSHES.append(box(-_div_hw, _y, FLOOR_Z2, _div_hw, _y2, FLOOR_Z2 + 2, _tex))
-        _y = _y2
-        _dash_on = not _dash_on
+for section_y1, section_y2 in [(CS_Y1, PB_Y1), (PB_Y2, CS_Y2)]:
+    divider_y = section_y1
+    dash_on = True
+    while divider_y < section_y2:
+        next_divider_y = min(divider_y + (DASH_LEN if dash_on else GAP_LEN), section_y2)
+        divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
+        BRUSHES.append(
+            box(
+                -div_hw,
+                divider_y,
+                FLOOR_Z2,
+                div_hw,
+                next_divider_y,
+                FLOOR_Z2 + 2,
+                divider_tex,
+            )
+        )
+        divider_y = next_divider_y
+        dash_on = not dash_on
 # Ennis Road — dashed E-W from Charles St east to world wall
-_x = ROAD_X2
-_dash_on = True
-while _x < EP_X2:
-    _x2 = min(_x + (_DASH if _dash_on else _GAP), EP_X2)
-    _tex = TEX_DIVIDER if _dash_on else TEX_ROAD
-    BRUSHES.append(box(_x, EP_Y - _div_ep_hw, FLOOR_Z2, _x2, EP_Y, FLOOR_Z2 + 2, _tex))
-    _x = _x2
-    _dash_on = not _dash_on
+divider_x = ROAD_X2
+dash_on = True
+while divider_x < EP_X2:
+    next_divider_x = min(divider_x + (DASH_LEN if dash_on else GAP_LEN), EP_X2)
+    divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
+    BRUSHES.append(
+        box(
+            divider_x,
+            EP_Y - div_ep_hw,
+            FLOOR_Z2,
+            next_divider_x,
+            EP_Y,
+            FLOOR_Z2 + 2,
+            divider_tex,
+        )
+    )
+    divider_x = next_divider_x
+    dash_on = not dash_on
 
 # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
 # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
@@ -1020,19 +1040,25 @@ BRUSHES.append(
     box(ROAD_X2, cy_se, FLOOR_Z2, cx_se, EP_Y - EP_HW, FLOOR_Z2 + 2, TEX_ROAD)
 )
 # Arc sweeps CCW from 90° (north) to 180° (west)
-for _i in range(CS_CRN_SEGS):
-    _a0 = math.radians(90 + _i * 90 / CS_CRN_SEGS)
-    _a1 = math.radians(90 + (_i + 1) * 90 / CS_CRN_SEGS)
-    _px0, _py0 = cx_se + CS_CRN_R * math.cos(_a0), cy_se + CS_CRN_R * math.sin(_a0)
-    _px1, _py1 = cx_se + CS_CRN_R * math.cos(_a1), cy_se + CS_CRN_R * math.sin(_a1)
+for corner_index in range(CS_CRN_SEGS):
+    angle_start = math.radians(90 + corner_index * 90 / CS_CRN_SEGS)
+    angle_end = math.radians(90 + (corner_index + 1) * 90 / CS_CRN_SEGS)
+    arc_x0, arc_y0 = (
+        cx_se + CS_CRN_R * math.cos(angle_start),
+        cy_se + CS_CRN_R * math.sin(angle_start),
+    )
+    arc_x1, arc_y1 = (
+        cx_se + CS_CRN_R * math.cos(angle_end),
+        cy_se + CS_CRN_R * math.sin(angle_end),
+    )
     BRUSHES.append(
         tri_prism(
             cx_se,
             cy_se,
-            _px0,
-            _py0,
-            _px1,
-            _py1,
+            arc_x0,
+            arc_y0,
+            arc_x1,
+            arc_y1,
             FLOOR_Z2,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
@@ -1046,19 +1072,25 @@ BRUSHES.append(
     box(ROAD_X2, EP_Y + EP_HW, FLOOR_Z2, cx_ne, cy_ne, FLOOR_Z2 + 2, TEX_ROAD)
 )
 # Arc sweeps CCW from 180° (west) to 270° (south)
-for _i in range(CS_CRN_SEGS):
-    _a0 = math.radians(180 + _i * 90 / CS_CRN_SEGS)
-    _a1 = math.radians(180 + (_i + 1) * 90 / CS_CRN_SEGS)
-    _px0, _py0 = cx_ne + CS_CRN_R * math.cos(_a0), cy_ne + CS_CRN_R * math.sin(_a0)
-    _px1, _py1 = cx_ne + CS_CRN_R * math.cos(_a1), cy_ne + CS_CRN_R * math.sin(_a1)
+for corner_index in range(CS_CRN_SEGS):
+    angle_start = math.radians(180 + corner_index * 90 / CS_CRN_SEGS)
+    angle_end = math.radians(180 + (corner_index + 1) * 90 / CS_CRN_SEGS)
+    arc_x0, arc_y0 = (
+        cx_ne + CS_CRN_R * math.cos(angle_start),
+        cy_ne + CS_CRN_R * math.sin(angle_start),
+    )
+    arc_x1, arc_y1 = (
+        cx_ne + CS_CRN_R * math.cos(angle_end),
+        cy_ne + CS_CRN_R * math.sin(angle_end),
+    )
     BRUSHES.append(
         tri_prism(
             cx_ne,
             cy_ne,
-            _px0,
-            _py0,
-            _px1,
-            _py1,
+            arc_x0,
+            arc_y0,
+            arc_x1,
+            arc_y1,
             FLOOR_Z2,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
@@ -1133,33 +1165,33 @@ BRUSHES.append(
 # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
 # Split around back road corridor gap (KH_BR_CORRIDOR_X1..KH_BR_CORRIDOR_X2)
 # SE corner (east of back road) uses gravel3c (mulch bed)
-for _vx1, _vx2, _vtex in [
+for vx1, vx2, vtex in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1, TEX_GROUND),
     (KH_BR_CORRIDOR_X2, EP_X2, "grave13c"),
 ]:
     BRUSHES.append(
         box(
-            _vx1,
+            vx1,
             EP_SW_EDGE + CS_WALK_W,
             FLOOR_Z1,
-            _vx2,
-            EP_Y - EP_HW - _EP_CURB_W,
+            vx2,
+            EP_Y - EP_HW - EP_CURB_W,
             FLOOR_Z2 + CS_WALK_H,
-            _vtex,
+            vtex,
         )
     )
 
 # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
-for _vx1, _vx2 in [
+for vx1, vx2 in [
     (ROAD_X2 + CS_WALK_W, KH_BR_CORRIDOR_X1),
     (KH_BR_CORRIDOR_X2, EP_X2),
 ]:
     BRUSHES.append(
         box(
-            _vx1,
-            EP_Y - EP_HW - _EP_CURB_W,
+            vx1,
+            EP_Y - EP_HW - EP_CURB_W,
             FLOOR_Z1,
-            _vx2,
+            vx2,
             EP_Y - EP_HW,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
@@ -1187,21 +1219,21 @@ EP_PIL_BELL2_HW = (
 )
 EP_PIL_BELL2_H = 27  # tapered top section height (was 36, ×0.75)
 
-for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
+for pillar_y in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
     ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW  # pillar centre X
-    _cap_hw = EP_PIL_HW + EP_PIL_CAP_OVH
+    cap_half_width = EP_PIL_HW + EP_PIL_CAP_OVH
 
     # Post
-    _base_h = EP_PIL_POST_H // 3  # bottom base = lower third of post
+    base_height = EP_PIL_POST_H // 3  # bottom base = lower third of post
     # Bottom base — same width as cap, gives plinth effect
     BRUSHES.append(
         box(
-            ennis_pil_cx - _cap_hw,
-            _epy - _cap_hw,
+            ennis_pil_cx - cap_half_width,
+            pillar_y - cap_half_width,
             EP_PIL_ZB,
-            ennis_pil_cx + _cap_hw,
-            _epy + _cap_hw,
-            EP_PIL_ZB + _base_h,
+            ennis_pil_cx + cap_half_width,
+            pillar_y + cap_half_width,
+            EP_PIL_ZB + base_height,
             TEX_WHITE_STONE,
         )
     )
@@ -1209,62 +1241,62 @@ for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
     BRUSHES.append(
         box(
             EP_PIL_X1,
-            _epy - EP_PIL_HW,
-            EP_PIL_ZB + _base_h,
+            pillar_y - EP_PIL_HW,
+            EP_PIL_ZB + base_height,
             EP_PIL_X2,
-            _epy + EP_PIL_HW,
+            pillar_y + EP_PIL_HW,
             EP_PIL_ZB + EP_PIL_POST_H,
             TEX_WHITE_STONE,
         )
     )
     # Thin cap divider — overhangs post on all sides
-    _cap_z = EP_PIL_ZB + EP_PIL_POST_H
+    cap_z = EP_PIL_ZB + EP_PIL_POST_H
     BRUSHES.append(
         box(
-            ennis_pil_cx - _cap_hw,
-            _epy - _cap_hw,
-            _cap_z,
-            ennis_pil_cx + _cap_hw,
-            _epy + _cap_hw,
-            _cap_z + EP_PIL_CAP_H,
+            ennis_pil_cx - cap_half_width,
+            pillar_y - cap_half_width,
+            cap_z,
+            ennis_pil_cx + cap_half_width,
+            pillar_y + cap_half_width,
+            cap_z + EP_PIL_CAP_H,
             TEX_WHITE_STONE,
         )
     )
     # Bell step 2 — tapered top, narrower than post
-    _b2_z = _cap_z + EP_PIL_CAP_H
+    bell2_z = cap_z + EP_PIL_CAP_H
     BRUSHES.append(
         box(
             ennis_pil_cx - EP_PIL_BELL2_HW,
-            _epy - EP_PIL_BELL2_HW,
-            _b2_z,
+            pillar_y - EP_PIL_BELL2_HW,
+            bell2_z,
             ennis_pil_cx + EP_PIL_BELL2_HW,
-            _epy + EP_PIL_BELL2_HW,
-            _b2_z + EP_PIL_BELL2_H,
+            pillar_y + EP_PIL_BELL2_HW,
+            bell2_z + EP_PIL_BELL2_H,
             TEX_WHITE_STONE,
         )
     )
     # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
-    _ennis_pil_apex = _b2_z + EP_PIL_BELL2_H
+    ennis_pillar_apex_z = bell2_z + EP_PIL_BELL2_H
     ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW
     BRUSHES.append(
         box(
             ennis_pil_cx - 3,
-            _epy - 3,
-            _ennis_pil_apex,
+            pillar_y - 3,
+            ennis_pillar_apex_z,
             ennis_pil_cx + 3,
-            _epy + 3,
-            _ennis_pil_apex + 16,
+            pillar_y + 3,
+            ennis_pillar_apex_z + 16,
             TEX_CEMENT,
         )
     )
     BRUSHES.append(
         box(
             ennis_pil_cx - 5,
-            _epy - 5,
-            _ennis_pil_apex + 16,
+            pillar_y - 5,
+            ennis_pillar_apex_z + 16,
             ennis_pil_cx + 5,
-            _epy + 5,
-            _ennis_pil_apex + 20,
+            pillar_y + 5,
+            ennis_pillar_apex_z + 20,
             TEX_BRICK,
         )
     )
@@ -1304,133 +1336,239 @@ BRUSHES.append(
     )
 )
 # North half — iron fence matching west-side style (FNC_* constants defined later)
-_gfx1 = bw_x1 + EP_WALL_T // 2 - 1  # centre the pickets on the wall line
-_gfx2 = _gfx1 + 2
-_g_fnc_h = 96
-_g_fnc_spacing = 16
-_g_fnc_tex = "metal4_4"
+gate_fence_x1 = bw_x1 + EP_WALL_T // 2 - 1  # centre the pickets on the wall line
+gate_fence_x2 = gate_fence_x1 + 2
+gate_fence_height = 96
+gate_fence_spacing = 16
+gate_fence_tex = "metal4_4"
 # Top rail
 BRUSHES.append(
     box(
-        _gfx1,
+        gate_fence_x1,
         bw_mid_y,
-        FLOOR_Z2 + _g_fnc_h - 28,
-        _gfx2,
+        FLOOR_Z2 + gate_fence_height - 28,
+        gate_fence_x2,
         WORLD_Y2 - WALL_T,
-        FLOOR_Z2 + _g_fnc_h - 26,
-        _g_fnc_tex,
+        FLOOR_Z2 + gate_fence_height - 26,
+        gate_fence_tex,
     )
 )
 # Pickets
-_gpy = bw_mid_y
-_gpi = 0
-while _gpy + 2 <= WORLD_Y2 - WALL_T:
-    _gpw = 8 if _gpi % 10 == 0 else 2
+gate_picket_y = bw_mid_y
+gate_picket_index = 0
+while gate_picket_y + 2 <= WORLD_Y2 - WALL_T:
+    gate_picket_width = 8 if gate_picket_index % 10 == 0 else 2
     BRUSHES.append(
-        box(_gfx1, _gpy, FLOOR_Z2, _gfx2, _gpy + _gpw, FLOOR_Z2 + _g_fnc_h, _g_fnc_tex)
+        box(
+            gate_fence_x1,
+            gate_picket_y,
+            FLOOR_Z2,
+            gate_fence_x2,
+            gate_picket_y + gate_picket_width,
+            FLOOR_Z2 + gate_fence_height,
+            gate_fence_tex,
+        )
     )
-    _gpy += _g_fnc_spacing
-    _gpi += 1
+    gate_picket_y += gate_fence_spacing
+    gate_picket_index += 1
 
 # ── Decorative iron panels on west face of brick wall, sitting ON TOP of wall ──
 # Panels protrude above wall top; rectangles are horizontal (wider than tall).
-_pf_x1 = bw_x1 - 2  # protrude 2 units from west face
-_pf_x2 = bw_x1
-_p_t = 2  # bar thickness
-_p_ow = 48  # outer frame Y width (wide = horizontal)
-_p_oh = 28  # outer frame Z height (shorter than wide)
-_p_iw = 28  # inner frame Y width
-_p_ih = 12  # inner frame Z height
-_p_z1 = FLOOR_Z2 + EP_WALL_H  # panels start at wall top
-_p_zctr = _p_z1 + _p_oh // 2  # Z centre above wall top
-_p_spacing = _p_ow + 16  # centre-to-centre spacing
+panel_x1 = bw_x1 - 2  # protrude 2 units from west face
+panel_x2 = bw_x1
+panel_bar_thickness = 2  # bar thickness
+panel_outer_width = 48  # outer frame Y width (wide = horizontal)
+panel_outer_height = 28  # outer frame Z height (shorter than wide)
+panel_inner_width = 28  # inner frame Y width
+panel_inner_height = 12  # inner frame Z height
+panel_z1 = FLOOR_Z2 + EP_WALL_H  # panels start at wall top
+panel_z_center = panel_z1 + panel_outer_height // 2  # Z centre above wall top
+panel_spacing = panel_outer_width + 16  # centre-to-centre spacing
 
 # Snap bw_mid_y to the north edge of the last full panel that fits in the original half-space
-_p_avail = bw_mid_y - bw_ny
-_p_count = max(
-    1, (_p_avail + _p_ow) // (_p_ow + 8)
+panel_available_span = bw_mid_y - bw_ny
+panel_count = max(
+    1, (panel_available_span + panel_outer_width) // (panel_outer_width + 8)
 )  # at least 8-unit gap between panels
-_p_spacing = _p_avail // _p_count  # evenly distribute N panels across the brick space
+panel_spacing = (
+    panel_available_span // panel_count
+)  # evenly distribute N panels across the brick space
 
 # Start first panel so its south edge aligns exactly with bw_ny (no overhang)
-_p_cy = bw_ny + _p_spacing // 2
-_p_drawn = 0
-while _p_drawn < _p_count:
-    _pw = _p_ow
-    _piw = _p_iw
+panel_center_y = bw_ny + panel_spacing // 2
+panels_drawn = 0
+while panels_drawn < panel_count:
+    panel_width = panel_outer_width
+    panel_inner_frame_width = panel_inner_width
 
-    y1_o = _p_cy - _pw // 2
-    y2_o = _p_cy + _pw // 2
-    z1_o = _p_zctr - _p_oh // 2
-    z2_o = _p_zctr + _p_oh // 2
-    y1_i = _p_cy - _piw // 2
-    y2_i = _p_cy + _piw // 2
-    z1_i = _p_zctr - _p_ih // 2
-    z2_i = _p_zctr + _p_ih // 2
+    y1_o = panel_center_y - panel_width // 2
+    y2_o = panel_center_y + panel_width // 2
+    z1_o = panel_z_center - panel_outer_height // 2
+    z2_o = panel_z_center + panel_outer_height // 2
+    y1_i = panel_center_y - panel_inner_frame_width // 2
+    y2_i = panel_center_y + panel_inner_frame_width // 2
+    z1_i = panel_z_center - panel_inner_height // 2
+    z2_i = panel_z_center + panel_inner_height // 2
 
     # Outer rectangle
     BRUSHES.append(
-        box(_pf_x1, y1_o, z1_o, _pf_x2, y2_o, z1_o + _p_t, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_o,
+            z1_o,
+            panel_x2,
+            y2_o,
+            z1_o + panel_bar_thickness,
+            gate_fence_tex,
+        )
     )  # bottom
     BRUSHES.append(
-        box(_pf_x1, y1_o, z2_o - _p_t, _pf_x2, y2_o, z2_o, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_o,
+            z2_o - panel_bar_thickness,
+            panel_x2,
+            y2_o,
+            z2_o,
+            gate_fence_tex,
+        )
     )  # top
     BRUSHES.append(
-        box(_pf_x1, y1_o, z1_o, _pf_x2, y1_o + _p_t, z2_o, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_o,
+            z1_o,
+            panel_x2,
+            y1_o + panel_bar_thickness,
+            z2_o,
+            gate_fence_tex,
+        )
     )  # left
     BRUSHES.append(
-        box(_pf_x1, y2_o - _p_t, z1_o, _pf_x2, y2_o, z2_o, _g_fnc_tex)
+        box(
+            panel_x1,
+            y2_o - panel_bar_thickness,
+            z1_o,
+            panel_x2,
+            y2_o,
+            z2_o,
+            gate_fence_tex,
+        )
     )  # right
     # Inner rectangle
     BRUSHES.append(
-        box(_pf_x1, y1_i, z1_i, _pf_x2, y2_i, z1_i + _p_t, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_i,
+            z1_i,
+            panel_x2,
+            y2_i,
+            z1_i + panel_bar_thickness,
+            gate_fence_tex,
+        )
     )  # bottom
     BRUSHES.append(
-        box(_pf_x1, y1_i, z2_i - _p_t, _pf_x2, y2_i, z2_i, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_i,
+            z2_i - panel_bar_thickness,
+            panel_x2,
+            y2_i,
+            z2_i,
+            gate_fence_tex,
+        )
     )  # top
     BRUSHES.append(
-        box(_pf_x1, y1_i, z1_i, _pf_x2, y1_i + _p_t, z2_i, _g_fnc_tex)
+        box(
+            panel_x1,
+            y1_i,
+            z1_i,
+            panel_x2,
+            y1_i + panel_bar_thickness,
+            z2_i,
+            gate_fence_tex,
+        )
     )  # left
     BRUSHES.append(
-        box(_pf_x1, y2_i - _p_t, z1_i, _pf_x2, y2_i, z2_i, _g_fnc_tex)
+        box(
+            panel_x1,
+            y2_i - panel_bar_thickness,
+            z1_i,
+            panel_x2,
+            y2_i,
+            z2_i,
+            gate_fence_tex,
+        )
     )  # right
     # Diagonal corner connectors: each inner corner → corresponding outer corner
     BRUSHES.append(
         ramp_slab_y(
-            _pf_x1, _pf_x2, y1_o, y1_i, z1_o, z1_i, z1_o + _p_t, z1_i + _p_t, _g_fnc_tex
+            panel_x1,
+            panel_x2,
+            y1_o,
+            y1_i,
+            z1_o,
+            z1_i,
+            z1_o + panel_bar_thickness,
+            z1_i + panel_bar_thickness,
+            gate_fence_tex,
         )
     )  # bottom-left
     BRUSHES.append(
         ramp_slab_y(
-            _pf_x1, _pf_x2, y2_i, y2_o, z1_i, z1_o, z1_i + _p_t, z1_o + _p_t, _g_fnc_tex
+            panel_x1,
+            panel_x2,
+            y2_i,
+            y2_o,
+            z1_i,
+            z1_o,
+            z1_i + panel_bar_thickness,
+            z1_o + panel_bar_thickness,
+            gate_fence_tex,
         )
     )  # bottom-right
     BRUSHES.append(
         ramp_slab_y(
-            _pf_x1, _pf_x2, y1_o, y1_i, z2_o - _p_t, z2_i - _p_t, z2_o, z2_i, _g_fnc_tex
+            panel_x1,
+            panel_x2,
+            y1_o,
+            y1_i,
+            z2_o - panel_bar_thickness,
+            z2_i - panel_bar_thickness,
+            z2_o,
+            z2_i,
+            gate_fence_tex,
         )
     )  # top-left
     BRUSHES.append(
         ramp_slab_y(
-            _pf_x1, _pf_x2, y2_i, y2_o, z2_i - _p_t, z2_o - _p_t, z2_i, z2_o, _g_fnc_tex
+            panel_x1,
+            panel_x2,
+            y2_i,
+            y2_o,
+            z2_i - panel_bar_thickness,
+            z2_o - panel_bar_thickness,
+            z2_i,
+            z2_o,
+            gate_fence_tex,
         )
     )  # top-right
     # Connector to next panel at mid-Z
-    _conn_y2_p = _p_cy + _p_spacing - _p_ow // 2
-    if _p_drawn + 1 < _p_count:
+    conn_y2_p = panel_center_y + panel_spacing - panel_outer_width // 2
+    if panels_drawn + 1 < panel_count:
         BRUSHES.append(
             box(
-                _pf_x1,
+                panel_x1,
                 y2_o,
-                _p_zctr - _p_t // 2,
-                _pf_x2,
-                _conn_y2_p,
-                _p_zctr + _p_t // 2,
-                _g_fnc_tex,
+                panel_z_center - panel_bar_thickness // 2,
+                panel_x2,
+                conn_y2_p,
+                panel_z_center + panel_bar_thickness // 2,
+                gate_fence_tex,
             )
         )
-    _p_cy += _p_spacing
-    _p_drawn += 1
+    panel_center_y += panel_spacing
+    panels_drawn += 1
 # Corner pillar — square brick post at the L junction, wider than wall
 EP_WALL_PIL_HW = 14  # pillar half-width (28 units square)
 EP_WALL_PIL_H = 120  # pillar height — taller than wall
@@ -1485,123 +1623,139 @@ BRUSHES.append(
 
 # ── East-running iron gate along Ennis Drive (from brick wall end to ~halfway east) ──
 # Built as func_detail to avoid BSP portal overflow from pickets in open space.
-_ew_x1 = bwex2  # starts at east end of brick wall
-_ew_x2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
-_ew_fy1 = bw_ny + EP_WALL_T // 2 - 1  # Y centre of fence line
-_ew_fy2 = _ew_fy1 + 2
-_ew_fence_brushes = []
+east_gate_x1 = bwex2  # starts at east end of brick wall
+east_gate_x2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
+east_gate_y1 = bw_ny + EP_WALL_T // 2 - 1  # Y centre of fence line
+east_gate_y2 = east_gate_y1 + 2
+east_gate_brushes = []
 # Top rail
-_ew_fence_brushes.append(
+east_gate_brushes.append(
     box(
-        _ew_x1,
-        _ew_fy1,
-        FLOOR_Z2 + _g_fnc_h - 28,
-        _ew_x2,
-        _ew_fy2,
-        FLOOR_Z2 + _g_fnc_h - 26,
-        _g_fnc_tex,
+        east_gate_x1,
+        east_gate_y1,
+        FLOOR_Z2 + gate_fence_height - 28,
+        east_gate_x2,
+        east_gate_y2,
+        FLOOR_Z2 + gate_fence_height - 26,
+        gate_fence_tex,
     )
 )
 # Pickets — 2-wide every 16, 8-wide posts every 10th
-_ewpx = _ew_x1
-_ewpi = 0
-while _ewpx + 2 <= _ew_x2:
-    _ewpw = 8 if _ewpi % 10 == 0 else 2
-    _ew_fence_brushes.append(
+east_gate_picket_x = east_gate_x1
+east_gate_picket_index = 0
+while east_gate_picket_x + 2 <= east_gate_x2:
+    east_gate_picket_width = 8 if east_gate_picket_index % 10 == 0 else 2
+    east_gate_brushes.append(
         box(
-            _ewpx,
-            _ew_fy1,
+            east_gate_picket_x,
+            east_gate_y1,
             FLOOR_Z2,
-            _ewpx + _ewpw,
-            _ew_fy2,
-            FLOOR_Z2 + _g_fnc_h,
-            _g_fnc_tex,
+            east_gate_picket_x + east_gate_picket_width,
+            east_gate_y2,
+            FLOOR_Z2 + gate_fence_height,
+            gate_fence_tex,
         )
     )
-    _ewpx += _g_fnc_spacing
-    _ewpi += 1
+    east_gate_picket_x += gate_fence_spacing
+    east_gate_picket_index += 1
 
 
 # ── Cement parapet wall — east half of Ennis Drive (iron fence end to east world wall) ──
-_cw_x1 = _ew_x2  # starts where iron fence ends
-_cw_x2 = WORLD_X2 - WALL_T  # east world wall inner face
-_cw_fy1 = bw_ny  # south face
-_cw_fy2 = bw_ny + EP_WALL_T  # north face
-_cw_h = 32  # parapet height — low enough to jump over
-_cw_pil_hw = 14  # pillar half-width
-_cw_pil_h = _cw_h + 16  # pillar slightly taller than wall
+cement_wall_x1 = east_gate_x2  # starts where iron fence ends
+cement_wall_x2 = WORLD_X2 - WALL_T  # east world wall inner face
+cement_wall_y1 = bw_ny  # south face
+cement_wall_y2 = bw_ny + EP_WALL_T  # north face
+cement_wall_height = 32  # parapet height — low enough to jump over
+cement_wall_pillar_half_width = 14  # pillar half-width
+cement_wall_pillar_height = cement_wall_height + 16  # pillar slightly taller than wall
 # Wall body
 BRUSHES.append(
-    box(_cw_x1, _cw_fy1, FLOOR_Z2, _cw_x2, _cw_fy2, FLOOR_Z2 + _cw_h, TEX_CEMENT)
+    box(
+        cement_wall_x1,
+        cement_wall_y1,
+        FLOOR_Z2,
+        cement_wall_x2,
+        cement_wall_y2,
+        FLOOR_Z2 + cement_wall_height,
+        TEX_CEMENT,
+    )
 )
 # Cap slab (slightly proud on all sides)
 BRUSHES.append(
     box(
-        _cw_x1,
-        _cw_fy1 - 2,
-        FLOOR_Z2 + _cw_h,
-        _cw_x2,
-        _cw_fy2 + 2,
-        FLOOR_Z2 + _cw_h + 6,
+        cement_wall_x1,
+        cement_wall_y1 - 2,
+        FLOOR_Z2 + cement_wall_height,
+        cement_wall_x2,
+        cement_wall_y2 + 2,
+        FLOOR_Z2 + cement_wall_height + 6,
         TEX_CEMENT,
     )
 )
 # Pillars at each end
-_cw_lamp_posts = []
-for _px in (_cw_x1, _cw_x2):
-    _pcy = (_cw_fy1 + _cw_fy2) // 2
+cement_wall_lamp_posts = []
+for pillar_x in (cement_wall_x1, cement_wall_x2):
+    pillar_center_y = (cement_wall_y1 + cement_wall_y2) // 2
     BRUSHES.append(
         box(
-            _px - _cw_pil_hw,
-            _pcy - _cw_pil_hw,
+            pillar_x - cement_wall_pillar_half_width,
+            pillar_center_y - cement_wall_pillar_half_width,
             FLOOR_Z2,
-            _px + _cw_pil_hw,
-            _pcy + _cw_pil_hw,
-            FLOOR_Z2 + _cw_pil_h,
+            pillar_x + cement_wall_pillar_half_width,
+            pillar_center_y + cement_wall_pillar_half_width,
+            FLOOR_Z2 + cement_wall_pillar_height,
             TEX_CEMENT,
         )
     )
     # Cap slab on pillar
     BRUSHES.append(
         box(
-            _px - _cw_pil_hw - 2,
-            _pcy - _cw_pil_hw - 2,
-            FLOOR_Z2 + _cw_pil_h,
-            _px + _cw_pil_hw + 2,
-            _pcy + _cw_pil_hw + 2,
-            FLOOR_Z2 + _cw_pil_h + 6,
+            pillar_x - cement_wall_pillar_half_width - 2,
+            pillar_center_y - cement_wall_pillar_half_width - 2,
+            FLOOR_Z2 + cement_wall_pillar_height,
+            pillar_x + cement_wall_pillar_half_width + 2,
+            pillar_center_y + cement_wall_pillar_half_width + 2,
+            FLOOR_Z2 + cement_wall_pillar_height + 6,
             TEX_CEMENT,
         )
     )
     # Lamppost pole
-    _lp_base = FLOOR_Z2 + _cw_pil_h + 6
+    lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + 6
     BRUSHES.append(
-        box(_px - 3, _pcy - 3, _lp_base, _px + 3, _pcy + 3, _lp_base + 160, TEX_PILLAR)
+        box(
+            pillar_x - 3,
+            pillar_center_y - 3,
+            lamppost_base_z,
+            pillar_x + 3,
+            pillar_center_y + 3,
+            lamppost_base_z + 160,
+            TEX_PILLAR,
+        )
     )
     # Lantern head — narrow shaft + wider cap
     BRUSHES.append(
         box(
-            _px - 4,
-            _pcy - 4,
-            _lp_base + 160,
-            _px + 4,
-            _pcy + 4,
-            _lp_base + 176,
+            pillar_x - 4,
+            pillar_center_y - 4,
+            lamppost_base_z + 160,
+            pillar_x + 4,
+            pillar_center_y + 4,
+            lamppost_base_z + 176,
             TEX_CEMENT,
         )
     )
     BRUSHES.append(
         box(
-            _px - 7,
-            _pcy - 7,
-            _lp_base + 176,
-            _px + 7,
-            _pcy + 7,
-            _lp_base + 180,
+            pillar_x - 7,
+            pillar_center_y - 7,
+            lamppost_base_z + 176,
+            pillar_x + 7,
+            pillar_center_y + 7,
+            lamppost_base_z + 180,
             TEX_CEMENT,
         )
     )
-    _cw_lamp_posts.append((_px, _pcy, _lp_base + 180))
+    cement_wall_lamp_posts.append((pillar_x, pillar_center_y, lamppost_base_z + 180))
 
 
 RH_FLOORS = 3
@@ -2089,44 +2243,54 @@ FNC_SPACING = 16  # picket center-to-center
 FNC_RAIL = 8  # rail thickness
 FNC_TEX = "metal4_4"
 
-for _fy1, _fy2 in [(CS_Y1, CS_Y2)]:
+for fence_y1, fence_y2 in [(CS_Y1, CS_Y2)]:
     # Top rail — thin, dropped so pickets extend above it
     BRUSHES.append(
         box(
             FNC_X1,
-            _fy1,
+            fence_y1,
             FLOOR_Z2 + FNC_H - 28,
             FNC_X2,
-            _fy2,
+            fence_y2,
             FLOOR_Z2 + FNC_H - 26,
             FNC_TEX,
         )
     )
     # Pickets — thin (2 wide) with thick posts (8 wide) every 10th
-    _py = _fy1
-    _pi = 0
-    while _py + 2 <= _fy2:
-        _pw = 8 if _pi % 10 == 0 else 2
+    picket_y = fence_y1
+    picket_index = 0
+    while picket_y + 2 <= fence_y2:
+        picket_width = 8 if picket_index % 10 == 0 else 2
         BRUSHES.append(
-            box(FNC_X1, _py, FLOOR_Z2, FNC_X2, _py + _pw, FLOOR_Z2 + FNC_H, FNC_TEX)
+            box(
+                FNC_X1,
+                picket_y,
+                FLOOR_Z2,
+                FNC_X2,
+                picket_y + picket_width,
+                FLOOR_Z2 + FNC_H,
+                FNC_TEX,
+            )
         )
-        _py += FNC_SPACING
-        _pi += 1
+        picket_y += FNC_SPACING
+        picket_index += 1
 
 
 # ════════════════════════════════════════════════════════════════════════════════
 # West flat approach removed — arch now starts at world edge
 # East flat stub from arch terminus to building entrance — angled southward
-_es1 = 0.0  # no shift at the pier (pivot)
-_es2 = east_y_shift(WORLD_X2 - WALL_T)  # full southward shift at east world wall
-_ep = PB_ARCH_X[4]  # easternmost pier — where the angle begins
+east_shift_start = 0.0  # no shift at the pier (pivot)
+east_shift_end = east_y_shift(
+    WORLD_X2 - WALL_T
+)  # full southward shift at east world wall
+east_pivot_x = PB_ARCH_X[4]  # easternmost pier — where the angle begins
 # Straight section: arch terminus → easternmost pier
 BRUSHES.append(
     box(
         PB_X2,
         PB_Y1,
         PB_DZ1,
-        _ep,
+        east_pivot_x,
         PB_Y2,
         PB_DZ2,
         TEX_STONE,
@@ -2137,14 +2301,14 @@ BRUSHES.append(
 # Angled section: easternmost pier → east world wall
 BRUSHES.append(
     shear_box_y(
-        _ep,
+        east_pivot_x,
         PB_Y1,
         PB_DZ1,
         WORLD_X2 - WALL_T,
         PB_Y2,
         PB_DZ2,
-        _es1,
-        _es2,
+        east_shift_start,
+        east_shift_end,
         TEX_STONE,
         tt=TEX_FLOOR,
         tb=TEX_FLOOR,
@@ -2173,40 +2337,56 @@ for i in range(SEG_SPAN_W):
 # ── Parapet walls — west flat approach removed; east flat stub only ───────────
 # North east parapet: straight PB_X2→pier, then angled pier→world wall
 BRUSHES.append(
-    box(PB_X2, PB_Y2 - PB_PAR_W, PB_DZ2, _ep, PB_Y2, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
+    box(
+        PB_X2,
+        PB_Y2 - PB_PAR_W,
+        PB_DZ2,
+        east_pivot_x,
+        PB_Y2,
+        PB_DZ2 + PB_PAR_H,
+        TEX_CEMENT,
+    )
 )
 BRUSHES.append(
     shear_box_y(
-        _ep,
+        east_pivot_x,
         PB_Y2 - PB_PAR_W,
         PB_DZ2,
         WORLD_X2 - WALL_T,
         PB_Y2,
         PB_DZ2 + PB_PAR_H,
-        _es1,
-        _es2,
+        east_shift_start,
+        east_shift_end,
         TEX_CEMENT,
     )
 )  # North east
-# South east — gaps at WALK_X1..WALK_X2 and _ewk_x1.._ewk_x2 for walkway/accessible-walkway connections
+# South east — gaps at WALK_X1..WALK_X2 and east_walk_x1..east_walk_x2 for walkway/accessible-walkway connections
 # West piece (PB_X2→WALK_X1): entirely before main walkway gap
 BRUSHES.append(
     box(PB_X2, PB_Y1, PB_DZ2, WALK_X1, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
 )
 # East piece (WALK_X2→world wall): straight to pier, then angled
 BRUSHES.append(
-    box(WALK_X2, PB_Y1, PB_DZ2, _ep, PB_Y1 + PB_PAR_W, PB_DZ2 + PB_PAR_H, TEX_CEMENT)
+    box(
+        WALK_X2,
+        PB_Y1,
+        PB_DZ2,
+        east_pivot_x,
+        PB_Y1 + PB_PAR_W,
+        PB_DZ2 + PB_PAR_H,
+        TEX_CEMENT,
+    )
 )
 BRUSHES.append(
     shear_box_y(
-        _ep,
+        east_pivot_x,
         PB_Y1,
         PB_DZ2,
         WORLD_X2 - WALL_T,
         PB_Y1 + PB_PAR_W,
         PB_DZ2 + PB_PAR_H,
-        _es1,
-        _es2,
+        east_shift_start,
+        east_shift_end,
         TEX_CEMENT,
     )
 )
@@ -2422,77 +2602,101 @@ tube_ny2 = tube_ny1 + PB_TUBE_HW * 2
 tube_sy1 = PB_Y1 + PB_PAR_W // 2 - PB_TUBE_HW
 tube_sy2 = tube_sy1 + PB_TUBE_HW * 2
 
-for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
-    for _i in range(SEG_SPAN_W):
-        _sx1 = PB_X1 + _i * SEG_W
-        _sx2 = _sx1 + SEG_W
-        _zb1 = dtop(_sx1) + PB_PAR_H + _tube_z_extra
-        _zb2 = dtop(_sx2) + PB_PAR_H + _tube_z_extra
+for tube_z_offset in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
+    for span_index in range(SEG_SPAN_W):
+        span_x1 = PB_X1 + span_index * SEG_W
+        span_x2 = span_x1 + SEG_W
+        tube_z1 = dtop(span_x1) + PB_PAR_H + tube_z_offset
+        tube_z2 = dtop(span_x2) + PB_PAR_H + tube_z_offset
         BRUSHES.append(
             ramp_slab(
-                _sx1,
-                _sx2,
+                span_x1,
+                span_x2,
                 tube_ny1,
                 tube_ny2,
-                _zb1,
-                _zb2,
-                _zb1 + PB_TUBE_HW * 2,
-                _zb2 + PB_TUBE_HW * 2,
+                tube_z1,
+                tube_z2,
+                tube_z1 + PB_TUBE_HW * 2,
+                tube_z2 + PB_TUBE_HW * 2,
                 TEX_RAIL,
             )
         )
-        if not (_sx1 < WALK_X2 and _sx2 > WALK_X1):
+        if not (span_x1 < WALK_X2 and span_x2 > WALK_X1):
             BRUSHES.append(
                 ramp_slab(
-                    _sx1,
-                    _sx2,
+                    span_x1,
+                    span_x2,
                     tube_sy1,
                     tube_sy2,
-                    _zb1,
-                    _zb2,
-                    _zb1 + PB_TUBE_HW * 2,
-                    _zb2 + PB_TUBE_HW * 2,
+                    tube_z1,
+                    tube_z2,
+                    tube_z1 + PB_TUBE_HW * 2,
+                    tube_z2 + PB_TUBE_HW * 2,
                     TEX_RAIL,
                 )
             )
     # East flat section — straight PB_X2→pier, angled pier→world wall
-    _tbz = PB_DZ2 + PB_PAR_H + _tube_z_extra
-    _x_east_end = WORLD_X2 - WALL_T
+    tube_base_z = PB_DZ2 + PB_PAR_H + tube_z_offset
+    east_end_x = WORLD_X2 - WALL_T
     # North tube: straight then angled
     BRUSHES.append(
-        box(PB_X2, tube_ny1, _tbz, _ep, tube_ny2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
+        box(
+            PB_X2,
+            tube_ny1,
+            tube_base_z,
+            east_pivot_x,
+            tube_ny2,
+            tube_base_z + PB_TUBE_HW * 2,
+            TEX_RAIL,
+        )
     )
     BRUSHES.append(
         shear_box_y(
-            _ep,
+            east_pivot_x,
             tube_ny1,
-            _tbz,
-            _x_east_end,
+            tube_base_z,
+            east_end_x,
             tube_ny2,
-            _tbz + PB_TUBE_HW * 2,
-            _es1,
-            _es2,
+            tube_base_z + PB_TUBE_HW * 2,
+            east_shift_start,
+            east_shift_end,
             TEX_RAIL,
         )
     )
     # South tube west piece (PB_X2→WALK_X1): before pier, straight
     BRUSHES.append(
-        box(PB_X2, tube_sy1, _tbz, WALK_X1, tube_sy2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
+        box(
+            PB_X2,
+            tube_sy1,
+            tube_base_z,
+            WALK_X1,
+            tube_sy2,
+            tube_base_z + PB_TUBE_HW * 2,
+            TEX_RAIL,
+        )
     )
     # South tube east piece (WALK_X2→world wall): straight to pier, then angled
     BRUSHES.append(
-        box(WALK_X2, tube_sy1, _tbz, _ep, tube_sy2, _tbz + PB_TUBE_HW * 2, TEX_RAIL)
+        box(
+            WALK_X2,
+            tube_sy1,
+            tube_base_z,
+            east_pivot_x,
+            tube_sy2,
+            tube_base_z + PB_TUBE_HW * 2,
+            TEX_RAIL,
+        )
     )
     BRUSHES.append(
         shear_box_y(
-            _ep,
+            east_pivot_x,
             tube_sy1,
-            _tbz,
-            _x_east_end,
+            tube_base_z,
+            east_end_x,
             tube_sy2,
-            _tbz + PB_TUBE_HW * 2,
-            _es1,
-            _es2,
+            tube_base_z + PB_TUBE_HW * 2,
+            east_shift_start,
+            east_shift_end,
             TEX_RAIL,
         )
     )
@@ -2521,7 +2725,7 @@ if SHOW_SUPPORTS:
 
         # Ceiling Z — use the higher of the two pier face deck-bottoms so stone
         # is flush with the bridge underside across the full pier X extent.
-        _pier_ceil_z = max(int(dbot(x1)), int(dbot(x2)))
+        pier_ceiling_z = max(int(dbot(x1)), int(dbot(x2)))
 
         # Arch opening varies by pillar type (outer / inner / centre)
         if px == 0:
@@ -2530,38 +2734,38 @@ if SHOW_SUPPORTS:
             a_rout, a_rin = PB_PIL_OUTER_R
         else:
             a_rout, a_rin = PB_PIL_INNER_R
-        a_stilt = _pier_ceil_z - a_rout - FLOOR_Z2
+        a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
         if a_stilt < 0:
             # Arch would overshoot the bridge bottom; cap rout so the crown
             # lands exactly at ceil_z (bridge deck underside).
-            a_rout = _pier_ceil_z - FLOOR_Z2
+            a_rout = pier_ceiling_z - FLOOR_Z2
             a_stilt = 0
 
         # Pin outer pier wall to exactly match the pillar tops above deck.
         # Cap a_rout so the arch ring never extends past PB_Y2 + PB_PIL_OVERHANG;
         # if rout was trimmed, recompute stilt so the arch crown still meets the deck.
-        _max_rout = PB_Y2 + PB_PIL_OVERHANG
-        if a_rout > _max_rout:
-            a_rout = _max_rout
-            a_stilt = _pier_ceil_z - a_rout - FLOOR_Z2
-        _arch_overhang = 0  # rout already reaches exactly the desired extent
+        max_outer_radius = PB_Y2 + PB_PIL_OVERHANG
+        if a_rout > max_outer_radius:
+            a_rout = max_outer_radius
+            a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
+        arch_overhang = 0  # rout already reaches exactly the desired extent
 
         # Ramped plinth: outer piers ramp up on their outward face so players
         # can run up from outside. East piers: high east side; west piers: high west side.
         # Central / road piers get a flat plinth.
         if px > 0:
             # East of road — ramp slopes up toward east (low at x1, high at x2)
-            _base_ramp = (FLOOR_Z2 + PB_PIL_BASE_H, FLOOR_Z2 + PB_PIL_BASE_RAMP_H)
+            base_ramp = (FLOOR_Z2 + PB_PIL_BASE_H, FLOOR_Z2 + PB_PIL_BASE_RAMP_H)
         elif px < 0:
             # West of road — ramp slopes up toward west (high at x1, low at x2)
-            _base_ramp = (FLOOR_Z2 + PB_PIL_BASE_RAMP_H, FLOOR_Z2 + PB_PIL_BASE_H)
+            base_ramp = (FLOOR_Z2 + PB_PIL_BASE_RAMP_H, FLOOR_Z2 + PB_PIL_BASE_H)
         else:
-            _base_ramp = None  # centre pier — flat plinth
+            base_ramp = None  # centre pier — flat plinth
 
         # Add pier structure — easternmost pier gets a square opening, rest are arched
         if px == max(PB_ARCH_X):
             # Overhang must reach PB_Y2+PB_PIL_OVERHANG to match pillar tops above deck
-            _sq_overhang = PB_Y2 + PB_PIL_OVERHANG - a_rin
+            sq_overhang = PB_Y2 + PB_PIL_OVERHANG - a_rin
             BRUSHES.extend(
                 square_wall(
                     x1,
@@ -2569,10 +2773,10 @@ if SHOW_SUPPORTS:
                     PB_Y1,
                     PB_Y2,
                     FLOOR_Z2,
-                    _pier_ceil_z,
+                    pier_ceiling_z,
                     a_rin,
                     TEX_PILLAR,
-                    overhang=_sq_overhang,
+                    overhang=sq_overhang,
                     base_h=PB_PIL_BASE_H,
                 )
             )
@@ -2584,15 +2788,15 @@ if SHOW_SUPPORTS:
                     PB_Y1,
                     PB_Y2,
                     FLOOR_Z2,
-                    _pier_ceil_z,
+                    pier_ceiling_z,
                     a_rin,
                     a_rout,
                     A_SEGS,
                     TEX_PILLAR,
                     stilt_h=a_stilt,
-                    overhang=_arch_overhang,
+                    overhang=arch_overhang,
                     base_h=PB_PIL_BASE_H,
-                    base_ramp=_base_ramp,
+                    base_ramp=base_ramp,
                     base_cap_h=0 if px == min(PB_ARCH_X) else PB_PIL_BASE_CAP_H,
                     base_cap_tex=TEX_CEMENT,
                     base_cap_ovh=PB_PIL_BASE_CAP_OVH,
@@ -2600,7 +2804,7 @@ if SHOW_SUPPORTS:
             )
 
         # Pillar tops (above deck, extend PB_PIL_OVERHANG past bridge edges and inward)
-        _pil_out = PB_Y2 + PB_PIL_OVERHANG  # always overhang past bridge edge
+        pier_outer_y = PB_Y2 + PB_PIL_OVERHANG  # always overhang past bridge edge
         # North pillar top
         BRUSHES.append(
             box(
@@ -2608,7 +2812,7 @@ if SHOW_SUPPORTS:
                 PB_Y2 - PB_PAR_W - PB_PIL_OVERHANG,
                 pdeck,
                 px + PB_PIL_HW,
-                _pil_out,
+                pier_outer_y,
                 ppil,
                 TEX_PILLAR,
             )
@@ -2618,7 +2822,7 @@ if SHOW_SUPPORTS:
         BRUSHES.append(
             box(
                 px - PB_PIL_HW,
-                -_pil_out,
+                -pier_outer_y,
                 pdeck,
                 px + PB_PIL_HW,
                 PB_Y1 + PB_PAR_W + PB_PIL_OVERHANG,
@@ -2630,52 +2834,76 @@ if SHOW_SUPPORTS:
         # Fill gap between pier top and deck surface in the overhang zone
         pier_top_z = int(pdeck) - 16
         BRUSHES.append(
-            box(x1, PB_Y2, pier_top_z, x2, _pil_out, pdeck, TEX_PILLAR)
+            box(x1, PB_Y2, pier_top_z, x2, pier_outer_y, pdeck, TEX_PILLAR)
         )  # north
         BRUSHES.append(
-            box(x1, -_pil_out, pier_top_z, x2, PB_Y1, pdeck, TEX_PILLAR)
+            box(x1, -pier_outer_y, pier_top_z, x2, PB_Y1, pdeck, TEX_PILLAR)
         )  # south
 
         # Cement cap slab + pyramid on top of each stone pillar post
-        _cap_x1, _cap_x2 = px - PB_PIL_PYR_W, px + PB_PIL_PYR_W
-        _n_cy1 = (
+        cap_x1, cap_x2 = px - PB_PIL_PYR_W, px + PB_PIL_PYR_W
+        north_cap_y1 = (
             PB_Y2 - PB_PAR_W - PB_PIL_OVERHANG - PB_PIL_CAP_IN_OVH
         )  # inward past pillar post
-        _n_cy2 = PB_Y2 + PB_PIL_CAP_OUT_OVH  # outward (north/road-facing) edge
-        _s_cy1 = PB_Y1 - PB_PIL_CAP_OUT_OVH  # outward (south/road-facing) edge
-        _s_cy2 = (
+        north_cap_y2 = PB_Y2 + PB_PIL_CAP_OUT_OVH  # outward (north/road-facing) edge
+        south_cap_y1 = PB_Y1 - PB_PIL_CAP_OUT_OVH  # outward (south/road-facing) edge
+        south_cap_y2 = (
             PB_Y1 + PB_PAR_W + PB_PIL_OVERHANG + PB_PIL_CAP_IN_OVH
         )  # inward past pillar post
         # Cap slabs (flat cement base)
-        BRUSHES.append(box(_cap_x1, _n_cy1, ppil, _cap_x2, _n_cy2, pcap, TEX_CEMENT))
-        BRUSHES.append(box(_cap_x1, _s_cy1, ppil, _cap_x2, _s_cy2, pcap, TEX_CEMENT))
+        BRUSHES.append(
+            box(cap_x1, north_cap_y1, ppil, cap_x2, north_cap_y2, pcap, TEX_CEMENT)
+        )
+        BRUSHES.append(
+            box(cap_x1, south_cap_y1, ppil, cap_x2, south_cap_y2, pcap, TEX_CEMENT)
+        )
         # Pyramids on top of cap slabs
         BRUSHES.append(
             pyramid(
-                _cap_x1, _n_cy1, pcap, _cap_x2, _n_cy2, pcap + PB_PIL_PYR_H, TEX_CEMENT
+                cap_x1,
+                north_cap_y1,
+                pcap,
+                cap_x2,
+                north_cap_y2,
+                pcap + PB_PIL_PYR_H,
+                TEX_CEMENT,
             )
         )
         BRUSHES.append(
             pyramid(
-                _cap_x1, _s_cy1, pcap, _cap_x2, _s_cy2, pcap + PB_PIL_PYR_H, TEX_CEMENT
+                cap_x1,
+                south_cap_y1,
+                pcap,
+                cap_x2,
+                south_cap_y2,
+                pcap + PB_PIL_PYR_H,
+                TEX_CEMENT,
             )
         )
         # Torch bases above pyramid apex — narrow post + wide cup
-        _apex = pcap + PB_PIL_PYR_H
-        for _tcy in [cy_n, cy_s]:
+        pyramid_apex_z = pcap + PB_PIL_PYR_H
+        for torch_center_y in [cy_n, cy_s]:
             # Narrow stone post (6x6) rising from pyramid tip
             BRUSHES.append(
-                box(px - 3, _tcy - 3, _apex, px + 3, _tcy + 3, _apex + 16, TEX_CEMENT)
+                box(
+                    px - 3,
+                    torch_center_y - 3,
+                    pyramid_apex_z,
+                    px + 3,
+                    torch_center_y + 3,
+                    pyramid_apex_z + 16,
+                    TEX_CEMENT,
+                )
             )
             # Wider brick cup/bracket at top holds the flame
             BRUSHES.append(
                 box(
                     px - 5,
-                    _tcy - 5,
-                    _apex + 16,
+                    torch_center_y - 5,
+                    pyramid_apex_z + 16,
                     px + 5,
-                    _tcy + 5,
-                    _apex + 20,
+                    torch_center_y + 5,
+                    pyramid_apex_z + 20,
                     TEX_BRICK,
                 )
             )
@@ -2687,8 +2915,8 @@ if SHOW_SUPPORTS:
                 box(x1 + 16, -a_rin, FLOOR_Z2, x2, a_rin, int(pdeck) - 16, TEX_CEMENT)
             )
             # Arch-shaped teleport flush with the west face (recessed into pier)
-            _tele_stilt = pier_top_z - FLOOR_Z2 - a_rin - 8
-            _abutment_tele_brush = arch_fill(
+            teleport_stilt_height = pier_top_z - FLOOR_Z2 - a_rin - 8
+            abutment_teleport_brush = arch_fill(
                 x1 + 2,
                 x1 + 18,
                 0.0,
@@ -2696,9 +2924,9 @@ if SHOW_SUPPORTS:
                 a_rin,
                 A_SEGS,
                 TEX_TELEPORT,
-                stilt_h=_tele_stilt,
+                stilt_h=teleport_stilt_height,
             )
-            _abutment_tele_dest_z = int(pdeck) + 40  # spawn height above deck
+            abutment_teleport_dest_z = int(pdeck) + 40  # spawn height above deck
 
 # ── Teleport Arches at both ends of bridge ───────────────────────────────────
 ARCH_RIN = 96
@@ -2706,50 +2934,53 @@ ARCH_ROUT = 136  # Fills the bridge width (updated to match PB_Y2=136)
 ARCH_STILT_H = 96  # Height of straight sides before arch springs
 ARCH_SLAB_W = 32  # Thickness of the arch in X
 
-for _ex, _ayc in [
+for arch_x_start, arch_center_y in [
     (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
-    (WORLD_X2 - WALL_T - ARCH_SLAB_W, _es2),  # east arch — shifted south with span
+    (
+        WORLD_X2 - WALL_T - ARCH_SLAB_W,
+        east_shift_end,
+    ),  # east arch — shifted south with span
 ]:
-    _xb, _xf = _ex, _ex + ARCH_SLAB_W
-    _sprz = PB_DZ2 + ARCH_STILT_H  # Z where arch curve begins
-    _post_w = ARCH_ROUT - ARCH_RIN  # post thickness in Y
+    arch_x1, arch_x2 = arch_x_start, arch_x_start + ARCH_SLAB_W
+    arch_spring_z = PB_DZ2 + ARCH_STILT_H  # Z where arch curve begins
+    arch_post_width = ARCH_ROUT - ARCH_RIN  # post thickness in Y
     # South post (extends to ground floor, with overhang)
     BRUSHES.append(
         box(
-            _xb,
-            PB_Y1 - PB_PIL_OVERHANG + _ayc,
+            arch_x1,
+            PB_Y1 - PB_PIL_OVERHANG + arch_center_y,
             FLOOR_Z2,
-            _xf,
-            PB_Y1 + _post_w + _ayc,
-            _sprz,
+            arch_x2,
+            PB_Y1 + arch_post_width + arch_center_y,
+            arch_spring_z,
             TEX_PILLAR,
         )
     )
     # North post (extends to ground floor, with overhang)
     BRUSHES.append(
         box(
-            _xb,
-            PB_Y2 - _post_w + _ayc,
+            arch_x1,
+            PB_Y2 - arch_post_width + arch_center_y,
             FLOOR_Z2,
-            _xf,
-            PB_Y2 + PB_PIL_OVERHANG + _ayc,
-            _sprz,
+            arch_x2,
+            PB_Y2 + PB_PIL_OVERHANG + arch_center_y,
+            arch_spring_z,
             TEX_PILLAR,
         )
     )
     # Arch ring segments (rounded top, with overhang)
-    _seg = 180.0 / A_SEGS
+    arch_segment_angle = 180.0 / A_SEGS
     for i in range(A_SEGS):
         BRUSHES.append(
             arch_seg(
-                _xb,
-                _xf,
-                _ayc,
-                float(_sprz),
+                arch_x1,
+                arch_x2,
+                arch_center_y,
+                float(arch_spring_z),
                 ARCH_RIN,
                 ARCH_ROUT + PB_PIL_OVERHANG,
-                i * _seg,
-                (i + 1) * _seg,
+                i * arch_segment_angle,
+                (i + 1) * arch_segment_angle,
                 TEX_PILLAR,
             )
         )
@@ -2805,28 +3036,28 @@ if KH_WALKWAY_ENABLED:
         )
     )
     # Handrail tubes along walkway sides, centred in the wall thickness
-    for _tube_z_extra in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
-        _tbz = WALK_ZT1 + PB_PAR_H + _tube_z_extra
-        _ww_cx = PBCS_WALK_WALL // 2
+    for tube_z_offset in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
+        tube_base_z = WALK_ZT1 + PB_PAR_H + tube_z_offset
+        ww_cx = PBCS_WALK_WALL // 2
         BRUSHES.append(
             box(
-                WALK_X1 - _ww_cx - PB_TUBE_HW,
+                WALK_X1 - ww_cx - PB_TUBE_HW,
                 KH_Y2,
-                _tbz,
-                WALK_X1 - _ww_cx + PB_TUBE_HW,
+                tube_base_z,
+                WALK_X1 - ww_cx + PB_TUBE_HW,
                 PB_Y1,
-                _tbz + PB_TUBE_HW * 2,
+                tube_base_z + PB_TUBE_HW * 2,
                 TEX_RAIL,
             )
         )
         BRUSHES.append(
             box(
-                WALK_X2 + _ww_cx - PB_TUBE_HW,
+                WALK_X2 + ww_cx - PB_TUBE_HW,
                 KH_Y2,
-                _tbz,
-                WALK_X2 + _ww_cx + PB_TUBE_HW,
+                tube_base_z,
+                WALK_X2 + ww_cx + PB_TUBE_HW,
                 PB_Y1,
-                _tbz + PB_TUBE_HW * 2,
+                tube_base_z + PB_TUBE_HW * 2,
                 TEX_RAIL,
             )
         )
@@ -2840,42 +3071,46 @@ if KH_WALKWAY_ENABLED:
 # Spans Y=KH_Y2..PB_Y1 (KH north face → bridge south edge).
 # ════════════════════════════════════════════════════════════════════════════════
 if KH_WALKWAY_ENABLED:
-    _ewk_cx = 2120
-    _ewk_hw = 32
-    _ewk_x1 = _ewk_cx - _ewk_hw  # 2088 — path position unchanged
-    _ewk_x2 = _ewk_cx + _ewk_hw  # 2152
-    _ewk_y1 = KH_Y2  # south: Knott Hall north face (-256)
-    _ewk_y2 = (
+    east_walk_center_x = 2120
+    east_walk_half_width = 32
+    east_walk_x1 = (
+        east_walk_center_x - east_walk_half_width
+    )  # 2088 — path position unchanged
+    east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
+    east_walk_y1 = KH_Y2  # south: Knott Hall north face (-256)
+    east_walk_y2 = (
         PB_Y2 + PB_PIL_OVERHANG + 96 + 80
     )  # north anchor: ramp moved 80 units north
-    _ewk_zt = KH_GROUND_Z + KH_WALL
-    _tz1 = KH_GROUND_Z  # flat at hilltop from KH face to slope start
-    _tz2 = int(
+    east_walk_top_z = KH_GROUND_Z + KH_WALL
+    terrain_z1 = KH_GROUND_Z  # flat at hilltop from KH face to slope start
+    terrain_z2 = int(
         KH_GROUND_Z
         + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
-        * (_ewk_y2 - (KH_Y2 + 96))
+        * (east_walk_y2 - (KH_Y2 + 96))
         / (EP_SW_EDGE - (KH_Y2 + 96))
     )
     # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KH_X2
-    _ewk_ext_y1 = _ewk_y2 - (_ewk_hw * 2)
-    _ewk_ext_y2 = _ewk_y2
-    _ext_tz1 = int(
+    east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
+    east_walk_ext_y2 = east_walk_y2
+    extension_terrain_z1 = int(
         KH_GROUND_Z
         + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
-        * (_ewk_ext_y1 - (KH_Y2 + 96))
+        * (east_walk_ext_y1 - (KH_Y2 + 96))
         / (EP_SW_EDGE - (KH_Y2 + 96))
     )
-    _ext_tz2 = _tz2
-    _ext_tz_west = (_ext_tz1 + _ext_tz2) // 2  # Z at west end (N-S path side)
+    extension_terrain_z2 = terrain_z2
+    extension_terrain_z_west = (
+        extension_terrain_z1 + extension_terrain_z2
+    ) // 2  # Z at west end (N-S path side)
     BRUSHES.append(
         ramp_slab(
-            _ewk_x2,
+            east_walk_x2,
             KH_X2,
-            _ewk_ext_y1,
-            _ewk_ext_y2,
+            east_walk_ext_y1,
+            east_walk_ext_y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            _ext_tz_west,
+            extension_terrain_z_west,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
             tt=TEX_FLOOR,
@@ -2889,39 +3124,47 @@ if KH_WALKWAY_ENABLED:
 # ════════════════════════════════════════════════════════════════════════════════
 if KH_WALKWAY_ENABLED:
     # Position just under the south edge of the bridge deck
-    _sup_yc = PB_Y1  # south edge of bridge = -136
-    _sup_hw = 16  # half-depth of beam/piers (N-S)
-    _sup_y1 = _sup_yc - _sup_hw
-    _sup_y2 = _sup_yc + _sup_hw
+    support_y_center = PB_Y1  # south edge of bridge = -136
+    support_half_width = 16  # half-depth of beam/piers (N-S)
+    support_y1 = support_y_center - support_half_width
+    support_y2 = support_y_center + support_half_width
     # Beam sits just below the walkway slab bottom
-    _beam_zt = WALK_ZT1 - KH_WALL  # bottom of walkway slab at bridge end
-    _beam_h = 20
-    _beam_zb = _beam_zt - _beam_h
+    beam_top_z = WALK_ZT1 - KH_WALL  # bottom of walkway slab at bridge end
+    beam_height = 20
+    beam_bottom_z = beam_top_z - beam_height
     # Span between the two bridge arch piers flanking the walkway (east span)
-    _beam_x1 = PB_ARCH_X[3]
-    _beam_x2 = PB_ARCH_X[4]
+    beam_x1 = PB_ARCH_X[3]
+    beam_x2 = PB_ARCH_X[4]
     # Horizontal crossbeam
     BRUSHES.append(
-        box(_beam_x1, _sup_y1, _beam_zb, _beam_x2, _sup_y2, _beam_zt, TEX_CEMENT)
+        box(
+            beam_x1,
+            support_y1,
+            beam_bottom_z,
+            beam_x2,
+            support_y2,
+            beam_top_z,
+            TEX_CEMENT,
+        )
     )
     # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
-    _rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge
-    _rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge
-    _west_piers = [
-        int(_beam_x1 + (_rail_x1 - _beam_x1) * f) for f in (0.28, 0.63, 0.93)
+    rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge
+    rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge
+    west_support_piers = [
+        int(beam_x1 + (rail_x1 - beam_x1) * f) for f in (0.28, 0.63, 0.93)
     ]
-    _east_piers = [int(_rail_x2 + (_beam_x2 - _rail_x2) * f) for f in (0.0, 0.45)]
-    _pier_xs = _west_piers + _east_piers
-    _pier_hw = 20
-    for _px in _pier_xs:
+    east_support_piers = [int(rail_x2 + (beam_x2 - rail_x2) * f) for f in (0.0, 0.45)]
+    support_pier_xs = west_support_piers + east_support_piers
+    support_pier_half_width = 20
+    for pier_x in support_pier_xs:
         BRUSHES.append(
             box(
-                _px - _pier_hw,
-                _sup_y1,
+                pier_x - support_pier_half_width,
+                support_y1,
                 FLOOR_Z2,
-                _px + _pier_hw,
-                _sup_y2,
-                _beam_zb,
+                pier_x + support_pier_half_width,
+                support_y2,
+                beam_bottom_z,
                 TEX_CEMENT,
             )
         )
@@ -2936,17 +3179,19 @@ if KH_WALKWAY_ENABLED:
 # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
 # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
 if KH_GROUND_Z > FLOOR_Z2:
-    _west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
-    _west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
-    _east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
+    west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
+    west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
+    east_flat_x2 = WORLD_X2 - WALL_T  # flat hilltop extends to east world wall
     # Solid hill fill under the entire building footprint — split to exclude indent pockets
     # so indents are recessed at all heights down to ground level
-    for _px1, _py1, _px2, _py2 in [
+    for fill_x1, fill_y1, fill_x2, fill_y2 in [
         (KH_X1 + INDENT, KH_Y1, KH_X2 - INDENT, KH_Y1 + INDENT),  # south strip
         (KH_X1, KH_Y1 + INDENT, KH_X2, KH_Y2 - INDENT),  # middle strip
         (KH_X1 + 2 * INDENT, KH_Y2 - INDENT, KH_X2 - INDENT, KH_Y2),  # north strip
     ]:
-        BRUSHES.append(box(_px1, _py1, FLOOR_Z2, _px2, _py2, KH_GROUND_Z, TEX_WALL))
+        BRUSHES.append(
+            box(fill_x1, fill_y1, FLOOR_Z2, fill_x2, fill_y2, KH_GROUND_Z, TEX_WALL)
+        )
     # NW indent floor — flush with exterior ground
     BRUSHES.append(
         box(
@@ -2961,13 +3206,13 @@ if KH_GROUND_Z > FLOOR_Z2:
     )
     # (No flat east fill — the back road section provides its own sloped fill there)
     # West hill — ramp from sidewalk height at Charles St up to building ground level
-    _west_ramp_north = KH_Y2 - INDENT * 3 // 4
+    west_ramp_north_y = KH_Y2 - INDENT * 3 // 4
     BRUSHES.append(
         ramp_slab(
-            _west_ramp_x1,
-            _west_ramp_x2,
+            west_ramp_x1,
+            west_ramp_x2,
             WORLD_Y1 + WALL_T,
-            _west_ramp_north,
+            west_ramp_north_y,
             FLOOR_Z1,
             FLOOR_Z1,
             FLOOR_Z2 + CS_WALK_H,
@@ -2978,10 +3223,10 @@ if KH_GROUND_Z > FLOOR_Z2:
     # Flat ground from ramp north edge to building face (west of KH_X1)
     BRUSHES.append(
         box(
-            _west_ramp_x1,
-            _west_ramp_north,
+            west_ramp_x1,
+            west_ramp_north_y,
             FLOOR_Z1,
-            _west_ramp_x2,
+            west_ramp_x2,
             KH_Y2,
             FLOOR_Z2 + CS_WALK_H,
             TEX_GROUND,
@@ -3003,22 +3248,24 @@ if KH_GROUND_Z > FLOOR_Z2:
     # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show.
     # Between Pier 4 (PIER4_X) and Pier 5 (PIER5_X): gradual slope from KH_GROUND_Z
     # at the north KH face (KH_Y2) down to sidewalk height at the Ennis sidewalk (EP_SW_EDGE).
-    _kh_ent_x1 = KH_ORIG_CX - 64
-    _kh_ent_x2 = KH_ORIG_CX + 64
-    _east_ramp_x1 = _kh_ent_x2  # east of entrance opening
-    _east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
-    _east_ramp_depth = 128  # N-S length of sloped sidewalk
-    _ep_plat_depth = 96  # N-S depth of side-step platform — slope must not cover this
+    kh_entry_x1 = KH_ORIG_CX - 64
+    kh_entry_x2 = KH_ORIG_CX + 64
+    east_ramp_x1 = kh_entry_x2  # east of entrance opening
+    east_ramp_x2 = KH_X2 - INDENT  # west edge of NE indent
+    east_ramp_depth = 128  # N-S length of sloped sidewalk
+    east_platform_depth = (
+        96  # N-S depth of side-step platform — slope must not cover this
+    )
     # West section of seg1 — stays at sidewalk height (up to NW indent of KH)
-    _seg1_split = (
+    segment1_split_x = (
         KH_X1 + 2 * INDENT
     )  # = NW indent X, aligns raised ground with NW corner
     BRUSHES.append(
         box(
-            _west_ramp_x1,
+            west_ramp_x1,
             KH_Y2,
             FLOOR_Z1,
-            _seg1_split,
+            segment1_split_x,
             EP_SW_EDGE,
             FLOOR_Z2 + CS_WALK_H,
             TEX_GROUND,
@@ -3028,8 +3275,8 @@ if KH_GROUND_Z > FLOOR_Z2:
     # sidewalk height at Ennis sidewalk
     BRUSHES.append(
         ramp_slab_y(
-            _seg1_split,
-            _kh_ent_x1,
+            segment1_split_x,
+            kh_entry_x1,
             KH_Y2,
             EP_SW_EDGE,
             FLOOR_Z1,
@@ -3040,42 +3287,42 @@ if KH_GROUND_Z > FLOOR_Z2:
         )
     )
     # Seg2 (east of entrance to NE indent)
-    # _ewk_ext_y1_val / _ewk_ext_y2_val bracket the E-W ramp (Y=264..328)
-    _ewk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80 - 64  # 264
-    _ewk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80  # 328
+    # east_walk_ext_y1_val / east_walk_ext_y2_val bracket the E-W ramp (Y=264..328)
+    east_walk_ext_y1_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80 - 64  # 264
+    east_walk_ext_y2_val = PB_Y2 + PB_PIL_OVERHANG + 96 + 80  # 328
     # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
-    _terrain_z_at = lambda y: int(
+    terrain_z_at = lambda y: int(
         KH_GROUND_Z
         + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
         * (y - (KH_Y2 + 96))
         / (EP_SW_EDGE - (KH_Y2 + 96))
     )
-    _ext_tz_west = (
-        _terrain_z_at(_ewk_ext_y1_val) + _terrain_z_at(_ewk_ext_y2_val)
+    extension_terrain_z_west = (
+        terrain_z_at(east_walk_ext_y1_val) + terrain_z_at(east_walk_ext_y2_val)
     ) // 2
     # Full sloped terrain Y=-160..264 (path zone starts at ramp south edge)
     BRUSHES.append(
         ramp_slab_y(
-            _kh_ent_x2,
-            _east_ramp_x2,
-            KH_Y2 + _ep_plat_depth,
-            _ewk_ext_y1_val,
+            kh_entry_x2,
+            east_ramp_x2,
+            KH_Y2 + east_platform_depth,
+            east_walk_ext_y1_val,
             FLOOR_Z1,
             FLOOR_Z1,
             KH_GROUND_Z,
-            _terrain_z_at(_ewk_ext_y1_val),
+            terrain_z_at(east_walk_ext_y1_val),
             TEX_GROUND,
         )
     )
-    # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=_ext_tz_west)
+    # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=extension_terrain_z_west)
     BRUSHES.append(
         box(
-            _kh_ent_x2,
-            _ewk_ext_y1_val,
+            kh_entry_x2,
+            east_walk_ext_y1_val,
             FLOOR_Z1,
-            _east_ramp_x2,
-            _ewk_ext_y2_val,
-            _ext_tz_west,
+            east_ramp_x2,
+            east_walk_ext_y2_val,
+            extension_terrain_z_west,
             TEX_CEMENT,
             tt=TEX_FLOOR,
         )
@@ -3083,13 +3330,13 @@ if KH_GROUND_Z > FLOOR_Z2:
     # North section (Y=328..504): sloped terrain continues
     BRUSHES.append(
         ramp_slab_y(
-            _kh_ent_x2,
-            _east_ramp_x2,
-            _ewk_ext_y2_val,
+            kh_entry_x2,
+            east_ramp_x2,
+            east_walk_ext_y2_val,
             EP_SW_EDGE,
             FLOOR_Z1,
             FLOOR_Z1,
-            _terrain_z_at(_ewk_ext_y2_val),
+            terrain_z_at(east_walk_ext_y2_val),
             FLOOR_Z2 + CS_WALK_H,
             TEX_GROUND,
         )
@@ -3097,11 +3344,11 @@ if KH_GROUND_Z > FLOOR_Z2:
     # NE indent ground — south of ramp (Y=-160..264): full ground, no cement needed
     BRUSHES.append(
         box(
-            _east_ramp_x2,
-            KH_Y2 + _ep_plat_depth,
+            east_ramp_x2,
+            KH_Y2 + east_platform_depth,
             FLOOR_Z1,
             KH_BR_CORRIDOR_X1,
-            _ewk_ext_y1_val,
+            east_walk_ext_y1_val,
             FLOOR_Z2 + CS_WALK_H,
             TEX_GROUND,
         )
@@ -3109,8 +3356,8 @@ if KH_GROUND_Z > FLOOR_Z2:
     # North of E-W extension (restore ground fully)
     BRUSHES.append(
         box(
-            _east_ramp_x2,
-            _ewk_ext_y2_val,
+            east_ramp_x2,
+            east_walk_ext_y2_val,
             FLOOR_Z1,
             KH_BR_CORRIDOR_X1,
             EP_SW_EDGE,
@@ -3131,32 +3378,42 @@ if KH_GROUND_Z > FLOOR_Z2:
         )
     )
     # East of entrance: flat platform at walkway level + steps going east down to ground
-    _ep_x1 = _east_ramp_x1  # KH_ENT_X2
-    _ep_x2 = KH_X2
-    _ep_n_steps = 4
-    _ep_step_rise = (KH_GROUND_Z - (FLOOR_Z2 + CS_WALK_H)) // _ep_n_steps
-    _ep_step_depth = 24
-    _ep_steps_w = _ep_n_steps * _ep_step_depth
-    _ep_step_x1 = _ep_x2 - _ep_steps_w  # steps recessed, end flush with east wall
+    east_platform_x1 = east_ramp_x1  # KH_ENT_X2
+    east_platform_x2 = KH_X2
+    east_step_count = 4
+    east_step_rise = (KH_GROUND_Z - (FLOOR_Z2 + CS_WALK_H)) // east_step_count
+    east_step_depth = 24
+    east_steps_width = east_step_count * east_step_depth
+    east_steps_x1 = (
+        east_platform_x2 - east_steps_width
+    )  # steps recessed, end flush with east wall
     # Flat platform at KH_GROUND_Z (west of steps)
     BRUSHES.append(
         box(
-            _ep_x1,
+            east_platform_x1,
             KH_Y2,
             FLOOR_Z1,
-            _ep_step_x1,
-            KH_Y2 + _ep_plat_depth,
+            east_steps_x1,
+            KH_Y2 + east_platform_depth,
             KH_GROUND_Z,
             TEX_CEMENT,
         )
     )
     # Steps going east (downhill in X), flush with KH east wall
-    for _si in range(_ep_n_steps):
-        _sz = KH_GROUND_Z - (_si + 1) * _ep_step_rise
-        _sx1 = _ep_step_x1 + _si * _ep_step_depth
-        _sx2 = _sx1 + _ep_step_depth
+    for step_index in range(east_step_count):
+        step_z = KH_GROUND_Z - (step_index + 1) * east_step_rise
+        step_x1 = east_steps_x1 + step_index * east_step_depth
+        step_x2 = step_x1 + east_step_depth
         BRUSHES.append(
-            box(_sx1, KH_Y2, FLOOR_Z1, _sx2, KH_Y2 + _ep_plat_depth, _sz, TEX_CEMENT)
+            box(
+                step_x1,
+                KH_Y2,
+                FLOOR_Z1,
+                step_x2,
+                KH_Y2 + east_platform_depth,
+                step_z,
+                TEX_CEMENT,
+            )
         )
     # Small cement connector — bridges step bottom to back road west sidewalk (32 units wide)
     BRUSHES.append(
@@ -3165,13 +3422,13 @@ if KH_GROUND_Z > FLOOR_Z2:
             KH_Y2,
             FLOOR_Z1,
             KH_X2 + CS_WALK_W,
-            KH_Y2 + _ep_plat_depth,
+            KH_Y2 + east_platform_depth,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
         )
     )
 
-_kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
+kh_brush_start = len(BRUSHES)  # checkpoint — trimmed below if KH_ENABLED is False
 
 # ══════════════════════════════════════════════════════════════════════════════
 # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
@@ -3429,21 +3686,21 @@ BRUSHES.append(
         TEX_ROAD,
     )
 )
-for _i in range(KH_BRCS_CRN_SEGS):
-    _a0 = math.radians(0 + _i * 90 / KH_BRCS_CRN_SEGS)
-    _a1 = math.radians(0 + (_i + 1) * 90 / KH_BRCS_CRN_SEGS)
-    _px0 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(_a0)
-    _py0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(_a0)
-    _px1 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(_a1)
-    _py1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(_a1)
+for corner_index in range(KH_BRCS_CRN_SEGS):
+    angle_start = math.radians(0 + corner_index * 90 / KH_BRCS_CRN_SEGS)
+    angle_end = math.radians(0 + (corner_index + 1) * 90 / KH_BRCS_CRN_SEGS)
+    arc_x0 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(angle_start)
+    arc_y0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_start)
+    arc_x1 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(angle_end)
+    arc_y1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_end)
     BRUSHES.append(
         tri_prism(
             KH_BR_JCX_W,
             KH_BR_EXT_Y2,
-            _px0,
-            _py0,
-            _px1,
-            _py1,
+            arc_x0,
+            arc_y0,
+            arc_x1,
+            arc_y1,
             FLOOR_Z2,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
@@ -3463,21 +3720,21 @@ BRUSHES.append(
         TEX_ROAD,
     )
 )
-for _i in range(KH_BRCS_CRN_SEGS):
-    _a0 = math.radians(90 + _i * 90 / KH_BRCS_CRN_SEGS)
-    _a1 = math.radians(90 + (_i + 1) * 90 / KH_BRCS_CRN_SEGS)
-    _px0 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(_a0)
-    _py0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(_a0)
-    _px1 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(_a1)
-    _py1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(_a1)
+for corner_index in range(KH_BRCS_CRN_SEGS):
+    angle_start = math.radians(90 + corner_index * 90 / KH_BRCS_CRN_SEGS)
+    angle_end = math.radians(90 + (corner_index + 1) * 90 / KH_BRCS_CRN_SEGS)
+    arc_x0 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(angle_start)
+    arc_y0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_start)
+    arc_x1 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(angle_end)
+    arc_y1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_end)
     BRUSHES.append(
         tri_prism(
             KH_BR_JCX_E,
             KH_BR_EXT_Y2,
-            _px0,
-            _py0,
-            _px1,
-            _py1,
+            arc_x0,
+            arc_y0,
+            arc_x1,
+            arc_y1,
             FLOOR_Z2,
             FLOOR_Z2 + CS_WALK_H,
             TEX_CEMENT,
@@ -3496,8 +3753,8 @@ KH_ENT_X1, KH_ENT_X2 = KH_ORIG_CX - 64, KH_ORIG_CX + 64
 KH_STEP_N = 5
 KH_STEP_DEPTH = 24  # tread depth
 KH_STAIR_OFFSET = 384  # distance from north wall to stair base
-_step_base_z = FLOOR_Z2 + CS_WALK_H  # steps start at apron surface height (8)
-step_rise = (KH_GROUND_Z - _step_base_z) * 1 // KH_STEP_N  # distributed rise per step
+stair_base_z = FLOOR_Z2 + CS_WALK_H  # steps start at apron surface height (8)
+step_rise = (KH_GROUND_Z - stair_base_z) * 1 // KH_STEP_N  # distributed rise per step
 
 # Flat cement platform between building and stairs
 BRUSHES.append(
@@ -3514,17 +3771,19 @@ BRUSHES.append(
 
 stair_y0 = KH_Y2 + KH_STAIR_OFFSET  # south edge of staircase
 stair_y_end = stair_y0 + KH_STEP_N * KH_STEP_DEPTH  # north end of stairs (ground level)
-for _si in range(KH_STEP_N):
-    _sz2 = _step_base_z + (KH_GROUND_Z - _step_base_z) * (_si + 1) // KH_STEP_N
-    _sy_n = stair_y0 + (KH_STEP_N - _si) * KH_STEP_DEPTH
+for stair_index in range(KH_STEP_N):
+    step_top_z = (
+        stair_base_z + (KH_GROUND_Z - stair_base_z) * (stair_index + 1) // KH_STEP_N
+    )
+    step_north_y = stair_y0 + (KH_STEP_N - stair_index) * KH_STEP_DEPTH
     BRUSHES.append(
         box(
             KH_ENT_X1,
             stair_y0,
-            _step_base_z,
+            stair_base_z,
             KH_ENT_X2,
-            _sy_n,
-            _sz2,
+            step_north_y,
+            step_top_z,
             TEX_CEMENT,
             tt=TEX_CEMENT,
         )
@@ -3545,22 +3804,22 @@ BRUSHES.append(
 
 # ── Stair side caps (cement cheek walls) ─────────────────────────────────────
 # Solid sloped cement walls on each side of the staircase, top follows stair slope.
-_cap_w = 24  # cheek wall thickness (X)
-_cap_raise = 16  # extra height above stair slope
-for _cx1, _cx2 in [
-    (KH_ENT_X1 - _cap_w, KH_ENT_X1),  # west cheek
-    (KH_ENT_X2, KH_ENT_X2 + _cap_w),  # east cheek
+cap_width = 24  # cheek wall thickness (X)
+cap_raise = 16  # extra height above stair slope
+for cap_x1, cap_x2 in [
+    (KH_ENT_X1 - cap_width, KH_ENT_X1),  # west cheek
+    (KH_ENT_X2, KH_ENT_X2 + cap_width),  # east cheek
 ]:
     BRUSHES.append(
         ramp_slab_y(
-            _cx1,
-            _cx2,
+            cap_x1,
+            cap_x2,
             stair_y0,
             stair_y_end,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_GROUND_Z + _cap_raise,
-            _step_base_z + _cap_raise,
+            KH_GROUND_Z + cap_raise,
+            stair_base_z + cap_raise,
             TEX_CEMENT,
         )
     )
@@ -3569,26 +3828,26 @@ for _cx1, _cx2 in [
 KH_RAIL_H = 72  # stair handrail height
 KH_RAIL_TEX = "metal4_4"
 KH_RAIL_SPACING = 16
-_post_w = 8  # post face width (X) — wide flat-facing
-_post_d = 2  # post depth (Y)
-_horiz_ext = 20  # length of level rail extension at top and bottom
-for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
-    _z_top_plat = KH_GROUND_Z + KH_RAIL_H - 28
-    _z_top_end = _step_base_z + KH_RAIL_H - 28
-    _rx1 = _rx_base - _post_w if _is_west else _rx_base
-    _rx2 = _rx_base if _is_west else _rx_base + _post_w
+post_width = 8  # post face width (X) — wide flat-facing
+post_depth = 2  # post depth (Y)
+level_extension = 20  # length of level rail extension at top and bottom
+for rail_x_base, is_west_side in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
+    rail_top_z_at_platform = KH_GROUND_Z + KH_RAIL_H - 28
+    rail_top_z_at_apron = stair_base_z + KH_RAIL_H - 28
+    rail_x1 = rail_x_base - post_width if is_west_side else rail_x_base
+    rail_x2 = rail_x_base if is_west_side else rail_x_base + post_width
 
     # Sloped cross rail
     BRUSHES.append(
         ramp_slab_y(
-            _rx1,
-            _rx2,
+            rail_x1,
+            rail_x2,
             stair_y0,
             stair_y_end,
-            _z_top_plat,
-            _z_top_end,
-            _z_top_plat + 2,
-            _z_top_end + 2,
+            rail_top_z_at_platform,
+            rail_top_z_at_apron,
+            rail_top_z_at_platform + 2,
+            rail_top_z_at_apron + 2,
             KH_RAIL_TEX,
         )
     )
@@ -3596,35 +3855,43 @@ for _rx_base, _is_west in [(KH_ENT_X1, True), (KH_ENT_X2, False)]:
     # Horizontal extension at top (level with platform floor)
     BRUSHES.append(
         box(
-            _rx1,
-            stair_y0 - _horiz_ext,
-            _z_top_plat,
-            _rx2,
+            rail_x1,
+            stair_y0 - level_extension,
+            rail_top_z_at_platform,
+            rail_x2,
             stair_y0,
-            _z_top_plat + 2,
+            rail_top_z_at_platform + 2,
             KH_RAIL_TEX,
         )
     )
     # Horizontal extension at bottom (level with apron floor)
     BRUSHES.append(
         box(
-            _rx1,
+            rail_x1,
             stair_y_end,
-            _z_top_end,
-            _rx2,
-            stair_y_end + _horiz_ext,
-            _z_top_end + 2,
+            rail_top_z_at_apron,
+            rail_x2,
+            stair_y_end + level_extension,
+            rail_top_z_at_apron + 2,
             KH_RAIL_TEX,
         )
     )
 
     # Posts — wide flat-facing
-    for _ry, _gz in [
+    for post_y, post_z in [
         (stair_y0, KH_GROUND_Z),
-        (stair_y_end, _step_base_z),
+        (stair_y_end, stair_base_z),
     ]:
         BRUSHES.append(
-            box(_rx1, _ry, _gz, _rx2, _ry + _post_d, _gz + KH_RAIL_H - 26, KH_RAIL_TEX)
+            box(
+                rail_x1,
+                post_y,
+                post_z,
+                rail_x2,
+                post_y + post_depth,
+                post_z + KH_RAIL_H - 26,
+                KH_RAIL_TEX,
+            )
         )
 
 # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
@@ -3730,57 +3997,57 @@ BRUSHES.append(
     )
 )
 # South mullions — protrude outward (south, -Y)
-for _mx in [sw_win_cx - KHRH_WIN_HALF - KH_MULLION_W, sw_win_cx + KHRH_WIN_HALF]:
+for mx in [sw_win_cx - KHRH_WIN_HALF - KH_MULLION_W, sw_win_cx + KHRH_WIN_HALF]:
     BRUSHES.append(
         box(
-            _mx,
+            mx,
             KH_Y1 + INDENT - KH_WALL,
             KH_GROUND_Z + KH_FLOOR_H,
-            _mx + KH_MULLION_W,
+            mx + KH_MULLION_W,
             KH_Y1 + INDENT + KH_MULLION_PRO,
             KH_Z2,
             TEX_CEMENT,
         )
     )
-for _mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]:
+for mx in [se_win_cx - KHRH_WIN_HALF - KH_MULLION_W, se_win_cx + KHRH_WIN_HALF]:
     BRUSHES.append(
         box(
-            _mx,
+            mx,
             KH_Y1 + INDENT - KH_WALL,
             KH_GROUND_Z + KH_FLOOR_H,
-            _mx + KH_MULLION_W,
+            mx + KH_MULLION_W,
             KH_Y1 + INDENT + KH_MULLION_PRO,
             KH_Z2,
             TEX_CEMENT,
         )
     )
 # Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
-for _wx in [sw_win_cx, se_win_cx]:
-    for _fl in range(1, KH_FLOORS):
-        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+for wx in [sw_win_cx, se_win_cx]:
+    for fl in range(1, KH_FLOORS):
+        mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
-                _wx - KHRH_WIN_HALF,
+                wx - KHRH_WIN_HALF,
                 KH_Y1 + INDENT - KH_WALL,
-                _mz,
-                _wx + KHRH_WIN_HALF,
+                mz,
+                wx + KHRH_WIN_HALF,
                 KH_Y1 + INDENT + KH_MULLION_PRO,
-                _mz + 4,
+                mz + 4,
                 TEX_RAIL,
             )
         )
 # Floor-level mullions — SW and SE south-face windows
-for _wx in [sw_win_cx, se_win_cx]:
-    for _fl in range(1, KH_FLOORS + 1):
-        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+for wx in [sw_win_cx, se_win_cx]:
+    for fl in range(1, KH_FLOORS + 1):
+        fz = KH_GROUND_Z + fl * KH_FLOOR_H
         BRUSHES.append(
             box(
-                _wx - KHRH_WIN_HALF,
+                wx - KHRH_WIN_HALF,
                 KH_Y1 + INDENT - KH_WALL,
-                _fz - 4 if _fl > 0 else KH_GROUND_Z,
-                _wx + KHRH_WIN_HALF,
+                fz - 4 if fl > 0 else KH_GROUND_Z,
+                wx + KHRH_WIN_HALF,
                 KH_Y1 + INDENT + KH_MULLION_PRO,
-                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                (fz if fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
@@ -3885,7 +4152,7 @@ BRUSHES.append(
 # Front mullions — protruding sfloor3_2 posts on each side of the recessed windows
 # and the narrow vertical window on the main north face. All protrude 12 units outward.
 # NW recessed windows: mullions for both (west and east window in the wide NW indentation)
-for _mx in [
+for mx in [
     nw_win_cx1 - KHRH_WIN_HALF - KH_MULLION_W,
     nw_win_cx1 + KHRH_WIN_HALF,
     nw_win_cx2 - KHRH_WIN_HALF - KH_MULLION_W,
@@ -3893,23 +4160,23 @@ for _mx in [
 ]:
     BRUSHES.append(
         box(
-            _mx,
+            mx,
             KH_Y2 - INDENT - KH_MULLION_PRO,
             KH_GROUND_Z + KH_FLOOR_H,
-            _mx + KH_MULLION_W,
+            mx + KH_MULLION_W,
             KH_Y2 - INDENT + KH_WALL,
             KH_Z2,
             TEX_CEMENT,
         )
     )
 # NE recessed window: mullions just outside the opening so player can fit through
-for _mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]:
+for mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]:
     BRUSHES.append(
         box(
-            _mx,
+            mx,
             KH_Y2 - INDENT - KH_MULLION_PRO,
             KH_GROUND_Z + KH_FLOOR_H,
-            _mx + KH_MULLION_W,
+            mx + KH_MULLION_W,
             KH_Y2 - INDENT + KH_WALL,
             KH_Z2,
             TEX_CEMENT,
@@ -3918,13 +4185,13 @@ for _mx in [ne_win_cx - KHRH_WIN_HALF - KH_MULLION_W, ne_win_cx + KHRH_WIN_HALF]
 # Main front wall window win_n: mullions on each side and center post
 win_n_x1, win_n_x2 = KH_ORIG_CX - 48, KH_ORIG_CX + 48
 win_n_mid = KH_ORIG_CX - 6  # left edge of center mullion
-for _mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
+for mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
     BRUSHES.append(
         box(
-            _mx,
+            mx,
             KH_Y2 - KH_WALL,
             KH_GROUND_Z + KH_FLOOR_H * 2,
-            _mx + KH_MULLION_W,
+            mx + KH_MULLION_W,
             KH_Y2 + KH_MULLION_PRO,
             KH_Z2,
             TEX_CEMENT,
@@ -3933,22 +4200,22 @@ for _mx in [win_n_x1 - KH_MULLION_W, win_n_mid, win_n_x2]:
 
 # ── "Marion Burk Knott Hall" sign plaque — north face, 2nd floor level ───────
 # Protruding cement slab, sized to fit pixel-font lettering
-_sign_text = "MARION BURK KNOTT HALL"
-_sign_px_w, _sign_px_h = 2, 4
-_sign_char_w = (4 + 1) * _sign_px_w
-_sign_total_w = len(_sign_text) * _sign_char_w - _sign_px_w
-_sign_hw = _sign_total_w // 2 + 4  # 4 unit padding each side = 222
-_sign_cx = KH_X2 - INDENT - _sign_hw  # east edge flush with wall end
-_sign_zb = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
-_sign_zt = _sign_zb + 48  # 48 units tall
+sign_text = "MARION BURK KNOTT HALL"
+sign_pixel_width, sign_pixel_height = 2, 4
+sign_char_width = (4 + 1) * sign_pixel_width
+sign_total_width = len(sign_text) * sign_char_width - sign_pixel_width
+sign_half_width = sign_total_width // 2 + 4  # 4 unit padding each side = 222
+sign_center_x = KH_X2 - INDENT - sign_half_width  # east edge flush with wall end
+sign_z1 = KH_GROUND_Z + KH_FLOOR_H * 2 + 20  # just above 2nd floor line
+sign_z2 = sign_z1 + 48  # 48 units tall
 BRUSHES.append(
     box(
-        _sign_cx - _sign_hw,
+        sign_center_x - sign_half_width,
         KH_Y2,
-        _sign_zb,
-        _sign_cx + _sign_hw,
+        sign_z1,
+        sign_center_x + sign_half_width,
         KH_Y2 + 6,
-        _sign_zt,
+        sign_z2,
         TEX_CEMENT,
     )
 )
@@ -3983,20 +4250,20 @@ BRUSHES.extend(
     )
 )
 # Vertical mullions — protrude 12 units east of wall face
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _dy in [
-        _wc - ww_half,  # left edge
-        _wc - 48,  # interior left
-        _wc + 36,  # interior right
-        _wc + ww_half - ww_div_w,  # right edge
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for mullion_y in [
+        window_center_y - ww_half,  # left edge
+        window_center_y - 48,  # interior left
+        window_center_y + 36,  # interior right
+        window_center_y + ww_half - ww_div_w,  # right edge
     ]:
         BRUSHES.append(
             box(
                 KH_X2 - KH_WALL,
-                _dy,
+                mullion_y,
                 KH_GROUND_Z + KH_FLOOR_H,
                 KH_X2 + ww_protrude,
-                _dy + ww_div_w,
+                mullion_y + ww_div_w,
                 KH_Z2,
                 TEX_CEMENT,
             )
@@ -4004,32 +4271,32 @@ for _wc in [ww_c1, ww_c2, ww_c3]:
 
 # Horizontal mullions — centered in each floor span for contrast, players still fit through
 # Mid-floor Z leaves ~85 units clearance each side (player height = 56)
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(1, KH_FLOORS):
-        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for fl in range(1, KH_FLOORS):
+        mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
                 KH_X2 - KH_WALL,
-                _wc - ww_half,
-                _mz,
+                window_center_y - ww_half,
+                mz,
                 KH_X2 + ww_protrude,
-                _wc + ww_half,
-                _mz + 4,
+                window_center_y + ww_half,
+                mz + 4,
                 TEX_RAIL,
             )
         )
 # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(1, KH_FLOORS + 1):
-        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for fl in range(1, KH_FLOORS + 1):
+        fz = KH_GROUND_Z + fl * KH_FLOOR_H
         BRUSHES.append(
             box(
                 KH_X2 - KH_WALL,
-                _wc - ww_half,
-                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                window_center_y - ww_half,
+                fz - 4 if fl > 0 else KH_GROUND_Z,
                 KH_X2 + ww_protrude,
-                _wc + ww_half,
-                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                window_center_y + ww_half,
+                (fz if fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
@@ -4053,119 +4320,119 @@ BRUSHES.extend(
 )
 # Vertical mullions — protrude 12 units west of wall face
 # 2 interior + 2 side mullions per window (4 total each)
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _dy in [
-        _wc - ww_half,  # left edge
-        _wc - 48,  # interior left
-        _wc + 36,  # interior right
-        _wc + ww_half - ww_div_w,  # right edge
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for mullion_y in [
+        window_center_y - ww_half,  # left edge
+        window_center_y - 48,  # interior left
+        window_center_y + 36,  # interior right
+        window_center_y + ww_half - ww_div_w,  # right edge
     ]:
         BRUSHES.append(
             box(
                 KH_X1 - ww_protrude,
-                _dy,
+                mullion_y,
                 KH_GROUND_Z + KH_FLOOR_H,
                 KH_X1 + KH_WALL,
-                _dy + ww_div_w,
+                mullion_y + ww_div_w,
                 KH_Z2,
                 TEX_CEMENT,
             )
         )
 
 # Horizontal mullions — west wall, matching east
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(1, KH_FLOORS):
-        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for fl in range(1, KH_FLOORS):
+        mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
                 KH_X1 - ww_protrude,
-                _wc - ww_half,
-                _mz,
+                window_center_y - ww_half,
+                mz,
                 KH_X1 + KH_WALL,
-                _wc + ww_half,
-                _mz + 4,
+                window_center_y + ww_half,
+                mz + 4,
                 TEX_RAIL,
             )
         )
 # Floor-level mullions — west wall
-for _wc in [ww_c1, ww_c2, ww_c3]:
-    for _fl in range(1, KH_FLOORS + 1):
-        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+for window_center_y in [ww_c1, ww_c2, ww_c3]:
+    for fl in range(1, KH_FLOORS + 1):
+        fz = KH_GROUND_Z + fl * KH_FLOOR_H
         BRUSHES.append(
             box(
                 KH_X1 - ww_protrude,
-                _wc - ww_half,
-                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                window_center_y - ww_half,
+                fz - 4 if fl > 0 else KH_GROUND_Z,
                 KH_X1 + KH_WALL,
-                _wc + ww_half,
-                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                window_center_y + ww_half,
+                (fz if fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
 
 # Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
-for _fl in range(2, KH_FLOORS):
-    _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+for fl in range(2, KH_FLOORS):
+    mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
     BRUSHES.append(
         box(
             win_n_x1,
             KH_Y2 - KH_WALL,
-            _mz,
+            mz,
             win_n_x2,
             KH_Y2 + KH_MULLION_PRO,
-            _mz + 4,
+            mz + 4,
             TEX_RAIL,
         )
     )
 # Floor-level mullions — win_n
-for _fl in range(2, KH_FLOORS + 1):
-    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
-    if _fz <= KH_Z2:
+for fl in range(2, KH_FLOORS + 1):
+    fz = KH_GROUND_Z + fl * KH_FLOOR_H
+    if fz <= KH_Z2:
         BRUSHES.append(
             box(
                 win_n_x1,
                 KH_Y2 - KH_WALL,
-                _fz - 4 if _fl > 0 else KH_GROUND_Z,
+                fz - 4 if fl > 0 else KH_GROUND_Z,
                 win_n_x2,
                 KH_Y2 + KH_MULLION_PRO,
-                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                (fz if fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
-for _wx, _wh in [
+for window_center_x, window_half_width in [
     (nw_win_cx1, KHRH_WIN_HALF),
     (nw_win_cx2, KHRH_WIN_HALF),
     (ne_win_cx, KHRH_WIN_HALF),
 ]:
-    for _fl in range(1, KH_FLOORS):
-        _mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2
+    for fl in range(1, KH_FLOORS):
+        mz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_FLOOR_H // 2
         BRUSHES.append(
             box(
-                _wx - _wh,
+                window_center_x - window_half_width,
                 KH_Y2 - INDENT - KH_MULLION_PRO,
-                _mz,
-                _wx + _wh,
+                mz,
+                window_center_x + window_half_width,
                 KH_Y2 - INDENT + KH_WALL,
-                _mz + 4,
+                mz + 4,
                 TEX_RAIL,
             )
         )
 # Floor-level mullions — NW/NE recessed north-face windows
-for _wx, _wh in [
+for window_center_x, window_half_width in [
     (nw_win_cx1, KHRH_WIN_HALF),
     (nw_win_cx2, KHRH_WIN_HALF),
     (ne_win_cx, KHRH_WIN_HALF),
 ]:
-    for _fl in range(1, KH_FLOORS + 1):
-        _fz = KH_GROUND_Z + _fl * KH_FLOOR_H
+    for fl in range(1, KH_FLOORS + 1):
+        fz = KH_GROUND_Z + fl * KH_FLOOR_H
         BRUSHES.append(
             box(
-                _wx - _wh,
+                window_center_x - window_half_width,
                 KH_Y2 - INDENT - KH_MULLION_PRO,
-                _fz - 4 if _fl > 0 else KH_GROUND_Z,
-                _wx + _wh,
+                fz - 4 if fl > 0 else KH_GROUND_Z,
+                window_center_x + window_half_width,
                 KH_Y2 - INDENT + KH_WALL,
-                (_fz if _fl > 0 else KH_GROUND_Z + 4),
+                (fz if fl > 0 else KH_GROUND_Z + 4),
                 TEX_RAIL,
             )
         )
@@ -4248,25 +4515,37 @@ BRUSHES.append(
     )
 )
 
-for _f in range(1, KH_FLOORS):
-    _sz = KH_GROUND_Z + _f * KH_FLOOR_H
-    _st = _sz + KH_WALL
+for floor_index in range(1, KH_FLOORS):
+    floor_z1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
+    floor_z2 = floor_z1 + KH_WALL
     # South bulk — full width up to stairwell's south wall
-    BRUSHES.append(box(bix1, biy1, _sz, bix2, wsty1, _st, TEX_FLOOR_KH))
+    BRUSHES.append(box(bix1, biy1, floor_z1, bix2, wsty1, floor_z2, TEX_FLOOR_KH))
     # Stairwell south extension (wsty1..sty1): floor on either side, stairwell open
-    BRUSHES.append(box(bix1, wsty1, _sz, wstx1, sty1, _st, TEX_FLOOR_KH))
-    BRUSHES.append(box(wstx2, wsty1, _sz, bix2, sty1, _st, TEX_FLOOR_KH))
+    BRUSHES.append(box(bix1, wsty1, floor_z1, wstx1, sty1, floor_z2, TEX_FLOOR_KH))
+    BRUSHES.append(box(wstx2, wsty1, floor_z1, bix2, sty1, floor_z2, TEX_FLOOR_KH))
     # North zone (sty1..biy2): west of stairwell, clipped for NW indentation
-    BRUSHES.append(box(bix1, sty1, _sz, wstx1, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(bix1 + 2 * INDENT, KH_Y2 - INDENT, _sz, wstx1, biy2, _st, TEX_FLOOR_KH)
+        box(bix1, sty1, floor_z1, wstx1, KH_Y2 - INDENT, floor_z2, TEX_FLOOR_KH)
+    )
+    BRUSHES.append(
+        box(
+            bix1 + 2 * INDENT,
+            KH_Y2 - INDENT,
+            floor_z1,
+            wstx1,
+            biy2,
+            floor_z2,
+            TEX_FLOOR_KH,
+        )
     )
     # Between west stairwell and east shaft
-    BRUSHES.append(box(wstx2, sty1, _sz, stx1, biy2, _st, TEX_FLOOR_KH))
+    BRUSHES.append(box(wstx2, sty1, floor_z1, stx1, biy2, floor_z2, TEX_FLOOR_KH))
     # East of shaft, clipped for NE indentation
-    BRUSHES.append(box(stx2, sty1, _sz, bix2, KH_Y2 - INDENT, _st, TEX_FLOOR_KH))
     BRUSHES.append(
-        box(stx2, KH_Y2 - INDENT, _sz, bix2 - INDENT, biy2, _st, TEX_FLOOR_KH)
+        box(stx2, sty1, floor_z1, bix2, KH_Y2 - INDENT, floor_z2, TEX_FLOOR_KH)
+    )
+    BRUSHES.append(
+        box(stx2, KH_Y2 - INDENT, floor_z1, bix2 - INDENT, biy2, floor_z2, TEX_FLOOR_KH)
     )
 
 # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
@@ -4277,11 +4556,11 @@ shaft_door_h = KH_FLOOR_H  # door height matches floor-to-floor height
 shaft_door_openings = [
     (
         sty1 + 16,
-        KH_GROUND_Z + _f * KH_FLOOR_H,
+        KH_GROUND_Z + floor_index * KH_FLOOR_H,
         sty2 - 16,
-        KH_GROUND_Z + _f * KH_FLOOR_H + shaft_door_h,
+        KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
     )
-    for _f in range(KH_FLOORS)
+    for floor_index in range(KH_FLOORS)
 ]
 
 # Shaft North wall (internal, solid)
@@ -4309,11 +4588,11 @@ BRUSHES.append(box(stx2, sty1, KH_GROUND_Z, stx2 + shaft_wall, sty2, KH_Z2, TEX_
 west_shaft_door_openings = [
     (
         sty1 + 16,  # same Y extents as east shaft doorway
-        KH_GROUND_Z + _f * KH_FLOOR_H,
+        KH_GROUND_Z + floor_index * KH_FLOOR_H,
         sty2 - 16,
-        KH_GROUND_Z + _f * KH_FLOOR_H + shaft_door_h,
+        KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
     )
-    for _f in range(KH_FLOORS)
+    for floor_index in range(KH_FLOORS)
 ]
 
 # West stairwell North wall (internal, solid)
@@ -4362,33 +4641,41 @@ stair_x1 = stair_cx - WST_HALF_N * WST_TREAD_X // 2  # west edge of stairs
 stair_x2 = stair_x1 + WST_HALF_N * WST_TREAD_X  # east edge of stairs
 wst_midY = (wsty1 + wsty2) // 2  # Y lane divider = -400
 
-for _fl in range(KH_FLOORS):
-    _z0 = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL  # floor surface Z
-    _z_mid = _z0 + WST_HALF_N * WST_STEP_R  # half-floor Z (_z0 + 80)
-    _z_top = _z0 + KH_FLOOR_H  # next floor surface Z (= exit level)
+for floor_index in range(KH_FLOORS):
+    floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL  # floor surface Z
+    half_flight_z = floor_z0 + WST_HALF_N * WST_STEP_R  # half-floor Z (floor_z0 + 80)
+    top_flight_z = floor_z0 + KH_FLOOR_H  # next floor surface Z (= exit level)
 
     # Entrance landing — flush with hallway floor, east of stair band (north lane).
     BRUSHES.append(
-        box(stair_x2, wst_midY, _z0 - PLAT_H, wstx2, wsty2, _z0, TEX_FLOOR_KH)
+        box(stair_x2, wst_midY, floor_z0 - PLAT_H, wstx2, wsty2, floor_z0, TEX_FLOOR_KH)
     )
     # Exit landing — flush with next floor, east of stair band (south lane).
     BRUSHES.append(
-        box(stair_x2, wsty1, _z_top - PLAT_H, wstx2, wst_midY, _z_top, TEX_FLOOR_KH)
+        box(
+            stair_x2,
+            wsty1,
+            top_flight_z - PLAT_H,
+            wstx2,
+            wst_midY,
+            top_flight_z,
+            TEX_FLOOR_KH,
+        )
     )
 
     # North lane: individual treads ascending westward (stair_x2 → stair_x1).
-    for _i in range(WST_HALF_N):
-        _sx_e = stair_x2 - _i * WST_TREAD_X
-        _sx_w = stair_x2 - (_i + 1) * WST_TREAD_X
-        _sz1 = _z0 + _i * WST_STEP_R
+    for tread_index in range(WST_HALF_N):
+        step_x_east = stair_x2 - tread_index * WST_TREAD_X
+        step_x_west = stair_x2 - (tread_index + 1) * WST_TREAD_X
+        step_z1 = floor_z0 + tread_index * WST_STEP_R
         BRUSHES.append(
             box(
-                _sx_w,
+                step_x_west,
                 wst_midY,
-                _sz1,
-                _sx_e,
+                step_z1,
+                step_x_east,
                 wsty2,
-                _sz1 + WST_STEP_R,
+                step_z1 + WST_STEP_R,
                 TEX_WALL,
                 tt=TEX_FLOOR_KH,
             )
@@ -4396,22 +4683,30 @@ for _fl in range(KH_FLOORS):
 
     # Half-floor west platform: turn-around landing, full shaft Y depth.
     BRUSHES.append(
-        box(wstx1, wsty1, _z_mid - PLAT_H, stair_x1, wsty2, _z_mid, TEX_FLOOR_KH)
+        box(
+            wstx1,
+            wsty1,
+            half_flight_z - PLAT_H,
+            stair_x1,
+            wsty2,
+            half_flight_z,
+            TEX_FLOOR_KH,
+        )
     )
 
     # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
-    for _i in range(WST_HALF_N):
-        _sx_w = stair_x1 + _i * WST_TREAD_X
-        _sx_e = _sx_w + WST_TREAD_X
-        _sz1 = _z_mid + _i * WST_STEP_R
+    for tread_index in range(WST_HALF_N):
+        step_x_west = stair_x1 + tread_index * WST_TREAD_X
+        step_x_east = step_x_west + WST_TREAD_X
+        step_z1 = half_flight_z + tread_index * WST_STEP_R
         BRUSHES.append(
             box(
-                _sx_w,
+                step_x_west,
                 wsty1,
-                _sz1,
-                _sx_e,
+                step_z1,
+                step_x_east,
                 wst_midY,
-                _sz1 + WST_STEP_R,
+                step_z1 + WST_STEP_R,
                 TEX_WALL,
                 tt=TEX_FLOOR_KH,
             )
@@ -4426,10 +4721,10 @@ WST_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, 
 WST_POST_W = 4  # square post cross-section
 WST_RAIL_T = 4  # cross-rail bar thickness
 
-for _fl in range(KH_FLOORS):
-    _z0 = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL
-    _z_mid = _z0 + WST_HALF_N * WST_STEP_R
-    _z_top = _z_mid + WST_HALF_N * WST_STEP_R
+for floor_index in range(KH_FLOORS):
+    floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL
+    half_flight_z = floor_z0 + WST_HALF_N * WST_STEP_R
+    top_flight_z = half_flight_z + WST_HALF_N * WST_STEP_R
 
     # ── North lane — south face (wst_midY) ────────────────────────────────
     # Lower post: east of stair band, in the entrance area
@@ -4437,10 +4732,10 @@ for _fl in range(KH_FLOORS):
         box(
             stair_x2,
             wst_midY,
-            _z0,
+            floor_z0,
             stair_x2 + WST_POST_W,
             wst_midY + WST_POST_W,
-            _z0 + WST_RAIL_H,
+            floor_z0 + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4449,10 +4744,10 @@ for _fl in range(KH_FLOORS):
         box(
             stair_x1 - WST_POST_W,
             wst_midY,
-            _z_mid,
+            half_flight_z,
             stair_x1,
             wst_midY + WST_POST_W,
-            _z_mid + WST_RAIL_H,
+            half_flight_z + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4463,10 +4758,10 @@ for _fl in range(KH_FLOORS):
             stair_x2,
             wst_midY,
             wst_midY + WST_RAIL_T,
-            _z_mid + WST_RAIL_H - WST_RAIL_T,
-            _z0 + WST_RAIL_H - WST_RAIL_T,
-            _z_mid + WST_RAIL_H,
-            _z0 + WST_RAIL_H,
+            half_flight_z + WST_RAIL_H - WST_RAIL_T,
+            floor_z0 + WST_RAIL_H - WST_RAIL_T,
+            half_flight_z + WST_RAIL_H,
+            floor_z0 + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4477,10 +4772,10 @@ for _fl in range(KH_FLOORS):
         box(
             stair_x1 - WST_POST_W,
             wst_midY - WST_POST_W,
-            _z_mid,
+            half_flight_z,
             stair_x1,
             wst_midY,
-            _z_mid + WST_RAIL_H,
+            half_flight_z + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4489,10 +4784,10 @@ for _fl in range(KH_FLOORS):
         box(
             stair_x2,
             wst_midY - WST_POST_W,
-            _z_top,
+            top_flight_z,
             stair_x2 + WST_POST_W,
             wst_midY,
-            _z_top + WST_RAIL_H,
+            top_flight_z + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4503,10 +4798,10 @@ for _fl in range(KH_FLOORS):
             stair_x2,
             wst_midY - WST_RAIL_T,
             wst_midY,
-            _z_mid + WST_RAIL_H - WST_RAIL_T,
-            _z_top + WST_RAIL_H - WST_RAIL_T,
-            _z_mid + WST_RAIL_H,
-            _z_top + WST_RAIL_H,
+            half_flight_z + WST_RAIL_H - WST_RAIL_T,
+            top_flight_z + WST_RAIL_H - WST_RAIL_T,
+            half_flight_z + WST_RAIL_H,
+            top_flight_z + WST_RAIL_H,
             TEX_RAIL,
         )
     )
@@ -4526,20 +4821,20 @@ w_hall_openings = [
 ]  # west stairwell gap — doorway size
 e_hall_openings = [(sty1, KH_GROUND_Z, sty2, KH_Z2)]  # shaft gap always open
 
-for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
-    _fz_surf = _fz1 + KH_WALL  # top of floor slab
-    _split = room_splits[_fl]
-    _sr_yc = (biy1 + _split) // 2  # south room Y center
-    _nr_yc = (_split + KH_WALL + biy2) // 2  # north room Y center
-    _dz2 = _fz_surf + 96  # door top
+for floor_index in range(KH_FLOORS):
+    fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
+    fz_surf = fz1 + KH_WALL  # top of floor slab
+    split = room_splits[floor_index]
+    sr_yc = (biy1 + split) // 2  # south room Y center
+    nr_yc = (split + KH_WALL + biy2) // 2  # north room Y center
+    dz2 = fz_surf + 96  # door top
     w_hall_openings += [
-        (_sr_yc - 32, _fz_surf, _sr_yc + 32, _dz2),
-        (_nr_yc - 32, _fz_surf, _nr_yc + 32, _dz2),
+        (sr_yc - 32, fz_surf, sr_yc + 32, dz2),
+        (nr_yc - 32, fz_surf, nr_yc + 32, dz2),
     ]
     e_hall_openings += [
-        (_sr_yc - 32, _fz_surf, _sr_yc + 32, _dz2),
-        (_nr_yc - 32, _fz_surf, _nr_yc + 32, _dz2),
+        (sr_yc - 32, fz_surf, sr_yc + 32, dz2),
+        (nr_yc - 32, fz_surf, nr_yc + 32, dz2),
     ]
 
 # West hallway wall with room door openings
@@ -4570,23 +4865,23 @@ BRUSHES.extend(
 )
 
 # Partition walls per floor (divide each side into 2 rooms, with connecting door)
-for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
-    _fz2 = _fz1 + KH_FLOOR_H
-    _fz_surf = _fz1 + KH_WALL
-    _split = room_splits[_fl]
-    _sp_y2 = _split + KH_WALL
-    _pdz2 = _fz_surf + 96
+for fl in range(KH_FLOORS):
+    fz1 = KH_GROUND_Z + fl * KH_FLOOR_H
+    fz2 = fz1 + KH_FLOOR_H
+    fz_surf = fz1 + KH_WALL
+    split = room_splits[fl]
+    sp_y2 = split + KH_WALL
+    pdz2 = fz_surf + 96
     # West side partition wall with connecting door
     BRUSHES.extend(
         layered_wall(
             wx1,
-            _split,
-            _fz1,
+            split,
+            fz1,
             wx2,
-            _sp_y2,
-            _fz2,
-            [(wxc - 32, _fz_surf, wxc + 32, _pdz2)],
+            sp_y2,
+            fz2,
+            [(wxc - 32, fz_surf, wxc + 32, pdz2)],
             TEX_WALL,
         )
     )
@@ -4594,18 +4889,18 @@ for _fl in range(KH_FLOORS):
     BRUSHES.extend(
         layered_wall(
             ex1,
-            _split,
-            _fz1,
+            split,
+            fz1,
             ex2,
-            _sp_y2,
-            _fz2,
-            [(exc - 32, _fz_surf, exc + 32, _pdz2)],
+            sp_y2,
+            fz2,
+            [(exc - 32, fz_surf, exc + 32, pdz2)],
             TEX_WALL,
         )
     )
 
 if not KH_ENABLED:
-    del BRUSHES[_kh_brush_start:]
+    del BRUSHES[kh_brush_start:]
 
 DRAW_KH_FASCIA_TEXT = True  # Set True to re-enable (slow to compile)
 
@@ -4702,12 +4997,12 @@ def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=Fa
 # Text reversed + mirrored so it reads correctly when viewed from north (facing south)
 BRUSHES.extend(
     render_text_flat(
-        _sign_text[::-1],
-        x0=_sign_cx - _sign_total_w // 2,
+        sign_text[::-1],
+        x0=sign_center_x - sign_total_width // 2,
         y_face=KH_Y2 + 6,
-        z_base=_sign_zb + 14,  # centered: (48-20)//2 = 14
-        px_w=_sign_px_w,
-        px_h=_sign_px_h,
+        z_base=sign_z1 + 14,  # centered: (48-20)//2 = 14
+        px_w=sign_pixel_width,
+        px_h=sign_pixel_height,
         depth=2,
         tex=TEX_RAIL,
         mirror=True,
@@ -4748,33 +5043,41 @@ CS_LAMP_POST_XS = [
     1246,
 ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
 lamp_post_ys = [EP_Y - EP_HW - 160]
-for _lx in CS_LAMP_POST_XS:
-    for _ly in lamp_post_ys:
-        _pole_top = FLOOR_Z2 + CS_LAMP_POST_H
+for lamp_x in CS_LAMP_POST_XS:
+    for lamp_y in lamp_post_ys:
+        pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
         # Narrow shaft
         BRUSHES.append(
-            box(_lx - 2, _ly - 2, FLOOR_Z2, _lx + 2, _ly + 2, _pole_top, TEX_PILLAR)
+            box(
+                lamp_x - 2,
+                lamp_y - 2,
+                FLOOR_Z2,
+                lamp_x + 2,
+                lamp_y + 2,
+                pole_top_z,
+                TEX_PILLAR,
+            )
         )
         # Torch top — narrow post + brick cup (matches bridge pillar torches)
         BRUSHES.append(
             box(
-                _lx - 3,
-                _ly - 3,
-                _pole_top,
-                _lx + 3,
-                _ly + 3,
-                _pole_top + 16,
+                lamp_x - 3,
+                lamp_y - 3,
+                pole_top_z,
+                lamp_x + 3,
+                lamp_y + 3,
+                pole_top_z + 16,
                 TEX_CEMENT,
             )
         )
         BRUSHES.append(
             box(
-                _lx - 5,
-                _ly - 5,
-                _pole_top + 16,
-                _lx + 5,
-                _ly + 5,
-                _pole_top + 20,
+                lamp_x - 5,
+                lamp_y - 5,
+                pole_top_z + 16,
+                lamp_x + 5,
+                lamp_y + 5,
+                pole_top_z + 20,
                 TEX_BRICK,
             )
         )
@@ -4798,15 +5101,15 @@ CS_ARCH_W_PRE = 48  # arch thickness in Y
 CS_ARCH_WALL_W_PRE = 320  # stone wall width flanking road
 cs_arch_top_pre = FLOOR_Z2 + CS_ARCH_STILT_PRE + CS_ARCH_RIN_PRE
 
-for _pre_syb, _pre_syf in [
+for pre_syb, pre_syf in [
     (CS_Y1, CS_Y1 + CS_ARCH_W_PRE),
     (CS_Y2 - CS_ARCH_W_PRE, CS_Y2),
 ]:
     # Stone arch posts + ring
     BRUSHES.extend(
         arch_wall_y(
-            _pre_syb,
-            _pre_syf,
+            pre_syb,
+            pre_syf,
             WORLD_X1 + WALL_T,
             WORLD_X2 - WALL_T,
             FLOOR_Z2,
@@ -4841,13 +5144,13 @@ ENTITIES = []
 if letter_brushes:
     ENTITIES.append(brush_ent("func_detail", letter_brushes))
 # Ennis east fence as func_detail — pickets in open space overflow BSP portals as worldspawn
-ENTITIES.append(brush_ent("func_detail", _ew_fence_brushes))
+ENTITIES.append(brush_ent("func_detail", east_gate_brushes))
 DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
 ROAD_Z = FLOOR_Z2 + 8
 
 
 # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
-_kh_ent_start = len(ENTITIES)  # checkpoint — trimmed below if KH_ENABLED is False
+kh_entity_start = len(ENTITIES)  # checkpoint — trimmed below if KH_ENABLED is False
 room_goodies = [
     "item_health",
     "weapon_supershotgun",
@@ -4871,83 +5174,103 @@ room_goodies = [
     "item_spikes",
 ]
 gi = 0
-for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
-    _item_z = _fz1 + KH_WALL + 24
-    _light_z = _fz1 + KH_FLOOR_H - 24  # near ceiling
-    _split = room_splits[_fl]
-    _sr_yc = (biy1 + _split) // 2
-    _nr_yc = (_split + KH_WALL + biy2) // 2
-    for _side_xc in [wxc, exc]:
-        for _ryc in [_sr_yc, _nr_yc]:
+for floor_index in range(KH_FLOORS):
+    fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
+    item_z = fz1 + KH_WALL + 24
+    light_z = fz1 + KH_FLOOR_H - 24  # near ceiling
+    split = room_splits[floor_index]
+    sr_yc = (biy1 + split) // 2
+    nr_yc = (split + KH_WALL + biy2) // 2
+    for side_xc in [wxc, exc]:
+        for ryc in [sr_yc, nr_yc]:
             # If west room north items land within 64 units of stairwell south wall, push south
-            _safe_ryc = _ryc
-            if _side_xc == wxc and _ryc == _nr_yc and _nr_yc > wsty1 - 64:
-                _safe_ryc = wsty1 - 80
+            safe_ryc = ryc
+            if side_xc == wxc and ryc == nr_yc and nr_yc > wsty1 - 64:
+                safe_ryc = wsty1 - 80
             ENTITIES.append(
-                ent("light", origin=f"{_side_xc} {_safe_ryc} {_light_z}", light="250")
+                ent("light", origin=f"{side_xc} {safe_ryc} {light_z}", light="250")
             )
             # Extra fill light at lower mid-height to reduce dark corners
             ENTITIES.append(
                 ent(
                     "light",
-                    origin=f"{_side_xc} {_safe_ryc} {_fz1 + KH_FLOOR_H // 2}",
+                    origin=f"{side_xc} {safe_ryc} {fz1 + KH_FLOOR_H // 2}",
                     light="150",
                 )
             )
             ENTITIES.append(
                 ent(
                     room_goodies[gi % len(room_goodies)],
-                    origin=f"{_side_xc - 40} {_safe_ryc} {_item_z}",
+                    origin=f"{side_xc - 40} {safe_ryc} {item_z}",
                 )
             )
             gi += 1
             ENTITIES.append(
                 ent(
                     room_goodies[gi % len(room_goodies)],
-                    origin=f"{_side_xc + 40} {_safe_ryc} {_item_z}",
+                    origin=f"{side_xc + 40} {safe_ryc} {item_z}",
                 )
             )
             gi += 1
 
 # ── West stairwell lights — ceiling + mid-flight + low fill per lane per floor ──────────
-_wst_xc = (wstx1 + wstx2) // 2  # X centre of shaft
-_wst_north_yc = (wst_midY + wsty2) // 2  # Y centre of north lane
-_wst_south_yc = (wsty1 + wst_midY) // 2  # Y centre of south lane
-for _fl in range(KH_FLOORS):
-    _wst_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24  # near ceiling
-    _wst_mz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 2  # mid-flight
-    _wst_loz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H // 4  # low fill
-    for _lz in [_wst_lz, _wst_mz, _wst_loz]:
+west_stair_center_x = (wstx1 + wstx2) // 2  # X centre of shaft
+west_stair_north_y = (wst_midY + wsty2) // 2  # Y centre of north lane
+west_stair_south_y = (wsty1 + wst_midY) // 2  # Y centre of south lane
+for floor_index in range(KH_FLOORS):
+    west_stair_light_z = (
+        KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+    )  # near ceiling
+    west_stair_mid_z = (
+        KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
+    )  # mid-flight
+    west_stair_low_z = (
+        KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H // 4
+    )  # low fill
+    for lz in [west_stair_light_z, west_stair_mid_z, west_stair_low_z]:
         ENTITIES.append(
-            ent("light", origin=f"{_wst_xc} {_wst_north_yc} {_lz}", light="220")
+            ent(
+                "light",
+                origin=f"{west_stair_center_x} {west_stair_north_y} {lz}",
+                light="220",
+            )
         )
         ENTITIES.append(
-            ent("light", origin=f"{_wst_xc} {_wst_south_yc} {_lz}", light="220")
+            ent(
+                "light",
+                origin=f"{west_stair_center_x} {west_stair_south_y} {lz}",
+                light="220",
+            )
         )
 
 # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
-_hall_xc = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
-_hall_ys = [
+hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
+hall_light_ys = [
     biy1 + (biy2 - biy1) * i // 4
     for i in range(1, 4)  # quarters: 25%, 50%, 75%
 ] + [
     biy1 + (biy2 - biy1) // 8,  # 12.5% (near south end)
     biy1 + (biy2 - biy1) * 7 // 8,  # 87.5% (near north end)
 ]
-for _fl in range(KH_FLOORS):
-    _hall_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24
-    for _ly in _hall_ys:
+for floor_index in range(KH_FLOORS):
+    hall_light_z = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+    for hall_y in hall_light_ys:
         ENTITIES.append(
-            ent("light", origin=f"{_hall_xc} {_ly} {_hall_lz}", light="200")
+            ent("light", origin=f"{hall_center_x} {hall_y} {hall_light_z}", light="200")
         )
 
 # ── Entrance corridor lights — one per floor in each doorway ─────────────────
-_ent_xc = KH_ENT_X2 + 64  # east entrance corridor mid-X
-_ent_yc = KH_Y2 - 48  # just inside north face
-for _fl in range(KH_FLOORS):
-    _ent_lz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_FLOOR_H - 24
-    ENTITIES.append(ent("light", origin=f"{_hall_xc} {_ent_yc} {_ent_lz}", light="220"))
+entry_corridor_x = KH_ENT_X2 + 64  # east entrance corridor mid-X
+entry_corridor_y = KH_Y2 - 48  # just inside north face
+for floor_index in range(KH_FLOORS):
+    entry_corridor_light_z = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+    ENTITIES.append(
+        ent(
+            "light",
+            origin=f"{hall_center_x} {entry_corridor_y} {entry_corridor_light_z}",
+            light="220",
+        )
+    )
 
 # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
 KH_SHELF_H = 64  # height of shelf stack
@@ -4956,27 +5279,27 @@ KH_SHELF_W = 64  # width
 
 shelf_offsets = [0, 0, 0, 0, 0]
 
-for _fl in range(KH_FLOORS):
-    _fz1 = KH_GROUND_Z + _fl * KH_FLOOR_H
-    _fz_surf = _fz1 + KH_WALL
-    _split = room_splits[_fl]
-    _stex = "shelf_1"
-    _xoff = shelf_offsets[_fl]
+for floor_index in range(KH_FLOORS):
+    fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
+    fz_surf = fz1 + KH_WALL
+    split = room_splits[floor_index]
+    shelf_tex = "shelf_1"
+    shelf_x_offset = shelf_offsets[floor_index]
 
-    for _sxc in [wxc, exc]:
+    for shelf_center_x in [wxc, exc]:
         # South room: shelf against south wall — front faces south (-Y)
-        _sp = _sxc + _xoff
+        shelf_x = shelf_center_x + shelf_x_offset
         ENTITIES.append(
             brush_ent(
                 "func_wall",
                 [
                     box(
-                        _sp - KH_SHELF_W // 2,
+                        shelf_x - KH_SHELF_W // 2,
                         biy1,
-                        _fz_surf,
-                        _sp + KH_SHELF_W // 2,
+                        fz_surf,
+                        shelf_x + KH_SHELF_W // 2,
                         biy1 + KH_SHELF_D,
-                        _fz_surf + KH_SHELF_H,
+                        fz_surf + KH_SHELF_H,
                         "shelf_1",
                     )
                 ],
@@ -4985,27 +5308,27 @@ for _fl in range(KH_FLOORS):
         ENTITIES.append(
             ent(
                 "light",
-                origin=f"{_sp} {biy1 + 32} {_fz_surf + KH_SHELF_H + 24}",
+                origin=f"{shelf_x} {biy1 + 32} {fz_surf + KH_SHELF_H + 24}",
                 light="180",
             )
         )
 
 
 if not KH_ENABLED:
-    del ENTITIES[_kh_ent_start:]
+    del ENTITIES[kh_entity_start:]
 
 ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_abutment_deck",
-        origin=f"{min(PB_ARCH_X)} 0 {_abutment_tele_dest_z}",
+        origin=f"{min(PB_ARCH_X)} 0 {abutment_teleport_dest_z}",
         angle="0",
     )
 )
 ENTITIES.append(
-    brush_ent("trigger_teleport", _abutment_tele_brush, target="dest_abutment_deck")
+    brush_ent("trigger_teleport", abutment_teleport_brush, target="dest_abutment_deck")
 )
-ENTITIES.append(brush_ent("func_illusionary", _abutment_tele_brush))
+ENTITIES.append(brush_ent("func_illusionary", abutment_teleport_brush))
 
 # Teleport destinations — west arch ↔ east arch
 ENTITIES.append(
@@ -5050,7 +5373,7 @@ ENTITIES.append(brush_ent("func_illusionary", west_lower))
 east_brushes = arch_fill(
     WORLD_X2 - WALL_T - ARCH_SLAB_W,
     WORLD_X2 - WALL_T,
-    _es2,
+    east_shift_end,
     PB_DZ2,
     ARCH_RIN,
     A_SEGS,
@@ -5068,12 +5391,20 @@ ENTITIES.append(
     ent(
         "info_teleport_destination",
         targetname="dest_east_deck",
-        origin=f"{east_lower_deck_x} {int(_es2)} {int(PB_DZ2 + 40)}",
+        origin=f"{east_lower_deck_x} {int(east_shift_end)} {int(PB_DZ2 + 40)}",
         angle="180",
     )
 )
 east_lower = [
-    box(elx1, _es2 - ARCH_RIN, FLOOR_Z2, elx2, _es2 + ARCH_RIN, PB_DZ2, TEX_TELEPORT)
+    box(
+        elx1,
+        east_shift_end - ARCH_RIN,
+        FLOOR_Z2,
+        elx2,
+        east_shift_end + ARCH_RIN,
+        PB_DZ2,
+        TEX_TELEPORT,
+    )
 ]
 ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
 ENTITIES.append(brush_ent("func_illusionary", east_lower))
@@ -5096,7 +5427,7 @@ ENTITIES.append(
 CS_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
 CS_ARCH_WALL_W = 320  # stone wall extends this far out from road edge on each side
 
-for _syb, _syf, _trig_y1, _trig_y2 in [
+for arch_y1, arch_y2, trigger_y1, trigger_y2 in [
     (
         CS_Y1,
         CS_Y1 + CS_ARCH_W,
@@ -5110,24 +5441,28 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
         CS_Y2 - CS_ARCH_TRIG_INSET,
     ),  # north arch — trigger inset from north wall
 ]:
-    _arch_top = FLOOR_Z2 + CS_ARCH_STILT + CS_ARCH_RIN
+    arch_top_z = FLOOR_Z2 + CS_ARCH_STILT + CS_ARCH_RIN
     # Box trigger — reliable activation, inset from walls
-    _ns_trig = [
+    north_south_trigger_brush = [
         box(
             ROAD_X1 + CS_ARCH_TRIG_INSET,
-            _trig_y1,
+            trigger_y1,
             FLOOR_Z2 + 4,
             ROAD_X2 - CS_ARCH_TRIG_INSET,
-            _trig_y2,
-            _arch_top,
+            trigger_y2,
+            arch_top_z,
             TEX_TELEPORT,
         )
     ]
-    ENTITIES.append(brush_ent("trigger_teleport", _ns_trig, target="dest_bridge_mid"))
+    ENTITIES.append(
+        brush_ent(
+            "trigger_teleport", north_south_trigger_brush, target="dest_bridge_mid"
+        )
+    )
     # Arch-shaped illusionary fill so the teleport glow looks like an arch
-    _ns_glow = arch_fill_y(
-        _syb,
-        _syf,
+    north_south_glow_brushes = arch_fill_y(
+        arch_y1,
+        arch_y2,
         0.0,
         FLOOR_Z2 + 4,
         CS_ARCH_RIN,
@@ -5135,7 +5470,7 @@ for _syb, _syf, _trig_y1, _trig_y2 in [
         TEX_TELEPORT,
         stilt_h=CS_ARCH_STILT,
     )
-    ENTITIES.append(brush_ent("func_illusionary", _ns_glow))
+    ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
 
 
 ENTITIES.append(
@@ -5219,11 +5554,11 @@ ENTITIES.append(
     ent("weapon_rocketlauncher", origin=f"{PB_ARCH_X[1]} {PB_Y1 - 48} {DECK_Z}")
 )
 # Remaining rocket launchers
-for _rl_origin in [
+for rl_origin in [
     f"{ROAD_X2 + 40} {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
     f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
-    f"{int(_ew_x1 + (_ew_x2 - _ew_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
-    f"{int(_cw_x1 + (_cw_x2 - _cw_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
+    f"{int(east_gate_x1 + (east_gate_x2 - east_gate_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
+    f"{int(cement_wall_x1 + (cement_wall_x2 - cement_wall_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
     # Bridge deck — one per span
     f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {DECK_Z}",  # span 1
     f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {DECK_Z}",  # span 2 south edge
@@ -5231,7 +5566,7 @@ for _rl_origin in [
     f"{(PB_ARCH_X[2] + PB_X2) // 2} 0 {DECK_Z}",  # span 4
     f"{(PB_X2 + PB_ARCH_X[4]) // 2} 0 {DECK_Z}",  # span 5 (east angled)
 ]:
-    ENTITIES.append(ent("weapon_rocketlauncher", origin=_rl_origin))
+    ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
 # Super shotgun — spread around mid-tier locations
 if KH_ENABLED:
@@ -5271,11 +5606,11 @@ for ax in PB_ARCH_X:
 for rx in [400, 800]:
     ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
-for _kf in range(1, KH_FLOORS):
+for kf in range(1, KH_FLOORS):
     ENTITIES.append(
         ent(
             "item_rockets",
-            origin=f"{KH_CX + 80} {kh_cy} {KH_GROUND_Z + _kf * KH_FLOOR_H + 40}",
+            origin=f"{KH_CX + 80} {kh_cy} {KH_GROUND_Z + kf * KH_FLOOR_H + 40}",
         )
     )
 ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))  # west sidewalk
@@ -5322,7 +5657,7 @@ if SHOW_SUPPORTS:
         )
         # Damaging trigger at each flame — hurts players who walk into the fire
         for cy in [cy_n, cy_s]:
-            _fhb = box(
+            fhb = box(
                 px - 16,
                 cy - 16,
                 int(pcap + 24),
@@ -5331,76 +5666,99 @@ if SHOW_SUPPORTS:
                 int(pcap) + 64,
                 TEX_SKY,
             )
-            ENTITIES.append(brush_ent("trigger_hurt", [_fhb], dmg="10"))
+            ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
 # Pillar base uplights — ground-level spots wash light up the pier faces
 if SHOW_SUPPORTS:
     for px in PB_ARCH_X:
         if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
             continue
-        for _uy in [PB_Y2 + 30, PB_Y1 - 30]:
-            ENTITIES.append(ent("light", origin=f"{px} {_uy} 16", light="200"))
+        for underbridge_light_y in [PB_Y2 + 30, PB_Y1 - 30]:
+            ENTITIES.append(
+                ent("light", origin=f"{px} {underbridge_light_y} 16", light="200")
+            )
 
 # Campus lamp post lights — flame above brick cup, matching bridge pillar torches
-for _lx in CS_LAMP_POST_XS:
-    for _ly in lamp_post_ys:
-        _pole_top = FLOOR_Z2 + CS_LAMP_POST_H
-        _flame_z = _pole_top + 20
-        ENTITIES.append(ent("light", origin=f"{_lx} {_ly} {_flame_z}", light="300"))
+for lamp_x in CS_LAMP_POST_XS:
+    for lamp_y in lamp_post_ys:
+        pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
+        flame_z = pole_top_z + 20
         ENTITIES.append(
-            ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_flame_z + 4}")
+            ent("light", origin=f"{lamp_x} {lamp_y} {flame_z}", light="300")
+        )
+        ENTITIES.append(
+            ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {flame_z + 4}")
         )
 
 # Ennis cement wall lamppost lights
-for _lx, _ly, _lz in _cw_lamp_posts:
-    ENTITIES.append(ent("light", origin=f"{_lx} {_ly} {_lz}", light="300"))
-    ENTITIES.append(ent("light_flame_large_yellow", origin=f"{_lx} {_ly} {_lz + 4}"))
+for lamp_x, lamp_y, lamp_z in cement_wall_lamp_posts:
+    ENTITIES.append(ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300"))
+    ENTITIES.append(
+        ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {lamp_z + 4}")
+    )
 
 # Ennis entrance pillar torches — flame above brick cup on each stone pillar
 ennis_pil_flame_z = EP_PIL_ZB + EP_PIL_POST_H + EP_PIL_CAP_H + EP_PIL_BELL2_H + 20
 ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW
-for _epy in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
+for pillar_y in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
     ENTITIES.append(
-        ent("light", origin=f"{ennis_pil_cx} {_epy} {ennis_pil_flame_z}", light="300")
+        ent(
+            "light",
+            origin=f"{ennis_pil_cx} {pillar_y} {ennis_pil_flame_z}",
+            light="300",
+        )
     )
     ENTITIES.append(
         ent(
             "light_flame_large_yellow",
-            origin=f"{ennis_pil_cx} {_epy} {ennis_pil_flame_z + 4}",
+            origin=f"{ennis_pil_cx} {pillar_y} {ennis_pil_flame_z + 4}",
         )
     )
 
 # Under-bridge amber pendant lights — flicker style, hang below deck
-for _px in PB_PEND_XS:
+for pier_x in PB_PEND_XS:
     ENTITIES.append(
-        ent("light", origin=f"{_px} 0 {int(dbot(_px)) - 20}", light="350", style="1")
+        ent(
+            "light",
+            origin=f"{pier_x} 0 {int(dbot(pier_x)) - 20}",
+            light="350",
+            style="1",
+        )
     )
 
 # Pier base lights — illuminate plinths and arch openings from just inside each pier
-for _px in PB_ARCH_X:
-    _pz = (
+for pier_x in PB_ARCH_X:
+    pier_light_z = (
         FLOOR_Z2 + PB_PIL_BASE_RAMP_H + 60
     )  # just above the plinth top, low in the arch
-    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y2 // 2} {_pz}", light="250"))
-    ENTITIES.append(ent("light", origin=f"{_px} {PB_Y1 // 2} {_pz}", light="250"))
+    ENTITIES.append(
+        ent("light", origin=f"{pier_x} {PB_Y2 // 2} {pier_light_z}", light="250")
+    )
+    ENTITIES.append(
+        ent("light", origin=f"{pier_x} {PB_Y1 // 2} {pier_light_z}", light="250")
+    )
 
 # Cement arch on east face of abutment pier (-1246) — three lights for good coverage
-_ab_px = min(PB_ARCH_X)  # = -1246
-_ab_arch_z = FLOOR_Z2 + PB_PIL_BASE_H + 60  # mid-height of arch opening
+abutment_pier_x = min(PB_ARCH_X)  # = -1246
+abutment_arch_z = FLOOR_Z2 + PB_PIL_BASE_H + 60  # mid-height of arch opening
 ENTITIES.append(
-    ent("light", origin=f"{_ab_px + PB_PIL_HW + 32} 0 {_ab_arch_z}", light="700")
+    ent(
+        "light",
+        origin=f"{abutment_pier_x + PB_PIL_HW + 32} 0 {abutment_arch_z}",
+        light="700",
+    )
 )
 ENTITIES.append(
     ent(
         "light",
-        origin=f"{_ab_px + PB_PIL_HW + 32} {PB_Y2 // 2} {_ab_arch_z}",
+        origin=f"{abutment_pier_x + PB_PIL_HW + 32} {PB_Y2 // 2} {abutment_arch_z}",
         light="500",
     )
 )
 ENTITIES.append(
     ent(
         "light",
-        origin=f"{_ab_px + PB_PIL_HW + 32} {PB_Y1 // 2} {_ab_arch_z}",
+        origin=f"{abutment_pier_x + PB_PIL_HW + 32} {PB_Y1 // 2} {abutment_arch_z}",
         light="500",
     )
 )
@@ -5436,28 +5794,38 @@ if KH_ENABLED:
 
 # Interior lights for the three campus buildings (north + 2 south)
 bldg_light_x = (RH_X1 + RH_X2) // 2
-for _bly1, _bly2 in [
+for building_y1, building_y2 in [
     (RH_NORTH_Y1, RH_NORTH_Y2),
     (RH_SOUTH1_Y1, RH_SOUTH1_Y2),
     (RH_SOUTH2_Y1, RH_SOUTH2_Y2),
 ]:
-    _bly = (_bly1 + _bly2) // 2
-    for _bfl in range(RH_FLOORS):
-        _blz = FLOOR_Z2 + _bfl * KH_FLOOR_H + KH_FLOOR_H // 2
+    building_y = (building_y1 + building_y2) // 2
+    for building_floor_index in range(RH_FLOORS):
+        building_light_z = (
+            FLOOR_Z2 + building_floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
+        )
         ENTITIES.append(
-            ent("light", origin=f"{bldg_light_x} {_bly} {_blz}", light="200")
+            ent(
+                "light",
+                origin=f"{bldg_light_x} {building_y} {building_light_z}",
+                light="200",
+            )
         )
 
 # Interior lights for Knott Hall — 3×4 grid per floor
 if KH_ENABLED:
-    for _kfl in range(KH_FLOORS):
-        _klz = KH_GROUND_Z + _kfl * KH_FLOOR_H + KH_FLOOR_H // 2
-        for _kxi in [1, 2, 3]:
-            _klx = KH_X1 + (KH_X2 - KH_X1) * _kxi // 4
-            for _kyi in [1, 2, 3, 4]:
-                _kly = KH_Y1 + (KH_Y2 - KH_Y1) * _kyi // 5
+    for kh_floor_index in range(KH_FLOORS):
+        kh_light_z = KH_GROUND_Z + kh_floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
+        for kh_x_index in [1, 2, 3]:
+            kh_light_x = KH_X1 + (KH_X2 - KH_X1) * kh_x_index // 4
+            for kh_y_index in [1, 2, 3, 4]:
+                kh_light_y = KH_Y1 + (KH_Y2 - KH_Y1) * kh_y_index // 5
                 ENTITIES.append(
-                    ent("light", origin=f"{_klx} {_kly} {_klz}", light="150")
+                    ent(
+                        "light",
+                        origin=f"{kh_light_x} {kh_light_y} {kh_light_z}",
+                        light="150",
+                    )
                 )
 
 # ── Cartoon trees as func_detail ─────────────────────────────────────────────
@@ -5465,7 +5833,7 @@ if KH_ENABLED:
 # - Dense forest behind cement/iron wall north of Ennis (bridge13, bridge02)
 # - Large trees flanking Knott Hall on west side (bridge01, bridge10)
 # - Trees along Ennis Parallel campus road (bridge02)
-_tree_positions = [
+tree_positions = [
     # Trees flanking Knott Hall (west side — bridge01, bridge10)
     (RH_X1 - 80, -600),
     (RH_X1 - 200, -300),
@@ -5476,77 +5844,83 @@ _tree_positions = [
     (ROAD_X1 - 400, bw_ny - 80),
     (ROAD_X1 - 600, bw_ny - 120),
 ]
-_all_tree_brushes = []
-for _tx, _ty in _tree_positions:
-    _all_tree_brushes += make_tree(_tx, _ty, FLOOR_Z2)
-ENTITIES.append(brush_ent("func_detail", _all_tree_brushes))
+all_tree_brushes = []
+for tree_x, tree_y in tree_positions:
+    all_tree_brushes += make_tree(tree_x, tree_y, FLOOR_Z2)
+ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
 # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
 # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
 # Tree height matches Knott Hall (KH_Z2).
-_cs_tree_h = KH_Z2
-_kh_tree_span = KH_Y2 - KH_Y1
-_cs_row_near = ROAD_X2 + CS_WALK_W + 300  # closer to Charles St
-_cs_row_far = ROAD_X2 + CS_WALK_W + 560  # closer to KH
+charles_tree_height = KH_Z2
+kh_tree_span = KH_Y2 - KH_Y1
+charles_tree_row_near_x = ROAD_X2 + CS_WALK_W + 300  # closer to Charles St
+charles_tree_row_far_x = ROAD_X2 + CS_WALK_W + 560  # closer to KH
 # Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
-_cs_row2_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.25, 0.75)]
+charles_tree_row2_ys = [int(KH_Y1 + kh_tree_span * f) for f in (0.25, 0.75)]
 # Row of 3 — far row, 3 trees at 15%, 50%, 85%
-_cs_row3_ys = [int(KH_Y1 + _kh_tree_span * f) for f in (0.15, 0.5, 0.85)]
-_cs_giant_brushes = []
-for _ty in _cs_row2_ys:
-    _cs_giant_brushes += make_giant_tree(_cs_row_near, _ty, FLOOR_Z2, _cs_tree_h)
-for _ty in _cs_row3_ys:
-    _cs_giant_brushes += make_giant_tree(_cs_row_far, _ty, FLOOR_Z2, _cs_tree_h)
-ENTITIES.append(brush_ent("func_detail", _cs_giant_brushes))
+charles_tree_row3_ys = [int(KH_Y1 + kh_tree_span * f) for f in (0.15, 0.5, 0.85)]
+charles_giant_tree_brushes = []
+for tree_y in charles_tree_row2_ys:
+    charles_giant_tree_brushes += make_giant_tree(
+        charles_tree_row_near_x, tree_y, FLOOR_Z2, charles_tree_height
+    )
+for tree_y in charles_tree_row3_ys:
+    charles_giant_tree_brushes += make_giant_tree(
+        charles_tree_row_far_x, tree_y, FLOOR_Z2, charles_tree_height
+    )
+ENTITIES.append(brush_ent("func_detail", charles_giant_tree_brushes))
 
 # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
 # Scattered grid: base spacing ~350 units with per-tree random jitter up to
 # ±120 units in X and Y so the forest looks natural, not uniform.
-_eg_tree_h = KH_Z2
-_eg_spacing = 350
-_eg_jitter = 120
-_eg_buf = 120  # clearance buffer from world edges / wall
-_eg_x1 = ROAD_X2 + CS_WALK_W + _eg_buf
-_eg_x2 = WORLD_X2 - WALL_T - _eg_buf
-_eg_y1 = (
+east_ground_tree_height = KH_Z2
+east_ground_spacing = 350
+east_ground_jitter = 120
+east_ground_buffer = 120  # clearance buffer from world edges / wall
+east_ground_x1 = ROAD_X2 + CS_WALK_W + east_ground_buffer
+east_ground_x2 = WORLD_X2 - WALL_T - east_ground_buffer
+east_ground_y1 = (
     bw_ny + EP_WALL_T + 200
 )  # centered in north space (fence=1148, world=1696, mid≈1422)
-_eg_y2 = WORLD_Y2 - WALL_T - _eg_buf
+east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 
-import random as _rng
+import random as tree_rng
 
-_rng.seed(42)  # fixed seed for reproducible layout
+tree_rng.seed(42)  # fixed seed for reproducible layout
 
-_eg_giant_brushes = []
-_gx = _eg_x1
-while _gx <= _eg_x2:
-    _gy = _eg_y1
-    while _gy <= _eg_y2:
-        _tx = _gx + _rng.randint(-_eg_jitter, _eg_jitter)
-        _ty = _gy + _rng.randint(-_eg_jitter, _eg_jitter)
-        _tx = max(_eg_x1, min(_eg_x2, _tx))
-        _ty = max(_eg_y1, min(_eg_y2, _ty))
-        _eg_giant_brushes += make_giant_tree(_tx, _ty, FLOOR_Z2, _eg_tree_h)
-        _gy += _eg_spacing
-    _gx += _eg_spacing
-ENTITIES.append(brush_ent("func_detail", _eg_giant_brushes))
+east_ground_giant_brushes = []
+grid_x = east_ground_x1
+while grid_x <= east_ground_x2:
+    grid_y = east_ground_y1
+    while grid_y <= east_ground_y2:
+        tree_x = grid_x + tree_rng.randint(-east_ground_jitter, east_ground_jitter)
+        tree_y = grid_y + tree_rng.randint(-east_ground_jitter, east_ground_jitter)
+        tree_x = max(east_ground_x1, min(east_ground_x2, tree_x))
+        tree_y = max(east_ground_y1, min(east_ground_y2, tree_y))
+        east_ground_giant_brushes += make_giant_tree(
+            tree_x, tree_y, FLOOR_Z2, east_ground_tree_height
+        )
+        grid_y += east_ground_spacing
+    grid_x += east_ground_spacing
+ENTITIES.append(brush_ent("func_detail", east_ground_giant_brushes))
 
 
-_bush_positions = [
+bush_positions = [
     # Along north face of Ennis brick wall (campus grass side, not sidewalk)
     (bw_x1 + 60, bw_ny + EP_WALL_T + 40),
     (bw_x1 + 160, bw_ny + EP_WALL_T + 40),
     (bw_x1 + 260, bw_ny + EP_WALL_T + 40),
     (bw_x1 + 360, bw_ny + EP_WALL_T + 40),
     # Along north face of iron fence
-    (int(_ew_x1 + 120), bw_ny + EP_WALL_T + 40),
-    (int(_ew_x1 + 300), bw_ny + EP_WALL_T + 40),
-    (int(_ew_x1 + 500), bw_ny + EP_WALL_T + 40),
-    (int(_ew_x1 + 700), bw_ny + EP_WALL_T + 40),
+    (int(east_gate_x1 + 120), bw_ny + EP_WALL_T + 40),
+    (int(east_gate_x1 + 300), bw_ny + EP_WALL_T + 40),
+    (int(east_gate_x1 + 500), bw_ny + EP_WALL_T + 40),
+    (int(east_gate_x1 + 700), bw_ny + EP_WALL_T + 40),
     # Along north face of cement parapet wall
-    (int(_cw_x1 + 120), bw_ny + EP_WALL_T + 40),
-    (int(_cw_x1 + 320), bw_ny + EP_WALL_T + 40),
-    (int(_cw_x1 + 560), bw_ny + EP_WALL_T + 40),
+    (int(cement_wall_x1 + 120), bw_ny + EP_WALL_T + 40),
+    (int(cement_wall_x1 + 320), bw_ny + EP_WALL_T + 40),
+    (int(cement_wall_x1 + 560), bw_ny + EP_WALL_T + 40),
     # Along Knott Hall west face (outside building)
     (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 - 200),
     (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
@@ -5556,33 +5930,35 @@ _bush_positions = [
     (RH_X2 + 48, 200),
     (RH_X2 + 48, 500),
 ]
-_all_bush_brushes = []
-for _bx, _by in _bush_positions:
-    _all_bush_brushes += make_bush(_bx, _by, FLOOR_Z2)
+all_bush_brushes = []
+for bush_x, bush_y in bush_positions:
+    all_bush_brushes += make_bush(bush_x, bush_y, FLOOR_Z2)
 
 # ── Bushes along verge in front of KH north face (south of Ennis sidewalk) ───
 # Line of bushes just south of EP_SW_EDGE, spanning the raised/sloped ground
 # between the NW indent and the back-road corridor, skipping the entrance.
-_kh_verge_y = EP_Y - EP_HW - 100  # north side of Ennis south sidewalk
-_kh_bush_spacing = 120
-_kh_bush_buf = 60
-_kh_bush_size = 40
-_kh_bush_jitter_x = 40
-_kh_bush_jitter_y = 30
-_kh_verge_brushes = []
-for _vx1, _vx2 in [
-    (ROAD_X2 + CS_WALK_W + _kh_bush_buf, KH_ORIG_CX - 64 - _kh_bush_buf),
-    (KH_ORIG_CX + 64 + _kh_bush_buf, KH_BR_CORRIDOR_X1 - _kh_bush_buf),
+kh_verge_y = EP_Y - EP_HW - 100  # north side of Ennis south sidewalk
+kh_bush_spacing = 120
+kh_bush_buffer = 60
+kh_bush_size = 40
+kh_bush_jitter_x = 40
+kh_bush_jitter_y = 30
+kh_verge_brushes = []
+for verge_x1, verge_x2 in [
+    (ROAD_X2 + CS_WALK_W + kh_bush_buffer, KH_ORIG_CX - 64 - kh_bush_buffer),
+    (KH_ORIG_CX + 64 + kh_bush_buffer, KH_BR_CORRIDOR_X1 - kh_bush_buffer),
 ]:
-    _bx = _vx1
-    while _bx <= _vx2:
-        _jx = _bx + _rng.randint(-_kh_bush_jitter_x, _kh_bush_jitter_x)
-        _jy = _kh_verge_y + _rng.randint(-_kh_bush_jitter_y, _kh_bush_jitter_y)
-        _kh_verge_brushes += make_bush(_jx, _jy, FLOOR_Z2, size=_kh_bush_size)
-        _bx += _kh_bush_spacing
-_all_bush_brushes += _kh_verge_brushes
+    bush_x = verge_x1
+    while bush_x <= verge_x2:
+        jittered_x = bush_x + tree_rng.randint(-kh_bush_jitter_x, kh_bush_jitter_x)
+        jittered_y = kh_verge_y + tree_rng.randint(-kh_bush_jitter_y, kh_bush_jitter_y)
+        kh_verge_brushes += make_bush(
+            jittered_x, jittered_y, FLOOR_Z2, size=kh_bush_size
+        )
+        bush_x += kh_bush_spacing
+all_bush_brushes += kh_verge_brushes
 
-ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
+ENTITIES.append(brush_ent("func_detail", all_bush_brushes))
 
 # ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
 # Outbound: east lane north on Charles → south lane east on Ennis → east end
@@ -5590,39 +5966,41 @@ ENTITIES.append(brush_ent("func_detail", _all_bush_brushes))
 # ── Charles Street platform — via back road, no Ennis lane switch ─────────────
 # Route: Charles outbound (north) → right on Ennis → right onto back road →
 #        south down hill → back up north → left on Ennis → Charles return (south)
-_CS_PLT_W = 128  # platform width and depth
-_CS_PLT_H = 12  # platform slab thickness
-_CS_PLT_SPEED = 180  # units per second
+CS_PLT_W = 128  # platform width and depth
+CS_PLT_H = 12  # platform slab thickness
+CS_PLT_SPEED = 180  # units per second
 
-_CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
-_CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
-_CS_PLT_Y_S = CS_Y1 + _CS_PLT_W // 2 + 48  # south turnaround
-_CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south Y≈792)
-_CS_PLT_Y_RET = EP_Y + EP_HW // 8  # return  Ennis lane  (north Y≈956)
-_CS_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
+CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
+CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
+CS_PLT_Y_S = CS_Y1 + CS_PLT_W // 2 + 48  # south turnaround
+CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south Y≈792)
+CS_PLT_Y_RET = EP_Y + EP_HW // 8  # return  Ennis lane  (north Y≈956)
+CS_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
 
 # Z origin at each road surface (platform bottom + half thickness)
-_oz_cs = ROAD_Z + _CS_PLT_H // 2  # Charles St   (= 14)
-_oz_flat = FLOOR_Z2 + 2 + _CS_PLT_H // 2  # Ennis / back road flat (= 8)
-_oz_br_s = KH_BR_ZT_S + 2 + _CS_PLT_H // 2  # back road south / hill top (= 72)
+platform_z_charles = ROAD_Z + CS_PLT_H // 2  # Charles St   (= 14)
+platform_z_flat = FLOOR_Z2 + 2 + CS_PLT_H // 2  # Ennis / back road flat (= 8)
+platform_z_backroad_south = (
+    KH_BR_ZT_S + 2 + CS_PLT_H // 2
+)  # back road south / hill top (= 72)
 
 # Platform brush — placed at pc1 (south end of outbound Charles lane)
-_cs_plt_brush = box(
-    _CS_PLT_X_OUT - _CS_PLT_W // 2,
-    _CS_PLT_Y_S - _CS_PLT_W // 2,
+cs_platform_brush = box(
+    CS_PLT_X_OUT - CS_PLT_W // 2,
+    CS_PLT_Y_S - CS_PLT_W // 2,
     ROAD_Z,
-    _CS_PLT_X_OUT + _CS_PLT_W // 2,
-    _CS_PLT_Y_S + _CS_PLT_W // 2,
-    ROAD_Z + _CS_PLT_H,
+    CS_PLT_X_OUT + CS_PLT_W // 2,
+    CS_PLT_Y_S + CS_PLT_W // 2,
+    ROAD_Z + CS_PLT_H,
     TEX_FLOOR,
 )
 ENTITIES.append(
     brush_ent(
         "func_train",
-        [_cs_plt_brush],
+        [cs_platform_brush],
         target="cs_pc1",
-        speed=str(_CS_PLT_SPEED),
-        _minlight="255",
+        speed=str(CS_PLT_SPEED),
+        minlight="255",
     )
 )
 
@@ -5630,23 +6008,23 @@ ENTITIES.append(
 # pc1 Charles south (out) → pc2 Ennis junction → pc3 back-road junction
 # → pc4 top of slope → pc5 hill bottom (turn) → pc6 top of slope (return)
 # → pc7 Ennis junction return → pc8 Charles/Ennis return → pc9 Charles south (ret) → pc1
-for _pcn, _tx, _ty, _oz, _target in [
-    ("cs_pc1", _CS_PLT_X_OUT, _CS_PLT_Y_S, _oz_cs, "cs_pc2"),
-    ("cs_pc2", _CS_PLT_X_OUT, _CS_PLT_Y_OUT, _oz_flat, "cs_pc3"),
-    ("cs_pc3", _CS_PLT_BR_X, _CS_PLT_Y_OUT, _oz_flat, "cs_pc4"),
-    ("cs_pc4", _CS_PLT_BR_X, KH_BR_Y2, _oz_flat, "cs_pc5"),
-    ("cs_pc5", _CS_PLT_BR_X, KH_BR_Y1, _oz_br_s, "cs_pc6"),
-    ("cs_pc6", _CS_PLT_BR_X, KH_BR_Y2, _oz_flat, "cs_pc7"),
-    ("cs_pc7", _CS_PLT_BR_X, _CS_PLT_Y_RET, _oz_flat, "cs_pc8"),
-    ("cs_pc8", _CS_PLT_X_RET, _CS_PLT_Y_RET, _oz_flat, "cs_pc9"),
-    ("cs_pc9", _CS_PLT_X_RET, _CS_PLT_Y_S, _oz_cs, "cs_pc1"),
+for path_corner_name, path_x, path_y, path_z, next_target in [
+    ("cs_pc1", CS_PLT_X_OUT, CS_PLT_Y_S, platform_z_charles, "cs_pc2"),
+    ("cs_pc2", CS_PLT_X_OUT, CS_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
+    ("cs_pc3", CS_PLT_BR_X, CS_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
+    ("cs_pc4", CS_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc5"),
+    ("cs_pc5", CS_PLT_BR_X, KH_BR_Y1, platform_z_backroad_south, "cs_pc6"),
+    ("cs_pc6", CS_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc7"),
+    ("cs_pc7", CS_PLT_BR_X, CS_PLT_Y_RET, platform_z_flat, "cs_pc8"),
+    ("cs_pc8", CS_PLT_X_RET, CS_PLT_Y_RET, platform_z_flat, "cs_pc9"),
+    ("cs_pc9", CS_PLT_X_RET, CS_PLT_Y_S, platform_z_charles, "cs_pc1"),
 ]:
     ENTITIES.append(
         ent(
             "path_corner",
-            targetname=_pcn,
-            target=_target,
-            origin=f"{_tx} {_ty} {_oz}",
+            targetname=path_corner_name,
+            target=next_target,
+            origin=f"{path_x} {path_y} {path_z}",
         )
     )
 
@@ -5654,39 +6032,55 @@ for _pcn, _tx, _ty, _oz, _target in [
 ENTITIES.append(
     ent(
         "item_artifact_super_damage",
-        origin=f"{_CS_PLT_BR_X} {KH_BR_Y1} {_oz_br_s + _CS_PLT_H + 18}",
+        origin=f"{CS_PLT_BR_X} {KH_BR_Y1} {platform_z_backroad_south + CS_PLT_H + 18}",
     )
 )
 
 # ── Rocket launchers along the platform route ─────────────────────────────────
-_rl_h = _CS_PLT_H + 56  # hover height above road — clear of platform top + item bbox
-_br_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
-_br_mid_z = (
+rocket_hover_height = (
+    CS_PLT_H + 56
+)  # hover height above road — clear of platform top + item bbox
+backroad_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
+backroad_mid_z = (
     FLOOR_Z2
     + 2
-    + (KH_BR_ZT_S - KH_BR_ZT_N) * (_br_mid_y - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)
+    + (KH_BR_ZT_S - KH_BR_ZT_N) * (backroad_mid_y - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)
 )
-for _rx, _ry, _rz in [
+for rocket_x, rocket_y, rocket_z in [
     # Charles outbound (south third, north third) — east sidewalk
-    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
-    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + rocket_hover_height),
+    (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + rocket_hover_height),
     # Ennis outbound (quarter, three-quarter) — south verge
-    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) // 3, EP_Y - EP_HW - 40, FLOOR_Z2 + 2 + _rl_h),
-    ((_CS_PLT_X_OUT + _CS_PLT_BR_X) * 2 // 3, EP_Y - EP_HW - 40, FLOOR_Z2 + 2 + _rl_h),
+    (
+        (CS_PLT_X_OUT + CS_PLT_BR_X) // 3,
+        EP_Y - EP_HW - 40,
+        FLOOR_Z2 + 2 + rocket_hover_height,
+    ),
+    (
+        (CS_PLT_X_OUT + CS_PLT_BR_X) * 2 // 3,
+        EP_Y - EP_HW - 40,
+        FLOOR_Z2 + 2 + rocket_hover_height,
+    ),
     # Back road going south (midpoint)
-    (_CS_PLT_BR_X, _br_mid_y, _br_mid_z + _rl_h),
+    (CS_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
     # Ennis return (midpoint) — north verge
-    ((_CS_PLT_X_RET + _CS_PLT_BR_X) // 2, EP_Y + EP_HW + 40, FLOOR_Z2 + 2 + _rl_h),
+    (
+        (CS_PLT_X_RET + CS_PLT_BR_X) // 2,
+        EP_Y + EP_HW + 40,
+        FLOOR_Z2 + 2 + rocket_hover_height,
+    ),
     # Charles return (south third, north third) — west sidewalk
-    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + _rl_h),
-    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + _rl_h),
+    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + rocket_hover_height),
+    (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + rocket_hover_height),
 ]:
-    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"{_rx} {_ry} {_rz}"))
+    ENTITIES.append(
+        ent("weapon_rocketlauncher", origin=f"{rocket_x} {rocket_y} {rocket_z}")
+    )
 
 # ── Monsters ──────────────────────────────────────────────────────────────────
 # Grunts patrol Charles Street and Ennis
-_stand_z = ROAD_Z + 24
-for _mx, _my, _mangle in [
+monster_stand_z = ROAD_Z + 24
+for monster_x, monster_y, monster_angle in [
     (ROAD_X1 + 64, -1200, 90),  # south Charles, west side heading north
     (ROAD_X2 - 64, -800, 270),  # south Charles, east side heading south
     (ROAD_X1 + 64, -300, 90),  # mid Charles, west side
@@ -5694,89 +6088,111 @@ for _mx, _my, _mangle in [
     (0, -1600, 90),  # far south Charles, centre
 ]:
     ENTITIES.append(
-        ent("monster_knight", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent(
+            "monster_knight",
+            origin=f"{monster_x} {monster_y} {monster_stand_z}",
+            angle=str(monster_angle),
+        )
     )
 
 # Grunts on Ennis
-for _mx, _my, _mangle in [
+for monster_x, monster_y, monster_angle in [
     (500, EP_Y - EP_HW + 40, 0),  # Ennis east, south lane
     (1200, EP_Y + EP_HW - 40, 180),  # Ennis east, north lane
     (1800, EP_Y - EP_HW + 40, 0),  # Ennis further east
 ]:
     ENTITIES.append(
-        ent("monster_knight", origin=f"{_mx} {_my} {_stand_z}", angle=str(_mangle))
+        ent(
+            "monster_knight",
+            origin=f"{monster_x} {monster_y} {monster_stand_z}",
+            angle=str(monster_angle),
+        )
     )
 
 # Ogres on the back road hill — like guards on the slope
-_br_cx = (KH_BR_RD_X1 + KH_BR_RD_X2) // 2
-for _my, _mz in [
+backroad_center_x = (KH_BR_RD_X1 + KH_BR_RD_X2) // 2
+for ogre_y, ogre_z in [
     (-600, FLOOR_Z2 + 2 + (64 * ((-600) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
     (-1200, FLOOR_Z2 + 2 + (64 * ((-1200) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
     (KH_BR_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
 ]:
-    ENTITIES.append(ent("monster_knight", origin=f"{_br_cx} {_my} {_mz}", angle="90"))
+    ENTITIES.append(
+        ent(
+            "monster_knight",
+            origin=f"{backroad_center_x} {ogre_y} {ogre_z}",
+            angle="90",
+        )
+    )
 
 # Knights inside KH rooms — one per floor in each room
-for _fl in range(KH_FLOORS):
-    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL + 24
-    _split = room_splits[_fl]
-    _sr_yc = (biy1 + _split) // 2
-    _nr_yc = (_split + KH_WALL + biy2) // 2
-    for _rxc in [wxc, exc]:
-        for _ryc in [_sr_yc, _nr_yc]:
+for fl in range(KH_FLOORS):
+    fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
+    split = room_splits[fl]
+    sr_yc = (biy1 + split) // 2
+    nr_yc = (split + KH_WALL + biy2) // 2
+    for rxc in [wxc, exc]:
+        for ryc in [sr_yc, nr_yc]:
             ENTITIES.append(
-                ent("monster_knight", origin=f"{_rxc} {_ryc} {_fz}", angle="270")
+                ent("monster_knight", origin=f"{rxc} {ryc} {fz}", angle="270")
             )
 
 # Enforcers in the hallway — one per floor
-_hall_xc = (KH_ENT_X1 + KH_ENT_X2) // 2
-for _fl in range(KH_FLOORS):
-    _fz = KH_GROUND_Z + _fl * KH_FLOOR_H + KH_WALL + 24
-    _hall_yc = (biy1 + biy2) // 2
+hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2
+for fl in range(KH_FLOORS):
+    fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
+    hall_yc = (biy1 + biy2) // 2
     ENTITIES.append(
-        ent("monster_knight", origin=f"{_hall_xc} {_hall_yc} {_fz}", angle="180")
+        ent("monster_knight", origin=f"{hall_center_x} {hall_yc} {fz}", angle="180")
     )
 
 # Enforcers on rooftop
-for _rx, _ry in [
+for roof_enemy_x, roof_enemy_y in [
     (wxc, KH_Y2 - 80),
     (exc, KH_Y2 - 80),
     (KH_CX, KH_Y1 + 80),
     (wxc, KH_Y1 + 80),
 ]:
     ENTITIES.append(
-        ent("monster_knight", origin=f"{_rx} {_ry} {KH_Z2 + 24}", angle="180")
+        ent(
+            "monster_knight",
+            origin=f"{roof_enemy_x} {roof_enemy_y} {KH_Z2 + 24}",
+            angle="180",
+        )
     )
 
 # ── Demon knights (monster_hell_knight) ───────────────────────────────────────
 # Two on the bridge arch span — guard the crown and Pier 3 approach
-_deck_cx_z = int(dtop(0)) + 24  # standing height at arch crown
-_deck_p3_z = int(dtop(525)) + 24  # standing height near Pier 3
-for _mx, _my, _mz, _mangle in [
-    (0, 0, _deck_cx_z, 180),  # arch crown, facing west
-    (525, 0, _deck_p3_z, 0),  # Pier 3 approach, facing east
+deck_center_z = int(dtop(0)) + 24  # standing height at arch crown
+deck_p3_z = int(dtop(525)) + 24  # standing height near Pier 3
+for monster_x, monster_y, monster_z, monster_angle in [
+    (0, 0, deck_center_z, 180),  # arch crown, facing west
+    (525, 0, deck_p3_z, 0),  # Pier 3 approach, facing east
 ]:
     ENTITIES.append(
-        ent("monster_hell_knight", origin=f"{_mx} {_my} {_mz}", angle=str(_mangle))
+        ent(
+            "monster_hell_knight",
+            origin=f"{monster_x} {monster_y} {monster_z}",
+            angle=str(monster_angle),
+        )
     )
 
 # One on the elevated walkway — guards the bridge → KH 2nd floor approach
-_wk_mid_x = (PB_X2 + WALK_X1) // 2  # midpoint of walkway span
+walkway_mid_x = (PB_X2 + WALK_X1) // 2  # midpoint of walkway span
 ENTITIES.append(
-    ent("monster_hell_knight", origin=f"{_wk_mid_x} 0 {WALK_ZT1 + 24}", angle="180")
+    ent("monster_hell_knight", origin=f"{walkway_mid_x} 0 {WALK_ZT1 + 24}", angle="180")
 )
 
 # Two on the accessible walkway alongside Pier 5
-_awk_z = KH_GROUND_Z + 24  # walkway surface + standing height
-for _awk_y, _awk_angle in [
+accessible_walk_z = KH_GROUND_Z + 24  # walkway surface + standing height
+for accessible_walk_y, accessible_walk_angle in [
     (-128, 90),  # mid-path, facing north toward bridge
     (180, 270),  # north end near bridge south edge, facing south
 ]:
     ENTITIES.append(
         ent(
             "monster_hell_knight",
-            origin=f"2120 {_awk_y} {_awk_z}",
-            angle=str(_awk_angle),
+            origin=f"2120 {accessible_walk_y} {accessible_walk_z}",
+            angle=str(accessible_walk_angle),
         )
     )
 
