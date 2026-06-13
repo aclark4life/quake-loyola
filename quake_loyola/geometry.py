@@ -519,9 +519,3 @@ def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
     openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
     Derived from layered_wall via XY swap."""
     return [swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
-
-
-def win_row(n, lo, hi):
-    """Evenly-spaced window centre positions."""
-    step = (hi - lo) / n
-    return [lo + step * (i + 0.5) for i in range(n)]
