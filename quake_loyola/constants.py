@@ -310,7 +310,7 @@ RH_SOUTH2_CY = (RH_SOUTH2_Y1 + RH_SOUTH2_Y2) // 2
 WORLD_Z2 = max(640, KH_Z2 + 512)
 
 
-def arch_z(x):
+def arch_z_at(x):
     """Z offset above flat datum for parabolic arch at x.
 
     Symmetric parabola centred at X=0 (Charles Street). Both sides degrade
@@ -320,27 +320,27 @@ def arch_z(x):
     return BRIDGE_ARCH_RISE * max(0.0, 1.0 - (x / float(BRIDGE_X2)) ** 2)
 
 
-def dbot(x):
+def deck_bot_z(x):
     """Z coordinate of the deck underside at a given X position."""
-    return BRIDGE_DZ1 + arch_z(x)
+    return BRIDGE_DZ1 + arch_z_at(x)
 
 
-def dtop(x):
+def deck_top_z(x):
     """Z coordinate of the deck surface (top face) at a given X position."""
-    return BRIDGE_DZ2 + arch_z(x)
+    return BRIDGE_DZ2 + arch_z_at(x)
 
 
-BRIDGE_DECK_Z = dtop(0) + 8
-WALK_ZT1 = int(dtop(KH_ORIG_CX))
+BRIDGE_DECK_Z = deck_top_z(0) + 8
+WALK_ZT1 = int(deck_top_z(KH_ORIG_CX))
 
 
-def ft(feet, inches=0):
+def ft_to_units(feet, inches=0):
     """Convert real-world feet (+ optional inches) to Quake units."""
     return round((feet + inches / 12) * SCALE)
 
 
-BRIDGE_PAR_W = ft(2, 6)
-BRIDGE_PIL_HW = ft(2, 5.5)
+BRIDGE_PAR_W = ft_to_units(2, 6)
+BRIDGE_PIL_HW = ft_to_units(2, 5.5)
 BRIDGE_BLK_PIR_M = BRIDGE_PIL_HW + BRIDGE_BLK_HW + 4
 RH_X2 = RH_PIER_X + BRIDGE_PIL_HW + 32
 FENCE_X1 = RH_X2 + 96

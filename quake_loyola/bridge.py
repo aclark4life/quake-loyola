@@ -1,5 +1,30 @@
 from .constants import (
     A_SEGS,
+    BRIDGE_ARCH_X,
+    BRIDGE_DZ2,
+    BRIDGE_EAST_PIVOT_X,
+    BRIDGE_EAST_SHIFT_END,
+    BRIDGE_EAST_SHIFT_START,
+    BRIDGE_PAR_H,
+    BRIDGE_PAR_W,
+    BRIDGE_PIL_BASE_CAP_H,
+    BRIDGE_PIL_BASE_CAP_OVH,
+    BRIDGE_PIL_BASE_H,
+    BRIDGE_PIL_BASE_RAMP_H,
+    BRIDGE_PIL_CAP_H,
+    BRIDGE_PIL_CAP_IN_OVH,
+    BRIDGE_PIL_CAP_OUT_OVH,
+    BRIDGE_PIL_EXTRA,
+    BRIDGE_PIL_HW,
+    BRIDGE_PIL_OVERHANG,
+    BRIDGE_PIL_PYR_H,
+    BRIDGE_PIL_PYR_W,
+    BRIDGE_SEG_SPAN_W,
+    BRIDGE_SEG_W,
+    BRIDGE_X1,
+    BRIDGE_X2,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_SW_EDGE,
@@ -16,31 +41,8 @@ from .constants import (
     KH_X2,
     KH_Y1,
     KH_Y2,
-    BRIDGE_ARCH_X,
-    BRIDGE_DZ2,
-    BRIDGE_PAR_H,
-    BRIDGE_PAR_W,
-    BRIDGE_PIL_BASE_CAP_H,
-    BRIDGE_PIL_BASE_CAP_OVH,
-    BRIDGE_PIL_BASE_H,
-    BRIDGE_PIL_BASE_RAMP_H,
-    BRIDGE_PIL_CAP_H,
-    BRIDGE_PIL_CAP_IN_OVH,
-    BRIDGE_PIL_CAP_OUT_OVH,
-    BRIDGE_PIL_EXTRA,
-    BRIDGE_PIL_HW,
-    BRIDGE_PIL_OVERHANG,
-    BRIDGE_PIL_PYR_H,
-    BRIDGE_PIL_PYR_W,
-    BRIDGE_X1,
-    BRIDGE_X2,
-    BRIDGE_Y1,
-    BRIDGE_Y2,
     ROAD_X2,
-    BRIDGE_SEG_SPAN_W,
-    BRIDGE_SEG_W,
     SHOW_SUPPORTS,
-    Textures,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -49,11 +51,9 @@ from .constants import (
     WORLD_X1,
     WORLD_X2,
     WORLD_Y1,
-    dbot,
-    dtop,
-    BRIDGE_EAST_PIVOT_X,
-    BRIDGE_EAST_SHIFT_END,
-    BRIDGE_EAST_SHIFT_START,
+    Textures,
+    deck_bot_z,
+    deck_top_z,
 )
 from .geometry import (
     arch_fill,
@@ -142,7 +142,7 @@ def build():
     for i in range(BRIDGE_SEG_SPAN_W):
         sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
         sx2 = sx1 + BRIDGE_SEG_W
-        pb1, pb2 = dtop(sx1), dtop(sx2)  # parapet base follows deck top
+        pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)  # parapet base follows deck top
         pt1, pt2 = (
             pb1 + BRIDGE_PAR_H,
             pb2 + BRIDGE_PAR_H,
@@ -214,7 +214,11 @@ def build():
             sy = y_shift_fn(cx) if y_shift_fn else 0.0
             # Use minimum parapet top across block width so block never floats above parapet
             bz = (
-                min(dtop(cx - BRIDGE_BLK_HW), dtop(cx), dtop(cx + BRIDGE_BLK_HW))
+                min(
+                    deck_top_z(cx - BRIDGE_BLK_HW),
+                    deck_top_z(cx),
+                    deck_top_z(cx + BRIDGE_BLK_HW),
+                )
                 + BRIDGE_PAR_H
             )
             BRUSHES.append(
@@ -232,7 +236,11 @@ def build():
             cx = x0 + (x1_s - x0) * (k + 1) / (n_s + 1)
             sy = y_shift_fn(cx) if y_shift_fn else 0.0
             bz = (
-                min(dtop(cx - BRIDGE_BLK_HW), dtop(cx), dtop(cx + BRIDGE_BLK_HW))
+                min(
+                    deck_top_z(cx - BRIDGE_BLK_HW),
+                    deck_top_z(cx),
+                    deck_top_z(cx + BRIDGE_BLK_HW),
+                )
                 + BRIDGE_PAR_H
             )
             if not (cx - BRIDGE_BLK_HW < WALK_X2 and cx + BRIDGE_BLK_HW > WALK_X1):
@@ -292,7 +300,13 @@ def build():
             cx = int(x0 + (x1_n - x0) * (k + 1) / (n + 1))
             sy = y_shift_fn(cx) if y_shift_fn else 0.0
             bz = (
-                int(min(dtop(cx - BRIDGE_SQ_HW), dtop(cx), dtop(cx + BRIDGE_SQ_HW)))
+                int(
+                    min(
+                        deck_top_z(cx - BRIDGE_SQ_HW),
+                        deck_top_z(cx),
+                        deck_top_z(cx + BRIDGE_SQ_HW),
+                    )
+                )
                 + BRIDGE_PAR_H
                 + BRIDGE_BLK_H // 2
             )
@@ -312,7 +326,13 @@ def build():
             sy = y_shift_fn(cx) if y_shift_fn else 0.0
             if not (cx - BRIDGE_SQ_HW < WALK_X2 and cx + BRIDGE_SQ_HW > WALK_X1):
                 bz = (
-                    int(min(dtop(cx - BRIDGE_SQ_HW), dtop(cx), dtop(cx + BRIDGE_SQ_HW)))
+                    int(
+                        min(
+                            deck_top_z(cx - BRIDGE_SQ_HW),
+                            deck_top_z(cx),
+                            deck_top_z(cx + BRIDGE_SQ_HW),
+                        )
+                    )
                     + BRIDGE_PAR_H
                     + BRIDGE_BLK_H // 2
                 )
@@ -380,8 +400,8 @@ def build():
         for span_index in range(BRIDGE_SEG_SPAN_W):
             span_x1 = BRIDGE_X1 + span_index * BRIDGE_SEG_W
             span_x2 = span_x1 + BRIDGE_SEG_W
-            tube_z1 = dtop(span_x1) + BRIDGE_PAR_H + tube_z_offset
-            tube_z2 = dtop(span_x2) + BRIDGE_PAR_H + tube_z_offset
+            tube_z1 = deck_top_z(span_x1) + BRIDGE_PAR_H + tube_z_offset
+            tube_z2 = deck_top_z(span_x2) + BRIDGE_PAR_H + tube_z_offset
             BRUSHES.append(
                 ramp_slab(
                     span_x1,
@@ -486,7 +506,7 @@ def build():
         for px in BRIDGE_ARCH_X:
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
                 continue
-            pdeck = dtop(px)  # deck surface at this X
+            pdeck = deck_top_z(px)  # deck surface at this X
             ppar = pdeck + BRIDGE_PAR_H  # parapet top
             ppil = ppar + BRIDGE_PIL_EXTRA  # pillar post top
             pcap = ppil + BRIDGE_PIL_CAP_H  # cap slab top
@@ -498,7 +518,7 @@ def build():
 
             # Ceiling Z — use the higher of the two pier face deck-bottoms so stone
             # is flush with the bridge underside across the full pier X extent.
-            pier_ceiling_z = max(int(dbot(x1)), int(dbot(x2)))
+            pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
 
             # Arch opening varies by pillar type (outer / inner / centre)
             if px == 0:
