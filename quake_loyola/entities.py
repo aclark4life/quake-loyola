@@ -51,43 +51,43 @@ from .constants import (
     ENNIS_WALL_T,
     ENNIS_Y,
     FLOOR_Z2,
-    KH_BIY1,
-    KH_BIY2,
-    KH_CX,
-    KH_DRIVEWAY_CORRIDOR_X1,
-    KH_DRIVEWAY_HW,
-    KH_DRIVEWAY_RD_X1,
-    KH_DRIVEWAY_RD_X2,
-    KH_DRIVEWAY_Y1,
-    KH_DRIVEWAY_Y2,
-    KH_DRIVEWAY_ZT_N,
-    KH_DRIVEWAY_ZT_S,
-    KH_EAST_ROOM_CX,
-    KH_ENABLED,
-    KH_ENT_X1,
-    KH_ENT_X2,
-    KH_FLOOR_H,
-    KH_FLOORS,
-    KH_GROUND_Z,
-    KH_ORIG_CX,
-    KH_ROOM_SPLITS,
-    KH_SHAFT_X1,
-    KH_SHAFT_X2,
-    KH_SHAFT_Y1,
-    KH_SHAFT_Y2,
-    KH_STAIRS_MID_Y,
-    KH_STAIRS_X1,
-    KH_STAIRS_X2,
-    KH_STAIRS_Y1,
-    KH_STAIRS_Y2,
-    KH_WALKWAY_ENABLED,
-    KH_WALL,
-    KH_WEST_ROOM_CX,
-    KH_X1,
-    KH_X2,
-    KH_Y1,
-    KH_Y2,
-    KH_Z2,
+    KNOTT_BIY1,
+    KNOTT_BIY2,
+    KNOTT_CX,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_HW,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
+    KNOTT_DRIVEWAY_Y1,
+    KNOTT_DRIVEWAY_Y2,
+    KNOTT_DRIVEWAY_ZT_N,
+    KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_EAST_ROOM_CX,
+    KNOTT_ENABLED,
+    KNOTT_ENT_X1,
+    KNOTT_ENT_X2,
+    KNOTT_FLOOR_H,
+    KNOTT_FLOORS,
+    KNOTT_GROUND_Z,
+    KNOTT_ORIG_CX,
+    KNOTT_ROOM_SPLITS,
+    KNOTT_SHAFT_X1,
+    KNOTT_SHAFT_X2,
+    KNOTT_SHAFT_Y1,
+    KNOTT_SHAFT_Y2,
+    KNOTT_STAIRS_MID_Y,
+    KNOTT_STAIRS_X1,
+    KNOTT_STAIRS_X2,
+    KNOTT_STAIRS_Y1,
+    KNOTT_STAIRS_Y2,
+    KNOTT_WALKWAY_ENABLED,
+    KNOTT_WALL,
+    KNOTT_WEST_ROOM_CX,
+    KNOTT_X1,
+    KNOTT_X2,
+    KNOTT_Y1,
+    KNOTT_Y2,
+    KNOTT_Z2,
     ROAD_X1,
     ROAD_X2,
     SHOW_SUPPORTS,
@@ -121,7 +121,9 @@ def build():
     ROAD_Z = FLOOR_Z2 + 8
 
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
-    kh_entity_start = len(ENTITIES)  # checkpoint — trimmed below if KH_ENABLED is False
+    knott_entity_start = len(
+        ENTITIES
+    )  # checkpoint — trimmed below if KNOTT_ENABLED is False
     room_goodies = [
         "item_health",
         "weapon_supershotgun",
@@ -145,23 +147,23 @@ def build():
         "item_spikes",
     ]
     gi = 0
-    for floor_index in range(KH_FLOORS):
-        fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
-        item_z = fz1 + KH_WALL + 24
-        light_z = fz1 + KH_FLOOR_H - 24  # near ceiling
-        split = KH_ROOM_SPLITS[floor_index]
-        sr_yc = (KH_BIY1 + split) // 2
-        nr_yc = (split + KH_WALL + KH_BIY2) // 2
-        for side_xc in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
+    for floor_index in range(KNOTT_FLOORS):
+        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
+        item_z = fz1 + KNOTT_WALL + 24
+        light_z = fz1 + KNOTT_FLOOR_H - 24  # near ceiling
+        split = KNOTT_ROOM_SPLITS[floor_index]
+        sr_yc = (KNOTT_BIY1 + split) // 2
+        nr_yc = (split + KNOTT_WALL + KNOTT_BIY2) // 2
+        for side_xc in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
             for ryc in [sr_yc, nr_yc]:
                 # If west room north items land within 64 units of stairwell south wall, push south
                 safe_ryc = ryc
                 if (
-                    side_xc == KH_WEST_ROOM_CX
+                    side_xc == KNOTT_WEST_ROOM_CX
                     and ryc == nr_yc
-                    and nr_yc > KH_STAIRS_Y1 - 64
+                    and nr_yc > KNOTT_STAIRS_Y1 - 64
                 ):
-                    safe_ryc = KH_STAIRS_Y1 - 80
+                    safe_ryc = KNOTT_STAIRS_Y1 - 80
                 ENTITIES.append(
                     ent("light", origin=f"{side_xc} {safe_ryc} {light_z}", light="250")
                 )
@@ -169,7 +171,7 @@ def build():
                 ENTITIES.append(
                     ent(
                         "light",
-                        origin=f"{side_xc} {safe_ryc} {fz1 + KH_FLOOR_H // 2}",
+                        origin=f"{side_xc} {safe_ryc} {fz1 + KNOTT_FLOOR_H // 2}",
                         light="150",
                     )
                 )
@@ -189,18 +191,22 @@ def build():
                 gi += 1
 
     # ── West stairwell lights — ceiling + mid-flight + low fill per lane per floor ──────────
-    west_stair_center_x = (KH_STAIRS_X1 + KH_STAIRS_X2) // 2  # X centre of shaft
-    west_stair_north_y = (KH_STAIRS_MID_Y + KH_STAIRS_Y2) // 2  # Y centre of north lane
-    west_stair_south_y = (KH_STAIRS_Y1 + KH_STAIRS_MID_Y) // 2  # Y centre of south lane
-    for floor_index in range(KH_FLOORS):
+    west_stair_center_x = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # X centre of shaft
+    west_stair_north_y = (
+        KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_Y2
+    ) // 2  # Y centre of north lane
+    west_stair_south_y = (
+        KNOTT_STAIRS_Y1 + KNOTT_STAIRS_MID_Y
+    ) // 2  # Y centre of south lane
+    for floor_index in range(KNOTT_FLOORS):
         west_stair_light_z = (
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H - 24
         )  # near ceiling
         west_stair_mid_z = (
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
         )  # mid-flight
         west_stair_low_z = (
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H // 4
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 4
         )  # low fill
         for lz in [west_stair_light_z, west_stair_mid_z, west_stair_low_z]:
             ENTITIES.append(
@@ -221,16 +227,16 @@ def build():
                 )
 
     # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
-    hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
+    hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2  # hallway centre X
     hall_light_ys = [
-        KH_BIY1 + (KH_BIY2 - KH_BIY1) * i // 4
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * i // 4
         for i in range(1, 4)  # quarters: 25%, 50%, 75%
     ] + [
-        KH_BIY1 + (KH_BIY2 - KH_BIY1) // 8,  # 12.5% (near south end)
-        KH_BIY1 + (KH_BIY2 - KH_BIY1) * 7 // 8,  # 87.5% (near north end)
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) // 8,  # 12.5% (near south end)
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * 7 // 8,  # 87.5% (near north end)
     ]
-    for floor_index in range(KH_FLOORS):
-        hall_light_z = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+    for floor_index in range(KNOTT_FLOORS):
+        hall_light_z = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H - 24
         for hall_y in hall_light_ys:
             ENTITIES.append(
                 ent(
@@ -241,10 +247,10 @@ def build():
             )
 
     # ── Entrance corridor lights — one per floor in each doorway ─────────────────
-    entry_corridor_y = KH_Y2 - 48  # just inside north face
-    for floor_index in range(KH_FLOORS):
+    entry_corridor_y = KNOTT_Y2 - 48  # just inside north face
+    for floor_index in range(KNOTT_FLOORS):
         entry_corridor_light_z = (
-            KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_FLOOR_H - 24
+            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H - 24
         )
         ENTITIES.append(
             ent(
@@ -255,19 +261,19 @@ def build():
         )
 
     # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
-    KH_SHELF_H = 64  # height of shelf stack
-    KH_SHELF_D = 16  # depth (one wall-thickness)
-    KH_SHELF_W = 64  # width
+    KNOTT_SHELF_H = 64  # height of shelf stack
+    KNOTT_SHELF_D = 16  # depth (one wall-thickness)
+    KNOTT_SHELF_W = 64  # width
 
     shelf_offsets = [0, 0, 0, 0, 0]
 
-    for floor_index in range(KH_FLOORS):
-        fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H
-        fz_surf = fz1 + KH_WALL
-        split = KH_ROOM_SPLITS[floor_index]
+    for floor_index in range(KNOTT_FLOORS):
+        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
+        fz_surf = fz1 + KNOTT_WALL
+        split = KNOTT_ROOM_SPLITS[floor_index]
         shelf_x_offset = shelf_offsets[floor_index]
 
-        for shelf_center_x in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
+        for shelf_center_x in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
             # South room: shelf against south wall — front faces south (-Y)
             shelf_x = shelf_center_x + shelf_x_offset
             ENTITIES.append(
@@ -275,12 +281,12 @@ def build():
                     "func_wall",
                     [
                         box(
-                            shelf_x - KH_SHELF_W // 2,
-                            KH_BIY1,
+                            shelf_x - KNOTT_SHELF_W // 2,
+                            KNOTT_BIY1,
                             fz_surf,
-                            shelf_x + KH_SHELF_W // 2,
-                            KH_BIY1 + KH_SHELF_D,
-                            fz_surf + KH_SHELF_H,
+                            shelf_x + KNOTT_SHELF_W // 2,
+                            KNOTT_BIY1 + KNOTT_SHELF_D,
+                            fz_surf + KNOTT_SHELF_H,
                             "shelf_1",
                         )
                     ],
@@ -289,13 +295,13 @@ def build():
             ENTITIES.append(
                 ent(
                     "light",
-                    origin=f"{shelf_x} {KH_BIY1 + 32} {fz_surf + KH_SHELF_H + 24}",
+                    origin=f"{shelf_x} {KNOTT_BIY1 + 32} {fz_surf + KNOTT_SHELF_H + 24}",
                     light="180",
                 )
             )
 
-    if not KH_ENABLED:
-        del ENTITIES[kh_entity_start:]
+    if not KNOTT_ENABLED:
+        del ENTITIES[knott_entity_start:]
 
     # Teleport destinations — west arch ↔ east arch
     ENTITIES.append(
@@ -310,7 +316,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_west",
-            origin=f"{KH_CX} {(KH_Y1 + KH_Y2) // 2} {int(KH_Z2 + 40)}",
+            origin=f"{KNOTT_CX} {(KNOTT_Y1 + KNOTT_Y2) // 2} {int(KNOTT_Z2 + 40)}",
             angle="180",  # facing south, on Knott Hall rooftop
         )
     )
@@ -442,12 +448,12 @@ def build():
     ENTITIES.append(
         ent(
             "info_player_start",
-            origin=f"{KH_CX} {BRIDGE_Y1 + BRIDGE_PAR_W + 32} {int(BRIDGE_DZ2 + 24)}",
+            origin=f"{KNOTT_CX} {BRIDGE_Y1 + BRIDGE_PAR_W + 32} {int(BRIDGE_DZ2 + 24)}",
             angle="180",
         )
     )
 
-    kh_cy = (KH_Y1 + KH_Y2) // 2  # Knott Hall center Y = -528
+    knott_cy = (KNOTT_Y1 + KNOTT_Y2) // 2  # Knott Hall center Y = -528
     DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2  # north building center Y
     DORM_CX = (DORM_X1 + DORM_X2) // 2  # west buildings center X
     DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2  # south building 1 center Y
@@ -463,25 +469,35 @@ def build():
         ((400, 0, int(deck_top_z(400) + 32)), 270),
         # Walkway
         *(
-            [((KH_CX, (BRIDGE_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180)]
-            if KH_ENABLED
+            [((KNOTT_CX, (BRIDGE_Y1 + KNOTT_Y2) // 2, int(WALK_ZT1 + 32)), 180)]
+            if KNOTT_ENABLED
             else []
         ),
         # Knott Hall — ground, mid, upper floors
         *(
             [
                 (
-                    ((KH_ENT_X1 + KH_ENT_X2) // 2, KH_Y2 - 80, KH_GROUND_Z + 40),
+                    (
+                        (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2,
+                        KNOTT_Y2 - 80,
+                        KNOTT_GROUND_Z + 40,
+                    ),
                     180,
                 ),  # entrance hallway, north
-                ((KH_CX - 100, kh_cy, KH_GROUND_Z + KH_FLOOR_H + 40), 270),
-                ((KH_CX + 100, kh_cy, KH_GROUND_Z + KH_FLOOR_H * 2 + 40), 90),
-                ((KH_CX, KH_Y1 + 100, KH_GROUND_Z + KH_FLOOR_H * 3 + 40), 0),
-                ((KH_CX, kh_cy, KH_GROUND_Z + KH_FLOOR_H * 4 + 40), 180),
+                ((KNOTT_CX - 100, knott_cy, KNOTT_GROUND_Z + KNOTT_FLOOR_H + 40), 270),
+                (
+                    (KNOTT_CX + 100, knott_cy, KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 40),
+                    90,
+                ),
+                (
+                    (KNOTT_CX, KNOTT_Y1 + 100, KNOTT_GROUND_Z + KNOTT_FLOOR_H * 3 + 40),
+                    0,
+                ),
+                ((KNOTT_CX, knott_cy, KNOTT_GROUND_Z + KNOTT_FLOOR_H * 4 + 40), 180),
                 # Knott Hall rooftop
-                ((KH_CX, kh_cy, KH_Z2 + 40), 180),
+                ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
             ]
-            if KH_ENABLED
+            if KNOTT_ENABLED
             else []
         ),
         # Charles Street
@@ -490,7 +506,7 @@ def build():
         ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
         # North building interior
         ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
-        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + KH_FLOOR_H + 40), 90),
+        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + KNOTT_FLOOR_H + 40), 90),
         # North building roof ridge
         ((DORM_CX, DORM_NORTH_CY, int(DORM_RIDGE_Z + 40)), 90),
         # South buildings interiors
@@ -512,11 +528,11 @@ def build():
     # Rocket launcher — bridge centre (high value, exposed position)
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {BRIDGE_DECK_Z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
-    if KH_ENABLED:
+    if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
                 "weapon_rocketlauncher",
-                origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H * 3 + 40}",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 3 + 40}",
             )
         )
     # Rocket launcher — west arch, north side
@@ -542,11 +558,11 @@ def build():
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
     # Super shotgun — spread around mid-tier locations
-    if KH_ENABLED:
+    if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
                 "weapon_supershotgun",
-                origin=f"{KH_EAST_ROOM_CX} {KH_Y2 - 80} {KH_GROUND_Z + 40}",
+                origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT_Y2 - 80} {KNOTT_GROUND_Z + 40}",
             )
         )
     ENTITIES.append(
@@ -557,11 +573,11 @@ def build():
     )
 
     # Grenade launcher — Knott Hall floor 2, south building 2
-    if KH_ENABLED:
+    if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
                 "weapon_grenadelauncher",
-                origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 40}",
             )
         )
     ENTITIES.append(
@@ -574,11 +590,11 @@ def build():
     # Nailgun — bridge approaches, Charles Street
     ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
-    if KH_ENABLED:
+    if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
                 "weapon_nailgun",
-                origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H + 40}",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H + 40}",
             )
         )
 
@@ -588,11 +604,11 @@ def build():
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
-    for kf in range(1, KH_FLOORS):
+    for kf in range(1, KNOTT_FLOORS):
         ENTITIES.append(
             ent(
                 "item_rockets",
-                origin=f"{KH_CX + 80} {kh_cy} {KH_GROUND_Z + kf * KH_FLOOR_H + 40}",
+                origin=f"{KNOTT_CX + 80} {knott_cy} {KNOTT_GROUND_Z + kf * KNOTT_FLOOR_H + 40}",
             )
         )
     ENTITIES.append(
@@ -608,11 +624,15 @@ def build():
     # Health — scattered throughout
     ENTITIES.append(ent("item_health", origin=f"0 0 {BRIDGE_DECK_Z}"))
     ENTITIES.append(
-        ent("item_health", origin=f"{KH_EAST_ROOM_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}")
+        ent(
+            "item_health",
+            origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT_Y2 - 64} {KNOTT_GROUND_Z + 40}",
+        )
     )
     ENTITIES.append(
         ent(
-            "item_health", origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H * 2 + 40}"
+            "item_health",
+            origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 40}",
         )
     )
     ENTITIES.append(
@@ -630,7 +650,8 @@ def build():
     )  # yellow armor on bridge
     ENTITIES.append(
         ent(
-            "item_armor2", origin=f"{KH_CX} {kh_cy} {KH_GROUND_Z + KH_FLOOR_H * 4 + 40}"
+            "item_armor2",
+            origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 4 + 40}",
         )
     )  # red armor top floor
     ENTITIES.append(
@@ -796,27 +817,31 @@ def build():
     )
 
     # Light on underside of walkway slab illuminating the ramp below
-    if KH_WALKWAY_ENABLED:
-        walk_mid_y = (BRIDGE_Y1 + KH_Y2) // 2
-        walk_frac = (BRIDGE_Y1 - walk_mid_y) / float(BRIDGE_Y1 - KH_Y2)
-        wk_zb1 = WALK_ZT1 - KH_WALL
-        wk_zb2 = WALK_ZT2 - KH_WALL
+    if KNOTT_WALKWAY_ENABLED:
+        walk_mid_y = (BRIDGE_Y1 + KNOTT_Y2) // 2
+        walk_frac = (BRIDGE_Y1 - walk_mid_y) / float(BRIDGE_Y1 - KNOTT_Y2)
+        wk_zb1 = WALK_ZT1 - KNOTT_WALL
+        wk_zb2 = WALK_ZT2 - KNOTT_WALL
         walk_bot_mid = int(wk_zb1 + walk_frac * (wk_zb2 - wk_zb1))
         ENTITIES.append(
-            ent("light", origin=f"{KH_CX} {walk_mid_y} {walk_bot_mid - 8}", light="300")
+            ent(
+                "light",
+                origin=f"{KNOTT_CX} {walk_mid_y} {walk_bot_mid - 8}",
+                light="300",
+            )
         )
 
     # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-    if KH_ENABLED:
-        lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
+    if KNOTT_ENABLED:
+        lift_travel = KNOTT_Z2 - (KNOTT_GROUND_Z + KNOTT_WALL)
         lift_brush = [
             box(
-                KH_SHAFT_X1 + 2,
-                KH_SHAFT_Y1 + 2,
-                KH_Z2 - 8,
-                KH_SHAFT_X2 - 2,
-                KH_SHAFT_Y2 - 2,
-                KH_Z2,
+                KNOTT_SHAFT_X1 + 2,
+                KNOTT_SHAFT_Y1 + 2,
+                KNOTT_Z2 - 8,
+                KNOTT_SHAFT_X2 - 2,
+                KNOTT_SHAFT_Y2 - 2,
+                KNOTT_Z2,
                 Textures.FLOOR_KH,
             )
         ]
@@ -834,7 +859,7 @@ def build():
         building_y = (building_y1 + building_y2) // 2
         for building_floor_index in range(DORM_FLOORS):
             building_light_z = (
-                FLOOR_Z2 + building_floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
+                FLOOR_Z2 + building_floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
             )
             ENTITIES.append(
                 ent(
@@ -845,17 +870,21 @@ def build():
             )
 
     # Interior lights for Knott Hall — 3×4 grid per floor
-    if KH_ENABLED:
-        for kh_floor_index in range(KH_FLOORS):
-            kh_light_z = KH_GROUND_Z + kh_floor_index * KH_FLOOR_H + KH_FLOOR_H // 2
-            for kh_x_index in [1, 2, 3]:
-                kh_light_x = KH_X1 + (KH_X2 - KH_X1) * kh_x_index // 4
-                for kh_y_index in [1, 2, 3, 4]:
-                    kh_light_y = KH_Y1 + (KH_Y2 - KH_Y1) * kh_y_index // 5
+    if KNOTT_ENABLED:
+        for knott_floor_index in range(KNOTT_FLOORS):
+            knott_light_z = (
+                KNOTT_GROUND_Z + knott_floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+            )
+            for knott_x_index in [1, 2, 3]:
+                knott_light_x = KNOTT_X1 + (KNOTT_X2 - KNOTT_X1) * knott_x_index // 4
+                for knott_y_index in [1, 2, 3, 4]:
+                    knott_light_y = (
+                        KNOTT_Y1 + (KNOTT_Y2 - KNOTT_Y1) * knott_y_index // 5
+                    )
                     ENTITIES.append(
                         ent(
                             "light",
-                            origin=f"{kh_light_x} {kh_light_y} {kh_light_z}",
+                            origin=f"{knott_light_x} {knott_light_y} {knott_light_z}",
                             light="150",
                         )
                     )
@@ -883,15 +912,17 @@ def build():
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
     # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
-    # Tree height matches Knott Hall (KH_Z2).
-    charles_tree_height = KH_Z2
-    kh_tree_span = KH_Y2 - KH_Y1
+    # Tree height matches Knott Hall (KNOTT_Z2).
+    charles_tree_height = KNOTT_Z2
+    knott_tree_span = KNOTT_Y2 - KNOTT_Y1
     charles_tree_row_near_x = ROAD_X2 + CHARLES_WALK_W + 300  # closer to Charles St
     charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560  # closer to KH
     # Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
-    charles_tree_row2_ys = [int(KH_Y1 + kh_tree_span * f) for f in (0.25, 0.75)]
+    charles_tree_row2_ys = [int(KNOTT_Y1 + knott_tree_span * f) for f in (0.25, 0.75)]
     # Row of 3 — far row, 3 trees at 15%, 50%, 85%
-    charles_tree_row3_ys = [int(KH_Y1 + kh_tree_span * f) for f in (0.15, 0.5, 0.85)]
+    charles_tree_row3_ys = [
+        int(KNOTT_Y1 + knott_tree_span * f) for f in (0.15, 0.5, 0.85)
+    ]
     charles_giant_tree_brushes = []
     for tree_y in charles_tree_row2_ys:
         charles_giant_tree_brushes += make_giant_tree(
@@ -906,7 +937,7 @@ def build():
     # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
     # Scattered grid: base spacing ~350 units with per-tree random jitter up to
     # ±120 units in X and Y so the forest looks natural, not uniform.
-    east_ground_tree_height = KH_Z2
+    east_ground_tree_height = KNOTT_Z2
     east_ground_spacing = 350
     east_ground_jitter = 120
     east_ground_buffer = 120  # clearance buffer from world edges / wall
@@ -953,9 +984,9 @@ def build():
         (int(ENNIS_CEMENT_X1 + 320), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_CEMENT_X1 + 560), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         # Along Knott Hall west face (outside building)
-        (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 - 200),
-        (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
-        (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 + 200),
+        (KNOTT_X1 - 48, (KNOTT_Y1 + KNOTT_Y2) // 2 - 200),
+        (KNOTT_X1 - 48, (KNOTT_Y1 + KNOTT_Y2) // 2),
+        (KNOTT_X1 - 48, (KNOTT_Y1 + KNOTT_Y2) // 2 + 200),
         # Along west building east face (outside building)
         (DORM_X2 + 48, -200),
         (DORM_X2 + 48, 200),
@@ -968,28 +999,36 @@ def build():
     # ── Bushes along verge in front of KH north face (south of Ennis sidewalk) ───
     # Line of bushes just south of ENNIS_SW_EDGE, spanning the raised/sloped ground
     # between the NW indent and the back-road corridor, skipping the entrance.
-    kh_verge_y = ENNIS_Y - ENNIS_HW - 100  # north side of Ennis south sidewalk
-    kh_bush_spacing = 120
-    kh_bush_buffer = 60
-    kh_bush_size = 40
-    kh_bush_jitter_x = 40
-    kh_bush_jitter_y = 30
-    kh_verge_brushes = []
+    knott_verge_y = ENNIS_Y - ENNIS_HW - 100  # north side of Ennis south sidewalk
+    knott_bush_spacing = 120
+    knott_bush_buffer = 60
+    knott_bush_size = 40
+    knott_bush_jitter_x = 40
+    knott_bush_jitter_y = 30
+    knott_verge_brushes = []
     for verge_x1, verge_x2 in [
-        (ROAD_X2 + CHARLES_WALK_W + kh_bush_buffer, KH_ORIG_CX - 64 - kh_bush_buffer),
-        (KH_ORIG_CX + 64 + kh_bush_buffer, KH_DRIVEWAY_CORRIDOR_X1 - kh_bush_buffer),
+        (
+            ROAD_X2 + CHARLES_WALK_W + knott_bush_buffer,
+            KNOTT_ORIG_CX - 64 - knott_bush_buffer,
+        ),
+        (
+            KNOTT_ORIG_CX + 64 + knott_bush_buffer,
+            KNOTT_DRIVEWAY_CORRIDOR_X1 - knott_bush_buffer,
+        ),
     ]:
         bush_x = verge_x1
         while bush_x <= verge_x2:
-            jittered_x = bush_x + tree_rng.randint(-kh_bush_jitter_x, kh_bush_jitter_x)
-            jittered_y = kh_verge_y + tree_rng.randint(
-                -kh_bush_jitter_y, kh_bush_jitter_y
+            jittered_x = bush_x + tree_rng.randint(
+                -knott_bush_jitter_x, knott_bush_jitter_x
             )
-            kh_verge_brushes += make_bush(
-                jittered_x, jittered_y, FLOOR_Z2, size=kh_bush_size
+            jittered_y = knott_verge_y + tree_rng.randint(
+                -knott_bush_jitter_y, knott_bush_jitter_y
             )
-            bush_x += kh_bush_spacing
-    all_bush_brushes += kh_verge_brushes
+            knott_verge_brushes += make_bush(
+                jittered_x, jittered_y, FLOOR_Z2, size=knott_bush_size
+            )
+            bush_x += knott_bush_spacing
+    all_bush_brushes += knott_verge_brushes
 
     ENTITIES.append(brush_ent("func_detail", all_bush_brushes))
 
@@ -1009,14 +1048,14 @@ def build():
     CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16  # outbound Ennis lane (south Y≈792)
     CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8  # return  Ennis lane  (north Y≈956)
     CHARLES_PLT_BR_X = (
-        KH_DRIVEWAY_RD_X1 + KH_DRIVEWAY_HW // 2
+        KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_HW // 2
     )  # right lane on back road (X≈2382)
 
     # Z origin at each road surface (platform bottom + half thickness)
     platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2  # Charles St   (= 14)
     platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2  # Ennis / back road flat (= 8)
     platform_z_backroad_south = (
-        KH_DRIVEWAY_ZT_S + 2 + CHARLES_PLT_H // 2
+        KNOTT_DRIVEWAY_ZT_S + 2 + CHARLES_PLT_H // 2
     )  # back road south / hill top (= 72)
 
     # Platform brush — placed at pc1 (south end of outbound Charles lane)
@@ -1047,15 +1086,15 @@ def build():
         ("cs_pc1", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc2"),
         ("cs_pc2", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
         ("cs_pc3", CHARLES_PLT_BR_X, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
-        ("cs_pc4", CHARLES_PLT_BR_X, KH_DRIVEWAY_Y2, platform_z_flat, "cs_pc5"),
+        ("cs_pc4", CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat, "cs_pc5"),
         (
             "cs_pc5",
             CHARLES_PLT_BR_X,
-            KH_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y1,
             platform_z_backroad_south,
             "cs_pc6",
         ),
-        ("cs_pc6", CHARLES_PLT_BR_X, KH_DRIVEWAY_Y2, platform_z_flat, "cs_pc7"),
+        ("cs_pc6", CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat, "cs_pc7"),
         ("cs_pc7", CHARLES_PLT_BR_X, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc8"),
         ("cs_pc8", CHARLES_PLT_X_RET, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc9"),
         ("cs_pc9", CHARLES_PLT_X_RET, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc1"),
@@ -1073,7 +1112,7 @@ def build():
     ENTITIES.append(
         ent(
             "item_artifact_super_damage",
-            origin=f"{CHARLES_PLT_BR_X} {KH_DRIVEWAY_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
+            origin=f"{CHARLES_PLT_BR_X} {KNOTT_DRIVEWAY_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
         )
     )
 
@@ -1081,13 +1120,13 @@ def build():
     rocket_hover_height = (
         CHARLES_PLT_H + 56
     )  # hover height above road — clear of platform top + item bbox
-    backroad_mid_y = (KH_DRIVEWAY_Y1 + KH_DRIVEWAY_Y2) // 2  # Y=-1072
+    backroad_mid_y = (KNOTT_DRIVEWAY_Y1 + KNOTT_DRIVEWAY_Y2) // 2  # Y=-1072
     backroad_mid_z = (
         FLOOR_Z2
         + 2
-        + (KH_DRIVEWAY_ZT_S - KH_DRIVEWAY_ZT_N)
-        * (backroad_mid_y - KH_DRIVEWAY_Y2)
-        // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2)
+        + (KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N)
+        * (backroad_mid_y - KNOTT_DRIVEWAY_Y2)
+        // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
     )
     for rocket_x, rocket_y, rocket_z in [
         # Charles outbound (south third, north third) — east sidewalk
@@ -1169,23 +1208,31 @@ def build():
         )
 
     # Ogres on the back road hill — like guards on the slope
-    backroad_center_x = (KH_DRIVEWAY_RD_X1 + KH_DRIVEWAY_RD_X2) // 2
+    backroad_center_x = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
     for ogre_y, ogre_z in [
         (
             -600,
             FLOOR_Z2
             + 2
-            + (64 * ((-600) - KH_DRIVEWAY_Y2) // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2))
+            + (
+                64
+                * ((-600) - KNOTT_DRIVEWAY_Y2)
+                // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
+            )
             + 24,
         ),
         (
             -1200,
             FLOOR_Z2
             + 2
-            + (64 * ((-1200) - KH_DRIVEWAY_Y2) // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2))
+            + (
+                64
+                * ((-1200) - KNOTT_DRIVEWAY_Y2)
+                // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
+            )
             + 24,
         ),
-        (KH_DRIVEWAY_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
+        (KNOTT_DRIVEWAY_Y1 + 64, KNOTT_GROUND_Z + 2 + 24),  # top of hill near quad
     ]:
         ENTITIES.append(
             ent(
@@ -1196,37 +1243,37 @@ def build():
         )
 
     # Knights inside KH rooms — one per floor in each room
-    for fl in range(KH_FLOORS):
-        fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
-        split = KH_ROOM_SPLITS[fl]
-        sr_yc = (KH_BIY1 + split) // 2
-        nr_yc = (split + KH_WALL + KH_BIY2) // 2
-        for rxc in [KH_WEST_ROOM_CX, KH_EAST_ROOM_CX]:
+    for fl in range(KNOTT_FLOORS):
+        fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_WALL + 24
+        split = KNOTT_ROOM_SPLITS[fl]
+        sr_yc = (KNOTT_BIY1 + split) // 2
+        nr_yc = (split + KNOTT_WALL + KNOTT_BIY2) // 2
+        for rxc in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
             for ryc in [sr_yc, nr_yc]:
                 ENTITIES.append(
                     ent("monster_knight", origin=f"{rxc} {ryc} {fz}", angle="270")
                 )
 
     # Enforcers in the hallway — one per floor
-    hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2
-    for fl in range(KH_FLOORS):
-        fz = KH_GROUND_Z + fl * KH_FLOOR_H + KH_WALL + 24
-        hall_yc = (KH_BIY1 + KH_BIY2) // 2
+    hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2
+    for fl in range(KNOTT_FLOORS):
+        fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_WALL + 24
+        hall_yc = (KNOTT_BIY1 + KNOTT_BIY2) // 2
         ENTITIES.append(
             ent("monster_knight", origin=f"{hall_center_x} {hall_yc} {fz}", angle="180")
         )
 
     # Enforcers on rooftop
     for roof_enemy_x, roof_enemy_y in [
-        (KH_WEST_ROOM_CX, KH_Y2 - 80),
-        (KH_EAST_ROOM_CX, KH_Y2 - 80),
-        (KH_CX, KH_Y1 + 80),
-        (KH_WEST_ROOM_CX, KH_Y1 + 80),
+        (KNOTT_WEST_ROOM_CX, KNOTT_Y2 - 80),
+        (KNOTT_EAST_ROOM_CX, KNOTT_Y2 - 80),
+        (KNOTT_CX, KNOTT_Y1 + 80),
+        (KNOTT_WEST_ROOM_CX, KNOTT_Y1 + 80),
     ]:
         ENTITIES.append(
             ent(
                 "monster_knight",
-                origin=f"{roof_enemy_x} {roof_enemy_y} {KH_Z2 + 24}",
+                origin=f"{roof_enemy_x} {roof_enemy_y} {KNOTT_Z2 + 24}",
                 angle="180",
             )
         )
@@ -1258,7 +1305,7 @@ def build():
     )
 
     # Two on the accessible walkway alongside Pier 5
-    accessible_walk_z = KH_GROUND_Z + 24  # walkway surface + standing height
+    accessible_walk_z = KNOTT_GROUND_Z + 24  # walkway surface + standing height
     for accessible_walk_y, accessible_walk_angle in [
         (-128, 90),  # mid-path, facing north toward bridge
         (180, 270),  # north end near bridge south edge, facing south
