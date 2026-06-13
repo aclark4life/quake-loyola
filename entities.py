@@ -121,7 +121,7 @@ from geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
-    DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
+    PB_DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
     ROAD_Z = FLOOR_Z2 + 8
 
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
@@ -506,7 +506,7 @@ def build():
 
     # ── Weapons ───────────────────────────────────────────────────────────────
     # Rocket launcher — bridge centre (high value, exposed position)
-    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {DECK_Z}"))
+    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {PB_DECK_Z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
     if KH_ENABLED:
         ENTITIES.append(
@@ -517,7 +517,7 @@ def build():
         )
     # Rocket launcher — west arch, north side
     ENTITIES.append(
-        ent("weapon_rocketlauncher", origin=f"{PB_ARCH_X[1]} {PB_Y1 - 48} {DECK_Z}")
+        ent("weapon_rocketlauncher", origin=f"{PB_ARCH_X[1]} {PB_Y1 - 48} {PB_DECK_Z}")
     )
     # Remaining rocket launchers
     for rl_origin in [
@@ -526,11 +526,11 @@ def build():
         f"{int(east_gate_x1 + (east_gate_x2 - east_gate_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
         f"{int(cement_wall_x1 + (cement_wall_x2 - cement_wall_x1) // 2)} {bw_ny - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
-        f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {DECK_Z}",  # span 1
-        f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {DECK_Z}",  # span 2 south edge
-        f"{(PB_ARCH_X[1] + PB_ARCH_X[2]) // 2} {PB_Y1 + 24} {DECK_Z}",  # span 3 north edge
-        f"{(PB_ARCH_X[2] + PB_X2) // 2} 0 {DECK_Z}",  # span 4
-        f"{(PB_X2 + PB_ARCH_X[4]) // 2} 0 {DECK_Z}",  # span 5 (east angled)
+        f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {PB_DECK_Z}",  # span 1
+        f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {PB_DECK_Z}",  # span 2 south edge
+        f"{(PB_ARCH_X[1] + PB_ARCH_X[2]) // 2} {PB_Y1 + 24} {PB_DECK_Z}",  # span 3 north edge
+        f"{(PB_ARCH_X[2] + PB_X2) // 2} 0 {PB_DECK_Z}",  # span 4
+        f"{(PB_X2 + PB_ARCH_X[4]) // 2} 0 {PB_DECK_Z}",  # span 5 (east angled)
     ]:
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
@@ -591,7 +591,7 @@ def build():
 
     # ── Health & Armor ────────────────────────────────────────────────────────
     # Health — scattered throughout
-    ENTITIES.append(ent("item_health", origin=f"0 0 {DECK_Z}"))
+    ENTITIES.append(ent("item_health", origin=f"0 0 {PB_DECK_Z}"))
     ENTITIES.append(ent("item_health", origin=f"{exc} {KH_Y2 - 64} {KH_GROUND_Z + 40}"))
     ENTITIES.append(
         ent(
@@ -609,7 +609,7 @@ def build():
     )
     # Armor — contested locations
     ENTITIES.append(
-        ent("item_armor1", origin=f"-200 0 {DECK_Z}")
+        ent("item_armor1", origin=f"-200 0 {PB_DECK_Z}")
     )  # yellow armor on bridge
     ENTITIES.append(
         ent(
