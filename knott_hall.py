@@ -1195,17 +1195,6 @@ def build():
                 TEX_FLOOR_KH,
             )
         )
-        BRUSHES.append(
-            box(
-                bix1 + 2 * INDENT,
-                KH_Y2 - INDENT,
-                floor_z1,
-                KH_STAIRS_X1,
-                KH_BIY2,
-                floor_z2,
-                TEX_FLOOR_KH,
-            )
-        )
         # Between west stairwell and east shaft
         BRUSHES.append(
             box(KH_STAIRS_X2, sty1, floor_z1, stx1, KH_BIY2, floor_z2, TEX_FLOOR_KH)
