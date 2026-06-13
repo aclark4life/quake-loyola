@@ -1,12 +1,7 @@
 import math
 from constants import (
     PB_EAST_SPAN_ANGLE,
-    KH_FLOOR_H,
     PB_ARCH_X,
-    RH_WIN_H,
-    RH_WIN_T,
-    RH_WIN_W,
-    TEX_CEMENT,
     TEX_GROUND,
 )
 
@@ -77,30 +72,6 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
                 ),  # north (angled)
                 face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb),  # bottom
                 face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),  # top
-            ]
-        )
-        + "\n}"
-    )
-
-
-def shelf_box(x1, y1, z1, x2, y2, z2, tex_case, tex_front, front="y1"):
-    """Box with tex_front on one face, tex_case on all others.
-    front: which face is the display face — 'y1' (-Y south), 'y2' (+Y north),
-                                             'x1' (-X west),  'x2' (+X east)."""
-    tx1 = tex_front if front == "x1" else tex_case
-    tx2 = tex_front if front == "x2" else tex_case
-    ty1 = tex_front if front == "y1" else tex_case
-    ty2 = tex_front if front == "y2" else tex_case
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tx1),
-                face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tx2),
-                face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ty1),
-                face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), ty2),
-                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tex_case),
-                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tex_case),
             ]
         )
         + "\n}"
@@ -641,63 +612,3 @@ def win_row(n, lo, hi):
     """Evenly-spaced window centre positions."""
     step = (hi - lo) / n
     return [lo + step * (i + 0.5) for i in range(n)]
-
-
-def abutment_bldg_windows(bx1, bx2, by1, by2, bz1, floors, skip_n=False, skip_s=False):
-    """Protruding TEX_CEMENT window-trim panels on the visible faces of a solid brick box."""
-    brushes = []
-    nx = max(2, (bx2 - bx1) // 80)  # windows per floor along X
-    ny = max(1, (by2 - by1) // 80)  # windows per floor along Y
-    for fl in range(floors):
-        wz = bz1 + fl * KH_FLOOR_H + KH_FLOOR_H // 2
-        if not skip_s:  # south face — protrude outward in -Y
-            for wx in win_row(nx, bx1 + 40, bx2 - 40):
-                brushes.append(
-                    box(
-                        wx - RH_WIN_W,
-                        by1 - RH_WIN_T,
-                        wz - RH_WIN_H,
-                        wx + RH_WIN_W,
-                        by1,
-                        wz + RH_WIN_H,
-                        TEX_CEMENT,
-                    )
-                )
-        if not skip_n:  # north face — protrude outward in +Y
-            for wx in win_row(nx, bx1 + 40, bx2 - 40):
-                brushes.append(
-                    box(
-                        wx - RH_WIN_W,
-                        by2,
-                        wz - RH_WIN_H,
-                        wx + RH_WIN_W,
-                        by2 + RH_WIN_T,
-                        wz + RH_WIN_H,
-                        TEX_CEMENT,
-                    )
-                )
-        for wy in win_row(ny, by1 + 40, by2 - 40):  # east face — protrude in +X
-            brushes.append(
-                box(
-                    bx2,
-                    wy - RH_WIN_W,
-                    wz - RH_WIN_H,
-                    bx2 + RH_WIN_T,
-                    wy + RH_WIN_W,
-                    wz + RH_WIN_H,
-                    TEX_CEMENT,
-                )
-            )
-        for wy in win_row(ny, by1 + 40, by2 - 40):  # west face — protrude in -X
-            brushes.append(
-                box(
-                    bx1 - RH_WIN_T,
-                    wy - RH_WIN_W,
-                    wz - RH_WIN_H,
-                    bx1,
-                    wy + RH_WIN_W,
-                    wz + RH_WIN_H,
-                    TEX_CEMENT,
-                )
-            )
-    return brushes
