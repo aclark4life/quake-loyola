@@ -1160,13 +1160,37 @@ def build():
                 Textures.GROUND,
             )
         )
-        # Accessible path pad — flat cement aligned with ramp (Y=264..328, Z=extension_terrain_z_west)
+        # Accessible entrance ramp — rises gently from sidewalk level (Z=8) on the west
+        # up to accessible-path level (Z=25) on the east.  Starts at the path's west edge
+        # (X=knott_entry_x2) and extends 128 units east, clearing the entrance staircase zone.
+        accessible_ramp_x1 = knott_entry_x2  # 1894 — west/low end
+        accessible_ramp_x2 = knott_entry_x2 + 128  # 2022 — east/high end
+        BRUSHES.append(
+            ramp_slab(
+                accessible_ramp_x1,
+                accessible_ramp_x2,
+                east_walk_ext_y1_val,
+                east_walk_ext_y2_val,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                extension_terrain_z_west,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
+            )
+        )
+        # Accessible path pad — flat cement at path level (Y=264..328, Z=extension_terrain_z_west),
+        # spanning from the ramp's east end to the east ramp's high/west end (X=2152) so the
+        # pad meets the east ramp flush without overshooting.
+        east_walk_x2 = (
+            2120 + 32
+        )  # west edge of E-W back-road ramp (KNOTT_WALKWAY block)
         BRUSHES.append(
             box(
-                knott_entry_x2,
+                accessible_ramp_x2,
                 east_walk_ext_y1_val,
                 FLOOR_Z1,
-                east_ramp_x2,
+                east_walk_x2,
                 east_walk_ext_y2_val,
                 extension_terrain_z_west,
                 Textures.CEMENT,
