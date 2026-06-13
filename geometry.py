@@ -4,41 +4,22 @@ from constants import (
     PB_ARCH_X,
     TEX_GROUND,
 )
-
-
-def fv(v):
-    """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
-    f = float(v)
-    return str(int(f)) if f == int(f) else f"{f:.6g}"
-
-
-def pt(x, y, z):
-    """Return a Quake map point literal string '( x y z )'."""
-    return f"( {fv(x)} {fv(y)} {fv(z)} )"
-
-
-def face(p1, p2, p3, tex, params="0 0 0 1 1"):
-    """Return a Quake MAP brush face string from 3 coplanar points and a texture name."""
-    return f"{pt(*p1)} {pt(*p2)} {pt(*p3)} {tex} {params}"
+from mapdata import Brush, Entity, Face
 
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
     """Axis-aligned rectangular brush. tex=sides, tt=top, tb=bottom (default to tex)."""
     tt = tt or tex
     tb = tb or tex
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tex),
-                face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tex),
-                face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),
-                face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
-                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
-                face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tex),
+            Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tex),
+            Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),
+            Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
+            Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
+            Face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
+        ]
     )
 
 
@@ -58,23 +39,15 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
     tb = tb or tex
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),  # -X west
-                face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),  # +X east
-                face(
-                    (x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex
-                ),  # south (angled)
-                face(
-                    (x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex
-                ),  # north (angled)
-                face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb),  # bottom
-                face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),  # top
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),  # -X west
+            Face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),  # +X east
+            Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),  # south (angled)
+            Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),  # north (angled)
+            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb),  # bottom
+            Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),  # top
+        ]
     )
 
 
@@ -82,18 +55,14 @@ def pyramid(x1, y1, z1, x2, y2, z2, tex):
     """Square pyramid: base x1..x2, y1..y2 at z=z1; apex at centre at z=z2."""
     cx = (x1 + x2) / 2.0
     cy = (y1 + y2) / 2.0
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tex),  # bottom
-                face((x2, y1, z1), (x1, y1, z1), (cx, cy, z2), tex),  # south
-                face((x1, y2, z1), (x2, y2, z1), (cx, cy, z2), tex),  # north
-                face((x1, y1, z1), (x1, y2, z1), (cx, cy, z2), tex),  # west
-                face((x2, y2, z1), (x2, y1, z1), (cx, cy, z2), tex),  # east
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tex),  # bottom
+            Face((x2, y1, z1), (x1, y1, z1), (cx, cy, z2), tex),  # south
+            Face((x1, y2, z1), (x2, y2, z1), (cx, cy, z2), tex),  # north
+            Face((x1, y1, z1), (x1, y2, z1), (cx, cy, z2), tex),  # west
+            Face((x2, y2, z1), (x2, y1, z1), (cx, cy, z2), tex),  # east
+        ]
     )
 
 
@@ -102,19 +71,15 @@ def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2."""
     tt = tt or tex
     tb = tb or tex
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tex),  # -X
-                face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), tex),  # +X
-                face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), tex),  # -Y
-                face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
-                face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
-                face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tex),  # -X
+            Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), tex),  # +X
+            Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), tex),  # -Y
+            Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
+            Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
+            Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
+        ]
     )
 
 
@@ -132,35 +97,31 @@ def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     tt = tt or tex
     tb = tb or tex
     faces = [
-        face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
-        face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
-        face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
-        face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
+        Face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
+        Face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
+        Face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
+        Face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
     ]
     # Only emit end-cap faces when the end has non-zero thickness
     if zt1 != zb1:
-        faces.append(face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex))  # -Y
+        faces.append(Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex))  # -Y
     if zt2 != zb2:
-        faces.append(face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex))  # +Y
-    return "{\n" + "\n".join(faces) + "\n}"
+        faces.append(Face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex))  # +Y
+    return Brush(faces)
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
     """Triangular prism. Triangle (ax,ay)→(bx,by)→(cx,cy) must be CCW from above.
     Face winding: side normals point inward (left-perpendicular of each CCW edge).
     Bottom +Z (solid above), top -Z (solid below)."""
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((ax, ay, z2), (bx, by, z2), (ax, ay, z1), tex),  # side AB
-                face((bx, by, z2), (cx, cy, z2), (bx, by, z1), tex),  # side BC
-                face((cx, cy, z2), (ax, ay, z2), (cx, cy, z1), tex),  # side CA
-                face((ax, ay, z1), (bx, by, z1), (cx, cy, z1), tex),  # bottom (+Z)
-                face((ax, ay, z2), (cx, cy, z2), (bx, by, z2), tex),  # top (-Z)
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((ax, ay, z2), (bx, by, z2), (ax, ay, z1), tex),  # side AB
+            Face((bx, by, z2), (cx, cy, z2), (bx, by, z1), tex),  # side BC
+            Face((cx, cy, z2), (ax, ay, z2), (cx, cy, z1), tex),  # side CA
+            Face((ax, ay, z1), (bx, by, z1), (cx, cy, z1), tex),  # bottom (+Z)
+            Face((ax, ay, z2), (cx, cy, z2), (bx, by, z2), tex),  # top (-Z)
+        ]
     )
 
 
@@ -283,19 +244,15 @@ def arch_seg(xb, xf, yc, zc, rin, rout, t1d, t2d, tex):
     cm, sm = math.cos(tm), math.sin(tm)
     yi, zi = yc + rin * cm, zc + rin * sm
     yo, zo = yc + rout * cm, zc + rout * sm
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
-                face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
-                face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
-                face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
-                face((xf, yi, zi), (xb, yi, zi), (xf, yi - sm, zi + cm), tex),
-                face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
+            Face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
+            Face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
+            Face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
+            Face((xf, yi, zi), (xb, yi, zi), (xf, yi - sm, zi + cm), tex),
+            Face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
+        ]
     )
 
 
@@ -308,18 +265,14 @@ def arch_pie_seg(xb, xf, yc, zc, rad, t1d, t2d, tex):
     c2, s2 = math.cos(t2), math.sin(t2)
     cm, sm = math.cos(tm), math.sin(tm)
     yo, zo = yc + rad * cm, zc + rad * sm
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
-                face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
-                face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
-                face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
-                face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
+            Face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
+            Face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
+            Face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
+            Face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
+        ]
     )
 
 
@@ -348,19 +301,15 @@ def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
     cm, sm = math.cos(tm), math.sin(tm)
     xi, zi = xc + rin * cm, zc + rin * sm
     xo, zo = xc + rout * cm, zc + rout * sm
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
-                face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
-                face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
-                face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
-                face((xi, yf, zi), (xi - sm, yf, zi + cm), (xi, yb, zi), tex),
-                face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
+            Face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
+            Face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
+            Face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
+            Face((xi, yf, zi), (xi - sm, yf, zi + cm), (xi, yb, zi), tex),
+            Face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
+        ]
     )
 
 
@@ -372,18 +321,14 @@ def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
     c2, s2 = math.cos(t2), math.sin(t2)
     cm, sm = math.cos(tm), math.sin(tm)
     xo, zo = xc + rad * cm, zc + rad * sm
-    return (
-        "{\n"
-        + "\n".join(
-            [
-                face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
-                face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
-                face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
-                face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
-                face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
-            ]
-        )
-        + "\n}"
+    return Brush(
+        [
+            Face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
+            Face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
+            Face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
+            Face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
+            Face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
+        ]
     )
 
 
@@ -547,25 +492,15 @@ def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=N
 
 
 def ent(cls, **kw):
-    """Return a Quake MAP point entity string for the given classname and key/value pairs."""
-    lines = ["{", f'"classname" "{cls}"']
-    for k, v in kw.items():
-        lines.append(f'"{k}" "{v}"')
-    lines.append("}")
-    return "\n".join(lines)
+    """Return a point Entity for the given classname and key/value pairs."""
+    return Entity(cls, dict(kw))
 
 
 def brush_ent(cls, brushes, **kw):
-    """Return a Quake MAP brush entity string wrapping one or more brush strings."""
-    lines = ["{", f'"classname" "{cls}"']
-    for k, v in kw.items():
-        lines.append(f'"{k}" "{v}"')
-    for b in brushes:
-        # Each b is a string "{\n...\n}" from box/ramp_slab
-        # Keep the braces for the brush within the entity
-        lines.append(b)
-    lines.append("}")
-    return "\n".join(lines)
+    """Return a brush Entity wrapping one or more Brush objects."""
+    if isinstance(brushes, Brush):
+        brushes = [brushes]
+    return Entity(cls, dict(kw), list(brushes))
 
 
 def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
