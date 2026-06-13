@@ -2,7 +2,8 @@
 
 # Paths to tools and directories
 ericw_version := "v0.18.1"
-ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version + "-Darwin"
+ericw_os      := if os() == "macos" { "Darwin" } else { "Linux" }
+ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version + "-" + ericw_os
 tools_bin     := ericw_dir + "/bin"
 quake_dir := "/Applications/id1"
 maps_dir  := quake_dir + "/maps"
@@ -19,7 +20,7 @@ all: setup generate compile-fast deploy
 install-tools:
     #!/usr/bin/env bash
     set -euo pipefail
-    archive="ericw-tools-{{ericw_version}}-Darwin.zip"
+    archive="ericw-tools-{{ericw_version}}-{{ericw_os}}.zip"
     url="https://github.com/ericwa/ericw-tools/releases/download/{{ericw_version}}/$archive"
     dest="{{justfile_directory()}}/.tools"
     if [ -d "{{ericw_dir}}" ]; then
