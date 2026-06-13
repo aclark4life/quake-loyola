@@ -1102,31 +1102,31 @@ def build():
             (pillar_x, pillar_center_y, lamppost_base_z + 180)
         )
 
-    RH_DEPTH = 600  # building N-S depth (doubled)
-    RH_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
-    RH_X2 = RH_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
-    RH_X1 = RH_X2 - 576  # west face of building (doubled width)
-    RH_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
-    RH_NORTH_Y1 = RH_NORTH_Y2 - RH_DEPTH  # north building south face
-    RH_SOUTH1_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
-    RH_SOUTH1_Y2 = RH_SOUTH1_Y1 + RH_DEPTH  # south building 1 north face = -1432
-    RH_SOUTH2_Y1 = RH_SOUTH1_Y2  # south building 2 south face = -1432
-    RH_SOUTH2_Y2 = RH_SOUTH2_Y1 + RH_DEPTH  # south building 2 north face = -832
+    DORM_DEPTH = 600  # building N-S depth (doubled)
+    DORM_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
+    DORM_X2 = DORM_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
+    DORM_X1 = DORM_X2 - 576  # west face of building (doubled width)
+    DORM_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
+    DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH  # north building south face
+    DORM_SOUTH1_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
+    DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH  # south building 1 north face = -1432
+    DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2  # south building 2 south face = -1432
+    DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH  # south building 2 north face = -832
 
     # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
-    RH_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
+    DORM_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
     # Interpolate ramp top-Z at the building's west face so the slope is continuous
     emb_zt_at_ab_x1 = int(
         BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (RH_X1 - BRIDGE_X1) / (RH_EMB_X2 - BRIDGE_X1)
+        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X1 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
     )
     # South segment — west of south buildings (through buildings' Y range)
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
-            RH_X1,
+            DORM_X1,
             CHARLES_Y1,
-            RH_SOUTH2_Y2,
+            DORM_SOUTH2_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
             BRIDGE_DZ2,
@@ -1139,9 +1139,9 @@ def build():
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
-            RH_EMB_X2,
-            RH_SOUTH2_Y2,
-            RH_NORTH_Y1,
+            DORM_EMB_X2,
+            DORM_SOUTH2_Y2,
+            DORM_NORTH_Y1,
             FLOOR_Z1,
             FLOOR_Z1,
             BRIDGE_DZ2,
@@ -1154,9 +1154,9 @@ def build():
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
-            RH_X1,
-            RH_NORTH_Y1,
-            RH_NORTH_Y2,
+            DORM_X1,
+            DORM_NORTH_Y1,
+            DORM_NORTH_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
             BRIDGE_DZ2,
@@ -1169,8 +1169,8 @@ def build():
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
-            RH_EMB_X2,
-            RH_NORTH_Y2,
+            DORM_EMB_X2,
+            DORM_NORTH_Y2,
             CHARLES_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
@@ -1183,45 +1183,45 @@ def build():
 
     # Wall extending north from the abutment pier, deck height, city2_1 texture
     # Door opening ~160 units north of the pier (visible in bridge10)
-    RH_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PIL_OVERHANG)  # south face of pier = -152
-    RH_DOOR_W = 80  # door opening width (~5 ft)
-    RH_DOOR_OFF = 160  # distance from pier face to door centre
-    RH_DOOR_H = (
+    DORM_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PIL_OVERHANG)  # south face of pier = -152
+    DORM_DOOR_W = 80  # door opening width (~5 ft)
+    DORM_DOOR_OFF = 160  # distance from pier face to door centre
+    DORM_DOOR_H = (
         128  # door opening height — embankment rises ~56 units at wall, need clearance
     )
     # (Building dimensions already defined above)
     # South brick wall — from bridge pier south face to nearest south building, with door gap
     # Door centered 160 units north of the building (closer to buildings)
-    s_door_y = RH_SOUTH2_Y2 + RH_DOOR_OFF  # door centre Y
+    s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF  # door centre Y
     BRUSHES.append(
         box(
-            RH_PIER_X - BRIDGE_PIL_HW,
-            RH_SOUTH2_Y2,
+            DORM_PIER_X - BRIDGE_PIL_HW,
+            DORM_SOUTH2_Y2,
             FLOOR_Z2,
-            RH_PIER_X + BRIDGE_PIL_HW,
-            s_door_y - RH_DOOR_W // 2,
+            DORM_PIER_X + BRIDGE_PIL_HW,
+            s_door_y - DORM_DOOR_W // 2,
             BRIDGE_DZ2,
             "city2_1",
         )
     )
     BRUSHES.append(
         box(
-            RH_PIER_X - BRIDGE_PIL_HW,
-            s_door_y + RH_DOOR_W // 2,
+            DORM_PIER_X - BRIDGE_PIL_HW,
+            s_door_y + DORM_DOOR_W // 2,
             FLOOR_Z2,
-            RH_PIER_X + BRIDGE_PIL_HW,
-            RH_WALL_S_Y2,
+            DORM_PIER_X + BRIDGE_PIL_HW,
+            DORM_WALL_S_Y2,
             BRIDGE_DZ2,
             "city2_1",
         )
     )
     BRUSHES.append(
         box(
-            RH_PIER_X - BRIDGE_PIL_HW,
-            s_door_y - RH_DOOR_W // 2,
-            FLOOR_Z2 + RH_DOOR_H,
-            RH_PIER_X + BRIDGE_PIL_HW,
-            s_door_y + RH_DOOR_W // 2,
+            DORM_PIER_X - BRIDGE_PIL_HW,
+            s_door_y - DORM_DOOR_W // 2,
+            FLOOR_Z2 + DORM_DOOR_H,
+            DORM_PIER_X + BRIDGE_PIL_HW,
+            s_door_y + DORM_DOOR_W // 2,
             BRIDGE_DZ2,
             "city2_1",
         )
