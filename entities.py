@@ -213,13 +213,15 @@ def build():
                     light="220",
                 )
             )
-            ENTITIES.append(
-                ent(
-                    "light",
-                    origin=f"{west_stair_center_x} {west_stair_south_y} {lz}",
-                    light="220",
+            # South-lane near-ceiling lights sit inside the floor slab above — skip (buried in solid)
+            if lz != west_stair_light_z:
+                ENTITIES.append(
+                    ent(
+                        "light",
+                        origin=f"{west_stair_center_x} {west_stair_south_y} {lz}",
+                        light="220",
+                    )
                 )
-            )
 
     # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
     hall_center_x = (KH_ENT_X1 + KH_ENT_X2) // 2  # hallway centre X
@@ -665,6 +667,11 @@ def build():
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
                 continue
             for underbridge_light_y in [PB_Y2 + 30, PB_Y1 - 30]:
+                # Skip abutment-pier positions buried in solid building geometry
+                if px == PB_ARCH_X[0]:
+                    continue
+                if px == PB_ARCH_X[-1] and underbridge_light_y == PB_Y1 - 30:
+                    continue
                 ENTITIES.append(
                     ent("light", origin=f"{px} {underbridge_light_y} 16", light="200")
                 )
@@ -686,7 +693,12 @@ def build():
 
     # Ennis cement wall lamppost lights
     for lamp_x, lamp_y, lamp_z in EP_CEMENT_LAMP_POSTS:
-        ENTITIES.append(ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300"))
+        # The east-wall post (EP_CEMENT_X2) sits flush against the world wall, so its
+        # point light is buried in solid — emit it only for the open (west) post.
+        if lamp_x != EP_CEMENT_X2:
+            ENTITIES.append(
+                ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300")
+            )
         ENTITIES.append(
             ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {lamp_z + 4}")
         )
@@ -722,6 +734,9 @@ def build():
 
     # Pier base lights — illuminate plinths and arch openings from just inside each pier
     for pier_x in PB_ARCH_X:
+        # West abutment pier is embedded in solid building geometry — skip buried lights
+        if pier_x == PB_ARCH_X[0]:
+            continue
         pier_light_z = (
             FLOOR_Z2 + PB_PIL_BASE_RAMP_H + 60
         )  # just above the plinth top, low in the arch
