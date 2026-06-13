@@ -1,8 +1,8 @@
 from constants import (
     A_SEGS,
-    CS_WALK_H,
-    CS_WALK_W,
-    EP_SW_EDGE,
+    CHARLES_WALK_H,
+    CHARLES_WALK_W,
+    ENNIS_SW_EDGE,
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
@@ -879,18 +879,18 @@ def build():
         )  # north anchor: ramp moved 80 units north
         terrain_z2 = int(
             KH_GROUND_Z
-            + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
+            + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
             * (east_walk_y2 - (KH_Y2 + 96))
-            / (EP_SW_EDGE - (KH_Y2 + 96))
+            / (ENNIS_SW_EDGE - (KH_Y2 + 96))
         )
         # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KH_X2
         east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
         east_walk_ext_y2 = east_walk_y2
         extension_terrain_z1 = int(
             KH_GROUND_Z
-            + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
+            + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
             * (east_walk_ext_y1 - (KH_Y2 + 96))
-            / (EP_SW_EDGE - (KH_Y2 + 96))
+            / (ENNIS_SW_EDGE - (KH_Y2 + 96))
         )
         extension_terrain_z2 = terrain_z2
         extension_terrain_z_west = (
@@ -905,7 +905,7 @@ def build():
                 FLOOR_Z1,
                 FLOOR_Z1,
                 extension_terrain_z_west,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_CEMENT,
                 tt=TEX_FLOOR,
             )
@@ -975,7 +975,7 @@ def build():
     # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
     # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
     if KH_GROUND_Z > FLOOR_Z2:
-        west_ramp_x1 = ROAD_X2 + CS_WALK_W  # east edge of east sidewalk = 336
+        west_ramp_x1 = ROAD_X2 + CHARLES_WALK_W  # east edge of east sidewalk = 336
         west_ramp_x2 = KH_X1  # ramp rises all the way to building west face
         # Solid hill fill under the entire building footprint — split to exclude indent pockets
         # so indents are recessed at all heights down to ground level
@@ -995,7 +995,7 @@ def build():
                 FLOOR_Z1,
                 KH_X1 + 2 * INDENT,
                 KH_Y2,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1010,7 +1010,7 @@ def build():
                 west_ramp_north_y,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 KH_GROUND_Z,
                 TEX_GROUND,
             )
@@ -1023,7 +1023,7 @@ def build():
                 FLOOR_Z1,
                 west_ramp_x2,
                 KH_Y2,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1042,7 +1042,7 @@ def build():
         # Flat ground in front of KH (north face to Ennis sidewalk edge), flush with sidewalk
         # Split around KH entrance strip (KH_ENT_X1..KH_ENT_X2) to let cement apron show.
         # Between Pier 4 (PIER4_X) and Pier 5 (PIER5_X): gradual slope from KH_GROUND_Z
-        # at the north KH face (KH_Y2) down to sidewalk height at the Ennis sidewalk (EP_SW_EDGE).
+        # at the north KH face (KH_Y2) down to sidewalk height at the Ennis sidewalk (ENNIS_SW_EDGE).
         kh_entry_x1 = KH_ORIG_CX - 64
         kh_entry_x2 = KH_ORIG_CX + 64
         east_ramp_x1 = kh_entry_x2  # east of entrance opening
@@ -1060,8 +1060,8 @@ def build():
                 KH_Y2,
                 FLOOR_Z1,
                 segment1_split_x,
-                EP_SW_EDGE,
-                FLOOR_Z2 + CS_WALK_H,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1072,11 +1072,11 @@ def build():
                 segment1_split_x,
                 kh_entry_x1,
                 KH_Y2,
-                EP_SW_EDGE,
+                ENNIS_SW_EDGE,
                 FLOOR_Z1,
                 FLOOR_Z1,
                 KH_GROUND_Z,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1089,9 +1089,9 @@ def build():
         def terrain_z_at(y):
             return int(
                 KH_GROUND_Z
-                + (FLOOR_Z2 + CS_WALK_H - KH_GROUND_Z)
+                + (FLOOR_Z2 + CHARLES_WALK_H - KH_GROUND_Z)
                 * (y - (KH_Y2 + 96))
-                / (EP_SW_EDGE - (KH_Y2 + 96))
+                / (ENNIS_SW_EDGE - (KH_Y2 + 96))
             )
 
         extension_terrain_z_west = (
@@ -1130,11 +1130,11 @@ def build():
                 kh_entry_x2,
                 east_ramp_x2,
                 east_walk_ext_y2_val,
-                EP_SW_EDGE,
+                ENNIS_SW_EDGE,
                 FLOOR_Z1,
                 FLOOR_Z1,
                 terrain_z_at(east_walk_ext_y2_val),
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1146,7 +1146,7 @@ def build():
                 FLOOR_Z1,
                 KH_BR_CORRIDOR_X1,
                 east_walk_ext_y1_val,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1157,8 +1157,8 @@ def build():
                 east_walk_ext_y2_val,
                 FLOOR_Z1,
                 KH_BR_CORRIDOR_X1,
-                EP_SW_EDGE,
-                FLOOR_Z2 + CS_WALK_H,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1169,8 +1169,8 @@ def build():
                 KH_Y2,
                 FLOOR_Z1,
                 WORLD_X2 - WALL_T,
-                EP_SW_EDGE,
-                FLOOR_Z2 + CS_WALK_H,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_GROUND,
             )
         )
@@ -1178,7 +1178,7 @@ def build():
         east_platform_x1 = east_ramp_x1  # KH_ENT_X2
         east_platform_x2 = KH_X2
         east_step_count = 4
-        east_step_rise = (KH_GROUND_Z - (FLOOR_Z2 + CS_WALK_H)) // east_step_count
+        east_step_rise = (KH_GROUND_Z - (FLOOR_Z2 + CHARLES_WALK_H)) // east_step_count
         east_step_depth = 24
         east_steps_width = east_step_count * east_step_depth
         east_steps_x1 = (
@@ -1218,9 +1218,9 @@ def build():
                 KH_X2,
                 KH_Y2,
                 FLOOR_Z1,
-                KH_X2 + CS_WALK_W,
+                KH_X2 + CHARLES_WALK_W,
                 KH_Y2 + east_platform_depth,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_CEMENT,
             )
         )

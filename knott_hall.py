@@ -1,14 +1,14 @@
 import math
 from constants import (
     A_SEGS,
-    CS_CRN_SEGS,
-    CS_WALK_H,
-    CS_WALK_W,
-    CS_Y1,
-    CS_Y2,
-    EP_HW,
-    EP_SW_EDGE,
-    EP_Y,
+    CHARLES_CRN_SEGS,
+    CHARLES_WALK_H,
+    CHARLES_WALK_W,
+    CHARLES_Y1,
+    CHARLES_Y2,
+    ENNIS_HW,
+    ENNIS_SW_EDGE,
+    ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
@@ -67,10 +67,10 @@ def build():
     # ══════════════════════════════════════════════════════════════════════════════
     KH_BR_HW = 128  # back road half-width (256-unit carriageway, like Ennis)
     KH_BRCS_WALK_W = (
-        CS_WALK_W  # sidewalk width = 80 units (matches Charles St sidewalks)
+        CHARLES_WALK_W  # sidewalk width = 80 units (matches Charles St sidewalks)
     )
-    KH_BRCS_CRN_R = CS_WALK_W  # corner radius = sidewalk width
-    KH_BRCS_CRN_SEGS = CS_CRN_SEGS  # 12 arc segments = 90°
+    KH_BRCS_CRN_R = CHARLES_WALK_W  # corner radius = sidewalk width
+    KH_BRCS_CRN_SEGS = CHARLES_CRN_SEGS  # 12 arc segments = 90°
 
     # ── X extents (road runs N-S, east of building east wall) ──
     KH_BR_WS_X1 = KH_X2  # west sidewalk west = building east wall = 1906
@@ -128,8 +128,8 @@ def build():
             KH_BR_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CS_WALK_H,
-            KH_BR_ZT_N + CS_WALK_H,
+            KH_BR_ZT_S + CHARLES_WALK_H,
+            KH_BR_ZT_N + CHARLES_WALK_H,
             TEX_CEMENT,
             tt=TEX_CEMENT,
         )
@@ -159,8 +159,8 @@ def build():
             KH_BR_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CS_WALK_H,
-            KH_BR_ZT_N + CS_WALK_H,
+            KH_BR_ZT_S + CHARLES_WALK_H,
+            KH_BR_ZT_N + CHARLES_WALK_H,
             TEX_CEMENT,
             tt=TEX_CEMENT,
         )
@@ -190,7 +190,7 @@ def build():
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
             KH_BR_Y1,
-            KH_BR_ZT_S + CS_WALK_H,
+            KH_BR_ZT_S + CHARLES_WALK_H,
             TEX_GROUND,
         )
     )
@@ -203,8 +203,8 @@ def build():
             KH_BR_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CS_WALK_H,
-            KH_BR_ZT_N + CS_WALK_H,
+            KH_BR_ZT_S + CHARLES_WALK_H,
+            KH_BR_ZT_N + CHARLES_WALK_H,
             TEX_GROUND,
             tt=TEX_GROUND,
         )
@@ -229,14 +229,14 @@ def build():
             FLOOR_Z1,
             KH_BR_ES_X2,
             KH_BR_Y1,
-            KH_BR_ZT_S + CS_WALK_H,
+            KH_BR_ZT_S + CHARLES_WALK_H,
             TEX_CEMENT,
         )
     )
 
     # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
     KH_BR_EXT_Y1 = KH_BR_Y2  # = -256 (north face of building)
-    KH_BR_EXT_Y2 = EP_Y - EP_HW - CS_WALK_W
+    KH_BR_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
 
     # Flat road surface
     BRUSHES.append(
@@ -258,7 +258,7 @@ def build():
             FLOOR_Z2,
             KH_BR_WS_X2,
             KH_BR_EXT_Y2,
-            FLOOR_Z2 + CS_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H,
             TEX_CEMENT,
         )
     )
@@ -270,7 +270,7 @@ def build():
             FLOOR_Z2,
             KH_BR_ES_X2,
             KH_BR_EXT_Y2,
-            FLOOR_Z2 + CS_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H,
             TEX_CEMENT,
         )
     )
@@ -282,7 +282,7 @@ def build():
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
             KH_BR_EXT_Y2,
-            FLOOR_Z2 + CS_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H,
             TEX_GROUND,
         )
     )
@@ -295,7 +295,7 @@ def build():
             KH_BR_EXT_Y2,
             FLOOR_Z2,
             KH_BR_RD_X2,
-            EP_Y - EP_HW,
+            ENNIS_Y - ENNIS_HW,
             FLOOR_Z2 + 2,
             TEX_ROAD,
         )
@@ -306,7 +306,7 @@ def build():
     # the back road — matching the Charles/Ennis corner style.
     # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
     KH_BR_JCX_W = KH_BR_WS_X1
-    KH_BR_JCY = EP_Y - EP_HW
+    KH_BR_JCY = ENNIS_Y - ENNIS_HW
     BRUSHES.append(
         box(
             KH_BR_WS_X1,
@@ -334,7 +334,7 @@ def build():
                 arc_x1,
                 arc_y1,
                 FLOOR_Z2,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_CEMENT,
             )
         )
@@ -368,7 +368,7 @@ def build():
                 arc_x1,
                 arc_y1,
                 FLOOR_Z2,
-                FLOOR_Z2 + CS_WALK_H,
+                FLOOR_Z2 + CHARLES_WALK_H,
                 TEX_CEMENT,
             )
         )
@@ -385,7 +385,7 @@ def build():
     KH_STEP_N = 5
     KH_STEP_DEPTH = 24  # tread depth
     KH_STAIR_OFFSET = 384  # distance from north wall to stair base
-    stair_base_z = FLOOR_Z2 + CS_WALK_H  # steps start at apron surface height (8)
+    stair_base_z = FLOOR_Z2 + CHARLES_WALK_H  # steps start at apron surface height (8)
 
     # Flat cement platform between building and stairs
     BRUSHES.append(
@@ -429,8 +429,8 @@ def build():
             stair_y_end,
             FLOOR_Z1,
             KH_ENT_X2,
-            EP_SW_EDGE,
-            FLOOR_Z2 + CS_WALK_H,
+            ENNIS_SW_EDGE,
+            FLOOR_Z2 + CHARLES_WALK_H,
             TEX_CEMENT,
         )
     )
@@ -1737,16 +1737,16 @@ def build():
     )
 
     # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-    CS_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
+    CHARLES_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
     # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
-    CS_LAMP_POST_XS = [
+    CHARLES_LAMP_POST_XS = [
         2158,
         1246,
     ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
-    CS_LAMP_POST_YS = [EP_Y - EP_HW - 160]
-    for lamp_x in CS_LAMP_POST_XS:
-        for lamp_y in CS_LAMP_POST_YS:
-            pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
+    CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - 160]
+    for lamp_x in CHARLES_LAMP_POST_XS:
+        for lamp_y in CHARLES_LAMP_POST_YS:
+            pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
             # Narrow shaft
             BRUSHES.append(
                 box(
@@ -1785,15 +1785,15 @@ def build():
 
     # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
     # ── N/S arch stone wall panels (must be added to B before worldspawn assembly) ──
-    CS_ARCH_RIN_PRE = 256  # inner radius = road half-width
-    CS_ARCH_ROUT_PRE = 312  # outer radius
-    CS_ARCH_STILT_PRE = 96  # stilt height
-    CS_ARCH_W_PRE = 48  # arch thickness in Y
-    cs_arch_top_pre = FLOOR_Z2 + CS_ARCH_STILT_PRE + CS_ARCH_RIN_PRE
+    CHARLES_ARCH_RIN_PRE = 256  # inner radius = road half-width
+    CHARLES_ARCH_ROUT_PRE = 312  # outer radius
+    CHARLES_ARCH_STILT_PRE = 96  # stilt height
+    CHARLES_ARCH_W_PRE = 48  # arch thickness in Y
+    cs_arch_top_pre = FLOOR_Z2 + CHARLES_ARCH_STILT_PRE + CHARLES_ARCH_RIN_PRE
 
     for pre_syb, pre_syf in [
-        (CS_Y1, CS_Y1 + CS_ARCH_W_PRE),
-        (CS_Y2 - CS_ARCH_W_PRE, CS_Y2),
+        (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W_PRE),
+        (CHARLES_Y2 - CHARLES_ARCH_W_PRE, CHARLES_Y2),
     ]:
         # Stone arch posts + ring
         BRUSHES.extend(
@@ -1804,11 +1804,11 @@ def build():
                 WORLD_X2 - WALL_T,
                 FLOOR_Z2,
                 cs_arch_top_pre,
-                CS_ARCH_RIN_PRE,
-                CS_ARCH_ROUT_PRE,
+                CHARLES_ARCH_RIN_PRE,
+                CHARLES_ARCH_ROUT_PRE,
                 A_SEGS,
                 TEX_STONE,
-                stilt_h=CS_ARCH_STILT_PRE,
+                stilt_h=CHARLES_ARCH_STILT_PRE,
             )
         )
     if letter_brushes:

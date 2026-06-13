@@ -3,20 +3,20 @@ from constants import (
     ARCH_SLAB_W,
     ARCH_STILT_H,
     A_SEGS,
-    CS_LAMP_POST_H,
-    CS_LAMP_POST_XS,
-    CS_WALK_W,
-    CS_Y1,
-    CS_Y2,
-    EP_HW,
-    EP_PIL_BELL2_H,
-    EP_PIL_CAP_H,
-    EP_PIL_HW,
-    EP_PIL_POST_H,
-    EP_PIL_X1,
-    EP_PIL_ZB,
-    EP_WALL_T,
-    EP_Y,
+    CHARLES_LAMP_POST_H,
+    CHARLES_LAMP_POST_XS,
+    CHARLES_WALK_W,
+    CHARLES_Y1,
+    CHARLES_Y2,
+    ENNIS_HW,
+    ENNIS_PIL_BELL2_H,
+    ENNIS_PIL_CAP_H,
+    ENNIS_PIL_HW,
+    ENNIS_PIL_POST_H,
+    ENNIS_PIL_X1,
+    ENNIS_PIL_ZB,
+    ENNIS_WALL_T,
+    ENNIS_Y,
     FLOOR_Z2,
     KH_BR_CORRIDOR_X1,
     KH_BR_HW,
@@ -82,17 +82,17 @@ from constants import (
     WORLD_Y2,
     KH_BIY1,
     KH_BIY2,
-    EP_WALL_NY,
-    EP_CEMENT_LAMP_POSTS,
-    EP_CEMENT_X1,
-    EP_CEMENT_X2,
+    ENNIS_WALL_NY,
+    ENNIS_CEMENT_LAMP_POSTS,
+    ENNIS_CEMENT_X1,
+    ENNIS_CEMENT_X2,
     dbot,
     dtop,
-    EP_GATE_X1,
-    EP_GATE_X2,
+    ENNIS_GATE_X1,
+    ENNIS_GATE_X2,
     BRIDGE_EAST_SHIFT_END,
     KH_EAST_ROOM_CX,
-    CS_LAMP_POST_YS,
+    CHARLES_LAMP_POST_YS,
     KH_ROOM_SPLITS,
     stx1,
     stx2,
@@ -382,9 +382,9 @@ def build():
     ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
     # ── North & South Charles Street arch teleports → bridge deck centre ─────────
-    CS_ARCH_RIN = 256  # inner radius = road half-width
-    CS_ARCH_STILT = 96  # straight post height before arch springs
-    CS_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
+    CHARLES_ARCH_RIN = 256  # inner radius = road half-width
+    CHARLES_ARCH_STILT = 96  # straight post height before arch springs
+    CHARLES_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
 
     ENTITIES.append(
         ent(
@@ -395,30 +395,30 @@ def build():
         )
     )
 
-    CS_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
+    CHARLES_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
 
     for arch_y1, arch_y2, trigger_y1, trigger_y2 in [
         (
-            CS_Y1,
-            CS_Y1 + CS_ARCH_W,
-            CS_Y1 + CS_ARCH_TRIG_INSET,
-            CS_Y1 + CS_ARCH_W,
+            CHARLES_Y1,
+            CHARLES_Y1 + CHARLES_ARCH_W,
+            CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
+            CHARLES_Y1 + CHARLES_ARCH_W,
         ),  # south arch — trigger inset from south wall
         (
-            CS_Y2 - CS_ARCH_W,
-            CS_Y2,
-            CS_Y2 - CS_ARCH_W,
-            CS_Y2 - CS_ARCH_TRIG_INSET,
+            CHARLES_Y2 - CHARLES_ARCH_W,
+            CHARLES_Y2,
+            CHARLES_Y2 - CHARLES_ARCH_W,
+            CHARLES_Y2 - CHARLES_ARCH_TRIG_INSET,
         ),  # north arch — trigger inset from north wall
     ]:
-        arch_top_z = FLOOR_Z2 + CS_ARCH_STILT + CS_ARCH_RIN
+        arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
         # Box trigger — reliable activation, inset from walls
         north_south_trigger_brush = [
             box(
-                ROAD_X1 + CS_ARCH_TRIG_INSET,
+                ROAD_X1 + CHARLES_ARCH_TRIG_INSET,
                 trigger_y1,
                 FLOOR_Z2 + 4,
-                ROAD_X2 - CS_ARCH_TRIG_INSET,
+                ROAD_X2 - CHARLES_ARCH_TRIG_INSET,
                 trigger_y2,
                 arch_top_z,
                 TEX_TELEPORT,
@@ -435,10 +435,10 @@ def build():
             arch_y2,
             0.0,
             FLOOR_Z2 + 4,
-            CS_ARCH_RIN,
+            CHARLES_ARCH_RIN,
             A_SEGS,
             TEX_TELEPORT,
-            stilt_h=CS_ARCH_STILT,
+            stilt_h=CHARLES_ARCH_STILT,
         )
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
 
@@ -531,10 +531,10 @@ def build():
     )
     # Remaining rocket launchers
     for rl_origin in [
-        f"{ROAD_X2 + 40} {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
+        f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
         f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
-        f"{int(EP_GATE_X1 + (EP_GATE_X2 - EP_GATE_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
-        f"{int(EP_CEMENT_X1 + (EP_CEMENT_X2 - EP_CEMENT_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
+        f"{int(ENNIS_GATE_X1 + (ENNIS_GATE_X2 - ENNIS_GATE_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
+        f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
         f"{(BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
         f"{(BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2} {BRIDGE_Y2 - 24} {BRIDGE_DECK_Z}",  # span 2 south edge
@@ -686,9 +686,9 @@ def build():
                 )
 
     # Campus lamp post lights — flame above brick cup, matching bridge pillar torches
-    for lamp_x in CS_LAMP_POST_XS:
-        for lamp_y in CS_LAMP_POST_YS:
-            pole_top_z = FLOOR_Z2 + CS_LAMP_POST_H
+    for lamp_x in CHARLES_LAMP_POST_XS:
+        for lamp_y in CHARLES_LAMP_POST_YS:
+            pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
             flame_z = pole_top_z + 20
             ENTITIES.append(
                 ent("light", origin=f"{lamp_x} {lamp_y} {flame_z}", light="300")
@@ -701,10 +701,10 @@ def build():
             )
 
     # Ennis cement wall lamppost lights
-    for lamp_x, lamp_y, lamp_z in EP_CEMENT_LAMP_POSTS:
-        # The east-wall post (EP_CEMENT_X2) sits flush against the world wall, so its
+    for lamp_x, lamp_y, lamp_z in ENNIS_CEMENT_LAMP_POSTS:
+        # The east-wall post (ENNIS_CEMENT_X2) sits flush against the world wall, so its
         # point light is buried in solid — emit it only for the open (west) post.
-        if lamp_x != EP_CEMENT_X2:
+        if lamp_x != ENNIS_CEMENT_X2:
             ENTITIES.append(
                 ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300")
             )
@@ -713,9 +713,14 @@ def build():
         )
 
     # Ennis entrance pillar torches — flame above brick cup on each stone pillar
-    ennis_pil_flame_z = EP_PIL_ZB + EP_PIL_POST_H + EP_PIL_CAP_H + EP_PIL_BELL2_H + 20
-    ennis_pil_cx = EP_PIL_X1 + EP_PIL_HW
-    for pillar_y in (EP_Y - EP_HW - EP_PIL_HW, EP_Y + EP_HW + EP_PIL_HW):
+    ennis_pil_flame_z = (
+        ENNIS_PIL_ZB + ENNIS_PIL_POST_H + ENNIS_PIL_CAP_H + ENNIS_PIL_BELL2_H + 20
+    )
+    ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
+    for pillar_y in (
+        ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW,
+        ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW,
+    ):
         ENTITIES.append(
             ent(
                 "light",
@@ -862,9 +867,9 @@ def build():
         (RH_X1 - 80, 200),
         (RH_X1 - 200, 500),
         # Along Ennis Parallel (campus side, west of Charles St — bridge02)
-        (ROAD_X1 - 200, EP_WALL_NY - 100),
-        (ROAD_X1 - 400, EP_WALL_NY - 80),
-        (ROAD_X1 - 600, EP_WALL_NY - 120),
+        (ROAD_X1 - 200, ENNIS_WALL_NY - 100),
+        (ROAD_X1 - 400, ENNIS_WALL_NY - 80),
+        (ROAD_X1 - 600, ENNIS_WALL_NY - 120),
     ]
     all_tree_brushes = []
     for tree_x, tree_y in tree_positions:
@@ -876,8 +881,8 @@ def build():
     # Tree height matches Knott Hall (KH_Z2).
     charles_tree_height = KH_Z2
     kh_tree_span = KH_Y2 - KH_Y1
-    charles_tree_row_near_x = ROAD_X2 + CS_WALK_W + 300  # closer to Charles St
-    charles_tree_row_far_x = ROAD_X2 + CS_WALK_W + 560  # closer to KH
+    charles_tree_row_near_x = ROAD_X2 + CHARLES_WALK_W + 300  # closer to Charles St
+    charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560  # closer to KH
     # Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
     charles_tree_row2_ys = [int(KH_Y1 + kh_tree_span * f) for f in (0.25, 0.75)]
     # Row of 3 — far row, 3 trees at 15%, 50%, 85%
@@ -900,10 +905,10 @@ def build():
     east_ground_spacing = 350
     east_ground_jitter = 120
     east_ground_buffer = 120  # clearance buffer from world edges / wall
-    east_ground_x1 = ROAD_X2 + CS_WALK_W + east_ground_buffer
+    east_ground_x1 = ROAD_X2 + CHARLES_WALK_W + east_ground_buffer
     east_ground_x2 = WORLD_X2 - WALL_T - east_ground_buffer
     east_ground_y1 = (
-        EP_WALL_NY + EP_WALL_T + 200
+        ENNIS_WALL_NY + ENNIS_WALL_T + 200
     )  # centered in north space (fence=1148, world=1696, mid≈1422)
     east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 
@@ -929,19 +934,19 @@ def build():
 
     bush_positions = [
         # Along north face of Ennis brick wall (campus grass side, not sidewalk)
-        ((ROAD_X2 + CS_WALK_W + 48) + 60, EP_WALL_NY + EP_WALL_T + 40),
-        ((ROAD_X2 + CS_WALK_W + 48) + 160, EP_WALL_NY + EP_WALL_T + 40),
-        ((ROAD_X2 + CS_WALK_W + 48) + 260, EP_WALL_NY + EP_WALL_T + 40),
-        ((ROAD_X2 + CS_WALK_W + 48) + 360, EP_WALL_NY + EP_WALL_T + 40),
+        ((ROAD_X2 + CHARLES_WALK_W + 48) + 60, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        ((ROAD_X2 + CHARLES_WALK_W + 48) + 160, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        ((ROAD_X2 + CHARLES_WALK_W + 48) + 260, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        ((ROAD_X2 + CHARLES_WALK_W + 48) + 360, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         # Along north face of iron fence
-        (int(EP_GATE_X1 + 120), EP_WALL_NY + EP_WALL_T + 40),
-        (int(EP_GATE_X1 + 300), EP_WALL_NY + EP_WALL_T + 40),
-        (int(EP_GATE_X1 + 500), EP_WALL_NY + EP_WALL_T + 40),
-        (int(EP_GATE_X1 + 700), EP_WALL_NY + EP_WALL_T + 40),
+        (int(ENNIS_GATE_X1 + 120), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        (int(ENNIS_GATE_X1 + 300), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        (int(ENNIS_GATE_X1 + 500), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        (int(ENNIS_GATE_X1 + 700), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         # Along north face of cement parapet wall
-        (int(EP_CEMENT_X1 + 120), EP_WALL_NY + EP_WALL_T + 40),
-        (int(EP_CEMENT_X1 + 320), EP_WALL_NY + EP_WALL_T + 40),
-        (int(EP_CEMENT_X1 + 560), EP_WALL_NY + EP_WALL_T + 40),
+        (int(ENNIS_CEMENT_X1 + 120), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        (int(ENNIS_CEMENT_X1 + 320), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
+        (int(ENNIS_CEMENT_X1 + 560), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         # Along Knott Hall west face (outside building)
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2 - 200),
         (KH_X1 - 48, (KH_Y1 + KH_Y2) // 2),
@@ -956,9 +961,9 @@ def build():
         all_bush_brushes += make_bush(bush_x, bush_y, FLOOR_Z2)
 
     # ── Bushes along verge in front of KH north face (south of Ennis sidewalk) ───
-    # Line of bushes just south of EP_SW_EDGE, spanning the raised/sloped ground
+    # Line of bushes just south of ENNIS_SW_EDGE, spanning the raised/sloped ground
     # between the NW indent and the back-road corridor, skipping the entrance.
-    kh_verge_y = EP_Y - EP_HW - 100  # north side of Ennis south sidewalk
+    kh_verge_y = ENNIS_Y - ENNIS_HW - 100  # north side of Ennis south sidewalk
     kh_bush_spacing = 120
     kh_bush_buffer = 60
     kh_bush_size = 40
@@ -966,7 +971,7 @@ def build():
     kh_bush_jitter_y = 30
     kh_verge_brushes = []
     for verge_x1, verge_x2 in [
-        (ROAD_X2 + CS_WALK_W + kh_bush_buffer, KH_ORIG_CX - 64 - kh_bush_buffer),
+        (ROAD_X2 + CHARLES_WALK_W + kh_bush_buffer, KH_ORIG_CX - 64 - kh_bush_buffer),
         (KH_ORIG_CX + 64 + kh_bush_buffer, KH_BR_CORRIDOR_X1 - kh_bush_buffer),
     ]:
         bush_x = verge_x1
@@ -989,32 +994,32 @@ def build():
     # ── Charles Street platform — via back road, no Ennis lane switch ─────────────
     # Route: Charles outbound (north) → right on Ennis → right onto back road →
     #        south down hill → back up north → left on Ennis → Charles return (south)
-    CS_PLT_W = 128  # platform width and depth
-    CS_PLT_H = 12  # platform slab thickness
-    CS_PLT_SPEED = 180  # units per second
+    CHARLES_PLT_W = 128  # platform width and depth
+    CHARLES_PLT_H = 12  # platform slab thickness
+    CHARLES_PLT_SPEED = 180  # units per second
 
-    CS_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
-    CS_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
-    CS_PLT_Y_S = CS_Y1 + CS_PLT_W // 2 + 48  # south turnaround
-    CS_PLT_Y_OUT = EP_Y - EP_HW + 16  # outbound Ennis lane (south Y≈792)
-    CS_PLT_Y_RET = EP_Y + EP_HW // 8  # return  Ennis lane  (north Y≈956)
-    CS_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
+    CHARLES_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
+    CHARLES_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
+    CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48  # south turnaround
+    CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16  # outbound Ennis lane (south Y≈792)
+    CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8  # return  Ennis lane  (north Y≈956)
+    CHARLES_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
 
     # Z origin at each road surface (platform bottom + half thickness)
-    platform_z_charles = ROAD_Z + CS_PLT_H // 2  # Charles St   (= 14)
-    platform_z_flat = FLOOR_Z2 + 2 + CS_PLT_H // 2  # Ennis / back road flat (= 8)
+    platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2  # Charles St   (= 14)
+    platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2  # Ennis / back road flat (= 8)
     platform_z_backroad_south = (
-        KH_BR_ZT_S + 2 + CS_PLT_H // 2
+        KH_BR_ZT_S + 2 + CHARLES_PLT_H // 2
     )  # back road south / hill top (= 72)
 
     # Platform brush — placed at pc1 (south end of outbound Charles lane)
     cs_platform_brush = box(
-        CS_PLT_X_OUT - CS_PLT_W // 2,
-        CS_PLT_Y_S - CS_PLT_W // 2,
+        CHARLES_PLT_X_OUT - CHARLES_PLT_W // 2,
+        CHARLES_PLT_Y_S - CHARLES_PLT_W // 2,
         ROAD_Z,
-        CS_PLT_X_OUT + CS_PLT_W // 2,
-        CS_PLT_Y_S + CS_PLT_W // 2,
-        ROAD_Z + CS_PLT_H,
+        CHARLES_PLT_X_OUT + CHARLES_PLT_W // 2,
+        CHARLES_PLT_Y_S + CHARLES_PLT_W // 2,
+        ROAD_Z + CHARLES_PLT_H,
         TEX_FLOOR,
     )
     ENTITIES.append(
@@ -1022,7 +1027,7 @@ def build():
             "func_train",
             [cs_platform_brush],
             target="cs_pc1",
-            speed=str(CS_PLT_SPEED),
+            speed=str(CHARLES_PLT_SPEED),
             minlight="255",
         )
     )
@@ -1032,15 +1037,15 @@ def build():
     # → pc4 top of slope → pc5 hill bottom (turn) → pc6 top of slope (return)
     # → pc7 Ennis junction return → pc8 Charles/Ennis return → pc9 Charles south (ret) → pc1
     for path_corner_name, path_x, path_y, path_z, next_target in [
-        ("cs_pc1", CS_PLT_X_OUT, CS_PLT_Y_S, platform_z_charles, "cs_pc2"),
-        ("cs_pc2", CS_PLT_X_OUT, CS_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
-        ("cs_pc3", CS_PLT_BR_X, CS_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
-        ("cs_pc4", CS_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc5"),
-        ("cs_pc5", CS_PLT_BR_X, KH_BR_Y1, platform_z_backroad_south, "cs_pc6"),
-        ("cs_pc6", CS_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc7"),
-        ("cs_pc7", CS_PLT_BR_X, CS_PLT_Y_RET, platform_z_flat, "cs_pc8"),
-        ("cs_pc8", CS_PLT_X_RET, CS_PLT_Y_RET, platform_z_flat, "cs_pc9"),
-        ("cs_pc9", CS_PLT_X_RET, CS_PLT_Y_S, platform_z_charles, "cs_pc1"),
+        ("cs_pc1", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc2"),
+        ("cs_pc2", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
+        ("cs_pc3", CHARLES_PLT_BR_X, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
+        ("cs_pc4", CHARLES_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc5"),
+        ("cs_pc5", CHARLES_PLT_BR_X, KH_BR_Y1, platform_z_backroad_south, "cs_pc6"),
+        ("cs_pc6", CHARLES_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc7"),
+        ("cs_pc7", CHARLES_PLT_BR_X, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc8"),
+        ("cs_pc8", CHARLES_PLT_X_RET, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc9"),
+        ("cs_pc9", CHARLES_PLT_X_RET, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc1"),
     ]:
         ENTITIES.append(
             ent(
@@ -1055,13 +1060,13 @@ def build():
     ENTITIES.append(
         ent(
             "item_artifact_super_damage",
-            origin=f"{CS_PLT_BR_X} {KH_BR_Y1} {platform_z_backroad_south + CS_PLT_H + 18}",
+            origin=f"{CHARLES_PLT_BR_X} {KH_BR_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
         )
     )
 
     # ── Rocket launchers along the platform route ─────────────────────────────────
     rocket_hover_height = (
-        CS_PLT_H + 56
+        CHARLES_PLT_H + 56
     )  # hover height above road — clear of platform top + item bbox
     backroad_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
     backroad_mid_z = (
@@ -1073,30 +1078,46 @@ def build():
     )
     for rocket_x, rocket_y, rocket_z in [
         # Charles outbound (south third, north third) — east sidewalk
-        (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + rocket_hover_height),
-        (ROAD_X2 + 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + rocket_hover_height),
+        (
+            ROAD_X2 + 40,
+            CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) // 6,
+            ROAD_Z + rocket_hover_height,
+        ),
+        (
+            ROAD_X2 + 40,
+            CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) * 2 // 6,
+            ROAD_Z + rocket_hover_height,
+        ),
         # Ennis outbound (quarter, three-quarter) — south verge
         (
-            (CS_PLT_X_OUT + CS_PLT_BR_X) // 3,
-            EP_Y - EP_HW - 40,
+            (CHARLES_PLT_X_OUT + CHARLES_PLT_BR_X) // 3,
+            ENNIS_Y - ENNIS_HW - 40,
             FLOOR_Z2 + 2 + rocket_hover_height,
         ),
         (
-            (CS_PLT_X_OUT + CS_PLT_BR_X) * 2 // 3,
-            EP_Y - EP_HW - 40,
+            (CHARLES_PLT_X_OUT + CHARLES_PLT_BR_X) * 2 // 3,
+            ENNIS_Y - ENNIS_HW - 40,
             FLOOR_Z2 + 2 + rocket_hover_height,
         ),
         # Back road going south (midpoint)
-        (CS_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
+        (CHARLES_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
         # Ennis return (midpoint) — north verge
         (
-            (CS_PLT_X_RET + CS_PLT_BR_X) // 2,
-            EP_Y + EP_HW + 40,
+            (CHARLES_PLT_X_RET + CHARLES_PLT_BR_X) // 2,
+            ENNIS_Y + ENNIS_HW + 40,
             FLOOR_Z2 + 2 + rocket_hover_height,
         ),
         # Charles return (south third, north third) — west sidewalk
-        (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) // 6, ROAD_Z + rocket_hover_height),
-        (ROAD_X1 - 40, CS_Y1 + (CS_Y2 - CS_Y1) * 2 // 6, ROAD_Z + rocket_hover_height),
+        (
+            ROAD_X1 - 40,
+            CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) // 6,
+            ROAD_Z + rocket_hover_height,
+        ),
+        (
+            ROAD_X1 - 40,
+            CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) * 2 // 6,
+            ROAD_Z + rocket_hover_height,
+        ),
     ]:
         ENTITIES.append(
             ent("weapon_rocketlauncher", origin=f"{rocket_x} {rocket_y} {rocket_z}")
@@ -1122,9 +1143,9 @@ def build():
 
     # Grunts on Ennis
     for monster_x, monster_y, monster_angle in [
-        (500, EP_Y - EP_HW + 40, 0),  # Ennis east, south lane
-        (1200, EP_Y + EP_HW - 40, 180),  # Ennis east, north lane
-        (1800, EP_Y - EP_HW + 40, 0),  # Ennis further east
+        (500, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis east, south lane
+        (1200, ENNIS_Y + ENNIS_HW - 40, 180),  # Ennis east, north lane
+        (1800, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis further east
     ]:
         ENTITIES.append(
             ent(
