@@ -31,8 +31,8 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
-    KH_BR_CORRIDOR_X1,
-    KH_BR_CORRIDOR_X2,
+    KH_DRIVEWAY_CORRIDOR_X1,
+    KH_DRIVEWAY_CORRIDOR_X2,
     KH_GROUND_Z,
     KH_ORIG_CX,
     KH_WALKWAY_ENABLED,
@@ -1183,7 +1183,7 @@ def build():
                 east_ramp_x2,
                 KH_Y2 + east_platform_depth,
                 FLOOR_Z1,
-                KH_BR_CORRIDOR_X1,
+                KH_DRIVEWAY_CORRIDOR_X1,
                 east_walk_ext_y1_val,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
@@ -1195,7 +1195,7 @@ def build():
                 east_ramp_x2,
                 east_walk_ext_y2_val,
                 FLOOR_Z1,
-                KH_BR_CORRIDOR_X1,
+                KH_DRIVEWAY_CORRIDOR_X1,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
@@ -1204,7 +1204,7 @@ def build():
         # Seg3 (east of back-road corridor to world wall) — beyond Pier 5, stays at sidewalk height
         BRUSHES.append(
             box(
-                KH_BR_CORRIDOR_X2,
+                KH_DRIVEWAY_CORRIDOR_X2,
                 KH_Y2,
                 FLOOR_Z1,
                 WORLD_X2 - WALL_T,

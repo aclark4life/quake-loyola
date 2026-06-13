@@ -17,23 +17,23 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
-    KH_BR_ES_X1,
-    KH_BR_ES_X2,
-    KH_BR_EXT_Y1,
-    KH_BR_EXT_Y2,
-    KH_BR_JCX_E,
-    KH_BR_JCX_W,
-    KH_BR_JCY,
-    KH_BR_RD_X1,
-    KH_BR_RD_X2,
-    KH_BR_WS_X1,
-    KH_BR_WS_X2,
-    KH_BR_Y1,
-    KH_BR_Y2,
-    KH_BR_ZT_N,
-    KH_BR_ZT_S,
-    KH_BRCS_CRN_R,
-    KH_BRCS_CRN_SEGS,
+    KH_DRIVEWAY_CURB_CRN_R,
+    KH_DRIVEWAY_CURB_CRN_SEGS,
+    KH_DRIVEWAY_ES_X1,
+    KH_DRIVEWAY_ES_X2,
+    KH_DRIVEWAY_EXT_Y1,
+    KH_DRIVEWAY_EXT_Y2,
+    KH_DRIVEWAY_JCX_E,
+    KH_DRIVEWAY_JCX_W,
+    KH_DRIVEWAY_JCY,
+    KH_DRIVEWAY_RD_X1,
+    KH_DRIVEWAY_RD_X2,
+    KH_DRIVEWAY_WS_X1,
+    KH_DRIVEWAY_WS_X2,
+    KH_DRIVEWAY_Y1,
+    KH_DRIVEWAY_Y2,
+    KH_DRIVEWAY_ZT_N,
+    KH_DRIVEWAY_ZT_S,
     KH_ENABLED,
     KH_FLOOR_H,
     KH_FLOORS,
@@ -85,14 +85,14 @@ def build():
     # Road surface — 2-unit textured overlay riding on sloped fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_RD_X1,
-            KH_BR_RD_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_RD_X1,
+            KH_DRIVEWAY_RD_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + 2,
-            KH_BR_ZT_N + 2,
+            KH_DRIVEWAY_ZT_S + 2,
+            KH_DRIVEWAY_ZT_N + 2,
             Textures.ROAD,
             tt=Textures.ROAD,
         )
@@ -100,14 +100,14 @@ def build():
     # Road fill — solid ground under road surface
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_RD_X1,
-            KH_BR_RD_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_RD_X1,
+            KH_DRIVEWAY_RD_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S,
-            KH_BR_ZT_N,
+            KH_DRIVEWAY_ZT_S,
+            KH_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -116,14 +116,14 @@ def build():
     # West sidewalk (strip between building east wall and road) — slopes with road
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_WS_X1,
-            KH_BR_WS_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_WS_X1,
+            KH_DRIVEWAY_WS_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CHARLES_WALK_H,
-            KH_BR_ZT_N + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.CEMENT,
             tt=Textures.CEMENT,
         )
@@ -131,14 +131,14 @@ def build():
     # West sidewalk fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_WS_X1,
-            KH_BR_WS_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_WS_X1,
+            KH_DRIVEWAY_WS_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S,
-            KH_BR_ZT_N,
+            KH_DRIVEWAY_ZT_S,
+            KH_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -147,14 +147,14 @@ def build():
     # East sidewalk — slopes with road
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_ES_X1,
-            KH_BR_ES_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_ES_X1,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CHARLES_WALK_H,
-            KH_BR_ZT_N + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.CEMENT,
             tt=Textures.CEMENT,
         )
@@ -162,14 +162,14 @@ def build():
     # East sidewalk fill
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_ES_X1,
-            KH_BR_ES_X2,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_ES_X1,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S,
-            KH_BR_ZT_N,
+            KH_DRIVEWAY_ZT_S,
+            KH_DRIVEWAY_ZT_N,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -179,26 +179,26 @@ def build():
     # South extension: flat at hill level
     BRUSHES.append(
         box(
-            KH_BR_ES_X2,
+            KH_DRIVEWAY_ES_X2,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
-            KH_BR_Y1,
-            KH_BR_ZT_S + CHARLES_WALK_H,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )
     # Main back road section: slopes with the sidewalk (88 at south → 8 at north)
     BRUSHES.append(
         ramp_slab_y(
-            KH_BR_ES_X2,
+            KH_DRIVEWAY_ES_X2,
             WORLD_X2 - WALL_T,
-            KH_BR_Y1,
-            KH_BR_Y2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KH_BR_ZT_S + CHARLES_WALK_H,
-            KH_BR_ZT_N + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KH_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -210,20 +210,20 @@ def build():
             KH_X1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KH_BR_ES_X1,
-            KH_BR_Y1,
-            KH_BR_ZT_S + 2,
+            KH_DRIVEWAY_ES_X1,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_ZT_S + 2,
             Textures.ROAD,
         )
     )
     BRUSHES.append(
         box(
-            KH_BR_ES_X1,
+            KH_DRIVEWAY_ES_X1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KH_BR_ES_X2,
-            KH_BR_Y1,
-            KH_BR_ZT_S + CHARLES_WALK_H,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_Y1,
+            KH_DRIVEWAY_ZT_S + CHARLES_WALK_H,
             Textures.CEMENT,
         )
     )
@@ -232,11 +232,11 @@ def build():
     # Flat road surface
     BRUSHES.append(
         box(
-            KH_BR_RD_X1,
-            KH_BR_EXT_Y1,
+            KH_DRIVEWAY_RD_X1,
+            KH_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_BR_RD_X2,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_RD_X2,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
@@ -244,11 +244,11 @@ def build():
     # West sidewalk
     BRUSHES.append(
         box(
-            KH_BR_WS_X1,
-            KH_BR_EXT_Y1,
+            KH_DRIVEWAY_WS_X1,
+            KH_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_BR_WS_X2,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_WS_X2,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -256,11 +256,11 @@ def build():
     # East sidewalk
     BRUSHES.append(
         box(
-            KH_BR_ES_X1,
-            KH_BR_EXT_Y1,
+            KH_DRIVEWAY_ES_X1,
+            KH_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
-            KH_BR_ES_X2,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -268,11 +268,11 @@ def build():
     # Terrain east of east sidewalk — flush with sidewalk top
     BRUSHES.append(
         box(
-            KH_BR_ES_X2,
-            KH_BR_EXT_Y1,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             WORLD_X2 - WALL_T,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
@@ -282,10 +282,10 @@ def build():
     # (This was previously the Ennis south sidewalk; now it's part of the road junction)
     BRUSHES.append(
         box(
-            KH_BR_RD_X1,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_RD_X1,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_BR_RD_X2,
+            KH_DRIVEWAY_RD_X2,
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2 + 2,
             Textures.ROAD,
@@ -298,26 +298,28 @@ def build():
     # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
     BRUSHES.append(
         box(
-            KH_BR_WS_X1,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_WS_X1,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_BR_RD_X1,
-            KH_BR_JCY,
+            KH_DRIVEWAY_RD_X1,
+            KH_DRIVEWAY_JCY,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
     )
-    for corner_index in range(KH_BRCS_CRN_SEGS):
-        angle_start = math.radians(0 + corner_index * 90 / KH_BRCS_CRN_SEGS)
-        angle_end = math.radians(0 + (corner_index + 1) * 90 / KH_BRCS_CRN_SEGS)
-        arc_x0 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(angle_start)
-        arc_y0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_start)
-        arc_x1 = KH_BR_JCX_W + KH_BRCS_CRN_R * math.cos(angle_end)
-        arc_y1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_end)
+    for corner_index in range(KH_DRIVEWAY_CURB_CRN_SEGS):
+        angle_start = math.radians(0 + corner_index * 90 / KH_DRIVEWAY_CURB_CRN_SEGS)
+        angle_end = math.radians(
+            0 + (corner_index + 1) * 90 / KH_DRIVEWAY_CURB_CRN_SEGS
+        )
+        arc_x0 = KH_DRIVEWAY_JCX_W + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_start)
+        arc_y0 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_start)
+        arc_x1 = KH_DRIVEWAY_JCX_W + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
+        arc_y1 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
         BRUSHES.append(
             tri_prism(
-                KH_BR_JCX_W,
-                KH_BR_EXT_Y2,
+                KH_DRIVEWAY_JCX_W,
+                KH_DRIVEWAY_EXT_Y2,
                 arc_x0,
                 arc_y0,
                 arc_x1,
@@ -331,26 +333,28 @@ def build():
     # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
     BRUSHES.append(
         box(
-            KH_BR_ES_X1,
-            KH_BR_EXT_Y2,
+            KH_DRIVEWAY_ES_X1,
+            KH_DRIVEWAY_EXT_Y2,
             FLOOR_Z2,
-            KH_BR_ES_X2,
-            KH_BR_JCY,
+            KH_DRIVEWAY_ES_X2,
+            KH_DRIVEWAY_JCY,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
     )
-    for corner_index in range(KH_BRCS_CRN_SEGS):
-        angle_start = math.radians(90 + corner_index * 90 / KH_BRCS_CRN_SEGS)
-        angle_end = math.radians(90 + (corner_index + 1) * 90 / KH_BRCS_CRN_SEGS)
-        arc_x0 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(angle_start)
-        arc_y0 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_start)
-        arc_x1 = KH_BR_JCX_E + KH_BRCS_CRN_R * math.cos(angle_end)
-        arc_y1 = KH_BR_EXT_Y2 + KH_BRCS_CRN_R * math.sin(angle_end)
+    for corner_index in range(KH_DRIVEWAY_CURB_CRN_SEGS):
+        angle_start = math.radians(90 + corner_index * 90 / KH_DRIVEWAY_CURB_CRN_SEGS)
+        angle_end = math.radians(
+            90 + (corner_index + 1) * 90 / KH_DRIVEWAY_CURB_CRN_SEGS
+        )
+        arc_x0 = KH_DRIVEWAY_JCX_E + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_start)
+        arc_y0 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_start)
+        arc_x1 = KH_DRIVEWAY_JCX_E + KH_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
+        arc_y1 = KH_DRIVEWAY_EXT_Y2 + KH_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
         BRUSHES.append(
             tri_prism(
-                KH_BR_JCX_E,
-                KH_BR_EXT_Y2,
+                KH_DRIVEWAY_JCX_E,
+                KH_DRIVEWAY_EXT_Y2,
                 arc_x0,
                 arc_y0,
                 arc_x1,

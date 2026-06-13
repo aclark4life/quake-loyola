@@ -43,15 +43,15 @@ from .constants import (
     FLOOR_Z2,
     KH_BIY1,
     KH_BIY2,
-    KH_BR_CORRIDOR_X1,
-    KH_BR_HW,
-    KH_BR_RD_X1,
-    KH_BR_RD_X2,
-    KH_BR_Y1,
-    KH_BR_Y2,
-    KH_BR_ZT_N,
-    KH_BR_ZT_S,
     KH_CX,
+    KH_DRIVEWAY_CORRIDOR_X1,
+    KH_DRIVEWAY_HW,
+    KH_DRIVEWAY_RD_X1,
+    KH_DRIVEWAY_RD_X2,
+    KH_DRIVEWAY_Y1,
+    KH_DRIVEWAY_Y2,
+    KH_DRIVEWAY_ZT_N,
+    KH_DRIVEWAY_ZT_S,
     KH_EAST_ROOM_CX,
     KH_ENABLED,
     KH_ENT_X1,
@@ -969,7 +969,7 @@ def build():
     kh_verge_brushes = []
     for verge_x1, verge_x2 in [
         (ROAD_X2 + CHARLES_WALK_W + kh_bush_buffer, KH_ORIG_CX - 64 - kh_bush_buffer),
-        (KH_ORIG_CX + 64 + kh_bush_buffer, KH_BR_CORRIDOR_X1 - kh_bush_buffer),
+        (KH_ORIG_CX + 64 + kh_bush_buffer, KH_DRIVEWAY_CORRIDOR_X1 - kh_bush_buffer),
     ]:
         bush_x = verge_x1
         while bush_x <= verge_x2:
@@ -1000,13 +1000,15 @@ def build():
     CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48  # south turnaround
     CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16  # outbound Ennis lane (south Y≈792)
     CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8  # return  Ennis lane  (north Y≈956)
-    CHARLES_PLT_BR_X = KH_BR_RD_X1 + KH_BR_HW // 2  # right lane on back road (X≈2382)
+    CHARLES_PLT_BR_X = (
+        KH_DRIVEWAY_RD_X1 + KH_DRIVEWAY_HW // 2
+    )  # right lane on back road (X≈2382)
 
     # Z origin at each road surface (platform bottom + half thickness)
     platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2  # Charles St   (= 14)
     platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2  # Ennis / back road flat (= 8)
     platform_z_backroad_south = (
-        KH_BR_ZT_S + 2 + CHARLES_PLT_H // 2
+        KH_DRIVEWAY_ZT_S + 2 + CHARLES_PLT_H // 2
     )  # back road south / hill top (= 72)
 
     # Platform brush — placed at pc1 (south end of outbound Charles lane)
@@ -1037,9 +1039,15 @@ def build():
         ("cs_pc1", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc2"),
         ("cs_pc2", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
         ("cs_pc3", CHARLES_PLT_BR_X, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
-        ("cs_pc4", CHARLES_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc5"),
-        ("cs_pc5", CHARLES_PLT_BR_X, KH_BR_Y1, platform_z_backroad_south, "cs_pc6"),
-        ("cs_pc6", CHARLES_PLT_BR_X, KH_BR_Y2, platform_z_flat, "cs_pc7"),
+        ("cs_pc4", CHARLES_PLT_BR_X, KH_DRIVEWAY_Y2, platform_z_flat, "cs_pc5"),
+        (
+            "cs_pc5",
+            CHARLES_PLT_BR_X,
+            KH_DRIVEWAY_Y1,
+            platform_z_backroad_south,
+            "cs_pc6",
+        ),
+        ("cs_pc6", CHARLES_PLT_BR_X, KH_DRIVEWAY_Y2, platform_z_flat, "cs_pc7"),
         ("cs_pc7", CHARLES_PLT_BR_X, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc8"),
         ("cs_pc8", CHARLES_PLT_X_RET, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc9"),
         ("cs_pc9", CHARLES_PLT_X_RET, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc1"),
@@ -1057,7 +1065,7 @@ def build():
     ENTITIES.append(
         ent(
             "item_artifact_super_damage",
-            origin=f"{CHARLES_PLT_BR_X} {KH_BR_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
+            origin=f"{CHARLES_PLT_BR_X} {KH_DRIVEWAY_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
         )
     )
 
@@ -1065,13 +1073,13 @@ def build():
     rocket_hover_height = (
         CHARLES_PLT_H + 56
     )  # hover height above road — clear of platform top + item bbox
-    backroad_mid_y = (KH_BR_Y1 + KH_BR_Y2) // 2  # Y=-1072
+    backroad_mid_y = (KH_DRIVEWAY_Y1 + KH_DRIVEWAY_Y2) // 2  # Y=-1072
     backroad_mid_z = (
         FLOOR_Z2
         + 2
-        + (KH_BR_ZT_S - KH_BR_ZT_N)
-        * (backroad_mid_y - KH_BR_Y2)
-        // (KH_BR_Y1 - KH_BR_Y2)
+        + (KH_DRIVEWAY_ZT_S - KH_DRIVEWAY_ZT_N)
+        * (backroad_mid_y - KH_DRIVEWAY_Y2)
+        // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2)
     )
     for rocket_x, rocket_y, rocket_z in [
         # Charles outbound (south third, north third) — east sidewalk
@@ -1153,14 +1161,23 @@ def build():
         )
 
     # Ogres on the back road hill — like guards on the slope
-    backroad_center_x = (KH_BR_RD_X1 + KH_BR_RD_X2) // 2
+    backroad_center_x = (KH_DRIVEWAY_RD_X1 + KH_DRIVEWAY_RD_X2) // 2
     for ogre_y, ogre_z in [
-        (-600, FLOOR_Z2 + 2 + (64 * ((-600) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24),
+        (
+            -600,
+            FLOOR_Z2
+            + 2
+            + (64 * ((-600) - KH_DRIVEWAY_Y2) // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2))
+            + 24,
+        ),
         (
             -1200,
-            FLOOR_Z2 + 2 + (64 * ((-1200) - KH_BR_Y2) // (KH_BR_Y1 - KH_BR_Y2)) + 24,
+            FLOOR_Z2
+            + 2
+            + (64 * ((-1200) - KH_DRIVEWAY_Y2) // (KH_DRIVEWAY_Y1 - KH_DRIVEWAY_Y2))
+            + 24,
         ),
-        (KH_BR_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
+        (KH_DRIVEWAY_Y1 + 64, KH_GROUND_Z + 2 + 24),  # top of hill near quad
     ]:
         ENTITIES.append(
             ent(
