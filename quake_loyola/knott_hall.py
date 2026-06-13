@@ -48,6 +48,9 @@ from .constants import (
     KNOTT_SHAFT_X2,
     KNOTT_SHAFT_Y1,
     KNOTT_SHAFT_Y2,
+    KNOTT_SIGN_PX_H,
+    KNOTT_SIGN_PX_W,
+    KNOTT_SIGN_TEXT,
     KNOTT_STAIRS_MID_Y,
     KNOTT_STAIRS_X1,
     KNOTT_STAIRS_X2,
@@ -844,22 +847,22 @@ def build():
 
     # ── "Marion Burk Knott Hall" sign plaque — north face, 2nd floor level ───────
     # Protruding cement slab, sized to fit pixel-font lettering
-    sign_text = "MARION BURK KNOTT HALL"
-    sign_pixel_width, sign_pixel_height = 2, 4
-    sign_char_width = (4 + 1) * sign_pixel_width
-    sign_total_width = len(sign_text) * sign_char_width - sign_pixel_width
-    sign_half_width = sign_total_width // 2 + 4  # 4 unit padding each side = 222
-    sign_center_x = KNOTT_X2 - INDENT - sign_half_width  # east edge flush with wall end
-    sign_z1 = KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 20  # just above 2nd floor line
-    sign_z2 = sign_z1 + 48  # 48 units tall
+    knott_sign_char_w = (4 + 1) * KNOTT_SIGN_PX_W
+    knott_sign_total_w = len(KNOTT_SIGN_TEXT) * knott_sign_char_w - KNOTT_SIGN_PX_W
+    knott_sign_half_w = knott_sign_total_w // 2 + 4  # 4 unit padding each side = 222
+    knott_sign_cx = (
+        KNOTT_X2 - INDENT - knott_sign_half_w
+    )  # east edge flush with wall end
+    knott_sign_z1 = KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 20  # just above 2nd floor line
+    knott_sign_z2 = knott_sign_z1 + 48  # 48 units tall
     BRUSHES.append(
         box(
-            sign_center_x - sign_half_width,
+            knott_sign_cx - knott_sign_half_w,
             KNOTT_Y2,
-            sign_z1,
-            sign_center_x + sign_half_width,
+            knott_sign_z1,
+            knott_sign_cx + knott_sign_half_w,
             KNOTT_Y2 + 6,
-            sign_z2,
+            knott_sign_z2,
             Textures.CEMENT,
         )
     )
@@ -1801,12 +1804,12 @@ def build():
     # Text reversed + mirrored so it reads correctly when viewed from north (facing south)
     BRUSHES.extend(
         render_text_flat(
-            sign_text[::-1],
-            x0=sign_center_x - sign_total_width // 2,
+            KNOTT_SIGN_TEXT[::-1],
+            x0=knott_sign_cx - knott_sign_total_w // 2,
             y_face=KNOTT_Y2 + 6,
-            z_base=sign_z1 + 14,  # centered: (48-20)//2 = 14
-            px_w=sign_pixel_width,
-            px_h=sign_pixel_height,
+            z_base=knott_sign_z1 + 14,  # centered: (48-20)//2 = 14
+            px_w=KNOTT_SIGN_PX_W,
+            px_h=KNOTT_SIGN_PX_H,
             depth=2,
             tex=Textures.RAIL,
             mirror=True,
