@@ -48,6 +48,17 @@ setup:
 generate:
     python3 generate_map.py
 
+# Create the local .venv and install test dependencies (pytest)
+venv:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d .venv ]; then python3 -m venv .venv; fi
+    .venv/bin/pip install -q --upgrade pip pytest
+
+# Run the Python unit + regression test suite with pytest
+test: venv
+    .venv/bin/pytest
+
 # Compile the map (geometry, visibility, and lighting)
 compile: install-tools
     {{tools_bin}}/qbsp {{map_name}}.map

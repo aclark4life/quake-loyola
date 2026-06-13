@@ -12,6 +12,13 @@
 # Test/scratch files
 test_*
 ref_test.*
+
+# Keep the unit/regression test suite (overrides the test_* rule above)
+!tests/
+!tests/test_*.py
+
+# Local virtual environment
+.venv/
 loyola.lit
 loyola.texinfo
 loyola.vis
