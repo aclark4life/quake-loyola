@@ -5,7 +5,6 @@ import math
 #   A_           arch ring (generic — voussoir segments, radius, segment count)
 #   ARCH_        pedestrian bridge arch profile dimensions (rin, rout, stilt, slab)
 #   CS_          Charles Street (the N-S road running under the bridge)
-#   PB_DECK_        bridge deck surface (top Z, thickness)
 #   DRAW_        boolean feature-flag (enables/disables a drawn element)
 #   EAST_        geometry on the east approach of the bridge span
 #   EP_          Ennis Place / Ennis Drive entrance (pillars, boundary wall, curbs)
@@ -13,8 +12,7 @@ import math
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
 #   KH_STAIRS_   west stairwell inside Knott Hall (steps, railings, posts)
-#   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
-#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths, deck Z)
+#   PB_          Pedestrian Bridge (span, deck, piers, parapet, segment widths)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
@@ -22,6 +20,7 @@ import math
 #   TEX_         texture name string
 #   WALK_        walkway connecting the bridge east end to Knott Hall 2nd floor
 #   WALL_        structural wall thickness (generic)
+#   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
 #   WORLD_       world bounding-box extents
 #
 # ──────────────────────────────────────────────────────────────────────────────
