@@ -247,15 +247,15 @@ def build():
 
     # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
     TEX_DIVIDER = "sfloor3_2"
-    DASH_LEN = 64  # dash length
-    GAP_LEN = 64  # gap length (filled with road tex)
+    ROAD_DASH_LEN = 64  # dash length
+    ROAD_GAP_LEN = 64  # gap length (filled with road tex)
     # Charles Street — dashed N-S, two sections either side of bridge
     for section_y1, section_y2 in [(CS_Y1, PB_Y1), (PB_Y2, CS_Y2)]:
         divider_y = section_y1
         dash_on = True
         while divider_y < section_y2:
             next_divider_y = min(
-                divider_y + (DASH_LEN if dash_on else GAP_LEN), section_y2
+                divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), section_y2
             )
             divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
             BRUSHES.append(
@@ -275,7 +275,9 @@ def build():
     divider_x = ROAD_X2
     dash_on = True
     while divider_x < EP_X2:
-        next_divider_x = min(divider_x + (DASH_LEN if dash_on else GAP_LEN), EP_X2)
+        next_divider_x = min(
+            divider_x + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), EP_X2
+        )
         divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
         BRUSHES.append(
             box(
