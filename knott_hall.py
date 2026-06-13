@@ -1278,19 +1278,21 @@ def build():
     # Step 0 of north lane and step 7 of south lane extend east to wstx2 so the
     # door at each floor connects directly to the staircase.
     # Loop runs KH_FLOORS times (fl 0→4) — top flight exits onto building roof.
-    WST_HALF_N = 8
-    WST_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
-    WST_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
+    KH_STAIRS_HALF_N = 8
+    KH_STAIRS_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
+    KH_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
     PLAT_H = 8  # platform slab thickness
     stair_cx = (wstx1 + wstx2) // 2  # shaft X centre
-    stair_x1 = stair_cx - WST_HALF_N * WST_TREAD_X // 2  # west edge of stairs
-    stair_x2 = stair_x1 + WST_HALF_N * WST_TREAD_X  # east edge of stairs
+    stair_x1 = (
+        stair_cx - KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X // 2
+    )  # west edge of stairs
+    stair_x2 = stair_x1 + KH_STAIRS_HALF_N * KH_STAIRS_TREAD_X  # east edge of stairs
     wst_midY = (wsty1 + wsty2) // 2  # Y lane divider = -400
 
     for floor_index in range(KH_FLOORS):
         floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL  # floor surface Z
         half_flight_z = (
-            floor_z0 + WST_HALF_N * WST_STEP_R
+            floor_z0 + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
         )  # half-floor Z (floor_z0 + 80)
         top_flight_z = floor_z0 + KH_FLOOR_H  # next floor surface Z (= exit level)
 
@@ -1320,10 +1322,10 @@ def build():
         )
 
         # North lane: individual treads ascending westward (stair_x2 → stair_x1).
-        for tread_index in range(WST_HALF_N):
-            step_x_east = stair_x2 - tread_index * WST_TREAD_X
-            step_x_west = stair_x2 - (tread_index + 1) * WST_TREAD_X
-            step_z1 = floor_z0 + tread_index * WST_STEP_R
+        for tread_index in range(KH_STAIRS_HALF_N):
+            step_x_east = stair_x2 - tread_index * KH_STAIRS_TREAD_X
+            step_x_west = stair_x2 - (tread_index + 1) * KH_STAIRS_TREAD_X
+            step_z1 = floor_z0 + tread_index * KH_STAIRS_STEP_R
             BRUSHES.append(
                 box(
                     step_x_west,
@@ -1331,7 +1333,7 @@ def build():
                     step_z1,
                     step_x_east,
                     wsty2,
-                    step_z1 + WST_STEP_R,
+                    step_z1 + KH_STAIRS_STEP_R,
                     TEX_WALL,
                     tt=TEX_FLOOR_KH,
                 )
@@ -1351,10 +1353,10 @@ def build():
         )
 
         # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
-        for tread_index in range(WST_HALF_N):
-            step_x_west = stair_x1 + tread_index * WST_TREAD_X
-            step_x_east = step_x_west + WST_TREAD_X
-            step_z1 = half_flight_z + tread_index * WST_STEP_R
+        for tread_index in range(KH_STAIRS_HALF_N):
+            step_x_west = stair_x1 + tread_index * KH_STAIRS_TREAD_X
+            step_x_east = step_x_west + KH_STAIRS_TREAD_X
+            step_z1 = half_flight_z + tread_index * KH_STAIRS_STEP_R
             BRUSHES.append(
                 box(
                     step_x_west,
@@ -1362,7 +1364,7 @@ def build():
                     step_z1,
                     step_x_east,
                     wst_midY,
-                    step_z1 + WST_STEP_R,
+                    step_z1 + KH_STAIRS_STEP_R,
                     TEX_WALL,
                     tt=TEX_FLOOR_KH,
                 )
@@ -1372,14 +1374,14 @@ def build():
     # 2 end posts + 1 sloped cross rail per half-flight, central divider (wst_midY).
     # Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
     # they never land on a tread.  Cross rail spans the full stair band between them.
-    WST_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
-    WST_POST_W = 4  # square post cross-section
-    WST_RAIL_T = 4  # cross-rail bar thickness
+    KH_STAIRS_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
+    KH_STAIRS_POST_W = 4  # square post cross-section
+    KH_STAIRS_RAIL_T = 4  # cross-rail bar thickness
 
     for floor_index in range(KH_FLOORS):
         floor_z0 = KH_GROUND_Z + floor_index * KH_FLOOR_H + KH_WALL
-        half_flight_z = floor_z0 + WST_HALF_N * WST_STEP_R
-        top_flight_z = half_flight_z + WST_HALF_N * WST_STEP_R
+        half_flight_z = floor_z0 + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
+        top_flight_z = half_flight_z + KH_STAIRS_HALF_N * KH_STAIRS_STEP_R
 
         # ── North lane — south face (wst_midY) ────────────────────────────────
         # Lower post: east of stair band, in the entrance area
@@ -1388,21 +1390,21 @@ def build():
                 stair_x2,
                 wst_midY,
                 floor_z0,
-                stair_x2 + WST_POST_W,
-                wst_midY + WST_POST_W,
-                floor_z0 + WST_RAIL_H,
+                stair_x2 + KH_STAIRS_POST_W,
+                wst_midY + KH_STAIRS_POST_W,
+                floor_z0 + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
         # Upper post: west of stair band, on the west platform
         BRUSHES.append(
             box(
-                stair_x1 - WST_POST_W,
+                stair_x1 - KH_STAIRS_POST_W,
                 wst_midY,
                 half_flight_z,
                 stair_x1,
-                wst_midY + WST_POST_W,
-                half_flight_z + WST_RAIL_H,
+                wst_midY + KH_STAIRS_POST_W,
+                half_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
@@ -1412,11 +1414,11 @@ def build():
                 stair_x1,
                 stair_x2,
                 wst_midY,
-                wst_midY + WST_RAIL_T,
-                half_flight_z + WST_RAIL_H - WST_RAIL_T,
-                floor_z0 + WST_RAIL_H - WST_RAIL_T,
-                half_flight_z + WST_RAIL_H,
-                floor_z0 + WST_RAIL_H,
+                wst_midY + KH_STAIRS_RAIL_T,
+                half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
+                floor_z0 + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
+                half_flight_z + KH_STAIRS_RAIL_H,
+                floor_z0 + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
@@ -1425,12 +1427,12 @@ def build():
         # Lower post: west of stair band, on the west platform
         BRUSHES.append(
             box(
-                stair_x1 - WST_POST_W,
-                wst_midY - WST_POST_W,
+                stair_x1 - KH_STAIRS_POST_W,
+                wst_midY - KH_STAIRS_POST_W,
                 half_flight_z,
                 stair_x1,
                 wst_midY,
-                half_flight_z + WST_RAIL_H,
+                half_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
@@ -1438,11 +1440,11 @@ def build():
         BRUSHES.append(
             box(
                 stair_x2,
-                wst_midY - WST_POST_W,
+                wst_midY - KH_STAIRS_POST_W,
                 top_flight_z,
-                stair_x2 + WST_POST_W,
+                stair_x2 + KH_STAIRS_POST_W,
                 wst_midY,
-                top_flight_z + WST_RAIL_H,
+                top_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
@@ -1451,12 +1453,12 @@ def build():
             ramp_slab(
                 stair_x1,
                 stair_x2,
-                wst_midY - WST_RAIL_T,
+                wst_midY - KH_STAIRS_RAIL_T,
                 wst_midY,
-                half_flight_z + WST_RAIL_H - WST_RAIL_T,
-                top_flight_z + WST_RAIL_H - WST_RAIL_T,
-                half_flight_z + WST_RAIL_H,
-                top_flight_z + WST_RAIL_H,
+                half_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
+                top_flight_z + KH_STAIRS_RAIL_H - KH_STAIRS_RAIL_T,
+                half_flight_z + KH_STAIRS_RAIL_H,
+                top_flight_z + KH_STAIRS_RAIL_H,
                 TEX_RAIL,
             )
         )
