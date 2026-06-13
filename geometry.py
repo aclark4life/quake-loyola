@@ -1,7 +1,7 @@
 import math
 from constants import (
-    PB_EAST_SPAN_ANGLE,
-    PB_ARCH_X,
+    BRIDGE_EAST_SPAN_ANGLE,
+    BRIDGE_ARCH_X,
     TEX_GROUND,
 )
 from mapdata import Brush, Entity, Face
@@ -52,11 +52,11 @@ def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
 
 def east_y_shift(x):
     """Southward Y shift (negative = south) for a given X east of the easternmost pier.
-    Pivots at PB_ARCH_X[4] (= 2206); zero for x <= that pier."""
-    pivot = PB_ARCH_X[4]
+    Pivots at BRIDGE_ARCH_X[4] (= 2206); zero for x <= that pier."""
+    pivot = BRIDGE_ARCH_X[4]
     if x <= pivot:
         return 0.0
-    return -(x - pivot) * math.tan(math.radians(PB_EAST_SPAN_ANGLE))
+    return -(x - pivot) * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
 
 
 def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):

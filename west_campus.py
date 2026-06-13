@@ -4,13 +4,13 @@ from constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KH_FLOOR_H,
-    PB_ARCH_X,
-    PB_DZ1,
-    PB_DZ2,
-    PB_X1,
-    PB_X2,
-    PB_Y1,
-    PB_Y2,
+    BRIDGE_ARCH_X,
+    BRIDGE_DZ1,
+    BRIDGE_DZ2,
+    BRIDGE_X1,
+    BRIDGE_X2,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     RH_FLOORS,
     RH_H,
     RH_NORTH_Y1,
@@ -21,8 +21,8 @@ from constants import (
     RH_SOUTH2_Y2,
     RH_X1,
     RH_X2,
-    PB_SEG_SPAN_W,
-    PB_SEG_W,
+    BRIDGE_SEG_SPAN_W,
+    BRIDGE_SEG_W,
     TEX_FLOOR,
     TEX_GROUND,
     TEX_ROAD,
@@ -391,20 +391,20 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # West flat approach removed — arch now starts at world edge
     # East flat stub from arch terminus to building entrance — angled southward
-    PB_EAST_SHIFT_START = 0.0  # no shift at the pier (pivot)
-    PB_EAST_SHIFT_END = east_y_shift(
+    BRIDGE_EAST_SHIFT_START = 0.0  # no shift at the pier (pivot)
+    BRIDGE_EAST_SHIFT_END = east_y_shift(
         WORLD_X2 - WALL_T
     )  # full southward shift at east world wall
-    PB_EAST_PIVOT_X = PB_ARCH_X[4]  # easternmost pier — where the angle begins
+    BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]  # easternmost pier — where the angle begins
     # Straight section: arch terminus → easternmost pier
     BRUSHES.append(
         box(
-            PB_X2,
-            PB_Y1,
-            PB_DZ1,
-            PB_EAST_PIVOT_X,
-            PB_Y2,
-            PB_DZ2,
+            BRIDGE_X2,
+            BRIDGE_Y1,
+            BRIDGE_DZ1,
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE_Y2,
+            BRIDGE_DZ2,
             TEX_STONE,
             tt=TEX_FLOOR,
             tb=TEX_FLOOR,
@@ -413,29 +413,29 @@ def build():
     # Angled section: easternmost pier → east world wall
     BRUSHES.append(
         shear_box_y(
-            PB_EAST_PIVOT_X,
-            PB_Y1,
-            PB_DZ1,
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE_Y1,
+            BRIDGE_DZ1,
             WORLD_X2 - WALL_T,
-            PB_Y2,
-            PB_DZ2,
-            PB_EAST_SHIFT_START,
-            PB_EAST_SHIFT_END,
+            BRIDGE_Y2,
+            BRIDGE_DZ2,
+            BRIDGE_EAST_SHIFT_START,
+            BRIDGE_EAST_SHIFT_END,
             TEX_STONE,
             tt=TEX_FLOOR,
             tb=TEX_FLOOR,
         )
     )
 
-    for i in range(PB_SEG_SPAN_W):
-        sx1 = PB_X1 + i * PB_SEG_W
-        sx2 = sx1 + PB_SEG_W
+    for i in range(BRIDGE_SEG_SPAN_W):
+        sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
+        sx2 = sx1 + BRIDGE_SEG_W
         BRUSHES.append(
             ramp_slab(
                 sx1,
                 sx2,
-                PB_Y1,
-                PB_Y2,
+                BRIDGE_Y1,
+                BRIDGE_Y2,
                 dbot(sx1),
                 dbot(sx2),
                 dtop(sx1),

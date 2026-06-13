@@ -23,10 +23,10 @@ from constants import (
     KH_Y1,
     KH_Y2,
     KH_Z2,
-    PB_DZ2,
-    PB_PAR_H,
-    PB_Y1,
-    PB_Y2,
+    BRIDGE_DZ2,
+    BRIDGE_PAR_H,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     TEX_BRICK,
     TEX_CEMENT,
     TEX_FLOOR_KH,
@@ -1660,7 +1660,7 @@ def build():
             bitmap = KH_FASCIA_FONT.get(ch, KH_FASCIA_FONT[" "])
             cx = x0 + ci * char_w
             x_mid = cx + (cols * px_w) / 2
-            z_top = int(dtop(x_mid)) + PB_PAR_H - 14  # centred in parapet height
+            z_top = int(dtop(x_mid)) + BRIDGE_PAR_H - 14  # centred in parapet height
             for row_i, row_bits in enumerate(bitmap):
                 z = z_top - row_i * px_h
                 for col_i in range(cols):
@@ -1715,7 +1715,7 @@ def build():
             render_text_fascia(
                 KH_FASCIA_TEXT,
                 x0=text_x0,
-                y_face=PB_Y1,
+                y_face=BRIDGE_Y1,
                 px_w=KH_FASCIA_PX_W,
                 px_h=KH_FASCIA_PX_H,
                 depth=1,
@@ -1724,7 +1724,7 @@ def build():
             + render_text_fascia(
                 KH_FASCIA_TEXT[::-1],
                 x0=text_x0,
-                y_face=PB_Y2 + 1,
+                y_face=BRIDGE_Y2 + 1,
                 px_w=KH_FASCIA_PX_W,
                 px_h=KH_FASCIA_PX_H,
                 depth=1,
@@ -1737,7 +1737,7 @@ def build():
     )
 
     # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-    CS_LAMP_POST_H = PB_DZ2 - 32  # pole height (~12 ft)
+    CS_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
     # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
     CS_LAMP_POST_XS = [
         2158,

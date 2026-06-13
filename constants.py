@@ -10,7 +10,7 @@ import math
 #   FENCE_       iron fence (pickets, rails, spacing)
 #   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
 #   KH_          Knott Hall (the main campus building south-east of the bridge)
-#   PB_          Pedestrian Bridge (span, deck, piers, parapet, east approach)
+#   BRIDGE_          Pedestrian Bridge (span, deck, piers, parapet, east approach)
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   RH_          Residence Hall (the west-campus buildings flanking the bridge)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
@@ -154,56 +154,56 @@ KH_BR_Y1 = KH_Y1
 KH_BR_Y2 = KH_Y2
 KH_BR_EXT_Y1 = KH_BR_Y2
 KH_STAIRS_Y1 = KH_BIY2 - 256
-PBPB_BLK_HW = 24
-PB_ARCH_RISE = 144
-PB_ARCH_X = [
+BRIDGE_BLK_HW = 24
+BRIDGE_ARCH_RISE = 144
+BRIDGE_ARCH_X = [
     -1246,  # Pier 1 — west abutment pier (top of embankment hill)
     -525,  # Pier 2
     525,  # Pier 3 (anchors Ennis Drive entrance pillars)
     KH_PIER_X,  # Pier 4 — west KH pier (arch span terminus)
     KH_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
 ]
-EP_GATE_X1 = PB_ARCH_X[2] + EP_PIL_HW + 80
-EP_PIL_X1 = PB_ARCH_X[2] - EP_PIL_HW
-EP_PIL_X2 = PB_ARCH_X[2] + EP_PIL_HW
-PB_BLK_H = 36
-PB_BLK_OVH = 0
-PB_DZ1, PB_DZ2 = (
+EP_GATE_X1 = BRIDGE_ARCH_X[2] + EP_PIL_HW + 80
+EP_PIL_X1 = BRIDGE_ARCH_X[2] - EP_PIL_HW
+EP_PIL_X2 = BRIDGE_ARCH_X[2] + EP_PIL_HW
+BRIDGE_BLK_H = 36
+BRIDGE_BLK_OVH = 0
+BRIDGE_DZ1, BRIDGE_DZ2 = (
     224,
     240,
 )
-CS_LAMP_POST_H = PB_DZ2 - 32
-KH_GROUND_Z = max(FLOOR_Z2, PB_DZ2 - KH_FLOOR_H - KH_WALL)
+CS_LAMP_POST_H = BRIDGE_DZ2 - 32
+KH_GROUND_Z = max(FLOOR_Z2, BRIDGE_DZ2 - KH_FLOOR_H - KH_WALL)
 KH_BR_ZT_S = KH_GROUND_Z
 KH_Z2 = KH_GROUND_Z + KH_FLOORS * KH_FLOOR_H
-PB_EAST_SHIFT_START = 0.0
-PB_EAST_SPAN_ANGLE = 12.0
-PB_PAR_H = 40
-PB_PIL_BASE_CAP_H = 6
-PB_PIL_BASE_CAP_OVH = 5
-PB_PIL_BASE_H = 24
-PB_PIL_BASE_RAMP_H = 40
-PB_PIL_CAP_H = 12
-PB_PIL_CAP_IN_OVH = 4
-PB_PIL_CAP_OUT_OVH = 20
-PB_PIL_CAP_OVHNTR_R = (160, 90)
-PB_PIL_EXTRA = 64
-PB_PIL_INNER_R = (160, 84)
-PB_PIL_OUTER_R = (140, 72)
-PB_PIL_OVERHANG = 16
-PB_PIL_PYR_H = 20
-PB_PIL_PYR_W = 45
-PB_SEG_SPAN_W = 32
-PB_SQ_D = 1
-PB_SQ_HH = 6
-PB_SQ_HW = 8
-PB_TUBE_GAP = 12
-PB_TUBE_HW = 2
-PB_TUBE_RISE = 10
-PB_X2 = KH_PIER_X
-PB_Y1, PB_Y2 = -136, 136
-CS_SWALK_START = PB_Y2 + 200
-EP_Y = PB_Y2 + 800
+BRIDGE_EAST_SHIFT_START = 0.0
+BRIDGE_EAST_SPAN_ANGLE = 12.0
+BRIDGE_PAR_H = 40
+BRIDGE_PIL_BASE_CAP_H = 6
+BRIDGE_PIL_BASE_CAP_OVH = 5
+BRIDGE_PIL_BASE_H = 24
+BRIDGE_PIL_BASE_RAMP_H = 40
+BRIDGE_PIL_CAP_H = 12
+BRIDGE_PIL_CAP_IN_OVH = 4
+BRIDGE_PIL_CAP_OUT_OVH = 20
+BRIDGE_PIL_CAP_OVHNTR_R = (160, 90)
+BRIDGE_PIL_EXTRA = 64
+BRIDGE_PIL_INNER_R = (160, 84)
+BRIDGE_PIL_OUTER_R = (140, 72)
+BRIDGE_PIL_OVERHANG = 16
+BRIDGE_PIL_PYR_H = 20
+BRIDGE_PIL_PYR_W = 45
+BRIDGE_SEG_SPAN_W = 32
+BRIDGE_SQ_D = 1
+BRIDGE_SQ_HH = 6
+BRIDGE_SQ_HW = 8
+BRIDGE_TUBE_GAP = 12
+BRIDGE_TUBE_HW = 2
+BRIDGE_TUBE_RISE = 10
+BRIDGE_X2 = KH_PIER_X
+BRIDGE_Y1, BRIDGE_Y2 = -136, 136
+CS_SWALK_START = BRIDGE_Y2 + 200
+EP_Y = BRIDGE_Y2 + 800
 CS_LAMP_POST_YS = [EP_Y - EP_HW - 160]
 CS_PLT_Y_OUT = EP_Y - EP_HW + 16
 CS_PLT_Y_RET = EP_Y + EP_HW // 8
@@ -211,7 +211,7 @@ EP_SW_EDGE = EP_Y - EP_HW - 3 * CS_WALK_W - 32
 EP_WALL_NY = EP_Y + EP_HW + EP_PIL_HW * 2
 KH_BR_EXT_Y2 = EP_Y - EP_HW - CS_WALK_W
 KH_BR_JCY = EP_Y - EP_HW
-PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X = PB_ARCH_X
+PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X = BRIDGE_ARCH_X
 PLAT_H = 8
 RH_DEPTH = 600
 RH_DOOR_H = (
@@ -224,13 +224,13 @@ RH_ENT_H = 100
 RH_ENT_HW = 48
 RH_FLOORS = 3
 RH_H = RH_FLOORS * KH_FLOOR_H
-RH_PIER_X = min(PB_ARCH_X)
+RH_PIER_X = min(BRIDGE_ARCH_X)
 RH_SLAB_T = 16
 RH_WALL = 16
 RH_EAVE_Z = FLOOR_Z2 + RH_H + RH_WALL
 RH_RIDGE_Z = RH_EAVE_Z + KH_FLOOR_H
-RH_WALL_N_Y1 = PB_Y2 + PB_PIL_OVERHANG
-RH_WALL_S_Y2 = -(PB_Y2 + PB_PIL_OVERHANG)
+RH_WALL_N_Y1 = BRIDGE_Y2 + BRIDGE_PIL_OVERHANG
+RH_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PIL_OVERHANG)
 RH_WIN_HH = 44
 RH_WIN_HW = 36
 RH_WIN_W, RH_WIN_H, RH_WIN_T = 20, 28, 3
@@ -264,8 +264,8 @@ WALK_ZT2 = KH_GROUND_Z + KH_FLOOR_H + KH_WALL
 WALL_T = 16
 WIN_HALF = 24
 WORLD_X1 = -1983
-PB_X1 = WORLD_X1 + WALL_T
-PB_SEG_W = (PB_X2 - PB_X1) / PB_SEG_SPAN_W
+BRIDGE_X1 = WORLD_X1 + WALL_T
+BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W
 WORLD_X2 = 2976
 EP_CEMENT_X2 = WORLD_X2 - WALL_T
 EP_GATE_X2 = (EP_GATE_X1 + WORLD_X2 - WALL_T) // 2
@@ -275,18 +275,18 @@ EP_CEMENT_LAMP_POSTS = [
     (EP_CEMENT_X2, EP_WALL_NY + EP_WALL_T // 2, FLOOR_Z2 + 234),
 ]
 EP_X2 = WORLD_X2 - WALL_T
-PB_EAST_SHIFT_END = -((WORLD_X2 - WALL_T) - PB_ARCH_X[4]) * math.tan(
-    math.radians(PB_EAST_SPAN_ANGLE)
+BRIDGE_EAST_SHIFT_END = -((WORLD_X2 - WALL_T) - BRIDGE_ARCH_X[4]) * math.tan(
+    math.radians(BRIDGE_EAST_SPAN_ANGLE)
 )
-PB_SPAN_CENTRES = [
-    (PB_X1 + PB_ARCH_X[0]) // 2,
-    (PB_ARCH_X[0] + PB_ARCH_X[1]) // 2,
-    (PB_ARCH_X[1] + PB_ARCH_X[2]) // 2,
-    (PB_ARCH_X[2] + PB_X2) // 2,
-    (PB_X2 + PB_ARCH_X[4]) // 2,
-    (PB_ARCH_X[4] + WORLD_X2 - WALL_T) // 2,
+BRIDGE_SPAN_CENTRES = [
+    (BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2,
+    (BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2,
+    (BRIDGE_ARCH_X[1] + BRIDGE_ARCH_X[2]) // 2,
+    (BRIDGE_ARCH_X[2] + BRIDGE_X2) // 2,
+    (BRIDGE_X2 + BRIDGE_ARCH_X[4]) // 2,
+    (BRIDGE_ARCH_X[4] + WORLD_X2 - WALL_T) // 2,
 ]
-PB_PEND_XS = PB_SPAN_CENTRES
+BRIDGE_PEND_XS = BRIDGE_SPAN_CENTRES
 WORLD_Y1, WORLD_Y2 = (
     -1984,
     1712,
@@ -309,23 +309,23 @@ def arch_z(x):
     """Z offset above flat datum for parabolic arch at x.
 
     Symmetric parabola centred at X=0 (Charles Street). Both sides degrade
-    at the same rate, reaching zero at ±PB_X2 (1246 units). West of -1246
+    at the same rate, reaching zero at ±BRIDGE_X2 (1246 units). West of -1246
     the value clamps to zero (flat approach to world wall).
     """
-    return PB_ARCH_RISE * max(0.0, 1.0 - (x / float(PB_X2)) ** 2)
+    return BRIDGE_ARCH_RISE * max(0.0, 1.0 - (x / float(BRIDGE_X2)) ** 2)
 
 
 def dbot(x):
     """Z coordinate of the deck underside at a given X position."""
-    return PB_DZ1 + arch_z(x)
+    return BRIDGE_DZ1 + arch_z(x)
 
 
 def dtop(x):
     """Z coordinate of the deck surface (top face) at a given X position."""
-    return PB_DZ2 + arch_z(x)
+    return BRIDGE_DZ2 + arch_z(x)
 
 
-PB_DECK_Z = dtop(0) + 8
+BRIDGE_DECK_Z = dtop(0) + 8
 WALK_ZT1 = int(dtop(KH_ORIG_CX))
 
 
@@ -334,10 +334,10 @@ def ft(feet, inches=0):
     return round((feet + inches / 12) * SCALE)
 
 
-PB_PAR_W = ft(2, 6)
-PB_PIL_HW = ft(2, 5.5)
-PB_BLK_PIR_M = PB_PIL_HW + PBPB_BLK_HW + 4
-RH_X2 = RH_PIER_X + PB_PIL_HW + 32
+BRIDGE_PAR_W = ft(2, 6)
+BRIDGE_PIL_HW = ft(2, 5.5)
+BRIDGE_BLK_PIR_M = BRIDGE_PIL_HW + BRIDGE_BLK_HW + 4
+RH_X2 = RH_PIER_X + BRIDGE_PIL_HW + 32
 FENCE_X1 = RH_X2 + 96
 FENCE_X2 = FENCE_X1 + 2
 RH_X1 = RH_X2 - 576
@@ -346,5 +346,5 @@ sty1, sty2 = KH_BIY2 - 128, KH_BIY2
 KH_STAIRS_Y2 = sty2
 KH_STAIRS_MID_Y = (KH_STAIRS_Y1 + KH_STAIRS_Y2) // 2
 RH_NORTH_CY = (RH_NORTH_Y1 + RH_NORTH_Y2) // 2
-PB_EAST_PIVOT_X = PB_ARCH_X[4]
+BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]
 RH_CX = (RH_X1 + RH_X2) // 2
