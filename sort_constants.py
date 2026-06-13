@@ -97,8 +97,8 @@ def parse_entries(source: str) -> tuple[str, list[dict]]:
             all_defined[n] = i
 
     # Map every defined name → the canonical entry name that defines it
-    # Needed for tuple unpacking: `PB_DZ1, PB_DZ2 = ...` has canonical name PB_DZ1
-    # but PB_DZ2 must also be tracked as a dep trigger.
+    # Needed for tuple unpacking: `BRIDGE_DZ1, BRIDGE_DZ2 = ...` has canonical name BRIDGE_DZ1
+    # but BRIDGE_DZ2 must also be tracked as a dep trigger.
     name_to_canonical = {n: entries[idx]["name"] for n, idx in all_defined.items()}
 
     # Compute deps as canonical entry names that must precede this entry

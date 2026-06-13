@@ -3,13 +3,13 @@ from constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KH_X2,
-    PB_ARCH_X,
-    PB_DZ2,
-    PB_PIL_HW,
-    PB_PIL_OVERHANG,
-    PB_X1,
-    PB_Y1,
-    PB_Y2,
+    BRIDGE_ARCH_X,
+    BRIDGE_DZ2,
+    BRIDGE_PIL_HW,
+    BRIDGE_PIL_OVERHANG,
+    BRIDGE_X1,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     ROAD_X1,
     ROAD_X2,
     TEX_BRICK,
@@ -83,7 +83,7 @@ def build():
     # ── Ennis Road (E-W, parallel to bridge, north side) ──
     # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
     # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-    EP_Y = PB_Y2 + 800  # 936: centred 800 units north of bridge north edge
+    EP_Y = BRIDGE_Y2 + 800  # 936: centred 800 units north of bridge north edge
     EP_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
     EP_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
     EP_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
@@ -100,7 +100,7 @@ def build():
         box(ROAD_X1, CS_Y1, FLOOR_Z2, -div_hw, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD)
     )
     BRUSHES.append(box(div_hw, CS_Y1, FLOOR_Z2, ROAD_X2, CS_Y2, FLOOR_Z2 + 2, TEX_ROAD))
-    CS_SWALK_START = PB_Y2 + 200  # sidewalk starts north of bridge
+    CS_SWALK_START = BRIDGE_Y2 + 200  # sidewalk starts north of bridge
     # West sidewalk — north of bridge
     BRUSHES.append(
         box(
@@ -250,7 +250,7 @@ def build():
     ROAD_DASH_LEN = 64  # dash length
     ROAD_GAP_LEN = 64  # gap length (filled with road tex)
     # Charles Street — dashed N-S, two sections either side of bridge
-    for section_y1, section_y2 in [(CS_Y1, PB_Y1), (PB_Y2, CS_Y2)]:
+    for section_y1, section_y2 in [(CS_Y1, BRIDGE_Y1), (BRIDGE_Y2, CS_Y2)]:
         divider_y = section_y1
         dash_on = True
         while divider_y < section_y2:
@@ -467,9 +467,9 @@ def build():
     # ── Ennis Drive entrance pillars (white stone columns flanking Charles St entrance) ──
     EP_PIL_HW = 22  # pillar half-width (was 30, ×0.75)
     EP_PIL_X1 = (
-        PB_ARCH_X[2] - EP_PIL_HW
+        BRIDGE_ARCH_X[2] - EP_PIL_HW
     )  # align pillar centre with closest bridge pier (X=525)
-    EP_PIL_X2 = PB_ARCH_X[2] + EP_PIL_HW
+    EP_PIL_X2 = BRIDGE_ARCH_X[2] + EP_PIL_HW
     EP_PIL_ZB = FLOOR_Z2
     EP_PIL_POST_H = 81  # post height (was 108, ×0.75)
     EP_PIL_CAP_OVH = 1
@@ -573,7 +573,7 @@ def build():
     EP_WALL_H = 96  # wall height — matches iron fence
     EP_WALL_NY = EP_Y + EP_HW + EP_PIL_HW * 2  # south face Y (flush with north pillar)
     EP_WALL_X1 = ROAD_X2 + CS_WALK_W + 48  # ~48u east of sidewalk (more grass)
-    bwex2 = PB_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
+    bwex2 = BRIDGE_ARCH_X[2] + EP_PIL_HW + 80  # E-W wall extends past stone pillar
     # East-running segment (south base of L)
     BRUSHES.append(
         box(
@@ -1025,8 +1025,8 @@ def build():
         EP_CEMENT_LAMP_POSTS.append((pillar_x, pillar_center_y, lamppost_base_z + 180))
 
     RH_DEPTH = 600  # building N-S depth (doubled)
-    RH_PIER_X = min(PB_ARCH_X)  # = -1100
-    RH_X2 = RH_PIER_X + PB_PIL_HW + 32  # east face of building  = -1031
+    RH_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
+    RH_X2 = RH_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
     RH_X1 = RH_X2 - 576  # west face of building (doubled width)
     RH_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
     RH_NORTH_Y1 = RH_NORTH_Y2 - RH_DEPTH  # north building south face
@@ -1039,18 +1039,19 @@ def build():
     RH_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
     # Interpolate ramp top-Z at the building's west face so the slope is continuous
     emb_zt_at_ab_x1 = int(
-        PB_DZ2 + (FLOOR_Z2 - PB_DZ2) * (RH_X1 - PB_X1) / (RH_EMB_X2 - PB_X1)
+        BRIDGE_DZ2
+        + (FLOOR_Z2 - BRIDGE_DZ2) * (RH_X1 - BRIDGE_X1) / (RH_EMB_X2 - BRIDGE_X1)
     )
     # South segment — west of south buildings (through buildings' Y range)
     BRUSHES.append(
         ramp_slab(
-            PB_X1,
+            BRIDGE_X1,
             RH_X1,
             CS_Y1,
             RH_SOUTH2_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            PB_DZ2,
+            BRIDGE_DZ2,
             emb_zt_at_ab_x1,
             TEX_GROUND,
             tt=TEX_GROUND,
@@ -1059,13 +1060,13 @@ def build():
     # South segment — full width between south buildings and north building
     BRUSHES.append(
         ramp_slab(
-            PB_X1,
+            BRIDGE_X1,
             RH_EMB_X2,
             RH_SOUTH2_Y2,
             RH_NORTH_Y1,
             FLOOR_Z1,
             FLOOR_Z1,
-            PB_DZ2,
+            BRIDGE_DZ2,
             FLOOR_Z2,
             TEX_GROUND,
             tt=TEX_GROUND,
@@ -1074,13 +1075,13 @@ def build():
     # Middle segment — only west of north building
     BRUSHES.append(
         ramp_slab(
-            PB_X1,
+            BRIDGE_X1,
             RH_X1,
             RH_NORTH_Y1,
             RH_NORTH_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            PB_DZ2,
+            BRIDGE_DZ2,
             emb_zt_at_ab_x1,
             TEX_GROUND,
             tt=TEX_GROUND,
@@ -1089,13 +1090,13 @@ def build():
     # North of north building — restore original ramp
     BRUSHES.append(
         ramp_slab(
-            PB_X1,
+            BRIDGE_X1,
             RH_EMB_X2,
             RH_NORTH_Y2,
             CS_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            PB_DZ2,
+            BRIDGE_DZ2,
             FLOOR_Z2,
             TEX_GROUND,
             tt=TEX_GROUND,
@@ -1104,7 +1105,7 @@ def build():
 
     # Wall extending north from the abutment pier, deck height, city2_1 texture
     # Door opening ~160 units north of the pier (visible in bridge10)
-    RH_WALL_S_Y2 = -(PB_Y2 + PB_PIL_OVERHANG)  # south face of pier = -152
+    RH_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PIL_OVERHANG)  # south face of pier = -152
     RH_DOOR_W = 80  # door opening width (~5 ft)
     RH_DOOR_OFF = 160  # distance from pier face to door centre
     RH_DOOR_H = (
@@ -1116,34 +1117,34 @@ def build():
     s_door_y = RH_SOUTH2_Y2 + RH_DOOR_OFF  # door centre Y
     BRUSHES.append(
         box(
-            RH_PIER_X - PB_PIL_HW,
+            RH_PIER_X - BRIDGE_PIL_HW,
             RH_SOUTH2_Y2,
             FLOOR_Z2,
-            RH_PIER_X + PB_PIL_HW,
+            RH_PIER_X + BRIDGE_PIL_HW,
             s_door_y - RH_DOOR_W // 2,
-            PB_DZ2,
+            BRIDGE_DZ2,
             "city2_1",
         )
     )
     BRUSHES.append(
         box(
-            RH_PIER_X - PB_PIL_HW,
+            RH_PIER_X - BRIDGE_PIL_HW,
             s_door_y + RH_DOOR_W // 2,
             FLOOR_Z2,
-            RH_PIER_X + PB_PIL_HW,
+            RH_PIER_X + BRIDGE_PIL_HW,
             RH_WALL_S_Y2,
-            PB_DZ2,
+            BRIDGE_DZ2,
             "city2_1",
         )
     )
     BRUSHES.append(
         box(
-            RH_PIER_X - PB_PIL_HW,
+            RH_PIER_X - BRIDGE_PIL_HW,
             s_door_y - RH_DOOR_W // 2,
             FLOOR_Z2 + RH_DOOR_H,
-            RH_PIER_X + PB_PIL_HW,
+            RH_PIER_X + BRIDGE_PIL_HW,
             s_door_y + RH_DOOR_W // 2,
-            PB_DZ2,
+            BRIDGE_DZ2,
             "city2_1",
         )
     )

@@ -41,21 +41,21 @@ from constants import (
     KH_Y1,
     KH_Y2,
     KH_Z2,
-    PB_ARCH_X,
-    PB_DZ2,
-    PB_PAR_H,
-    PB_PAR_W,
-    PB_PEND_XS,
-    PB_PIL_BASE_H,
-    PB_PIL_BASE_RAMP_H,
-    PB_PIL_CAP_H,
-    PB_PIL_EXTRA,
-    PB_PIL_HW,
-    PB_PIL_PYR_H,
-    PB_X1,
-    PB_X2,
-    PB_Y1,
-    PB_Y2,
+    BRIDGE_ARCH_X,
+    BRIDGE_DZ2,
+    BRIDGE_PAR_H,
+    BRIDGE_PAR_W,
+    BRIDGE_PEND_XS,
+    BRIDGE_PIL_BASE_H,
+    BRIDGE_PIL_BASE_RAMP_H,
+    BRIDGE_PIL_CAP_H,
+    BRIDGE_PIL_EXTRA,
+    BRIDGE_PIL_HW,
+    BRIDGE_PIL_PYR_H,
+    BRIDGE_X1,
+    BRIDGE_X2,
+    BRIDGE_Y1,
+    BRIDGE_Y2,
     RH_FLOORS,
     RH_NORTH_Y1,
     RH_NORTH_Y2,
@@ -90,7 +90,7 @@ from constants import (
     dtop,
     EP_GATE_X1,
     EP_GATE_X2,
-    PB_EAST_SHIFT_END,
+    BRIDGE_EAST_SHIFT_END,
     KH_EAST_ROOM_CX,
     CS_LAMP_POST_YS,
     KH_ROOM_SPLITS,
@@ -120,7 +120,7 @@ from geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
-    PB_DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
+    BRIDGE_DECK_Z = dtop(0) + 8  # centre of arch deck + a bit (spawn/item height)
     ROAD_Z = FLOOR_Z2 + 8
 
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
@@ -323,7 +323,7 @@ def build():
         WORLD_X1 + WALL_T,
         WORLD_X1 + WALL_T + ARCH_SLAB_W,
         0.0,
-        PB_DZ2,
+        BRIDGE_DZ2,
         ARCH_RIN,
         A_SEGS,
         TEX_TELEPORT,
@@ -335,7 +335,9 @@ def build():
     # West lower trigger (ground floor — simple box between posts)
     wlx1 = WORLD_X1 + WALL_T
     wlx2 = wlx1 + ARCH_SLAB_W
-    west_lower = [box(wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, PB_DZ2, TEX_TELEPORT)]
+    west_lower = [
+        box(wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, BRIDGE_DZ2, TEX_TELEPORT)
+    ]
     ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
     ENTITIES.append(brush_ent("func_illusionary", west_lower))
 
@@ -343,8 +345,8 @@ def build():
     east_brushes = arch_fill(
         WORLD_X2 - WALL_T - ARCH_SLAB_W,
         WORLD_X2 - WALL_T,
-        PB_EAST_SHIFT_END,
-        PB_DZ2,
+        BRIDGE_EAST_SHIFT_END,
+        BRIDGE_DZ2,
         ARCH_RIN,
         A_SEGS,
         TEX_TELEPORT,
@@ -361,18 +363,18 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_east_deck",
-            origin=f"{east_lower_deck_x} {int(PB_EAST_SHIFT_END)} {int(PB_DZ2 + 40)}",
+            origin=f"{east_lower_deck_x} {int(BRIDGE_EAST_SHIFT_END)} {int(BRIDGE_DZ2 + 40)}",
             angle="180",
         )
     )
     east_lower = [
         box(
             elx1,
-            PB_EAST_SHIFT_END - ARCH_RIN,
+            BRIDGE_EAST_SHIFT_END - ARCH_RIN,
             FLOOR_Z2,
             elx2,
-            PB_EAST_SHIFT_END + ARCH_RIN,
-            PB_DZ2,
+            BRIDGE_EAST_SHIFT_END + ARCH_RIN,
+            BRIDGE_DZ2,
             TEX_TELEPORT,
         )
     ]
@@ -443,7 +445,7 @@ def build():
     ENTITIES.append(
         ent(
             "info_player_start",
-            origin=f"{KH_CX} {PB_Y1 + PB_PAR_W + 32} {int(PB_DZ2 + 24)}",
+            origin=f"{KH_CX} {BRIDGE_Y1 + BRIDGE_PAR_W + 32} {int(BRIDGE_DZ2 + 24)}",
             angle="180",
         )
     )
@@ -464,7 +466,7 @@ def build():
         ((400, 0, int(dtop(400) + 32)), 270),
         # Walkway
         *(
-            [((KH_CX, (PB_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180)]
+            [((KH_CX, (BRIDGE_Y1 + KH_Y2) // 2, int(WALK_ZT1 + 32)), 180)]
             if KH_ENABLED
             else []
         ),
@@ -511,7 +513,7 @@ def build():
 
     # ── Weapons ───────────────────────────────────────────────────────────────
     # Rocket launcher — bridge centre (high value, exposed position)
-    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {PB_DECK_Z}"))
+    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {BRIDGE_DECK_Z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
     if KH_ENABLED:
         ENTITIES.append(
@@ -522,20 +524,23 @@ def build():
         )
     # Rocket launcher — west arch, north side
     ENTITIES.append(
-        ent("weapon_rocketlauncher", origin=f"{PB_ARCH_X[1]} {PB_Y1 - 48} {PB_DECK_Z}")
+        ent(
+            "weapon_rocketlauncher",
+            origin=f"{BRIDGE_ARCH_X[1]} {BRIDGE_Y1 - 48} {BRIDGE_DECK_Z}",
+        )
     )
     # Remaining rocket launchers
     for rl_origin in [
         f"{ROAD_X2 + 40} {EP_Y - EP_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
-        f"{PB_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
+        f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
         f"{int(EP_GATE_X1 + (EP_GATE_X2 - EP_GATE_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
         f"{int(EP_CEMENT_X1 + (EP_CEMENT_X2 - EP_CEMENT_X1) // 2)} {EP_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
-        f"{(PB_X1 + PB_ARCH_X[0]) // 2} 0 {PB_DECK_Z}",  # span 1
-        f"{(PB_ARCH_X[0] + PB_ARCH_X[1]) // 2} {PB_Y2 - 24} {PB_DECK_Z}",  # span 2 south edge
-        f"{(PB_ARCH_X[1] + PB_ARCH_X[2]) // 2} {PB_Y1 + 24} {PB_DECK_Z}",  # span 3 north edge
-        f"{(PB_ARCH_X[2] + PB_X2) // 2} 0 {PB_DECK_Z}",  # span 4
-        f"{(PB_X2 + PB_ARCH_X[4]) // 2} 0 {PB_DECK_Z}",  # span 5 (east angled)
+        f"{(BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
+        f"{(BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2} {BRIDGE_Y2 - 24} {BRIDGE_DECK_Z}",  # span 2 south edge
+        f"{(BRIDGE_ARCH_X[1] + BRIDGE_ARCH_X[2]) // 2} {BRIDGE_Y1 + 24} {BRIDGE_DECK_Z}",  # span 3 north edge
+        f"{(BRIDGE_ARCH_X[2] + BRIDGE_X2) // 2} 0 {BRIDGE_DECK_Z}",  # span 4
+        f"{(BRIDGE_X2 + BRIDGE_ARCH_X[4]) // 2} 0 {BRIDGE_DECK_Z}",  # span 5 (east angled)
     ]:
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
@@ -578,7 +583,7 @@ def build():
         )
 
     # ── Ammo ──────────────────────────────────────────────────────────────────
-    for ax in PB_ARCH_X:
+    for ax in BRIDGE_ARCH_X:
         ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(dtop(ax) + 8)}"))
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
@@ -599,7 +604,7 @@ def build():
 
     # ── Health & Armor ────────────────────────────────────────────────────────
     # Health — scattered throughout
-    ENTITIES.append(ent("item_health", origin=f"0 0 {PB_DECK_Z}"))
+    ENTITIES.append(ent("item_health", origin=f"0 0 {BRIDGE_DECK_Z}"))
     ENTITIES.append(
         ent("item_health", origin=f"{KH_EAST_ROOM_CX} {KH_Y2 - 64} {KH_GROUND_Z + 40}")
     )
@@ -619,7 +624,7 @@ def build():
     )
     # Armor — contested locations
     ENTITIES.append(
-        ent("item_armor1", origin=f"-200 0 {PB_DECK_Z}")
+        ent("item_armor1", origin=f"-200 0 {BRIDGE_DECK_Z}")
     )  # yellow armor on bridge
     ENTITIES.append(
         ent(
@@ -632,15 +637,19 @@ def build():
 
     # Torch lights on pillar caps
     if SHOW_SUPPORTS:
-        for px in PB_ARCH_X:
+        for px in BRIDGE_ARCH_X:
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
                 continue
             pbase = dtop(px)
             pcap = (
-                pbase + PB_PAR_H + PB_PIL_EXTRA + PB_PIL_CAP_H + PB_PIL_PYR_H
+                pbase
+                + BRIDGE_PAR_H
+                + BRIDGE_PIL_EXTRA
+                + BRIDGE_PIL_CAP_H
+                + BRIDGE_PIL_PYR_H
             )  # top of pyramid
-            cy_n = PB_Y2 - PB_PAR_W // 2  # centred on north pillar cap
-            cy_s = PB_Y1 + PB_PAR_W // 2  # centred on south pillar cap
+            cy_n = BRIDGE_Y2 - BRIDGE_PAR_W // 2  # centred on north pillar cap
+            cy_s = BRIDGE_Y1 + BRIDGE_PAR_W // 2  # centred on south pillar cap
             # Flames on pillar tops — raised above pyramid apex so they visually sit on top
             ENTITIES.append(
                 ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
@@ -663,14 +672,14 @@ def build():
 
     # Pillar base uplights — ground-level spots wash light up the pier faces
     if SHOW_SUPPORTS:
-        for px in PB_ARCH_X:
+        for px in BRIDGE_ARCH_X:
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
                 continue
-            for underbridge_light_y in [PB_Y2 + 30, PB_Y1 - 30]:
+            for underbridge_light_y in [BRIDGE_Y2 + 30, BRIDGE_Y1 - 30]:
                 # Skip abutment-pier positions buried in solid building geometry
-                if px == PB_ARCH_X[0]:
+                if px == BRIDGE_ARCH_X[0]:
                     continue
-                if px == PB_ARCH_X[-1] and underbridge_light_y == PB_Y1 - 30:
+                if px == BRIDGE_ARCH_X[-1] and underbridge_light_y == BRIDGE_Y1 - 30:
                     continue
                 ENTITIES.append(
                     ent("light", origin=f"{px} {underbridge_light_y} 16", light="200")
@@ -722,7 +731,7 @@ def build():
         )
 
     # Under-bridge amber pendant lights — flicker style, hang below deck
-    for pier_x in PB_PEND_XS:
+    for pier_x in BRIDGE_PEND_XS:
         ENTITIES.append(
             ent(
                 "light",
@@ -733,49 +742,53 @@ def build():
         )
 
     # Pier base lights — illuminate plinths and arch openings from just inside each pier
-    for pier_x in PB_ARCH_X:
+    for pier_x in BRIDGE_ARCH_X:
         # West abutment pier is embedded in solid building geometry — skip buried lights
-        if pier_x == PB_ARCH_X[0]:
+        if pier_x == BRIDGE_ARCH_X[0]:
             continue
         pier_light_z = (
-            FLOOR_Z2 + PB_PIL_BASE_RAMP_H + 60
+            FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H + 60
         )  # just above the plinth top, low in the arch
         ENTITIES.append(
-            ent("light", origin=f"{pier_x} {PB_Y2 // 2} {pier_light_z}", light="250")
+            ent(
+                "light", origin=f"{pier_x} {BRIDGE_Y2 // 2} {pier_light_z}", light="250"
+            )
         )
         ENTITIES.append(
-            ent("light", origin=f"{pier_x} {PB_Y1 // 2} {pier_light_z}", light="250")
+            ent(
+                "light", origin=f"{pier_x} {BRIDGE_Y1 // 2} {pier_light_z}", light="250"
+            )
         )
 
     # Cement arch on east face of abutment pier (-1246) — three lights for good coverage
-    abutment_pier_x = min(PB_ARCH_X)  # = -1246
-    abutment_arch_z = FLOOR_Z2 + PB_PIL_BASE_H + 60  # mid-height of arch opening
+    abutment_pier_x = min(BRIDGE_ARCH_X)  # = -1246
+    abutment_arch_z = FLOOR_Z2 + BRIDGE_PIL_BASE_H + 60  # mid-height of arch opening
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + PB_PIL_HW + 32} 0 {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} 0 {abutment_arch_z}",
             light="700",
         )
     )
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + PB_PIL_HW + 32} {PB_Y2 // 2} {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} {BRIDGE_Y2 // 2} {abutment_arch_z}",
             light="500",
         )
     )
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + PB_PIL_HW + 32} {PB_Y1 // 2} {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} {BRIDGE_Y1 // 2} {abutment_arch_z}",
             light="500",
         )
     )
 
     # Light on underside of walkway slab illuminating the ramp below
     if KH_WALKWAY_ENABLED:
-        walk_mid_y = (PB_Y1 + KH_Y2) // 2
-        walk_frac = (PB_Y1 - walk_mid_y) / float(PB_Y1 - KH_Y2)
+        walk_mid_y = (BRIDGE_Y1 + KH_Y2) // 2
+        walk_frac = (BRIDGE_Y1 - walk_mid_y) / float(BRIDGE_Y1 - KH_Y2)
         wk_zb1 = WALK_ZT1 - KH_WALL
         wk_zb2 = WALK_ZT2 - KH_WALL
         walk_bot_mid = int(wk_zb1 + walk_frac * (wk_zb2 - wk_zb1))
@@ -1192,7 +1205,7 @@ def build():
         )
 
     # One on the elevated walkway — guards the bridge → KH 2nd floor approach
-    walkway_mid_x = (PB_X2 + WALK_X1) // 2  # midpoint of walkway span
+    walkway_mid_x = (BRIDGE_X2 + WALK_X1) // 2  # midpoint of walkway span
     ENTITIES.append(
         ent(
             "monster_hell_knight",
