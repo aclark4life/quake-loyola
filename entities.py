@@ -69,10 +69,7 @@ from constants import (
     ROAD_X1,
     ROAD_X2,
     SHOW_SUPPORTS,
-    TEX_FLOOR,
-    TEX_FLOOR_KH,
-    TEX_SKY,
-    TEX_TELEPORT,
+    Textures,
     WALK_X1,
     WALK_ZT1,
     WALK_ZT2,
@@ -326,7 +323,7 @@ def build():
         BRIDGE_DZ2,
         ARCH_RIN,
         A_SEGS,
-        TEX_TELEPORT,
+        Textures.TELEPORT,
         stilt_h=ARCH_STILT_H,
     )
     ENTITIES.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
@@ -336,7 +333,7 @@ def build():
     wlx1 = WORLD_X1 + WALL_T
     wlx2 = wlx1 + ARCH_SLAB_W
     west_lower = [
-        box(wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, BRIDGE_DZ2, TEX_TELEPORT)
+        box(wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, BRIDGE_DZ2, Textures.TELEPORT)
     ]
     ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
     ENTITIES.append(brush_ent("func_illusionary", west_lower))
@@ -349,7 +346,7 @@ def build():
         BRIDGE_DZ2,
         ARCH_RIN,
         A_SEGS,
-        TEX_TELEPORT,
+        Textures.TELEPORT,
         stilt_h=ARCH_STILT_H,
     )
     ENTITIES.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
@@ -375,7 +372,7 @@ def build():
             elx2,
             BRIDGE_EAST_SHIFT_END + ARCH_RIN,
             BRIDGE_DZ2,
-            TEX_TELEPORT,
+            Textures.TELEPORT,
         )
     ]
     ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
@@ -421,7 +418,7 @@ def build():
                 ROAD_X2 - CHARLES_ARCH_TRIG_INSET,
                 trigger_y2,
                 arch_top_z,
-                TEX_TELEPORT,
+                Textures.TELEPORT,
             )
         ]
         ENTITIES.append(
@@ -437,7 +434,7 @@ def build():
             FLOOR_Z2 + 4,
             CHARLES_ARCH_RIN,
             A_SEGS,
-            TEX_TELEPORT,
+            Textures.TELEPORT,
             stilt_h=CHARLES_ARCH_STILT,
         )
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
@@ -666,7 +663,7 @@ def build():
                     px + 16,
                     cy + 16,
                     int(pcap) + 64,
-                    TEX_SKY,
+                    Textures.SKY,
                 )
                 ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
@@ -812,7 +809,7 @@ def build():
                 stx2 - 2,
                 sty2 - 2,
                 KH_Z2,
-                TEX_FLOOR_KH,
+                Textures.FLOOR_KH,
             )
         ]
         ENTITIES.append(
@@ -1020,7 +1017,7 @@ def build():
         CHARLES_PLT_X_OUT + CHARLES_PLT_W // 2,
         CHARLES_PLT_Y_S + CHARLES_PLT_W // 2,
         ROAD_Z + CHARLES_PLT_H,
-        TEX_FLOOR,
+        Textures.FLOOR,
     )
     ENTITIES.append(
         brush_ent(

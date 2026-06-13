@@ -2,7 +2,7 @@ import math
 from constants import (
     BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_ARCH_X,
-    TEX_GROUND,
+    Textures,
 )
 from mapdata import Brush, Entity, Face
 
@@ -146,7 +146,7 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
 def make_tree(cx, cy, base_z):
     """Cartoon tree: brown trunk + three stacked ground-texture pyramids."""
     TEX_TRUNK = "bricka2_1"
-    TEX_FOLIAGE = TEX_GROUND
+    TEX_FOLIAGE = Textures.GROUND
     brushes = []
     # Trunk — 10×10, 56 units tall
     brushes.append(box(cx - 5, cy - 5, base_z, cx + 5, cy + 5, base_z + 56, TEX_TRUNK))
@@ -174,7 +174,7 @@ def make_tree(cx, cy, base_z):
 def make_giant_tree(cx, cy, base_z, total_h=700):
     """Giant cartoon tree scaled to total_h units — trunk + three stacked foliage layers."""
     TEX_TRUNK = "bricka2_1"
-    TEX_FOLIAGE = TEX_GROUND
+    TEX_FOLIAGE = Textures.GROUND
     brushes = []
     trunk_h = int(total_h * 0.45)
     # Trunk — wider than small trees
@@ -224,7 +224,9 @@ def make_bush(cx, cy, base_z, size=24):
     """Cartoon bush: raised rectangular body with a small pyramid cap."""
     brushes = []
     # Short legs lifting it off the ground
-    brushes.append(box(cx - 6, cy - 6, base_z, cx + 6, cy + 6, base_z + 10, TEX_GROUND))
+    brushes.append(
+        box(cx - 6, cy - 6, base_z, cx + 6, cy + 6, base_z + 10, Textures.GROUND)
+    )
     # Main rectangular body
     brushes.append(
         box(
@@ -234,7 +236,7 @@ def make_bush(cx, cy, base_z, size=24):
             cx + size,
             cy + size,
             base_z + size + 10,
-            TEX_GROUND,
+            Textures.GROUND,
         )
     )
     # Small pyramid cap — just a hint of taper
@@ -246,7 +248,7 @@ def make_bush(cx, cy, base_z, size=24):
             cx + size - 4,
             cy + size - 4,
             base_z + size + 20,
-            TEX_GROUND,
+            Textures.GROUND,
         )
     )
     return brushes

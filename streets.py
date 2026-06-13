@@ -12,13 +12,7 @@ from constants import (
     BRIDGE_Y2,
     ROAD_X1,
     ROAD_X2,
-    TEX_BRICK,
-    TEX_CEMENT,
-    TEX_GROUND,
-    TEX_PILLAR,
-    TEX_ROAD,
-    TEX_SKY,
-    TEX_WHITE_STONE,
+    Textures,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
@@ -43,31 +37,61 @@ def build():
     # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
     # ════════════════════════════════════════════════════════════════════════════════
     BRUSHES.append(
-        box(WORLD_X1, WORLD_Y1, FLOOR_Z1, WORLD_X2, WORLD_Y2, FLOOR_Z2, TEX_GROUND)
+        box(WORLD_X1, WORLD_Y1, FLOOR_Z1, WORLD_X2, WORLD_Y2, FLOOR_Z2, Textures.GROUND)
     )  # floor
     BRUSHES.append(
         box(
-            WORLD_X1, WORLD_Y1, FLOOR_Z1, WORLD_X1 + WALL_T, WORLD_Y2, WORLD_Z2, TEX_SKY
+            WORLD_X1,
+            WORLD_Y1,
+            FLOOR_Z1,
+            WORLD_X1 + WALL_T,
+            WORLD_Y2,
+            WORLD_Z2,
+            Textures.SKY,
         )
     )  # W wall
     BRUSHES.append(
         box(
-            WORLD_X2 - WALL_T, WORLD_Y1, FLOOR_Z1, WORLD_X2, WORLD_Y2, WORLD_Z2, TEX_SKY
+            WORLD_X2 - WALL_T,
+            WORLD_Y1,
+            FLOOR_Z1,
+            WORLD_X2,
+            WORLD_Y2,
+            WORLD_Z2,
+            Textures.SKY,
         )
     )  # E wall
     BRUSHES.append(
         box(
-            WORLD_X1, WORLD_Y2 - WALL_T, FLOOR_Z1, WORLD_X2, WORLD_Y2, WORLD_Z2, TEX_SKY
+            WORLD_X1,
+            WORLD_Y2 - WALL_T,
+            FLOOR_Z1,
+            WORLD_X2,
+            WORLD_Y2,
+            WORLD_Z2,
+            Textures.SKY,
         )
     )  # N wall
     BRUSHES.append(
         box(
-            WORLD_X1, WORLD_Y1, FLOOR_Z1, WORLD_X2, WORLD_Y1 + WALL_T, WORLD_Z2, TEX_SKY
+            WORLD_X1,
+            WORLD_Y1,
+            FLOOR_Z1,
+            WORLD_X2,
+            WORLD_Y1 + WALL_T,
+            WORLD_Z2,
+            Textures.SKY,
         )
     )  # S wall
     BRUSHES.append(
         box(
-            WORLD_X1, WORLD_Y1, WORLD_Z2 - WALL_T, WORLD_X2, WORLD_Y2, WORLD_Z2, TEX_SKY
+            WORLD_X1,
+            WORLD_Y1,
+            WORLD_Z2 - WALL_T,
+            WORLD_X2,
+            WORLD_Y2,
+            WORLD_Z2,
+            Textures.SKY,
         )
     )  # sky
 
@@ -99,10 +123,26 @@ def build():
     div_hw = 4  # half-width of Charles St divider slot
     div_ep_hw = 16  # half-width of Ennis divider slot (wider for rune1_lig2 white)
     BRUSHES.append(
-        box(ROAD_X1, CHARLES_Y1, FLOOR_Z2, -div_hw, CHARLES_Y2, FLOOR_Z2 + 2, TEX_ROAD)
+        box(
+            ROAD_X1,
+            CHARLES_Y1,
+            FLOOR_Z2,
+            -div_hw,
+            CHARLES_Y2,
+            FLOOR_Z2 + 2,
+            Textures.ROAD,
+        )
     )
     BRUSHES.append(
-        box(div_hw, CHARLES_Y1, FLOOR_Z2, ROAD_X2, CHARLES_Y2, FLOOR_Z2 + 2, TEX_ROAD)
+        box(
+            div_hw,
+            CHARLES_Y1,
+            FLOOR_Z2,
+            ROAD_X2,
+            CHARLES_Y2,
+            FLOOR_Z2 + 2,
+            Textures.ROAD,
+        )
     )
     CHARLES_SWALK_START = BRIDGE_Y2 + 200  # sidewalk starts north of bridge
     # West sidewalk — north of bridge
@@ -114,7 +154,7 @@ def build():
             ROAD_X1,
             CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # West curb — south section up to sidewalk start
@@ -126,7 +166,7 @@ def build():
             ROAD_X1,
             CHARLES_SWALK_START,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Raised ground west of curb — rock/ground texture, flush with sidewalk
@@ -138,7 +178,7 @@ def build():
             ROAD_X1 - 8,
             CHARLES_SWALK_START,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_GROUND,
+            Textures.GROUND,
         )
     )
     # East sidewalk — split into two segments, trimmed CHARLES_WALK_W short of each corner
@@ -150,7 +190,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     BRUSHES.append(
@@ -161,7 +201,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -176,7 +216,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y - div_ep_hw,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     # Main east sections — full south extent to road edge
@@ -192,7 +232,7 @@ def build():
                 road_x2,
                 ENNIS_Y - div_ep_hw,
                 FLOOR_Z2 + 2,
-                TEX_ROAD,
+                Textures.ROAD,
             )
         )
     # Corridor gap section (back road entrance, no curb strip)
@@ -204,7 +244,7 @@ def build():
             KH_BR_CORRIDOR_X2,
             ENNIS_Y - div_ep_hw,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     BRUSHES.append(
@@ -215,7 +255,7 @@ def build():
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW,
             FLOOR_Z2 + 2,
-            TEX_ROAD,
+            Textures.ROAD,
         )
     )
     # North curb — offset east by CHARLES_WALK_W to cut corner square
@@ -227,7 +267,7 @@ def build():
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # South curb — split into two segments with a gap for the back road entrance
@@ -240,7 +280,7 @@ def build():
             KH_X2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # East segment: back road east sidewalk east to world wall
@@ -253,7 +293,7 @@ def build():
             ENNIS_X2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -269,7 +309,7 @@ def build():
             next_divider_y = min(
                 divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), section_y2
             )
-            divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
+            divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
             BRUSHES.append(
                 box(
                     -div_hw,
@@ -290,7 +330,7 @@ def build():
         next_divider_x = min(
             divider_x + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), ENNIS_X2
         )
-        divider_tex = TEX_DIVIDER if dash_on else TEX_ROAD
+        divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
         BRUSHES.append(
             box(
                 divider_x,
@@ -315,7 +355,15 @@ def build():
     cx_se = ROAD_X2 + CHARLES_CRN_R
     cy_se = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
     BRUSHES.append(
-        box(ROAD_X2, cy_se, FLOOR_Z2, cx_se, ENNIS_Y - ENNIS_HW, FLOOR_Z2 + 2, TEX_ROAD)
+        box(
+            ROAD_X2,
+            cy_se,
+            FLOOR_Z2,
+            cx_se,
+            ENNIS_Y - ENNIS_HW,
+            FLOOR_Z2 + 2,
+            Textures.ROAD,
+        )
     )
     # Arc sweeps CCW from 90° (north) to 180° (west)
     for corner_index in range(CHARLES_CRN_SEGS):
@@ -339,7 +387,7 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -347,7 +395,15 @@ def build():
     cx_ne = ROAD_X2 + CHARLES_CRN_R
     cy_ne = ENNIS_Y + ENNIS_HW + CHARLES_CRN_R
     BRUSHES.append(
-        box(ROAD_X2, ENNIS_Y + ENNIS_HW, FLOOR_Z2, cx_ne, cy_ne, FLOOR_Z2 + 2, TEX_ROAD)
+        box(
+            ROAD_X2,
+            ENNIS_Y + ENNIS_HW,
+            FLOOR_Z2,
+            cx_ne,
+            cy_ne,
+            FLOOR_Z2 + 2,
+            Textures.ROAD,
+        )
     )
     # Arc sweeps CCW from 180° (west) to 270° (south)
     for corner_index in range(CHARLES_CRN_SEGS):
@@ -371,7 +427,7 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -389,8 +445,8 @@ def build():
             FLOOR_Z1,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # East ramp — south of Ennis Road
@@ -404,8 +460,8 @@ def build():
             FLOOR_Z1,
             FLOOR_Z2 + CHARLES_WALK_H,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # East ramp — north of Ennis Road
@@ -419,8 +475,8 @@ def build():
             FLOOR_Z1,
             FLOOR_Z2 + CHARLES_WALK_H,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # Ennis north ramp — slopes from north curb edge down going north
@@ -434,8 +490,8 @@ def build():
             FLOOR_Z1,
             FLOOR_Z2 + CHARLES_WALK_H,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)
@@ -444,7 +500,7 @@ def build():
     # Split around back road corridor gap (KH_BR_CORRIDOR_X1..KH_BR_CORRIDOR_X2)
     # SE corner (east of back road) uses gravel3c (mulch bed)
     for vx1, vx2, vtex in [
-        (ROAD_X2 + CHARLES_WALK_W, KH_BR_CORRIDOR_X1, TEX_GROUND),
+        (ROAD_X2 + CHARLES_WALK_W, KH_BR_CORRIDOR_X1, Textures.GROUND),
         (KH_BR_CORRIDOR_X2, ENNIS_X2, "grave13c"),
     ]:
         BRUSHES.append(
@@ -472,7 +528,7 @@ def build():
                 vx2,
                 ENNIS_Y - ENNIS_HW,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
 
@@ -514,7 +570,7 @@ def build():
                 ennis_pil_cx + cap_half_width,
                 pillar_y + cap_half_width,
                 ENNIS_PIL_ZB + base_height,
-                TEX_WHITE_STONE,
+                Textures.WHITE_STONE,
             )
         )
         # Upper post — narrower, sits on bottom base
@@ -526,7 +582,7 @@ def build():
                 ENNIS_PIL_X2,
                 pillar_y + ENNIS_PIL_HW,
                 ENNIS_PIL_ZB + ENNIS_PIL_POST_H,
-                TEX_WHITE_STONE,
+                Textures.WHITE_STONE,
             )
         )
         # Thin cap divider — overhangs post on all sides
@@ -539,7 +595,7 @@ def build():
                 ennis_pil_cx + cap_half_width,
                 pillar_y + cap_half_width,
                 cap_z + ENNIS_PIL_CAP_H,
-                TEX_WHITE_STONE,
+                Textures.WHITE_STONE,
             )
         )
         # Bell step 2 — tapered top, narrower than post
@@ -552,7 +608,7 @@ def build():
                 ennis_pil_cx + ENNIS_PIL_BELL2_HW,
                 pillar_y + ENNIS_PIL_BELL2_HW,
                 bell2_z + ENNIS_PIL_BELL2_H,
-                TEX_WHITE_STONE,
+                Textures.WHITE_STONE,
             )
         )
         # Torch base above pyramid apex — narrow post + brick cup (matches bridge pillars)
@@ -566,7 +622,7 @@ def build():
                 ennis_pil_cx + 3,
                 pillar_y + 3,
                 ennis_pillar_apex_z + 16,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         BRUSHES.append(
@@ -577,7 +633,7 @@ def build():
                 ennis_pil_cx + 5,
                 pillar_y + 5,
                 ennis_pillar_apex_z + 20,
-                TEX_BRICK,
+                Textures.BRICK,
             )
         )
 
@@ -877,7 +933,7 @@ def build():
             bw_cx + ENNIS_WALL_PIL_HW,
             bw_cy + ENNIS_WALL_PIL_HW,
             FLOOR_Z2 + ENNIS_WALL_PIL_H + 6,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Square cap slab, then shallow pyramid on top
@@ -889,7 +945,7 @@ def build():
             bw_cx + ENNIS_WALL_PIL_HW + 1,
             bw_cy + ENNIS_WALL_PIL_HW + 1,
             FLOOR_Z2 + ENNIS_WALL_PIL_H + 10,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     BRUSHES.append(
@@ -900,7 +956,7 @@ def build():
             bw_cx + ENNIS_WALL_PIL_HW + 1,
             bw_cy + ENNIS_WALL_PIL_HW + 1,
             FLOOR_Z2 + ENNIS_WALL_PIL_H + 16,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
 
@@ -961,7 +1017,7 @@ def build():
             ENNIS_CEMENT_X2,
             cement_wall_y2,
             FLOOR_Z2 + cement_wall_height,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Cap slab (slightly proud on all sides)
@@ -973,7 +1029,7 @@ def build():
             ENNIS_CEMENT_X2,
             cement_wall_y2 + 2,
             FLOOR_Z2 + cement_wall_height + 6,
-            TEX_CEMENT,
+            Textures.CEMENT,
         )
     )
     # Pillars at each end
@@ -988,7 +1044,7 @@ def build():
                 pillar_x + cement_wall_pillar_half_width,
                 pillar_center_y + cement_wall_pillar_half_width,
                 FLOOR_Z2 + cement_wall_pillar_height,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # Cap slab on pillar
@@ -1000,7 +1056,7 @@ def build():
                 pillar_x + cement_wall_pillar_half_width + 2,
                 pillar_center_y + cement_wall_pillar_half_width + 2,
                 FLOOR_Z2 + cement_wall_pillar_height + 6,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         # Lamppost pole
@@ -1013,7 +1069,7 @@ def build():
                 pillar_x + 3,
                 pillar_center_y + 3,
                 lamppost_base_z + 160,
-                TEX_PILLAR,
+                Textures.PILLAR,
             )
         )
         # Lantern head — narrow shaft + wider cap
@@ -1025,7 +1081,7 @@ def build():
                 pillar_x + 4,
                 pillar_center_y + 4,
                 lamppost_base_z + 176,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         BRUSHES.append(
@@ -1036,7 +1092,7 @@ def build():
                 pillar_x + 7,
                 pillar_center_y + 7,
                 lamppost_base_z + 180,
-                TEX_CEMENT,
+                Textures.CEMENT,
             )
         )
         ENNIS_CEMENT_LAMP_POSTS.append(
@@ -1072,8 +1128,8 @@ def build():
             FLOOR_Z1,
             BRIDGE_DZ2,
             emb_zt_at_ab_x1,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # South segment — full width between south buildings and north building
@@ -1087,8 +1143,8 @@ def build():
             FLOOR_Z1,
             BRIDGE_DZ2,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # Middle segment — only west of north building
@@ -1102,8 +1158,8 @@ def build():
             FLOOR_Z1,
             BRIDGE_DZ2,
             emb_zt_at_ab_x1,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
     # North of north building — restore original ramp
@@ -1117,8 +1173,8 @@ def build():
             FLOOR_Z1,
             BRIDGE_DZ2,
             FLOOR_Z2,
-            TEX_GROUND,
-            tt=TEX_GROUND,
+            Textures.GROUND,
+            tt=Textures.GROUND,
         )
     )
 
