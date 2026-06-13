@@ -253,17 +253,30 @@ All textures come from the community **quake101.wad** collection. Download **qua
 
 ## Compiling
 
-You need **ericw-tools v0.18.1** or later: [github.com/ericwa/ericw-tools/releases](https://github.com/ericwa/ericw-tools/releases).  
-Place `quake101.wad` in the same directory as the `.map` file, then:
+The project uses [just](https://github.com/casey/just) to automate the full pipeline. Install it with `brew install just` (or your package manager), then:
 
 ```bash
-# 1. BSP (geometry)
+# Full pipeline: download tools & WADs, generate map, compile, deploy
+just
+
+# Individual steps
+just setup          # download quake101.wad and ad.wad if missing
+just generate       # run generate_map.py → loyola.map
+just compile        # qbsp → vis → light (full vis pass)
+just compile-fast   # qbsp → vis -fast → light (faster iteration)
+just deploy         # copy loyola.bsp + loyola.lit to /Applications/id1/maps/
+just install-tools  # download ericw-tools v0.18.1 to .tools/ (runs automatically)
+```
+
+ericw-tools are downloaded automatically to `.tools/` on first compile — no manual installation needed. WADs are downloaded from Quaketastic automatically by `just setup`.
+
+### Manual compilation (without just)
+
+Download **ericw-tools v0.18.1**: [github.com/ericwa/ericw-tools/releases](https://github.com/ericwa/ericw-tools/releases) and place `quake101.wad` alongside the `.map` file, then:
+
+```bash
 qbsp loyola.map
-
-# 2. Visibility (inter-leaf vis — speeds up rendering significantly)
 vis loyola.bsp
-
-# 3. Lighting
 light loyola.bsp
 ```
 
@@ -329,6 +342,12 @@ Launches vkQuake with:
 4. **Run → Launch Engine** → choose *vkQuake* to test immediately.
 
 ## Regenerating the map
+
+```bash
+just generate
+```
+
+Or directly:
 
 ```bash
 python3 generate_map.py
