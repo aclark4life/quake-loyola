@@ -37,8 +37,8 @@ from constants import (
     PB_Y1,
     PB_Y2,
     ROAD_X2,
-    SEG_SPAN_W,
-    SEG_W,
+    PB_SEG_SPAN_W,
+    PB_SEG_W,
     SHOW_SUPPORTS,
     TEX_BRICK,
     TEX_CEMENT,
@@ -146,9 +146,9 @@ def build():
         )
     )
 
-    for i in range(SEG_SPAN_W):
-        sx1 = PB_X1 + i * SEG_W
-        sx2 = sx1 + SEG_W
+    for i in range(PB_SEG_SPAN_W):
+        sx1 = PB_X1 + i * PB_SEG_W
+        sx2 = sx1 + PB_SEG_W
         pb1, pb2 = dtop(sx1), dtop(sx2)  # parapet base follows deck top
         pt1, pt2 = pb1 + PB_PAR_H, pb2 + PB_PAR_H  # parapet top = base + PB_PAR_H
         # North parapet
@@ -361,9 +361,9 @@ def build():
     tube_sy2 = tube_sy1 + PB_TUBE_HW * 2
 
     for tube_z_offset in [PB_TUBE_RISE, PB_TUBE_RISE + PB_TUBE_GAP]:
-        for span_index in range(SEG_SPAN_W):
-            span_x1 = PB_X1 + span_index * SEG_W
-            span_x2 = span_x1 + SEG_W
+        for span_index in range(PB_SEG_SPAN_W):
+            span_x1 = PB_X1 + span_index * PB_SEG_W
+            span_x2 = span_x1 + PB_SEG_W
             tube_z1 = dtop(span_x1) + PB_PAR_H + tube_z_offset
             tube_z2 = dtop(span_x2) + PB_PAR_H + tube_z_offset
             BRUSHES.append(
