@@ -22,6 +22,10 @@ from .constants import (
     KH_FLOORS,
     KH_GROUND_Z,
     KH_ORIG_CX,
+    KH_SHAFT_X1,
+    KH_SHAFT_X2,
+    KH_SHAFT_Y1,
+    KH_SHAFT_Y2,
     KH_WALL,
     KH_X1,
     KH_X2,
@@ -519,9 +523,6 @@ def build():
                 )
             )
 
-    # Lift shaft east of entrance: 16 units east of KH_ENT_X2, 128 wide
-    stx1, stx2 = KH_ENT_X2 + 16, KH_ENT_X2 + 16 + 128
-    sty1, sty2 = KH_BIY2 - 128, KH_BIY2  # Y: -400 to -272
     # West stairwell extents defined after INDENT below
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
@@ -533,7 +534,7 @@ def build():
     KH_STAIRS_X1 = (
         bix1 + 2 * INDENT
     )  # west stairwell west edge — flush with NW indent corner
-    KH_STAIRS_Y2 = sty2  # stairwell north edge (same as east shaft)
+    KH_STAIRS_Y2 = KH_SHAFT_Y2  # stairwell north edge (same as east shaft)
     KH_STAIRS_Y1 = KH_BIY2 - 256  # stairwell south edge — double depth (256 vs 128)
 
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
@@ -1110,11 +1111,19 @@ def build():
         )
     )  # north of west stairwell
     BRUSHES.append(
-        box(KH_STAIRS_X2, KH_Y1, KH_Z2, stx1, KH_Y2, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
+        box(
+            KH_STAIRS_X2,
+            KH_Y1,
+            KH_Z2,
+            KH_SHAFT_X1,
+            KH_Y2,
+            KH_Z2 + KH_WALL,
+            Textures.FLOOR_KH,
+        )
     )  # between shafts (no indent — interior)
     BRUSHES.append(
         box(
-            stx2,
+            KH_SHAFT_X2,
             KH_Y1,
             KH_Z2,
             KH_X2,
@@ -1125,7 +1134,7 @@ def build():
     )  # east bulk
     BRUSHES.append(
         box(
-            stx2,
+            KH_SHAFT_X2,
             KH_Y2 - INDENT,
             KH_Z2,
             KH_X2 - INDENT,
@@ -1135,10 +1144,26 @@ def build():
         )
     )  # east north-strip (NE cutout)
     BRUSHES.append(
-        box(stx1, KH_Y1, KH_Z2, stx2, sty1, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
+        box(
+            KH_SHAFT_X1,
+            KH_Y1,
+            KH_Z2,
+            KH_SHAFT_X2,
+            KH_SHAFT_Y1,
+            KH_Z2 + KH_WALL,
+            Textures.FLOOR_KH,
+        )
     )  # south of shaft
     BRUSHES.append(
-        box(stx1, sty2, KH_Z2, stx2, KH_Y2, KH_Z2 + KH_WALL, Textures.FLOOR_KH)
+        box(
+            KH_SHAFT_X1,
+            KH_SHAFT_Y2,
+            KH_Z2,
+            KH_SHAFT_X2,
+            KH_Y2,
+            KH_Z2 + KH_WALL,
+            Textures.FLOOR_KH,
+        )
     )  # north of shaft (closes roof over north wall above shaft)
 
     # ── Interior floor slabs (floors 0-3, lift shaft opening in center-north) ────
@@ -1169,14 +1194,14 @@ def build():
                 bix1, KH_BIY1, floor_z1, bix2, KH_STAIRS_Y1, floor_z2, Textures.FLOOR_KH
             )
         )
-        # Stairwell south extension (KH_STAIRS_Y1..sty1): floor on either side, stairwell open
+        # Stairwell south extension (KH_STAIRS_Y1..KH_SHAFT_Y1): floor on either side, stairwell open
         BRUSHES.append(
             box(
                 bix1,
                 KH_STAIRS_Y1,
                 floor_z1,
                 KH_STAIRS_X1,
-                sty1,
+                KH_SHAFT_Y1,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
@@ -1187,16 +1212,16 @@ def build():
                 KH_STAIRS_Y1,
                 floor_z1,
                 bix2,
-                sty1,
+                KH_SHAFT_Y1,
                 floor_z2,
                 Textures.FLOOR_KH,
             )
         )
-        # North zone (sty1..KH_BIY2): west of stairwell, clipped for NW indentation
+        # North zone (KH_SHAFT_Y1..KH_BIY2): west of stairwell, clipped for NW indentation
         BRUSHES.append(
             box(
                 bix1,
-                sty1,
+                KH_SHAFT_Y1,
                 floor_z1,
                 KH_STAIRS_X1,
                 KH_Y2 - INDENT,
@@ -1207,16 +1232,30 @@ def build():
         # Between west stairwell and east shaft
         BRUSHES.append(
             box(
-                KH_STAIRS_X2, sty1, floor_z1, stx1, KH_BIY2, floor_z2, Textures.FLOOR_KH
+                KH_STAIRS_X2,
+                KH_SHAFT_Y1,
+                floor_z1,
+                KH_SHAFT_X1,
+                KH_BIY2,
+                floor_z2,
+                Textures.FLOOR_KH,
             )
         )
         # East of shaft, clipped for NE indentation
         BRUSHES.append(
-            box(stx2, sty1, floor_z1, bix2, KH_Y2 - INDENT, floor_z2, Textures.FLOOR_KH)
+            box(
+                KH_SHAFT_X2,
+                KH_SHAFT_Y1,
+                floor_z1,
+                bix2,
+                KH_Y2 - INDENT,
+                floor_z2,
+                Textures.FLOOR_KH,
+            )
         )
         BRUSHES.append(
             box(
-                stx2,
+                KH_SHAFT_X2,
                 KH_Y2 - INDENT,
                 floor_z1,
                 bix2 - INDENT,
@@ -1227,15 +1266,15 @@ def build():
         )
 
     # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
-    # Walls around the lift shaft (stx1..stx2, sty1..sty2)
+    # Walls around the lift shaft (KH_SHAFT_X1..KH_SHAFT_X2, KH_SHAFT_Y1..KH_SHAFT_Y2)
     shaft_wall = 8
     # Door opening dimensions per floor (used for both wall openings and func_door entities)
     shaft_door_h = KH_FLOOR_H  # door height matches floor-to-floor height
     shaft_door_openings = [
         (
-            sty1 + 16,
+            KH_SHAFT_Y1 + 16,
             KH_GROUND_Z + floor_index * KH_FLOOR_H,
-            sty2 - 16,
+            KH_SHAFT_Y2 - 16,
             KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
         )
         for floor_index in range(KH_FLOORS)
@@ -1243,20 +1282,36 @@ def build():
 
     # Shaft North wall (internal, solid)
     BRUSHES.append(
-        box(stx1, sty2, KH_GROUND_Z, stx2, sty2 + shaft_wall, KH_Z2, Textures.WALL)
+        box(
+            KH_SHAFT_X1,
+            KH_SHAFT_Y2,
+            KH_GROUND_Z,
+            KH_SHAFT_X2,
+            KH_SHAFT_Y2 + shaft_wall,
+            KH_Z2,
+            Textures.WALL,
+        )
     )
     # Shaft South wall (internal, solid)
     BRUSHES.append(
-        box(stx1, sty1 - shaft_wall, KH_GROUND_Z, stx2, sty1, KH_Z2, Textures.WALL)
+        box(
+            KH_SHAFT_X1,
+            KH_SHAFT_Y1 - shaft_wall,
+            KH_GROUND_Z,
+            KH_SHAFT_X2,
+            KH_SHAFT_Y1,
+            KH_Z2,
+            Textures.WALL,
+        )
     )
     # Shaft West wall (internal, openings for each floor's door — flush with hallway east wall and shaft interior)
     BRUSHES.extend(
         layered_wall_y(
-            sty1,
+            KH_SHAFT_Y1,
             KH_ENT_X2,
             KH_GROUND_Z,
-            sty2,
-            stx1,
+            KH_SHAFT_Y2,
+            KH_SHAFT_X1,
             KH_Z2,
             shaft_door_openings,
             Textures.WALL,
@@ -1264,16 +1319,24 @@ def build():
     )
     # Shaft East wall (internal)
     BRUSHES.append(
-        box(stx2, sty1, KH_GROUND_Z, stx2 + shaft_wall, sty2, KH_Z2, Textures.WALL)
+        box(
+            KH_SHAFT_X2,
+            KH_SHAFT_Y1,
+            KH_GROUND_Z,
+            KH_SHAFT_X2 + shaft_wall,
+            KH_SHAFT_Y2,
+            KH_Z2,
+            Textures.WALL,
+        )
     )
 
     # ── West Stairwell Enclosure ──────────────────────────────────────────────────
     # Walls around the west stairwell (KH_STAIRS_X1..KH_STAIRS_X2, KH_STAIRS_Y1..KH_STAIRS_Y2)
     west_shaft_door_openings = [
         (
-            sty1 + 16,  # same Y extents as east shaft doorway
+            KH_SHAFT_Y1 + 16,  # same Y extents as east shaft doorway
             KH_GROUND_Z + floor_index * KH_FLOOR_H,
-            sty2 - 16,
+            KH_SHAFT_Y2 - 16,
             KH_GROUND_Z + floor_index * KH_FLOOR_H + shaft_door_h,
         )
         for floor_index in range(KH_FLOORS)
@@ -1535,9 +1598,11 @@ def build():
 
     # Collect door openings in hallway walls across all floors
     w_hall_openings = [
-        (sty1, KH_GROUND_Z, sty2, KH_Z2)
+        (KH_SHAFT_Y1, KH_GROUND_Z, KH_SHAFT_Y2, KH_Z2)
     ]  # west stairwell gap — doorway size
-    e_hall_openings = [(sty1, KH_GROUND_Z, sty2, KH_Z2)]  # shaft gap always open
+    e_hall_openings = [
+        (KH_SHAFT_Y1, KH_GROUND_Z, KH_SHAFT_Y2, KH_Z2)
+    ]  # shaft gap always open
 
     for floor_index in range(KH_FLOORS):
         fz1 = KH_GROUND_Z + floor_index * KH_FLOOR_H

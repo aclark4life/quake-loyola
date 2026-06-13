@@ -61,6 +61,10 @@ from .constants import (
     KH_GROUND_Z,
     KH_ORIG_CX,
     KH_ROOM_SPLITS,
+    KH_SHAFT_X1,
+    KH_SHAFT_X2,
+    KH_SHAFT_Y1,
+    KH_SHAFT_Y2,
     KH_STAIRS_MID_Y,
     KH_STAIRS_X1,
     KH_STAIRS_X2,
@@ -97,10 +101,6 @@ from .constants import (
     Textures,
     deck_bot_z,
     deck_top_z,
-    stx1,
-    stx2,
-    sty1,
-    sty2,
 )
 from .geometry import (
     arch_fill,
@@ -803,11 +803,11 @@ def build():
         lift_travel = KH_Z2 - (KH_GROUND_Z + KH_WALL)
         lift_brush = [
             box(
-                stx1 + 2,
-                sty1 + 2,
+                KH_SHAFT_X1 + 2,
+                KH_SHAFT_Y1 + 2,
                 KH_Z2 - 8,
-                stx2 - 2,
-                sty2 - 2,
+                KH_SHAFT_X2 - 2,
+                KH_SHAFT_Y2 - 2,
                 KH_Z2,
                 Textures.FLOOR_KH,
             )
