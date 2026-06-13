@@ -597,7 +597,7 @@ def build():
             "city2_1",
         )
     )
-    # North half — iron fence matching west-side style (FNC_* constants defined later)
+    # North half — iron fence matching west-side style (FENCE_* constants defined later)
     gate_fence_x1 = bw_x1 + EP_WALL_T // 2 - 1  # centre the pickets on the wall line
     gate_fence_x2 = gate_fence_x1 + 2
     gate_fence_height = 96
