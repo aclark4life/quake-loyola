@@ -7,6 +7,28 @@ from constants import (
 from mapdata import Brush, Entity, Face
 
 
+def _swap_xy(brush):
+    """Return a new Brush with X and Y coordinates swapped on every face.
+
+    Swapping two coordinates is a reflection, which flips the handedness of the
+    coordinate system and reverses each face's outward normal.  To compensate,
+    p2 and p3 are also swapped so that the winding order — and therefore the
+    outward normal direction — is preserved.
+    """
+    return Brush(
+        [
+            Face(
+                (f.p1[1], f.p1[0], f.p1[2]),
+                (f.p3[1], f.p3[0], f.p3[2]),  # p3 before p2 cancels the reflection flip
+                (f.p2[1], f.p2[0], f.p2[2]),
+                f.tex,
+                f.params,
+            )
+            for f in brush.faces
+        ]
+    )
+
+
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
     """Axis-aligned rectangular brush. tex=sides, tt=top, tb=bottom (default to tex)."""
     tt = tt or tex
@@ -68,46 +90,37 @@ def pyramid(x1, y1, z1, x2, y2, z2, tex):
 
 def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     """Prismatic slab whose bottom and top faces are sloped in the X direction.
-    zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2."""
+    zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2.
+    End-cap faces are omitted when an end tapers to a knife-edge (zb == zt there),
+    keeping the brush valid as a 4- or 5-face wedge instead of a degenerate prism."""
     tt = tt or tex
     tb = tb or tex
-    return Brush(
-        [
-            Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tex),  # -X
-            Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), tex),  # +X
-            Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), tex),  # -Y
-            Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
-            Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
-            Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
-        ]
-    )
+    faces = []
+    if zt1 != zb1:
+        faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tex))  # -X
+    if zt2 != zb2:
+        faces.append(Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), tex))  # +X
+    faces += [
+        Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), tex),  # -Y
+        Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
+        Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
+        Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
+    ]
+    return Brush(faces)
 
 
 def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
     """Prismatic slab whose bottom and top faces are sloped in the Y direction.
     zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2.
     y1 and y2 may be passed in either order.
-    When one end tapers to a knife-edge (zb==zt), that end face is omitted so
-    the brush remains valid (5-face wedge instead of a degenerate 6-face prism)."""
-    # Normalise so y1 <= y2 (face normals assume this ordering)
+    When one end tapers to a knife-edge (zb==zt), that end-cap face is omitted
+    (delegated to ramp_slab's own conditional logic via the XY swap)."""
+    # Normalise so y1 <= y2 before delegating
     if y1 > y2:
         y1, y2 = y2, y1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
-    tt = tt or tex
-    tb = tb or tex
-    faces = [
-        Face((x1, y1, zb1), (x1, y2, zb2), (x1, y1, zt1), tex),  # -X
-        Face((x2, y1, zb1), (x2, y1, zt1), (x2, y2, zb2), tex),  # +X
-        Face((x1, y1, zb1), (x2, y1, zb1), (x1, y2, zb2), tb),  # sloped bottom
-        Face((x1, y1, zt1), (x1, y2, zt2), (x2, y1, zt1), tt),  # sloped top
-    ]
-    # Only emit end-cap faces when the end has non-zero thickness
-    if zt1 != zb1:
-        faces.append(Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb1), tex))  # -Y
-    if zt2 != zb2:
-        faces.append(Face((x1, y2, zb2), (x2, y2, zb2), (x1, y2, zt2), tex))  # +Y
-    return Brush(faces)
+    return _swap_xy(ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb))
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
@@ -293,57 +306,21 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
 
 def arch_seg_y(yb, yf, xc, zc, rin, rout, t1d, t2d, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (Y-aligned span).
-    Mirror of arch_seg with X and Y roles swapped."""
-    t1, t2 = math.radians(t1d), math.radians(t2d)
-    tm = (t1 + t2) / 2.0
-    c1, s1 = math.cos(t1), math.sin(t1)
-    c2, s2 = math.cos(t2), math.sin(t2)
-    cm, sm = math.cos(tm), math.sin(tm)
-    xi, zi = xc + rin * cm, zc + rin * sm
-    xo, zo = xc + rout * cm, zc + rout * sm
-    return Brush(
-        [
-            Face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
-            Face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
-            Face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
-            Face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
-            Face((xi, yf, zi), (xi - sm, yf, zi + cm), (xi, yb, zi), tex),
-            Face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
-        ]
-    )
+    Derived from arch_seg via XY swap."""
+    return _swap_xy(arch_seg(yb, yf, xc, zc, rin, rout, t1d, t2d, tex))
 
 
 def arch_pie_seg_y(yb, yf, xc, zc, rad, t1d, t2d, tex):
-    """Solid pie-slice brush for filling a Y-aligned arch interior. Mirror of arch_pie_seg."""
-    t1, t2 = math.radians(t1d), math.radians(t2d)
-    tm = (t1 + t2) / 2.0
-    c1, s1 = math.cos(t1), math.sin(t1)
-    c2, s2 = math.cos(t2), math.sin(t2)
-    cm, sm = math.cos(tm), math.sin(tm)
-    xo, zo = xc + rad * cm, zc + rad * sm
-    return Brush(
-        [
-            Face((xc, yf, zc), (xc + 1, yf, zc), (xc, yf, zc + 1), tex),
-            Face((xc, yb, zc), (xc, yb, zc + 1), (xc + 1, yb, zc), tex),
-            Face((xc, yf, zc), (xc, yb, zc), (xc + c1, yf, zc + s1), tex),
-            Face((xc, yf, zc), (xc + c2, yf, zc + s2), (xc, yb, zc), tex),
-            Face((xo, yf, zo), (xo, yb, zo), (xo - sm, yf, zo + cm), tex),
-        ]
-    )
+    """Solid pie-slice brush for a Y-aligned arch interior. Derived from arch_pie_seg via XY swap."""
+    return _swap_xy(arch_pie_seg(yb, yf, xc, zc, rad, t1d, t2d, tex))
 
 
 def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
-    """Solid arch fill for a Y-aligned arch opening. Mirror of arch_fill."""
-    stilt_h = rin if stilt_h is None else stilt_h
-    sprz = floor_z + stilt_h
-    seg = 180.0 / segs
-    brushes = []
-    brushes.append(box(-rin, y1, floor_z, rin, y2, sprz, tex))
-    for i in range(segs):
-        brushes.append(
-            arch_pie_seg_y(y1, y2, xc, float(sprz), rin, i * seg, (i + 1) * seg, tex)
-        )
-    return brushes
+    """Solid arch fill for a Y-aligned arch opening. Derived from arch_fill via XY swap."""
+    return [
+        _swap_xy(b)
+        for b in arch_fill(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=stilt_h)
+    ]
 
 
 def square_wall(x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_h=0):
@@ -526,21 +503,8 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
 def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
     """Wall slab (thin in X) with rectangular cutouts.
     openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
-    """
-    ys = sorted({y1, y2} | {o[0] for o in openings} | {o[2] for o in openings})
-    zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
-    brushes = []
-    for yi in range(len(ys) - 1):
-        for zi in range(len(zs) - 1):
-            cy1, cy2 = ys[yi], ys[yi + 1]
-            cz1, cz2 = zs[zi], zs[zi + 1]
-            covered = any(
-                o[0] <= cy1 and cy2 <= o[2] and o[1] <= cz1 and cz2 <= o[3]
-                for o in openings
-            )
-            if not covered:
-                brushes.append(box(x1, cy1, cz1, x2, cy2, cz2, tex))
-    return brushes
+    Derived from layered_wall via XY swap."""
+    return [_swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
 
 
 def win_row(n, lo, hi):
