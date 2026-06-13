@@ -1,6 +1,6 @@
 from constants import (
-    CS_Y1,
-    CS_Y2,
+    CHARLES_Y1,
+    CHARLES_Y2,
     FLOOR_Z1,
     FLOOR_Z2,
     KH_FLOOR_H,
@@ -356,7 +356,7 @@ def build():
     FENCE_SPACING = 16  # picket center-to-center
     FENCE_TEX = "metal4_4"
 
-    for fence_y1, fence_y2 in [(CS_Y1, CS_Y2)]:
+    for fence_y1, fence_y2 in [(CHARLES_Y1, CHARLES_Y2)]:
         # Top rail — thin, dropped so pickets extend above it
         BRUSHES.append(
             box(
