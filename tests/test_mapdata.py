@@ -5,9 +5,8 @@ from quake_loyola.mapdata import (
     Entity,
     Face,
     MapBuilder,
-    format_value,
-    format_point,
 )
+from quake_loyola.utils import format_value, format_point
 
 
 class FormattingTests(unittest.TestCase):

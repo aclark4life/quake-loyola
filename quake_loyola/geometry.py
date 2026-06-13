@@ -5,33 +5,7 @@ from .constants import (
     Textures,
 )
 from .mapdata import Brush, Entity, Face
-
-
-def _swap_xy(src):
-    """Return a new Brush with X and Y coordinates swapped on every face.
-
-    Swapping two coordinates is a reflection, which flips the handedness of the
-    coordinate system and reverses each face's outward normal.  To compensate,
-    p2 and p3 are also swapped so that the winding order — and therefore the
-    outward normal direction — is preserved.
-    """
-
-    def swap(p):
-        """Swap the X and Y components of a point, leaving Z unchanged."""
-        return (p[1], p[0], p[2])
-
-    return Brush(
-        [
-            Face(
-                swap(face.p1),
-                swap(face.p3),  # p3 before p2 cancels the reflection flip
-                swap(face.p2),
-                face.tex,
-                face.params,
-            )
-            for face in src.faces
-        ]
-    )
+from .utils import swap_xy
 
 
 def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
@@ -125,7 +99,7 @@ def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None):
         y1, y2 = y2, y1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
-    return _swap_xy(ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb))
+    return swap_xy(ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb))
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
@@ -323,14 +297,14 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
 def arch_seg_y(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (Y-aligned span).
     Derived from arch_seg via XY swap."""
-    return _swap_xy(
+    return swap_xy(
         arch_seg(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex)
     )
 
 
 def arch_pie_seg_y(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Solid pie-slice brush for a Y-aligned arch interior. Derived from arch_pie_seg via XY swap."""
-    return _swap_xy(
+    return swap_xy(
         arch_pie_seg(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex)
     )
 
@@ -338,7 +312,7 @@ def arch_pie_seg_y(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex):
 def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     """Solid arch fill for a Y-aligned arch opening. Derived from arch_fill via XY swap."""
     return [
-        _swap_xy(b)
+        swap_xy(b)
         for b in arch_fill(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=stilt_h)
     ]
 
@@ -544,7 +518,7 @@ def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
     """Wall slab (thin in X) with rectangular cutouts.
     openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
     Derived from layered_wall via XY swap."""
-    return [_swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
+    return [swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
 
 
 def win_row(n, lo, hi):
