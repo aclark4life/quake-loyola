@@ -11,6 +11,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    env:
+      LD_LIBRARY_PATH: ${{ github.workspace }}/.tools/ericw-tools-v0.18.1-Linux/bin
+
     steps:
       - uses: actions/checkout@v4
 
@@ -40,13 +43,50 @@ jobs:
       - name: Generate map
         run: just generate
 
-      - name: Compile map (qbsp -> vis -> light)
-        run: just compile
-        env:
-          LD_LIBRARY_PATH: ${{ github.workspace }}/.tools/ericw-tools-v0.18.1-Linux/bin
+      - name: Install ericw-tools
+        run: just install-tools
+
+      - name: qbsp — geometry & BSP tree
+        run: .tools/ericw-tools-v0.18.1-Linux/bin/qbsp loyola.map 2>&1 | tee qbsp.log
+
+      - name: vis — full visibility (PVS)
+        run: .tools/ericw-tools-v0.18.1-Linux/bin/vis loyola.bsp 2>&1 | tee vis.log
+
+      - name: light — lightmaps
+        run: .tools/ericw-tools-v0.18.1-Linux/bin/light loyola.bsp 2>&1 | tee light.log
 
       - name: Package release archive
         run: zip -j "loyola-${{ github.ref_name }}.zip" loyola.bsp loyola.lit
+
+      - name: Build summary
+        if: always()
+        run: |
+          {
+            echo "## Loyola build — ${{ github.ref_name }}"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | --- |"
+            [ -f loyola.bsp ] && echo "| loyola.bsp | $(du -h loyola.bsp | cut -f1) |"
+            [ -f loyola.lit ] && echo "| loyola.lit | $(du -h loyola.lit | cut -f1) |"
+            [ -f "loyola-${{ github.ref_name }}.zip" ] && echo "| release zip | $(du -h "loyola-${{ github.ref_name }}.zip" | cut -f1) |"
+            [ -f vis.log ] && echo "| vis leafs | $(grep -oE '[0-9]+ leafs' vis.log | head -1 | grep -oE '[0-9]+') |"
+            [ -f vis.log ] && echo "| vis clusters | $(grep -oE '[0-9]+ clusters' vis.log | head -1 | grep -oE '[0-9]+') |"
+            [ -f vis.log ] && echo "| vis portals | $(grep -oE '[0-9]+ portals' vis.log | head -1 | grep -oE '[0-9]+') |"
+            echo ""
+            echo "<details><summary>qbsp log</summary>"
+            echo ""
+            echo '~~~'
+            [ -f qbsp.log ] && cat qbsp.log
+            echo '~~~'
+            echo "</details>"
+            echo ""
+            echo "<details><summary>vis log</summary>"
+            echo ""
+            echo '~~~'
+            [ -f vis.log ] && cat vis.log
+            echo '~~~'
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
