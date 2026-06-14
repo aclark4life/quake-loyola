@@ -304,6 +304,7 @@ def build():
     TEX_DIVIDER = "sfloor3_2"
     ROAD_DASH_LEN = 64  # dash length
     ROAD_GAP_LEN = 64  # gap length (filled with road tex)
+    dash_brushes = []
     # Charles Street — dashed N-S, two sections either side of bridge
     for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE_Y1), (BRIDGE_Y2, CHARLES_Y2)]:
         divider_y = section_y1
@@ -313,7 +314,7 @@ def build():
                 divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), section_y2
             )
             divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
-            BRUSHES.append(
+            dash_brushes.append(
                 box(
                     -div_hw,
                     divider_y,
@@ -334,7 +335,7 @@ def build():
             divider_x + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), ENNIS_X2
         )
         divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
-        BRUSHES.append(
+        dash_brushes.append(
             box(
                 divider_x,
                 ENNIS_Y - div_ep_hw,
@@ -347,6 +348,8 @@ def build():
         )
         divider_x = next_divider_x
         dash_on = not dash_on
+    if dash_brushes:
+        ENTITIES.append(brush_ent("func_detail", dash_brushes))
 
     # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
     # Arc center at the OUTER (far) corner so the curve faces outward toward the road.

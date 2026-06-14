@@ -278,7 +278,7 @@ def build():
             shelf_x = shelf_center_x + shelf_x_offset
             ENTITIES.append(
                 brush_ent(
-                    "func_wall",
+                    "func_detail",
                     [
                         box(
                             shelf_x - KNOTT_SHELF_W // 2,
