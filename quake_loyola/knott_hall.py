@@ -85,6 +85,7 @@ from .geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
+    DETAIL_BRUSHES = []
     knott_brush_start = len(
         BRUSHES
     )  # checkpoint — trimmed below if KNOTT_ENABLED is False
@@ -483,7 +484,7 @@ def build():
         rail_x2 = rail_x_base if is_west_side else rail_x_base + post_width
 
         # Sloped cross rail
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab_y(
                 rail_x1,
                 rail_x2,
@@ -498,7 +499,7 @@ def build():
         )
 
         # Horizontal extension at top (level with platform floor)
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 rail_x1,
                 stair_y0 - level_extension,
@@ -510,7 +511,7 @@ def build():
             )
         )
         # Horizontal extension at bottom (level with apron floor)
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 rail_x1,
                 stair_y_end,
@@ -527,7 +528,7 @@ def build():
             (stair_y0, KNOTT_GROUND_Z),
             (stair_y_end, stair_base_z),
         ]:
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     rail_x1,
                     post_y,
@@ -635,7 +636,7 @@ def build():
     )
     # South mullions — protrude outward (south, -Y)
     for mx in [sw_win_cx - WIN_HALF - KNOTT_MULLION_W, sw_win_cx + WIN_HALF]:
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT_Y1 + INDENT - KNOTT_WALL,
@@ -647,7 +648,7 @@ def build():
             )
         )
     for mx in [se_win_cx - WIN_HALF - KNOTT_MULLION_W, se_win_cx + WIN_HALF]:
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT_Y1 + INDENT - KNOTT_WALL,
@@ -662,7 +663,7 @@ def build():
     for wx in [sw_win_cx, se_win_cx]:
         for fl in range(1, KNOTT_FLOORS):
             mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
                     KNOTT_Y1 + INDENT - KNOTT_WALL,
@@ -677,7 +678,7 @@ def build():
     for wx in [sw_win_cx, se_win_cx]:
         for fl in range(1, KNOTT_FLOORS + 1):
             fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
                     KNOTT_Y1 + INDENT - KNOTT_WALL,
@@ -805,7 +806,7 @@ def build():
         nw_win_cx2 - WIN_HALF - KNOTT_MULLION_W,
         nw_win_cx2 + WIN_HALF,
     ]:
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
@@ -818,7 +819,7 @@ def build():
         )
     # NE recessed window: mullions just outside the opening so player can fit through
     for mx in [ne_win_cx - WIN_HALF - KNOTT_MULLION_W, ne_win_cx + WIN_HALF]:
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
@@ -833,7 +834,7 @@ def build():
     win_n_x1, win_n_x2 = KNOTT_ORIG_CX - 48, KNOTT_ORIG_CX + 48
     win_n_mid = KNOTT_ORIG_CX - 6  # left edge of center mullion
     for mx in [win_n_x1 - KNOTT_MULLION_W, win_n_mid, win_n_x2]:
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT_Y2 - KNOTT_WALL,
@@ -919,7 +920,7 @@ def build():
             window_center_y + 36,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X2 - KNOTT_WALL,
                     mullion_y,
@@ -936,7 +937,7 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for fl in range(1, KNOTT_FLOORS):
             mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X2 - KNOTT_WALL,
                     window_center_y - ww_half,
@@ -951,7 +952,7 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for fl in range(1, KNOTT_FLOORS + 1):
             fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X2 - KNOTT_WALL,
                     window_center_y - ww_half,
@@ -1004,7 +1005,7 @@ def build():
             window_center_y + 36,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X1 - ww_protrude,
                     mullion_y,
@@ -1020,7 +1021,7 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for fl in range(1, KNOTT_FLOORS):
             mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X1 - ww_protrude,
                     window_center_y - ww_half,
@@ -1035,7 +1036,7 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for fl in range(1, KNOTT_FLOORS + 1):
             fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X1 - ww_protrude,
                     window_center_y - ww_half,
@@ -1050,7 +1051,7 @@ def build():
     # Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
     for fl in range(2, KNOTT_FLOORS):
         mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 win_n_x1,
                 KNOTT_Y2 - KNOTT_WALL,
@@ -1065,7 +1066,7 @@ def build():
     for fl in range(2, KNOTT_FLOORS + 1):
         fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
         if fz <= KNOTT_Z2:
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     win_n_x1,
                     KNOTT_Y2 - KNOTT_WALL,
@@ -1083,7 +1084,7 @@ def build():
     ]:
         for fl in range(1, KNOTT_FLOORS):
             mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
                     KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
@@ -1102,7 +1103,7 @@ def build():
     ]:
         for fl in range(1, KNOTT_FLOORS + 1):
             fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
                     KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
@@ -1219,12 +1220,12 @@ def build():
     # Floor 0 (ground): full slab with no shaft opening, clipped for NW indentation
     sz0 = KNOTT_GROUND_Z
     st0 = sz0 + KNOTT_WALL
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_X1, KNOTT_Y1, sz0, KNOTT_X2, KNOTT_Y2 - INDENT, st0, Textures.FLOOR_KH
         )
     )
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_X1 + 2 * INDENT,
             KNOTT_Y2 - INDENT,
@@ -1240,7 +1241,7 @@ def build():
         floor_z1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
         floor_z2 = floor_z1 + KNOTT_WALL
         # South bulk — full width up to stairwell's south wall
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 bix1,
                 KNOTT_BIY1,
@@ -1252,7 +1253,7 @@ def build():
             )
         )
         # Stairwell south extension (KNOTT_STAIRS_Y1..KNOTT_SHAFT_Y1): floor on either side, stairwell open
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 bix1,
                 KNOTT_STAIRS_Y1,
@@ -1263,7 +1264,7 @@ def build():
                 Textures.FLOOR_KH,
             )
         )
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 KNOTT_STAIRS_X2,
                 KNOTT_STAIRS_Y1,
@@ -1275,7 +1276,7 @@ def build():
             )
         )
         # North zone (KNOTT_SHAFT_Y1..KNOTT_BIY2): west of stairwell, clipped for NW indentation
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 bix1,
                 KNOTT_SHAFT_Y1,
@@ -1287,7 +1288,7 @@ def build():
             )
         )
         # Between west stairwell and east shaft
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 KNOTT_STAIRS_X2,
                 KNOTT_SHAFT_Y1,
@@ -1299,7 +1300,7 @@ def build():
             )
         )
         # East of shaft, clipped for NE indentation
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 KNOTT_SHAFT_X2,
                 KNOTT_SHAFT_Y1,
@@ -1310,7 +1311,7 @@ def build():
                 Textures.FLOOR_KH,
             )
         )
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 KNOTT_SHAFT_X2,
                 KNOTT_Y2 - INDENT,
@@ -1338,7 +1339,7 @@ def build():
     ]
 
     # Shaft North wall (internal, solid)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_SHAFT_X1,
             KNOTT_SHAFT_Y2,
@@ -1350,7 +1351,7 @@ def build():
         )
     )
     # Shaft South wall (internal, solid)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_SHAFT_X1,
             KNOTT_SHAFT_Y1 - shaft_wall,
@@ -1362,7 +1363,7 @@ def build():
         )
     )
     # Shaft West wall (internal, openings for each floor's door — flush with hallway east wall and shaft interior)
-    BRUSHES.extend(
+    DETAIL_BRUSHES.extend(
         layered_wall_y(
             KNOTT_SHAFT_Y1,
             KNOTT_ENT_X2,
@@ -1375,7 +1376,7 @@ def build():
         )
     )
     # Shaft East wall (internal)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_SHAFT_X2,
             KNOTT_SHAFT_Y1,
@@ -1400,7 +1401,7 @@ def build():
     ]
 
     # West stairwell North wall (internal, solid)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_STAIRS_X1,
             KNOTT_STAIRS_Y2,
@@ -1412,7 +1413,7 @@ def build():
         )
     )
     # West stairwell South wall (internal, solid)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_STAIRS_X1,
             KNOTT_STAIRS_Y1 - shaft_wall,
@@ -1424,7 +1425,7 @@ def build():
         )
     )
     # West stairwell East wall (internal, openings for each floor's door — flush both sides)
-    BRUSHES.extend(
+    DETAIL_BRUSHES.extend(
         layered_wall_y(
             KNOTT_STAIRS_Y1,
             KNOTT_STAIRS_X2,
@@ -1437,7 +1438,7 @@ def build():
         )
     )
     # West stairwell West wall (internal, solid)
-    BRUSHES.append(
+    DETAIL_BRUSHES.append(
         box(
             KNOTT_STAIRS_X1 - shaft_wall,
             KNOTT_STAIRS_Y1,
@@ -1481,7 +1482,7 @@ def build():
         top_flight_z = floor_z0 + KNOTT_FLOOR_H  # next floor surface Z (= exit level)
 
         # Entrance landing — flush with hallway floor, east of stair band (north lane).
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x2,
                 KNOTT_STAIRS_MID_Y,
@@ -1493,7 +1494,7 @@ def build():
             )
         )
         # Exit landing — flush with next floor, east of stair band (south lane).
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x2,
                 KNOTT_STAIRS_Y1,
@@ -1510,7 +1511,7 @@ def build():
             step_x_east = stair_x2 - tread_index * KNOTT_STAIRS_TREAD_X
             step_x_west = stair_x2 - (tread_index + 1) * KNOTT_STAIRS_TREAD_X
             step_z1 = floor_z0 + tread_index * KNOTT_STAIRS_STEP_R
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     step_x_west,
                     KNOTT_STAIRS_MID_Y,
@@ -1524,7 +1525,7 @@ def build():
             )
 
         # Half-floor west platform: turn-around landing, full shaft Y depth.
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 KNOTT_STAIRS_X1,
                 KNOTT_STAIRS_Y1,
@@ -1541,7 +1542,7 @@ def build():
             step_x_west = stair_x1 + tread_index * KNOTT_STAIRS_TREAD_X
             step_x_east = step_x_west + KNOTT_STAIRS_TREAD_X
             step_z1 = half_flight_z + tread_index * KNOTT_STAIRS_STEP_R
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     step_x_west,
                     KNOTT_STAIRS_Y1,
@@ -1569,7 +1570,7 @@ def build():
 
         # ── North lane — south face (KNOTT_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: east of stair band, in the entrance area
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x2,
                 KNOTT_STAIRS_MID_Y,
@@ -1581,7 +1582,7 @@ def build():
             )
         )
         # Upper post: west of stair band, on the west platform
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x1 - KNOTT_STAIRS_POST_W,
                 KNOTT_STAIRS_MID_Y,
@@ -1593,7 +1594,7 @@ def build():
             )
         )
         # Sloped cross rail along center divider (high at west, low at east)
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab(
                 stair_x1,
                 stair_x2,
@@ -1609,7 +1610,7 @@ def build():
 
         # ── South lane — north face (KNOTT_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: west of stair band, on the west platform
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x1 - KNOTT_STAIRS_POST_W,
                 KNOTT_STAIRS_MID_Y - KNOTT_STAIRS_POST_W,
@@ -1621,7 +1622,7 @@ def build():
             )
         )
         # Upper post: east of stair band, in the entrance area
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 stair_x2,
                 KNOTT_STAIRS_MID_Y - KNOTT_STAIRS_POST_W,
@@ -1633,7 +1634,7 @@ def build():
             )
         )
         # Sloped cross rail along center divider (low at west, high at east)
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab(
                 stair_x1,
                 stair_x2,
@@ -1919,4 +1920,6 @@ def build():
         )
     if letter_brushes:
         ENTITIES.append(brush_ent("func_detail", letter_brushes))
+    if DETAIL_BRUSHES:
+        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES

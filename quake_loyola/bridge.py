@@ -886,7 +886,7 @@ def build():
         )
         # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
         PBCS_WALK_WALL = 32
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab_y(
                 WALK_X1 - PBCS_WALK_WALL,
                 WALK_X1,
@@ -899,7 +899,7 @@ def build():
                 Textures.CEMENT,
             )
         )
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab_y(
                 WALK_X2,
                 WALK_X2 + PBCS_WALK_WALL,

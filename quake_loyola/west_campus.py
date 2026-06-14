@@ -31,6 +31,7 @@ from .constants import (
 )
 from .geometry import (
     box,
+    brush_ent,
     east_y_shift,
     layered_wall,
     layered_wall_y,
@@ -372,10 +373,10 @@ def build():
     FENCE_H = 96  # fence height
     FENCE_SPACING = 16  # picket center-to-center
     FENCE_TEX = "metal4_4"
-
+    fence_brushes = []
     for fence_y1, fence_y2 in [(CHARLES_Y1, CHARLES_Y2)]:
         # Top rail — thin, dropped so pickets extend above it
-        BRUSHES.append(
+        fence_brushes.append(
             box(
                 FENCE_X1,
                 fence_y1,
@@ -391,7 +392,7 @@ def build():
         picket_index = 0
         while picket_y + 2 <= fence_y2:
             picket_width = 8 if picket_index % 10 == 0 else 2
-            BRUSHES.append(
+            fence_brushes.append(
                 box(
                     FENCE_X1,
                     picket_y,
@@ -404,6 +405,8 @@ def build():
             )
             picket_y += FENCE_SPACING
             picket_index += 1
+    if fence_brushes:
+        ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
     # ════════════════════════════════════════════════════════════════════════════════
     # West flat approach removed — arch now starts at world edge
@@ -413,8 +416,9 @@ def build():
         WORLD_X2 - WALL_T
     )  # full southward shift at east world wall
     BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]  # easternmost pier — where the angle begins
+    bridge_detail_brushes = []
     # Straight section: arch terminus → easternmost pier
-    BRUSHES.append(
+    bridge_detail_brushes.append(
         box(
             BRIDGE_X2,
             BRIDGE_Y1,
@@ -428,7 +432,7 @@ def build():
         )
     )
     # Angled section: easternmost pier → east world wall
-    BRUSHES.append(
+    bridge_detail_brushes.append(
         shear_box_y(
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y1,
@@ -447,7 +451,7 @@ def build():
     for i in range(BRIDGE_SEG_SPAN_W):
         sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
         sx2 = sx1 + BRIDGE_SEG_W
-        BRUSHES.append(
+        bridge_detail_brushes.append(
             ramp_slab(
                 sx1,
                 sx2,
@@ -462,4 +466,6 @@ def build():
                 tb=Textures.FLOOR,
             )
         )
+    if bridge_detail_brushes:
+        ENTITIES.append(brush_ent("func_detail", bridge_detail_brushes))
     return BRUSHES, ENTITIES
