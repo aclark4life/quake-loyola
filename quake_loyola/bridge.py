@@ -1,6 +1,7 @@
 from .constants import (
     A_SEGS,
     BRIDGE_ARCH_X,
+    BRIDGE_DZ1,
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
@@ -51,6 +52,8 @@ from .constants import (
     WORLD_X1,
     WORLD_X2,
     WORLD_Y1,
+    WORLD_Y2,
+    WORLD_Z2,
     Textures,
     deck_bot_z,
     deck_top_z,
@@ -74,6 +77,14 @@ from .geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
+    # Bridge superstructure (parapets, railings, arch voussoirs, teleport arches) is
+    # collected into a func_detail entity below instead of worldspawn.  None of it
+    # seals the level (the world shell does), so keeping it out of the BSP avoids the
+    # extra portals that make full vis slow.  Appends below are temporarily redirected
+    # to DETAIL_BRUSHES, then worldspawn routing is restored after the teleport arches.
+    DETAIL_BRUSHES = []
+    _worldspawn_brushes = BRUSHES
+    BRUSHES = DETAIL_BRUSHES
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
     # North east parapet: straight BRIDGE_X2→pier, then angled pier→world wall
     BRUSHES.append(
@@ -817,6 +828,40 @@ def build():
                     Textures.PILLAR,
                 )
             )
+
+    # Restore worldspawn routing and emit the bridge superstructure as one func_detail
+    # entity — excluded from BSP/vis portal generation, but still solid and rendered.
+    BRUSHES = _worldspawn_brushes
+    if DETAIL_BRUSHES:
+        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
+
+    # Add hint brushes to split the large open space around the bridge (vis optimization)
+    # This prevents "Leaf with too many portals" errors after converting bridge to detail.
+    BRUSHES.append(box(-2, WORLD_Y1, FLOOR_Z1, 2, WORLD_Y2, WORLD_Z2, "hint"))
+    BRUSHES.append(
+        box(
+            BRIDGE_ARCH_X[1] - 2,
+            WORLD_Y1,
+            FLOOR_Z1,
+            BRIDGE_ARCH_X[1] + 2,
+            WORLD_Y2,
+            WORLD_Z2,
+            "hint",
+        )
+    )
+    BRUSHES.append(
+        box(
+            BRIDGE_ARCH_X[2] - 2,
+            WORLD_Y1,
+            FLOOR_Z1,
+            BRIDGE_ARCH_X[2] + 2,
+            WORLD_Y2,
+            WORLD_Z2,
+            "hint",
+        )
+    )
+    BRUSHES.append(box(WORLD_X1, -140, FLOOR_Z1, WORLD_X2, -136, WORLD_Z2, "hint"))
+    BRUSHES.append(box(WORLD_X1, 136, FLOOR_Z1, WORLD_X2, 140, WORLD_Z2, "hint"))
 
     # ════════════════════════════════════════════════════════════════════════════════
     # WALKWAY — flat bridge from south edge to building 2nd floor entrance
