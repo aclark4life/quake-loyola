@@ -78,7 +78,11 @@ deploy:
     cp {{map_name}}.bsp {{maps_dir}}/
     cp {{map_name}}.lit {{maps_dir}}/
 
-# Clean up temporary build files
+# Clean up temporary build files and test artifacts
 clean:
-    rm -f {{map_name}}.bsp {{map_name}}.lit {{map_name}}.prt {{map_name}}.pts {{map_name}}.log
+    rm -f {{map_name}}.map {{map_name}}.bsp {{map_name}}.lit {{map_name}}.vis
+    rm -f test.bsp
+    rm -f test_*.json
+    rm -f *.log *.prt *.pts *.wad
+    find . -name "__pycache__" -type d -exec rm -rf {} +
 
