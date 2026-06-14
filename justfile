@@ -80,7 +80,7 @@ deploy:
 
 # Clean up temporary build files and test artifacts
 clean:
-    rm -f {{map_name}}.map {{map_name}}.bsp {{map_name}}.lit {{map_name}}.vis
+    rm -f {{map_name}}.bsp {{map_name}}.lit {{map_name}}.vis
     rm -f test.bsp
     rm -f test_*.json
     rm -f *.log *.prt *.pts *.wad
