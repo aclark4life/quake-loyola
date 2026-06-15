@@ -100,7 +100,8 @@ def build():
     dorm_s_openings = nb_wins_xz(dorm_wx) + [
         (DORM_CX - DORM_ENT_HW, FLOOR_Z2, DORM_CX + DORM_ENT_HW, FLOOR_Z2 + DORM_ENT_H)
     ]
-    BRUSHES.extend(
+    north_bldg_detail = []
+    north_bldg_detail.extend(
         layered_wall(
             DORM_X1,
             DORM_NORTH_Y1,
@@ -113,7 +114,7 @@ def build():
         )
     )
     # North wall — windows only
-    BRUSHES.extend(
+    north_bldg_detail.extend(
         layered_wall(
             DORM_X1,
             DORM_NORTH_Y2 - DORM_WALL,
@@ -134,7 +135,7 @@ def build():
             FLOOR_Z2 + DORM_ENT_H,
         )
     ]
-    BRUSHES.extend(
+    north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM_WALL,
             DORM_X2 - DORM_WALL,
@@ -147,7 +148,7 @@ def build():
         )
     )
     # West wall — windows
-    BRUSHES.extend(
+    north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM_WALL,
             DORM_X1,
@@ -160,7 +161,7 @@ def build():
         )
     )
     # Ceiling slab
-    BRUSHES.append(
+    north_bldg_detail.append(
         box(
             DORM_X1,
             DORM_NORTH_Y1,
@@ -177,7 +178,7 @@ def build():
     DORM_RIDGE_Z = DORM_EAVE_Z + KNOTT_FLOOR_H  # ridge apex
     DORM_SLAB_T = 16  # roof slab thickness at eave
     # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
-    BRUSHES.append(
+    north_bldg_detail.append(
         ramp_slab(
             DORM_X1,
             DORM_CX,
@@ -191,7 +192,7 @@ def build():
         )
     )
     # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
-    BRUSHES.append(
+    north_bldg_detail.append(
         ramp_slab(
             DORM_CX,
             DORM_X2,
@@ -204,6 +205,8 @@ def build():
             Textures.ROOF,
         )
     )
+    ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
+
     # Interior floor — flat ground surface inside the building (covers the hill void)
     BRUSHES.append(
         box(
@@ -220,6 +223,7 @@ def build():
 
     # ── Two south buildings — exact copies of north building, stacked N-S ──────────
     # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
+    # Moved to func_detail to reduce portal complexity in the open campus area.
 
     def make_south_bldg(by1, by2):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
@@ -364,8 +368,12 @@ def build():
         )
         return brushes
 
-    BRUSHES.extend(make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2))
-    BRUSHES.extend(make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2))
+    ENTITIES.append(
+        brush_ent("func_detail", make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2))
+    )
+    ENTITIES.append(
+        brush_ent("func_detail", make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2))
+    )
 
     # ── Iron fence along east face of west buildings ──────────────────────────
     FENCE_X1 = DORM_X2 + 96  # well clear of building face

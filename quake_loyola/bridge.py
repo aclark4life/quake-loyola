@@ -834,6 +834,7 @@ def build():
     BRUSHES = _worldspawn_brushes
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
+        DETAIL_BRUSHES = []
 
     # Add hint brushes to split the large open space around the bridge (vis optimization)
     # This prevents "Leaf with too many portals" errors after converting bridge to detail.
@@ -886,7 +887,7 @@ def build():
         )
         # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
         PBCS_WALK_WALL = 32
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab_y(
                 WALK_X1 - PBCS_WALK_WALL,
                 WALK_X1,
@@ -899,7 +900,7 @@ def build():
                 Textures.CEMENT,
             )
         )
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab_y(
                 WALK_X2,
                 WALK_X2 + PBCS_WALK_WALL,
@@ -916,7 +917,7 @@ def build():
         for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
             tube_base_z = WALK_ZT1 + BRIDGE_PAR_H + tube_z_offset
             ww_cx = PBCS_WALK_WALL // 2
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
                     KNOTT_Y2,
@@ -927,7 +928,7 @@ def build():
                     Textures.RAIL,
                 )
             )
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
                     KNOTT_Y2,
@@ -972,7 +973,7 @@ def build():
         extension_terrain_z_west = (
             extension_terrain_z1 + extension_terrain_z2
         ) // 2  # Z at west end (N-S path side)
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             ramp_slab(
                 east_walk_x2,
                 KNOTT_X2,
@@ -1006,7 +1007,7 @@ def build():
         beam_x1 = BRIDGE_ARCH_X[3]
         beam_x2 = BRIDGE_ARCH_X[4]
         # Horizontal crossbeam
-        BRUSHES.append(
+        DETAIL_BRUSHES.append(
             box(
                 beam_x1,
                 support_y1,
@@ -1029,7 +1030,7 @@ def build():
         support_pier_xs = west_support_piers + east_support_piers
         support_pier_half_width = 20
         for pier_x in support_pier_xs:
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     pier_x - support_pier_half_width,
                     support_y1,
@@ -1359,4 +1360,6 @@ def build():
             )
         )
         ENTITIES.append(brush_ent("func_illusionary", abutment_teleport_brush))
+    if DETAIL_BRUSHES:
+        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES

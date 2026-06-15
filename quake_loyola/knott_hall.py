@@ -1855,7 +1855,7 @@ def build():
         for lamp_y in CHARLES_LAMP_POST_YS:
             pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
             # Narrow shaft
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     lamp_x - 2,
                     lamp_y - 2,
@@ -1867,7 +1867,7 @@ def build():
                 )
             )
             # Torch top — narrow post + brick cup (matches bridge pillar torches)
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     lamp_x - 3,
                     lamp_y - 3,
@@ -1878,7 +1878,7 @@ def build():
                     Textures.CEMENT,
                 )
             )
-            BRUSHES.append(
+            DETAIL_BRUSHES.append(
                 box(
                     lamp_x - 5,
                     lamp_y - 5,
@@ -1903,7 +1903,7 @@ def build():
         (CHARLES_Y2 - CHARLES_ARCH_W_PRE, CHARLES_Y2),
     ]:
         # Stone arch posts + ring
-        BRUSHES.extend(
+        DETAIL_BRUSHES.extend(
             arch_wall_y(
                 pre_syb,
                 pre_syf,

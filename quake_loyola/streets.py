@@ -34,6 +34,7 @@ from .geometry import (
 def build():
     BRUSHES = []
     ENTITIES = []
+    DETAIL_BRUSHES = []
     # ════════════════════════════════════════════════════════════════════════════════
     # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
     # ════════════════════════════════════════════════════════════════════════════════
@@ -95,6 +96,10 @@ def build():
             Textures.SKY,
         )
     )  # sky
+    # ── Non-sealing street furniture, markings, and decorative ground geometry ──
+    # These are moved to DETAIL_BRUSHES to speed up vis and reduce portal fragmentation.
+    _world_brushes = BRUSHES
+    BRUSHES = DETAIL_BRUSHES
 
     # ════════════════════════════════════════════════════════════════════════════════
     # CHARLES STREET — road surface, sidewalks, centre stripe
@@ -1105,6 +1110,9 @@ def build():
             (pillar_x, pillar_center_y, lamppost_base_z + 180)
         )
 
+    # ── Embankment — hill under Dorm buildings ───────────────────────────────────
+    # Large terrain feature that blocks visibility — restore worldspawn routing.
+    BRUSHES = _world_brushes
     DORM_DEPTH = 600  # building N-S depth (doubled)
     DORM_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
     DORM_X2 = DORM_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
@@ -1231,4 +1239,6 @@ def build():
     )
     if east_gate_brushes:
         ENTITIES.append(brush_ent("func_detail", east_gate_brushes))
+    if DETAIL_BRUSHES:
+        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES
