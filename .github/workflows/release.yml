@@ -19,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -61,20 +63,50 @@ jobs:
       - name: Package release archive
         run: zip -j "loyola-${{ github.ref_name }}.zip" loyola.bsp loyola.lit
 
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          TAG="${{ github.ref_name }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
+
+          {
+            echo "## What's Changed"
+            echo ""
+            if [ -n "$PREV_TAG" ]; then
+              git log "${PREV_TAG}..${TAG}" --pretty=format:"- %s (%h)" --no-merges
+            else
+              git log "${TAG}" --pretty=format:"- %s (%h)" --no-merges
+            fi
+            echo ""
+            echo ""
+
+            echo "## Build Metrics"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | --- |"
+            [ -f loyola.bsp ] && echo "| loyola.bsp | $(du -h loyola.bsp | cut -f1) |"
+            [ -f loyola.lit ] && echo "| loyola.lit | $(du -h loyola.lit | cut -f1) |"
+            [ -f "loyola-${TAG}.zip" ] && echo "| release zip | $(du -h "loyola-${TAG}.zip" | cut -f1) |"
+            [ -f vis.log ] && echo "| vis leafs | $(grep -oE '[0-9]+ leafs' vis.log | head -1 | grep -oE '[0-9]+') |"
+            [ -f vis.log ] && echo "| vis clusters | $(grep -oE '[0-9]+ clusters' vis.log | head -1 | grep -oE '[0-9]+') |"
+            [ -f vis.log ] && echo "| vis portals | $(grep -oE '[0-9]+ portals' vis.log | head -1 | grep -oE '[0-9]+') |"
+            [ -f vis.log ] && echo "| vis time | $(grep -oE '[0-9.]+ seconds elapsed' vis.log | tail -1 | grep -oE '[0-9.]+') s |"
+            echo ""
+
+            if [ -n "$PREV_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
+            fi
+          } > release_body.md
+
+          echo "prev_tag=${PREV_TAG}" >> "$GITHUB_OUTPUT"
+
       - name: Build summary
         if: always()
         run: |
           {
             echo "## Loyola build — ${{ github.ref_name }}"
             echo ""
-            echo "| Metric | Value |"
-            echo "| --- | --- |"
-            [ -f loyola.bsp ] && echo "| loyola.bsp | $(du -h loyola.bsp | cut -f1) |"
-            [ -f loyola.lit ] && echo "| loyola.lit | $(du -h loyola.lit | cut -f1) |"
-            [ -f "loyola-${{ github.ref_name }}.zip" ] && echo "| release zip | $(du -h "loyola-${{ github.ref_name }}.zip" | cut -f1) |"
-            [ -f vis.log ] && echo "| vis leafs | $(grep -oE '[0-9]+ leafs' vis.log | head -1 | grep -oE '[0-9]+') |"
-            [ -f vis.log ] && echo "| vis clusters | $(grep -oE '[0-9]+ clusters' vis.log | head -1 | grep -oE '[0-9]+') |"
-            [ -f vis.log ] && echo "| vis portals | $(grep -oE '[0-9]+ portals' vis.log | head -1 | grep -oE '[0-9]+') |"
+            cat release_body.md 2>/dev/null || true
             echo ""
             echo "<details><summary>qbsp log</summary>"
             echo ""
@@ -95,5 +127,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: loyola-${{ github.ref_name }}.zip
-          generate_release_notes: true
+          body_path: release_body.md
           draft: true
