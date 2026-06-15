@@ -737,12 +737,7 @@ def build():
 
     # Ennis cement wall lamppost lights
     for lamp_x, lamp_y, lamp_z in ENNIS_CEMENT_LAMP_POSTS:
-        # The east-wall post (ENNIS_CEMENT_X2) sits flush against the world wall, so its
-        # point light is buried in solid — emit it only for the open (west) post.
-        if lamp_x != ENNIS_CEMENT_X2:
-            ENTITIES.append(
-                ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300")
-            )
+        ENTITIES.append(ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300"))
         ENTITIES.append(
             ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {lamp_z + 4}")
         )
