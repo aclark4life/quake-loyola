@@ -384,7 +384,8 @@ def build():
     ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
     ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
-    # ── North & South Charles Street arch teleports → bridge deck centre ─────────
+    # ── North & South Charles Street arch teleports ────────────────────────────────
+    # South arch → bridge deck centre; North arch → north dorm rooftop
     CHARLES_ARCH_RIN = 256  # inner radius = road half-width
     CHARLES_ARCH_STILT = 96  # straight post height before arch springs
     CHARLES_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
@@ -397,22 +398,32 @@ def build():
             angle="0",
         )
     )
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_dorm_roof",
+            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            angle="180",  # facing south toward bridge
+        )
+    )
 
     CHARLES_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
 
-    for arch_y1, arch_y2, trigger_y1, trigger_y2 in [
+    for arch_y1, arch_y2, trigger_y1, trigger_y2, arch_target in [
         (
             CHARLES_Y1,
             CHARLES_Y1 + CHARLES_ARCH_W,
             CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
             CHARLES_Y1 + CHARLES_ARCH_W,
-        ),  # south arch — trigger inset from south wall
+            "dest_bridge_mid",
+        ),  # south arch → bridge deck
         (
             CHARLES_Y2 - CHARLES_ARCH_W,
             CHARLES_Y2,
             CHARLES_Y2 - CHARLES_ARCH_W,
             CHARLES_Y2 - CHARLES_ARCH_TRIG_INSET,
-        ),  # north arch — trigger inset from north wall
+            "dest_dorm_roof",
+        ),  # north arch → dorm rooftop
     ]:
         arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
         # Box trigger — reliable activation, inset from walls
@@ -428,9 +439,7 @@ def build():
             )
         ]
         ENTITIES.append(
-            brush_ent(
-                "trigger_teleport", north_south_trigger_brush, target="dest_bridge_mid"
-            )
+            brush_ent("trigger_teleport", north_south_trigger_brush, target=arch_target)
         )
         # Arch-shaped illusionary fill so the teleport glow looks like an arch
         north_south_glow_brushes = arch_fill_y(
