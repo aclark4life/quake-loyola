@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-from quake_loyola import bridge, entities, knott_hall, streets, west_campus
+from quake_loyola import (
+    bridge,
+    entities,
+    knott_hall,
+    knott_terrain,
+    streets,
+    west_campus,
+)
 from quake_loyola.constants import Textures
 from quake_loyola.mapdata import MapBuilder
 
@@ -20,7 +27,7 @@ WORLDSPAWN_FIELDS = {
 def build_map():
     """Build the full map by collecting every module's geometry into a MapBuilder."""
     mb = MapBuilder()
-    for mod in [streets, west_campus, bridge, knott_hall, entities]:
+    for mod in [streets, west_campus, bridge, knott_terrain, knott_hall, entities]:
         brushes, ents = mod.build()
         mb.add_brushes(brushes)
         mb.add_entities(ents)
