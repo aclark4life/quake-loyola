@@ -2,6 +2,7 @@ import math
 
 from .constants import (
     A_SEGS,
+    ARCH_RIN,
     BRIDGE_DZ2,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
@@ -286,6 +287,35 @@ def build():
             KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
+        )
+    )
+    # Cement E-W walk + mulch bed over that terrain (func_detail surface laid on the worldspawn
+    # ground, like the Ennis sidewalk/verge).  The walk aligns with the east teleport opening,
+    # leading from the back-road N-S sidewalk to the teleport; the rest north to the Ennis south
+    # sidewalk is a grave13c mulch bed.
+    teleport_walk_y2 = (
+        KNOTT_DRIVEWAY_EXT_Y1 + 2 * ARCH_RIN
+    )  # north edge of teleport opening
+    DETAIL_BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_EXT_Y1,
+            FLOOR_Z2,
+            WORLD_X2 - WALL_T,
+            teleport_walk_y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    DETAIL_BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_ES_X2,
+            teleport_walk_y2,
+            FLOOR_Z2,
+            WORLD_X2 - WALL_T,
+            ENNIS_SW_EDGE,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            "grave13c",
         )
     )
 

@@ -1,6 +1,7 @@
 import math
 
 from .constants import (
+    ARCH_SLAB_W,
     BRIDGE_ARCH_X,
     BRIDGE_DZ2,
     BRIDGE_PIL_HW,
@@ -1020,9 +1021,11 @@ def build():
         east_gate_picket_x += gate_fence_spacing
         east_gate_picket_index += 1
 
-    # ── Cement parapet wall — east half of Ennis Drive (iron fence end to east world wall) ──
+    # ── Cement parapet wall — east half of Ennis Drive (iron fence end to east teleport) ──
     ENNIS_CEMENT_X1 = ENNIS_GATE_X2  # starts where iron fence ends
-    ENNIS_CEMENT_X2 = WORLD_X2_EXT - WALL_T  # east world wall inner face
+    ENNIS_CEMENT_X2 = (
+        WORLD_X2 - WALL_T - ARCH_SLAB_W // 2
+    )  # aligned with east teleport centre
     cement_wall_y1 = ENNIS_WALL_NY  # south face
     cement_wall_y2 = ENNIS_WALL_NY + ENNIS_WALL_T  # north face
     cement_wall_height = 32  # parapet height — low enough to jump over
