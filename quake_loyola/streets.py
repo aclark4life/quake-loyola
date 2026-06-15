@@ -16,6 +16,7 @@ from .constants import (
     WALL_T,
     WORLD_X1,
     WORLD_X2,
+    WORLD_X2_EXT,
     WORLD_Y1,
     WORLD_Y2,
     WORLD_Z2,
@@ -39,7 +40,15 @@ def build():
     # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
     # ════════════════════════════════════════════════════════════════════════════════
     BRUSHES.append(
-        box(WORLD_X1, WORLD_Y1, FLOOR_Z1, WORLD_X2, WORLD_Y2, FLOOR_Z2, Textures.GROUND)
+        box(
+            WORLD_X1,
+            WORLD_Y1,
+            FLOOR_Z1,
+            WORLD_X2_EXT,
+            WORLD_Y2,
+            FLOOR_Z2,
+            Textures.GROUND,
+        )
     )  # floor
     BRUSHES.append(
         box(
@@ -54,10 +63,10 @@ def build():
     )  # W wall
     BRUSHES.append(
         box(
-            WORLD_X2 - WALL_T,
+            WORLD_X2_EXT - WALL_T,
             WORLD_Y1,
             FLOOR_Z1,
-            WORLD_X2,
+            WORLD_X2_EXT,
             WORLD_Y2,
             WORLD_Z2,
             Textures.SKY,
@@ -68,7 +77,7 @@ def build():
             WORLD_X1,
             WORLD_Y2 - WALL_T,
             FLOOR_Z1,
-            WORLD_X2,
+            WORLD_X2_EXT,
             WORLD_Y2,
             WORLD_Z2,
             Textures.SKY,
@@ -79,7 +88,7 @@ def build():
             WORLD_X1,
             WORLD_Y1,
             FLOOR_Z1,
-            WORLD_X2,
+            WORLD_X2_EXT,
             WORLD_Y1 + WALL_T,
             WORLD_Z2,
             Textures.SKY,
@@ -90,7 +99,7 @@ def build():
             WORLD_X1,
             WORLD_Y1,
             WORLD_Z2 - WALL_T,
-            WORLD_X2,
+            WORLD_X2_EXT,
             WORLD_Y2,
             WORLD_Z2,
             Textures.SKY,
@@ -116,7 +125,7 @@ def build():
     ENNIS_Y = BRIDGE_Y2 + 800  # 936: centred 800 units north of bridge north edge
     ENNIS_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
     ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
-    ENNIS_X2 = WORLD_X2 - WALL_T  # dead-end at east world wall
+    ENNIS_X2 = WORLD_X2_EXT - WALL_T  # dead-end at east world wall
     ENNIS_SW_EDGE = (
         ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - 32
     )  # Ennis south sidewalk outer edge
