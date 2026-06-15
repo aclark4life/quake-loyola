@@ -983,7 +983,9 @@ def build():
     # ── East-running iron gate along Ennis Drive (from brick wall end to ~halfway east) ──
     # Built as func_detail to avoid BSP portal overflow from pickets in open space.
     ENNIS_GATE_X1 = bwex2  # starts at east end of brick wall
-    ENNIS_GATE_X2 = (bwex2 + WORLD_X2 - WALL_T) // 2  # ends halfway to east world wall
+    ENNIS_GATE_X2 = (
+        bwex2 + WORLD_X2_EXT - WALL_T
+    ) // 2  # ends halfway to east world wall
     east_gate_y1 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1  # Y centre of fence line
     east_gate_y2 = east_gate_y1 + 2
     east_gate_brushes = []
@@ -1020,7 +1022,7 @@ def build():
 
     # ── Cement parapet wall — east half of Ennis Drive (iron fence end to east world wall) ──
     ENNIS_CEMENT_X1 = ENNIS_GATE_X2  # starts where iron fence ends
-    ENNIS_CEMENT_X2 = WORLD_X2 - WALL_T  # east world wall inner face
+    ENNIS_CEMENT_X2 = WORLD_X2_EXT - WALL_T  # east world wall inner face
     cement_wall_y1 = ENNIS_WALL_NY  # south face
     cement_wall_y2 = ENNIS_WALL_NY + ENNIS_WALL_T  # north face
     cement_wall_height = 32  # parapet height — low enough to jump over
