@@ -28834,8 +28834,8 @@
 
 {
 "classname" "info_teleport_destination"
-"targetname" "dest_bridge_mid"
-"origin" "0 0 440"
+"targetname" "dest_south_dorm_roof"
+"origin" "-1465 -1668 696"
 "angle" "0"
 }
 
@@ -28843,12 +28843,12 @@
 "classname" "info_teleport_destination"
 "targetname" "dest_dorm_roof"
 "origin" "-1465 1246 696"
-"angle" "180"
+"angle" "0"
 }
 
 {
 "classname" "trigger_teleport"
-"target" "dest_bridge_mid"
+"target" "dest_south_dorm_roof"
 {
 ( -248 -1960 4 ) ( -248 -1920 4 ) ( -248 -1960 352 ) *teleport 0 0 0 1 1
 ( 248 -1960 4 ) ( 248 -1960 352 ) ( 248 -1920 4 ) *teleport 0 0 0 1 1

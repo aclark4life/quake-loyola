@@ -385,7 +385,7 @@ def build():
     ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
     # ── North & South Charles Street arch teleports ────────────────────────────────
-    # South arch → bridge deck centre; North arch → north dorm rooftop
+    # South arch → south dorm rooftop; North arch → north dorm rooftop
     CHARLES_ARCH_RIN = 256  # inner radius = road half-width
     CHARLES_ARCH_STILT = 96  # straight post height before arch springs
     CHARLES_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
@@ -393,9 +393,9 @@ def build():
     ENTITIES.append(
         ent(
             "info_teleport_destination",
-            targetname="dest_bridge_mid",
-            origin=f"0 0 {int(deck_top_z(0) + 56)}",
-            angle="0",
+            targetname="dest_south_dorm_roof",
+            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            angle="0",  # facing east, atop roof ridge center
         )
     )
     ENTITIES.append(
@@ -403,7 +403,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_dorm_roof",
             origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
-            angle="180",  # facing south toward bridge
+            angle="0",  # facing east, atop roof ridge center
         )
     )
 
@@ -415,8 +415,8 @@ def build():
             CHARLES_Y1 + CHARLES_ARCH_W,
             CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
             CHARLES_Y1 + CHARLES_ARCH_W,
-            "dest_bridge_mid",
-        ),  # south arch → bridge deck
+            "dest_south_dorm_roof",
+        ),  # south arch → south dorm rooftop
         (
             CHARLES_Y2 - CHARLES_ARCH_W,
             CHARLES_Y2,
