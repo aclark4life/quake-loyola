@@ -107,6 +107,8 @@ from .constants import (
 from .geometry import (
     arch_fill,
     arch_fill_y,
+    arch_wall,
+    arch_wall_y,
     box,
     brush_ent,
     ent,
@@ -455,6 +457,131 @@ def build():
             stilt_h=CHARLES_ARCH_STILT,
         )
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
+
+    # ── Ennis east-end & KH driveway south-end arch teleports ─────────────────
+    # Both arches → top of Knott Hall rooftop.
+    # Each arch spans the road opening and glows with teleport texture.
+    ENNIS_ARCH_STILT = 64
+    KH_DRIVE_ARCH_STILT = 64
+    ARCH_TRIG_INSET = 8  # keep triggers off the walls/floor
+
+    kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
+    kh_roof_origin = f"{KNOTT_CX} {(KNOTT_Y1 + KNOTT_Y2) // 2} {int(KNOTT_Z2 + 40)}"
+
+    # Destinations — both land on KH rooftop, facing south
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_ennis_east",
+            origin=kh_roof_origin,
+            angle="270",  # facing south on KH rooftop
+        )
+    )
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_kh_drive_south",
+            origin=kh_roof_origin,
+            angle="270",  # facing south on KH rooftop
+        )
+    )
+
+    # Ennis east arch (X-aligned, at the east world wall)
+    ennis_arch_x1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
+    ennis_arch_x2 = WORLD_X2_EXT - WALL_T
+    ennis_arch_top_z = FLOOR_Z2 + ENNIS_ARCH_STILT + ENNIS_HW
+    ennis_east_trigger = [
+        box(
+            ennis_arch_x1,
+            ENNIS_Y - ENNIS_HW + ARCH_TRIG_INSET,
+            FLOOR_Z2 + 4,
+            ennis_arch_x2,
+            ENNIS_Y + ENNIS_HW - ARCH_TRIG_INSET,
+            ennis_arch_top_z,
+            Textures.TELEPORT,
+        )
+    ]
+    ENTITIES.append(
+        brush_ent("trigger_teleport", ennis_east_trigger, target="dest_kh_drive_south")
+    )
+    ennis_east_glow = arch_fill(
+        ennis_arch_x1,
+        ennis_arch_x2,
+        float(ENNIS_Y),
+        FLOOR_Z2,
+        ENNIS_HW,
+        A_SEGS,
+        Textures.TELEPORT,
+        stilt_h=ENNIS_ARCH_STILT,
+    )
+    ENTITIES.append(brush_ent("func_illusionary", ennis_east_glow))
+
+    # Stone arch surround — X-aligned, freestanding at the east Ennis wall
+    ENNIS_ARCH_ROUT = ENNIS_HW + 56
+    ennis_stone_arch = arch_wall(
+        ennis_arch_x1,
+        ennis_arch_x2,
+        ENNIS_Y - ENNIS_ARCH_ROUT,
+        ENNIS_Y + ENNIS_ARCH_ROUT,
+        FLOOR_Z2,
+        ennis_arch_top_z,
+        ENNIS_HW,
+        ENNIS_ARCH_ROUT,
+        A_SEGS,
+        Textures.STONE,
+        stilt_h=ENNIS_ARCH_STILT,
+        yc=float(ENNIS_Y),
+        freestanding=True,
+    )
+    ENTITIES.append(brush_ent("func_detail", ennis_stone_arch))
+
+    # KH driveway south arch (Y-aligned, flush with the south world wall)
+    kh_arch_y1 = CHARLES_Y1
+    kh_arch_y2 = CHARLES_Y1 + ARCH_SLAB_W
+    kh_arch_top_z = KNOTT_DRIVEWAY_ZT_S + KH_DRIVE_ARCH_STILT + KNOTT_DRIVEWAY_HW
+    kh_drive_trigger = [
+        box(
+            kh_drive_cx - KNOTT_DRIVEWAY_HW + ARCH_TRIG_INSET,
+            kh_arch_y1,
+            KNOTT_DRIVEWAY_ZT_S + 4,
+            kh_drive_cx + KNOTT_DRIVEWAY_HW - ARCH_TRIG_INSET,
+            kh_arch_y2,
+            kh_arch_top_z,
+            Textures.TELEPORT,
+        )
+    ]
+    ENTITIES.append(
+        brush_ent("trigger_teleport", kh_drive_trigger, target="dest_ennis_east")
+    )
+    kh_drive_glow = arch_fill_y(
+        kh_arch_y1,
+        kh_arch_y2,
+        float(kh_drive_cx),
+        KNOTT_DRIVEWAY_ZT_S,
+        KNOTT_DRIVEWAY_HW,
+        A_SEGS,
+        Textures.TELEPORT,
+        stilt_h=KH_DRIVE_ARCH_STILT,
+    )
+    ENTITIES.append(brush_ent("func_illusionary", kh_drive_glow))
+
+    # Stone arch surround — Y-aligned, freestanding at the KH driveway south end
+    KH_ARCH_ROUT = KNOTT_DRIVEWAY_HW + 56
+    kh_stone_arch = arch_wall_y(
+        kh_arch_y1,
+        kh_arch_y2,
+        kh_drive_cx - KH_ARCH_ROUT,
+        kh_drive_cx + KH_ARCH_ROUT,
+        KNOTT_DRIVEWAY_ZT_S,
+        kh_arch_top_z,
+        KNOTT_DRIVEWAY_HW,
+        KH_ARCH_ROUT,
+        A_SEGS,
+        Textures.STONE,
+        stilt_h=KH_DRIVE_ARCH_STILT,
+        xc=float(kh_drive_cx),
+    )
+    ENTITIES.append(brush_ent("func_detail", kh_stone_arch))
 
     ENTITIES.append(
         ent(
