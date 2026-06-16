@@ -948,7 +948,7 @@ def build():
     east_ground_jitter = 120
     east_ground_buffer = 120  # clearance buffer from world edges / wall
     east_ground_x1 = ROAD_X2 + CHARLES_WALK_W + east_ground_buffer
-    east_ground_x2 = WORLD_X2 - WALL_T - east_ground_buffer
+    east_ground_x2 = WORLD_X2_EXT - WALL_T - east_ground_buffer
     east_ground_y1 = (
         ENNIS_WALL_NY + ENNIS_WALL_T + 200
     )  # centered in north space (fence=1148, world=1696, mid≈1422)

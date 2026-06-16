@@ -158,7 +158,7 @@ def build():
             BRIDGE_Y2,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
-            BRIDGE_EAST_SHIFT_END,
+            east_y_shift(WORLD_X2 - WALL_T - ARCH_SLAB_W),
             Textures.CEMENT,
         )
     )  # North east
@@ -196,7 +196,7 @@ def build():
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
-            BRIDGE_EAST_SHIFT_END,
+            east_y_shift(WORLD_X2 - WALL_T - ARCH_SLAB_W),
             Textures.CEMENT,
         )
     )
