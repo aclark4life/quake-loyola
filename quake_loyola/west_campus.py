@@ -1,13 +1,4 @@
 from .constants import (
-    BRIDGE_ARCH_X,
-    BRIDGE_DZ1,
-    BRIDGE_DZ2,
-    BRIDGE_SEG_SPAN_W,
-    BRIDGE_SEG_W,
-    BRIDGE_X1,
-    BRIDGE_X2,
-    BRIDGE_Y1,
-    BRIDGE_Y2,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_FLOORS,
@@ -23,20 +14,14 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT_FLOOR_H,
-    WALL_T,
-    WORLD_X2,
     Textures,
-    deck_bot_z,
-    deck_top_z,
 )
 from .geometry import (
     box,
     brush_ent,
-    east_y_shift,
     layered_wall,
     layered_wall_y,
     ramp_slab,
-    shear_box_y,
 )
 
 
@@ -416,64 +401,4 @@ def build():
     if fence_brushes:
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
-    # ════════════════════════════════════════════════════════════════════════════════
-    # West flat approach removed — arch now starts at world edge
-    # East flat stub from arch terminus to building entrance — angled southward
-    BRIDGE_EAST_SHIFT_START = 0.0  # no shift at the pier (pivot)
-    BRIDGE_EAST_SHIFT_END = east_y_shift(
-        WORLD_X2 - WALL_T
-    )  # full southward shift at east world wall
-    BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]  # easternmost pier — where the angle begins
-    bridge_detail_brushes = []
-    # Straight section: arch terminus → easternmost pier
-    bridge_detail_brushes.append(
-        box(
-            BRIDGE_X2,
-            BRIDGE_Y1,
-            BRIDGE_DZ1,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE_Y2,
-            BRIDGE_DZ2,
-            Textures.STONE,
-            tt=Textures.FLOOR,
-            tb=Textures.FLOOR,
-        )
-    )
-    # Angled section: easternmost pier → east world wall
-    bridge_detail_brushes.append(
-        shear_box_y(
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE_Y1,
-            BRIDGE_DZ1,
-            WORLD_X2 - WALL_T,
-            BRIDGE_Y2,
-            BRIDGE_DZ2,
-            BRIDGE_EAST_SHIFT_START,
-            BRIDGE_EAST_SHIFT_END,
-            Textures.STONE,
-            tt=Textures.FLOOR,
-            tb=Textures.FLOOR,
-        )
-    )
-
-    for i in range(BRIDGE_SEG_SPAN_W):
-        sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
-        sx2 = sx1 + BRIDGE_SEG_W
-        bridge_detail_brushes.append(
-            ramp_slab(
-                sx1,
-                sx2,
-                BRIDGE_Y1,
-                BRIDGE_Y2,
-                deck_bot_z(sx1),
-                deck_bot_z(sx2),
-                deck_top_z(sx1),
-                deck_top_z(sx2),
-                Textures.STONE,
-                tt=Textures.FLOOR,
-                tb=Textures.FLOOR,
-            )
-        )
-    if bridge_detail_brushes:
-        ENTITIES.append(brush_ent("func_detail", bridge_detail_brushes))
     return BRUSHES, ENTITIES

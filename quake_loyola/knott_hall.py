@@ -2,7 +2,6 @@ import math
 
 from .constants import (
     A_SEGS,
-    ARCH_RIN,
     BRIDGE_DZ2,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
@@ -67,6 +66,7 @@ from .constants import (
     WALL_T,
     WORLD_X1,
     WORLD_X2,
+    WORLD_X2_EXT,
     WORLD_Y1,
     Textures,
     deck_top_z,
@@ -194,7 +194,7 @@ def build():
             KNOTT_DRIVEWAY_ES_X2,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            WORLD_X2 - WALL_T,
+            WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_Y1,
             KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
             Textures.GROUND,
@@ -204,7 +204,7 @@ def build():
     BRUSHES.append(
         ramp_slab_y(
             KNOTT_DRIVEWAY_ES_X2,
-            WORLD_X2 - WALL_T,
+            WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_Y1,
             KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
@@ -277,45 +277,18 @@ def build():
             Textures.CEMENT,
         )
     )
-    # Terrain east of east sidewalk — flush with sidewalk top
+    # Terrain east of east sidewalk — sealing ground recessed to floor level so the
+    # decorative detail surfaces (cement walk / mulch / Ennis verge) laid on top at
+    # sidewalk height (FLOOR_Z2 + CHARLES_WALK_H) are the visible surface, not this ground.
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X2,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
-            WORLD_X2 - WALL_T,
+            WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
+            FLOOR_Z2,
             Textures.GROUND,
-        )
-    )
-    # Cement E-W walk + mulch bed over that terrain (func_detail surface laid on the worldspawn
-    # ground, like the Ennis sidewalk/verge).  The walk aligns with the east teleport opening,
-    # leading from the back-road N-S sidewalk to the teleport; the rest north to the Ennis south
-    # sidewalk is a grave13c mulch bed.
-    teleport_walk_y2 = (
-        KNOTT_DRIVEWAY_EXT_Y1 + 2 * ARCH_RIN
-    )  # north edge of teleport opening
-    DETAIL_BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            WORLD_X2 - WALL_T,
-            teleport_walk_y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    DETAIL_BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            teleport_walk_y2,
-            FLOOR_Z2,
-            WORLD_X2 - WALL_T,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            "grave13c",
         )
     )
 
