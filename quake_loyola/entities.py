@@ -97,6 +97,8 @@ from .constants import (
     WALL_T,
     WORLD_X1,
     WORLD_X2,
+    WORLD_X2_EXT,
+    WORLD_Y1,
     WORLD_Y2,
     Textures,
     deck_bot_z,
@@ -971,6 +973,36 @@ def build():
             grid_y += east_ground_spacing
         grid_x += east_ground_spacing
     ENTITIES.append(brush_ent("func_detail", east_ground_giant_brushes))
+
+    # ── Giant trees east of the teleport — randomised scatter, wider coverage ────
+    # Randomly scattered across the full extended-east strip (WORLD_X2 → WORLD_X2_EXT),
+    # south of Ennis drive down to the south world wall.
+    # Rejection sampling enforces a minimum separation so trees don't overlap.
+    east_side_tree_height = KNOTT_Z2
+    east_side_foliage_hw = 160  # widest foliage half-width (make_giant_tree)
+    _world_x2_ext = WORLD_X2 + 512  # WORLD_X2_EXT
+    _ennis_south = ENNIS_Y - ENNIS_HW  # Ennis road south edge
+    _ennis_sw_edge = _ennis_south - 3 * CHARLES_WALK_W - 32  # Ennis south sidewalk edge
+    east_tele_brushes = []
+    et_x1 = (
+        WORLD_X2 + WALL_T + east_side_foliage_hw + 20
+    )  # foliage clears the world wall / teleport
+    et_x2 = _world_x2_ext - WALL_T - 80
+    et_y1 = WORLD_Y1 + WALL_T + 120
+    et_y2 = _ennis_sw_edge - east_side_foliage_hw  # keep foliage clear of the sidewalk
+    et_min_dist = 280  # minimum centre-to-centre spacing
+    et_placed = []
+    for _ in range(300):  # attempt budget — stops when area is full
+        cx = tree_rng.randint(et_x1, et_x2)
+        cy = tree_rng.randint(et_y1, et_y2)
+        if all(
+            (cx - px) ** 2 + (cy - py) ** 2 >= et_min_dist**2 for px, py in et_placed
+        ):
+            et_placed.append((cx, cy))
+            east_tele_brushes += make_giant_tree(
+                cx, cy, FLOOR_Z2, east_side_tree_height
+            )
+    ENTITIES.append(brush_ent("func_detail", east_tele_brushes))
 
     bush_positions = [
         # Along north face of Ennis brick wall (campus grass side, not sidewalk)
