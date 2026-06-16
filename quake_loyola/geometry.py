@@ -356,8 +356,11 @@ def arch_wall(
     base_cap_h=0,
     base_cap_tex=None,
     base_cap_ovh=0,
+    yc=0.0,
+    freestanding=False,
 ):
-    """Stone wall with arched opening centred at Y=0.
+    """Stone wall with arched opening centred at Y=yc (default 0).
+    freestanding=True: posts stop at spring height, no cap above crown, no side fill.
 
     stilt_h: height of straight sides before the arch springs (defaults to rin,
              giving a plain semicircle; set > rin for a tall stilted/gothic arch).
@@ -374,23 +377,32 @@ def arch_wall(
     sprz = floor_z + stilt_h  # Z where arch springs
     seg = 180.0 / segs
     brushes = []
-    # Solid rock on either side of the arch (makes pier a solid mass, not freestanding)
-    if y1 < -(rout + overhang):
-        brushes.append(box(x1, y1, floor_z, x2, -(rout + overhang), ceil_z, tex))
-    if y2 > (rout + overhang):
-        brushes.append(box(x1, rout + overhang, floor_z, x2, y2, ceil_z, tex))
+    pillar_top = sprz if freestanding else ceil_z
+    # Solid rock on either side of the arch opening (omitted when freestanding)
+    if not freestanding:
+        if y1 < yc - (rout + overhang):
+            brushes.append(
+                box(x1, y1, floor_z, x2, yc - (rout + overhang), ceil_z, tex)
+            )
+        if y2 > yc + (rout + overhang):
+            brushes.append(
+                box(x1, yc + (rout + overhang), floor_z, x2, y2, ceil_z, tex)
+            )
     brushes.append(
-        box(x1, -(rout + overhang), floor_z, x2, -rin, ceil_z, tex)
-    )  # south pillar, full height (extended by overhang)
+        box(x1, yc - (rout + overhang), floor_z, x2, yc - rin, pillar_top, tex)
+    )  # south pillar
     brushes.append(
-        box(x1, rin, floor_z, x2, rout + overhang, ceil_z, tex)
-    )  # north pillar, full height (extended by overhang)
-    # Cap above arch crown: fills above the inner arc top
-    brushes.append(box(x1, -rin, sprz + rin, x2, rin, ceil_z, tex))
+        box(x1, yc + rin, floor_z, x2, yc + (rout + overhang), pillar_top, tex)
+    )  # north pillar
+    # Cap above arch crown (omitted when freestanding)
+    if not freestanding:
+        brushes.append(box(x1, yc - rin, sprz + rin, x2, yc + rin, ceil_z, tex))
     # Stone plinth at base — closes arch opening at ground level
     if base_ramp is not None:
         zt1, zt2 = base_ramp
-        brushes.append(ramp_slab(x1, x2, -rin, rin, floor_z, floor_z, zt1, zt2, tex))
+        brushes.append(
+            ramp_slab(x1, x2, yc - rin, yc + rin, floor_z, floor_z, zt1, zt2, tex)
+        )
         if base_cap_h > 0:
             cap_tex = base_cap_tex or tex
             cx1, cx2 = x1 - base_cap_ovh, x2 + base_cap_ovh
@@ -399,8 +411,8 @@ def arch_wall(
                 ramp_slab(
                     cx1,
                     cx2,
-                    -crin,
-                    crin,
+                    yc - crin,
+                    yc + crin,
                     zt1,
                     zt2,
                     zt1 + base_cap_h,
@@ -409,7 +421,7 @@ def arch_wall(
                 )
             )
     elif base_h > 0:
-        brushes.append(box(x1, -rin, floor_z, x2, rin, floor_z + base_h, tex))
+        brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, floor_z + base_h, tex))
         if base_cap_h > 0:
             cap_tex = base_cap_tex or tex
             cx1, cx2 = x1 - base_cap_ovh, x2 + base_cap_ovh
@@ -417,10 +429,10 @@ def arch_wall(
             brushes.append(
                 box(
                     cx1,
-                    -crin,
+                    yc - crin,
                     floor_z + base_h,
                     cx2,
-                    crin,
+                    yc + crin,
                     floor_z + base_h + base_cap_h,
                     cap_tex,
                 )
@@ -428,19 +440,24 @@ def arch_wall(
 
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
     # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
-    if rout < rin * 1.41421356:
+    # Omitted in freestanding mode — no cap means no corner to fill.
+    if not freestanding and rout < rin * 1.41421356:
         h_side = math.sqrt(max(0, rout**2 - rin**2))
         # South-top corner
-        brushes.append(box(x1, -rin, sprz + h_side, x2, -h_side, sprz + rin, tex))
+        brushes.append(
+            box(x1, yc - rin, sprz + h_side, x2, yc - h_side, sprz + rin, tex)
+        )
         # North-top corner
-        brushes.append(box(x1, h_side, sprz + h_side, x2, rin, sprz + rin, tex))
+        brushes.append(
+            box(x1, yc + h_side, sprz + h_side, x2, yc + rin, sprz + rin, tex)
+        )
 
     for seg_index in range(segs):
         brushes.append(
             arch_seg(
                 x1,
                 x2,
-                0.0,
+                yc,
                 float(sprz),
                 rin,
                 rout,
@@ -452,26 +469,24 @@ def arch_wall(
     return brushes
 
 
-def arch_wall_y(y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None):
+def arch_wall_y(
+    y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, xc=0.0
+):
     """Freestanding arch ring (posts + curved ring) aligned on the Y axis.
-    Side walls are omitted so the arch stands alone without flanking fill."""
+    Side walls are omitted so the arch stands alone without flanking fill.
+    xc: centre X of the arch opening (default 0)."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
     seg = 180.0 / segs
     brushes = []
-    # Side walls removed to make arch freestanding
-    # if x1 < -rout:
-    #     brushes.append(box(x1, y1, floor_z, -rout, y2, ceil_z, tex))
-    # if x2 > rout:
-    #     brushes.append(box(rout, y1, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(box(-rout, y1, floor_z, -rin, y2, sprz, tex))
-    brushes.append(box(rin, y1, floor_z, rout, y2, sprz, tex))
+    brushes.append(box(xc - rout, y1, floor_z, xc - rin, y2, sprz, tex))
+    brushes.append(box(xc + rin, y1, floor_z, xc + rout, y2, sprz, tex))
     for seg_index in range(segs):
         brushes.append(
             arch_seg_y(
                 y1,
                 y2,
-                0.0,
+                xc,
                 float(sprz),
                 rin,
                 rout,
