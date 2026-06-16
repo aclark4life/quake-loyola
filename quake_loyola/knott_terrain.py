@@ -33,6 +33,7 @@ from .constants import (
     ROAD_X2,
     WALL_T,
     WORLD_X2,
+    WORLD_X2_EXT,
     WORLD_Y1,
     Textures,
 )
@@ -122,7 +123,7 @@ def build():
                 KNOTT_X1,
                 WORLD_Y1 + WALL_T,
                 FLOOR_Z1,
-                WORLD_X2 - WALL_T,
+                WORLD_X2_EXT - WALL_T,
                 KNOTT_Y1,
                 KNOTT_GROUND_Z,
                 Textures.WALL,
@@ -275,13 +276,18 @@ def build():
                 Textures.GROUND,
             )
         )
-        # Seg3 (east of back-road corridor to world wall) — beyond Pier 5, stays at sidewalk height
+        # Seg3 (east of back-road corridor to east world wall) — beyond Pier 5; sealing ground
+        # flush with the sidewalk. Extends to the full extended east boundary (WORLD_X2_EXT)
+        # so the ground stays level all the way to the Ennis east dead-end.
+        # Stops at ENNIS_SW_EDGE (south Ennis sidewalk outer edge) where curb/verge detail
+        # begins, so it has no detail laid on top and can sit at sidewalk height without
+        # z-fighting (the detail/verge to the north sits over the recessed knott_hall ground).
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_CORRIDOR_X2,
                 KNOTT_Y2,
                 FLOOR_Z1,
-                WORLD_X2 - WALL_T,
+                WORLD_X2_EXT - WALL_T,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,

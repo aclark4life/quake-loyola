@@ -78,6 +78,64 @@ def build():
     DETAIL_BRUSHES = []
     _worldspawn_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
+    # Arch slab thickness — defined early so the parapets stop at the arch face,
+    # preventing coplanar faces between the east arch posts and the parapet east edge.
+    ARCH_SLAB_W = 32
+    # ── Bridge deck slab — the walkable surface across the whole span ─────────────
+    # Straight section: arch terminus → easternmost pier
+    BRUSHES.append(
+        box(
+            BRIDGE_X2,
+            BRIDGE_Y1,
+            BRIDGE_DZ1,
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE_Y2,
+            BRIDGE_DZ2,
+            Textures.STONE,
+            tt=Textures.FLOOR,
+            tb=Textures.FLOOR,
+        )
+    )
+    # Angled section: easternmost pier → 1 unit inside the east arch face.
+    # The east end is recessed to WORLD_X2 - WALL_T - 1 so the deck's east face is no
+    # longer coplanar with the arch east face (eliminating z-fighting), while the arch
+    # post geometry (X=2928–2960) still covers the deck's north/south edges so there is
+    # no visible overhang on either side.
+    DECK_EAST_END_X = WORLD_X2 - WALL_T - 1
+    BRUSHES.append(
+        shear_box_y(
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE_Y1,
+            BRIDGE_DZ1,
+            DECK_EAST_END_X,
+            BRIDGE_Y2,
+            BRIDGE_DZ2,
+            BRIDGE_EAST_SHIFT_START,
+            east_y_shift(DECK_EAST_END_X),
+            Textures.STONE,
+            tt=Textures.FLOOR,
+            tb=Textures.FLOOR,
+        )
+    )
+    # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
+    for i in range(BRIDGE_SEG_SPAN_W):
+        sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
+        sx2 = sx1 + BRIDGE_SEG_W
+        BRUSHES.append(
+            ramp_slab(
+                sx1,
+                sx2,
+                BRIDGE_Y1,
+                BRIDGE_Y2,
+                deck_bot_z(sx1),
+                deck_bot_z(sx2),
+                deck_top_z(sx1),
+                deck_top_z(sx2),
+                Textures.STONE,
+                tt=Textures.FLOOR,
+                tb=Textures.FLOOR,
+            )
+        )
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
     # North east parapet: straight BRIDGE_X2→pier, then angled pier→world wall
     BRUSHES.append(
@@ -96,7 +154,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y2 - BRIDGE_PAR_W,
             BRIDGE_DZ2,
-            WORLD_X2 - WALL_T,
+            WORLD_X2 - WALL_T - ARCH_SLAB_W,
             BRIDGE_Y2,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
@@ -134,7 +192,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE_Y1,
             BRIDGE_DZ2,
-            WORLD_X2 - WALL_T,
+            WORLD_X2 - WALL_T - ARCH_SLAB_W,
             BRIDGE_Y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE_PAR_H,
             BRIDGE_EAST_SHIFT_START,
@@ -769,7 +827,7 @@ def build():
     ARCH_RIN = 96
     ARCH_ROUT = 136  # Fills the bridge width (updated to match BRIDGE_Y2=136)
     ARCH_STILT_H = 96  # Height of straight sides before arch springs
-    ARCH_SLAB_W = 32  # Thickness of the arch in X
+    # ARCH_SLAB_W already defined above (= 32)
 
     for arch_x_start, arch_center_y in [
         (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
