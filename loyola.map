@@ -33039,6 +33039,6 @@
 
 {
 "classname" "info_intermission"
-"origin" "-361 -600 600"
-"mangle" "-35 90 0"
+"origin" "-361 -500 350"
+"mangle" "-10 90 0"
 }
