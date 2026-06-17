@@ -1498,6 +1498,16 @@ def build():
             Textures.TELEPORT,
         )
         ENTITIES.append(brush_ent("trigger_changelevel", roof_trig_brush, map="loyola"))
+        # Visible portal — same brush rendered as illusionary, plus a glow light
+        ENTITIES.append(brush_ent("func_illusionary", roof_trig_brush))
+        ENTITIES.append(
+            ent(
+                "light",
+                origin=f"{roof_trigger_xc} {roof_trigger_yc} {KNOTT_Z2 + 36}",
+                light="200",
+                _color="0.4 0.6 1",  # cool blue glow to mark the exit
+            )
+        )
 
     # ── Intermission camera — swooping view down the bridge toward KH ─────────────
     # Positioned high above the west end of the bridge, angled east-downward.
