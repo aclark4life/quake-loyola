@@ -1505,22 +1505,28 @@ def build():
             _color="0.4 0.6 1",
         )
     )
-    # Cement frame — two posts + lintel around the north face of the portal
+    # Cement frame — two posts + lintel on each face of the portal (4 posts total)
     frame_t = 16  # post/lintel thickness
-    frame_d = 12  # depth of frame slab (centred on north portal face)
+    frame_d = 12  # depth of frame slab (centred on each portal face)
     ex1 = dorm_exit_xc - dorm_exit_hw
     ex2 = dorm_exit_xc + dorm_exit_hw
-    fy1 = dorm_exit_yc + dorm_exit_hw - frame_d // 2
-    fy2 = dorm_exit_yc + dorm_exit_hw + frame_d // 2
     portal_top = FLOOR_Z2 + 112
-    for bx1, bx2, bz1, bz2 in [
-        (ex1 - frame_t, ex1, FLOOR_Z2, portal_top + frame_t),  # left post
-        (ex2, ex2 + frame_t, FLOOR_Z2, portal_top + frame_t),  # right post
-        (ex1 - frame_t, ex2 + frame_t, portal_top, portal_top + frame_t),  # lintel
+    for face_yc in [
+        dorm_exit_yc - dorm_exit_hw,  # south face
+        dorm_exit_yc + dorm_exit_hw,  # north face
     ]:
-        ENTITIES.append(
-            brush_ent("func_detail", box(bx1, fy1, bz1, bx2, fy2, bz2, Textures.CEMENT))
-        )
+        fy1 = face_yc - frame_d // 2
+        fy2 = face_yc + frame_d // 2
+        for bx1, bx2, bz1, bz2 in [
+            (ex1 - frame_t, ex1, FLOOR_Z2, portal_top + frame_t),  # left post
+            (ex2, ex2 + frame_t, FLOOR_Z2, portal_top + frame_t),  # right post
+            (ex1 - frame_t, ex2 + frame_t, portal_top, portal_top + frame_t),  # lintel
+        ]:
+            ENTITIES.append(
+                brush_ent(
+                    "func_detail", box(bx1, fy1, bz1, bx2, fy2, bz2, Textures.CEMENT)
+                )
+            )
 
     # ── Intermission camera — south of bridge, looking north toward it ────────────
     ENTITIES.append(
