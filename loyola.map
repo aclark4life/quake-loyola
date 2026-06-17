@@ -29311,15 +29311,15 @@
 {
 "classname" "info_teleport_destination"
 "targetname" "dest_ennis_east"
-"origin" "1722 -1072 904"
-"angle" "270"
+"origin" "1830 -400 904"
+"angle" "90"
 }
 
 {
 "classname" "info_teleport_destination"
 "targetname" "dest_kh_drive_south"
-"origin" "1722 -1072 904"
-"angle" "270"
+"origin" "1830 -400 904"
+"angle" "90"
 }
 
 {
