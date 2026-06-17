@@ -1510,10 +1510,11 @@ def build():
         )
 
     # ── Intermission camera — swooping view down the bridge toward KH ─────────────
-    # Positioned high above the west end of the bridge, angled east-downward.
-    intermission_x = BRIDGE_X1 - 128
+    # Positioned above the bridge interior, angled east-downward toward KH.
+    # Must stay inside WORLD_X1 to avoid a BSP leak.
+    intermission_x = BRIDGE_X1 + 400  # well inside west world wall
     intermission_y = (KNOTT_Y1 + KNOTT_Y2) // 2
-    intermission_z = KNOTT_Z2 + 256
+    intermission_z = KNOTT_Z2 + 200
     ENTITIES.append(
         ent(
             "info_intermission",
