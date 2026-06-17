@@ -1481,4 +1481,35 @@ def build():
             )
         )
 
+    # ── Single-player exit — rooftop trigger_changelevel ─────────────────────────
+    # Loops back to this map. Trigger sits at the south edge of the KH roof,
+    # opposite the lift landing zone, so the player has to explore to find it.
+    if KNOTT_ENABLED:
+        roof_trigger_xc = KNOTT_CX
+        roof_trigger_yc = KNOTT_Y1 + 80  # south quarter of roof
+        roof_trigger_hw = 64
+        roof_trig_brush = box(
+            roof_trigger_xc - roof_trigger_hw,
+            roof_trigger_yc - roof_trigger_hw,
+            KNOTT_Z2,
+            roof_trigger_xc + roof_trigger_hw,
+            roof_trigger_yc + roof_trigger_hw,
+            KNOTT_Z2 + 72,
+            Textures.TELEPORT,
+        )
+        ENTITIES.append(brush_ent("trigger_changelevel", roof_trig_brush, map="loyola"))
+
+    # ── Intermission camera — swooping view down the bridge toward KH ─────────────
+    # Positioned high above the west end of the bridge, angled east-downward.
+    intermission_x = BRIDGE_X1 - 128
+    intermission_y = (KNOTT_Y1 + KNOTT_Y2) // 2
+    intermission_z = KNOTT_Z2 + 256
+    ENTITIES.append(
+        ent(
+            "info_intermission",
+            origin=f"{intermission_x} {intermission_y} {intermission_z}",
+            mangle="-30 0 0",  # pitch=-30 (looking down), yaw=0 (facing east toward KH)
+        )
+    )
+
     return BRUSHES, ENTITIES
