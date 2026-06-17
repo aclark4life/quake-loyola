@@ -1511,7 +1511,7 @@ def build():
         ent(
             "info_intermission",
             origin=f"-361 -500 350",  # south of bridge center, slightly elevated
-            mangle="-10 90 0",  # pitch=-10 (nearly level), yaw=90 (facing north at bridge)
+            mangle="-10 75 0",  # pitch=-10 (nearly level), yaw=75 (mostly north, nudged east)
         )
     )
 
