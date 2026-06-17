@@ -1506,12 +1506,12 @@ def build():
         )
     )
 
-    # ── Intermission camera — above the bridge looking along its length ───────────
+    # ── Intermission camera — south of bridge, looking north toward it ────────────
     ENTITIES.append(
         ent(
             "info_intermission",
-            origin=f"-361 -600 600",  # above/south of bridge center
-            mangle="-35 90 0",  # pitch=-35 (down), yaw=90 (facing north along bridge)
+            origin=f"-361 -500 350",  # south of bridge center, slightly elevated
+            mangle="-10 90 0",  # pitch=-10 (nearly level), yaw=90 (facing north at bridge)
         )
     )
 
