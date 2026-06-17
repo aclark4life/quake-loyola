@@ -1465,7 +1465,9 @@ def build():
     # door at each floor connects directly to the staircase.
     # Loop runs KNOTT_FLOORS times (fl 0→4) — top flight exits onto building roof.
     KNOTT_STAIRS_HALF_N = 8
-    KNOTT_STAIRS_STEP_R = 10  # rise per step (≤ 18-unit Quake limit)
+    KNOTT_STAIRS_STEP_R = KNOTT_FLOOR_H // (
+        2 * KNOTT_STAIRS_HALF_N
+    )  # rise per step, derived from floor height (≤ 18-unit Quake limit)
     KNOTT_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
     PLAT_H = 8  # platform slab thickness
     stair_cx = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # shaft X centre
