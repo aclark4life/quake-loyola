@@ -466,7 +466,7 @@ def build():
     ARCH_TRIG_INSET = 8  # keep triggers off the walls/floor
 
     kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
-    kh_roof_origin = f"{KNOTT_CX} {(KNOTT_Y1 + KNOTT_Y2) // 2} {int(KNOTT_Z2 + 40)}"
+    kh_roof_origin = f"{(KNOTT_STAIRS_X2 + KNOTT_SHAFT_X1) // 2} {(KNOTT_STAIRS_Y1 + KNOTT_SHAFT_Y2) // 2} {int(KNOTT_Z2 + 40)}"
 
     # Destinations — both land on KH rooftop, facing south
     ENTITIES.append(
@@ -474,7 +474,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_ennis_east",
             origin=kh_roof_origin,
-            angle="270",  # facing south on KH rooftop
+            angle="90",  # facing north on KH rooftop
         )
     )
     ENTITIES.append(
@@ -482,7 +482,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
             origin=kh_roof_origin,
-            angle="270",  # facing south on KH rooftop
+            angle="90",  # facing north on KH rooftop
         )
     )
 
