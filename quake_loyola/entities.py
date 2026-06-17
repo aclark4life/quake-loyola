@@ -1527,8 +1527,25 @@ def build():
                     "func_detail", box(bx1, fy1, bz1, bx2, fy2, bz2, Textures.CEMENT)
                 )
             )
+    # Cross beams — run in Y across the top, left and right, connecting both face frames
+    beam_y1 = dorm_exit_yc - dorm_exit_hw - frame_d // 2
+    beam_y2 = dorm_exit_yc + dorm_exit_hw + frame_d // 2
+    for bx1, bx2 in [(ex1 - frame_t, ex1), (ex2, ex2 + frame_t)]:
+        ENTITIES.append(
+            brush_ent(
+                "func_detail",
+                box(
+                    bx1,
+                    beam_y1,
+                    portal_top,
+                    bx2,
+                    beam_y2,
+                    portal_top + frame_t,
+                    Textures.CEMENT,
+                ),
+            )
+        )
 
-    # ── Intermission camera — south of bridge, looking north toward it ────────────
     ENTITIES.append(
         ent(
             "info_intermission",
