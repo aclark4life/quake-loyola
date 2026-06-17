@@ -1251,6 +1251,29 @@ def build():
             "city2_1",
         )
     )
+    # Brick pillars flanking the door — protrude proud of both wall faces, with cap
+    pillar_w = 32  # pillar width in Y
+    pillar_proud = 12  # how much pillar protrudes past each wall face in X
+    px1 = DORM_PIER_X - BRIDGE_PIL_HW - pillar_proud
+    px2 = DORM_PIER_X + BRIDGE_PIL_HW + pillar_proud
+    cap_h = 10
+    cap_overhang = 6
+    for py1, py2 in [
+        (s_door_y - DORM_DOOR_W // 2 - pillar_w, s_door_y - DORM_DOOR_W // 2),  # south
+        (s_door_y + DORM_DOOR_W // 2, s_door_y + DORM_DOOR_W // 2 + pillar_w),  # north
+    ]:
+        DETAIL_BRUSHES.append(box(px1, py1, FLOOR_Z2, px2, py2, BRIDGE_DZ2, "city2_1"))
+        DETAIL_BRUSHES.append(
+            box(
+                px1 - cap_overhang,
+                py1 - cap_overhang,
+                BRIDGE_DZ2,
+                px2 + cap_overhang,
+                py2 + cap_overhang,
+                BRIDGE_DZ2 + cap_h,
+                "city2_1",
+            )
+        )
     if east_gate_brushes:
         ENTITIES.append(brush_ent("func_detail", east_gate_brushes))
     if DETAIL_BRUSHES:
