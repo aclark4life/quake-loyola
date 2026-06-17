@@ -33040,5 +33040,5 @@
 {
 "classname" "info_intermission"
 "origin" "-361 -500 350"
-"mangle" "-10 90 0"
+"mangle" "-10 75 0"
 }
