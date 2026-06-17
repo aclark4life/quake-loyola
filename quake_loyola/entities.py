@@ -1481,45 +1481,37 @@ def build():
             )
         )
 
-    # ── Single-player exit — rooftop trigger_changelevel ─────────────────────────
-    # Loops back to this map. Trigger sits at the south edge of the KH roof,
-    # opposite the lift landing zone, so the player has to explore to find it.
-    if KNOTT_ENABLED:
-        roof_trigger_xc = KNOTT_CX
-        roof_trigger_yc = KNOTT_Y1 + 80  # south quarter of roof
-        roof_trigger_hw = 64
-        roof_trig_brush = box(
-            roof_trigger_xc - roof_trigger_hw,
-            roof_trigger_yc - roof_trigger_hw,
-            KNOTT_Z2,
-            roof_trigger_xc + roof_trigger_hw,
-            roof_trigger_yc + roof_trigger_hw,
-            KNOTT_Z2 + 72,
-            Textures.TELEPORT,
+    # ── Single-player exit — inside south dorm ───────────────────────────────────
+    # Loops back to this map. Portal stands inside south dorm 1.
+    dorm_exit_xc = (DORM_X1 + DORM_X2) // 2
+    dorm_exit_yc = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
+    dorm_exit_hw = 64
+    dorm_exit_brush = box(
+        dorm_exit_xc - dorm_exit_hw,
+        dorm_exit_yc - dorm_exit_hw,
+        FLOOR_Z2,
+        dorm_exit_xc + dorm_exit_hw,
+        dorm_exit_yc + dorm_exit_hw,
+        FLOOR_Z2 + 112,
+        Textures.TELEPORT,
+    )
+    ENTITIES.append(brush_ent("trigger_changelevel", dorm_exit_brush, map="loyola"))
+    ENTITIES.append(brush_ent("func_illusionary", dorm_exit_brush))
+    ENTITIES.append(
+        ent(
+            "light",
+            origin=f"{dorm_exit_xc} {dorm_exit_yc} {FLOOR_Z2 + 56}",
+            light="200",
+            _color="0.4 0.6 1",
         )
-        ENTITIES.append(brush_ent("trigger_changelevel", roof_trig_brush, map="loyola"))
-        # Visible portal — same brush rendered as illusionary, plus a glow light
-        ENTITIES.append(brush_ent("func_illusionary", roof_trig_brush))
-        ENTITIES.append(
-            ent(
-                "light",
-                origin=f"{roof_trigger_xc} {roof_trigger_yc} {KNOTT_Z2 + 36}",
-                light="200",
-                _color="0.4 0.6 1",  # cool blue glow to mark the exit
-            )
-        )
+    )
 
-    # ── Intermission camera — swooping view down the bridge toward KH ─────────────
-    # Positioned above the bridge interior, angled east-downward toward KH.
-    # Must stay inside WORLD_X1 to avoid a BSP leak.
-    intermission_x = BRIDGE_X1 + 400  # well inside west world wall
-    intermission_y = (KNOTT_Y1 + KNOTT_Y2) // 2
-    intermission_z = KNOTT_Z2 + 200
+    # ── Intermission camera — above the south dorm looking down-east ──────────────
     ENTITIES.append(
         ent(
             "info_intermission",
-            origin=f"{intermission_x} {intermission_y} {intermission_z}",
-            mangle="-30 0 0",  # pitch=-30 (looking down), yaw=0 (facing east toward KH)
+            origin=f"{dorm_exit_xc} {dorm_exit_yc} {DORM_RIDGE_Z + 400}",
+            mangle="-50 0 0",  # pitch=-50 (steep down), yaw=0 (facing east toward bridge)
         )
     )
 
