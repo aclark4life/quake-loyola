@@ -255,7 +255,7 @@ def build():
     # outer face flush with the wall below; grooves between planks reveal the
     # recessed slab behind them (relief) without protruding past the wall.
     DORM_GABLE_DEPTH = 6
-    DORM_NB_SY1 = DORM_NORTH_Y1 + DORM_GABLE_DEPTH
+    DORM_NB_SY1 = DORM_NORTH_Y1  # south end abuts building 2 — full slab, no recess
     DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
     # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
     north_bldg_detail.append(
@@ -287,20 +287,8 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # Horizontal wood slats over both exposed gable ends (fill the recess, flush)
-    north_bldg_detail += gable_slats(
-        DORM_X1,
-        DORM_X2,
-        DORM_CX,
-        DORM_EAVE_Z,
-        DORM_RIDGE_Z,
-        DORM_SLAB_T,
-        DORM_NORTH_Y1,
-        DORM_GABLE_DEPTH,  # +Y → into building
-        Textures.GABLE,
-        n=8,
-        gap=4,
-    )
+    # Horizontal wood slats over the exposed north gable end only (the south end
+    # abuts north building 2, so no gable there).
     north_bldg_detail += gable_slats(
         DORM_X1,
         DORM_X2,
@@ -473,7 +461,7 @@ def build():
     NB2_SLAB_T = 16
     NB2_GABLE_DEPTH = 6
     NB2_SY1 = DORM_NORTH2_Y1 + NB2_GABLE_DEPTH
-    NB2_SY2 = DORM_NORTH2_Y2 - NB2_GABLE_DEPTH
+    NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
     north2_bldg_detail.append(
         ramp_slab(
             DORM_X1,
@@ -502,6 +490,7 @@ def build():
             ts=Textures.GABLE,
         )
     )
+    # Slats on the exposed south gable end only (the north end abuts building 1).
     north2_bldg_detail += gable_slats(
         DORM_X1,
         DORM_X2,
@@ -511,19 +500,6 @@ def build():
         NB2_SLAB_T,
         DORM_NORTH2_Y1,
         NB2_GABLE_DEPTH,
-        Textures.GABLE,
-        n=8,
-        gap=4,
-    )
-    north2_bldg_detail += gable_slats(
-        DORM_X1,
-        DORM_X2,
-        DORM_CX,
-        NB2_EAVE_Z,
-        NB2_RIDGE_Z,
-        NB2_SLAB_T,
-        DORM_NORTH2_Y2,
-        -NB2_GABLE_DEPTH,
         Textures.GABLE,
         n=8,
         gap=4,
@@ -547,10 +523,11 @@ def build():
     # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
     # Moved to func_detail to reduce portal complexity in the open campus area.
 
-    def make_south_bldg(by1, by2, slat_lo=False, slat_hi=False):
+    def make_south_bldg(by1, by2, slat_lo=False, slat_hi=False, entrance=True):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
-        slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends."""
+        slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends.
+        entrance adds the east-face entrance arch/door (windows only when False)."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 100
@@ -644,7 +621,11 @@ def build():
             )
         )
         cy = (by1 + by2) // 2
-        east_openings = wyz() + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
+        east_openings = wyz()
+        if entrance:
+            east_openings = east_openings + [
+                (cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)
+            ]
         brushes.extend(
             layered_wall_y(
                 by1 + DORM_WALL,
@@ -737,19 +718,20 @@ def build():
         # ── Decorative wood trim (entrance arch + window frames) ─────────────────────
 
         # East-face entrance arch (faces Charles Street)
-        brushes += entrance_arch_ywall(
-            cy,
-            FLOOR_Z2,
-            ent_hw,
-            ent_h,
-            bx2,
-            +1,
-            Textures.GABLE,
-            pillar_w=14,
-            pillar_d=24,
-            lintel_h=16,
-            arch_h=60,
-        )
+        if entrance:
+            brushes += entrance_arch_ywall(
+                cy,
+                FLOOR_Z2,
+                ent_hw,
+                ent_h,
+                bx2,
+                +1,
+                Textures.GABLE,
+                pillar_w=14,
+                pillar_d=24,
+                lintel_h=16,
+                arch_h=60,
+            )
         # Window frames — south face (inward, flush outer→inner)
         for xl, zb, xr, zt in wxz():
             brushes += win_frame_xwall(
@@ -775,26 +757,30 @@ def build():
             brushes += win_frame_ywall(
                 yl, yr, zb, zt, bx1, +1, Textures.GABLE, fd=DORM_WALL
             )
-        # Window frames — east face (skip ground-floor window overlapping the entrance opening)
+        # Window frames — east face (skip ground-floor window overlapping the entrance
+        # opening when an entrance is present)
         for yl, zb, yr, zt in wyz():
-            if yr <= cy - ent_hw or yl >= cy + ent_hw:
-                brushes += win_frame_ywall(
-                    yl, yr, zb, zt, bx2, -1, Textures.GABLE, fd=DORM_WALL
-                )
-        # Center window frames — east face, 2nd and 3rd floor (above entrance opening)
-        for fl in range(1, DORM_FLOORS):
-            zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-            zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+            if entrance and not (yr <= cy - ent_hw or yl >= cy + ent_hw):
+                continue
             brushes += win_frame_ywall(
-                cy - DORM_WIN_HW,
-                cy + DORM_WIN_HW,
-                zb,
-                zt,
-                bx2,
-                -1,
-                Textures.GABLE,
-                fd=DORM_WALL,
+                yl, yr, zb, zt, bx2, -1, Textures.GABLE, fd=DORM_WALL
             )
+        # Center window frames — east face, 2nd and 3rd floor (above entrance opening);
+        # only needed when an entrance suppressed the center frames in the loop above.
+        if entrance:
+            for fl in range(1, DORM_FLOORS):
+                zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
+                zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+                brushes += win_frame_ywall(
+                    cy - DORM_WIN_HW,
+                    cy + DORM_WIN_HW,
+                    zb,
+                    zt,
+                    bx2,
+                    -1,
+                    Textures.GABLE,
+                    fd=DORM_WALL,
+                )
 
         return brushes
 
@@ -807,7 +793,9 @@ def build():
     ENTITIES.append(
         brush_ent(
             "func_detail",
-            make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, slat_hi=True),
+            make_south_bldg(
+                DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, slat_hi=True, entrance=False
+            ),
         )
     )
 

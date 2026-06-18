@@ -14,11 +14,11 @@ WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola Bridge & Knott Hall",
     "sky": Textures.SKY,
-    "ambient": "60",
+    "ambient": "90",
     "_sunlight": "220",
     "_sunlight_color": "255 245 210",
     "_sunlight_dir": "60 -60",
-    "_sunlight_penumbra": "8",
+    "_sunlight_penumbra": "30",
     "dmflags": "128",
     "_fog": "0.03 0.5 0.5 0.6",
 }
