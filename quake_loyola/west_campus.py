@@ -198,7 +198,7 @@ def build():
         )
     )
     # Horizontal wood slats over both exposed gable ends
-    DORM_GABLE_PROUD = 6
+    DORM_GABLE_DEPTH = 6  # slats extend inward; outer face flush with wall
     north_bldg_detail += gable_slats(
         DORM_X1,
         DORM_X2,
@@ -207,7 +207,7 @@ def build():
         DORM_RIDGE_Z,
         DORM_SLAB_T,
         DORM_NORTH_Y1,
-        -DORM_GABLE_PROUD,
+        DORM_GABLE_DEPTH,  # +Y → into building
         Textures.GABLE,
     )
     north_bldg_detail += gable_slats(
@@ -218,7 +218,7 @@ def build():
         DORM_RIDGE_Z,
         DORM_SLAB_T,
         DORM_NORTH_Y2,
-        DORM_GABLE_PROUD,
+        -DORM_GABLE_DEPTH,  # -Y → into building
         Textures.GABLE,
     )
     ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
@@ -385,14 +385,14 @@ def build():
                 ts=Textures.GABLE,
             )
         )
-        proud = 6
+        depth = 6  # slats extend inward; outer face flush with wall
         if slat_lo:
             brushes += gable_slats(
-                bx1, bx2, cx, eave_z, ridge_z, slab_t, by1, -proud, Textures.GABLE
+                bx1, bx2, cx, eave_z, ridge_z, slab_t, by1, depth, Textures.GABLE
             )
         if slat_hi:
             brushes += gable_slats(
-                bx1, bx2, cx, eave_z, ridge_z, slab_t, by2, proud, Textures.GABLE
+                bx1, bx2, cx, eave_z, ridge_z, slab_t, by2, -depth, Textures.GABLE
             )
         return brushes
 
