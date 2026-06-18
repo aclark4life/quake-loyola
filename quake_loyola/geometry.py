@@ -68,30 +68,37 @@ def pyramid(x1, y1, z1, x2, y2, z2, tex):
     )
 
 
-def ramp_slab(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None):
+def ramp_slab(
+    x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
+):
     """Prismatic slab whose bottom and top faces are sloped in the X direction.
     zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2.
     End-cap faces are omitted when an end tapers to a knife-edge (zb == zt there),
     keeping the brush valid as a 4- or 5-face wedge instead of a degenerate prism.
-    te: texture for the -X/+X end-cap (gable) faces; defaults to tex."""
+    te: texture for the -X/+X end-cap faces; defaults to tex.
+    ts: texture for the -Y/+Y side faces (the triangular gable ends when the ridge
+        runs along Y); defaults to tex."""
     tt = tt or tex
     tb = tb or tex
     te = te or tex
+    ts = ts or tex
     faces = []
     if zt1 != zb1:
         faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), te))  # -X
     if zt2 != zb2:
         faces.append(Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), te))  # +X
     faces += [
-        Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), tex),  # -Y
-        Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), tex),  # +Y
+        Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), ts),  # -Y
+        Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), ts),  # +Y
         Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),  # sloped bottom
         Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),  # sloped top
     ]
     return Brush(faces)
 
 
-def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None):
+def ramp_slab_y(
+    x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
+):
     """Prismatic slab whose bottom and top faces are sloped in the Y direction.
     zb1/zt1 = bottom/top Z at y=y1;  zb2/zt2 = bottom/top Z at y=y2.
     y1 and y2 may be passed in either order.
@@ -103,7 +110,7 @@ def ramp_slab_y(x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=No
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
     return swap_xy(
-        ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb, te=te)
+        ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb, te=te, ts=ts)
     )
 
 
