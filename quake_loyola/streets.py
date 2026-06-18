@@ -1218,12 +1218,13 @@ def build():
     # South brick wall — from bridge pier south face to nearest south building, with door gap
     # Door centered 160 units north of the building (closer to buildings)
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF  # door centre Y
+    wall_hw = 12  # half-thickness of wall (thinner than pier)
     BRUSHES.append(
         box(
-            DORM_PIER_X - BRIDGE_PIL_HW,
+            DORM_PIER_X - wall_hw,
             DORM_SOUTH2_Y2,
             FLOOR_Z2,
-            DORM_PIER_X + BRIDGE_PIL_HW,
+            DORM_PIER_X + wall_hw,
             s_door_y - DORM_DOOR_W // 2,
             BRIDGE_DZ2,
             "city2_1",
@@ -1231,10 +1232,10 @@ def build():
     )
     BRUSHES.append(
         box(
-            DORM_PIER_X - BRIDGE_PIL_HW,
+            DORM_PIER_X - wall_hw,
             s_door_y + DORM_DOOR_W // 2,
             FLOOR_Z2,
-            DORM_PIER_X + BRIDGE_PIL_HW,
+            DORM_PIER_X + wall_hw,
             DORM_WALL_S_Y2,
             BRIDGE_DZ2,
             "city2_1",
@@ -1242,10 +1243,10 @@ def build():
     )
     BRUSHES.append(
         box(
-            DORM_PIER_X - BRIDGE_PIL_HW,
+            DORM_PIER_X - wall_hw,
             s_door_y - DORM_DOOR_W // 2,
             FLOOR_Z2 + DORM_DOOR_H,
-            DORM_PIER_X + BRIDGE_PIL_HW,
+            DORM_PIER_X + wall_hw,
             s_door_y + DORM_DOOR_W // 2,
             BRIDGE_DZ2,
             "city2_1",
@@ -1255,8 +1256,8 @@ def build():
     pillar_w = 20  # pillar width in Y (thinner)
     pillar_proud = 12  # how much pillar protrudes past each wall face in X
     pillar_h = BRIDGE_DZ2 + 80  # noticeably taller than the wall
-    px1 = DORM_PIER_X - BRIDGE_PIL_HW - pillar_proud
-    px2 = DORM_PIER_X + BRIDGE_PIL_HW + pillar_proud
+    px1 = DORM_PIER_X - wall_hw - pillar_proud
+    px2 = DORM_PIER_X + wall_hw + pillar_proud
     cap_h = 10
     cap_overhang = 6
     door_north = s_door_y + DORM_DOOR_W // 2
