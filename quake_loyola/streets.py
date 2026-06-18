@@ -1254,7 +1254,7 @@ def build():
     # Brick pillars — both north of the door, spread apart, slightly taller than wall
     pillar_w = 32  # pillar width in Y
     pillar_proud = 12  # how much pillar protrudes past each wall face in X
-    pillar_h = BRIDGE_DZ2 + 24  # a little taller than the wall
+    pillar_h = BRIDGE_DZ2 + 80  # noticeably taller than the wall
     px1 = DORM_PIER_X - BRIDGE_PIL_HW - pillar_proud
     px2 = DORM_PIER_X + BRIDGE_PIL_HW + pillar_proud
     cap_h = 10
@@ -1263,9 +1263,9 @@ def build():
     for py1, py2 in [
         (door_north + 16, door_north + 16 + pillar_w),  # just north of door
         (
-            door_north + 16 + pillar_w + 64,
-            door_north + 16 + pillar_w + 64 + pillar_w,
-        ),  # further north
+            door_north + 16 + pillar_w + 160,
+            door_north + 16 + pillar_w + 160 + pillar_w,
+        ),  # well further north
     ]:
         DETAIL_BRUSHES.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
         DETAIL_BRUSHES.append(
