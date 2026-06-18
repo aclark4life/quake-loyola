@@ -87,7 +87,7 @@ CHARLES_RAMP_W = 64
 CHARLES_WALK_H = 8
 CHARLES_WALK_W = 80
 
-DORM_DEPTH = 600
+DORM_DEPTH = 450
 DORM_DOOR_H = (
     128  # door opening height — embankment rises ~56 units at wall, need clearance
 )
