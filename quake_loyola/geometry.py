@@ -191,9 +191,31 @@ def entrance_arch_xwall(
         ),  # right gable
     ]
     # Capstone slats overhang the gable/pillar in all directions
-    overhang, slat_h, side_ov = 16, 5, 8
+    overhang, slat_h, side_ov = 3, 5, 2
     ya_cap = ya - overhang if out_sign < 0 else ya
     yb_cap = yb + overhang if out_sign > 0 else yb
+    # Two decorative cross beams at the top of the door / base of the A-frame
+    beam_h, beam_gap, upper_rise = 2, 9, 6
+    brushes += [
+        box(
+            lx1 - side_ov,
+            ya_cap,
+            eave_z + upper_rise,
+            rx2 + side_ov,
+            yb_cap,
+            eave_z + upper_rise + beam_h,
+            tex,
+        ),  # upper beam
+        box(
+            lx1 - side_ov,
+            ya_cap,
+            eave_z - beam_gap - beam_h,
+            rx2 + side_ov,
+            yb_cap,
+            eave_z - beam_gap,
+            tex,
+        ),  # lower beam
+    ]
     # Extrapolate slat-bottom Z at the extended side edges (continue gable slope outward)
     half_span = ent_hw + pillar_w  # = cx - lx1 = rx2 - cx
     slat_drop = side_ov * (arch_h - arch_t) // half_span
@@ -260,9 +282,31 @@ def entrance_arch_ywall(
         ),  # right gable
     ]
     # Capstone slats overhang the gable/pillar in all directions
-    overhang, slat_h, side_ov = 16, 5, 8
+    overhang, slat_h, side_ov = 3, 5, 2
     xa_cap = xa - overhang if out_sign < 0 else xa
     xb_cap = xb + overhang if out_sign > 0 else xb
+    # Two decorative cross beams at the top of the door / base of the A-frame
+    beam_h, beam_gap, upper_rise = 2, 9, 6
+    brushes += [
+        box(
+            xa_cap,
+            ly1 - side_ov,
+            eave_z + upper_rise,
+            xb_cap,
+            ry2 + side_ov,
+            eave_z + upper_rise + beam_h,
+            tex,
+        ),  # upper beam
+        box(
+            xa_cap,
+            ly1 - side_ov,
+            eave_z - beam_gap - beam_h,
+            xb_cap,
+            ry2 + side_ov,
+            eave_z - beam_gap,
+            tex,
+        ),  # lower beam
+    ]
     # Extrapolate slat-bottom Z at the extended side edges (continue gable slope outward)
     half_span = ent_hw + pillar_w  # = cy - ly1 = ry2 - cy
     slat_drop = side_ov * (arch_h - arch_t) // half_span
