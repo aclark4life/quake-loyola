@@ -206,7 +206,7 @@ class Textures:
     PILLAR = "city2_7"
     RAIL = "metal5_4"
     ROAD = "azfloor1_1"
-    ROOF = "wgrnd1_5"
+    ROOF = "roofkell1"
     SKY = "sky1"
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
