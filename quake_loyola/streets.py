@@ -1217,7 +1217,9 @@ def build():
     # (Building dimensions already defined above)
     # South brick wall — from bridge pier south face to nearest south building, with door gap
     # Door centered 160 units north of the building (closer to buildings)
-    wall_start_y = DORM_SOUTH2_Y1  # wall extends south to the south face of dorm 2
+    wall_start_y = (
+        DORM_SOUTH2_Y2  # wall stops at the north face of dorm 2 (don't run through it)
+    )
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF  # door centre Y
     wall_hw = 12  # half-thickness of wall (thinner than pier)
     BRUSHES.append(
