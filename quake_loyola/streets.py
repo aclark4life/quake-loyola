@@ -1263,10 +1263,10 @@ def build():
     cap_overhang = 1
     door_north = s_door_y + DORM_DOOR_W // 2
     for py1, py2 in [
-        (door_north + 16, door_north + 16 + pillar_w),  # just north of door
+        (door_north + 96, door_north + 96 + pillar_w),  # north of door
         (
-            door_north + 16 + pillar_w + 280,
-            door_north + 16 + pillar_w + 280 + pillar_w,
+            door_north + 96 + pillar_w + 280,
+            door_north + 96 + pillar_w + 280 + pillar_w,
         ),  # well further north
     ]:
         DETAIL_BRUSHES.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
