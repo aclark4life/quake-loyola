@@ -1259,7 +1259,7 @@ def build():
     px1 = DORM_PIER_X - wall_hw - pillar_proud
     px2 = DORM_PIER_X + wall_hw + pillar_proud
     cap_h = 10
-    cap_overhang = 6
+    cap_overhang = 3
     door_north = s_door_y + DORM_DOOR_W // 2
     for py1, py2 in [
         (door_north + 16, door_north + 16 + pillar_w),  # just north of door
