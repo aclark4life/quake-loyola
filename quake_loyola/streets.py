@@ -1253,8 +1253,8 @@ def build():
         )
     )
     # Brick pillars — both north of the door, spread apart, slightly taller than wall
-    pillar_w = 32  # pillar width in Y
-    pillar_proud = 12  # how much pillar protrudes past each wall face in X
+    pillar_w = 56  # pillar width in Y (wider N/S)
+    pillar_proud = 6  # small E/W protrusion past wall face
     pillar_h = BRIDGE_DZ2 + 80  # noticeably taller than the wall
     px1 = DORM_PIER_X - wall_hw - pillar_proud
     px2 = DORM_PIER_X + wall_hw + pillar_proud
