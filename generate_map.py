@@ -11,7 +11,7 @@ from quake_loyola.constants import Textures
 from quake_loyola.mapdata import MapBuilder
 
 WORLDSPAWN_FIELDS = {
-    "wad": "quake101.wad;ad.wad",
+    "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola Bridge & Knott Hall",
     "sky": Textures.SKY,
     "ambient": "60",

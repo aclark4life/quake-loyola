@@ -178,6 +178,7 @@ def build():
             DORM_EAVE_Z + DORM_SLAB_T,
             DORM_RIDGE_Z,
             Textures.ROOF,
+            tt=Textures.GABLE,
         )
     )
     # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
@@ -192,6 +193,7 @@ def build():
             DORM_RIDGE_Z,
             DORM_EAVE_Z + DORM_SLAB_T,
             Textures.ROOF,
+            tt=Textures.GABLE,
         )
     )
     ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
@@ -340,6 +342,7 @@ def build():
                 eave_z + slab_t,
                 ridge_z,
                 Textures.ROOF,
+                tt=Textures.GABLE,
             )
         )
         brushes.append(
@@ -353,6 +356,7 @@ def build():
                 ridge_z,
                 eave_z + slab_t,
                 Textures.ROOF,
+                tt=Textures.GABLE,
             )
         )
         return brushes
