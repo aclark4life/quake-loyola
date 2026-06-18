@@ -22,10 +22,14 @@ from .constants import (
 from .geometry import (
     box,
     brush_ent,
+    entrance_arch_xwall,
+    entrance_arch_ywall,
     gable_slats,
     layered_wall,
     layered_wall_y,
     ramp_slab,
+    win_frame_xwall,
+    win_frame_ywall,
 )
 from .utils import iron_fence
 
@@ -163,7 +167,36 @@ def build():
         )
     )
 
-    # Gable (A-frame) roof — ridge runs N-S at building X center, KNOTT_FLOOR_H above ceiling
+    # ── Decorative wood trim (entrance arches + window frames) ───────────────────────
+    # South-face entrance arch (faces bridge)
+    north_bldg_detail += entrance_arch_xwall(
+        DORM_CX, FLOOR_Z2, DORM_ENT_HW, DORM_ENT_H, DORM_NORTH_Y1, -1, Textures.GABLE
+    )
+    # East-face entrance arch (faces Charles Street)
+    north_bldg_detail += entrance_arch_ywall(
+        DORM_NORTH_CY, FLOOR_Z2, DORM_ENT_HW, DORM_ENT_H, DORM_X2, +1, Textures.GABLE
+    )
+    # Window frames — south face (windows only, not the entrance opening)
+    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
+        north_bldg_detail += win_frame_xwall(
+            xl, xr, zb, zt, DORM_NORTH_Y1, -1, Textures.GABLE
+        )
+    # Window frames — north face
+    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
+        north_bldg_detail += win_frame_xwall(
+            xl, xr, zb, zt, DORM_NORTH_Y2, +1, Textures.GABLE
+        )
+    # Window frames — east face (windows only, not the entrance opening)
+    for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
+        north_bldg_detail += win_frame_ywall(
+            yl, yr, zb, zt, DORM_X2, +1, Textures.GABLE
+        )
+    # Window frames — west face
+    for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
+        north_bldg_detail += win_frame_ywall(
+            yl, yr, zb, zt, DORM_X1, -1, Textures.GABLE
+        )
+
     DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
     DORM_RIDGE_Z = DORM_EAVE_Z + KNOTT_FLOOR_H  # ridge apex
     DORM_SLAB_T = 16  # roof slab thickness at eave
@@ -214,6 +247,8 @@ def build():
         DORM_NORTH_Y1,
         DORM_GABLE_DEPTH,  # +Y → into building
         Textures.GABLE,
+        n=8,
+        gap=4,
     )
     north_bldg_detail += gable_slats(
         DORM_X1,
@@ -225,6 +260,8 @@ def build():
         DORM_NORTH_Y2,
         -DORM_GABLE_DEPTH,  # -Y → into building
         Textures.GABLE,
+        n=8,
+        gap=4,
     )
     ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
 
@@ -396,12 +433,51 @@ def build():
         )
         if slat_lo:
             brushes += gable_slats(
-                bx1, bx2, cx, eave_z, ridge_z, slab_t, by1, depth, Textures.GABLE
+                bx1,
+                bx2,
+                cx,
+                eave_z,
+                ridge_z,
+                slab_t,
+                by1,
+                depth,
+                Textures.GABLE,
+                n=8,
+                gap=4,
             )
         if slat_hi:
             brushes += gable_slats(
-                bx1, bx2, cx, eave_z, ridge_z, slab_t, by2, -depth, Textures.GABLE
+                bx1,
+                bx2,
+                cx,
+                eave_z,
+                ridge_z,
+                slab_t,
+                by2,
+                -depth,
+                Textures.GABLE,
+                n=8,
+                gap=4,
             )
+
+        # ── Decorative wood trim (entrance arch + window frames) ─────────────────────
+        # East-face entrance arch (faces Charles Street)
+        brushes += entrance_arch_ywall(
+            cy, FLOOR_Z2, ent_hw, ent_h, bx2, +1, Textures.GABLE
+        )
+        # Window frames — south face
+        for xl, zb, xr, zt in wxz():
+            brushes += win_frame_xwall(xl, xr, zb, zt, by1, -1, Textures.GABLE)
+        # Window frames — north face
+        for xl, zb, xr, zt in wxz():
+            brushes += win_frame_xwall(xl, xr, zb, zt, by2, +1, Textures.GABLE)
+        # Window frames — west face
+        for yl, zb, yr, zt in wyz():
+            brushes += win_frame_ywall(yl, yr, zb, zt, bx1, -1, Textures.GABLE)
+        # Window frames — east face (windows only, not the entrance opening)
+        for yl, zb, yr, zt in wyz():
+            brushes += win_frame_ywall(yl, yr, zb, zt, bx2, +1, Textures.GABLE)
+
         return brushes
 
     ENTITIES.append(
