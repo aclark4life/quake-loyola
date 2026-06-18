@@ -1251,26 +1251,31 @@ def build():
             "city2_1",
         )
     )
-    # Brick pillars flanking the door — protrude proud of both wall faces, with cap
+    # Brick pillars — both north of the door, spread apart, slightly taller than wall
     pillar_w = 32  # pillar width in Y
     pillar_proud = 12  # how much pillar protrudes past each wall face in X
+    pillar_h = BRIDGE_DZ2 + 24  # a little taller than the wall
     px1 = DORM_PIER_X - BRIDGE_PIL_HW - pillar_proud
     px2 = DORM_PIER_X + BRIDGE_PIL_HW + pillar_proud
     cap_h = 10
     cap_overhang = 6
+    door_north = s_door_y + DORM_DOOR_W // 2
     for py1, py2 in [
-        (s_door_y - DORM_DOOR_W // 2 - pillar_w, s_door_y - DORM_DOOR_W // 2),  # south
-        (s_door_y + DORM_DOOR_W // 2, s_door_y + DORM_DOOR_W // 2 + pillar_w),  # north
+        (door_north + 16, door_north + 16 + pillar_w),  # just north of door
+        (
+            door_north + 16 + pillar_w + 64,
+            door_north + 16 + pillar_w + 64 + pillar_w,
+        ),  # further north
     ]:
-        DETAIL_BRUSHES.append(box(px1, py1, FLOOR_Z2, px2, py2, BRIDGE_DZ2, "city2_1"))
+        DETAIL_BRUSHES.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
         DETAIL_BRUSHES.append(
             box(
                 px1 - cap_overhang,
                 py1 - cap_overhang,
-                BRIDGE_DZ2,
+                pillar_h,
                 px2 + cap_overhang,
                 py2 + cap_overhang,
-                BRIDGE_DZ2 + cap_h,
+                pillar_h + cap_h,
                 "city2_1",
             )
         )
