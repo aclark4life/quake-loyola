@@ -171,7 +171,7 @@ def entrance_arch_xwall(
     arch_h=48,
     arch_t=8,
 ):
-    """Two pillars + A-frame pediment over an entrance in an X-normal wall.
+    """Two pillars + A-frame pediment with crossbeams over an entrance in an X-normal wall.
     cx: X centre of entrance; base_z: Z floor level; ent_hw: half-width; ent_h: height.
     face_y: Y of outer wall face; out_sign: -1 protrudes south (-Y), +1 protrudes north (+Y)."""
     ya, yb = sorted((face_y, face_y + out_sign * pillar_d))
@@ -179,17 +179,51 @@ def entrance_arch_xwall(
     rx1, rx2 = cx + ent_hw, cx + ent_hw + pillar_w
     pz2 = base_z + ent_h + lintel_h
     eave_z, ridge_z = pz2, pz2 + arch_h
-    return [
+    brushes = [
         box(lx1, ya, base_z, lx2, yb, pz2, tex),  # left pillar
         box(rx1, ya, base_z, rx2, yb, pz2, tex),  # right pillar
         box(lx1, ya, base_z + ent_h, rx2, yb, pz2, tex),  # lintel
         ramp_slab(
             lx1, cx, ya, yb, eave_z, eave_z, eave_z + arch_t, ridge_z, tex
-        ),  # left slope
+        ),  # left gable
         ramp_slab(
             cx, rx2, ya, yb, eave_z, eave_z, ridge_z, eave_z + arch_t, tex
-        ),  # right slope
+        ),  # right gable
     ]
+    # Capstone slats overhang the gable/pillar in all directions
+    overhang, slat_h, side_ov = 16, 5, 8
+    ya_cap = ya - overhang if out_sign < 0 else ya
+    yb_cap = yb + overhang if out_sign > 0 else yb
+    # Extrapolate slat-bottom Z at the extended side edges (continue gable slope outward)
+    half_span = ent_hw + pillar_w  # = cx - lx1 = rx2 - cx
+    slat_drop = side_ov * (arch_h - arch_t) // half_span
+    zb_ext = eave_z + arch_t - slat_drop  # slat bottom at extended left/right corners
+    zt_ext = zb_ext + slat_h
+    brushes += [
+        ramp_slab(
+            lx1 - side_ov,
+            cx,
+            ya_cap,
+            yb_cap,
+            zb_ext,
+            ridge_z,
+            zt_ext,
+            ridge_z + slat_h,
+            tex,
+        ),  # left slat
+        ramp_slab(
+            cx,
+            rx2 + side_ov,
+            ya_cap,
+            yb_cap,
+            ridge_z,
+            zb_ext,
+            ridge_z + slat_h,
+            zt_ext,
+            tex,
+        ),  # right slat
+    ]
+    return brushes
 
 
 def entrance_arch_ywall(
@@ -206,7 +240,7 @@ def entrance_arch_ywall(
     arch_h=48,
     arch_t=8,
 ):
-    """Two pillars + A-frame pediment over an entrance in a Y-normal wall.
+    """Two pillars + A-frame pediment with crossbeams over an entrance in a Y-normal wall.
     cy: Y centre of entrance; base_z: Z floor level; ent_hw: half-width; ent_h: height.
     face_x: X of outer wall face; out_sign: +1 protrudes east (+X), -1 protrudes west (-X)."""
     xa, xb = sorted((face_x, face_x + out_sign * pillar_d))
@@ -214,44 +248,82 @@ def entrance_arch_ywall(
     ry1, ry2 = cy + ent_hw, cy + ent_hw + pillar_w
     pz2 = base_z + ent_h + lintel_h
     eave_z, ridge_z = pz2, pz2 + arch_h
-    return [
+    brushes = [
         box(xa, ly1, base_z, xb, ly2, pz2, tex),  # left pillar
         box(xa, ry1, base_z, xb, ry2, pz2, tex),  # right pillar
         box(xa, ly1, base_z + ent_h, xb, ry2, pz2, tex),  # lintel
         ramp_slab_y(
             xa, xb, ly1, cy, eave_z, eave_z, eave_z + arch_t, ridge_z, tex
-        ),  # left slope
+        ),  # left gable
         ramp_slab_y(
             xa, xb, cy, ry2, eave_z, eave_z, ridge_z, eave_z + arch_t, tex
-        ),  # right slope
+        ),  # right gable
     ]
+    # Capstone slats overhang the gable/pillar in all directions
+    overhang, slat_h, side_ov = 16, 5, 8
+    xa_cap = xa - overhang if out_sign < 0 else xa
+    xb_cap = xb + overhang if out_sign > 0 else xb
+    # Extrapolate slat-bottom Z at the extended side edges (continue gable slope outward)
+    half_span = ent_hw + pillar_w  # = cy - ly1 = ry2 - cy
+    slat_drop = side_ov * (arch_h - arch_t) // half_span
+    zb_ext = eave_z + arch_t - slat_drop  # slat bottom at extended left/right corners
+    zt_ext = zb_ext + slat_h
+    brushes += [
+        ramp_slab_y(
+            xa_cap,
+            xb_cap,
+            ly1 - side_ov,
+            cy,
+            zb_ext,
+            ridge_z,
+            zt_ext,
+            ridge_z + slat_h,
+            tex,
+        ),  # left slat
+        ramp_slab_y(
+            xa_cap,
+            xb_cap,
+            cy,
+            ry2 + side_ov,
+            ridge_z,
+            zb_ext,
+            ridge_z + slat_h,
+            zt_ext,
+            tex,
+        ),  # right slat
+    ]
+    return brushes
 
 
-def win_frame_xwall(xl, xr, zb, zt, face_y, out_sign, tex, fw=8, fd=4):
-    """Four-piece wood frame flush against an X-normal wall face, around one window.
-    xl/xr: left/right X of opening; zb/zt: bottom/top Z.
-    face_y: Y of outer wall face; out_sign: -1 south, +1 north.
-    fw: frame border width; fd: protrusion depth."""
+def win_frame_xwall(xl, xr, zb, zt, face_y, out_sign, tex, fw=6, fd=4, margin=2):
+    """Four frame bars sitting inside a window opening in an X-normal wall.
+    Bars are inset by margin from the opening edges so they never overlap the wall.
+    They protrude outward by fd (out_sign: -1 south, +1 north).
+    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge."""
     ya, yb = sorted((face_y, face_y + out_sign * fd))
+    ix1, ix2 = xl + margin, xr - margin
+    iz1, iz2 = zb + margin, zt - margin
     return [
-        box(xl - fw, ya, zt, xr + fw, yb, zt + fw, tex),  # top (includes corners)
-        box(xl - fw, ya, zb - fw, xr + fw, yb, zb, tex),  # bottom (includes corners)
-        box(xl - fw, ya, zb, xl, yb, zt, tex),  # left side
-        box(xr, ya, zb, xr + fw, yb, zt, tex),  # right side
+        box(ix1, ya, iz2 - fw, ix2, yb, iz2, tex),  # top
+        box(ix1, ya, iz1, ix2, yb, iz1 + fw, tex),  # bottom
+        box(ix1, ya, iz1, ix1 + fw, yb, iz2, tex),  # left
+        box(ix2 - fw, ya, iz1, ix2, yb, iz2, tex),  # right
     ]
 
 
-def win_frame_ywall(yl, yr, zb, zt, face_x, out_sign, tex, fw=8, fd=4):
-    """Four-piece wood frame flush against a Y-normal wall face, around one window.
-    yl/yr: left/right Y of opening; zb/zt: bottom/top Z.
-    face_x: X of outer wall face; out_sign: +1 east, -1 west.
-    fw: frame border width; fd: protrusion depth."""
+def win_frame_ywall(yl, yr, zb, zt, face_x, out_sign, tex, fw=6, fd=4, margin=2):
+    """Four frame bars sitting inside a window opening in a Y-normal wall.
+    Bars are inset by margin from the opening edges so they never overlap the wall.
+    They protrude outward by fd (out_sign: +1 east, -1 west).
+    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge."""
     xa, xb = sorted((face_x, face_x + out_sign * fd))
+    iy1, iy2 = yl + margin, yr - margin
+    iz1, iz2 = zb + margin, zt - margin
     return [
-        box(xa, yl - fw, zt, xb, yr + fw, zt + fw, tex),  # top (includes corners)
-        box(xa, yl - fw, zb - fw, xb, yr + fw, zb, tex),  # bottom (includes corners)
-        box(xa, yl - fw, zb, xb, yl, zt, tex),  # left side
-        box(xa, yr, zb, xb, yr + fw, zt, tex),  # right side
+        box(xa, iy1, iz2 - fw, xb, iy2, iz2, tex),  # top
+        box(xa, iy1, iz1, xb, iy2, iz1 + fw, tex),  # bottom
+        box(xa, iy1, iz1, xb, iy1 + fw, iz2, tex),  # left
+        box(xa, iy2 - fw, iz1, xb, iy2, iz2, tex),  # right
     ]
 
 

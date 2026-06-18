@@ -25,6 +25,7 @@ from .constants import (
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM_FLOOR_H,
     DORM_FLOORS,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
@@ -644,7 +645,7 @@ def build():
         ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
         # North building interior
         ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
-        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + KNOTT_FLOOR_H + 40), 90),
+        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM_FLOOR_H + 40), 90),
         # North building roof ridge
         ((DORM_CX, DORM_NORTH_CY, int(DORM_RIDGE_Z + 40)), 90),
         # South buildings interiors
@@ -982,17 +983,20 @@ def build():
             brush_ent("func_plat", lift_brush, height=str(lift_travel), speed="200")
         )
 
-    # Interior lights for the three campus buildings (north + 2 south)
+    # Interior lights for all campus dorm buildings (north1, north2, 2 south)
+    _dorm_north2_y2 = DORM_NORTH_Y1
+    _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     bldg_light_x = (DORM_X1 + DORM_X2) // 2
     for building_y1, building_y2 in [
         (DORM_NORTH_Y1, DORM_NORTH_Y2),
+        (_dorm_north2_y1, _dorm_north2_y2),
         (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2),
         (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2),
     ]:
         building_y = (building_y1 + building_y2) // 2
         for building_floor_index in range(DORM_FLOORS):
             building_light_z = (
-                FLOOR_Z2 + building_floor_index * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+                FLOOR_Z2 + building_floor_index * DORM_FLOOR_H + DORM_FLOOR_H // 2
             )
             ENTITIES.append(
                 ent(
