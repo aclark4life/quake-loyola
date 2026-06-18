@@ -22,6 +22,7 @@ from .constants import (
 from .geometry import (
     box,
     brush_ent,
+    gable_slats,
     layered_wall,
     layered_wall_y,
     ramp_slab,
@@ -196,6 +197,30 @@ def build():
             ts=Textures.GABLE,
         )
     )
+    # Horizontal wood slats over both exposed gable ends
+    DORM_GABLE_PROUD = 6
+    north_bldg_detail += gable_slats(
+        DORM_X1,
+        DORM_X2,
+        DORM_CX,
+        DORM_EAVE_Z,
+        DORM_RIDGE_Z,
+        DORM_SLAB_T,
+        DORM_NORTH_Y1,
+        -DORM_GABLE_PROUD,
+        Textures.GABLE,
+    )
+    north_bldg_detail += gable_slats(
+        DORM_X1,
+        DORM_X2,
+        DORM_CX,
+        DORM_EAVE_Z,
+        DORM_RIDGE_Z,
+        DORM_SLAB_T,
+        DORM_NORTH_Y2,
+        DORM_GABLE_PROUD,
+        Textures.GABLE,
+    )
     ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
 
     # Interior floor — flat ground surface inside the building (covers the hill void)
@@ -216,9 +241,10 @@ def build():
     # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
     # Moved to func_detail to reduce portal complexity in the open campus area.
 
-    def make_south_bldg(by1, by2):
+    def make_south_bldg(by1, by2, slat_lo=False, slat_hi=False):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
-        between Y positions by1 (south) and by2 (north)."""
+        between Y positions by1 (south) and by2 (north).
+        slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 100
@@ -359,13 +385,28 @@ def build():
                 ts=Textures.GABLE,
             )
         )
+        proud = 6
+        if slat_lo:
+            brushes += gable_slats(
+                bx1, bx2, cx, eave_z, ridge_z, slab_t, by1, -proud, Textures.GABLE
+            )
+        if slat_hi:
+            brushes += gable_slats(
+                bx1, bx2, cx, eave_z, ridge_z, slab_t, by2, proud, Textures.GABLE
+            )
         return brushes
 
     ENTITIES.append(
-        brush_ent("func_detail", make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2))
+        brush_ent(
+            "func_detail",
+            make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, slat_lo=True),
+        )
     )
     ENTITIES.append(
-        brush_ent("func_detail", make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2))
+        brush_ent(
+            "func_detail",
+            make_south_bldg(DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, slat_hi=True),
+        )
     )
 
     # ── Iron fence along east face of west buildings ──────────────────────────

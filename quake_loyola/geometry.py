@@ -114,6 +114,49 @@ def ramp_slab_y(
     )
 
 
+def gable_slats(
+    bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=6, gap=4, min_w=24
+):
+    """Decorative horizontal wood slats laid over a triangular gable end.
+    The gable lies in the X-Z plane at y=yface: its base runs bx1..bx2 at
+    z=eave_z and tapers to the ridge apex at x=apex_x, z=ridge_z (the lowest
+    slab_t units of the side edges stay vertical, matching the roof slab).
+    Planks stand proud of the face by |depth| (sign of depth = outward Y
+    direction) and stack in n bands separated by gap-unit shadow grooves;
+    bands narrower than min_w near the apex are skipped."""
+    y0, y1 = sorted((yface, yface + depth))
+    denom = ridge_z - (eave_z + slab_t)
+
+    def edge_x(z):
+        t = z - (eave_z + slab_t)
+        if t <= 0:
+            return bx1, bx2
+        return bx1 + t * (apex_x - bx1) / denom, bx2 - t * (bx2 - apex_x) / denom
+
+    band = (ridge_z - eave_z) / n
+    brushes = []
+    for i in range(n):
+        z0 = eave_z + i * band
+        z1 = z0 + band - gap
+        xl0, xr0 = edge_x(z0)
+        xl1, xr1 = edge_x(z1)
+        if xr1 - xl1 < min_w:
+            continue
+        brushes.append(
+            Brush(
+                [
+                    Face((xl0, y0, z0), (xl0, y1, z0), (xl1, y0, z1), tex),  # left end
+                    Face((xr0, y0, z0), (xr1, y0, z1), (xr0, y1, z0), tex),  # right end
+                    Face((xl0, y0, z0), (xl1, y0, z1), (xr0, y0, z0), tex),  # -Y
+                    Face((xl0, y1, z0), (xr0, y1, z0), (xl1, y1, z1), tex),  # +Y
+                    Face((xl0, y0, z0), (xr0, y0, z0), (xl0, y1, z0), tex),  # bottom
+                    Face((xl1, y0, z1), (xl1, y1, z1), (xr1, y0, z1), tex),  # top
+                ]
+            )
+        )
+    return brushes
+
+
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
     """Triangular prism. Triangle (ax,ay)→(bx,by)→(cx,cy) must be CCW from above.
     Face winding: side normals point inward (left-perpendicular of each CCW edge).
