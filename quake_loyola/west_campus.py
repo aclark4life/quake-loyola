@@ -1,14 +1,17 @@
 from .constants import (
+    BRIDGE_DZ2,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_FLOORS,
     DORM_H,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
+    DORM_PIER_X,
     DORM_SOUTH1_Y1,
     DORM_SOUTH1_Y2,
     DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
+    DORM_WALL_S_Y2,
     DORM_X1,
     DORM_X2,
     FLOOR_Z1,
@@ -23,6 +26,7 @@ from .geometry import (
     layered_wall_y,
     ramp_slab,
 )
+from .utils import iron_fence
 
 
 def build():
@@ -400,5 +404,91 @@ def build():
             picket_index += 1
     if fence_brushes:
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
+
+    # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
+    # Door is centered 160 units north of dorm 2; pillars and iron fence are detail.
+    wall_hw = 12  # half-thickness (thinner than pier)
+    DORM_DOOR_W = 80  # door opening width
+    DORM_DOOR_OFF = 160  # distance from dorm 2 north face to door centre
+    DORM_DOOR_H = 128  # door opening height
+    wall_start_y = DORM_SOUTH2_Y2  # wall stops at north face of dorm 2
+    s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF
+    # Brick wall body (worldspawn — seals the level)
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            wall_start_y,
+            FLOOR_Z2,
+            DORM_PIER_X + wall_hw,
+            s_door_y - DORM_DOOR_W // 2,
+            BRIDGE_DZ2,
+            "city2_1",
+        )
+    )
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            s_door_y + DORM_DOOR_W // 2,
+            FLOOR_Z2,
+            DORM_PIER_X + wall_hw,
+            DORM_WALL_S_Y2,
+            BRIDGE_DZ2,
+            "city2_1",
+        )
+    )
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            s_door_y - DORM_DOOR_W // 2,
+            FLOOR_Z2 + DORM_DOOR_H,
+            DORM_PIER_X + wall_hw,
+            s_door_y + DORM_DOOR_W // 2,
+            BRIDGE_DZ2,
+            "city2_1",
+        )
+    )
+    # Brick pillars + iron fence (func_detail — non-sealing)
+    wall_detail = []
+    pillar_w = 56
+    pillar_proud = 6
+    pillar_h = BRIDGE_DZ2 + 80
+    px1 = DORM_PIER_X - wall_hw - pillar_proud
+    px2 = DORM_PIER_X + wall_hw + pillar_proud
+    cap_h = 10
+    cap_overhang = 1
+    door_north = s_door_y + DORM_DOOR_W // 2
+    for py1, py2 in [
+        (door_north + 96, door_north + 96 + pillar_w),
+        (door_north + 96 + pillar_w + 380, door_north + 96 + pillar_w + 380 + pillar_w),
+    ]:
+        wall_detail.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
+        wall_detail.append(
+            box(
+                px1 - cap_overhang,
+                py1 - cap_overhang,
+                pillar_h,
+                px2 + cap_overhang,
+                py2 + cap_overhang,
+                pillar_h + cap_h,
+                "city2_1",
+            )
+        )
+    wall_detail.extend(
+        iron_fence(
+            [
+                (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
+                (
+                    s_door_y - DORM_DOOR_W // 2,
+                    s_door_y + DORM_DOOR_W // 2,
+                ),  # over lintel
+                (s_door_y + DORM_DOOR_W // 2, DORM_WALL_S_Y2),  # north of door to pier
+            ],
+            DORM_PIER_X - 1,
+            DORM_PIER_X + 1,
+            "metal4_4",
+            BRIDGE_DZ2,
+        )
+    )
+    ENTITIES.append(brush_ent("func_detail", wall_detail))
 
     return BRUSHES, ENTITIES
