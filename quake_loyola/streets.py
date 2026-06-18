@@ -24,6 +24,7 @@ from .constants import (
     Textures,
 )
 from .geometry import (
+    arch_seg,
     box,
     brush_ent,
     pyramid,
@@ -1290,11 +1291,21 @@ def build():
     fence_h = 80
     fence_spacing = 16
     fence_z_base = BRIDGE_DZ2
+    # Posts every 10 pickets; small circle sits between the two top rails
+    fence_post_stride = fence_spacing * 10  # 160 units between post centres
+    circle_rout = (
+        5  # outer radius — outer edge sits 1 unit inside each beam (6-unit half-gap)
+    )
+    circle_rin = 3  # inner radius — ring thickness = 2 units, matches rail thickness
+    circle_cz = (
+        fence_z_base + fence_h - 8
+    )  # Z centre: midpoint of 12-unit gap between the two beams
     for fy1, fy2 in [
         (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
         (s_door_y - DORM_DOOR_W // 2, s_door_y + DORM_DOOR_W // 2),  # over door lintel
         (s_door_y + DORM_DOOR_W // 2, DORM_WALL_S_Y2),  # north of door to bridge pier
     ]:
+        # Top rail
         DETAIL_BRUSHES.append(
             box(
                 fence_x1,
@@ -1303,6 +1314,18 @@ def build():
                 fence_x2,
                 fy2,
                 fence_z_base + fence_h,
+                fence_tex,
+            )
+        )
+        # Second crossbeam — a few inches below the top rail
+        DETAIL_BRUSHES.append(
+            box(
+                fence_x1,
+                fy1,
+                fence_z_base + fence_h - 16,
+                fence_x2,
+                fy2,
+                fence_z_base + fence_h - 14,
                 fence_tex,
             )
         )
@@ -1323,6 +1346,28 @@ def build():
             )
             picket_y += fence_spacing
             picket_index += 1
+        # Proper iron circle (8-segment octagon ring) between each post pair,
+        # sitting in the Z gap between the second crossbeam and the top rail
+        post_y = fy1
+        while post_y + fence_post_stride <= fy2:
+            # Y centre of gap between this post and the next (+4 = half post width)
+            circle_cy = post_y + fence_post_stride // 2 + 4
+            # 8 arch_seg calls × 45° = full 360° circle ring in the Y-Z plane
+            for seg_i in range(8):
+                DETAIL_BRUSHES.append(
+                    arch_seg(
+                        fence_x1,
+                        fence_x2,
+                        circle_cy,
+                        float(circle_cz),
+                        circle_rin,
+                        circle_rout,
+                        seg_i * 45,
+                        (seg_i + 1) * 45,
+                        fence_tex,
+                    )
+                )
+            post_y += fence_post_stride
     if east_gate_brushes:
         ENTITIES.append(brush_ent("func_detail", east_gate_brushes))
     if DETAIL_BRUSHES:
