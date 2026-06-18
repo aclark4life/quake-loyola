@@ -1281,45 +1281,45 @@ def build():
                 "city2_1",
             )
         )
-    # Iron fence on top of wall between the two pillars
-    fence_y1 = door_north + 96 + pillar_w  # north face of south pillar
-    fence_y2 = door_north + 96 + pillar_w + 380  # south face of north pillar
+    # Iron fence on top of wall — full length, split around the door opening
     fence_x1 = DORM_PIER_X - 1
     fence_x2 = DORM_PIER_X + 1
     fence_tex = "metal4_4"
-    fence_h = 80  # fence height above wall top
+    fence_h = 80
     fence_spacing = 16
     fence_z_base = BRIDGE_DZ2
-    # Top rail
-    DETAIL_BRUSHES.append(
-        box(
-            fence_x1,
-            fence_y1,
-            fence_z_base + fence_h - 2,
-            fence_x2,
-            fence_y2,
-            fence_z_base + fence_h,
-            fence_tex,
-        )
-    )
-    # Pickets
-    fence_picket_y = fence_y1
-    fence_picket_index = 0
-    while fence_picket_y + 2 <= fence_y2:
-        picket_w = 8 if fence_picket_index % 10 == 0 else 2
+    for fy1, fy2 in [
+        (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
+        (s_door_y + DORM_DOOR_W // 2, DORM_WALL_S_Y2),  # north of door to bridge pier
+    ]:
         DETAIL_BRUSHES.append(
             box(
                 fence_x1,
-                fence_picket_y,
-                fence_z_base,
+                fy1,
+                fence_z_base + fence_h - 2,
                 fence_x2,
-                fence_picket_y + picket_w,
+                fy2,
                 fence_z_base + fence_h,
                 fence_tex,
             )
         )
-        fence_picket_y += fence_spacing
-        fence_picket_index += 1
+        picket_y = fy1
+        picket_index = 0
+        while picket_y + 2 <= fy2:
+            picket_w = 8 if picket_index % 10 == 0 else 2
+            DETAIL_BRUSHES.append(
+                box(
+                    fence_x1,
+                    picket_y,
+                    fence_z_base,
+                    fence_x2,
+                    picket_y + picket_w,
+                    fence_z_base + fence_h,
+                    fence_tex,
+                )
+            )
+            picket_y += fence_spacing
+            picket_index += 1
     if east_gate_brushes:
         ENTITIES.append(brush_ent("func_detail", east_gate_brushes))
     if DETAIL_BRUSHES:
