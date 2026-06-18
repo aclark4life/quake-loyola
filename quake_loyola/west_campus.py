@@ -167,13 +167,19 @@ def build():
     DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
     DORM_RIDGE_Z = DORM_EAVE_Z + KNOTT_FLOOR_H  # ridge apex
     DORM_SLAB_T = 16  # roof slab thickness at eave
+    # Recess the roof-slab gable ends inward so the slats fill the gap with their
+    # outer face flush with the wall below; grooves between planks reveal the
+    # recessed slab behind them (relief) without protruding past the wall.
+    DORM_GABLE_DEPTH = 6
+    DORM_NB_SY1 = DORM_NORTH_Y1 + DORM_GABLE_DEPTH
+    DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
     # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
     north_bldg_detail.append(
         ramp_slab(
             DORM_X1,
             DORM_CX,
-            DORM_NORTH_Y1,
-            DORM_NORTH_Y2,
+            DORM_NB_SY1,
+            DORM_NB_SY2,
             DORM_EAVE_Z,
             DORM_EAVE_Z,
             DORM_EAVE_Z + DORM_SLAB_T,
@@ -187,8 +193,8 @@ def build():
         ramp_slab(
             DORM_CX,
             DORM_X2,
-            DORM_NORTH_Y1,
-            DORM_NORTH_Y2,
+            DORM_NB_SY1,
+            DORM_NB_SY2,
             DORM_EAVE_Z,
             DORM_EAVE_Z,
             DORM_RIDGE_Z,
@@ -197,8 +203,7 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # Horizontal wood slats over both exposed gable ends
-    DORM_GABLE_DEPTH = 6  # slats extend inward; outer face flush with wall
+    # Horizontal wood slats over both exposed gable ends (fill the recess, flush)
     north_bldg_detail += gable_slats(
         DORM_X1,
         DORM_X2,
@@ -357,12 +362,16 @@ def build():
             FLOOR_Z2 + DORM_H + DORM_WALL + KNOTT_FLOOR_H,
             16,
         )
+        depth = 6  # slat recess depth; outer face flush with wall
+        # Recess the slab gable end only where slats are added (abutting ends stay full)
+        sy1 = by1 + depth if slat_lo else by1
+        sy2 = by2 - depth if slat_hi else by2
         brushes.append(
             ramp_slab(
                 bx1,
                 cx,
-                by1,
-                by2,
+                sy1,
+                sy2,
                 eave_z,
                 eave_z,
                 eave_z + slab_t,
@@ -375,8 +384,8 @@ def build():
             ramp_slab(
                 cx,
                 bx2,
-                by1,
-                by2,
+                sy1,
+                sy2,
                 eave_z,
                 eave_z,
                 ridge_z,
@@ -385,7 +394,6 @@ def build():
                 ts=Textures.GABLE,
             )
         )
-        depth = 6  # slats extend inward; outer face flush with wall
         if slat_lo:
             brushes += gable_slats(
                 bx1, bx2, cx, eave_z, ridge_z, slab_t, by1, depth, Textures.GABLE
