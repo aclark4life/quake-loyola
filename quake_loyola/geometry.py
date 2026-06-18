@@ -115,15 +115,15 @@ def ramp_slab_y(
 
 
 def gable_slats(
-    bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=6, gap=4, min_w=24
+    bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=24, gap=2, min_w=6
 ):
     """Decorative horizontal wood slats laid over a triangular gable end.
     The gable lies in the X-Z plane at y=yface: its base runs bx1..bx2 at
     z=eave_z and tapers to the ridge apex at x=apex_x, z=ridge_z (the lowest
     slab_t units of the side edges stay vertical, matching the roof slab).
-    Planks stand proud of the face by |depth| (sign of depth = outward Y
-    direction) and stack in n bands separated by gap-unit shadow grooves;
-    bands narrower than min_w near the apex are skipped."""
+    Planks extend inward by |depth| (outer face flush with yface) and stack
+    in n bands separated by gap-unit shadow grooves; bands narrower than
+    min_w near the apex are skipped."""
     y0, y1 = sorted((yface, yface + depth))
     denom = ridge_z - (eave_z + slab_t)
 
