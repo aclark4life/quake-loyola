@@ -1290,6 +1290,7 @@ def build():
     fence_z_base = BRIDGE_DZ2
     for fy1, fy2 in [
         (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
+        (s_door_y - DORM_DOOR_W // 2, s_door_y + DORM_DOOR_W // 2),  # over door lintel
         (s_door_y + DORM_DOOR_W // 2, DORM_WALL_S_Y2),  # north of door to bridge pier
     ]:
         DETAIL_BRUSHES.append(
