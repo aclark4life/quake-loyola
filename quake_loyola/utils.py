@@ -54,8 +54,8 @@ def iron_fence(
     z_base,
     height=80,
     spacing=16,
-    circle_rin=3,
-    circle_rout=5,
+    circle_rin=4,
+    circle_rout=6,
 ):
     """Build an iron fence for each (y1, y2) span in segments.
 
