@@ -157,6 +157,104 @@ def gable_slats(
     return brushes
 
 
+def entrance_arch_xwall(
+    cx,
+    base_z,
+    ent_hw,
+    ent_h,
+    face_y,
+    out_sign,
+    tex,
+    pillar_w=10,
+    pillar_d=10,
+    lintel_h=12,
+    arch_h=48,
+    arch_t=8,
+):
+    """Two pillars + A-frame pediment over an entrance in an X-normal wall.
+    cx: X centre of entrance; base_z: Z floor level; ent_hw: half-width; ent_h: height.
+    face_y: Y of outer wall face; out_sign: -1 protrudes south (-Y), +1 protrudes north (+Y)."""
+    ya, yb = sorted((face_y, face_y + out_sign * pillar_d))
+    lx1, lx2 = cx - ent_hw - pillar_w, cx - ent_hw
+    rx1, rx2 = cx + ent_hw, cx + ent_hw + pillar_w
+    pz2 = base_z + ent_h + lintel_h
+    eave_z, ridge_z = pz2, pz2 + arch_h
+    return [
+        box(lx1, ya, base_z, lx2, yb, pz2, tex),  # left pillar
+        box(rx1, ya, base_z, rx2, yb, pz2, tex),  # right pillar
+        box(lx1, ya, base_z + ent_h, rx2, yb, pz2, tex),  # lintel
+        ramp_slab(
+            lx1, cx, ya, yb, eave_z, eave_z, eave_z + arch_t, ridge_z, tex
+        ),  # left slope
+        ramp_slab(
+            cx, rx2, ya, yb, eave_z, eave_z, ridge_z, eave_z + arch_t, tex
+        ),  # right slope
+    ]
+
+
+def entrance_arch_ywall(
+    cy,
+    base_z,
+    ent_hw,
+    ent_h,
+    face_x,
+    out_sign,
+    tex,
+    pillar_w=10,
+    pillar_d=10,
+    lintel_h=12,
+    arch_h=48,
+    arch_t=8,
+):
+    """Two pillars + A-frame pediment over an entrance in a Y-normal wall.
+    cy: Y centre of entrance; base_z: Z floor level; ent_hw: half-width; ent_h: height.
+    face_x: X of outer wall face; out_sign: +1 protrudes east (+X), -1 protrudes west (-X)."""
+    xa, xb = sorted((face_x, face_x + out_sign * pillar_d))
+    ly1, ly2 = cy - ent_hw - pillar_w, cy - ent_hw
+    ry1, ry2 = cy + ent_hw, cy + ent_hw + pillar_w
+    pz2 = base_z + ent_h + lintel_h
+    eave_z, ridge_z = pz2, pz2 + arch_h
+    return [
+        box(xa, ly1, base_z, xb, ly2, pz2, tex),  # left pillar
+        box(xa, ry1, base_z, xb, ry2, pz2, tex),  # right pillar
+        box(xa, ly1, base_z + ent_h, xb, ry2, pz2, tex),  # lintel
+        ramp_slab_y(
+            xa, xb, ly1, cy, eave_z, eave_z, eave_z + arch_t, ridge_z, tex
+        ),  # left slope
+        ramp_slab_y(
+            xa, xb, cy, ry2, eave_z, eave_z, ridge_z, eave_z + arch_t, tex
+        ),  # right slope
+    ]
+
+
+def win_frame_xwall(xl, xr, zb, zt, face_y, out_sign, tex, fw=8, fd=4):
+    """Four-piece wood frame flush against an X-normal wall face, around one window.
+    xl/xr: left/right X of opening; zb/zt: bottom/top Z.
+    face_y: Y of outer wall face; out_sign: -1 south, +1 north.
+    fw: frame border width; fd: protrusion depth."""
+    ya, yb = sorted((face_y, face_y + out_sign * fd))
+    return [
+        box(xl - fw, ya, zt, xr + fw, yb, zt + fw, tex),  # top (includes corners)
+        box(xl - fw, ya, zb - fw, xr + fw, yb, zb, tex),  # bottom (includes corners)
+        box(xl - fw, ya, zb, xl, yb, zt, tex),  # left side
+        box(xr, ya, zb, xr + fw, yb, zt, tex),  # right side
+    ]
+
+
+def win_frame_ywall(yl, yr, zb, zt, face_x, out_sign, tex, fw=8, fd=4):
+    """Four-piece wood frame flush against a Y-normal wall face, around one window.
+    yl/yr: left/right Y of opening; zb/zt: bottom/top Z.
+    face_x: X of outer wall face; out_sign: +1 east, -1 west.
+    fw: frame border width; fd: protrusion depth."""
+    xa, xb = sorted((face_x, face_x + out_sign * fd))
+    return [
+        box(xa, yl - fw, zt, xb, yr + fw, zt + fw, tex),  # top (includes corners)
+        box(xa, yl - fw, zb - fw, xb, yr + fw, zb, tex),  # bottom (includes corners)
+        box(xa, yl - fw, zb, xb, yl, zt, tex),  # left side
+        box(xa, yr, zb, xb, yr + fw, zt, tex),  # right side
+    ]
+
+
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
     """Triangular prism. Triangle (ax,ay)→(bx,by)→(cx,cy) must be CCW from above.
     Face winding: side normals point inward (left-perpendicular of each CCW edge).
