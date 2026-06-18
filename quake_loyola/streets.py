@@ -1127,7 +1127,7 @@ def build():
     # ── Embankment — hill under Dorm buildings ───────────────────────────────────
     # Large terrain feature that blocks visibility — restore worldspawn routing.
     BRUSHES = _world_brushes
-    DORM_DEPTH = 600  # building N-S depth (doubled)
+    DORM_DEPTH = 450  # building N-S depth
     DORM_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
     DORM_X2 = DORM_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
     DORM_X1 = DORM_X2 - 576  # west face of building (doubled width)
@@ -1217,12 +1217,13 @@ def build():
     # (Building dimensions already defined above)
     # South brick wall — from bridge pier south face to nearest south building, with door gap
     # Door centered 160 units north of the building (closer to buildings)
+    wall_start_y = DORM_SOUTH2_Y1  # wall extends south to the south face of dorm 2
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF  # door centre Y
     wall_hw = 12  # half-thickness of wall (thinner than pier)
     BRUSHES.append(
         box(
             DORM_PIER_X - wall_hw,
-            DORM_SOUTH2_Y2,
+            wall_start_y,
             FLOOR_Z2,
             DORM_PIER_X + wall_hw,
             s_door_y - DORM_DOOR_W // 2,
