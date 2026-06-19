@@ -101,6 +101,7 @@ DORM_SLAB_T = 16
 DORM_WALL = 16
 DORM_WIN_HH = 44
 DORM_WIN_HW = 36
+DORM_WIN_MARGIN = 0  # gap between window frame bar and opening edge (0 = flush)
 DORM_WIN_W, DORM_WIN_H, DORM_WIN_T = 20, 28, 3
 
 DRAW_BRIDGE_FASCIA_TEXT = True
