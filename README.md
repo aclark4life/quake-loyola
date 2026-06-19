@@ -90,6 +90,7 @@ The bridge has five piers, numbered west to east. This naming is used consistent
 |---|---|
 | **Teleport arch** | Decorative stone arch portal at each end of the bridge with a trigger field. West arch teleports to east; east to west. |
 | **Post** | Straight vertical stone column on each side of a teleport arch opening. |
+| **Lintel** | The horizontal beam spanning the top of an opening (door, window, or portal), resting on the two vertical posts. On the south-dorm exit portal the lintel and its connecting cross beams carry the `z_exit` texture. |
 
 ## Map layout
 

@@ -144,6 +144,7 @@ FASCIA_FONT = {
     "U": [0b1001, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
     "V": [0b1001, 0b1001, 0b1001, 0b0110, 0b0110, 0b0000],
     "W": [0b1001, 0b1001, 0b1111, 0b1111, 0b1001, 0b0000],
+    "X": [0b1001, 0b0110, 0b0110, 0b0110, 0b1001, 0b0000],
     "Y": [0b1001, 0b0110, 0b0100, 0b0100, 0b0100, 0b0000],
     " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
 }
@@ -200,10 +201,12 @@ SHOW_SUPPORTS = True
 class Textures:
     BRICK = "bricka2_1"
     CEMENT = "sfloor3_2"
+    EXIT = "z_exit"
     DIVIDER = "sfloor3_2"
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
+    LAVA = "*lava1"
     PILLAR = "city2_7"
     RAIL = "metal5_4"
     ROAD = "azfloor1_1"
