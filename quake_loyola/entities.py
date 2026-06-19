@@ -116,6 +116,8 @@ from .geometry import (
     make_bush,
     make_giant_tree,
     make_tree,
+    render_text_flat,
+    render_text_flat_x,
 )
 
 
@@ -1581,9 +1583,23 @@ def build():
     ex1 = dorm_exit_xc - dorm_exit_hw
     ex2 = dorm_exit_xc + dorm_exit_hw
     portal_top = FLOOR_Z2 + 112
-    for face_yc in [
-        dorm_exit_yc - dorm_exit_hw,  # south face
-        dorm_exit_yc + dorm_exit_hw,  # north face
+    # px_w=4 px_h=2 → "EXIT" is 76 units wide × 12 tall; centred on 160-wide lintel
+    exit_px_w, exit_px_h, exit_depth = 4, 2, 2
+    # Embed each letter 1 unit into its backing surface so the letter's back face is
+    # never coplanar with the beam/lintel face (coplanar faces z-fight in qbsp, which
+    # garbles the corner letters). exit_total = visible standoff (exit_depth) + embed.
+    exit_embed = 1
+    exit_total = exit_depth + exit_embed
+    exit_text_w = (
+        4 * 5 - 1
+    ) * exit_px_w  # 76 units (4 chars × 5-col cell − trailing gap)
+    exit_x0 = dorm_exit_xc - exit_text_w // 2
+    exit_z_base = (
+        portal_top + (frame_t - 6 * exit_px_h) // 2
+    )  # vertically centred in lintel
+    for face_yc, out_sign in [
+        (dorm_exit_yc - dorm_exit_hw, -1),  # south face — letters protrude south
+        (dorm_exit_yc + dorm_exit_hw, +1),  # north face — letters protrude north
     ]:
         fy1 = face_yc - frame_d // 2
         fy2 = face_yc + frame_d // 2
@@ -1597,6 +1613,28 @@ def build():
                     "func_detail", box(bx1, fy1, bz1, bx2, fy2, bz2, Textures.CEMENT)
                 )
             )
+        # Pixel-font "EXIT" letters raised on the outward lintel face.
+        # Same handedness rule as the Knott Hall sign / bridge fascia:
+        #   south-facing (protrudes -Y) → normal text, mirror=False
+        #   north-facing (protrudes +Y) → reversed text, mirror=True
+        # Back face is recessed into the lintel slab (exit_embed) to avoid z-fighting.
+        if out_sign < 0:
+            letter_text, y_face, do_mirror = "EXIT", fy1 - exit_depth, False
+        else:
+            letter_text, y_face, do_mirror = "EXIT"[::-1], fy2 - exit_embed, True
+        letter_brushes = render_text_flat(
+            letter_text,
+            x0=exit_x0,
+            y_face=y_face,
+            z_base=exit_z_base,
+            px_w=exit_px_w,
+            px_h=exit_px_h,
+            depth=exit_total,
+            tex=Textures.RAIL,
+            mirror=do_mirror,
+        )
+        if letter_brushes:
+            ENTITIES.append(brush_ent("func_detail", letter_brushes))
     # Cross beams — run in Y across the top, left and right, connecting both face frames
     beam_y1 = dorm_exit_yc - dorm_exit_hw - frame_d // 2
     beam_y2 = dorm_exit_yc + dorm_exit_hw + frame_d // 2
@@ -1615,6 +1653,31 @@ def build():
                 ),
             )
         )
+    # "EXIT" letters on the west and east cross-beam faces (text advances in +Y).
+    # West face is read facing east (viewer-left = +Y) → reversed text, mirror=True.
+    # East face is read facing west (viewer-left = -Y) → normal text, mirror=False.
+    # Back face is recessed into the cross-beam (exit_embed) to avoid z-fighting.
+    # These faces use the glowing lava texture: the metal letter texture rendered
+    # dark/garbled on the dense "E" glyph here, while the fullbright lava reads
+    # cleanly and suits the teleport-portal theme.
+    exit_y0 = dorm_exit_yc - exit_text_w // 2
+    for x_face, letter_text, do_mirror in [
+        (ex1 - frame_t - exit_depth, "EXIT"[::-1], True),  # west face
+        (ex2 + frame_t - exit_embed, "EXIT", False),  # east face
+    ]:
+        lb = render_text_flat_x(
+            letter_text,
+            y0=exit_y0,
+            x_face=x_face,
+            z_base=exit_z_base,
+            px_w=exit_px_w,
+            px_h=exit_px_h,
+            depth=exit_total,
+            tex=Textures.LAVA,
+            mirror=do_mirror,
+        )
+        if lb:
+            ENTITIES.append(brush_ent("func_detail", lb))
 
     ENTITIES.append(
         ent(

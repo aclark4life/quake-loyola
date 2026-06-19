@@ -3,6 +3,7 @@ import math
 from .constants import (
     BRIDGE_ARCH_X,
     BRIDGE_EAST_SPAN_ANGLE,
+    FASCIA_FONT,
     Textures,
 )
 from .mapdata import Brush, Entity, Face
@@ -843,3 +844,65 @@ def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
     openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
     Derived from layered_wall via XY swap."""
     return [swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
+
+
+def render_text_flat_x(text, y0, x_face, z_base, px_w, px_h, depth, tex, mirror=False):
+    """Like render_text_flat but text advances in +Y and protrudes in +X from x_face.
+
+    Use for east/west-facing surfaces. For a surface viewed from the west (facing east),
+    pass text[::-1] and mirror=True so glyphs read correctly left-to-right.
+
+    Consecutive lit pixels in a row are merged into a single box so dense glyphs (e.g. E)
+    don't generate internal T-junctions that sparkle/garble at render time.
+    """
+    cols = 4
+    rows = 6
+    char_w = (cols + 1) * px_w
+    brushes = []
+    for ci, ch in enumerate(text):
+        bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
+        cy = y0 + ci * char_w
+        for row_i, row_bits in enumerate(bitmap):
+            z = z_base + (rows - 1 - row_i) * px_h
+            run_start = None
+            for col_i in range(cols + 1):
+                src_col = (cols - 1 - col_i) if mirror else col_i
+                lit = col_i < cols and (row_bits & (1 << (cols - 1 - src_col)))
+                if lit and run_start is None:
+                    run_start = col_i
+                elif not lit and run_start is not None:
+                    py1 = cy + run_start * px_w
+                    py2 = cy + col_i * px_w
+                    brushes.append(
+                        box(x_face, py1, z, x_face + depth, py2, z + px_h, tex)
+                    )
+                    run_start = None
+    return brushes
+
+
+def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=False):
+    """Render text as pixel-font raised boxes on a flat wall surface.
+
+    Characters advance left-to-right in +X; rows stack upward in +Z from z_base.
+    Each character cell is (4+1)*px_w units wide; glyphs are 4 columns × 6 rows.
+    depth: how far each pixel box protrudes in +Y from y_face.
+    mirror=True flips each glyph horizontally — combine with text[::-1] to make
+    text readable on a surface viewed from the -Y direction (e.g., north face).
+    """
+    cols = 4
+    rows = 6
+    char_w = (cols + 1) * px_w
+    brushes = []
+    for ci, ch in enumerate(text):
+        bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
+        cx = x0 + ci * char_w
+        for row_i, row_bits in enumerate(bitmap):
+            z = z_base + (rows - 1 - row_i) * px_h
+            for col_i in range(cols):
+                src_col = (cols - 1 - col_i) if mirror else col_i
+                if row_bits & (1 << (cols - 1 - src_col)):
+                    px = cx + col_i * px_w
+                    brushes.append(
+                        box(px, y_face, z, px + px_w, y_face + depth, z + px_h, tex)
+                    )
+    return brushes

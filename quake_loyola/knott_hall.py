@@ -79,6 +79,7 @@ from .geometry import (
     layered_wall_y,
     ramp_slab,
     ramp_slab_y,
+    render_text_flat,
     tri_prism,
 )
 
@@ -1810,28 +1811,6 @@ def build():
                             box(px, y_face - depth, z - cph, px + cpw, y_face, z, tex)
                         )
             cx += char_w
-        return brushes
-
-    def render_text_flat(
-        text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=False
-    ):
-        """Render text as pixel-font raised boxes on a flat north-facing wall surface."""
-        cols = 4
-        rows = 6
-        char_w_f = (cols + 1) * px_w
-        brushes = []
-        for ci, ch in enumerate(text):
-            bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
-            cx = x0 + ci * char_w_f
-            for row_i, row_bits in enumerate(bitmap):
-                z = z_base + (rows - 1 - row_i) * px_h
-                for col_i in range(cols):
-                    src_col = (cols - 1 - col_i) if mirror else col_i
-                    if row_bits & (1 << (cols - 1 - src_col)):
-                        px = cx + col_i * px_w
-                        brushes.append(
-                            box(px, y_face, z, px + px_w, y_face + depth, z + px_h, tex)
-                        )
         return brushes
 
     # Raised pixel-font letters on the Knott Hall sign plaque
