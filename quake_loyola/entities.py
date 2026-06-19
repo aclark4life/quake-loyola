@@ -737,6 +737,71 @@ def build():
             )
         )
 
+    # Lightning gun — high-value, contested spots
+    ENTITIES.append(
+        ent("weapon_lightning", origin=f"200 0 {BRIDGE_DECK_Z}")
+    )  # bridge centre
+    ENTITIES.append(
+        ent(
+            "weapon_lightning",
+            origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
+        )
+    )  # north dorm roof
+    if KNOTT_ENABLED:
+        ENTITIES.append(
+            ent(
+                "weapon_lightning",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 4 + 40}",
+            )
+        )  # KH top floor
+    ENTITIES.append(
+        ent("weapon_lightning", origin=f"0 -500 {ROAD_Z + 24}")
+    )  # south Charles St
+
+    # ── Ogres — spread across open areas and upper floors ─────────────────────
+    # Bridge deck
+    ENTITIES.append(ent("monster_ogre", origin=f"-300 0 {BRIDGE_DECK_Z}", angle="90"))
+    ENTITIES.append(ent("monster_ogre", origin=f"300 0 {BRIDGE_DECK_Z}", angle="270"))
+    # Charles Street
+    ENTITIES.append(ent("monster_ogre", origin=f"0 200 {ROAD_Z + 24}", angle="180"))
+    ENTITIES.append(ent("monster_ogre", origin=f"0 -600 {ROAD_Z + 24}", angle="0"))
+    # East sidewalk
+    ENTITIES.append(ent("monster_ogre", origin=f"700 0 {ROAD_Z + 24}", angle="270"))
+    # West sidewalk
+    ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
+    # Dorm rooftop
+    ENTITIES.append(
+        ent(
+            "monster_ogre",
+            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + 40}",
+            angle="90",
+        )
+    )
+    # Knott Hall floors
+    if KNOTT_ENABLED:
+        ENTITIES.append(
+            ent(
+                "monster_ogre",
+                origin=f"{KNOTT_WEST_ROOM_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 40}",
+                angle="90",
+            )
+        )
+        ENTITIES.append(
+            ent(
+                "monster_ogre",
+                origin=f"{KNOTT_EAST_ROOM_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT_FLOOR_H * 3 + 40}",
+                angle="270",
+            )
+        )
+        # KH rooftop
+        ENTITIES.append(
+            ent(
+                "monster_ogre",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_Z2 + 40}",
+                angle="180",
+            )
+        )
+
     # ── Ammo ──────────────────────────────────────────────────────────────────
     for ax in BRIDGE_ARCH_X:
         ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(deck_top_z(ax) + 8)}"))
