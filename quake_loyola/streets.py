@@ -1160,17 +1160,35 @@ def build():
             tt=Textures.GROUND,
         )
     )
-    # South segment — full width between south buildings and north building
+    # South segment — full width in the open gap between south building 2 and
+    # north building 2 (stops short of north building 2's south face)
+    DORM_NORTH2_Y1 = DORM_NORTH_Y1 - DORM_DEPTH  # south face of north building 2
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
             DORM_EMB_X2,
             DORM_SOUTH2_Y2,
-            DORM_NORTH_Y1,
+            DORM_NORTH2_Y1,
             FLOOR_Z1,
             FLOOR_Z1,
             BRIDGE_DZ2,
             FLOOR_Z2,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # West of north building 2 — stop the hill at the west face so the interior
+    # is hollow like the other dorms (matches the north building 1 middle segment)
+    BRUSHES.append(
+        ramp_slab(
+            BRIDGE_X1,
+            DORM_X1,
+            DORM_NORTH2_Y1,
+            DORM_NORTH_Y1,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            BRIDGE_DZ2,
+            emb_zt_at_ab_x1,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
