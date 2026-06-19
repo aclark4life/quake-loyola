@@ -523,14 +523,18 @@ def build():
     # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
     # Moved to func_detail to reduce portal complexity in the open campus area.
 
-    def make_south_bldg(by1, by2, slat_lo=False, slat_hi=False, entrance=True):
+    def make_south_bldg(
+        by1, by2, slat_lo=False, slat_hi=False, entrance=True, chimney=False
+    ):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
         slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends.
-        entrance adds the east-face entrance arch/door (windows only when False)."""
+        entrance adds the east-face entrance arch/door (windows only when False).
+        chimney cuts a passable shaft through the east roof slope and ceiling and adds
+        a hollow brick stack above the roof (the player can drop into the interior)."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
-        ent_hw, ent_h = 48, 100
+        ent_hw, ent_h = 48, 120
         wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
             (cx + ent_hw) + (bx2 - cx - ent_hw) * k // 3 for k in [1, 2]
         ]
@@ -623,9 +627,10 @@ def build():
         cy = (by1 + by2) // 2
         east_openings = wyz()
         if entrance:
-            east_openings = east_openings + [
-                (cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)
-            ]
+            # Solid wall above the door — drop the center-column windows, keep entrance only
+            east_openings = [
+                o for o in east_openings if o[2] <= cy - ent_hw or o[0] >= cy + ent_hw
+            ] + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
         brushes.extend(
             layered_wall_y(
                 by1 + DORM_WALL,
@@ -638,17 +643,34 @@ def build():
                 "city2_1",
             )
         )
-        brushes.append(
-            box(
-                bx1,
-                by1,
-                FLOOR_Z2 + DORM_H,
-                bx2,
-                by2,
-                FLOOR_Z2 + DORM_H + DORM_WALL,
-                "city2_1",
+        # Chimney shaft footprint straddling the roof ridge (only when chimney=True)
+        chim_x1 = chim_x2 = chim_y1 = chim_y2 = None
+        if chimney:
+            chw = 32  # half-width of the 64-unit square shaft (player hull fits)
+            ccy = cy + 64  # a little north of the building centre
+            chim_x1, chim_x2 = cx - chw, cx + chw
+            chim_y1, chim_y2 = ccy - chw, ccy + chw
+        # Ceiling slab — split around the shaft when a chimney is present
+        if chimney:
+            _cz1, _cz2 = FLOOR_Z2 + DORM_H, FLOOR_Z2 + DORM_H + DORM_WALL
+            brushes += [
+                box(bx1, by1, _cz1, chim_x1, by2, _cz2, "city2_1"),
+                box(chim_x2, by1, _cz1, bx2, by2, _cz2, "city2_1"),
+                box(chim_x1, by1, _cz1, chim_x2, chim_y1, _cz2, "city2_1"),
+                box(chim_x1, chim_y2, _cz1, chim_x2, by2, _cz2, "city2_1"),
+            ]
+        else:
+            brushes.append(
+                box(
+                    bx1,
+                    by1,
+                    FLOOR_Z2 + DORM_H,
+                    bx2,
+                    by2,
+                    FLOOR_Z2 + DORM_H + DORM_WALL,
+                    "city2_1",
+                )
             )
-        )
         eave_z, ridge_z, slab_t = (
             FLOOR_Z2 + DORM_H + DORM_WALL,
             FLOOR_Z2 + DORM_H + DORM_WALL + DORM_ROOF_H,
@@ -658,34 +680,164 @@ def build():
         # Recess the slab gable end only where slats are added (abutting ends stay full)
         sy1 = by1 + depth if slat_lo else by1
         sy2 = by2 - depth if slat_hi else by2
-        brushes.append(
-            ramp_slab(
-                bx1,
-                cx,
-                sy1,
-                sy2,
-                eave_z,
-                eave_z,
-                eave_z + slab_t,
-                ridge_z,
-                Textures.ROOF,
-                ts=Textures.GABLE,
+        if chimney:
+            # Both slopes split around the shaft so it passes through the ridge
+            def _wtop(x):
+                return int(
+                    eave_z
+                    + slab_t
+                    + (x - bx1) * (ridge_z - eave_z - slab_t) // (cx - bx1)
+                )
+
+            def _etop(x):
+                return int(
+                    ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx)
+                )
+
+            brushes += [
+                ramp_slab(  # west slope, south of shaft
+                    bx1,
+                    cx,
+                    sy1,
+                    chim_y1,
+                    eave_z,
+                    eave_z,
+                    eave_z + slab_t,
+                    ridge_z,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # west slope, north of shaft
+                    bx1,
+                    cx,
+                    chim_y2,
+                    sy2,
+                    eave_z,
+                    eave_z,
+                    eave_z + slab_t,
+                    ridge_z,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # west slope, eave-side fill beside shaft
+                    bx1,
+                    chim_x1,
+                    chim_y1,
+                    chim_y2,
+                    eave_z,
+                    eave_z,
+                    eave_z + slab_t,
+                    _wtop(chim_x1),
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # east slope, south of shaft
+                    cx,
+                    bx2,
+                    sy1,
+                    chim_y1,
+                    eave_z,
+                    eave_z,
+                    ridge_z,
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # east slope, north of shaft
+                    cx,
+                    bx2,
+                    chim_y2,
+                    sy2,
+                    eave_z,
+                    eave_z,
+                    ridge_z,
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # east slope, eave-side fill beside shaft
+                    chim_x2,
+                    bx2,
+                    chim_y1,
+                    chim_y2,
+                    eave_z,
+                    eave_z,
+                    _etop(chim_x2),
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+            ]
+            # Hollow brick stack rising above the ridge, open at the top
+            # Keep height ≤ 36 so a player on the ridge can jump over the walls
+            chim_wall, chim_top = 12, ridge_z + 32
+            brushes += [
+                box(
+                    chim_x1 - chim_wall,
+                    chim_y1 - chim_wall,
+                    eave_z,
+                    chim_x2 + chim_wall,
+                    chim_y1,
+                    chim_top,
+                    "city2_1",
+                ),  # south
+                box(
+                    chim_x1 - chim_wall,
+                    chim_y2,
+                    eave_z,
+                    chim_x2 + chim_wall,
+                    chim_y2 + chim_wall,
+                    chim_top,
+                    "city2_1",
+                ),  # north
+                box(
+                    chim_x1 - chim_wall,
+                    chim_y1,
+                    eave_z,
+                    chim_x1,
+                    chim_y2,
+                    chim_top,
+                    "city2_1",
+                ),  # west
+                box(
+                    chim_x2,
+                    chim_y1,
+                    eave_z,
+                    chim_x2 + chim_wall,
+                    chim_y2,
+                    chim_top,
+                    "city2_1",
+                ),  # east
+            ]
+        else:
+            brushes.append(
+                ramp_slab(
+                    bx1,
+                    cx,
+                    sy1,
+                    sy2,
+                    eave_z,
+                    eave_z,
+                    eave_z + slab_t,
+                    ridge_z,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                )
             )
-        )
-        brushes.append(
-            ramp_slab(
-                cx,
-                bx2,
-                sy1,
-                sy2,
-                eave_z,
-                eave_z,
-                ridge_z,
-                eave_z + slab_t,
-                Textures.ROOF,
-                ts=Textures.GABLE,
+            brushes.append(
+                ramp_slab(
+                    cx,
+                    bx2,
+                    sy1,
+                    sy2,
+                    eave_z,
+                    eave_z,
+                    ridge_z,
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                )
             )
-        )
         if slat_lo:
             brushes += gable_slats(
                 bx1,
@@ -732,6 +884,35 @@ def build():
                 lintel_h=16,
                 arch_h=60,
             )
+            # Transom over the door: a crossbeam plus 4 mullions forming square panes
+            grille_d, beam_h, mull_w, trans_h = 8, 6, 6, 26
+            gx1, gx2 = bx2, bx2 + grille_d
+            trans_t = FLOOR_Z2 + ent_h  # top of the door opening
+            trans_b = trans_t - trans_h  # crossbeam line below the transom
+            brushes.append(
+                box(
+                    gx1,
+                    cy - ent_hw,
+                    trans_b - beam_h,
+                    gx2,
+                    cy + ent_hw,
+                    trans_b,
+                    Textures.GABLE,
+                )
+            )  # crossbeam at the top of the door opening
+            for k in range(5):
+                mx = cy - ent_hw + (2 * ent_hw) * k // 4
+                brushes.append(
+                    box(
+                        gx1,
+                        mx - mull_w // 2,
+                        trans_b,
+                        gx2,
+                        mx + mull_w // 2,
+                        trans_t,
+                        Textures.GABLE,
+                    )
+                )  # transom mullion
         # Window frames — south face (inward, flush outer→inner)
         for xl, zb, xr, zt in wxz():
             brushes += win_frame_xwall(
@@ -765,29 +946,12 @@ def build():
             brushes += win_frame_ywall(
                 yl, yr, zb, zt, bx2, -1, Textures.GABLE, fd=DORM_WALL
             )
-        # Center window frames — east face, 2nd and 3rd floor (above entrance opening);
-        # only needed when an entrance suppressed the center frames in the loop above.
-        if entrance:
-            for fl in range(1, DORM_FLOORS):
-                zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-                zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
-                brushes += win_frame_ywall(
-                    cy - DORM_WIN_HW,
-                    cy + DORM_WIN_HW,
-                    zb,
-                    zt,
-                    bx2,
-                    -1,
-                    Textures.GABLE,
-                    fd=DORM_WALL,
-                )
-
         return brushes
 
     ENTITIES.append(
         brush_ent(
             "func_detail",
-            make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, slat_lo=True),
+            make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, slat_lo=True, chimney=True),
         )
     )
     ENTITIES.append(

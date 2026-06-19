@@ -986,7 +986,7 @@ def build():
     # Interior lights for all campus dorm buildings (north1, north2, 2 south)
     _dorm_north2_y2 = DORM_NORTH_Y1
     _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
-    bldg_light_x = (DORM_X1 + DORM_X2) // 2
+    bldg_light_xs = [DORM_X1 + (DORM_X2 - DORM_X1) * i // 4 for i in [1, 2, 3]]
     for building_y1, building_y2 in [
         (DORM_NORTH_Y1, DORM_NORTH_Y2),
         (_dorm_north2_y1, _dorm_north2_y2),
@@ -998,13 +998,14 @@ def build():
             building_light_z = (
                 FLOOR_Z2 + building_floor_index * DORM_FLOOR_H + DORM_FLOOR_H // 2
             )
-            ENTITIES.append(
-                ent(
-                    "light",
-                    origin=f"{bldg_light_x} {building_y} {building_light_z}",
-                    light="200",
+            for bldg_light_x in bldg_light_xs:
+                ENTITIES.append(
+                    ent(
+                        "light",
+                        origin=f"{bldg_light_x} {building_y} {building_light_z}",
+                        light="250",
+                    )
                 )
-            )
 
     # Interior lights for Knott Hall — 3×4 grid per floor
     if KNOTT_ENABLED:
