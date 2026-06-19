@@ -45,11 +45,21 @@ def build():
     DORM_WIN_HH = 44  # window half-height
     DORM_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
     DORM_ENT_H = 100  # entrance height
+    DORM_INNER_DOOR_HW = 40  # half-width of doorway between adjacent buildings
+    DORM_INNER_DOOR_H = 128  # height of doorway between adjacent buildings
 
     DORM_CX = (DORM_X1 + DORM_X2) // 2  # building X center
     DORM_NORTH_CY = (
         DORM_NORTH_Y1 + DORM_NORTH_Y2
     ) // 2  # building Y center (gable ridge line)
+
+    # Interior doorway opening (X-normal walls) shared by adjacent buildings
+    dorm_door_open = (
+        DORM_CX - DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        DORM_CX + DORM_INNER_DOOR_HW,
+        FLOOR_Z2 + DORM_INNER_DOOR_H,
+    )
 
     # Window X centers on south/north face: 2 left + 2 right of the entrance gap
     dorm_wx = [DORM_X1 + (DORM_CX - DORM_ENT_HW - DORM_X1) * k // 3 for k in [1, 2]] + [
@@ -111,7 +121,7 @@ def build():
             DORM_X2,
             DORM_NORTH_Y1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            dorm_s_openings,
+            dorm_s_openings + [dorm_door_open],  # ground-floor center is a doorway
             "city2_1",
         )
     )
@@ -200,7 +210,7 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    for fl in range(DORM_FLOORS):
+    for fl in range(1, DORM_FLOORS):  # ground-floor center is now a doorway to bldg 2
         zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
         zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
         north_bldg_detail += win_frame_xwall(
@@ -214,6 +224,21 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
+    # Door frame — ground-floor center doorway to building 2 (south face)
+    north_bldg_detail += win_frame_xwall(
+        DORM_CX - DORM_INNER_DOOR_HW,
+        DORM_CX + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + DORM_INNER_DOOR_H,
+        DORM_NORTH_Y1,
+        +1,
+        Textures.GABLE,
+        fw=8,  # thick frame bars
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
     # Window frames — north face
     for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
         north_bldg_detail += win_frame_xwall(
@@ -241,6 +266,7 @@ def build():
             Textures.GABLE,
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
+            crossbar=fl != 1,  # 2nd-floor center: one open (undivided) window
         )
     # Window frames — east face (all windows; no entrance to skip)
     for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
@@ -403,7 +429,8 @@ def build():
                     FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
                 )
                 for fl in range(1, DORM_FLOORS)
-            ],
+            ]
+            + [dorm_door_open],  # ground-floor center is a doorway to bldg 2
             "city2_1",
         )
     )
@@ -499,6 +526,21 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
+    # Door frame — ground-floor center doorway to building 1 (north face)
+    north2_bldg_detail += win_frame_xwall(
+        DORM_CX - DORM_INNER_DOOR_HW,
+        DORM_CX + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + DORM_INNER_DOOR_H,
+        DORM_NORTH2_Y2,
+        -1,
+        Textures.GABLE,
+        fw=8,  # thick frame bars
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
     # Window frames — east face (no entrance; all windows get frames)
     for yl, zb, yr, zt in nb_wins_yz(dorm_wy2):
         north2_bldg_detail += win_frame_ywall(
@@ -594,14 +636,22 @@ def build():
     # Moved to func_detail to reduce portal complexity in the open campus area.
 
     def make_south_bldg(
-        by1, by2, slat_lo=False, slat_hi=False, entrance=True, chimney=False
+        by1,
+        by2,
+        slat_lo=False,
+        slat_hi=False,
+        entrance=True,
+        chimney=False,
+        door_lo=False,
+        door_hi=False,
     ):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
         slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends.
         entrance adds the east-face entrance arch/door (windows only when False).
         chimney cuts a passable shaft through the east roof slope and ceiling and adds
-        a hollow brick stack above the roof (the player can drop into the interior)."""
+        a hollow brick stack above the roof (the player can drop into the interior).
+        door_lo/door_hi add a ground-floor center doorway on the by1/-Y or by2/+Y wall."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 120
@@ -666,7 +716,7 @@ def build():
                 bx2,
                 by1 + DORM_WALL,
                 FLOOR_Z2 + DORM_H,
-                wxz() + mid_wxz,
+                wxz() + mid_wxz + ([dorm_door_open] if door_lo else []),
                 "city2_1",
             )
         )
@@ -678,7 +728,7 @@ def build():
                 bx2,
                 by2,
                 FLOOR_Z2 + DORM_H,
-                wxz() + mid_wxz,
+                wxz() + mid_wxz + ([dorm_door_open] if door_hi else []),
                 "city2_1",
             )
         )
@@ -1078,22 +1128,78 @@ def build():
                 fd=DORM_WALL,
                 margin=DORM_WIN_MARGIN,
             )
+        # Door frames — ground-floor center doorways to adjacent south buildings
+        if door_hi:
+            brushes += win_frame_xwall(
+                cx - DORM_INNER_DOOR_HW,
+                cx + DORM_INNER_DOOR_HW,
+                FLOOR_Z2,
+                FLOOR_Z2 + DORM_INNER_DOOR_H,
+                by2,
+                -1,
+                Textures.GABLE,
+                fw=8,  # thick frame bars
+                fd=DORM_WALL,
+                margin=DORM_WIN_MARGIN,
+                crossbar=False,
+                bottom=False,
+            )
+        if door_lo:
+            brushes += win_frame_xwall(
+                cx - DORM_INNER_DOOR_HW,
+                cx + DORM_INNER_DOOR_HW,
+                FLOOR_Z2,
+                FLOOR_Z2 + DORM_INNER_DOOR_H,
+                by1,
+                +1,
+                Textures.GABLE,
+                fw=8,  # thick frame bars
+                fd=DORM_WALL,
+                margin=DORM_WIN_MARGIN,
+                crossbar=False,
+                bottom=False,
+            )
         return brushes
 
     ENTITIES.append(
         brush_ent(
             "func_detail",
-            make_south_bldg(DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, slat_lo=True, chimney=True),
+            make_south_bldg(
+                DORM_SOUTH1_Y1,
+                DORM_SOUTH1_Y2,
+                slat_lo=True,
+                chimney=True,
+                door_hi=True,
+            ),
         )
     )
     ENTITIES.append(
         brush_ent(
             "func_detail",
             make_south_bldg(
-                DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, slat_hi=True, entrance=False
+                DORM_SOUTH2_Y1,
+                DORM_SOUTH2_Y2,
+                slat_hi=True,
+                entrance=False,
+                door_lo=True,
             ),
         )
     )
+
+    # ── Threshold floors across the inter-building doorways (fill the wall seam) ──
+    for seam_y in (DORM_NORTH_Y1, DORM_SOUTH1_Y2):
+        BRUSHES.append(
+            box(
+                DORM_CX - DORM_INNER_DOOR_HW,
+                seam_y - DORM_WALL,
+                FLOOR_Z1,
+                DORM_CX + DORM_INNER_DOOR_HW,
+                seam_y + DORM_WALL,
+                FLOOR_Z2,
+                Textures.GROUND,
+                tt=Textures.ROAD,
+            )
+        )
 
     # ── Iron fence along east face of west buildings ──────────────────────────
     FENCE_X1 = DORM_X2 + 96  # well clear of building face
