@@ -339,36 +339,76 @@ def entrance_arch_ywall(
     return brushes
 
 
-def win_frame_xwall(xl, xr, zb, zt, face_y, out_sign, tex, fw=6, fd=4, margin=2):
+def win_frame_xwall(
+    xl,
+    xr,
+    zb,
+    zt,
+    face_y,
+    out_sign,
+    tex,
+    fw=6,
+    fd=4,
+    margin=2,
+    crossbar=True,
+    bottom=True,
+):
     """Four frame bars sitting inside a window opening in an X-normal wall.
     Bars are inset by margin from the opening edges so they never overlap the wall.
     They protrude outward by fd (out_sign: -1 south, +1 north).
-    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge."""
+    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge.
+    crossbar: add a horizontal mullion at mid-height for upper/lower panes.
+    bottom: include the bottom bar (set False for doorways at floor level)."""
     ya, yb = sorted((face_y, face_y + out_sign * fd))
     ix1, ix2 = xl + margin, xr - margin
     iz1, iz2 = zb + margin, zt - margin
-    return [
-        box(ix1, ya, iz2 - fw, ix2, yb, iz2, tex),  # top
-        box(ix1, ya, iz1, ix2, yb, iz1 + fw, tex),  # bottom
+    bars = [box(ix1, ya, iz2 - fw, ix2, yb, iz2, tex)]  # top
+    if bottom:
+        bars.append(box(ix1, ya, iz1, ix2, yb, iz1 + fw, tex))  # bottom
+    bars += [
         box(ix1, ya, iz1, ix1 + fw, yb, iz2, tex),  # left
         box(ix2 - fw, ya, iz1, ix2, yb, iz2, tex),  # right
     ]
+    if crossbar:
+        zc = (iz1 + iz2) // 2
+        bars.append(box(ix1, ya, zc - fw // 2, ix2, yb, zc + fw // 2, tex))  # mullion
+    return bars
 
 
-def win_frame_ywall(yl, yr, zb, zt, face_x, out_sign, tex, fw=6, fd=4, margin=2):
+def win_frame_ywall(
+    yl,
+    yr,
+    zb,
+    zt,
+    face_x,
+    out_sign,
+    tex,
+    fw=6,
+    fd=4,
+    margin=2,
+    crossbar=True,
+    bottom=True,
+):
     """Four frame bars sitting inside a window opening in a Y-normal wall.
     Bars are inset by margin from the opening edges so they never overlap the wall.
     They protrude outward by fd (out_sign: +1 east, -1 west).
-    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge."""
+    fw: bar width; fd: protrusion depth; margin: gap between bar and opening edge.
+    crossbar: add a horizontal mullion at mid-height for upper/lower panes.
+    bottom: include the bottom bar (set False for doorways at floor level)."""
     xa, xb = sorted((face_x, face_x + out_sign * fd))
     iy1, iy2 = yl + margin, yr - margin
     iz1, iz2 = zb + margin, zt - margin
-    return [
-        box(xa, iy1, iz2 - fw, xb, iy2, iz2, tex),  # top
-        box(xa, iy1, iz1, xb, iy2, iz1 + fw, tex),  # bottom
+    bars = [box(xa, iy1, iz2 - fw, xb, iy2, iz2, tex)]  # top
+    if bottom:
+        bars.append(box(xa, iy1, iz1, xb, iy2, iz1 + fw, tex))  # bottom
+    bars += [
         box(xa, iy1, iz1, xb, iy1 + fw, iz2, tex),  # left
         box(xa, iy2 - fw, iz1, xb, iy2, iz2, tex),  # right
     ]
+    if crossbar:
+        zc = (iz1 + iz2) // 2
+        bars.append(box(xa, iy1, zc - fw // 2, xb, iy2, zc + fw // 2, tex))  # mullion
+    return bars
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
