@@ -884,9 +884,12 @@ def build():
                 lintel_h=16,
                 arch_h=60,
             )
-            # Transom over the door: a crossbeam plus 4 mullions forming square panes
+            # Transom over the door: top + bottom crossbeams plus 4 mullions forming square panes
             grille_d, beam_h, mull_w, trans_h = 8, 6, 6, 26
-            gx1, gx2 = bx2, bx2 + grille_d
+            # Centre the grille within the pillar depth (bx2 .. bx2+pillar_d)
+            _pillar_d = 24
+            gx1 = bx2 + _pillar_d // 2 - grille_d // 2
+            gx2 = bx2 + _pillar_d // 2 + grille_d // 2
             trans_t = FLOOR_Z2 + ent_h  # top of the door opening
             trans_b = trans_t - trans_h  # crossbeam line below the transom
             brushes.append(
@@ -899,7 +902,18 @@ def build():
                     trans_b,
                     Textures.GABLE,
                 )
-            )  # crossbeam at the top of the door opening
+            )  # bottom crossbeam dividing door from transom panes
+            brushes.append(
+                box(
+                    gx1,
+                    cy - ent_hw,
+                    trans_t - beam_h,
+                    gx2,
+                    cy + ent_hw,
+                    trans_t,
+                    Textures.GABLE,
+                )
+            )  # top crossbeam at the top of the transom panes
             for k in range(5):
                 mx = cy - ent_hw + (2 * ent_hw) * k // 4
                 brushes.append(
