@@ -1,6 +1,5 @@
 from .constants import (
     BRIDGE_DZ2,
-    BRIDGE_Y1,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_FLOOR_H,
@@ -21,6 +20,8 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     SDORM_LIFT,
+    SDORM_SLOPE_Y_N,
+    SDORM_SLOPE_Y_S,
     Textures,
 )
 from .geometry import (
@@ -32,6 +33,7 @@ from .geometry import (
     layered_wall,
     layered_wall_y,
     ramp_slab,
+    ramp_slab_y,
     win_frame_xwall,
     win_frame_ywall,
 )
@@ -1231,41 +1233,59 @@ def build():
     FENCE_SPACING = 16  # picket center-to-center
     FENCE_TEX = "metal4_4"
     fence_brushes = []
-    # South run sits on the raised terrace crest; north run stays at grade.
-    for fence_y1, fence_y2, fence_base in [
-        (CHARLES_Y1, BRIDGE_Y1, FLOOR_Z2 + SDORM_LIFT),
-        (BRIDGE_Y1, CHARLES_Y2, FLOOR_Z2),
-    ]:
-        # Top rail — thin, dropped so pickets extend above it
+
+    def fence_base_at(y):
+        """Iron-fence base Z: on the raised terrace south of the brick wall's
+        south pillar, declining to grade between the pillar and the north side of
+        the bridge so the fence stays connected, then flat at grade to the north."""
+        if y <= SDORM_SLOPE_Y_S:
+            return FLOOR_Z2 + SDORM_LIFT
+        if y >= SDORM_SLOPE_Y_N:
+            return FLOOR_Z2
+        frac = (SDORM_SLOPE_Y_N - y) / (SDORM_SLOPE_Y_N - SDORM_SLOPE_Y_S)
+        return FLOOR_Z2 + round(SDORM_LIFT * frac)
+
+    # Top rail — flat over the two level runs, sloped through the decline band.
+    rail_lo, rail_hi = FENCE_H - 28, FENCE_H - 26
+    for ry1, ry2 in [(CHARLES_Y1, SDORM_SLOPE_Y_S), (SDORM_SLOPE_Y_N, CHARLES_Y2)]:
+        b = fence_base_at((ry1 + ry2) // 2)
+        fence_brushes.append(
+            box(FENCE_X1, ry1, b + rail_lo, FENCE_X2, ry2, b + rail_hi, FENCE_TEX)
+        )
+    bs, bn = fence_base_at(SDORM_SLOPE_Y_S), fence_base_at(SDORM_SLOPE_Y_N)
+    fence_brushes.append(
+        ramp_slab_y(
+            FENCE_X1,
+            FENCE_X2,
+            SDORM_SLOPE_Y_S,
+            SDORM_SLOPE_Y_N,
+            bs + rail_lo,
+            bn + rail_lo,
+            bs + rail_hi,
+            bn + rail_hi,
+            FENCE_TEX,
+        )
+    )
+    # Pickets — thin (2 wide) with thick posts (8 wide) every 10th; base follows
+    # the terrace/decline so each picket meets the ground.
+    picket_y = CHARLES_Y1
+    picket_index = 0
+    while picket_y + 2 <= CHARLES_Y2:
+        picket_width = 8 if picket_index % 10 == 0 else 2
+        fence_base = fence_base_at(picket_y)
         fence_brushes.append(
             box(
                 FENCE_X1,
-                fence_y1,
-                fence_base + FENCE_H - 28,
+                picket_y,
+                fence_base,
                 FENCE_X2,
-                fence_y2,
-                fence_base + FENCE_H - 26,
+                picket_y + picket_width,
+                fence_base + FENCE_H,
                 FENCE_TEX,
             )
         )
-        # Pickets — thin (2 wide) with thick posts (8 wide) every 10th
-        picket_y = fence_y1
-        picket_index = 0
-        while picket_y + 2 <= fence_y2:
-            picket_width = 8 if picket_index % 10 == 0 else 2
-            fence_brushes.append(
-                box(
-                    FENCE_X1,
-                    picket_y,
-                    fence_base,
-                    FENCE_X2,
-                    picket_y + picket_width,
-                    fence_base + FENCE_H,
-                    FENCE_TEX,
-                )
-            )
-            picket_y += FENCE_SPACING
-            picket_index += 1
+        picket_y += FENCE_SPACING
+        picket_index += 1
     if fence_brushes:
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
@@ -1329,9 +1349,9 @@ def build():
         (door_north + 96, door_north + 96 + pillar_w),
         (door_north + 96 + pillar_w + 380, door_north + 96 + pillar_w + 380 + pillar_w),
     ]:
-        wall_detail.append(
-            box(px1, py1, FLOOR_Z2 + SDORM_LIFT, px2, py2, pillar_h, "city2_1")
-        )
+        # Base extends to grade so the pillar still meets the ground where the
+        # wall→fence strip declines north of the south pillar.
+        wall_detail.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
         wall_detail.append(
             box(
                 px1 - cap_overhang,
