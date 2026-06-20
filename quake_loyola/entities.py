@@ -1630,7 +1630,7 @@ def build():
             px_w=exit_px_w,
             px_h=exit_px_h,
             depth=exit_total,
-            tex=Textures.RAIL,
+            tex=Textures.LAVA,
             mirror=do_mirror,
         )
         if letter_brushes:
