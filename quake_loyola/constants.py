@@ -394,3 +394,9 @@ DORM_CX = (DORM_X1 + DORM_X2) // 2
 SDORM_LIFT = 128  # terrace height = new south-dorm floor level
 SDORM_TERRACE_X2 = DORM_X2 + 216  # east edge of flat terrace (= south fence line)
 SDORM_TOE_X = -400  # frontage ramp reaches grade (z=0) here, near the road
+# N-S decline at/east of the front fence: from the brick wall's south pillar down
+# to the north side of the bridge, so the iron fence stays connected to grade.
+SDORM_SLOPE_Y_S = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + 96  # south pillar
+SDORM_SLOPE_Y_N = BRIDGE_Y2  # north side of bridge
+SDORM_WALL_X = DORM_PIER_X  # brick-wall centreline: divides the flat dorm pad (west)
+# from the strip that declines north between the wall and the fence (east).

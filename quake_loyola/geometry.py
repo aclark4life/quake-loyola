@@ -115,6 +115,30 @@ def ramp_slab_y(
     )
 
 
+def corner_ramp(x_hi, x_lo, y_hi, y_lo, z_base, z_hi, tex, tt=None):
+    """Tetrahedral corner ramp: a single tilted top plane that is high at the
+    (x_hi, y_hi) corner (z_hi) and falls to z_base along BOTH far edges — the
+    x_lo edge and the y_lo edge. The descending diagonal runs from (x_hi, y_lo)
+    to (x_lo, y_hi); the (x_lo, y_lo) corner is left at grade (not covered).
+
+    Used to blend a raised terrace corner down to grade in two directions at
+    once. Requires x_hi < x_lo, y_hi < y_lo, z_base < z_hi (matches the winding
+    derived below)."""
+    tt = tt or tex
+    a = (x_hi, y_hi, z_hi)  # raised apex
+    b = (x_hi, y_hi, z_base)
+    c = (x_hi, y_lo, z_base)
+    d = (x_lo, y_hi, z_base)
+    return Brush(
+        [
+            Face(b, d, c, tex),  # bottom (−Z)
+            Face(a, b, c, tex),  # x_hi face (−X)
+            Face(a, d, b, tex),  # y_hi face (−Y)
+            Face(a, c, d, tt),  # slanted top
+        ]
+    )
+
+
 def gable_slats(
     bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=24, gap=2, min_w=6
 ):

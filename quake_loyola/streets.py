@@ -15,8 +15,11 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
+    SDORM_SLOPE_Y_N,
+    SDORM_SLOPE_Y_S,
     SDORM_TERRACE_X2,
     SDORM_TOE_X,
+    SDORM_WALL_X,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
@@ -29,6 +32,7 @@ from .constants import (
 from .geometry import (
     box,
     brush_ent,
+    corner_ramp,
     pyramid,
     ramp_slab,
     ramp_slab_y,
@@ -1235,30 +1239,80 @@ def build():
     terr_top = FLOOR_Z2 + SDORM_LIFT
     terr_y1 = WORLD_Y1 + WALL_T
     terr_y2 = BRIDGE_Y1
-    # Flat terrace pad
+    # Flat terrace pad — west of the brick wall (under the south dorms), kept level.
     BRUSHES.append(
         box(
             DORM_X1,
             terr_y1,
             FLOOR_Z2,
-            SDORM_TERRACE_X2,
+            SDORM_WALL_X,
             terr_y2,
             terr_top,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
     )
-    # Gentle frontage ramp east of the pad, descending to grade at SDORM_TOE_X
+    # Strip between the brick wall and the front fence: flat crest south of the
+    # wall's south pillar, then declining north (below) so this strip drops to
+    # grade toward the bridge along with the fence instead of ending in a cliff.
+    BRUSHES.append(
+        box(
+            SDORM_WALL_X,
+            terr_y1,
+            FLOOR_Z2,
+            SDORM_TERRACE_X2,
+            SDORM_SLOPE_Y_S,
+            terr_top,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # N-S decline of the wall→fence strip: crest (terr_top) at the south pillar
+    # down to grade at the north side of the bridge, flat across the strip width.
+    BRUSHES.append(
+        ramp_slab_y(
+            SDORM_WALL_X,
+            SDORM_TERRACE_X2,
+            SDORM_SLOPE_Y_S,
+            SDORM_SLOPE_Y_N,
+            FLOOR_Z2,
+            FLOOR_Z2,
+            terr_top,
+            FLOOR_Z2,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # Gentle frontage ramp east of the pad (Charles-St hill), south of the brick
+    # wall's south pillar. North of the pillar the frontage instead declines to the
+    # north (corner wedge below), so the fence stays connected down to the bridge.
     BRUSHES.append(
         ramp_slab(
             SDORM_TERRACE_X2,
             SDORM_TOE_X,
             terr_y1,
-            terr_y2,
+            SDORM_SLOPE_Y_S,
             FLOOR_Z2,
             FLOOR_Z2,
             terr_top,
             FLOOR_Z2,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # Corner wedge: at/east of the front fence, decline from the terrace crest at
+    # the south pillar down to grade at the north side of the bridge. High at the
+    # (fence, south-pillar) corner; falls to grade along both the north edge and
+    # the road edge. Its south edge (crest→road, E-W) matches the frontage ramp
+    # above, so the two meet seamlessly.
+    BRUSHES.append(
+        corner_ramp(
+            SDORM_TERRACE_X2,
+            SDORM_TOE_X,
+            SDORM_SLOPE_Y_S,
+            SDORM_SLOPE_Y_N,
+            FLOOR_Z2,
+            terr_top,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
