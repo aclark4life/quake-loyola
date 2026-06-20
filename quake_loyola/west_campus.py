@@ -106,6 +106,20 @@ def build():
             for wy in wy_list
         ]
 
+    def nb_wins_yz_west(wy_list):
+        """West-face window openings — floors 0 and 1 are buried by the hillside
+        (terrain reaches z=177 at the building west face), so only floor 2+ is shown."""
+        return [
+            (
+                wy - DORM_WIN_HW,
+                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                wy + DORM_WIN_HW,
+                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+            )
+            for fl in range(2, DORM_FLOORS)
+            for wy in wy_list
+        ]
+
     # South wall (faces bridge) — windows only, no entrance on this face
     dorm_s_openings = nb_wins_xz(dorm_wx) + [
         (
@@ -173,7 +187,7 @@ def build():
             "city2_1",
         )
     )
-    # West wall — windows
+    # West wall — windows (floor 2 only; floors 0–1 are buried by the hillside)
     north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM_WALL,
@@ -182,7 +196,7 @@ def build():
             DORM_NORTH_Y2 - DORM_WALL,
             DORM_X1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz(dorm_wy),
+            nb_wins_yz_west(dorm_wy),
             "city2_1",
         )
     )
@@ -300,8 +314,8 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Window frames — west face
-    for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
+    # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
+    for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy):
         north_bldg_detail += win_frame_ywall(
             yl,
             yr,
@@ -451,7 +465,7 @@ def build():
             "city2_1",
         )
     )
-    # West wall — windows only
+    # West wall — windows only (floor 2 only; floors 0–1 buried by hillside)
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM_WALL,
@@ -460,7 +474,7 @@ def build():
             DORM_NORTH2_Y2 - DORM_WALL,
             DORM_X1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz(dorm_wy2),
+            nb_wins_yz_west(dorm_wy2),
             "city2_1",
         )
     )
@@ -558,8 +572,8 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Window frames — west face
-    for yl, zb, yr, zt in nb_wins_yz(dorm_wy2):
+    # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
+    for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy2):
         north2_bldg_detail += win_frame_ywall(
             yl,
             yr,
@@ -648,6 +662,8 @@ def build():
         chimney=False,
         door_lo=False,
         door_hi=False,
+        north_pier_x=None,
+        north_pier_hw=0,
     ):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
@@ -655,7 +671,9 @@ def build():
         entrance adds the east-face entrance arch/door (windows only when False).
         chimney cuts a passable shaft through the east roof slope and ceiling and adds
         a hollow brick stack above the roof (the player can drop into the interior).
-        door_lo/door_hi add a ground-floor center doorway on the by1/-Y or by2/+Y wall."""
+        door_lo/door_hi add a ground-floor center doorway on the by1/-Y or by2/+Y wall.
+        north_pier_x/north_pier_hw: X position and half-width of an external wall that
+        blocks windows on the north face (by2); overlapping openings are omitted."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 120
@@ -687,6 +705,32 @@ def build():
                 for fl in range(DORM_FLOORS)
                 for wy in wy_list
             ]
+
+        def wyz_west():
+            """West-face windows: floor 0 is buried by the hillside after terrace lift."""
+            return [
+                (
+                    wy - DORM_WIN_HW,
+                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                    wy + DORM_WIN_HW,
+                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+                )
+                for fl in range(1, DORM_FLOORS)
+                for wy in wy_list
+            ]
+
+        def wxz_north():
+            """North-face (by2) windows, filtering any opening that overlaps an
+            external pier/wall at north_pier_x ± north_pier_hw."""
+            wins = wxz()
+            if north_pier_x is not None:
+                wins = [
+                    (xl, zb, xr, zt)
+                    for xl, zb, xr, zt in wins
+                    if xr <= north_pier_x - north_pier_hw
+                    or xl >= north_pier_x + north_pier_hw
+                ]
+            return wins
 
         brushes = []
         # Interior floor
@@ -732,7 +776,7 @@ def build():
                 bx2,
                 by2,
                 FLOOR_Z2 + DORM_H,
-                wxz() + mid_wxz + ([dorm_door_open] if door_hi else []),
+                wxz_north() + mid_wxz + ([dorm_door_open] if door_hi else []),
                 "city2_1",
             )
         )
@@ -744,7 +788,7 @@ def build():
                 by2 - DORM_WALL,
                 bx1 + DORM_WALL,
                 FLOOR_Z2 + DORM_H,
-                wyz(),
+                wyz_west(),
                 "city2_1",
             )
         )
@@ -1092,8 +1136,8 @@ def build():
                 fd=DORM_WALL,
                 margin=DORM_WIN_MARGIN,
             )
-        # Window frames — north face
-        for xl, zb, xr, zt in wxz():
+        # Window frames — north face (pier-blocked windows omitted via wxz_north())
+        for xl, zb, xr, zt in wxz_north():
             brushes += win_frame_xwall(
                 xl,
                 xr,
@@ -1118,8 +1162,8 @@ def build():
                 fd=DORM_WALL,
                 margin=DORM_WIN_MARGIN,
             )
-        # Window frames — west face
-        for yl, zb, yr, zt in wyz():
+        # Window frames — west face (floor 0 buried by hillside after terrace lift)
+        for yl, zb, yr, zt in wyz_west():
             brushes += win_frame_ywall(
                 yl,
                 yr,
@@ -1206,6 +1250,8 @@ def build():
                     slat_hi=True,
                     entrance=False,
                     door_lo=True,
+                    north_pier_x=DORM_PIER_X,
+                    north_pier_hw=12,
                 )
             ],
         )
