@@ -91,6 +91,7 @@ from .constants import (
     KNOTT_Z2,
     ROAD_X1,
     ROAD_X2,
+    SDORM_LIFT,
     SHOW_SUPPORTS,
     WALK_X1,
     WALK_ZT1,
@@ -401,7 +402,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_south_dorm_roof",
-            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
             angle="0",  # facing east, atop roof ridge center
         )
     )
@@ -651,8 +652,8 @@ def build():
         # North building roof ridge
         ((DORM_CX, DORM_NORTH_CY, int(DORM_RIDGE_Z + 40)), 90),
         # South buildings interiors
-        ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + 40), 90),
-        ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + 40), 90),
+        ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
+        ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
         # Ground east/west of bridge
         ((800, 0, ROAD_Z + 24), 270),
         ((-800, 0, ROAD_Z + 24), 90),
@@ -710,7 +711,10 @@ def build():
         ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}")
     )  # east sidewalk
     ENTITIES.append(
-        ent("weapon_supershotgun", origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + 40}")
+        ent(
+            "weapon_supershotgun",
+            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+        )
     )
 
     # Grenade launcher — Knott Hall floor 2, south building 2
@@ -724,7 +728,7 @@ def build():
     ENTITIES.append(
         ent(
             "weapon_grenadelauncher",
-            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + 40}",
+            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
         )
     )
 
@@ -775,7 +779,7 @@ def build():
     ENTITIES.append(
         ent(
             "monster_ogre",
-            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + 40}",
+            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
             angle="90",
         )
     )
@@ -848,7 +852,10 @@ def build():
         ent("item_health", origin=f"300 -600 {ROAD_Z + 24}")
     )  # east sidewalk
     ENTITIES.append(
-        ent("item_health", origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + 40}")
+        ent(
+            "item_health",
+            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+        )
     )
     # Armor — contested locations
     ENTITIES.append(
@@ -1054,16 +1061,19 @@ def build():
     _dorm_north2_y2 = DORM_NORTH_Y1
     _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     bldg_light_xs = [DORM_X1 + (DORM_X2 - DORM_X1) * i // 4 for i in [1, 2, 3]]
-    for building_y1, building_y2 in [
-        (DORM_NORTH_Y1, DORM_NORTH_Y2),
-        (_dorm_north2_y1, _dorm_north2_y2),
-        (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2),
-        (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2),
+    for building_y1, building_y2, building_lift in [
+        (DORM_NORTH_Y1, DORM_NORTH_Y2, 0),
+        (_dorm_north2_y1, _dorm_north2_y2, 0),
+        (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, SDORM_LIFT),
+        (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, SDORM_LIFT),
     ]:
         building_y = (building_y1 + building_y2) // 2
         for building_floor_index in range(DORM_FLOORS):
             building_light_z = (
-                FLOOR_Z2 + building_floor_index * DORM_FLOOR_H + DORM_FLOOR_H // 2
+                FLOOR_Z2
+                + building_lift
+                + building_floor_index * DORM_FLOOR_H
+                + DORM_FLOOR_H // 2
             )
             for bldg_light_x in bldg_light_xs:
                 ENTITIES.append(
@@ -1558,13 +1568,14 @@ def build():
     dorm_exit_xc = (DORM_X1 + DORM_X2) // 2
     dorm_exit_yc = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
     dorm_exit_hw = 64
+    dorm_exit_z0 = FLOOR_Z2 + SDORM_LIFT
     dorm_exit_brush = box(
         dorm_exit_xc - dorm_exit_hw,
         dorm_exit_yc - dorm_exit_hw,
-        FLOOR_Z2,
+        dorm_exit_z0,
         dorm_exit_xc + dorm_exit_hw,
         dorm_exit_yc + dorm_exit_hw,
-        FLOOR_Z2 + 112,
+        dorm_exit_z0 + 112,
         Textures.TELEPORT,
     )
     ENTITIES.append(brush_ent("trigger_changelevel", dorm_exit_brush, map="loyola"))
@@ -1572,7 +1583,7 @@ def build():
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{dorm_exit_xc} {dorm_exit_yc} {FLOOR_Z2 + 56}",
+            origin=f"{dorm_exit_xc} {dorm_exit_yc} {dorm_exit_z0 + 56}",
             light="200",
             _color="0.4 0.6 1",
         )
@@ -1582,7 +1593,7 @@ def build():
     frame_d = 12  # depth of frame slab (centred on each portal face)
     ex1 = dorm_exit_xc - dorm_exit_hw
     ex2 = dorm_exit_xc + dorm_exit_hw
-    portal_top = FLOOR_Z2 + 112
+    portal_top = dorm_exit_z0 + 112
     # px_w=4 px_h=2 → "EXIT" is 76 units wide × 12 tall; centred on 160-wide lintel
     exit_px_w, exit_px_h, exit_depth = 4, 2, 2
     # Embed each letter 1 unit into its backing surface so the letter's back face is
@@ -1604,8 +1615,8 @@ def build():
         fy1 = face_yc - frame_d // 2
         fy2 = face_yc + frame_d // 2
         for bx1, bx2, bz1, bz2 in [
-            (ex1 - frame_t, ex1, FLOOR_Z2, portal_top + frame_t),  # left post
-            (ex2, ex2 + frame_t, FLOOR_Z2, portal_top + frame_t),  # right post
+            (ex1 - frame_t, ex1, dorm_exit_z0, portal_top + frame_t),  # left post
+            (ex2, ex2 + frame_t, dorm_exit_z0, portal_top + frame_t),  # right post
             (ex1 - frame_t, ex2 + frame_t, portal_top, portal_top + frame_t),  # lintel
         ]:
             ENTITIES.append(

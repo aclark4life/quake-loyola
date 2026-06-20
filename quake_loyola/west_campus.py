@@ -1,5 +1,6 @@
 from .constants import (
     BRIDGE_DZ2,
+    BRIDGE_Y1,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_FLOOR_H,
@@ -19,6 +20,7 @@ from .constants import (
     DORM_X2,
     FLOOR_Z1,
     FLOOR_Z2,
+    SDORM_LIFT,
     Textures,
 )
 from .geometry import (
@@ -1179,38 +1181,44 @@ def build():
     ENTITIES.append(
         brush_ent(
             "func_detail",
-            make_south_bldg(
-                DORM_SOUTH1_Y1,
-                DORM_SOUTH1_Y2,
-                slat_lo=True,
-                chimney=True,
-                door_hi=True,
-            ),
+            [
+                b.translated(0, 0, SDORM_LIFT)
+                for b in make_south_bldg(
+                    DORM_SOUTH1_Y1,
+                    DORM_SOUTH1_Y2,
+                    slat_lo=True,
+                    chimney=True,
+                    door_hi=True,
+                )
+            ],
         )
     )
     ENTITIES.append(
         brush_ent(
             "func_detail",
-            make_south_bldg(
-                DORM_SOUTH2_Y1,
-                DORM_SOUTH2_Y2,
-                slat_hi=True,
-                entrance=False,
-                door_lo=True,
-            ),
+            [
+                b.translated(0, 0, SDORM_LIFT)
+                for b in make_south_bldg(
+                    DORM_SOUTH2_Y1,
+                    DORM_SOUTH2_Y2,
+                    slat_hi=True,
+                    entrance=False,
+                    door_lo=True,
+                )
+            ],
         )
     )
 
     # ── Threshold floors across the inter-building doorways (fill the wall seam) ──
-    for seam_y in (DORM_NORTH_Y1, DORM_SOUTH1_Y2):
+    for seam_y, seam_lift in ((DORM_NORTH_Y1, 0), (DORM_SOUTH1_Y2, SDORM_LIFT)):
         BRUSHES.append(
             box(
                 DORM_CX - DORM_INNER_DOOR_HW,
                 seam_y - DORM_WALL,
-                FLOOR_Z1,
+                FLOOR_Z1 + seam_lift,
                 DORM_CX + DORM_INNER_DOOR_HW,
                 seam_y + DORM_WALL,
-                FLOOR_Z2,
+                FLOOR_Z2 + seam_lift,
                 Textures.GROUND,
                 tt=Textures.ROAD,
             )
@@ -1223,16 +1231,20 @@ def build():
     FENCE_SPACING = 16  # picket center-to-center
     FENCE_TEX = "metal4_4"
     fence_brushes = []
-    for fence_y1, fence_y2 in [(CHARLES_Y1, CHARLES_Y2)]:
+    # South run sits on the raised terrace crest; north run stays at grade.
+    for fence_y1, fence_y2, fence_base in [
+        (CHARLES_Y1, BRIDGE_Y1, FLOOR_Z2 + SDORM_LIFT),
+        (BRIDGE_Y1, CHARLES_Y2, FLOOR_Z2),
+    ]:
         # Top rail — thin, dropped so pickets extend above it
         fence_brushes.append(
             box(
                 FENCE_X1,
                 fence_y1,
-                FLOOR_Z2 + FENCE_H - 28,
+                fence_base + FENCE_H - 28,
                 FENCE_X2,
                 fence_y2,
-                FLOOR_Z2 + FENCE_H - 26,
+                fence_base + FENCE_H - 26,
                 FENCE_TEX,
             )
         )
@@ -1245,10 +1257,10 @@ def build():
                 box(
                     FENCE_X1,
                     picket_y,
-                    FLOOR_Z2,
+                    fence_base,
                     FENCE_X2,
                     picket_y + picket_width,
-                    FLOOR_Z2 + FENCE_H,
+                    fence_base + FENCE_H,
                     FENCE_TEX,
                 )
             )
@@ -1265,6 +1277,10 @@ def build():
     DORM_DOOR_H = 128  # door opening height
     wall_start_y = DORM_SOUTH2_Y2  # wall stops at north face of dorm 2
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF
+    # Gate opening now sits on the raised terrace (its sill is buried in the pad);
+    # the wall top stays at the bridge deck so the wall just reads as shorter.
+    gate_base = FLOOR_Z2 + SDORM_LIFT
+    gate_top = gate_base + 96
     # Brick wall body (worldspawn — seals the level)
     BRUSHES.append(
         box(
@@ -1292,7 +1308,7 @@ def build():
         box(
             DORM_PIER_X - wall_hw,
             s_door_y - DORM_DOOR_W // 2,
-            FLOOR_Z2 + DORM_DOOR_H,
+            gate_top,
             DORM_PIER_X + wall_hw,
             s_door_y + DORM_DOOR_W // 2,
             BRIDGE_DZ2,
@@ -1313,7 +1329,9 @@ def build():
         (door_north + 96, door_north + 96 + pillar_w),
         (door_north + 96 + pillar_w + 380, door_north + 96 + pillar_w + 380 + pillar_w),
     ]:
-        wall_detail.append(box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, "city2_1"))
+        wall_detail.append(
+            box(px1, py1, FLOOR_Z2 + SDORM_LIFT, px2, py2, pillar_h, "city2_1")
+        )
         wall_detail.append(
             box(
                 px1 - cap_overhang,
@@ -1353,20 +1371,20 @@ def build():
         box(
             WALK_X1,
             DORM_SOUTH1_Y1,
-            FLOOR_Z2,
+            FLOOR_Z2 + SDORM_LIFT,
             WALK_X2,
             DORM_SOUTH2_Y2,
-            FLOOR_Z2 + WALKWAY_H,
+            FLOOR_Z2 + SDORM_LIFT + WALKWAY_H,
             Textures.STONE,
         ),
         # Spur north from the dorm corner to the brick-wall door (east side of wall)
         box(
             DORM_PIER_X + wall_hw,
             DORM_SOUTH2_Y2,
-            FLOOR_Z2,
+            FLOOR_Z2 + SDORM_LIFT,
             WALK_X2,
             door_north,
-            FLOOR_Z2 + WALKWAY_H,
+            FLOOR_Z2 + SDORM_LIFT + WALKWAY_H,
             Textures.STONE,
         ),
     ]

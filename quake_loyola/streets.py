@@ -14,6 +14,9 @@ from .constants import (
     KNOTT_X2,
     ROAD_X1,
     ROAD_X2,
+    SDORM_LIFT,
+    SDORM_TERRACE_X2,
+    SDORM_TOE_X,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
@@ -1218,6 +1221,43 @@ def build():
             FLOOR_Z1,
             FLOOR_Z1,
             BRIDGE_DZ2,
+            FLOOR_Z2,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+
+    # ── South-dorm terrace + gentler frontage hill out to Charles Street ──────────
+    # South of the bridge (Y up to BRIDGE_Y1) raise a flat terrace under the south
+    # dorms + brick-wall gate, then slope gently down to grade near the road. This
+    # lifts the ground at the brick wall (decreasing its visible height while its
+    # top stays at the bridge deck) and gives the dorms a level pad.
+    terr_top = FLOOR_Z2 + SDORM_LIFT
+    terr_y1 = WORLD_Y1 + WALL_T
+    terr_y2 = BRIDGE_Y1
+    # Flat terrace pad
+    BRUSHES.append(
+        box(
+            DORM_X1,
+            terr_y1,
+            FLOOR_Z2,
+            SDORM_TERRACE_X2,
+            terr_y2,
+            terr_top,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # Gentle frontage ramp east of the pad, descending to grade at SDORM_TOE_X
+    BRUSHES.append(
+        ramp_slab(
+            SDORM_TERRACE_X2,
+            SDORM_TOE_X,
+            terr_y1,
+            terr_y2,
+            FLOOR_Z2,
+            FLOOR_Z2,
+            terr_top,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
