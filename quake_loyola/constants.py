@@ -387,3 +387,10 @@ FENCE_X1 = DORM_X2 + 96
 FENCE_X2 = FENCE_X1 + 2
 DORM_X1 = DORM_X2 - 576
 DORM_CX = (DORM_X1 + DORM_X2) // 2
+
+# South-dorm raised terrace + gentler frontage hill out to Charles Street.
+# The south-dorm pad sits flat on a terrace at FLOOR_Z2 + SDORM_LIFT; east of the
+# pad a gentle ramp descends to grade at SDORM_TOE_X (the "hill out to Charles St").
+SDORM_LIFT = 128  # terrace height = new south-dorm floor level
+SDORM_TERRACE_X2 = DORM_X2 + 216  # east edge of flat terrace (= south fence line)
+SDORM_TOE_X = -400  # frontage ramp reaches grade (z=0) here, near the road
