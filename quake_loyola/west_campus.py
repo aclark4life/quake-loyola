@@ -807,9 +807,9 @@ def build():
                 + [
                     (
                         cy - DORM_INNER_DOOR_HW,
-                        FLOOR_Z2,
+                        FLOOR_Z2 - SDORM_LIFT,
                         cy + DORM_INNER_DOOR_HW,
-                        FLOOR_Z2 + TUNN_H,
+                        FLOOR_Z2,
                     )
                 ],
                 "city2_1",
@@ -1201,8 +1201,8 @@ def build():
         brushes += win_frame_ywall(
             cy - DORM_INNER_DOOR_HW,
             cy + DORM_INNER_DOOR_HW,
+            FLOOR_Z2 - SDORM_LIFT,
             FLOOR_Z2,
-            FLOOR_Z2 + TUNN_H,
             bx1,
             +1,
             Textures.GABLE,
@@ -1318,24 +1318,11 @@ def build():
     DORM_NORTH2_Y1_tunn = DORM_NORTH_Y1 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     gap_y1, gap_y2 = DORM_SOUTH2_Y2, DORM_NORTH2_Y1_tunn
 
-    # Back-fill ramp: fill from tunnel ceiling to terrain level in the gap where the
-    # ceiling drops below the hillside surface (northern portion only).
-    # ceiling_top slopes from _ct_s=272 (south) to _ct_n=144 (north); terrain at
-    # x=DORM_X1 is ~177. The ceiling dips below terrain at y ≈ 205, so back-fill
-    # starts there (non-degenerate) and runs to the north end of the gap.
-    _ct_s = SDORM_LIFT + TUNN_H + TUNN_T  # ceiling top at gap south end = 272
-    _ct_n = FLOOR_Z2 + TUNN_H + TUNN_T  # ceiling top at gap north end = 144
-    _backfill_y0 = 205  # y where ceiling_top ≈ terrain_top at x=DORM_X1 (~177)
-    _ct_at_bf0 = _ct_s + (_ct_n - _ct_s) * (_backfill_y0 - gap_y1) // (
-        gap_y2 - gap_y1
-    )  # ≈ 177
-
-    for seg_y1, seg_y2, fz, tunn_brushes in [
-        # South flat section — floor at SDORM_LIFT
+    for seg_y1, seg_y2, tunn_brushes in [
+        # South flat section — floor at FLOOR_Z2, ceiling at SDORM_LIFT (fully underground)
         (
             DORM_SOUTH1_Y1,
             DORM_SOUTH2_Y2,
-            SDORM_LIFT,
             [
                 box(
                     TUNN_XW,
@@ -1343,34 +1330,43 @@ def build():
                     FLOOR_Z1,
                     TUNN_X2,
                     DORM_SOUTH2_Y2,
-                    SDORM_LIFT,
+                    FLOOR_Z2,
                     Textures.STONE,
                 ),
                 box(
                     TUNN_XW,
                     DORM_SOUTH1_Y1,
-                    SDORM_LIFT + TUNN_H,
+                    SDORM_LIFT,
                     TUNN_X2,
                     DORM_SOUTH2_Y2,
-                    SDORM_LIFT + TUNN_H + TUNN_T,
+                    SDORM_LIFT + TUNN_T,
                     Textures.STONE,
                 ),
                 box(
                     TUNN_XW,
                     DORM_SOUTH1_Y1,
-                    SDORM_LIFT,
+                    FLOOR_Z2,
                     TUNN_X1,
                     DORM_SOUTH2_Y2,
-                    SDORM_LIFT + TUNN_H,
+                    SDORM_LIFT,
+                    Textures.STONE,
+                ),
+                # Back-fill above ceiling to hillside level
+                box(
+                    TUNN_XW,
+                    DORM_SOUTH1_Y1,
+                    SDORM_LIFT + TUNN_T,
+                    TUNN_X2,
+                    DORM_SOUTH2_Y2,
+                    BRIDGE_DZ2,
                     Textures.STONE,
                 ),
             ],
         ),
-        # North flat section — floor at FLOOR_Z2
+        # North flat section — floor at FLOOR_Z2, ceiling at SDORM_LIFT
         (
             DORM_NORTH2_Y1_tunn,
             DORM_NORTH_Y2,
-            FLOOR_Z2,
             [
                 box(
                     TUNN_XW,
@@ -1384,10 +1380,10 @@ def build():
                 box(
                     TUNN_XW,
                     DORM_NORTH2_Y1_tunn,
-                    FLOOR_Z2 + TUNN_H,
+                    SDORM_LIFT,
                     TUNN_X2,
                     DORM_NORTH_Y2,
-                    FLOOR_Z2 + TUNN_H + TUNN_T,
+                    SDORM_LIFT + TUNN_T,
                     Textures.STONE,
                 ),
                 box(
@@ -1396,14 +1392,14 @@ def build():
                     FLOOR_Z2,
                     TUNN_X1,
                     DORM_NORTH_Y2,
-                    FLOOR_Z2 + TUNN_H,
+                    SDORM_LIFT,
                     Textures.STONE,
                 ),
-                # Back-fill above ceiling to hillside level (tunnel is fully underground here)
+                # Back-fill above ceiling to hillside level
                 box(
                     TUNN_XW,
                     DORM_NORTH2_Y1_tunn,
-                    FLOOR_Z2 + TUNN_H + TUNN_T,
+                    SDORM_LIFT + TUNN_T,
                     TUNN_X2,
                     DORM_NORTH_Y2,
                     BRIDGE_DZ2,
@@ -1414,56 +1410,32 @@ def build():
     ]:
         BRUSHES.extend(tunn_brushes)
 
-    # Gap slope section — floor ramps from SDORM_LIFT (south) to FLOOR_Z2 (north)
+    # Gap section — flat floor and ceiling (tunnel is underground throughout the gap)
     BRUSHES.append(
-        ramp_slab_y(
+        box(TUNN_XW, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.STONE)
+    )
+    BRUSHES.append(
+        box(
             TUNN_XW,
-            TUNN_X2,
             gap_y1,
-            gap_y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
             SDORM_LIFT,
-            FLOOR_Z2,
-            Textures.STONE,
-        )
-    )
-    BRUSHES.append(
-        ramp_slab_y(
-            TUNN_XW,
             TUNN_X2,
-            gap_y1,
             gap_y2,
-            SDORM_LIFT + TUNN_H,
-            FLOOR_Z2 + TUNN_H,
-            SDORM_LIFT + TUNN_H + TUNN_T,
-            FLOOR_Z2 + TUNN_H + TUNN_T,
+            SDORM_LIFT + TUNN_T,
             Textures.STONE,
         )
     )
     BRUSHES.append(
-        ramp_slab_y(
-            TUNN_XW,
-            TUNN_X1,
-            gap_y1,
-            gap_y2,
-            SDORM_LIFT,
-            FLOOR_Z2,
-            SDORM_LIFT + TUNN_H,
-            FLOOR_Z2 + TUNN_H,
-            Textures.STONE,
-        )
+        box(TUNN_XW, gap_y1, FLOOR_Z2, TUNN_X1, gap_y2, SDORM_LIFT, Textures.STONE)
     )
-    # Back-fill above ceiling where ceiling drops below terrain (y ≥ 205, non-degenerate ramp)
+    # Back-fill above ceiling: terrain at TUNN_XW is ~205, ceiling_top is 144 — fully buried
     BRUSHES.append(
-        ramp_slab_y(
+        box(
             TUNN_XW,
+            gap_y1,
+            SDORM_LIFT + TUNN_T,
             TUNN_X2,
-            _backfill_y0,
             gap_y2,
-            _ct_at_bf0,
-            _ct_n,
-            BRIDGE_DZ2,
             BRIDGE_DZ2,
             Textures.STONE,
         )
