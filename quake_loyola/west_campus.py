@@ -265,7 +265,7 @@ def build():
             Textures.GABLE,
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
-            crossbar=fl != 1,  # 2nd-floor center: one open (undivided) window
+            crossbar=True,
         )
     # Window frames — east face (all windows; no entrance to skip)
     for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
