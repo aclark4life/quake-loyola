@@ -120,9 +120,11 @@ def build():
             for wy in wy_list
         ]
 
-    def nb_wins_xz_upper(wx_list):
+    def nb_wins_xz_upper(wx_list, x_clear=None):
         """X-facing wall windows from floor 1 up — floor 0 is buried by the
-        gap embankment on the NB2 south face and NB1 north face."""
+        gap embankment on the NB2 south face and NB1 north face.
+        x_clear: windows with wx < x_clear also skip floor 1 (terrain still
+        overlaps the floor-1 sill at the far-west window position)."""
         return [
             (
                 wx - DORM_WIN_HW,
@@ -132,6 +134,7 @@ def build():
             )
             for fl in range(1, DORM_FLOORS)
             for wx in wx_list
+            if x_clear is None or wx >= x_clear or fl >= 2
         ]
 
     # South wall (faces NB2) — door only, no windows on interior walls
@@ -148,7 +151,7 @@ def build():
             "city2_1",
         )
     )
-    # North wall — windows only (floor 0 buried by gap embankment; center only floor 1+)
+    # North wall — windows (floors 0 and wx<-1652 floor 1 buried by gap embankment; center floor 1+)
     north_bldg_detail.extend(
         layered_wall(
             DORM_X1,
@@ -157,7 +160,7 @@ def build():
             DORM_X2,
             DORM_NORTH_Y2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz_upper(dorm_wx)
+            nb_wins_xz_upper(dorm_wx, x_clear=-1652)
             + [
                 (
                     DORM_CX - DORM_WIN_HW,
@@ -235,8 +238,8 @@ def build():
         crossbar=False,
         bottom=False,
     )
-    # Window frames — north face (floor 0 buried by gap embankment)
-    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx):
+    # Window frames — north face (floors 0 and wx<-1652 floor 1 buried by gap embankment)
+    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
         north_bldg_detail += win_frame_xwall(
             xl,
             xr,
@@ -394,7 +397,7 @@ def build():
         for fl in range(1, DORM_FLOORS)
     ]
     north2_bldg_detail = []
-    # South wall — floor 0 buried by gap embankment; floor 1+ only
+    # South wall — floors 0 and wx<-1652 floor 1 buried by gap embankment
     north2_bldg_detail.extend(
         layered_wall(
             DORM_X1,
@@ -403,7 +406,7 @@ def build():
             DORM_X2,
             DORM_NORTH2_Y1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz_upper(dorm_wx) + nb2_cx_opens,
+            nb_wins_xz_upper(dorm_wx, x_clear=-1652) + nb2_cx_opens,
             "city2_1",
         )
     )
@@ -458,8 +461,8 @@ def build():
             "city2_1",
         )
     )
-    # Window frames — south face (floor 0 buried by gap embankment; floor 1+ only)
-    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx):
+    # Window frames — south face (floors 0 and wx<-1652 floor 1 buried by gap embankment)
+    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
         north2_bldg_detail += win_frame_xwall(
             xl,
             xr,
