@@ -120,6 +120,20 @@ def build():
             for wy in wy_list
         ]
 
+    def nb_wins_xz_upper(wx_list):
+        """X-facing wall windows from floor 1 up — floor 0 is buried by the
+        gap embankment on the NB2 south face and NB1 north face."""
+        return [
+            (
+                wx - DORM_WIN_HW,
+                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                wx + DORM_WIN_HW,
+                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+            )
+            for fl in range(1, DORM_FLOORS)
+            for wx in wx_list
+        ]
+
     # South wall (faces bridge) — windows only, no entrance on this face
     dorm_s_openings = nb_wins_xz(dorm_wx) + [
         (
@@ -143,7 +157,7 @@ def build():
             "city2_1",
         )
     )
-    # North wall — windows only (including center windows on 2nd and 3rd floor)
+    # North wall — windows only (floor 0 buried by gap embankment; center only floor 1+)
     north_bldg_detail.extend(
         layered_wall(
             DORM_X1,
@@ -152,7 +166,7 @@ def build():
             DORM_X2,
             DORM_NORTH_Y2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz(dorm_wx)
+            nb_wins_xz_upper(dorm_wx)
             + [
                 (
                     DORM_CX - DORM_WIN_HW,
@@ -257,8 +271,8 @@ def build():
         crossbar=False,
         bottom=False,
     )
-    # Window frames — north face
-    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
+    # Window frames — north face (floor 0 buried by gap embankment)
+    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx):
         north_bldg_detail += win_frame_xwall(
             xl,
             xr,
@@ -405,7 +419,7 @@ def build():
     dorm_wy2 = [
         DORM_NORTH2_Y1 + (DORM_NORTH2_Y2 - DORM_NORTH2_Y1) * k // 4 for k in [1, 2, 3]
     ]
-    # Center openings (all floors) for X-facing walls of building 2
+    # Center openings (floor 1+ only) for X-facing walls of building 2
     nb2_cx_opens = [
         (
             DORM_CX - DORM_WIN_HW,
@@ -413,10 +427,10 @@ def build():
             DORM_CX + DORM_WIN_HW,
             FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
         )
-        for fl in range(DORM_FLOORS)
+        for fl in range(1, DORM_FLOORS)
     ]
     north2_bldg_detail = []
-    # South wall — windows only (no entrance)
+    # South wall — floor 0 buried by gap embankment; floor 1+ only
     north2_bldg_detail.extend(
         layered_wall(
             DORM_X1,
@@ -425,7 +439,7 @@ def build():
             DORM_X2,
             DORM_NORTH2_Y1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz(dorm_wx) + nb2_cx_opens,
+            nb_wins_xz_upper(dorm_wx) + nb2_cx_opens,
             "city2_1",
         )
     )
@@ -490,8 +504,8 @@ def build():
             "city2_1",
         )
     )
-    # Window frames — south face (all windows + center, all floors)
-    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
+    # Window frames — south face (floor 0 buried by gap embankment; floor 1+ only)
+    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx):
         north2_bldg_detail += win_frame_xwall(
             xl,
             xr,
@@ -503,7 +517,7 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    for fl in range(DORM_FLOORS):
+    for fl in range(1, DORM_FLOORS):
         zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
         zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
         north2_bldg_detail += win_frame_xwall(
