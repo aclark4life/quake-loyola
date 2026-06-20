@@ -1217,7 +1217,7 @@ def build():
         )
 
     # ── Iron fence along east face of west buildings ──────────────────────────
-    FENCE_X1 = DORM_X2 + 96  # well clear of building face
+    FENCE_X1 = DORM_X2 + 216  # pushed further east to sit outside the front walkway
     FENCE_X2 = FENCE_X1 + 2  # picket/rail thickness
     FENCE_H = 96  # fence height
     FENCE_SPACING = 16  # picket center-to-center
@@ -1342,5 +1342,34 @@ def build():
         )
     )
     ENTITIES.append(brush_ent("func_detail", wall_detail))
+
+    # ── Raised stone walkway: narrow strip set off the dorm face (sits just
+    #    inside the fence), with a spur running north to the brick-wall door ────
+    WALKWAY_H = 6
+    WALK_X2 = FENCE_X1 - 40  # outer edge, a little inside the fence line
+    WALK_X1 = WALK_X2 - 96  # narrow strip, leaving a gap to the dorm face
+    walk = [
+        # Frontage parallel to the dorm east face
+        box(
+            WALK_X1,
+            DORM_SOUTH1_Y1,
+            FLOOR_Z2,
+            WALK_X2,
+            DORM_SOUTH2_Y2,
+            FLOOR_Z2 + WALKWAY_H,
+            Textures.STONE,
+        ),
+        # Spur north from the dorm corner to the brick-wall door (east side of wall)
+        box(
+            DORM_PIER_X + wall_hw,
+            DORM_SOUTH2_Y2,
+            FLOOR_Z2,
+            WALK_X2,
+            door_north,
+            FLOOR_Z2 + WALKWAY_H,
+            Textures.STONE,
+        ),
+    ]
+    ENTITIES.append(brush_ent("func_detail", walk))
 
     return BRUSHES, ENTITIES
