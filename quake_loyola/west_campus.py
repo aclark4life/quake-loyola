@@ -664,6 +664,7 @@ def build():
         door_hi=False,
         north_pier_x=None,
         north_pier_hw=0,
+        north_min_floor=0,
     ):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
@@ -673,7 +674,9 @@ def build():
         a hollow brick stack above the roof (the player can drop into the interior).
         door_lo/door_hi add a ground-floor center doorway on the by1/-Y or by2/+Y wall.
         north_pier_x/north_pier_hw: X position and half-width of an external wall that
-        blocks windows on the north face (by2); overlapping openings are omitted."""
+        blocks windows on the north face (by2); overlapping openings are omitted.
+        north_min_floor: lowest floor shown on the north (by2) face; floors below this
+        are omitted (used when the embankment in the gap partially buries floor 0)."""
         bx1, bx2 = DORM_X1, DORM_X2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 120
@@ -720,9 +723,18 @@ def build():
             ]
 
         def wxz_north():
-            """North-face (by2) windows, filtering any opening that overlaps an
-            external pier/wall at north_pier_x ± north_pier_hw."""
-            wins = wxz()
+            """North-face (by2) windows: floors below north_min_floor are omitted,
+            and any opening that overlaps north_pier_x ± north_pier_hw is filtered."""
+            wins = [
+                (
+                    wx - DORM_WIN_HW,
+                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                    wx + DORM_WIN_HW,
+                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+                )
+                for fl in range(north_min_floor, DORM_FLOORS)
+                for wx in wx_list
+            ]
             if north_pier_x is not None:
                 wins = [
                     (xl, zb, xr, zt)
@@ -1252,6 +1264,7 @@ def build():
                     door_lo=True,
                     north_pier_x=DORM_PIER_X,
                     north_pier_hw=12,
+                    north_min_floor=1,
                 )
             ],
         )
