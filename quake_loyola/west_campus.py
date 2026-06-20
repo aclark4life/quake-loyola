@@ -134,16 +134,7 @@ def build():
             for wx in wx_list
         ]
 
-    # South wall (faces bridge) — windows only, no entrance on this face
-    dorm_s_openings = nb_wins_xz(dorm_wx) + [
-        (
-            DORM_CX - DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-            DORM_CX + DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-        )
-        for fl in range(DORM_FLOORS)
-    ]
+    # South wall (faces NB2) — door only, no windows on interior walls
     north_bldg_detail = []
     north_bldg_detail.extend(
         layered_wall(
@@ -153,7 +144,7 @@ def build():
             DORM_X2,
             DORM_NORTH_Y1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            dorm_s_openings + [dorm_door_open],  # ground-floor center is a doorway
+            [dorm_door_open],
             "city2_1",
         )
     )
@@ -229,34 +220,7 @@ def build():
 
     # ── Decorative wood trim (window frames only — no entrance arches) ───────────────
 
-    # Window frames — south face (all windows including center, all floors)
-    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
-        north_bldg_detail += win_frame_xwall(
-            xl,
-            xr,
-            zb,
-            zt,
-            DORM_NORTH_Y1,
-            +1,
-            Textures.GABLE,
-            fd=DORM_WALL,
-            margin=DORM_WIN_MARGIN,
-        )
-    for fl in range(1, DORM_FLOORS):  # ground-floor center is now a doorway to bldg 2
-        zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-        zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
-        north_bldg_detail += win_frame_xwall(
-            DORM_CX - DORM_WIN_HW,
-            DORM_CX + DORM_WIN_HW,
-            zb,
-            zt,
-            DORM_NORTH_Y1,
-            +1,
-            Textures.GABLE,
-            fd=DORM_WALL,
-            margin=DORM_WIN_MARGIN,
-        )
-    # Door frame — ground-floor center doorway to building 2 (south face)
+    # Door frame — ground-floor center doorway to building 2 (south face, interior wall)
     north_bldg_detail += win_frame_xwall(
         DORM_CX - DORM_INNER_DOOR_HW,
         DORM_CX + DORM_INNER_DOOR_HW,
@@ -443,7 +407,7 @@ def build():
             "city2_1",
         )
     )
-    # North wall — windows only (faces south face of building 1)
+    # North wall (faces NB1) — door only, no windows on interior walls
     north2_bldg_detail.extend(
         layered_wall(
             DORM_X1,
@@ -452,17 +416,7 @@ def build():
             DORM_X2,
             DORM_NORTH2_Y2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz(dorm_wx)
-            + [
-                (
-                    DORM_CX - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                    DORM_CX + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-                )
-                for fl in range(1, DORM_FLOORS)
-            ]
-            + [dorm_door_open],  # ground-floor center is a doorway to bldg 2
+            [dorm_door_open],
             "city2_1",
         )
     )
@@ -531,34 +485,7 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Window frames — north face
-    for xl, zb, xr, zt in nb_wins_xz(dorm_wx):
-        north2_bldg_detail += win_frame_xwall(
-            xl,
-            xr,
-            zb,
-            zt,
-            DORM_NORTH2_Y2,
-            -1,
-            Textures.GABLE,
-            fd=DORM_WALL,
-            margin=DORM_WIN_MARGIN,
-        )
-    for fl in range(1, DORM_FLOORS):
-        zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-        zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
-        north2_bldg_detail += win_frame_xwall(
-            DORM_CX - DORM_WIN_HW,
-            DORM_CX + DORM_WIN_HW,
-            zb,
-            zt,
-            DORM_NORTH2_Y2,
-            -1,
-            Textures.GABLE,
-            fd=DORM_WALL,
-            margin=DORM_WIN_MARGIN,
-        )
-    # Door frame — ground-floor center doorway to building 1 (north face)
+    # Door frame — ground-floor center doorway to building 1 (north face, interior wall)
     north2_bldg_detail += win_frame_xwall(
         DORM_CX - DORM_INNER_DOOR_HW,
         DORM_CX + DORM_INNER_DOOR_HW,
@@ -790,7 +717,8 @@ def build():
                 bx2,
                 by1 + DORM_WALL,
                 FLOOR_Z2 + DORM_H,
-                wxz() + mid_wxz + ([dorm_door_open] if door_lo else []),
+                ([] if door_lo else wxz() + mid_wxz)
+                + ([dorm_door_open] if door_lo else []),
                 "city2_1",
             )
         )
@@ -802,7 +730,8 @@ def build():
                 bx2,
                 by2,
                 FLOOR_Z2 + DORM_H,
-                wxz_north() + mid_wxz + ([dorm_door_open] if door_hi else []),
+                ([] if door_hi else wxz_north() + mid_wxz)
+                + ([dorm_door_open] if door_hi else []),
                 "city2_1",
             )
         )
@@ -1136,58 +1065,58 @@ def build():
                 crossbar=False,
                 bottom=False,
             )
-        # Window frames — south face (inward, flush outer→inner)
-        for xl, zb, xr, zt in wxz():
-            brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by1,
-                +1,
-                Textures.GABLE,
-                fd=DORM_WALL,
-                margin=DORM_WIN_MARGIN,
-            )
-        # Center window frames — south face, 2nd and 3rd floor
-        for xl, zb, xr, zt in mid_wxz:
-            brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by1,
-                +1,
-                Textures.GABLE,
-                fd=DORM_WALL,
-                margin=DORM_WIN_MARGIN,
-            )
-        # Window frames — north face (pier-blocked windows omitted via wxz_north())
-        for xl, zb, xr, zt in wxz_north():
-            brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by2,
-                -1,
-                Textures.GABLE,
-                fd=DORM_WALL,
-                margin=DORM_WIN_MARGIN,
-            )
-        # Center window frames — north face, 2nd and 3rd floor
-        for xl, zb, xr, zt in mid_wxz:
-            brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by2,
-                -1,
-                Textures.GABLE,
-                fd=DORM_WALL,
-                margin=DORM_WIN_MARGIN,
-            )
+        # Window frames — south face (door wall has no windows)
+        if not door_lo:
+            for xl, zb, xr, zt in wxz():
+                brushes += win_frame_xwall(
+                    xl,
+                    xr,
+                    zb,
+                    zt,
+                    by1,
+                    +1,
+                    Textures.GABLE,
+                    fd=DORM_WALL,
+                    margin=DORM_WIN_MARGIN,
+                )
+            for xl, zb, xr, zt in mid_wxz:
+                brushes += win_frame_xwall(
+                    xl,
+                    xr,
+                    zb,
+                    zt,
+                    by1,
+                    +1,
+                    Textures.GABLE,
+                    fd=DORM_WALL,
+                    margin=DORM_WIN_MARGIN,
+                )
+        # Window frames — north face (door wall has no windows)
+        if not door_hi:
+            for xl, zb, xr, zt in wxz_north():
+                brushes += win_frame_xwall(
+                    xl,
+                    xr,
+                    zb,
+                    zt,
+                    by2,
+                    -1,
+                    Textures.GABLE,
+                    fd=DORM_WALL,
+                    margin=DORM_WIN_MARGIN,
+                )
+            for xl, zb, xr, zt in mid_wxz:
+                brushes += win_frame_xwall(
+                    xl,
+                    xr,
+                    zb,
+                    zt,
+                    by2,
+                    -1,
+                    Textures.GABLE,
+                    fd=DORM_WALL,
+                    margin=DORM_WIN_MARGIN,
+                )
         # Window frames — west face (floor 0 buried by hillside after terrace lift)
         for yl, zb, yr, zt in wyz_west():
             brushes += win_frame_ywall(
