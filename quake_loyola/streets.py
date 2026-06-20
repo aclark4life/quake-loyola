@@ -1238,16 +1238,33 @@ def build():
     # top stays at the bridge deck) and gives the dorms a level pad.
     terr_top = FLOOR_Z2 + SDORM_LIFT
     terr_y1 = WORLD_Y1 + WALL_T
-    terr_y2 = BRIDGE_Y1
-    # Flat terrace pad — west of the brick wall (under the south dorms), kept level.
+    # Flat terrace pad — west of the brick wall (under the south dorms): level
+    # crest south of the wall's south pillar, then declining north (below) so the
+    # ground west of the wall drops to the bridge symmetrically with the east side.
     BRUSHES.append(
         box(
             DORM_X1,
             terr_y1,
             FLOOR_Z2,
             SDORM_WALL_X,
-            terr_y2,
+            SDORM_SLOPE_Y_S,
             terr_top,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # N-S decline west of the wall: crest at the south pillar down to grade at the
+    # north side of the bridge, matching the wall→fence strip on the east side.
+    BRUSHES.append(
+        ramp_slab_y(
+            DORM_X1,
+            SDORM_WALL_X,
+            SDORM_SLOPE_Y_S,
+            SDORM_SLOPE_Y_N,
+            FLOOR_Z2,
+            FLOOR_Z2,
+            terr_top,
+            FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
