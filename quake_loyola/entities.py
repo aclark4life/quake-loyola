@@ -1111,10 +1111,11 @@ def build():
     # - Trees along Ennis Parallel campus road (bridge02)
     tree_positions = [
         # Trees flanking Knott Hall (west side — bridge01, bridge10)
-        (DORM_X1 - 80, -600),
-        (DORM_X1 - 200, -300),
-        (DORM_X1 - 80, 200),
-        (DORM_X1 - 200, 500),
+        # Shifted west of tunnel outer wall (TUNN_XW = DORM_X1 - 96)
+        (DORM_X1 - 200, -600),
+        (DORM_X1 - 350, -300),
+        (DORM_X1 - 200, 200),
+        (DORM_X1 - 350, 500),
         # Along Ennis Parallel (campus side, west of Charles St — bridge02)
         (ROAD_X1 - 200, ENNIS_WALL_NY - 100),
         (ROAD_X1 - 400, ENNIS_WALL_NY - 80),
