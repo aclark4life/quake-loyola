@@ -52,6 +52,14 @@ def build():
     DORM_INNER_DOOR_HW = 40  # half-width of doorway between adjacent buildings
     DORM_INNER_DOOR_H = 128  # height of doorway between adjacent buildings
 
+    # Underground tunnel connecting south and north dorm clusters
+    TUNN_W = 80  # interior X-depth (west into hillside)
+    TUNN_T = DORM_WALL  # wall/ceiling/floor thickness (= 16)
+    TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
+    TUNN_X2 = DORM_X1  # east tunnel face = west face of buildings
+    TUNN_X1 = TUNN_X2 - TUNN_W  # inner west face of tunnel interior
+    TUNN_XW = TUNN_X1 - TUNN_T  # outer west wall (= DORM_X1 - 96)
+
     DORM_CX = (DORM_X1 + DORM_X2) // 2  # building X center
     DORM_NORTH_CY = (
         DORM_NORTH_Y1 + DORM_NORTH_Y2
@@ -196,6 +204,7 @@ def build():
         )
     )
     # West wall — windows (floor 2 only; floors 0–1 are buried by the hillside)
+    # + ground-floor tunnel door opening
     north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM_WALL,
@@ -204,7 +213,15 @@ def build():
             DORM_NORTH_Y2 - DORM_WALL,
             DORM_X1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz_west(dorm_wy),
+            nb_wins_yz_west(dorm_wy)
+            + [
+                (
+                    DORM_NORTH_CY - DORM_INNER_DOOR_HW,
+                    FLOOR_Z2,
+                    DORM_NORTH_CY + DORM_INNER_DOOR_HW,
+                    FLOOR_Z2 + TUNN_H,
+                )
+            ],
             "city2_1",
         )
     )
@@ -308,6 +325,21 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
+    # Door frame — west face tunnel entrance
+    north_bldg_detail += win_frame_ywall(
+        DORM_NORTH_CY - DORM_INNER_DOOR_HW,
+        DORM_NORTH_CY + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + TUNN_H,
+        DORM_X1,
+        +1,
+        Textures.GABLE,
+        fw=8,
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
 
     DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
     DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H  # ridge apex
@@ -437,6 +469,7 @@ def build():
         )
     )
     # West wall — windows only (floor 2 only; floors 0–1 buried by hillside)
+    # + ground-floor tunnel door opening
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM_WALL,
@@ -445,7 +478,15 @@ def build():
             DORM_NORTH2_Y2 - DORM_WALL,
             DORM_X1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz_west(dorm_wy2),
+            nb_wins_yz_west(dorm_wy2)
+            + [
+                (
+                    DORM_NORTH2_CY - DORM_INNER_DOOR_HW,
+                    FLOOR_Z2,
+                    DORM_NORTH2_CY + DORM_INNER_DOOR_HW,
+                    FLOOR_Z2 + TUNN_H,
+                )
+            ],
             "city2_1",
         )
     )
@@ -529,6 +570,21 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
+    # Door frame — west face tunnel entrance
+    north2_bldg_detail += win_frame_ywall(
+        DORM_NORTH2_CY - DORM_INNER_DOOR_HW,
+        DORM_NORTH2_CY + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + TUNN_H,
+        DORM_X1,
+        +1,
+        Textures.GABLE,
+        fw=8,
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
     # Roof — same gable profile as building 1
     NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL
     NB2_RIDGE_Z = NB2_EAVE_Z + DORM_ROOF_H
@@ -738,6 +794,7 @@ def build():
                 "city2_1",
             )
         )
+        cy = (by1 + by2) // 2
         brushes.extend(
             layered_wall_y(
                 by1 + DORM_WALL,
@@ -746,11 +803,18 @@ def build():
                 by2 - DORM_WALL,
                 bx1 + DORM_WALL,
                 FLOOR_Z2 + DORM_H,
-                wyz_west(),
+                wyz_west()
+                + [
+                    (
+                        cy - DORM_INNER_DOOR_HW,
+                        FLOOR_Z2,
+                        cy + DORM_INNER_DOOR_HW,
+                        FLOOR_Z2 + TUNN_H,
+                    )
+                ],
                 "city2_1",
             )
         )
-        cy = (by1 + by2) // 2
         east_openings = wyz()
         if entrance:
             # Solid wall above the door — drop the center-column windows, keep entrance only
@@ -1133,6 +1197,21 @@ def build():
                 fd=DORM_WALL,
                 margin=DORM_WIN_MARGIN,
             )
+        # Door frame — west face tunnel entrance
+        brushes += win_frame_ywall(
+            cy - DORM_INNER_DOOR_HW,
+            cy + DORM_INNER_DOOR_HW,
+            FLOOR_Z2,
+            FLOOR_Z2 + TUNN_H,
+            bx1,
+            +1,
+            Textures.GABLE,
+            fw=8,
+            fd=DORM_WALL,
+            margin=DORM_WIN_MARGIN,
+            crossbar=False,
+            bottom=False,
+        )
         # Window frames — east face (skip ground-floor window overlapping the entrance
         # opening when an entrance is present)
         for yl, zb, yr, zt in wyz():
@@ -1230,6 +1309,189 @@ def build():
                 tt=Textures.ROAD,
             )
         )
+
+    # ── Underground tunnel connecting south and north dorm clusters ───────────
+    # Runs along the western face of all four dorm buildings (x = TUNN_XW to DORM_X1)
+    # and through the gap between clusters. Floor is flat at SDORM_LIFT under the south
+    # dorms, ramps down to FLOOR_Z2 through the gap, then flat under the north dorms.
+    # Terrain slabs in streets.py are clipped to TUNN_XW to leave this channel clear.
+    DORM_NORTH2_Y1_tunn = DORM_NORTH_Y1 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
+    gap_y1, gap_y2 = DORM_SOUTH2_Y2, DORM_NORTH2_Y1_tunn
+
+    # Back-fill ramp: fill from tunnel ceiling to terrain level in the gap where the
+    # ceiling drops below the hillside surface (northern portion only).
+    # ceiling_top slopes from _ct_s=272 (south) to _ct_n=144 (north); terrain at
+    # x=DORM_X1 is ~177. The ceiling dips below terrain at y ≈ 205, so back-fill
+    # starts there (non-degenerate) and runs to the north end of the gap.
+    _ct_s = SDORM_LIFT + TUNN_H + TUNN_T  # ceiling top at gap south end = 272
+    _ct_n = FLOOR_Z2 + TUNN_H + TUNN_T  # ceiling top at gap north end = 144
+    _backfill_y0 = 205  # y where ceiling_top ≈ terrain_top at x=DORM_X1 (~177)
+    _ct_at_bf0 = _ct_s + (_ct_n - _ct_s) * (_backfill_y0 - gap_y1) // (
+        gap_y2 - gap_y1
+    )  # ≈ 177
+
+    for seg_y1, seg_y2, fz, tunn_brushes in [
+        # South flat section — floor at SDORM_LIFT
+        (
+            DORM_SOUTH1_Y1,
+            DORM_SOUTH2_Y2,
+            SDORM_LIFT,
+            [
+                box(
+                    TUNN_XW,
+                    DORM_SOUTH1_Y1,
+                    FLOOR_Z1,
+                    TUNN_X2,
+                    DORM_SOUTH2_Y2,
+                    SDORM_LIFT,
+                    Textures.STONE,
+                ),
+                box(
+                    TUNN_XW,
+                    DORM_SOUTH1_Y1,
+                    SDORM_LIFT + TUNN_H,
+                    TUNN_X2,
+                    DORM_SOUTH2_Y2,
+                    SDORM_LIFT + TUNN_H + TUNN_T,
+                    Textures.STONE,
+                ),
+                box(
+                    TUNN_XW,
+                    DORM_SOUTH1_Y1,
+                    SDORM_LIFT,
+                    TUNN_X1,
+                    DORM_SOUTH2_Y2,
+                    SDORM_LIFT + TUNN_H,
+                    Textures.STONE,
+                ),
+            ],
+        ),
+        # North flat section — floor at FLOOR_Z2
+        (
+            DORM_NORTH2_Y1_tunn,
+            DORM_NORTH_Y2,
+            FLOOR_Z2,
+            [
+                box(
+                    TUNN_XW,
+                    DORM_NORTH2_Y1_tunn,
+                    FLOOR_Z1,
+                    TUNN_X2,
+                    DORM_NORTH_Y2,
+                    FLOOR_Z2,
+                    Textures.STONE,
+                ),
+                box(
+                    TUNN_XW,
+                    DORM_NORTH2_Y1_tunn,
+                    FLOOR_Z2 + TUNN_H,
+                    TUNN_X2,
+                    DORM_NORTH_Y2,
+                    FLOOR_Z2 + TUNN_H + TUNN_T,
+                    Textures.STONE,
+                ),
+                box(
+                    TUNN_XW,
+                    DORM_NORTH2_Y1_tunn,
+                    FLOOR_Z2,
+                    TUNN_X1,
+                    DORM_NORTH_Y2,
+                    FLOOR_Z2 + TUNN_H,
+                    Textures.STONE,
+                ),
+                # Back-fill above ceiling to hillside level (tunnel is fully underground here)
+                box(
+                    TUNN_XW,
+                    DORM_NORTH2_Y1_tunn,
+                    FLOOR_Z2 + TUNN_H + TUNN_T,
+                    TUNN_X2,
+                    DORM_NORTH_Y2,
+                    BRIDGE_DZ2,
+                    Textures.STONE,
+                ),
+            ],
+        ),
+    ]:
+        BRUSHES.extend(tunn_brushes)
+
+    # Gap slope section — floor ramps from SDORM_LIFT (south) to FLOOR_Z2 (north)
+    BRUSHES.append(
+        ramp_slab_y(
+            TUNN_XW,
+            TUNN_X2,
+            gap_y1,
+            gap_y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            SDORM_LIFT,
+            FLOOR_Z2,
+            Textures.STONE,
+        )
+    )
+    BRUSHES.append(
+        ramp_slab_y(
+            TUNN_XW,
+            TUNN_X2,
+            gap_y1,
+            gap_y2,
+            SDORM_LIFT + TUNN_H,
+            FLOOR_Z2 + TUNN_H,
+            SDORM_LIFT + TUNN_H + TUNN_T,
+            FLOOR_Z2 + TUNN_H + TUNN_T,
+            Textures.STONE,
+        )
+    )
+    BRUSHES.append(
+        ramp_slab_y(
+            TUNN_XW,
+            TUNN_X1,
+            gap_y1,
+            gap_y2,
+            SDORM_LIFT,
+            FLOOR_Z2,
+            SDORM_LIFT + TUNN_H,
+            FLOOR_Z2 + TUNN_H,
+            Textures.STONE,
+        )
+    )
+    # Back-fill above ceiling where ceiling drops below terrain (y ≥ 205, non-degenerate ramp)
+    BRUSHES.append(
+        ramp_slab_y(
+            TUNN_XW,
+            TUNN_X2,
+            _backfill_y0,
+            gap_y2,
+            _ct_at_bf0,
+            _ct_n,
+            BRIDGE_DZ2,
+            BRIDGE_DZ2,
+            Textures.STONE,
+        )
+    )
+
+    # South and north end caps (only the tunnel's west portion; building walls cap the east)
+    BRUSHES.append(
+        box(
+            TUNN_XW,
+            DORM_SOUTH1_Y1,
+            FLOOR_Z1,
+            TUNN_X2,
+            DORM_SOUTH1_Y1 + TUNN_T,
+            BRIDGE_DZ2,
+            Textures.STONE,
+        )
+    )
+    BRUSHES.append(
+        box(
+            TUNN_XW,
+            DORM_NORTH_Y2 - TUNN_T,
+            FLOOR_Z1,
+            TUNN_X2,
+            DORM_NORTH_Y2,
+            BRIDGE_DZ2,
+            Textures.STONE,
+        )
+    )
 
     # ── Iron fence along east face of west buildings ──────────────────────────
     FENCE_X1 = DORM_X2 + 216  # pushed further east to sit outside the front walkway
