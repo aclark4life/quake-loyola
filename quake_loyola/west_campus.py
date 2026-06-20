@@ -1000,14 +1000,14 @@ def build():
                 +1,
                 Textures.GABLE,
                 pillar_w=14,
-                pillar_d=24,
+                pillar_d=12,
                 lintel_h=16,
                 arch_h=60,
             )
             # Transom over the door: top + bottom crossbeams plus 4 mullions forming square panes
             grille_d, beam_h, mull_w, trans_h = 8, 6, 6, 26
             # Centre the grille within the pillar depth (bx2 .. bx2+pillar_d)
-            _pillar_d = 24
+            _pillar_d = 12
             gx1 = bx2 + _pillar_d // 2 - grille_d // 2
             gx2 = bx2 + _pillar_d // 2 + grille_d // 2
             trans_t = FLOOR_Z2 + ent_h  # top of the door opening
@@ -1047,6 +1047,21 @@ def build():
                         Textures.GABLE,
                     )
                 )  # transom mullion
+            # Frame recessed into the door opening (jambs + head lining the reveal,
+            # like the window frames) using the same gable wood as the arch/pillars.
+            brushes += win_frame_ywall(
+                cy - ent_hw,
+                cy + ent_hw,
+                FLOOR_Z2,
+                FLOOR_Z2 + ent_h,
+                bx2,
+                -1,
+                Textures.GABLE,
+                fd=DORM_WALL,
+                margin=DORM_WIN_MARGIN,
+                crossbar=False,
+                bottom=False,
+            )
         # Window frames — south face (inward, flush outer→inner)
         for xl, zb, xr, zt in wxz():
             brushes += win_frame_xwall(
