@@ -1564,12 +1564,14 @@ def build():
             )
         )
 
-    # ── Single-player exit — inside south dorm ───────────────────────────────────
-    # Loops back to this map. Portal stands inside south dorm 1.
+    # ── Single-player exit — inside north dorm 2 (southern north dorm) ──────────
+    # Loops back to this map. Portal stands inside north dorm 2.
     dorm_exit_xc = (DORM_X1 + DORM_X2) // 2
-    dorm_exit_yc = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
+    _north2_y2 = DORM_NORTH_Y1  # north face of dorm 2 = south face of dorm 1
+    _north2_y1 = _north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
+    dorm_exit_yc = (_north2_y1 + _north2_y2) // 2
     dorm_exit_hw = 64
-    dorm_exit_z0 = FLOOR_Z2 + SDORM_LIFT
+    dorm_exit_z0 = FLOOR_Z2
     dorm_exit_brush = box(
         dorm_exit_xc - dorm_exit_hw,
         dorm_exit_yc - dorm_exit_hw,

@@ -15,7 +15,7 @@ WORLDSPAWN_FIELDS = {
     "message": "Loyola Bridge & Knott Hall",
     "sky": Textures.SKY,
     "ambient": "90",
-    "_sunlight": "220",
+    "_sunlight": "140",
     "_sunlight_color": "255 245 210",
     "_sunlight_dir": "60 -60",
     "_sunlight_penumbra": "30",

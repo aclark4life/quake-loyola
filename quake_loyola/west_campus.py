@@ -1,7 +1,9 @@
 from .constants import (
     BRIDGE_DZ2,
+    BRIDGE_X1,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM_EMB_X2,
     DORM_FLOOR_H,
     DORM_FLOORS,
     DORM_H,
@@ -22,6 +24,13 @@ from .constants import (
     SDORM_LIFT,
     SDORM_SLOPE_Y_N,
     SDORM_SLOPE_Y_S,
+    SDORM_STAIR_N,
+    SDORM_STAIR_RISE,
+    SDORM_STAIR_RUN,
+    SDORM_STAIR_X1,
+    SDORM_STAIR_X2,
+    SDORM_STAIR_Y1,
+    SDORM_STAIR_Y2,
     Textures,
 )
 from .geometry import (
@@ -59,6 +68,17 @@ def build():
     TUNN_X2 = DORM_X1  # east tunnel face = west face of buildings
     TUNN_X1 = TUNN_X2 - TUNN_W  # inner west face of tunnel interior
     TUNN_XW = TUNN_X1 - TUNN_T  # outer west wall (= DORM_X1 - 96)
+
+    # Embankment surface Z at the west/east faces of the tunnel channel.
+    # Reproduces the ramp_slab formula used in streets.py so back-fill tops
+    # sit flush with the hillside rather than protruding above it.
+    _emb_denom = DORM_EMB_X2 - BRIDGE_X1
+    emb_zt_tunn_w = int(
+        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_XW - BRIDGE_X1) / _emb_denom
+    )
+    emb_zt_tunn_e = int(
+        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_X2 - BRIDGE_X1) / _emb_denom
+    )
 
     DORM_CX = (DORM_X1 + DORM_X2) // 2  # building X center
     DORM_NORTH_CY = (
@@ -469,7 +489,6 @@ def build():
         )
     )
     # West wall — windows only (floor 2 only; floors 0–1 buried by hillside)
-    # + ground-floor tunnel door opening
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM_WALL,
@@ -478,15 +497,7 @@ def build():
             DORM_NORTH2_Y2 - DORM_WALL,
             DORM_X1 + DORM_WALL,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz_west(dorm_wy2)
-            + [
-                (
-                    DORM_NORTH2_CY - DORM_INNER_DOOR_HW,
-                    FLOOR_Z2,
-                    DORM_NORTH2_CY + DORM_INNER_DOOR_HW,
-                    FLOOR_Z2 + TUNN_H,
-                )
-            ],
+            nb_wins_yz_west(dorm_wy2),
             "city2_1",
         )
     )
@@ -570,21 +581,6 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Door frame — west face tunnel entrance
-    north2_bldg_detail += win_frame_ywall(
-        DORM_NORTH2_CY - DORM_INNER_DOOR_HW,
-        DORM_NORTH2_CY + DORM_INNER_DOOR_HW,
-        FLOOR_Z2,
-        FLOOR_Z2 + TUNN_H,
-        DORM_X1,
-        +1,
-        Textures.GABLE,
-        fw=8,
-        fd=DORM_WALL,
-        margin=DORM_WIN_MARGIN,
-        crossbar=False,
-        bottom=False,
-    )
     # Roof — same gable profile as building 1
     NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL
     NB2_RIDGE_Z = NB2_EAVE_Z + DORM_ROOF_H
@@ -665,6 +661,8 @@ def build():
         north_pier_x=None,
         north_pier_hw=0,
         north_min_floor=0,
+        west_door=True,
+        stairwell=False,
     ):
         """Build the south abutment building geometry (walls, roof, windows, entrance)
         between Y positions by1 (south) and by2 (north).
@@ -745,19 +743,70 @@ def build():
             return wins
 
         brushes = []
-        # Interior floor
-        brushes.append(
-            box(
-                bx1 + DORM_WALL,
-                by1 + DORM_WALL,
-                FLOOR_Z1,
-                bx2 - DORM_WALL,
-                by2 - DORM_WALL,
-                FLOOR_Z2,
-                Textures.GROUND,
-                tt=Textures.ROAD,
+        # Interior floor — carved around the stairwell void when stairwell=True
+        if stairwell:
+            # Floor frame: south strip, north strip, and an east strip; the void
+            # itself (west edge to SDORM_STAIR_X2, SDORM_STAIR_Y1..Y2) is left open.
+            brushes += [
+                box(
+                    bx1 + DORM_WALL,
+                    by1 + DORM_WALL,
+                    FLOOR_Z1,
+                    bx2 - DORM_WALL,
+                    SDORM_STAIR_Y1,
+                    FLOOR_Z2,
+                    Textures.GROUND,
+                    tt=Textures.ROAD,
+                ),
+                box(
+                    bx1 + DORM_WALL,
+                    SDORM_STAIR_Y2,
+                    FLOOR_Z1,
+                    bx2 - DORM_WALL,
+                    by2 - DORM_WALL,
+                    FLOOR_Z2,
+                    Textures.GROUND,
+                    tt=Textures.ROAD,
+                ),
+                box(
+                    SDORM_STAIR_X2,
+                    SDORM_STAIR_Y1,
+                    FLOOR_Z1,
+                    bx2 - DORM_WALL,
+                    SDORM_STAIR_Y2,
+                    FLOOR_Z2,
+                    Textures.GROUND,
+                    tt=Textures.ROAD,
+                ),
+            ]
+            # Descending steps: lowest at the west (door) end at the tunnel floor
+            # (FLOOR_Z2 - SDORM_LIFT in local coords), rising to the dorm floor.
+            for i in range(SDORM_STAIR_N):
+                brushes.append(
+                    box(
+                        SDORM_STAIR_X1 + i * SDORM_STAIR_RUN,
+                        SDORM_STAIR_Y1,
+                        FLOOR_Z2 - SDORM_LIFT,
+                        SDORM_STAIR_X1 + (i + 1) * SDORM_STAIR_RUN,
+                        SDORM_STAIR_Y2,
+                        (i + 1) * SDORM_STAIR_RISE - SDORM_LIFT,
+                        Textures.GROUND,
+                        tt=Textures.ROAD,
+                    )
+                )
+        else:
+            brushes.append(
+                box(
+                    bx1 + DORM_WALL,
+                    by1 + DORM_WALL,
+                    FLOOR_Z1,
+                    bx2 - DORM_WALL,
+                    by2 - DORM_WALL,
+                    FLOOR_Z2,
+                    Textures.GROUND,
+                    tt=Textures.ROAD,
+                )
             )
-        )
         # Center window openings on 2nd and 3rd floor (no entrance on these faces)
         mid_wxz = [
             (
@@ -804,14 +853,18 @@ def build():
                 bx1 + DORM_WALL,
                 FLOOR_Z2 + DORM_H,
                 wyz_west()
-                + [
-                    (
-                        cy - DORM_INNER_DOOR_HW,
-                        FLOOR_Z2 - SDORM_LIFT,
-                        cy + DORM_INNER_DOOR_HW,
-                        FLOOR_Z2,
-                    )
-                ],
+                + (
+                    [
+                        (
+                            cy - DORM_INNER_DOOR_HW,
+                            FLOOR_Z2 - SDORM_LIFT,
+                            cy + DORM_INNER_DOOR_HW,
+                            FLOOR_Z2,
+                        )
+                    ]
+                    if west_door
+                    else []
+                ),
                 "city2_1",
             )
         )
@@ -1272,6 +1325,7 @@ def build():
                     slat_lo=True,
                     chimney=True,
                     door_hi=True,
+                    stairwell=True,
                 )
             ],
         )
@@ -1290,6 +1344,7 @@ def build():
                     north_pier_x=DORM_PIER_X,
                     north_pier_hw=12,
                     north_min_floor=1,
+                    west_door=False,
                 )
             ],
         )
@@ -1331,7 +1386,7 @@ def build():
                     TUNN_X2,
                     DORM_SOUTH2_Y2,
                     FLOOR_Z2,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
                 box(
                     TUNN_XW,
@@ -1340,7 +1395,7 @@ def build():
                     TUNN_X2,
                     DORM_SOUTH2_Y2,
                     SDORM_LIFT + TUNN_T,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
                 box(
                     TUNN_XW,
@@ -1349,17 +1404,19 @@ def build():
                     TUNN_X1,
                     DORM_SOUTH2_Y2,
                     SDORM_LIFT,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
-                # Back-fill above ceiling to hillside level
-                box(
+                # Back-fill above ceiling — sloped to match embankment surface
+                ramp_slab(
                     TUNN_XW,
-                    DORM_SOUTH1_Y1,
-                    SDORM_LIFT + TUNN_T,
                     TUNN_X2,
+                    DORM_SOUTH1_Y1,
                     DORM_SOUTH2_Y2,
-                    BRIDGE_DZ2,
-                    Textures.STONE,
+                    SDORM_LIFT + TUNN_T,
+                    SDORM_LIFT + TUNN_T,
+                    emb_zt_tunn_w,
+                    emb_zt_tunn_e,
+                    Textures.GROUND,
                 ),
             ],
         ),
@@ -1375,7 +1432,7 @@ def build():
                     TUNN_X2,
                     DORM_NORTH_Y2,
                     FLOOR_Z2,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
                 box(
                     TUNN_XW,
@@ -1384,7 +1441,7 @@ def build():
                     TUNN_X2,
                     DORM_NORTH_Y2,
                     SDORM_LIFT + TUNN_T,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
                 box(
                     TUNN_XW,
@@ -1393,17 +1450,19 @@ def build():
                     TUNN_X1,
                     DORM_NORTH_Y2,
                     SDORM_LIFT,
-                    Textures.STONE,
+                    Textures.GROUND,
                 ),
-                # Back-fill above ceiling to hillside level
-                box(
+                # Back-fill above ceiling — sloped to match embankment surface
+                ramp_slab(
                     TUNN_XW,
-                    DORM_NORTH2_Y1_tunn,
-                    SDORM_LIFT + TUNN_T,
                     TUNN_X2,
+                    DORM_NORTH2_Y1_tunn,
                     DORM_NORTH_Y2,
-                    BRIDGE_DZ2,
-                    Textures.STONE,
+                    SDORM_LIFT + TUNN_T,
+                    SDORM_LIFT + TUNN_T,
+                    emb_zt_tunn_w,
+                    emb_zt_tunn_e,
+                    Textures.GROUND,
                 ),
             ],
         ),
@@ -1412,7 +1471,7 @@ def build():
 
     # Gap section — flat floor and ceiling (tunnel is underground throughout the gap)
     BRUSHES.append(
-        box(TUNN_XW, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.STONE)
+        box(TUNN_XW, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
     BRUSHES.append(
         box(
@@ -1422,22 +1481,24 @@ def build():
             TUNN_X2,
             gap_y2,
             SDORM_LIFT + TUNN_T,
-            Textures.STONE,
+            Textures.GROUND,
         )
     )
     BRUSHES.append(
-        box(TUNN_XW, gap_y1, FLOOR_Z2, TUNN_X1, gap_y2, SDORM_LIFT, Textures.STONE)
+        box(TUNN_XW, gap_y1, FLOOR_Z2, TUNN_X1, gap_y2, SDORM_LIFT, Textures.GROUND)
     )
-    # Back-fill above ceiling: terrain at TUNN_XW is ~205, ceiling_top is 144 — fully buried
+    # Back-fill above ceiling — sloped to match embankment surface (west ≈ 206, east ≈ 177)
     BRUSHES.append(
-        box(
+        ramp_slab(
             TUNN_XW,
-            gap_y1,
-            SDORM_LIFT + TUNN_T,
             TUNN_X2,
+            gap_y1,
             gap_y2,
-            BRIDGE_DZ2,
-            Textures.STONE,
+            SDORM_LIFT + TUNN_T,
+            SDORM_LIFT + TUNN_T,
+            emb_zt_tunn_w,
+            emb_zt_tunn_e,
+            Textures.GROUND,
         )
     )
 
@@ -1450,18 +1511,20 @@ def build():
             TUNN_X2,
             DORM_SOUTH1_Y1 + TUNN_T,
             BRIDGE_DZ2,
-            Textures.STONE,
+            Textures.GROUND,
         )
     )
     BRUSHES.append(
-        box(
+        ramp_slab(
             TUNN_XW,
-            DORM_NORTH_Y2 - TUNN_T,
-            FLOOR_Z1,
             TUNN_X2,
+            DORM_NORTH_Y2 - TUNN_T,
             DORM_NORTH_Y2,
-            BRIDGE_DZ2,
-            Textures.STONE,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            emb_zt_tunn_w,
+            emb_zt_tunn_e,
+            Textures.GROUND,
         )
     )
 
