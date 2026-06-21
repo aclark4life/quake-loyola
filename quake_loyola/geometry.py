@@ -375,26 +375,38 @@ def win_frame_xwall(
     face_y,
     out_sign,
     tex,
-    fw=6,
+    fw=4,
     fd=4,
     margin=2,
     crossbar=True,
     bottom=True,
-    inner_gap=3,
+    inner_gap=0,
+    ifw=None,
+    inner_recess=2,
 ):
     """Double window frame (outer + inner) inside a window opening in an X-normal wall.
 
-    Produces two concentric rectangular frames separated by a visible gap.  The
-    outer frame is inset by *margin* from the opening edges; the inner frame is
-    inset a further ``fw + inner_gap`` from the outer frame edges.  The crossbar
-    (horizontal mullion) is placed on the inner frame at half the frame-bar width.
+    Produces two concentric rectangular frames.  The outer frame is inset by
+    *margin* from the opening edges; the inner frame is inset a further
+    ``fw + inner_gap`` from the outer frame edges and recessed ``inner_recess``
+    units back from the wall face so it sits visibly behind the outer frame.
+    The crossbar (horizontal mullion) is centered in the wall depth (at ``fd//2``)
+    so it appears recessed and mid-plane.
 
-    ``fw``: frame bar width; ``fd``: protrusion depth; ``margin``: gap between
-    outer bar and opening edge; ``inner_gap``: clear space between the two frames.
+    ``fw``: outer frame bar width; ``ifw``: inner frame bar width (defaults to
+    ``fw - 1``); ``fd``: protrusion depth; ``margin``: gap between outer bar and
+    opening edge; ``inner_gap``: lateral clearance between the two frames (0 = flush);
+    ``inner_recess``: how far the inner frame's face sits behind the outer face.
     ``crossbar``: add a mullion dividing the inner pane into upper/lower halves.
     ``bottom``: include bottom bars (set False for doorways at floor level — the
     inner side bars then run all the way to floor level like the outer ones)."""
+    if ifw is None:
+        ifw = max(fw - 1, 2)
     ya, yb = sorted((face_y, face_y + out_sign * fd))
+    # Inner frame centered in wall depth: equal recess from front and back faces.
+    jya, jyb = sorted(
+        (face_y + out_sign * inner_recess, face_y + out_sign * (fd - inner_recess))
+    )
     ix1, ix2 = xl + margin, xr - margin
     iz1, iz2 = zb + margin, zt - margin
 
@@ -407,25 +419,29 @@ def win_frame_xwall(
         box(ix2 - fw, ya, iz1, ix2, yb, iz2, tex),  # right
     ]
 
-    # Inner frame — inset by (fw + inner_gap) from outer frame on every side.
+    # Inner frame — inset by (fw + inner_gap) from outer frame laterally, and
+    # recessed inner_recess units from the wall face.
     # When bottom=False (doorway), inner side bars run from floor level so the
     # two U-shapes share the same base.
     jx1 = ix1 + fw + inner_gap
     jx2 = ix2 - fw - inner_gap
     jz1 = iz1 + fw + inner_gap if bottom else iz1
     jz2 = iz2 - fw - inner_gap
-    if jx2 - jx1 > 2 * fw and jz2 - jz1 > 2 * fw:
-        bars.append(box(jx1, ya, jz2 - fw, jx2, yb, jz2, tex))  # top
+    if jx2 - jx1 > 2 * ifw and jz2 - jz1 > 2 * ifw:
+        bars.append(box(jx1, jya, jz2 - ifw, jx2, jyb, jz2, tex))  # top
         if bottom:
-            bars.append(box(jx1, ya, jz1, jx2, yb, jz1 + fw, tex))  # bottom
+            bars.append(box(jx1, jya, jz1, jx2, jyb, jz1 + ifw, tex))  # bottom
         bars += [
-            box(jx1, ya, jz1, jx1 + fw, yb, jz2, tex),  # left
-            box(jx2 - fw, ya, jz1, jx2, yb, jz2, tex),  # right
+            box(jx1, jya, jz1, jx1 + ifw, jyb, jz2, tex),  # left
+            box(jx2 - ifw, jya, jz1, jx2, jyb, jz2, tex),  # right
         ]
         if crossbar:
-            cb = max(fw // 2, 2)  # crossbar thickness ≈ half the frame-bar width
+            cb = max(ifw // 2, 2)  # crossbar height ≈ half the inner frame-bar width
             zc = (jz1 + jz2) // 2
-            bars.append(box(jx1, ya, zc - cb // 2, jx2, yb, zc + cb - cb // 2, tex))
+            # Crossbar centered in wall depth (fd//2) and recessed from the face.
+            cr = fd // 2 - ifw // 2
+            cya, cyb = sorted((face_y + out_sign * cr, face_y + out_sign * (cr + ifw)))
+            bars.append(box(jx1, cya, zc - cb // 2, jx2, cyb, zc + cb - cb // 2, tex))
     return bars
 
 
@@ -437,26 +453,38 @@ def win_frame_ywall(
     face_x,
     out_sign,
     tex,
-    fw=6,
+    fw=4,
     fd=4,
     margin=2,
     crossbar=True,
     bottom=True,
-    inner_gap=3,
+    inner_gap=0,
+    ifw=None,
+    inner_recess=2,
 ):
     """Double window frame (outer + inner) inside a window opening in a Y-normal wall.
 
-    Produces two concentric rectangular frames separated by a visible gap.  The
-    outer frame is inset by *margin* from the opening edges; the inner frame is
-    inset a further ``fw + inner_gap`` from the outer frame edges.  The crossbar
-    (horizontal mullion) is placed on the inner frame at half the frame-bar width.
+    Produces two concentric rectangular frames.  The outer frame is inset by
+    *margin* from the opening edges; the inner frame is inset a further
+    ``fw + inner_gap`` from the outer frame edges and recessed ``inner_recess``
+    units back from the wall face so it sits visibly behind the outer frame.
+    The crossbar (horizontal mullion) is centered in the wall depth (at ``fd//2``)
+    so it appears recessed and mid-plane.
 
-    ``fw``: frame bar width; ``fd``: protrusion depth; ``margin``: gap between
-    outer bar and opening edge; ``inner_gap``: clear space between the two frames.
+    ``fw``: outer frame bar width; ``ifw``: inner frame bar width (defaults to
+    ``fw - 1``); ``fd``: protrusion depth; ``margin``: gap between outer bar and
+    opening edge; ``inner_gap``: lateral clearance between the two frames (0 = flush);
+    ``inner_recess``: how far the inner frame's face sits behind the outer face.
     ``crossbar``: add a mullion dividing the inner pane into upper/lower halves.
     ``bottom``: include bottom bars (set False for doorways at floor level — the
     inner side bars then run all the way to floor level like the outer ones)."""
+    if ifw is None:
+        ifw = max(fw - 1, 2)
     xa, xb = sorted((face_x, face_x + out_sign * fd))
+    # Inner frame centered in wall depth: equal recess from front and back faces.
+    jxa, jxb = sorted(
+        (face_x + out_sign * inner_recess, face_x + out_sign * (fd - inner_recess))
+    )
     iy1, iy2 = yl + margin, yr - margin
     iz1, iz2 = zb + margin, zt - margin
 
@@ -469,24 +497,28 @@ def win_frame_ywall(
         box(xa, iy2 - fw, iz1, xb, iy2, iz2, tex),  # right
     ]
 
-    # Inner frame — inset by (fw + inner_gap) from outer frame on every side.
+    # Inner frame — inset by (fw + inner_gap) from outer frame laterally, and
+    # recessed inner_recess units from the wall face.
     # When bottom=False (doorway), inner side bars run from floor level.
     jy1 = iy1 + fw + inner_gap
     jy2 = iy2 - fw - inner_gap
     jz1 = iz1 + fw + inner_gap if bottom else iz1
     jz2 = iz2 - fw - inner_gap
-    if jy2 - jy1 > 2 * fw and jz2 - jz1 > 2 * fw:
-        bars.append(box(xa, jy1, jz2 - fw, xb, jy2, jz2, tex))  # top
+    if jy2 - jy1 > 2 * ifw and jz2 - jz1 > 2 * ifw:
+        bars.append(box(jxa, jy1, jz2 - ifw, jxb, jy2, jz2, tex))  # top
         if bottom:
-            bars.append(box(xa, jy1, jz1, xb, jy2, jz1 + fw, tex))  # bottom
+            bars.append(box(jxa, jy1, jz1, jxb, jy2, jz1 + ifw, tex))  # bottom
         bars += [
-            box(xa, jy1, jz1, xb, jy1 + fw, jz2, tex),  # left
-            box(xa, jy2 - fw, jz1, xb, jy2, jz2, tex),  # right
+            box(jxa, jy1, jz1, jxb, jy1 + ifw, jz2, tex),  # left
+            box(jxa, jy2 - ifw, jz1, jxb, jy2, jz2, tex),  # right
         ]
         if crossbar:
-            cb = max(fw // 2, 2)  # crossbar thickness ≈ half the frame-bar width
+            cb = max(ifw // 2, 2)  # crossbar height ≈ half the inner frame-bar width
             zc = (jz1 + jz2) // 2
-            bars.append(box(xa, jy1, zc - cb // 2, xb, jy2, zc + cb - cb // 2, tex))
+            # Crossbar centered in wall depth (fd//2) and recessed from the face.
+            cr = fd // 2 - ifw // 2
+            cxa, cxb = sorted((face_x + out_sign * cr, face_x + out_sign * (cr + ifw)))
+            bars.append(box(cxa, jy1, zc - cb // 2, cxb, jy2, zc + cb - cb // 2, tex))
     return bars
 
 
