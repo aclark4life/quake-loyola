@@ -59,7 +59,7 @@ def build():
     DORM_WIN_HH = 44  # window half-height
     DORM_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
     DORM_ENT_H = 100  # entrance height
-    DORM_INNER_DOOR_HW = 40  # half-width of doorway between adjacent buildings
+    DORM_INNER_DOOR_HW = 56  # half-width of doorway between adjacent buildings
     DORM_INNER_DOOR_H = 128  # height of doorway between adjacent buildings
 
     # Underground tunnel — dimensions and embankment interpolation
