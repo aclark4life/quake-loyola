@@ -1386,8 +1386,10 @@ def build():
                     Textures.GROUND,
                 ),
                 # Wedge ceiling — underside slopes from BRIDGE_DZ2-TUNN_T (west) to
-                # SDORM_LIFT (east); top face matches the embankment surface so the
-                # tunnel height grows naturally toward the world west wall.
+                # SDORM_LIFT (east). Top slopes from BRIDGE_DZ2 (west wall) down to
+                # SDORM_LIFT (east), tapering to a knife edge flush with the south
+                # terrace so the hill reads as a clean slope with no wedge poking
+                # above the terrace; the dorm interior/terrace are untouched.
                 ramp_slab(
                     BRIDGE_X1,
                     TUNN_X2,
@@ -1396,7 +1398,7 @@ def build():
                     BRIDGE_DZ2 - TUNN_T,
                     SDORM_LIFT,
                     BRIDGE_DZ2,
-                    emb_zt_tunn_e,
+                    SDORM_LIFT,
                     Textures.GROUND,
                 ),
             ],
@@ -1438,6 +1440,8 @@ def build():
         box(BRIDGE_X1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
     # Wedge ceiling for the gap section — same profile as south/north.
+    # ts=SKY: the south gable end at gap_y1 is partially exposed above the
+    # south section's knife edge (128 vs 177); sky texture keeps it invisible.
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
@@ -1449,6 +1453,7 @@ def build():
             BRIDGE_DZ2,
             emb_zt_tunn_e,
             Textures.GROUND,
+            ts=Textures.SKY,
         )
     )
 

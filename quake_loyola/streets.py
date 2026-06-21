@@ -9,6 +9,7 @@ from .constants import (
     BRIDGE_X1,
     BRIDGE_Y1,
     BRIDGE_Y2,
+    DORM_X1,
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT_X2,
@@ -61,6 +62,7 @@ def build():
             Textures.GROUND,
         )
     )  # floor
+    # W wall — split by Z so only the tunnel-height portion shows ground on its inner face.
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -68,10 +70,22 @@ def build():
             FLOOR_Z1,
             WORLD_X1 + WALL_T,
             WORLD_Y2,
+            BRIDGE_DZ2,
+            Textures.SKY,
+            te=Textures.GROUND,  # inner east face at tunnel height → ground
+        )
+    )  # W wall lower (tunnel height)
+    BRUSHES.append(
+        box(
+            WORLD_X1,
+            WORLD_Y1,
+            BRIDGE_DZ2,
+            WORLD_X1 + WALL_T,
+            WORLD_Y2,
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # W wall
+    )  # W wall upper (above tunnel)
     BRUSHES.append(
         box(
             WORLD_X2_EXT - WALL_T,
@@ -83,9 +97,42 @@ def build():
             Textures.SKY,
         )
     )  # E wall
+    # N wall — split at DORM_X1 (tunnel east boundary).  The inner (south) face is
+    # split ALONG the tunnel ceiling-underside line, which slopes from
+    # BRIDGE_DZ2-WALL_T at the world wall down to SDORM_LIFT at DORM_X1: ground on
+    # the visible tunnel end-wall below that line, sky above it (the band above is
+    # buried in the hillside slab / open sky), so no ground triangle pokes above
+    # the hill.  This line is always below the hill roofline, so it stays hidden.
+    BRUSHES.append(
+        ramp_slab(
+            WORLD_X1,
+            DORM_X1,
+            WORLD_Y2 - WALL_T,
+            WORLD_Y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            BRIDGE_DZ2 - WALL_T,
+            SDORM_LIFT,
+            Textures.SKY,
+            ts=Textures.GROUND,  # inner south face = tunnel end-wall → ground
+        )
+    )  # N wall tunnel portal (ground up to the ceiling-underside line)
+    BRUSHES.append(
+        ramp_slab(
+            WORLD_X1,
+            DORM_X1,
+            WORLD_Y2 - WALL_T,
+            WORLD_Y2,
+            BRIDGE_DZ2 - WALL_T,
+            SDORM_LIFT,
+            WORLD_Z2,
+            WORLD_Z2,
+            Textures.SKY,
+        )
+    )  # N wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
         box(
-            WORLD_X1,
+            DORM_X1,
             WORLD_Y2 - WALL_T,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -93,10 +140,38 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # N wall
+    )  # N wall east of tunnel
+    # S wall — mirror of N wall split (ground below the ceiling-underside line, sky above).
+    BRUSHES.append(
+        ramp_slab(
+            WORLD_X1,
+            DORM_X1,
+            WORLD_Y1,
+            WORLD_Y1 + WALL_T,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            BRIDGE_DZ2 - WALL_T,
+            SDORM_LIFT,
+            Textures.SKY,
+            ts=Textures.GROUND,  # inner north face = tunnel end-wall → ground
+        )
+    )  # S wall tunnel portal (ground up to the ceiling-underside line)
+    BRUSHES.append(
+        ramp_slab(
+            WORLD_X1,
+            DORM_X1,
+            WORLD_Y1,
+            WORLD_Y1 + WALL_T,
+            BRIDGE_DZ2 - WALL_T,
+            SDORM_LIFT,
+            WORLD_Z2,
+            WORLD_Z2,
+            Textures.SKY,
+        )
+    )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
         box(
-            WORLD_X1,
+            DORM_X1,
             WORLD_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -104,7 +179,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # S wall
+    )  # S wall east of tunnel
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1140,7 +1215,7 @@ def build():
     DORM_DEPTH = 450  # building N-S depth
     DORM_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
     DORM_X2 = DORM_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
-    DORM_X1 = DORM_X2 - 576  # west face of building (doubled width)
+    # DORM_X1 imported from constants (= DORM_X2 - 576)
     DORM_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
     DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH  # north building south face
     DORM_SOUTH1_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
@@ -1154,6 +1229,13 @@ def build():
     emb_zt_at_ab_x1 = int(
         BRIDGE_DZ2
         + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X1 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
+    )
+    # Same hill-slope interpolation at the building's east face — used where the
+    # ramp must skip the (now hollow) building interior and only fill the narrow
+    # east toe strip between the east wall and the embankment edge.
+    emb_zt_at_dorm_x2 = int(
+        BRIDGE_DZ2
+        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X2 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
     )
     # Gap segment — east of the tunnel channel only (DORM_X1 to DORM_EMB_X2).
     # The entire strip west of DORM_X1 aligned with the dorm buildings is now open
@@ -1172,21 +1254,22 @@ def build():
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
+            ts=Textures.SKY,  # gable ends face N/S world boundary — show sky
         )
     )
-    # North building cluster — east of tunnel channel (DORM_X1 to DORM_EMB_X2).
-    # Mirrors the gap-segment ramp above but for the north cluster Y range.
-    # The west strip (BRIDGE_X1 to DORM_X1) for this Y range is tunnel + backfill
-    # handled by west_campus.py; this slab restores the missing east-half fill.
+    # North building cluster — east toe strip only (DORM_X2 to DORM_EMB_X2).
+    # The building interior (DORM_X1 to DORM_X2) is left hollow (carved out of the
+    # hill) so the north dorms are open rooms with a flat floor at tunnel level;
+    # only the narrow strip east of the building wall is backfilled to grade.
     BRUSHES.append(
         ramp_slab(
-            DORM_X1,
+            DORM_X2,
             DORM_EMB_X2,
             DORM_NORTH2_Y1,
             DORM_NORTH_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            emb_zt_at_ab_x1,
+            emb_zt_at_dorm_x2,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
@@ -1195,6 +1278,8 @@ def build():
     # North of north building — east strip only (DORM_X1 to DORM_EMB_X2).
     # The west strip (BRIDGE_X1..DORM_X1) is now the tunnel north extension,
     # owned by west_campus.py, so this ramp starts at DORM_X1.
+    # ts=SKY: south gable end at DORM_NORTH_Y2 is partially exposed in the
+    # carved-out north dorm interior (north cluster ramp starts at DORM_X2).
     BRUSHES.append(
         ramp_slab(
             DORM_X1,
@@ -1207,6 +1292,7 @@ def build():
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
+            ts=Textures.SKY,  # gable end visible behind north dorms — show sky
         )
     )
 

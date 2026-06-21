@@ -10,16 +10,38 @@ from .mapdata import Brush, Entity, Face
 from .utils import swap_xy
 
 
-def box(x1, y1, z1, x2, y2, z2, tex, tt=None, tb=None, tt_params="0 0 0 1 1"):
-    """Axis-aligned rectangular brush. tex=sides, tt=top, tb=bottom (default to tex)."""
+def box(
+    x1,
+    y1,
+    z1,
+    x2,
+    y2,
+    z2,
+    tex,
+    tt=None,
+    tb=None,
+    tt_params="0 0 0 1 1",
+    tw=None,
+    te=None,
+    ts=None,
+    tn=None,
+):
+    """Axis-aligned rectangular brush.
+    tex=all sides (default).  Per-face overrides:
+      tt=top, tb=bottom, tw=-X (west), te=+X (east), ts=-Y (south), tn=+Y (north).
+    """
     tt = tt or tex
     tb = tb or tex
+    tw = tw or tex
+    te = te or tex
+    ts = ts or tex
+    tn = tn or tex
     return Brush(
         [
-            Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tex),
-            Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), tex),
-            Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), tex),
-            Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tex),
+            Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw),  # -X west
+            Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), te),  # +X east
+            Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ts),  # -Y south
+            Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tn),  # +Y north
             Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
             Face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
         ]
