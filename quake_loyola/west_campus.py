@@ -1385,24 +1385,16 @@ def build():
                     FLOOR_Z2,
                     Textures.GROUND,
                 ),
-                # Ceiling — extends to world west wall
-                box(
-                    BRIDGE_X1,
-                    DORM_SOUTH1_Y1,
-                    SDORM_LIFT,
-                    TUNN_X2,
-                    DORM_SOUTH2_Y2,
-                    SDORM_LIFT + TUNN_T,
-                    Textures.GROUND,
-                ),
-                # Back-fill above ceiling — sloped from world west wall to building face
+                # Wedge ceiling — underside slopes from BRIDGE_DZ2-TUNN_T (west) to
+                # SDORM_LIFT (east); top face matches the embankment surface so the
+                # tunnel height grows naturally toward the world west wall.
                 ramp_slab(
                     BRIDGE_X1,
                     TUNN_X2,
                     DORM_SOUTH1_Y1,
                     DORM_SOUTH2_Y2,
-                    SDORM_LIFT + TUNN_T,
-                    SDORM_LIFT + TUNN_T,
+                    BRIDGE_DZ2 - TUNN_T,
+                    SDORM_LIFT,
                     BRIDGE_DZ2,
                     emb_zt_tunn_e,
                     Textures.GROUND,
@@ -1424,24 +1416,14 @@ def build():
                     FLOOR_Z2,
                     Textures.GROUND,
                 ),
-                # Ceiling — extends to world west wall
-                box(
-                    BRIDGE_X1,
-                    DORM_NORTH2_Y1_tunn,
-                    SDORM_LIFT,
-                    TUNN_X2,
-                    DORM_NORTH_Y2,
-                    SDORM_LIFT + TUNN_T,
-                    Textures.GROUND,
-                ),
-                # Back-fill above ceiling — sloped from world west wall to building face
+                # Wedge ceiling — same profile as the south section.
                 ramp_slab(
                     BRIDGE_X1,
                     TUNN_X2,
                     DORM_NORTH2_Y1_tunn,
                     DORM_NORTH_Y2,
-                    SDORM_LIFT + TUNN_T,
-                    SDORM_LIFT + TUNN_T,
+                    BRIDGE_DZ2 - TUNN_T,
+                    SDORM_LIFT,
                     BRIDGE_DZ2,
                     emb_zt_tunn_e,
                     Textures.GROUND,
@@ -1455,26 +1437,42 @@ def build():
     BRUSHES.append(
         box(BRIDGE_X1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
-    BRUSHES.append(
-        box(
-            BRIDGE_X1,
-            gap_y1,
-            SDORM_LIFT,
-            TUNN_X2,
-            gap_y2,
-            SDORM_LIFT + TUNN_T,
-            Textures.GROUND,
-        )
-    )
-    # Back-fill above ceiling — sloped from world west wall to building face
+    # Wedge ceiling for the gap section — same profile as south/north.
     BRUSHES.append(
         ramp_slab(
             BRIDGE_X1,
             TUNN_X2,
             gap_y1,
             gap_y2,
-            SDORM_LIFT + TUNN_T,
-            SDORM_LIFT + TUNN_T,
+            BRIDGE_DZ2 - TUNN_T,
+            SDORM_LIFT,
+            BRIDGE_DZ2,
+            emb_zt_tunn_e,
+            Textures.GROUND,
+        )
+    )
+
+    # North extension — from north building's north face to the world north wall.
+    # Same wedge-ceiling profile as the other sections; no buildings above, just ramp.
+    BRUSHES.append(
+        box(
+            BRIDGE_X1,
+            DORM_NORTH_Y2,
+            FLOOR_Z1,
+            TUNN_X2,
+            CHARLES_Y2,
+            FLOOR_Z2,
+            Textures.GROUND,
+        )
+    )
+    BRUSHES.append(
+        ramp_slab(
+            BRIDGE_X1,
+            TUNN_X2,
+            DORM_NORTH_Y2,
+            CHARLES_Y2,
+            BRIDGE_DZ2 - TUNN_T,
+            SDORM_LIFT,
             BRIDGE_DZ2,
             emb_zt_tunn_e,
             Textures.GROUND,
@@ -1483,11 +1481,11 @@ def build():
 
     # ── Lights for the west-side underground tunnel space ────────────────────
     # Evenly-spaced along the full N-S extent of the tunnel (DORM_SOUTH1_Y1 to
-    # DORM_NORTH_Y2), centred in the X width of the tunnel, at mid-height.
+    # CHARLES_Y2), centred in the X width of the tunnel, at mid-height.
     _tunn_light_x = (BRIDGE_X1 + DORM_X1) // 2  # centre of full tunnel width
     _tunn_light_z = SDORM_LIFT // 2  # mid-height between floor (0) and ceiling (128)
     _tunn_y_start = DORM_SOUTH1_Y1 + 200  # 200 units from south end
-    _tunn_y_end = DORM_NORTH_Y2 - 200  # 200 units from north end
+    _tunn_y_end = CHARLES_Y2 - 200  # 200 units from north end
     _tunn_light_count = 7
     for _i in range(_tunn_light_count):
         _ly = _tunn_y_start + (_tunn_y_end - _tunn_y_start) * _i // (
