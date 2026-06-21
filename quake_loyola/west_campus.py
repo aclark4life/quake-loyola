@@ -930,10 +930,20 @@ def build():
                     ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx)
                 )
 
+            # Flat ridge cap: stop each slope DECK_HW units short of the ridge
+            # centreline and fill the gap with a flat-topped box.  This eliminates
+            # the invisible clip-hull wedge that Quake generates when two opposing
+            # sloped brushes meet at a knife-edge, which otherwise traps players
+            # walking on the roof near the chimney.
+            # The slope hull expansion in X is ~17 units, so DECK_HW must exceed 17
+            # for the two expanded slope hulls not to overlap and create a phantom
+            # solid wedge above the deck.  24 gives a ~7-unit safety margin.
+            DECK_HW = 24  # half-width of the flat ridge cap strip (48 units total)
+            deck_x1, deck_x2 = cx - DECK_HW, cx + DECK_HW
             brushes += [
                 ramp_slab(  # west slope, south of shaft
                     bx1,
-                    cx,
+                    deck_x1,
                     sy1,
                     chim_y1,
                     eave_z,
@@ -945,7 +955,7 @@ def build():
                 ),
                 ramp_slab(  # west slope, north of shaft
                     bx1,
-                    cx,
+                    deck_x1,
                     chim_y2,
                     sy2,
                     eave_z,
@@ -968,7 +978,7 @@ def build():
                     ts=Textures.GABLE,
                 ),
                 ramp_slab(  # east slope, south of shaft
-                    cx,
+                    deck_x2,
                     bx2,
                     sy1,
                     chim_y1,
@@ -980,7 +990,7 @@ def build():
                     ts=Textures.GABLE,
                 ),
                 ramp_slab(  # east slope, north of shaft
-                    cx,
+                    deck_x2,
                     bx2,
                     chim_y2,
                     sy2,
@@ -1002,6 +1012,25 @@ def build():
                     eave_z + slab_t,
                     Textures.ROOF,
                     ts=Textures.GABLE,
+                ),
+                # Flat ridge cap south and north of chimney bay
+                box(
+                    deck_x1,
+                    sy1,
+                    ridge_z,
+                    deck_x2,
+                    chim_y1,
+                    ridge_z + slab_t,
+                    Textures.ROOF,
+                ),
+                box(
+                    deck_x1,
+                    chim_y2,
+                    ridge_z,
+                    deck_x2,
+                    sy2,
+                    ridge_z + slab_t,
+                    Textures.ROOF,
                 ),
             ]
             # Hollow brick stack rising above the ridge, open at the top
