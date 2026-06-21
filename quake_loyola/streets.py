@@ -1155,48 +1155,11 @@ def build():
         BRIDGE_DZ2
         + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X1 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
     )
-    # Underground tunnel connecting south and north dorm clusters runs at
-    # x = TUNN_XW to DORM_X1 (80-unit interior + 16-unit outer wall west of buildings).
-    # All embankment slabs in that X range are clipped to leave the tunnel channel clear.
-    TUNN_XW = (
-        DORM_X1 - 96
-    )  # outer west wall of tunnel (DORM_X1 - 80 interior - 16 wall)
-    emb_zt_at_tunn_xw = int(
-        BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_XW - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
-    )
-    # South segment — west of south buildings, clipped at TUNN_XW to leave tunnel channel
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE_X1,
-            TUNN_XW,
-            CHARLES_Y1,
-            DORM_SOUTH2_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            BRIDGE_DZ2,
-            emb_zt_at_tunn_xw,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # Gap segment — split around tunnel channel:
-    # west of tunnel (BRIDGE_X1 to TUNN_XW) and east of tunnel (DORM_X1 to DORM_EMB_X2)
+    # Gap segment — east of the tunnel channel only (DORM_X1 to DORM_EMB_X2).
+    # The entire strip west of DORM_X1 aligned with the dorm buildings is now open
+    # tunnel volume that extends all the way to the world west wall; geometry for
+    # that hollow is handled entirely in west_campus.py.
     DORM_NORTH2_Y1 = DORM_NORTH_Y1 - DORM_DEPTH  # south face of north building 2
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE_X1,
-            TUNN_XW,
-            DORM_SOUTH2_Y2,
-            DORM_NORTH2_Y1,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            BRIDGE_DZ2,
-            emb_zt_at_tunn_xw,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
     BRUSHES.append(
         ramp_slab(
             DORM_X1,
@@ -1207,36 +1170,6 @@ def build():
             FLOOR_Z1,
             emb_zt_at_ab_x1,
             FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # West of north building 2 — clipped at TUNN_XW to leave tunnel channel
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE_X1,
-            TUNN_XW,
-            DORM_NORTH2_Y1,
-            DORM_NORTH_Y1,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            BRIDGE_DZ2,
-            emb_zt_at_tunn_xw,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # Middle segment (north building 1) — clipped at TUNN_XW to leave tunnel channel
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE_X1,
-            TUNN_XW,
-            DORM_NORTH_Y1,
-            DORM_NORTH_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            BRIDGE_DZ2,
-            emb_zt_at_tunn_xw,
             Textures.GROUND,
             tt=Textures.GROUND,
         )

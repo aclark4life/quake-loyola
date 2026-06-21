@@ -36,6 +36,7 @@ from .constants import (
 from .geometry import (
     box,
     brush_ent,
+    ent,
     entrance_arch_xwall,
     entrance_arch_ywall,
     gable_slats,
@@ -61,21 +62,13 @@ def build():
     DORM_INNER_DOOR_HW = 40  # half-width of doorway between adjacent buildings
     DORM_INNER_DOOR_H = 128  # height of doorway between adjacent buildings
 
-    # Underground tunnel connecting south and north dorm clusters
-    TUNN_W = 80  # interior X-depth (west into hillside)
+    # Underground tunnel — dimensions and embankment interpolation
     TUNN_T = DORM_WALL  # wall/ceiling/floor thickness (= 16)
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
-    TUNN_X2 = DORM_X1  # east tunnel face = west face of buildings
-    TUNN_X1 = TUNN_X2 - TUNN_W  # inner west face of tunnel interior
-    TUNN_XW = TUNN_X1 - TUNN_T  # outer west wall (= DORM_X1 - 96)
+    TUNN_X2 = DORM_X1  # east face of tunnel = west face of buildings
 
-    # Embankment surface Z at the west/east faces of the tunnel channel.
-    # Reproduces the ramp_slab formula used in streets.py so back-fill tops
-    # sit flush with the hillside rather than protruding above it.
+    # Embankment surface Z at the building's west face (east end of the backfill ramp).
     _emb_denom = DORM_EMB_X2 - BRIDGE_X1
-    emb_zt_tunn_w = int(
-        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_XW - BRIDGE_X1) / _emb_denom
-    )
     emb_zt_tunn_e = int(
         BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_X2 - BRIDGE_X1) / _emb_denom
     )
@@ -1365,22 +1358,26 @@ def build():
             )
         )
 
-    # ── Underground tunnel connecting south and north dorm clusters ───────────
-    # Runs along the western face of all four dorm buildings (x = TUNN_XW to DORM_X1)
-    # and through the gap between clusters. Floor is flat at SDORM_LIFT under the south
-    # dorms, ramps down to FLOOR_Z2 through the gap, then flat under the north dorms.
-    # Terrain slabs in streets.py are clipped to TUNN_XW to leave this channel clear.
+    # ── Underground tunnel — full west strip from world west wall to buildings ──
+    # Extends from BRIDGE_X1 (inner face of the west sky-wall) to DORM_X1 (building
+    # west face) across the full N-S span of both dorm clusters and the gap between
+    # them.  Floor is at FLOOR_Z2, ceiling at SDORM_LIFT / SDORM_LIFT+TUNN_T.
+    # Above the ceiling a sloped backfill slab (at BRIDGE_DZ2 on the west side,
+    # grading down to emb_zt_tunn_e at DORM_X1) fills the hillside; streets.py no
+    # longer places any embankment in the BRIDGE_X1-to-DORM_X1 X-range for these
+    # Y segments since the tunnel now owns the whole strip.
     DORM_NORTH2_Y1_tunn = DORM_NORTH_Y1 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     gap_y1, gap_y2 = DORM_SOUTH2_Y2, DORM_NORTH2_Y1_tunn
 
     for seg_y1, seg_y2, tunn_brushes in [
-        # South flat section — floor at FLOOR_Z2, ceiling at SDORM_LIFT (fully underground)
+        # South flat section — fully underground under the south dorm pair
         (
             DORM_SOUTH1_Y1,
             DORM_SOUTH2_Y2,
             [
+                # Floor — extends to world west wall
                 box(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     DORM_SOUTH1_Y1,
                     FLOOR_Z1,
                     TUNN_X2,
@@ -1388,8 +1385,9 @@ def build():
                     FLOOR_Z2,
                     Textures.GROUND,
                 ),
+                # Ceiling — extends to world west wall
                 box(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     DORM_SOUTH1_Y1,
                     SDORM_LIFT,
                     TUNN_X2,
@@ -1397,36 +1395,28 @@ def build():
                     SDORM_LIFT + TUNN_T,
                     Textures.GROUND,
                 ),
-                box(
-                    TUNN_XW,
-                    DORM_SOUTH1_Y1,
-                    FLOOR_Z2,
-                    TUNN_X1,
-                    DORM_SOUTH2_Y2,
-                    SDORM_LIFT,
-                    Textures.GROUND,
-                ),
-                # Back-fill above ceiling — sloped to match embankment surface
+                # Back-fill above ceiling — sloped from world west wall to building face
                 ramp_slab(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     TUNN_X2,
                     DORM_SOUTH1_Y1,
                     DORM_SOUTH2_Y2,
                     SDORM_LIFT + TUNN_T,
                     SDORM_LIFT + TUNN_T,
-                    emb_zt_tunn_w,
+                    BRIDGE_DZ2,
                     emb_zt_tunn_e,
                     Textures.GROUND,
                 ),
             ],
         ),
-        # North flat section — floor at FLOOR_Z2, ceiling at SDORM_LIFT
+        # North flat section — fully underground under the north dorm pair
         (
             DORM_NORTH2_Y1_tunn,
             DORM_NORTH_Y2,
             [
+                # Floor — extends to world west wall
                 box(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     DORM_NORTH2_Y1_tunn,
                     FLOOR_Z1,
                     TUNN_X2,
@@ -1434,8 +1424,9 @@ def build():
                     FLOOR_Z2,
                     Textures.GROUND,
                 ),
+                # Ceiling — extends to world west wall
                 box(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     DORM_NORTH2_Y1_tunn,
                     SDORM_LIFT,
                     TUNN_X2,
@@ -1443,24 +1434,15 @@ def build():
                     SDORM_LIFT + TUNN_T,
                     Textures.GROUND,
                 ),
-                box(
-                    TUNN_XW,
-                    DORM_NORTH2_Y1_tunn,
-                    FLOOR_Z2,
-                    TUNN_X1,
-                    DORM_NORTH_Y2,
-                    SDORM_LIFT,
-                    Textures.GROUND,
-                ),
-                # Back-fill above ceiling — sloped to match embankment surface
+                # Back-fill above ceiling — sloped from world west wall to building face
                 ramp_slab(
-                    TUNN_XW,
+                    BRIDGE_X1,
                     TUNN_X2,
                     DORM_NORTH2_Y1_tunn,
                     DORM_NORTH_Y2,
                     SDORM_LIFT + TUNN_T,
                     SDORM_LIFT + TUNN_T,
-                    emb_zt_tunn_w,
+                    BRIDGE_DZ2,
                     emb_zt_tunn_e,
                     Textures.GROUND,
                 ),
@@ -1469,13 +1451,13 @@ def build():
     ]:
         BRUSHES.extend(tunn_brushes)
 
-    # Gap section — flat floor and ceiling (tunnel is underground throughout the gap)
+    # Gap section — open tunnel running from world west wall through the gap between clusters
     BRUSHES.append(
-        box(TUNN_XW, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
+        box(BRIDGE_X1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
     BRUSHES.append(
         box(
-            TUNN_XW,
+            BRIDGE_X1,
             gap_y1,
             SDORM_LIFT,
             TUNN_X2,
@@ -1484,23 +1466,36 @@ def build():
             Textures.GROUND,
         )
     )
-    BRUSHES.append(
-        box(TUNN_XW, gap_y1, FLOOR_Z2, TUNN_X1, gap_y2, SDORM_LIFT, Textures.GROUND)
-    )
-    # Back-fill above ceiling — sloped to match embankment surface (west ≈ 206, east ≈ 177)
+    # Back-fill above ceiling — sloped from world west wall to building face
     BRUSHES.append(
         ramp_slab(
-            TUNN_XW,
+            BRIDGE_X1,
             TUNN_X2,
             gap_y1,
             gap_y2,
             SDORM_LIFT + TUNN_T,
             SDORM_LIFT + TUNN_T,
-            emb_zt_tunn_w,
+            BRIDGE_DZ2,
             emb_zt_tunn_e,
             Textures.GROUND,
         )
     )
+
+    # ── Lights for the west-side underground tunnel space ────────────────────
+    # Evenly-spaced along the full N-S extent of the tunnel (DORM_SOUTH1_Y1 to
+    # DORM_NORTH_Y2), centred in the X width of the tunnel, at mid-height.
+    _tunn_light_x = (BRIDGE_X1 + DORM_X1) // 2  # centre of full tunnel width
+    _tunn_light_z = SDORM_LIFT // 2  # mid-height between floor (0) and ceiling (128)
+    _tunn_y_start = DORM_SOUTH1_Y1 + 200  # 200 units from south end
+    _tunn_y_end = DORM_NORTH_Y2 - 200  # 200 units from north end
+    _tunn_light_count = 7
+    for _i in range(_tunn_light_count):
+        _ly = _tunn_y_start + (_tunn_y_end - _tunn_y_start) * _i // (
+            _tunn_light_count - 1
+        )
+        ENTITIES.append(
+            ent("light", origin=f"{_tunn_light_x} {_ly} {_tunn_light_z}", light="220")
+        )
 
     # Iron fence along east face of west buildings ──────────────────────────
     FENCE_X1 = DORM_X2 + 216  # pushed further east to sit outside the front walkway
