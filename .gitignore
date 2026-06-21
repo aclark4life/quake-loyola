@@ -1,5 +1,6 @@
 # Compiled BSP and related output
 *.bsp
+*.map
 *.prt
 *.pts
 *.log
