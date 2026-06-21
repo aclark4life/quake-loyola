@@ -141,6 +141,23 @@ def build():
             for wy in wy_list
         ]
 
+    def nb_wins_yz_double(wy_list):
+        """Double window openings for Y-facing wall — two full-single-sized panes per floor."""
+        DBL_HALF_GAP = 4  # half the mullion gap between the two panes
+        result = []
+        for fl in range(DORM_FLOORS):
+            for wy in wy_list:
+                zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
+                zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+                # Each pane is a full single-window width (DORM_WIN_HW * 2)
+                result.append(
+                    (wy - DORM_WIN_HW * 2 - DBL_HALF_GAP, zb, wy - DBL_HALF_GAP, zt)
+                )
+                result.append(
+                    (wy + DBL_HALF_GAP, zb, wy + DORM_WIN_HW * 2 + DBL_HALF_GAP, zt)
+                )
+        return result
+
     def nb_wins_xz_upper(wx_list, x_clear=None):
         """X-facing wall windows from floor 1 up — floor 0 is buried by the
         gap embankment on the NB2 south face and NB1 north face.
@@ -195,15 +212,12 @@ def build():
         )
     )
     # East wall — windows only (no entrance)
-    dorm_e_openings = nb_wins_yz(dorm_wy) + [
-        (
-            DORM_NORTH_CY - DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-            DORM_NORTH_CY + DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-        )
-        for fl in range(DORM_FLOORS)
-    ]
+    # Explicit even-spaced positions within NB1 (G≈65): sets 4(D), 5(S).
+    nb1_e_double_wy = DORM_NORTH_Y1 + 157  # set 4 double
+    nb1_e_single_wy = DORM_NORTH_Y1 + 334  # set 5 single
+    dorm_e_openings = nb_wins_yz_double([nb1_e_double_wy]) + nb_wins_yz(
+        [nb1_e_single_wy]
+    )
     north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM_WALL,
@@ -253,21 +267,7 @@ def build():
 
     # ── Decorative wood trim (window frames only — no entrance arches) ───────────────
 
-    # Door frame — ground-floor center doorway to building 2 (south face, interior wall)
-    north_bldg_detail += win_frame_xwall(
-        DORM_CX - DORM_INNER_DOOR_HW,
-        DORM_CX + DORM_INNER_DOOR_HW,
-        FLOOR_Z2,
-        FLOOR_Z2 + DORM_INNER_DOOR_H,
-        DORM_NORTH_Y1,
-        +1,
-        Textures.GABLE,
-        fw=8,  # thick frame bars
-        fd=DORM_WALL,
-        margin=DORM_WIN_MARGIN,
-        crossbar=False,
-        bottom=False,
-    )
+    # Door frame removed — south wall between NB1 and NB2 is gone.
     # Window frames — north face (floors 0 and wx<-1652 floor 1 buried by gap embankment)
     for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
         north_bldg_detail += win_frame_xwall(
@@ -297,8 +297,23 @@ def build():
             margin=DORM_WIN_MARGIN,
             crossbar=True,
         )
-    # Window frames — east face (all windows; no entrance to skip)
-    for yl, zb, yr, zt in nb_wins_yz(dorm_wy):
+    # Door frame — ground-floor center doorway to building 2 (south face, interior wall)
+    north_bldg_detail += win_frame_xwall(
+        DORM_CX - DORM_INNER_DOOR_HW,
+        DORM_CX + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + DORM_INNER_DOOR_H,
+        DORM_NORTH_Y1,
+        +1,
+        Textures.GABLE,
+        fw=8,
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
+    # Window frames — east face (set4 double, set5 single) — evenly spaced
+    for yl, zb, yr, zt in nb_wins_yz_double([nb1_e_double_wy]):
         north_bldg_detail += win_frame_ywall(
             yl,
             yr,
@@ -310,13 +325,10 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Center window frames — east face, all floors
-    for fl in range(DORM_FLOORS):
-        zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-        zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+    for yl, zb, yr, zt in nb_wins_yz([nb1_e_single_wy]):
         north_bldg_detail += win_frame_ywall(
-            DORM_NORTH_CY - DORM_WIN_HW,
-            DORM_NORTH_CY + DORM_WIN_HW,
+            yl,
+            yr,
             zb,
             zt,
             DORM_X2,
@@ -485,6 +497,10 @@ def build():
         )
     )
     # East wall — windows only (no entrance, no arch)
+    # Explicit even-spaced positions within NB2 (G≈30): sets 1(S), 2(S), 3(D).
+    nb2_e_wy_s1 = DORM_NORTH2_Y1 + 82  # set 1 single
+    nb2_e_wy_s2 = DORM_NORTH2_Y1 + 184  # set 2 single
+    nb2_e_double_wy = DORM_NORTH2_Y1 + 326  # set 3 double
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM_WALL,
@@ -493,7 +509,8 @@ def build():
             DORM_NORTH2_Y2 - DORM_WALL,
             DORM_X2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz(dorm_wy2),
+            nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2])
+            + nb_wins_yz_double([nb2_e_double_wy]),
             "city2_1",
         )
     )
@@ -549,23 +566,8 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    # Door frame — ground-floor center doorway to building 1 (north face, interior wall)
-    north2_bldg_detail += win_frame_xwall(
-        DORM_CX - DORM_INNER_DOOR_HW,
-        DORM_CX + DORM_INNER_DOOR_HW,
-        FLOOR_Z2,
-        FLOOR_Z2 + DORM_INNER_DOOR_H,
-        DORM_NORTH2_Y2,
-        -1,
-        Textures.GABLE,
-        fw=8,  # thick frame bars
-        fd=DORM_WALL,
-        margin=DORM_WIN_MARGIN,
-        crossbar=False,
-        bottom=False,
-    )
-    # Window frames — east face (no entrance; all windows get frames)
-    for yl, zb, yr, zt in nb_wins_yz(dorm_wy2):
+    # Window frames — east face (set1+2 single; set3 double) — evenly spaced
+    for yl, zb, yr, zt in nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2]):
         north2_bldg_detail += win_frame_ywall(
             yl,
             yr,
@@ -577,6 +579,33 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
+    for yl, zb, yr, zt in nb_wins_yz_double([nb2_e_double_wy]):
+        north2_bldg_detail += win_frame_ywall(
+            yl,
+            yr,
+            zb,
+            zt,
+            DORM_X2,
+            -1,
+            Textures.GABLE,
+            fd=DORM_WALL,
+            margin=DORM_WIN_MARGIN,
+        )
+    # Door frame — ground-floor center doorway to building 1 (north face, interior wall)
+    north2_bldg_detail += win_frame_xwall(
+        DORM_CX - DORM_INNER_DOOR_HW,
+        DORM_CX + DORM_INNER_DOOR_HW,
+        FLOOR_Z2,
+        FLOOR_Z2 + DORM_INNER_DOOR_H,
+        DORM_NORTH2_Y2,
+        -1,
+        Textures.GABLE,
+        fw=8,
+        fd=DORM_WALL,
+        margin=DORM_WIN_MARGIN,
+        crossbar=False,
+        bottom=False,
+    )
     # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
     for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy2):
         north2_bldg_detail += win_frame_ywall(
