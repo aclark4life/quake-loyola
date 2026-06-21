@@ -49,12 +49,12 @@ setup:
 generate:
     python3 generate_map.py
 
-# Create the local .venv and install test dependencies (pytest)
+# Create the local .venv and install test and docs dependencies
 venv:
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d .venv ]; then python3 -m venv .venv; fi
-    .venv/bin/pip install -q --upgrade pip pytest
+    .venv/bin/pip install -q --upgrade pip pytest sphinx furo
 
 # Run the Python unit + regression test suite with pytest
 test: venv
@@ -77,6 +77,11 @@ deploy:
     mkdir -p {{maps_dir}}
     cp {{map_name}}.bsp {{maps_dir}}/
     cp {{map_name}}.lit {{maps_dir}}/
+
+# Build the Sphinx HTML documentation into docs/_build/html/
+docs: venv
+    .venv/bin/sphinx-build -b html docs docs/_build/html
+    @echo "Docs written to docs/_build/html/index.html"
 
 # Clean up temporary build files and test artifacts
 clean:
