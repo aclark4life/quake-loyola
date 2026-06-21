@@ -17,6 +17,9 @@ from .constants import (
     SDORM_LIFT,
     SDORM_SLOPE_Y_N,
     SDORM_SLOPE_Y_S,
+    SDORM_STAIR_X2,
+    SDORM_STAIR_Y1,
+    SDORM_STAIR_Y2,
     SDORM_TERRACE_X2,
     SDORM_TOE_X,
     SDORM_WALL_X,
@@ -1264,17 +1267,41 @@ def build():
     # Flat terrace pad — west of the brick wall (under the south dorms): level
     # crest south of the wall's south pillar, then declining north (below) so the
     # ground west of the wall drops to the bridge symmetrically with the east side.
-    BRUSHES.append(
-        box(
-            DORM_X1,
-            terr_y1,
-            FLOOR_Z2,
-            SDORM_WALL_X,
-            SDORM_SLOPE_Y_S,
-            terr_top,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
+    # The pad is split into a frame around the south-dorm-1 stairwell void (carved
+    # full-height z=FLOOR_Z2..terr_top so the steps can descend to the tunnel).
+    BRUSHES.extend(
+        [
+            box(
+                DORM_X1,
+                terr_y1,
+                FLOOR_Z2,
+                SDORM_WALL_X,
+                SDORM_STAIR_Y1,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            box(
+                DORM_X1,
+                SDORM_STAIR_Y2,
+                FLOOR_Z2,
+                SDORM_WALL_X,
+                SDORM_SLOPE_Y_S,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            box(
+                SDORM_STAIR_X2,
+                SDORM_STAIR_Y1,
+                FLOOR_Z2,
+                SDORM_WALL_X,
+                SDORM_STAIR_Y2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+        ]
     )
     # N-S decline west of the wall: crest at the south pillar down to grade at the
     # north side of the bridge, matching the wall→fence strip on the east side.

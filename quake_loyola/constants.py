@@ -400,3 +400,16 @@ SDORM_SLOPE_Y_S = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + 96  # sout
 SDORM_SLOPE_Y_N = BRIDGE_Y2  # north side of bridge
 SDORM_WALL_X = DORM_PIER_X  # brick-wall centreline: divides the flat dorm pad (west)
 # from the strip that declines north between the wall and the fence (east).
+
+# South-dorm stairwell — steps cut into the south-dorm-1 footprint, descending west
+# to the existing west-wall tunnel door, bridging the SDORM_LIFT drop down to the
+# tunnel floor (z=0). The footprint below is carved out of both the terrace fill
+# (streets.py) and the dorm interior floor (west_campus.py); the steps fill it.
+SDORM_STAIR_HW = 40  # half-width (matches the west-wall door opening)
+SDORM_STAIR_N = SDORM_LIFT // 16  # number of 16-high steps (= 8)
+SDORM_STAIR_RISE = SDORM_LIFT // SDORM_STAIR_N  # per-step rise (= 16)
+SDORM_STAIR_RUN = 32  # tread depth (E-W) per step
+SDORM_STAIR_X1 = DORM_X1 + 16  # first-step / floor-hole west edge (= interior face)
+SDORM_STAIR_X2 = SDORM_STAIR_X1 + SDORM_STAIR_N * SDORM_STAIR_RUN  # east edge of run
+SDORM_STAIR_Y1 = DORM_SOUTH1_CY - SDORM_STAIR_HW
+SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
