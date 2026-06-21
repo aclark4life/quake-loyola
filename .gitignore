@@ -18,6 +18,9 @@ ref_test.*
 !tests/
 !tests/test_*.py
 
+# Sphinx build output
+docs/_build/
+
 # Local virtual environment
 .venv/
 loyola.lit

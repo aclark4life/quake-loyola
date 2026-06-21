@@ -73,12 +73,14 @@ def ramp_slab(
     x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
 ):
     """Prismatic slab whose bottom and top faces are sloped in the X direction.
-    zb1/zt1 = bottom/top Z at x=x1;  zb2/zt2 = bottom/top Z at x=x2.
+
+    ``zb1``/``zt1`` = bottom/top Z at x=x1; ``zb2``/``zt2`` = bottom/top Z at x=x2.
     End-cap faces are omitted when an end tapers to a knife-edge (zb == zt there),
     keeping the brush valid as a 4- or 5-face wedge instead of a degenerate prism.
-    te: texture for the -X/+X end-cap faces; defaults to tex.
-    ts: texture for the -Y/+Y side faces (the triangular gable ends when the ridge
-        runs along Y); defaults to tex."""
+
+    ``te``: texture for the -X/+X end-cap faces; defaults to *tex*.
+    ``ts``: texture for the -Y/+Y side faces (triangular gable ends when the ridge
+    runs along Y); defaults to *tex*."""
     tt = tt or tex
     tb = tb or tex
     te = te or tex
@@ -143,10 +145,11 @@ def gable_slats(
     bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=24, gap=2, min_w=6
 ):
     """Decorative horizontal wood slats laid over a triangular gable end.
+
     The gable lies in the X-Z plane at y=yface: its base runs bx1..bx2 at
     z=eave_z and tapers to the ridge apex at x=apex_x, z=ridge_z (the lowest
     slab_t units of the side edges stay vertical, matching the roof slab).
-    Planks extend inward by |depth| (outer face flush with yface) and stack
+    Planks extend inward by ``depth`` (outer face flush with yface) and stack
     in n bands separated by gap-unit shadow grooves; bands narrower than
     min_w near the apex are skipped."""
     y0, y1 = sorted((yface, yface + depth))
@@ -693,18 +696,25 @@ def arch_wall(
     freestanding=False,
 ):
     """Stone wall with arched opening centred at Y=yc (default 0).
-    freestanding=True: posts stop at spring height, no cap above crown, no side fill.
 
-    stilt_h: height of straight sides before the arch springs (defaults to rin,
-             giving a plain semicircle; set > rin for a tall stilted/gothic arch).
-    overhang: extra Y extent on the rectangular pillar portions beyond ±rout.
-    base_h: solid stone plinth height at ground level — arch opening starts above this.
-    base_ramp: if given, a (zt_x1, zt_x2) tuple — replaces the flat base_h box with a
-               ramp_slab whose top slopes from zt_x1 at x=x1 to zt_x2 at x=x2.
-               base_h is ignored when base_ramp is set.
-    base_cap_h: thin slab placed on top of the plinth (flat or ramped) in base_cap_tex.
-    base_cap_tex: texture for the cap slab (defaults to tex).
-    base_cap_ovh: how far the cap extends beyond the plinth in X and Y (cornice effect).
+    ``freestanding=True``: posts stop at spring height, no cap above crown, no side fill.
+
+    ``stilt_h``: height of straight sides before the arch springs (defaults to rin,
+    giving a plain semicircle; set > rin for a tall stilted/gothic arch).
+
+    ``overhang``: extra Y extent on the rectangular pillar portions beyond ±rout.
+
+    ``base_h``: solid stone plinth height at ground level — arch opening starts above this.
+
+    ``base_ramp``: if given, a (zt_x1, zt_x2) tuple — replaces the flat base_h box with
+    a ramp_slab whose top slopes from zt_x1 at x=x1 to zt_x2 at x=x2.
+    base_h is ignored when base_ramp is set.
+
+    ``base_cap_h``: thin slab placed on top of the plinth (flat or ramped) in base_cap_tex.
+
+    ``base_cap_tex``: texture for the cap slab (defaults to tex).
+
+    ``base_cap_ovh``: how far the cap extends beyond the plinth in X and Y (cornice effect).
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
