@@ -1174,16 +1174,36 @@ def build():
             tt=Textures.GROUND,
         )
     )
-    # North of north building — restore original ramp
+    # North building cluster — east of tunnel channel (DORM_X1 to DORM_EMB_X2).
+    # Mirrors the gap-segment ramp above but for the north cluster Y range.
+    # The west strip (BRIDGE_X1 to DORM_X1) for this Y range is tunnel + backfill
+    # handled by west_campus.py; this slab restores the missing east-half fill.
     BRUSHES.append(
         ramp_slab(
-            BRIDGE_X1,
+            DORM_X1,
+            DORM_EMB_X2,
+            DORM_NORTH2_Y1,
+            DORM_NORTH_Y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            emb_zt_at_ab_x1,
+            FLOOR_Z2,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    # North of north building — east strip only (DORM_X1 to DORM_EMB_X2).
+    # The west strip (BRIDGE_X1..DORM_X1) is now the tunnel north extension,
+    # owned by west_campus.py, so this ramp starts at DORM_X1.
+    BRUSHES.append(
+        ramp_slab(
+            DORM_X1,
             DORM_EMB_X2,
             DORM_NORTH_Y2,
             CHARLES_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            BRIDGE_DZ2,
+            emb_zt_at_ab_x1,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
