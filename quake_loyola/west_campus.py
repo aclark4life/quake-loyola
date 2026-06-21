@@ -1502,33 +1502,7 @@ def build():
         )
     )
 
-    # South and north end caps (only the tunnel's west portion; building walls cap the east)
-    BRUSHES.append(
-        box(
-            TUNN_XW,
-            DORM_SOUTH1_Y1,
-            FLOOR_Z1,
-            TUNN_X2,
-            DORM_SOUTH1_Y1 + TUNN_T,
-            BRIDGE_DZ2,
-            Textures.GROUND,
-        )
-    )
-    BRUSHES.append(
-        ramp_slab(
-            TUNN_XW,
-            TUNN_X2,
-            DORM_NORTH_Y2 - TUNN_T,
-            DORM_NORTH_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            emb_zt_tunn_w,
-            emb_zt_tunn_e,
-            Textures.GROUND,
-        )
-    )
-
-    # ── Iron fence along east face of west buildings ──────────────────────────
+    # Iron fence along east face of west buildings ──────────────────────────
     FENCE_X1 = DORM_X2 + 216  # pushed further east to sit outside the front walkway
     FENCE_X2 = FENCE_X1 + 2  # picket/rail thickness
     FENCE_H = 96  # fence height
