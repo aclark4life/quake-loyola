@@ -363,11 +363,15 @@ def build():
     DORM_GABLE_DEPTH = 6
     DORM_NB_SY1 = DORM_NORTH_Y1  # south end abuts building 2 — full slab, no recess
     DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
-    # West slope: flat bottom at eave_z, top slopes up to ridge at nb_cx
+    # Flat ridge cap — same DECK_HW=24 logic as south dorm: stops expanded slope
+    # hulls from overlapping and creating an invisible clip-hull wedge on the ridge.
+    NB_DECK_HW = 24
+    NB_DECK_X1, NB_DECK_X2 = DORM_CX - NB_DECK_HW, DORM_CX + NB_DECK_HW
+    # West slope: flat bottom at eave_z, top slopes up to ridge at deck edge
     north_bldg_detail.append(
         ramp_slab(
             DORM_X1,
-            DORM_CX,
+            NB_DECK_X1,
             DORM_NB_SY1,
             DORM_NB_SY2,
             DORM_EAVE_Z,
@@ -378,10 +382,10 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # East slope: top at ridge at nb_cx, slopes down to eave at AB_X2
+    # East slope: top at ridge at deck edge, slopes down to eave at DORM_X2
     north_bldg_detail.append(
         ramp_slab(
-            DORM_CX,
+            NB_DECK_X2,
             DORM_X2,
             DORM_NB_SY1,
             DORM_NB_SY2,
@@ -391,6 +395,18 @@ def build():
             DORM_EAVE_Z + DORM_SLAB_T,
             Textures.ROOF,
             ts=Textures.GABLE,
+        )
+    )
+    # Flat ridge cap deck
+    north_bldg_detail.append(
+        box(
+            NB_DECK_X1,
+            DORM_NB_SY1,
+            DORM_RIDGE_Z,
+            NB_DECK_X2,
+            DORM_NB_SY2,
+            DORM_RIDGE_Z + DORM_SLAB_T,
+            Textures.ROOF,
         )
     )
     # Horizontal wood slats over the exposed north gable end only (the south end
@@ -581,10 +597,12 @@ def build():
     NB2_GABLE_DEPTH = 6
     NB2_SY1 = DORM_NORTH2_Y1 + NB2_GABLE_DEPTH
     NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
+    NB2_DECK_HW = 24
+    NB2_DECK_X1, NB2_DECK_X2 = DORM_CX - NB2_DECK_HW, DORM_CX + NB2_DECK_HW
     north2_bldg_detail.append(
         ramp_slab(
             DORM_X1,
-            DORM_CX,
+            NB2_DECK_X1,
             NB2_SY1,
             NB2_SY2,
             NB2_EAVE_Z,
@@ -597,7 +615,7 @@ def build():
     )
     north2_bldg_detail.append(
         ramp_slab(
-            DORM_CX,
+            NB2_DECK_X2,
             DORM_X2,
             NB2_SY1,
             NB2_SY2,
@@ -607,6 +625,18 @@ def build():
             NB2_EAVE_Z + NB2_SLAB_T,
             Textures.ROOF,
             ts=Textures.GABLE,
+        )
+    )
+    # Flat ridge cap deck
+    north2_bldg_detail.append(
+        box(
+            NB2_DECK_X1,
+            NB2_SY1,
+            NB2_RIDGE_Z,
+            NB2_DECK_X2,
+            NB2_SY2,
+            NB2_RIDGE_Z + NB2_SLAB_T,
+            Textures.ROOF,
         )
     )
     # Slats on the exposed south gable end only (the north end abuts building 1).
@@ -1075,10 +1105,12 @@ def build():
                 ),  # east
             ]
         else:
+            _deck_hw = 24
+            _deck_x1, _deck_x2 = cx - _deck_hw, cx + _deck_hw
             brushes.append(
                 ramp_slab(
                     bx1,
-                    cx,
+                    _deck_x1,
                     sy1,
                     sy2,
                     eave_z,
@@ -1091,7 +1123,7 @@ def build():
             )
             brushes.append(
                 ramp_slab(
-                    cx,
+                    _deck_x2,
                     bx2,
                     sy1,
                     sy2,
@@ -1101,6 +1133,17 @@ def build():
                     eave_z + slab_t,
                     Textures.ROOF,
                     ts=Textures.GABLE,
+                )
+            )
+            brushes.append(
+                box(
+                    _deck_x1,
+                    sy1,
+                    ridge_z,
+                    _deck_x2,
+                    sy2,
+                    ridge_z + slab_t,
+                    Textures.ROOF,
                 )
             )
         if slat_lo:
