@@ -143,7 +143,7 @@ def build():
 
     def nb_wins_yz_double(wy_list):
         """Double window openings for Y-facing wall — two full-single-sized panes per floor."""
-        DBL_HALF_GAP = 4  # half the mullion gap between the two panes
+        DBL_HALF_GAP = 0  # no gap between the two panes
         result = []
         for fl in range(DORM_FLOORS):
             for wy in wy_list:
@@ -375,15 +375,11 @@ def build():
     DORM_GABLE_DEPTH = 6
     DORM_NB_SY1 = DORM_NORTH_Y1  # south end abuts building 2 — full slab, no recess
     DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
-    # Flat ridge cap — same DECK_HW=24 logic as south dorm: stops expanded slope
-    # hulls from overlapping and creating an invisible clip-hull wedge on the ridge.
-    NB_DECK_HW = 24
-    NB_DECK_X1, NB_DECK_X2 = DORM_CX - NB_DECK_HW, DORM_CX + NB_DECK_HW
-    # West slope: flat bottom at eave_z, top slopes up to ridge at deck edge
+    # West slope: flat bottom at eave_z, top slopes up to ridge
     north_bldg_detail.append(
         ramp_slab(
             DORM_X1,
-            NB_DECK_X1,
+            DORM_CX,
             DORM_NB_SY1,
             DORM_NB_SY2,
             DORM_EAVE_Z,
@@ -394,10 +390,10 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # East slope: top at ridge at deck edge, slopes down to eave at DORM_X2
+    # East slope: top at ridge, slopes down to eave at DORM_X2
     north_bldg_detail.append(
         ramp_slab(
-            NB_DECK_X2,
+            DORM_CX,
             DORM_X2,
             DORM_NB_SY1,
             DORM_NB_SY2,
@@ -407,18 +403,6 @@ def build():
             DORM_EAVE_Z + DORM_SLAB_T,
             Textures.ROOF,
             ts=Textures.GABLE,
-        )
-    )
-    # Flat ridge cap deck
-    north_bldg_detail.append(
-        box(
-            NB_DECK_X1,
-            DORM_NB_SY1,
-            DORM_RIDGE_Z,
-            NB_DECK_X2,
-            DORM_NB_SY2,
-            DORM_RIDGE_Z + DORM_SLAB_T,
-            Textures.ROOF,
         )
     )
     # Horizontal wood slats over the exposed north gable end only (the south end
@@ -626,12 +610,10 @@ def build():
     NB2_GABLE_DEPTH = 6
     NB2_SY1 = DORM_NORTH2_Y1 + NB2_GABLE_DEPTH
     NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
-    NB2_DECK_HW = 24
-    NB2_DECK_X1, NB2_DECK_X2 = DORM_CX - NB2_DECK_HW, DORM_CX + NB2_DECK_HW
     north2_bldg_detail.append(
         ramp_slab(
             DORM_X1,
-            NB2_DECK_X1,
+            DORM_CX,
             NB2_SY1,
             NB2_SY2,
             NB2_EAVE_Z,
@@ -644,7 +626,7 @@ def build():
     )
     north2_bldg_detail.append(
         ramp_slab(
-            NB2_DECK_X2,
+            DORM_CX,
             DORM_X2,
             NB2_SY1,
             NB2_SY2,
@@ -654,18 +636,6 @@ def build():
             NB2_EAVE_Z + NB2_SLAB_T,
             Textures.ROOF,
             ts=Textures.GABLE,
-        )
-    )
-    # Flat ridge cap deck
-    north2_bldg_detail.append(
-        box(
-            NB2_DECK_X1,
-            NB2_SY1,
-            NB2_RIDGE_Z,
-            NB2_DECK_X2,
-            NB2_SY2,
-            NB2_RIDGE_Z + NB2_SLAB_T,
-            Textures.ROOF,
         )
     )
     # Slats on the exposed south gable end only (the north end abuts building 1).
@@ -943,7 +913,10 @@ def build():
         if chimney:
             chw = 32  # half-width of the 64-unit square shaft (player hull fits)
             ccy = cy + 64  # a little north of the building centre
-            chim_x1, chim_x2 = cx - chw, cx + chw
+            chim_x1, chim_x2 = (
+                cx + 80,
+                cx + 80 + chw * 2,
+            )  # well east of ridge to avoid BSP slope issues
             chim_y1, chim_y2 = ccy - chw, ccy + chw
         # Ceiling slab — split around the shaft when a chimney is present
         if chimney:
@@ -989,33 +962,12 @@ def build():
                     ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx)
                 )
 
-            # Flat ridge cap: stop each slope DECK_HW units short of the ridge
-            # centreline and fill the gap with a flat-topped box.  This eliminates
-            # the invisible clip-hull wedge that Quake generates when two opposing
-            # sloped brushes meet at a knife-edge, which otherwise traps players
-            # walking on the roof near the chimney.
-            # The slope hull expansion in X is ~17 units, so DECK_HW must exceed 17
-            # for the two expanded slope hulls not to overlap and create a phantom
-            # solid wedge above the deck.  24 gives a ~7-unit safety margin.
-            DECK_HW = 24  # half-width of the flat ridge cap strip (48 units total)
-            deck_x1, deck_x2 = cx - DECK_HW, cx + DECK_HW
+            # No deck — chimney is well east of the ridge so slopes meet cleanly.
             brushes += [
-                ramp_slab(  # west slope, south of shaft
+                ramp_slab(  # west slope — full span, chimney is east of ridge
                     bx1,
-                    deck_x1,
+                    cx,
                     sy1,
-                    chim_y1,
-                    eave_z,
-                    eave_z,
-                    eave_z + slab_t,
-                    ridge_z,
-                    Textures.ROOF,
-                    ts=Textures.GABLE,
-                ),
-                ramp_slab(  # west slope, north of shaft
-                    bx1,
-                    deck_x1,
-                    chim_y2,
                     sy2,
                     eave_z,
                     eave_z,
@@ -1024,43 +976,43 @@ def build():
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # west slope, eave-side fill beside shaft
-                    bx1,
+                ramp_slab(  # east slope, south of chimney bay
+                    cx,
+                    bx2,
+                    sy1,
+                    chim_y1,
+                    eave_z,
+                    eave_z,
+                    ridge_z,
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # east slope, north of chimney bay
+                    cx,
+                    bx2,
+                    chim_y2,
+                    sy2,
+                    eave_z,
+                    eave_z,
+                    ridge_z,
+                    eave_z + slab_t,
+                    Textures.ROOF,
+                    ts=Textures.GABLE,
+                ),
+                ramp_slab(  # east slope, chimney bay, west of shaft
+                    cx,
                     chim_x1,
                     chim_y1,
                     chim_y2,
                     eave_z,
                     eave_z,
-                    eave_z + slab_t,
-                    _wtop(chim_x1),
-                    Textures.ROOF,
-                    ts=Textures.GABLE,
-                ),
-                ramp_slab(  # east slope, south of shaft
-                    deck_x2,
-                    bx2,
-                    sy1,
-                    chim_y1,
-                    eave_z,
-                    eave_z,
                     ridge_z,
-                    eave_z + slab_t,
+                    _etop(chim_x1),
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # east slope, north of shaft
-                    deck_x2,
-                    bx2,
-                    chim_y2,
-                    sy2,
-                    eave_z,
-                    eave_z,
-                    ridge_z,
-                    eave_z + slab_t,
-                    Textures.ROOF,
-                    ts=Textures.GABLE,
-                ),
-                ramp_slab(  # east slope, eave-side fill beside shaft
+                ramp_slab(  # east slope, chimney bay, east of shaft
                     chim_x2,
                     bx2,
                     chim_y1,
@@ -1071,25 +1023,6 @@ def build():
                     eave_z + slab_t,
                     Textures.ROOF,
                     ts=Textures.GABLE,
-                ),
-                # Flat ridge cap south and north of chimney bay
-                box(
-                    deck_x1,
-                    sy1,
-                    ridge_z,
-                    deck_x2,
-                    chim_y1,
-                    ridge_z + slab_t,
-                    Textures.ROOF,
-                ),
-                box(
-                    deck_x1,
-                    chim_y2,
-                    ridge_z,
-                    deck_x2,
-                    sy2,
-                    ridge_z + slab_t,
-                    Textures.ROOF,
                 ),
             ]
             # Hollow brick stack rising above the ridge, open at the top
@@ -1134,12 +1067,10 @@ def build():
                 ),  # east
             ]
         else:
-            _deck_hw = 24
-            _deck_x1, _deck_x2 = cx - _deck_hw, cx + _deck_hw
             brushes.append(
                 ramp_slab(
                     bx1,
-                    _deck_x1,
+                    cx,
                     sy1,
                     sy2,
                     eave_z,
@@ -1152,7 +1083,7 @@ def build():
             )
             brushes.append(
                 ramp_slab(
-                    _deck_x2,
+                    cx,
                     bx2,
                     sy1,
                     sy2,
@@ -1162,17 +1093,6 @@ def build():
                     eave_z + slab_t,
                     Textures.ROOF,
                     ts=Textures.GABLE,
-                )
-            )
-            brushes.append(
-                box(
-                    _deck_x1,
-                    sy1,
-                    ridge_z,
-                    _deck_x2,
-                    sy2,
-                    ridge_z + slab_t,
-                    Textures.ROOF,
                 )
             )
         if slat_lo:

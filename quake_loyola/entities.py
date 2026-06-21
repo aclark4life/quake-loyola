@@ -402,8 +402,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_south_dorm_roof",
-            origin=f"{(DORM_X1 + DORM_X2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-            angle="0",  # facing east, atop roof ridge center
+            origin=f"{(DORM_X1 + DORM_X2) // 2 - 96} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
+            angle="0",  # facing east, on west roof slope well clear of chimney
         )
     )
     ENTITIES.append(
