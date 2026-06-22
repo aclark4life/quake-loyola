@@ -1,31 +1,6 @@
 import math
 from dataclasses import dataclass
 
-# ── Constant prefix legend ─────────────────────────────────────────────────────
-#
-#   A_           arch ring (generic — voussoir segments, radius, segment count)
-#   ARCH_        pedestrian bridge arch profile dimensions (rin, rout, stilt, slab)
-#   BRIDGE_          Pedestrian Bridge (span, deck, piers, parapet, east approach)
-#   CHARLES_          Charles Street (the N-S road running under the bridge)
-#   DORM_          Dormitory (the west-campus buildings flanking the bridge)
-#   DRAW_        boolean feature-flag (enables/disables a drawn element)
-#   ENNIS_          Ennis Parallel entrance (pillars, boundary wall, curbs)
-#   FASCIA_      shared pixel-font glyph bitmaps for building/bridge fascia lettering
-#   FENCE_       iron fence (pickets, rails, spacing)
-#   FLOOR_       world ground-plane Z levels (FLOOR_Z1 = bottom, FLOOR_Z2 = top)
-#   KNOTT_          Knott Hall (the main campus building south-east of the bridge)
-#   PLAT_        Charles Street scrolling platform (func_train)
-#   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
-#   SHOW_        boolean feature-flag (shows/hides a map element)
-#   Lighting     worldspawn lighting / fog settings (class — Lighting.SUNLIGHT, …)
-#   Textures     texture name palette (class — Textures.BRICK, Textures.ROAD, …)
-#   WALK_        walkway connecting the bridge east end to Knott Hall 2nd floor
-#   WALL_        structural wall thickness (generic)
-#   WIN_         shared window geometry (Knott Hall / Residence Hall facades)
-#   WORLD_       world bounding-box extents
-#
-# ──────────────────────────────────────────────────────────────────────────────
-
 ARCH_RIN = 96
 ARCH_ROUT = 136
 ARCH_SLAB_W = 32
