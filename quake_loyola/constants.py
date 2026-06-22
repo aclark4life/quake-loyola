@@ -312,9 +312,17 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
         sunlight_penumbra="60",
         fog="0.05 0.5 0.5 0.55",
     ),
+    "night": LightingPreset(
+        ambient="5",
+        sunlight="20",
+        sunlight_color="180 200 255",  # cool moonlight blue
+        sunlight_dir="15 120",  # low moon, opposite side from sun
+        sunlight_penumbra="10",
+        fog="0.08 0.05 0.05 0.15",  # dark blue-black fog
+    ),
 }
 
-LIGHTING = LIGHTING_PRESETS["midday"]
+LIGHTING = LIGHTING_PRESETS["dusk"]
 
 
 class Textures:
