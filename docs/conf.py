@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # Project metadata
 # ---------------------------------------------------------------------------
 project = "quake-loyola"
-copyright = "2025, Alex Clark"
+copyright = "2026, Alex Clark"
 author = "Alex Clark"
 
 # ---------------------------------------------------------------------------

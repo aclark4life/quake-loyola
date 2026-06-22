@@ -117,3 +117,14 @@ values deliberately (and review the diff) whenever the map intentionally changes
 
 ``tests/test_mapdata.py`` and ``tests/test_geometry.py`` provide unit tests
 for the data model and shape constructors respectively.
+
+AI agent instructions
+---------------------
+
+``.github/copilot-instructions.md`` is the canonical reference for AI coding
+agents (GitHub Copilot IDE, Copilot CLI, and others).  It covers the full
+project layout, all ``just`` recipes, coding conventions, and the expected
+workflow for map changes versus documentation changes.
+
+``AGENTS.md`` at the repo root is a one-line pointer to that file, providing
+compatibility with agents that look for ``AGENTS.md`` by convention.
