@@ -117,20 +117,28 @@ def build():
             tb=Textures.FLOOR,
         )
     )
+
+    def iter_bridge_span_segments():
+        for i in range(BRIDGE_SEG_SPAN_W):
+            sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
+            sx2 = sx1 + BRIDGE_SEG_W
+            db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
+            pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
+            pt1, pt2 = pb1 + BRIDGE_PAR_H, pb2 + BRIDGE_PAR_H
+            yield sx1, sx2, db1, db2, pb1, pb2, pt1, pt2
+
     # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
-    for i in range(BRIDGE_SEG_SPAN_W):
-        sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
-        sx2 = sx1 + BRIDGE_SEG_W
+    for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
         BRUSHES.append(
             ramp_slab(
                 sx1,
                 sx2,
                 BRIDGE_Y1,
                 BRIDGE_Y2,
-                deck_bot_z(sx1),
-                deck_bot_z(sx2),
-                deck_top_z(sx1),
-                deck_top_z(sx2),
+                db1,
+                db2,
+                pb1,
+                pb2,
                 Textures.STONE,
                 tt=Textures.FLOOR,
                 tb=Textures.FLOOR,
@@ -201,14 +209,7 @@ def build():
         )
     )
 
-    for i in range(BRIDGE_SEG_SPAN_W):
-        sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
-        sx2 = sx1 + BRIDGE_SEG_W
-        pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)  # parapet base follows deck top
-        pt1, pt2 = (
-            pb1 + BRIDGE_PAR_H,
-            pb2 + BRIDGE_PAR_H,
-        )  # parapet top = base + BRIDGE_PAR_H
+    for sx1, sx2, _, _, pb1, pb2, pt1, pt2 in iter_bridge_span_segments():
         # North parapet
         BRUSHES.append(
             ramp_slab(
@@ -453,11 +454,18 @@ def build():
     tube_sy2 = tube_sy1 + BRIDGE_TUBE_HW * 2
 
     for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-        for span_index in range(BRIDGE_SEG_SPAN_W):
-            span_x1 = BRIDGE_X1 + span_index * BRIDGE_SEG_W
-            span_x2 = span_x1 + BRIDGE_SEG_W
-            tube_z1 = deck_top_z(span_x1) + BRIDGE_PAR_H + tube_z_offset
-            tube_z2 = deck_top_z(span_x2) + BRIDGE_PAR_H + tube_z_offset
+        for (
+            span_x1,
+            span_x2,
+            _,
+            _,
+            _,
+            _,
+            tube_z1,
+            tube_z2,
+        ) in iter_bridge_span_segments():
+            tube_z1 += tube_z_offset
+            tube_z2 += tube_z_offset
             BRUSHES.append(
                 ramp_slab(
                     span_x1,
