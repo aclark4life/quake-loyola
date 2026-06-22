@@ -90,3 +90,16 @@ just docs
 ```
 
 Builds Sphinx HTML documentation into `docs/_build/html/`.
+
+## Agent workflow
+
+### Map changes
+1. After every prompted change: `python generate_map.py && just compile-fast && just deploy`
+2. Wait for explicit confirmation before committing
+3. Always commit **and** push together — never commit without pushing
+4. If the map geometry changes, update the golden hash in the regression tests
+
+### Doc changes
+1. Create a new branch
+2. Commit and push to that branch
+3. Open a PR — do not merge directly to main
