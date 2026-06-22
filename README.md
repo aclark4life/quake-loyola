@@ -267,6 +267,8 @@ just compile        # qbsp → vis → light (full vis pass)
 just compile-fast   # qbsp → vis -fast → light (faster iteration)
 just deploy         # copy loyola.bsp + loyola.lit to /Applications/id1/maps/
 just install-tools  # download ericw-tools v0.18.1 to .tools/ (runs automatically)
+just test           # run the pytest suite
+just update-golden  # recompute and patch golden hash/counts after geometry changes
 ```
 
 ericw-tools are downloaded automatically to `.tools/` on first compile — no manual installation needed. WADs are downloaded from Quaketastic automatically by `just setup`.
