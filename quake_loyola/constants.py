@@ -335,6 +335,9 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
 }
 
 LIGHTING = LIGHTING_PRESETS["night"]
+FOG_DENSITY: float | None = (
+    None  # override preset fog density: FogDensity.LOW/MED/HIGH/OFF
+)
 
 
 class Textures:
@@ -651,10 +654,16 @@ SDORM_STAIR_X2 = SDORM_STAIR_X1 + SDORM_STAIR_N * SDORM_STAIR_RUN  # east edge o
 SDORM_STAIR_Y1 = DORM_SOUTH1_CY - SDORM_STAIR_HW
 SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
 
+_fog = (
+    make_fog(FOG_DENSITY, *[float(x) for x in LIGHTING.fog.split()[1:]])
+    if FOG_DENSITY is not None
+    else LIGHTING.fog
+)
+
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
     "dmflags": "128",
-    **LIGHTING.to_worldspawn(),
+    **{**LIGHTING.to_worldspawn(), "_fog": _fog},
 }
