@@ -7,20 +7,20 @@ from quake_loyola import (
     streets,
     west_campus,
 )
-from quake_loyola.constants import Textures
+from quake_loyola.constants import Lighting, Textures
 from quake_loyola.mapdata import MapBuilder
 
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola Bridge & Knott Hall",
     "sky": Textures.SKY,
-    "ambient": "90",
-    "_sunlight": "140",
-    "_sunlight_color": "255 245 210",
-    "_sunlight_dir": "60 -60",
-    "_sunlight_penumbra": "30",
+    "ambient": Lighting.AMBIENT,
+    "_sunlight": Lighting.SUNLIGHT,
+    "_sunlight_color": Lighting.SUNLIGHT_COLOR,
+    "_sunlight_dir": Lighting.SUNLIGHT_DIR,
+    "_sunlight_penumbra": Lighting.SUNLIGHT_PENUMBRA,
     "dmflags": "128",
-    "_fog": "0.03 0.5 0.5 0.6",
+    "_fog": Lighting.FOG,
 }
 
 MODULES = [streets, west_campus, bridge, knott_terrain, knott_hall, entities]
