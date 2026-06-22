@@ -249,58 +249,62 @@ SHOW_SUPPORTS = True
 WORLD_EAST_BUFFER = 512
 
 
-class Lighting:
-    """Worldspawn lighting fields — adjust these to change time of day.
+@dataclass
+class LightingPreset:
+    """All worldspawn lighting and fog fields for a single time-of-day."""
 
-    Swap in a preset by copying its values over the active fields below.
+    ambient: str
+    sunlight: str
+    sunlight_color: str
+    sunlight_dir: str  # "pitch yaw" — pitch = elevation above horizon, yaw = azimuth
+    sunlight_penumbra: str
+    fog: str  # "density r g b"
 
-    Dawn:
-        AMBIENT = "30"
-        SUNLIGHT = "120"
-        SUNLIGHT_COLOR = "255 200 140"  # pale orange
-        SUNLIGHT_DIR = "8 -90"          # low on the eastern horizon
-        SUNLIGHT_PENUMBRA = "40"
-        FOG = "0.04 0.6 0.5 0.4"
 
-    Midday (active):
-        AMBIENT = "90"
-        SUNLIGHT = "140"
-        SUNLIGHT_COLOR = "255 245 210"  # warm white
-        SUNLIGHT_DIR = "60 -60"
-        SUNLIGHT_PENUMBRA = "30"
-        FOG = "0.03 0.5 0.5 0.6"
+LIGHTING_PRESETS: dict[str, LightingPreset] = {
+    "dawn": LightingPreset(
+        ambient="30",
+        sunlight="120",
+        sunlight_color="255 200 140",  # pale orange
+        sunlight_dir="8 -90",  # low on the eastern horizon
+        sunlight_penumbra="40",
+        fog="0.04 0.6 0.5 0.4",
+    ),
+    "midday": LightingPreset(
+        ambient="90",
+        sunlight="140",
+        sunlight_color="255 245 210",  # warm white
+        sunlight_dir="60 -60",
+        sunlight_penumbra="30",
+        fog="0.03 0.5 0.5 0.6",
+    ),
+    "golden_hour": LightingPreset(
+        ambient="40",
+        sunlight="160",
+        sunlight_color="255 180 80",  # deep amber
+        sunlight_dir="10 -90",  # low on the western horizon
+        sunlight_penumbra="40",
+        fog="0.05 0.6 0.4 0.3",
+    ),
+    "dusk": LightingPreset(
+        ambient="20",
+        sunlight="100",
+        sunlight_color="200 120 60",  # dusky orange-red
+        sunlight_dir="5 -120",  # just below the horizon
+        sunlight_penumbra="50",
+        fog="0.06 0.4 0.3 0.4",
+    ),
+    "overcast": LightingPreset(
+        ambient="120",
+        sunlight="0",
+        sunlight_color="200 210 220",  # cool grey-white
+        sunlight_dir="90 0",
+        sunlight_penumbra="60",
+        fog="0.05 0.5 0.5 0.55",
+    ),
+}
 
-    Golden hour:
-        AMBIENT = "40"
-        SUNLIGHT = "160"
-        SUNLIGHT_COLOR = "255 180 80"   # deep amber
-        SUNLIGHT_DIR = "10 -90"         # low on the western horizon
-        SUNLIGHT_PENUMBRA = "40"
-        FOG = "0.05 0.6 0.4 0.3"
-
-    Dusk:
-        AMBIENT = "20"
-        SUNLIGHT = "100"
-        SUNLIGHT_COLOR = "200 120 60"   # dusky orange-red
-        SUNLIGHT_DIR = "5 -120"         # just below the horizon
-        SUNLIGHT_PENUMBRA = "50"
-        FOG = "0.06 0.4 0.3 0.4"
-
-    Overcast:
-        AMBIENT = "120"
-        SUNLIGHT = "0"
-        SUNLIGHT_COLOR = "200 210 220"  # cool grey-white
-        SUNLIGHT_DIR = "90 0"
-        SUNLIGHT_PENUMBRA = "60"
-        FOG = "0.05 0.5 0.5 0.55"
-    """
-
-    AMBIENT = "90"
-    SUNLIGHT = "140"
-    SUNLIGHT_COLOR = "255 245 210"  # warm white → midday sun
-    SUNLIGHT_DIR = "60 -60"  # pitch elevation + yaw azimuth
-    SUNLIGHT_PENUMBRA = "30"
-    FOG = "0.03 0.5 0.5 0.6"  # density r g b
+LIGHTING = LIGHTING_PRESETS["midday"]
 
 
 class Textures:
@@ -621,11 +625,11 @@ WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
-    "ambient": Lighting.AMBIENT,
-    "_sunlight": Lighting.SUNLIGHT,
-    "_sunlight_color": Lighting.SUNLIGHT_COLOR,
-    "_sunlight_dir": Lighting.SUNLIGHT_DIR,
-    "_sunlight_penumbra": Lighting.SUNLIGHT_PENUMBRA,
+    "ambient": LIGHTING.ambient,
+    "_sunlight": LIGHTING.sunlight,
+    "_sunlight_color": LIGHTING.sunlight_color,
+    "_sunlight_dir": LIGHTING.sunlight_dir,
+    "_sunlight_penumbra": LIGHTING.sunlight_penumbra,
     "dmflags": "128",
-    "_fog": Lighting.FOG,
+    "_fog": LIGHTING.fog,
 }
