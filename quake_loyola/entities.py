@@ -311,7 +311,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_west",
             origin="2149 -264 904",
-            angles="32 185 0",  # facing west, on KH rooftop
+            angle="180",  # facing west, on KH rooftop
         )
     )
 
@@ -464,7 +464,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_ennis_east",
             origin="2149 -264 904",
-            angles="32 185 0",  # facing west
+            angle="180",  # facing west
         )
     )
     ENTITIES.append(
@@ -472,7 +472,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
             origin="2149 -264 904",
-            angles="32 185 0",  # facing west
+            angle="180",  # facing west
         )
     )
 
