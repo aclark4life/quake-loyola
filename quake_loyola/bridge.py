@@ -247,6 +247,43 @@ def build():
         BRIDGE_PIL_HW + BRIDGE_BLK_HW + 4
     )  # clearance from pier centre to block centre
 
+    def add_repeated_parapet_decorations(
+        x_start,
+        x_end,
+        n,
+        *,
+        x_half_width,
+        z_at_center,
+        north_brush,
+        south_brush,
+        center_fn=lambda x: x,
+        west_margin=None,
+        east_margin=None,
+        n_south=None,
+        east_margin_n=None,
+        y_shift_fn=None,
+    ):
+        """Place repeated decorations along the north/south parapets of a span."""
+        n_s = n if n_south is None else n_south
+        mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
+        mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
+        mx1_n = east_margin_n if east_margin_n is not None else mx1
+        x0 = x_start + mx0
+        x1_n = x_end - mx1_n
+        x1_s = x_end - mx1
+
+        def iter_positions(count, x_limit):
+            for k in range(count):
+                cx = center_fn(x0 + (x_limit - x0) * (k + 1) / (count + 1))
+                sy = y_shift_fn(cx) if y_shift_fn else 0.0
+                yield cx, sy, z_at_center(cx)
+
+        for cx, sy, bz in iter_positions(n, x1_n):
+            BRUSHES.append(north_brush(cx, sy, bz))
+        for cx, sy, bz in iter_positions(n_s, x1_s):
+            if not (cx - x_half_width < WALK_X2 and cx + x_half_width > WALK_X1):
+                BRUSHES.append(south_brush(cx, sy, bz))
+
     def add_parapet_blocks(
         x_start,
         x_end,
@@ -257,66 +294,42 @@ def build():
         east_margin_n=None,
         y_shift_fn=None,
     ):
-        """Add evenly-spaced cement blocks atop N and S parapets in a bridge span.
-
-        n_south defaults to n.  South blocks that overlap the walkway gap
-        (WALK_X1..WALK_X2) are skipped automatically.
-        east_margin_n overrides east_margin for north blocks only.
-        y_shift_fn(cx) returns a southward Y offset for angled spans (e.g. east flat span).
-        """
-        n_s = n if n_south is None else n_south
-        mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
-        mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
-        mx1_n = east_margin_n if east_margin_n is not None else mx1
-        x0 = x_start + mx0
-        x1_n = x_end - mx1_n
-        x1_s = x_end - mx1
-        for k in range(n):
-            cx = x0 + (x1_n - x0) * (k + 1) / (n + 1)
-            sy = y_shift_fn(cx) if y_shift_fn else 0.0
-            # Use minimum parapet top across block width so block never floats above parapet
-            bz = (
-                min(
-                    deck_top_z(cx - BRIDGE_BLK_HW),
-                    deck_top_z(cx),
-                    deck_top_z(cx + BRIDGE_BLK_HW),
-                )
-                + BRIDGE_PAR_H
+        """Add evenly-spaced cement blocks atop N and S parapets in a bridge span."""
+        add_repeated_parapet_decorations(
+            x_start,
+            x_end,
+            n,
+            x_half_width=BRIDGE_BLK_HW,
+            z_at_center=lambda cx: min(
+                deck_top_z(cx - BRIDGE_BLK_HW),
+                deck_top_z(cx),
+                deck_top_z(cx + BRIDGE_BLK_HW),
             )
-            BRUSHES.append(
-                box(
-                    cx - BRIDGE_BLK_HW,
-                    BRIDGE_Y2 - BRIDGE_PAR_W + sy,
-                    bz,
-                    cx + BRIDGE_BLK_HW,
-                    BRIDGE_Y2 + BRIDGE_BLK_OVH + sy,
-                    bz + BRIDGE_BLK_H,
-                    Textures.CEMENT,
-                )
-            )
-        for k in range(n_s):
-            cx = x0 + (x1_s - x0) * (k + 1) / (n_s + 1)
-            sy = y_shift_fn(cx) if y_shift_fn else 0.0
-            bz = (
-                min(
-                    deck_top_z(cx - BRIDGE_BLK_HW),
-                    deck_top_z(cx),
-                    deck_top_z(cx + BRIDGE_BLK_HW),
-                )
-                + BRIDGE_PAR_H
-            )
-            if not (cx - BRIDGE_BLK_HW < WALK_X2 and cx + BRIDGE_BLK_HW > WALK_X1):
-                BRUSHES.append(
-                    box(
-                        cx - BRIDGE_BLK_HW,
-                        BRIDGE_Y1 - BRIDGE_BLK_OVH + sy,
-                        bz,
-                        cx + BRIDGE_BLK_HW,
-                        BRIDGE_Y1 + BRIDGE_PAR_W + sy,
-                        bz + BRIDGE_BLK_H,
-                        Textures.CEMENT,
-                    )
-                )
+            + BRIDGE_PAR_H,
+            north_brush=lambda cx, sy, bz: box(
+                cx - BRIDGE_BLK_HW,
+                BRIDGE_Y2 - BRIDGE_PAR_W + sy,
+                bz,
+                cx + BRIDGE_BLK_HW,
+                BRIDGE_Y2 + BRIDGE_BLK_OVH + sy,
+                bz + BRIDGE_BLK_H,
+                Textures.CEMENT,
+            ),
+            south_brush=lambda cx, sy, bz: box(
+                cx - BRIDGE_BLK_HW,
+                BRIDGE_Y1 - BRIDGE_BLK_OVH + sy,
+                bz,
+                cx + BRIDGE_BLK_HW,
+                BRIDGE_Y1 + BRIDGE_PAR_W + sy,
+                bz + BRIDGE_BLK_H,
+                Textures.CEMENT,
+            ),
+            west_margin=west_margin,
+            east_margin=east_margin,
+            n_south=n_south,
+            east_margin_n=east_margin_n,
+            y_shift_fn=y_shift_fn,
+        )
 
     # Western span (BRIDGE_X1 → BRIDGE_ARCH_X[0]): no blocks — open span
     # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks
@@ -351,64 +364,45 @@ def build():
         y_shift_fn=None,
     ):
         """Add raised decorative squares on parapet outer faces, same positions as blocks."""
-        n_s = n if n_south is None else n_south
-        mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
-        mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
-        mx1_n = east_margin_n if east_margin_n is not None else mx1
-        x0 = x_start + mx0
-        x1_n = x_end - mx1_n
-        x1_s = x_end - mx1
-        for k in range(n):
-            cx = int(x0 + (x1_n - x0) * (k + 1) / (n + 1))
-            sy = y_shift_fn(cx) if y_shift_fn else 0.0
-            bz = (
-                int(
-                    min(
-                        deck_top_z(cx - BRIDGE_SQ_HW),
-                        deck_top_z(cx),
-                        deck_top_z(cx + BRIDGE_SQ_HW),
-                    )
-                )
-                + BRIDGE_PAR_H
-                + BRIDGE_BLK_H // 2
-            )
-            BRUSHES.append(
-                box(
-                    cx - BRIDGE_SQ_HW,
-                    BRIDGE_Y2 + sy,
-                    bz - BRIDGE_SQ_HH,
-                    cx + BRIDGE_SQ_HW,
-                    BRIDGE_Y2 + BRIDGE_SQ_D + sy,
-                    bz + BRIDGE_SQ_HH,
-                    Textures.RAIL,
+        add_repeated_parapet_decorations(
+            x_start,
+            x_end,
+            n,
+            x_half_width=BRIDGE_SQ_HW,
+            z_at_center=lambda cx: int(
+                min(
+                    deck_top_z(cx - BRIDGE_SQ_HW),
+                    deck_top_z(cx),
+                    deck_top_z(cx + BRIDGE_SQ_HW),
                 )
             )
-        for k in range(n_s):
-            cx = int(x0 + (x1_s - x0) * (k + 1) / (n_s + 1))
-            sy = y_shift_fn(cx) if y_shift_fn else 0.0
-            if not (cx - BRIDGE_SQ_HW < WALK_X2 and cx + BRIDGE_SQ_HW > WALK_X1):
-                bz = (
-                    int(
-                        min(
-                            deck_top_z(cx - BRIDGE_SQ_HW),
-                            deck_top_z(cx),
-                            deck_top_z(cx + BRIDGE_SQ_HW),
-                        )
-                    )
-                    + BRIDGE_PAR_H
-                    + BRIDGE_BLK_H // 2
-                )
-                BRUSHES.append(
-                    box(
-                        cx - BRIDGE_SQ_HW,
-                        BRIDGE_Y1 - BRIDGE_SQ_D + sy,
-                        bz - BRIDGE_SQ_HH,
-                        cx + BRIDGE_SQ_HW,
-                        BRIDGE_Y1 + sy,
-                        bz + BRIDGE_SQ_HH,
-                        Textures.RAIL,
-                    )
-                )
+            + BRIDGE_PAR_H
+            + BRIDGE_BLK_H // 2,
+            north_brush=lambda cx, sy, bz: box(
+                cx - BRIDGE_SQ_HW,
+                BRIDGE_Y2 + sy,
+                bz - BRIDGE_SQ_HH,
+                cx + BRIDGE_SQ_HW,
+                BRIDGE_Y2 + BRIDGE_SQ_D + sy,
+                bz + BRIDGE_SQ_HH,
+                Textures.RAIL,
+            ),
+            south_brush=lambda cx, sy, bz: box(
+                cx - BRIDGE_SQ_HW,
+                BRIDGE_Y1 - BRIDGE_SQ_D + sy,
+                bz - BRIDGE_SQ_HH,
+                cx + BRIDGE_SQ_HW,
+                BRIDGE_Y1 + sy,
+                bz + BRIDGE_SQ_HH,
+                Textures.RAIL,
+            ),
+            center_fn=int,
+            west_margin=west_margin,
+            east_margin=east_margin,
+            n_south=n_south,
+            east_margin_n=east_margin_n,
+            y_shift_fn=y_shift_fn,
+        )
 
     add_parapet_squares(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
     add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
