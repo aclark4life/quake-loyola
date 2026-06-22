@@ -250,7 +250,50 @@ WORLD_EAST_BUFFER = 512
 
 
 class Lighting:
-    """Worldspawn lighting fields — adjust these to change time of day."""
+    """Worldspawn lighting fields — adjust these to change time of day.
+
+    Swap in a preset by copying its values over the active fields below.
+
+    Dawn:
+        AMBIENT = "30"
+        SUNLIGHT = "120"
+        SUNLIGHT_COLOR = "255 200 140"  # pale orange
+        SUNLIGHT_DIR = "8 -90"          # low on the eastern horizon
+        SUNLIGHT_PENUMBRA = "40"
+        FOG = "0.04 0.6 0.5 0.4"
+
+    Midday (active):
+        AMBIENT = "90"
+        SUNLIGHT = "140"
+        SUNLIGHT_COLOR = "255 245 210"  # warm white
+        SUNLIGHT_DIR = "60 -60"
+        SUNLIGHT_PENUMBRA = "30"
+        FOG = "0.03 0.5 0.5 0.6"
+
+    Golden hour:
+        AMBIENT = "40"
+        SUNLIGHT = "160"
+        SUNLIGHT_COLOR = "255 180 80"   # deep amber
+        SUNLIGHT_DIR = "10 -90"         # low on the western horizon
+        SUNLIGHT_PENUMBRA = "40"
+        FOG = "0.05 0.6 0.4 0.3"
+
+    Dusk:
+        AMBIENT = "20"
+        SUNLIGHT = "100"
+        SUNLIGHT_COLOR = "200 120 60"   # dusky orange-red
+        SUNLIGHT_DIR = "5 -120"         # just below the horizon
+        SUNLIGHT_PENUMBRA = "50"
+        FOG = "0.06 0.4 0.3 0.4"
+
+    Overcast:
+        AMBIENT = "120"
+        SUNLIGHT = "0"
+        SUNLIGHT_COLOR = "200 210 220"  # cool grey-white
+        SUNLIGHT_DIR = "90 0"
+        SUNLIGHT_PENUMBRA = "60"
+        FOG = "0.05 0.5 0.5 0.55"
+    """
 
     AMBIENT = "90"
     SUNLIGHT = "140"
