@@ -397,7 +397,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_dorm_roof",
             origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
-            angle="0",  # facing east, atop roof ridge center
+            angle="270",  # facing south, at top of A-frame ridge
         )
     )
 
