@@ -23,11 +23,13 @@ WORLDSPAWN_FIELDS = {
     "_fog": "0.03 0.5 0.5 0.6",
 }
 
+MODULES = [streets, west_campus, bridge, knott_terrain, knott_hall, entities]
+
 
 def build_map():
     """Build the full map by collecting every module's geometry into a MapBuilder."""
     mb = MapBuilder()
-    for mod in [streets, west_campus, bridge, knott_terrain, knott_hall, entities]:
+    for mod in MODULES:
         brushes, ents = mod.build()
         mb.add_brushes(brushes)
         mb.add_entities(ents)
