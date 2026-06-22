@@ -1750,21 +1750,6 @@ def build():
                 fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
             )
-        # Door frame — west face tunnel entrance
-        brushes += win_frame_ywall(
-            cy - DORM_INNER_DOOR_HW,
-            cy + DORM_INNER_DOOR_HW,
-            FLOOR_Z2 - SDORM_LIFT,
-            FLOOR_Z2,
-            bx1,
-            +1,
-            Textures.GABLE,
-            fw=8,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-            crossbar=False,
-            bottom=False,
-        )
         # Window frames — east face (skip ground-floor window overlapping the entrance
         # opening when an entrance is present)
         for yl, zb, yr, zt in wyz():
