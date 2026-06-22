@@ -22,6 +22,7 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
+    KNOTT,
     KNOTT_DRIVEWAY_CURB_CRN_R,
     KNOTT_DRIVEWAY_CURB_CRN_SEGS,
     KNOTT_DRIVEWAY_ES_X1,
@@ -154,11 +155,11 @@ def build():
         )
 
     def floor_levels():
-        for floor_index in range(KNOTT_FLOORS):
-            fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
-            fz2 = fz1 + KNOTT_FLOOR_H
-            fz_surf = fz1 + KNOTT_WALL
-            fz_mid = fz1 + KNOTT_FLOOR_H // 2
+        for floor_index in range(KNOTT.floors):
+            fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
+            fz2 = fz1 + KNOTT.floor_h
+            fz_surf = fz1 + KNOTT.wall_t
+            fz_mid = fz1 + KNOTT.floor_h // 2
             yield floor_index, fz1, fz2, fz_surf, fz_mid
 
     # ══════════════════════════════════════════════════════════════════════════════

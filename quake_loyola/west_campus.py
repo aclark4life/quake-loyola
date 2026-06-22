@@ -4,6 +4,7 @@ from .constants import (
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM,
     DORM_BRICK_GATE_H,
     DORM_BRICK_PILLAR_CAP_H,
     DORM_BRICK_PILLAR_CAP_OVH,
@@ -615,7 +616,7 @@ def build():
     ENTITIES = []
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
     # Underground tunnel — dimensions and embankment interpolation
-    TUNN_T = DORM_WALL  # wall/ceiling/floor thickness (= 16)
+    TUNN_T = DORM.wall_t  # wall/ceiling/floor thickness (= 16)
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
     TUNN_X2 = DORM_X1  # east face of tunnel = west face of buildings
 
@@ -649,16 +650,16 @@ def build():
     ]
 
     dorm_wz_lo = (
-        DORM_FLOOR_H - DORM_WIN_HH * 2
+        DORM.floor_h - DORM_WIN_HH * 2
     ) // 2  # window sill offset within a floor
     dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2  # window head offset within a floor
 
     def dorm_window_z(fl):
-        base_z = FLOOR_Z2 + fl * DORM_FLOOR_H
+        base_z = FLOOR_Z2 + fl * DORM.floor_h
         return base_z + dorm_wz_lo, base_z + dorm_wz_hi
 
     def dorm_window_levels(start_floor=0):
-        for fl in range(start_floor, DORM_FLOORS):
+        for fl in range(start_floor, DORM.floors):
             yield fl, *dorm_window_z(fl)
 
     def dorm_window_openings(
