@@ -448,7 +448,32 @@ def build():
         )
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
 
-    # ── Ennis east-end & KH driveway south-end arch teleports ─────────────────
+    # Stone arch surrounds for north & south Charles Street arches
+    CHARLES_ARCH_ROUT = 312  # outer radius
+    charles_arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
+    for arch_y1, arch_y2 in [
+        (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W),
+        (CHARLES_Y2 - CHARLES_ARCH_W, CHARLES_Y2),
+    ]:
+        ENTITIES.append(
+            brush_ent(
+                "func_detail",
+                arch_wall_y(
+                    arch_y1,
+                    arch_y2,
+                    WORLD_X1 + WALL_T,
+                    WORLD_X2 - WALL_T,
+                    FLOOR_Z2,
+                    charles_arch_top_z,
+                    CHARLES_ARCH_RIN,
+                    CHARLES_ARCH_ROUT,
+                    A_SEGS,
+                    Textures.PILLAR,
+                    stilt_h=CHARLES_ARCH_STILT,
+                ),
+            )
+        )
+
     # Both arches → top of Knott Hall rooftop.
     # Each arch spans the road opening and glows with teleport texture.
     ENNIS_ARCH_STILT = 64
