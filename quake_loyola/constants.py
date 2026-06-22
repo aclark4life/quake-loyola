@@ -345,7 +345,7 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
 LIGHTING = LIGHTING_PRESETS["dawn"]
 FOG_DENSITY: float | None = (
     # None  # override preset fog density: FogDensity.LOW/MED/HIGH/OFF
-    FogDensity.OFF
+    FogDensity.LOW
 )
 
 
