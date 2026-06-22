@@ -1,4 +1,5 @@
 import math
+from dataclasses import dataclass
 
 # ── Constant prefix legend ─────────────────────────────────────────────────────
 #
@@ -293,6 +294,39 @@ class Textures:
     WHITE_STONE = "sfloor3_2"
 
 
+@dataclass
+class KnottSpec:
+    floors: int
+    floor_h: int
+    wall_t: int
+    x1: int
+    x2: int
+    y1: int
+    y2: int
+    driveway_hw: int
+
+
+@dataclass
+class BridgeSpec:
+    x1: int
+    x2: int
+    y1: int
+    y2: int
+    arch_rise: int
+    parapet_h: int
+    walk_wall: int
+
+
+@dataclass
+class DormSpec:
+    floor_h: int
+    floors: int
+    wall_t: int
+    depth: int
+    x1: int
+    x2: int
+
+
 # ── Derived / Dependent Constants ─────────────────────────────────────────────
 KNOTT_ENT_HALF_W = 64
 KNOTT_STAIR_LANDING_GAP = 16
@@ -495,6 +529,58 @@ FENCE_X1 = DORM_X2 + DORM_FENCE_OFFSET
 FENCE_X2 = FENCE_X1 + 2
 DORM_X1 = DORM_X2 - 576
 DORM_CX = (DORM_X1 + DORM_X2) // 2
+
+KNOTT = KnottSpec(
+    floors=KNOTT_FLOORS,
+    floor_h=KNOTT_FLOOR_H,
+    wall_t=KNOTT_WALL,
+    x1=KNOTT_X1,
+    x2=KNOTT_X2,
+    y1=KNOTT_Y1,
+    y2=KNOTT_Y2,
+    driveway_hw=KNOTT_DRIVEWAY_HW,
+)
+BRIDGE = BridgeSpec(
+    x1=BRIDGE_X1,
+    x2=BRIDGE_X2,
+    y1=BRIDGE_Y1,
+    y2=BRIDGE_Y2,
+    arch_rise=BRIDGE_ARCH_RISE,
+    parapet_h=BRIDGE_PAR_H,
+    walk_wall=BRIDGE_WALK_WALL,
+)
+DORM = DormSpec(
+    floor_h=DORM_FLOOR_H,
+    floors=DORM_FLOORS,
+    wall_t=DORM_WALL,
+    depth=DORM_DEPTH,
+    x1=DORM_X1,
+    x2=DORM_X2,
+)
+
+KNOTT_FLOORS = KNOTT.floors
+KNOTT_FLOOR_H = KNOTT.floor_h
+KNOTT_WALL = KNOTT.wall_t
+KNOTT_X1 = KNOTT.x1
+KNOTT_X2 = KNOTT.x2
+KNOTT_Y1 = KNOTT.y1
+KNOTT_Y2 = KNOTT.y2
+KNOTT_DRIVEWAY_HW = KNOTT.driveway_hw
+
+BRIDGE_X1 = BRIDGE.x1
+BRIDGE_X2 = BRIDGE.x2
+BRIDGE_Y1 = BRIDGE.y1
+BRIDGE_Y2 = BRIDGE.y2
+BRIDGE_ARCH_RISE = BRIDGE.arch_rise
+BRIDGE_PAR_H = BRIDGE.parapet_h
+BRIDGE_WALK_WALL = BRIDGE.walk_wall
+
+DORM_FLOOR_H = DORM.floor_h
+DORM_FLOORS = DORM.floors
+DORM_WALL = DORM.wall_t
+DORM_DEPTH = DORM.depth
+DORM_X1 = DORM.x1
+DORM_X2 = DORM.x2
 
 # South-dorm raised terrace + gentler frontage hill out to Charles Street.
 # The south-dorm pad sits flat on a terrace at FLOOR_Z2 + SDORM_LIFT; east of the

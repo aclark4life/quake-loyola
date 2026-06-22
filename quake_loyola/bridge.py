@@ -4,6 +4,7 @@ from .constants import (
     ARCH_ROUT,
     ARCH_SLAB_W,
     ARCH_STILT_H,
+    BRIDGE,
     BRIDGE_ACCESS_WALK_CENTER_X,
     BRIDGE_ACCESS_WALK_HALF_W,
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
@@ -119,10 +120,10 @@ def build():
     BRUSHES.append(
         box(
             BRIDGE_X2,
-            BRIDGE_Y1,
+            BRIDGE.y1,
             BRIDGE_DZ1,
             BRIDGE_EAST_PIVOT_X,
-            BRIDGE_Y2,
+            BRIDGE.y2,
             BRIDGE_DZ2,
             Textures.STONE,
             tt=Textures.FLOOR,
@@ -138,10 +139,10 @@ def build():
     BRUSHES.append(
         shear_box_y(
             BRIDGE_EAST_PIVOT_X,
-            BRIDGE_Y1,
+            BRIDGE.y1,
             BRIDGE_DZ1,
             DECK_EAST_END_X,
-            BRIDGE_Y2,
+            BRIDGE.y2,
             BRIDGE_DZ2,
             BRIDGE_EAST_SHIFT_START,
             east_y_shift(DECK_EAST_END_X),
@@ -153,7 +154,7 @@ def build():
 
     def iter_bridge_span_segments():
         for i in range(BRIDGE_SEG_SPAN_W):
-            sx1 = BRIDGE_X1 + i * BRIDGE_SEG_W
+            sx1 = BRIDGE.x1 + i * BRIDGE_SEG_W
             sx2 = sx1 + BRIDGE_SEG_W
             db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
             pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
