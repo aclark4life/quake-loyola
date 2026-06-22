@@ -332,11 +332,20 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
         sunlight_penumbra="10",
         fog=make_fog(FogDensity.HIGH, 0.05, 0.05, 0.15),  # dark blue-black
     ),
+    "bright": LightingPreset(
+        ambient="120",
+        sunlight="255",
+        sunlight_color="255 255 240",  # brilliant white with slight warmth
+        sunlight_dir="75 -45",  # high sun, near overhead
+        sunlight_penumbra="20",
+        fog=make_fog(FogDensity.OFF, 0.5, 0.5, 0.6),
+    ),
 }
 
-LIGHTING = LIGHTING_PRESETS["night"]
+LIGHTING = LIGHTING_PRESETS["dawn"]
 FOG_DENSITY: float | None = (
-    None  # override preset fog density: FogDensity.LOW/MED/HIGH/OFF
+    # None  # override preset fog density: FogDensity.LOW/MED/HIGH/OFF
+    FogDensity.OFF
 )
 
 
