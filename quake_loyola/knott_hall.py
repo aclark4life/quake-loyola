@@ -1914,7 +1914,7 @@ def build():
                 CHARLES_ARCH_RIN_PRE,
                 CHARLES_ARCH_ROUT_PRE,
                 A_SEGS,
-                Textures.STONE,
+                Textures.PILLAR,
                 stilt_h=CHARLES_ARCH_STILT_PRE,
             )
         )
