@@ -558,29 +558,6 @@ DORM = DormSpec(
     x2=DORM_X2,
 )
 
-KNOTT_FLOORS = KNOTT.floors
-KNOTT_FLOOR_H = KNOTT.floor_h
-KNOTT_WALL = KNOTT.wall_t
-KNOTT_X1 = KNOTT.x1
-KNOTT_X2 = KNOTT.x2
-KNOTT_Y1 = KNOTT.y1
-KNOTT_Y2 = KNOTT.y2
-KNOTT_DRIVEWAY_HW = KNOTT.driveway_hw
-
-BRIDGE_X1 = BRIDGE.x1
-BRIDGE_X2 = BRIDGE.x2
-BRIDGE_Y1 = BRIDGE.y1
-BRIDGE_Y2 = BRIDGE.y2
-BRIDGE_ARCH_RISE = BRIDGE.arch_rise
-BRIDGE_PAR_H = BRIDGE.parapet_h
-BRIDGE_WALK_WALL = BRIDGE.walk_wall
-
-DORM_FLOOR_H = DORM.floor_h
-DORM_FLOORS = DORM.floors
-DORM_WALL = DORM.wall_t
-DORM_DEPTH = DORM.depth
-DORM_X1 = DORM.x1
-DORM_X2 = DORM.x2
 
 # South-dorm raised terrace + gentler frontage hill out to Charles Street.
 # The south-dorm pad sits flat on a terrace at FLOOR_Z2 + SDORM_LIFT; east of the
