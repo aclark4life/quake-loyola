@@ -450,6 +450,7 @@ def build():
 
     # Stone arch surrounds for north & south Charles Street arches
     CHARLES_ARCH_ROUT = 312  # outer radius
+    CHARLES_ARCH_SEGS = 24  # smoother than the global A_SEGS = 16
     charles_arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
     for arch_y1, arch_y2 in [
         (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W),
@@ -467,7 +468,7 @@ def build():
                     charles_arch_top_z,
                     CHARLES_ARCH_RIN,
                     CHARLES_ARCH_ROUT,
-                    A_SEGS,
+                    CHARLES_ARCH_SEGS,
                     Textures.PILLAR,
                     stilt_h=CHARLES_ARCH_STILT,
                 ),
