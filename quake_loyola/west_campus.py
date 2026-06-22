@@ -1,6 +1,6 @@
 from .constants import (
+    BRIDGE,
     BRIDGE_DZ2,
-    BRIDGE_X1,
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
@@ -20,8 +20,6 @@ from .constants import (
     DORM_EMB_X2,
     DORM_ENT_H,
     DORM_ENT_HW,
-    DORM_FLOOR_H,
-    DORM_FLOORS,
     DORM_FRONT_WALKWAY_FENCE_OFFSET,
     DORM_FRONT_WALKWAY_H,
     DORM_FRONT_WALKWAY_W,
@@ -38,13 +36,10 @@ from .constants import (
     DORM_SOUTH1_Y2,
     DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
-    DORM_WALL,
     DORM_WALL_S_Y2,
     DORM_WIN_HH,
     DORM_WIN_HW,
     DORM_WIN_MARGIN,
-    DORM_X1,
-    DORM_X2,
     ENNIS_CEMENT_WALL_CAP_H,
     ENNIS_CEMENT_WALL_CAP_OVH,
     ENNIS_CEMENT_WALL_H,
@@ -618,15 +613,15 @@ def build():
     # Underground tunnel — dimensions and embankment interpolation
     TUNN_T = DORM.wall_t  # wall/ceiling/floor thickness (= 16)
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
-    TUNN_X2 = DORM_X1  # east face of tunnel = west face of buildings
+    TUNN_X2 = DORM.x1  # east face of tunnel = west face of buildings
 
     # Embankment surface Z at the building's west face (east end of the backfill ramp).
-    _emb_denom = DORM_EMB_X2 - BRIDGE_X1
+    _emb_denom = DORM_EMB_X2 - BRIDGE.x1
     emb_zt_tunn_e = int(
-        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_X2 - BRIDGE_X1) / _emb_denom
+        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_X2 - BRIDGE.x1) / _emb_denom
     )
 
-    DORM_CX = (DORM_X1 + DORM_X2) // 2  # building X center
+    DORM_CX = (DORM.x1 + DORM.x2) // 2  # building X center
     DORM_NORTH_CY = (
         DORM_NORTH_Y1 + DORM_NORTH_Y2
     ) // 2  # building Y center (gable ridge line)
@@ -640,8 +635,8 @@ def build():
     )
 
     # Window X centers on south/north face: 2 left + 2 right of the entrance gap
-    dorm_wx = [DORM_X1 + (DORM_CX - DORM_ENT_HW - DORM_X1) * k // 3 for k in [1, 2]] + [
-        (DORM_CX + DORM_ENT_HW) + (DORM_X2 - DORM_CX - DORM_ENT_HW) * k // 3
+    dorm_wx = [DORM.x1 + (DORM_CX - DORM_ENT_HW - DORM.x1) * k // 3 for k in [1, 2]] + [
+        (DORM_CX + DORM_ENT_HW) + (DORM.x2 - DORM_CX - DORM_ENT_HW) * k // 3
         for k in [1, 2]
     ]
     # Window Y centers on east/west face: 3 evenly spaced
@@ -711,11 +706,11 @@ def build():
     north_bldg_detail = []
     north_bldg_detail.extend(
         layered_wall(
-            DORM_X1,
+            DORM.x1,
             DORM_NORTH_Y1,
             FLOOR_Z2,
-            DORM_X2,
-            DORM_NORTH_Y1 + DORM_WALL,
+            DORM.x2,
+            DORM_NORTH_Y1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
             [dorm_door_open],
             "city2_1",
@@ -724,10 +719,10 @@ def build():
     # North wall — windows (floors 0 and wx<-1652 floor 1 buried by gap embankment; center floor 1+)
     north_bldg_detail.extend(
         layered_wall(
-            DORM_X1,
-            DORM_NORTH_Y2 - DORM_WALL,
+            DORM.x1,
+            DORM_NORTH_Y2 - DORM.wall_t,
             FLOOR_Z2,
-            DORM_X2,
+            DORM.x2,
             DORM_NORTH_Y2,
             FLOOR_Z2 + DORM_H,
             nb_wins_xz_upper(dorm_wx, x_clear=-1652)
@@ -752,11 +747,11 @@ def build():
     )
     north_bldg_detail.extend(
         layered_wall_y(
-            DORM_NORTH_Y1 + DORM_WALL,
-            DORM_X2 - DORM_WALL,
+            DORM_NORTH_Y1 + DORM.wall_t,
+            DORM.x2 - DORM.wall_t,
             FLOOR_Z2,
-            DORM_NORTH_Y2 - DORM_WALL,
-            DORM_X2,
+            DORM_NORTH_Y2 - DORM.wall_t,
+            DORM.x2,
             FLOOR_Z2 + DORM_H,
             dorm_e_openings,
             "city2_1",
@@ -766,11 +761,11 @@ def build():
     # + ground-floor tunnel door opening
     north_bldg_detail.extend(
         layered_wall_y(
-            DORM_NORTH_Y1 + DORM_WALL,
-            DORM_X1,
+            DORM_NORTH_Y1 + DORM.wall_t,
+            DORM.x1,
             FLOOR_Z2,
-            DORM_NORTH_Y2 - DORM_WALL,
-            DORM_X1 + DORM_WALL,
+            DORM_NORTH_Y2 - DORM.wall_t,
+            DORM.x1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
             nb_wins_yz_west(dorm_wy)
             + [
@@ -787,12 +782,12 @@ def build():
     # Ceiling slab
     north_bldg_detail.append(
         box(
-            DORM_X1,
+            DORM.x1,
             DORM_NORTH_Y1,
             FLOOR_Z2 + DORM_H,
-            DORM_X2,
+            DORM.x2,
             DORM_NORTH_Y2,
-            FLOOR_Z2 + DORM_H + DORM_WALL,
+            FLOOR_Z2 + DORM_H + DORM.wall_t,
             "city2_1",
         )
     )
@@ -810,7 +805,7 @@ def build():
             DORM_NORTH_Y2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Center window frames — north face, 2nd and 3rd floor
@@ -823,7 +818,7 @@ def build():
             DORM_NORTH_Y2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
             crossbar=True,
         )
@@ -837,7 +832,7 @@ def build():
         +1,
         Textures.GABLE,
         fw=8,
-        fd=DORM_WALL,
+        fd=DORM.wall_t,
         margin=DORM_WIN_MARGIN,
         crossbar=False,
         bottom=False,
@@ -849,10 +844,10 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X2,
+            DORM.x2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     for yl, zb, yr, zt in nb_wins_yz([nb1_e_single_wy]):
@@ -861,10 +856,10 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X2,
+            DORM.x2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
@@ -874,10 +869,10 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X1,
+            DORM.x1,
             +1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Door frame — west face tunnel entrance
@@ -886,17 +881,17 @@ def build():
         DORM_NORTH_CY + DORM_INNER_DOOR_HW,
         FLOOR_Z2,
         FLOOR_Z2 + TUNN_H,
-        DORM_X1,
+        DORM.x1,
         +1,
         Textures.GABLE,
         fw=8,
-        fd=DORM_WALL,
+        fd=DORM.wall_t,
         margin=DORM_WIN_MARGIN,
         crossbar=False,
         bottom=False,
     )
 
-    DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL  # top of ceiling slab = eave level
+    DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t  # top of ceiling slab = eave level
     DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H  # ridge apex
     DORM_SLAB_T = 16  # roof slab thickness at eave
     # Recess the roof-slab gable ends inward so the slats fill the gap with their
@@ -907,7 +902,7 @@ def build():
     # West slope: flat bottom at eave_z, top slopes up to ridge
     north_bldg_detail.append(
         ramp_slab(
-            DORM_X1,
+            DORM.x1,
             DORM_CX,
             DORM_NB_SY1,
             DORM_NB_SY2,
@@ -919,11 +914,11 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # East slope: top at ridge, slopes down to eave at DORM_X2
+    # East slope: top at ridge, slopes down to eave at DORM.x2
     north_bldg_detail.append(
         ramp_slab(
             DORM_CX,
-            DORM_X2,
+            DORM.x2,
             DORM_NB_SY1,
             DORM_NB_SY2,
             DORM_EAVE_Z,
@@ -937,8 +932,8 @@ def build():
     # Horizontal wood slats over the exposed north gable end only (the south end
     # abuts north building 2, so no gable there).
     north_bldg_detail += gable_slats(
-        DORM_X1,
-        DORM_X2,
+        DORM.x1,
+        DORM.x2,
         DORM_CX,
         DORM_EAVE_Z,
         DORM_RIDGE_Z,
@@ -954,11 +949,11 @@ def build():
     # Interior floor — flat ground surface inside the building (covers the hill void)
     BRUSHES.append(
         box(
-            DORM_X1 + DORM_WALL,
-            DORM_NORTH_Y1 + DORM_WALL,
+            DORM.x1 + DORM.wall_t,
+            DORM_NORTH_Y1 + DORM.wall_t,
             FLOOR_Z1,
-            DORM_X2 - DORM_WALL,
-            DORM_NORTH_Y2 - DORM_WALL,
+            DORM.x2 - DORM.wall_t,
+            DORM_NORTH_Y2 - DORM.wall_t,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.ROAD,
@@ -986,11 +981,11 @@ def build():
     # South wall — floors 0 and wx<-1652 floor 1 buried by gap embankment
     north2_bldg_detail.extend(
         layered_wall(
-            DORM_X1,
+            DORM.x1,
             DORM_NORTH2_Y1,
             FLOOR_Z2,
-            DORM_X2,
-            DORM_NORTH2_Y1 + DORM_WALL,
+            DORM.x2,
+            DORM_NORTH2_Y1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
             nb_wins_xz_upper(dorm_wx, x_clear=-1652) + nb2_cx_opens,
             "city2_1",
@@ -999,10 +994,10 @@ def build():
     # North wall (faces NB1) — door only, no windows on interior walls
     north2_bldg_detail.extend(
         layered_wall(
-            DORM_X1,
-            DORM_NORTH2_Y2 - DORM_WALL,
+            DORM.x1,
+            DORM_NORTH2_Y2 - DORM.wall_t,
             FLOOR_Z2,
-            DORM_X2,
+            DORM.x2,
             DORM_NORTH2_Y2,
             FLOOR_Z2 + DORM_H,
             [dorm_door_open],
@@ -1016,11 +1011,11 @@ def build():
     nb2_e_double_wy = DORM_NORTH2_Y1 + 326  # set 3 double
     north2_bldg_detail.extend(
         layered_wall_y(
-            DORM_NORTH2_Y1 + DORM_WALL,
-            DORM_X2 - DORM_WALL,
+            DORM_NORTH2_Y1 + DORM.wall_t,
+            DORM.x2 - DORM.wall_t,
             FLOOR_Z2,
-            DORM_NORTH2_Y2 - DORM_WALL,
-            DORM_X2,
+            DORM_NORTH2_Y2 - DORM.wall_t,
+            DORM.x2,
             FLOOR_Z2 + DORM_H,
             nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2])
             + nb_wins_yz_double([nb2_e_double_wy]),
@@ -1030,11 +1025,11 @@ def build():
     # West wall — windows only (floor 2 only; floors 0–1 buried by hillside)
     north2_bldg_detail.extend(
         layered_wall_y(
-            DORM_NORTH2_Y1 + DORM_WALL,
-            DORM_X1,
+            DORM_NORTH2_Y1 + DORM.wall_t,
+            DORM.x1,
             FLOOR_Z2,
-            DORM_NORTH2_Y2 - DORM_WALL,
-            DORM_X1 + DORM_WALL,
+            DORM_NORTH2_Y2 - DORM.wall_t,
+            DORM.x1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
             nb_wins_yz_west(dorm_wy2),
             "city2_1",
@@ -1043,12 +1038,12 @@ def build():
     # Ceiling slab
     north2_bldg_detail.append(
         box(
-            DORM_X1,
+            DORM.x1,
             DORM_NORTH2_Y1,
             FLOOR_Z2 + DORM_H,
-            DORM_X2,
+            DORM.x2,
             DORM_NORTH2_Y2,
-            FLOOR_Z2 + DORM_H + DORM_WALL,
+            FLOOR_Z2 + DORM_H + DORM.wall_t,
             "city2_1",
         )
     )
@@ -1062,7 +1057,7 @@ def build():
             DORM_NORTH2_Y1,
             +1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     for _, zb, zt in dorm_window_levels(1):
@@ -1074,7 +1069,7 @@ def build():
             DORM_NORTH2_Y1,
             +1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Window frames — east face (set1+2 single; set3 double) — evenly spaced
@@ -1084,10 +1079,10 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X2,
+            DORM.x2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     for yl, zb, yr, zt in nb_wins_yz_double([nb2_e_double_wy]):
@@ -1096,10 +1091,10 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X2,
+            DORM.x2,
             -1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Door frame — ground-floor center doorway to building 1 (north face, interior wall)
@@ -1112,7 +1107,7 @@ def build():
         -1,
         Textures.GABLE,
         fw=8,
-        fd=DORM_WALL,
+        fd=DORM.wall_t,
         margin=DORM_WIN_MARGIN,
         crossbar=False,
         bottom=False,
@@ -1124,14 +1119,14 @@ def build():
             yr,
             zb,
             zt,
-            DORM_X1,
+            DORM.x1,
             +1,
             Textures.GABLE,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
     # Roof — same gable profile as building 1
-    NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL
+    NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t
     NB2_RIDGE_Z = NB2_EAVE_Z + DORM_ROOF_H
     NB2_SLAB_T = 16
     NB2_GABLE_DEPTH = 6
@@ -1139,7 +1134,7 @@ def build():
     NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
     north2_bldg_detail.append(
         ramp_slab(
-            DORM_X1,
+            DORM.x1,
             DORM_CX,
             NB2_SY1,
             NB2_SY2,
@@ -1154,7 +1149,7 @@ def build():
     north2_bldg_detail.append(
         ramp_slab(
             DORM_CX,
-            DORM_X2,
+            DORM.x2,
             NB2_SY1,
             NB2_SY2,
             NB2_EAVE_Z,
@@ -1167,8 +1162,8 @@ def build():
     )
     # Slats on the exposed south gable end only (the north end abuts building 1).
     north2_bldg_detail += gable_slats(
-        DORM_X1,
-        DORM_X2,
+        DORM.x1,
+        DORM.x2,
         DORM_CX,
         NB2_EAVE_Z,
         NB2_RIDGE_Z,
@@ -1183,11 +1178,11 @@ def build():
     # Interior floor
     BRUSHES.append(
         box(
-            DORM_X1 + DORM_WALL,
-            DORM_NORTH2_Y1 + DORM_WALL,
+            DORM.x1 + DORM.wall_t,
+            DORM_NORTH2_Y1 + DORM.wall_t,
             FLOOR_Z1,
-            DORM_X2 - DORM_WALL,
-            DORM_NORTH2_Y2 - DORM_WALL,
+            DORM.x2 - DORM.wall_t,
+            DORM_NORTH2_Y2 - DORM.wall_t,
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.ROAD,
@@ -1195,7 +1190,7 @@ def build():
     )
 
     # ── Two south buildings — exact copies of north building, stacked N-S ──────────
-    # Same X footprint (DORM_X1..DORM_X2), entrance on east face (faces Charles Street).
+    # Same X footprint (DORM.x1..DORM.x2), entrance on east face (faces Charles Street).
     # Moved to func_detail to reduce portal complexity in the open campus area.
 
     def make_south_bldg(
@@ -1224,7 +1219,7 @@ def build():
         blocks windows on the north face (by2); overlapping openings are omitted.
         north_min_floor: lowest floor shown on the north (by2) face; floors below this
         are omitted (used when the embankment in the gap partially buries floor 0)."""
-        bx1, bx2 = DORM_X1, DORM_X2
+        bx1, bx2 = DORM.x1, DORM.x2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, 120
         wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
@@ -1262,21 +1257,21 @@ def build():
             # itself (west edge to SDORM_STAIR_X2, SDORM_STAIR_Y1..Y2) is left open.
             brushes += [
                 box(
-                    bx1 + DORM_WALL,
-                    by1 + DORM_WALL,
+                    bx1 + DORM.wall_t,
+                    by1 + DORM.wall_t,
                     FLOOR_Z1,
-                    bx2 - DORM_WALL,
+                    bx2 - DORM.wall_t,
                     SDORM_STAIR_Y1,
                     FLOOR_Z2,
                     Textures.GROUND,
                     tt=Textures.ROAD,
                 ),
                 box(
-                    bx1 + DORM_WALL,
+                    bx1 + DORM.wall_t,
                     SDORM_STAIR_Y2,
                     FLOOR_Z1,
-                    bx2 - DORM_WALL,
-                    by2 - DORM_WALL,
+                    bx2 - DORM.wall_t,
+                    by2 - DORM.wall_t,
                     FLOOR_Z2,
                     Textures.GROUND,
                     tt=Textures.ROAD,
@@ -1285,7 +1280,7 @@ def build():
                     SDORM_STAIR_X2,
                     SDORM_STAIR_Y1,
                     FLOOR_Z1,
-                    bx2 - DORM_WALL,
+                    bx2 - DORM.wall_t,
                     SDORM_STAIR_Y2,
                     FLOOR_Z2,
                     Textures.GROUND,
@@ -1310,11 +1305,11 @@ def build():
         else:
             brushes.append(
                 box(
-                    bx1 + DORM_WALL,
-                    by1 + DORM_WALL,
+                    bx1 + DORM.wall_t,
+                    by1 + DORM.wall_t,
                     FLOOR_Z1,
-                    bx2 - DORM_WALL,
-                    by2 - DORM_WALL,
+                    bx2 - DORM.wall_t,
+                    by2 - DORM.wall_t,
                     FLOOR_Z2,
                     Textures.GROUND,
                     tt=Textures.ROAD,
@@ -1336,7 +1331,7 @@ def build():
                 by1,
                 FLOOR_Z2,
                 bx2,
-                by1 + DORM_WALL,
+                by1 + DORM.wall_t,
                 FLOOR_Z2 + DORM_H,
                 ([] if door_lo else wxz() + mid_wxz)
                 + ([dorm_door_open] if door_lo else []),
@@ -1346,7 +1341,7 @@ def build():
         brushes.extend(
             layered_wall(
                 bx1,
-                by2 - DORM_WALL,
+                by2 - DORM.wall_t,
                 FLOOR_Z2,
                 bx2,
                 by2,
@@ -1359,11 +1354,11 @@ def build():
         cy = (by1 + by2) // 2
         brushes.extend(
             layered_wall_y(
-                by1 + DORM_WALL,
+                by1 + DORM.wall_t,
                 bx1,
                 FLOOR_Z2,
-                by2 - DORM_WALL,
-                bx1 + DORM_WALL,
+                by2 - DORM.wall_t,
+                bx1 + DORM.wall_t,
                 FLOOR_Z2 + DORM_H,
                 wyz_west()
                 + (
@@ -1389,10 +1384,10 @@ def build():
             ] + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
         brushes.extend(
             layered_wall_y(
-                by1 + DORM_WALL,
-                bx2 - DORM_WALL,
+                by1 + DORM.wall_t,
+                bx2 - DORM.wall_t,
                 FLOOR_Z2,
-                by2 - DORM_WALL,
+                by2 - DORM.wall_t,
                 bx2,
                 FLOOR_Z2 + DORM_H,
                 east_openings,
@@ -1411,7 +1406,7 @@ def build():
             chim_y1, chim_y2 = ccy - chw, ccy + chw
         # Ceiling slab — split around the shaft when a chimney is present
         if chimney:
-            _cz1, _cz2 = FLOOR_Z2 + DORM_H, FLOOR_Z2 + DORM_H + DORM_WALL
+            _cz1, _cz2 = FLOOR_Z2 + DORM_H, FLOOR_Z2 + DORM_H + DORM.wall_t
             brushes += [
                 box(bx1, by1, _cz1, chim_x1, by2, _cz2, "city2_1"),
                 box(chim_x2, by1, _cz1, bx2, by2, _cz2, "city2_1"),
@@ -1426,13 +1421,13 @@ def build():
                     FLOOR_Z2 + DORM_H,
                     bx2,
                     by2,
-                    FLOOR_Z2 + DORM_H + DORM_WALL,
+                    FLOOR_Z2 + DORM_H + DORM.wall_t,
                     "city2_1",
                 )
             )
         eave_z, ridge_z, slab_t = (
-            FLOOR_Z2 + DORM_H + DORM_WALL,
-            FLOOR_Z2 + DORM_H + DORM_WALL + DORM_ROOF_H,
+            FLOOR_Z2 + DORM_H + DORM.wall_t,
+            FLOOR_Z2 + DORM_H + DORM.wall_t + DORM_ROOF_H,
             16,
         )
         depth = 6  # slat recess depth; outer face flush with wall
@@ -1685,7 +1680,7 @@ def build():
                 bx2,
                 -1,
                 Textures.GABLE,
-                fd=DORM_WALL,
+                fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
                 crossbar=False,
                 bottom=False,
@@ -1701,7 +1696,7 @@ def build():
                     by1,
                     +1,
                     Textures.GABLE,
-                    fd=DORM_WALL,
+                    fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
             for xl, zb, xr, zt in mid_wxz:
@@ -1713,7 +1708,7 @@ def build():
                     by1,
                     +1,
                     Textures.GABLE,
-                    fd=DORM_WALL,
+                    fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
         # Window frames — north face (door wall has no windows)
@@ -1727,7 +1722,7 @@ def build():
                     by2,
                     -1,
                     Textures.GABLE,
-                    fd=DORM_WALL,
+                    fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
             for xl, zb, xr, zt in mid_wxz:
@@ -1739,7 +1734,7 @@ def build():
                     by2,
                     -1,
                     Textures.GABLE,
-                    fd=DORM_WALL,
+                    fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
         # Window frames — west face (floor 0 buried by hillside after terrace lift)
@@ -1752,7 +1747,7 @@ def build():
                 bx1,
                 +1,
                 Textures.GABLE,
-                fd=DORM_WALL,
+                fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
             )
         # Door frame — west face tunnel entrance
@@ -1765,7 +1760,7 @@ def build():
             +1,
             Textures.GABLE,
             fw=8,
-            fd=DORM_WALL,
+            fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
             crossbar=False,
             bottom=False,
@@ -1783,7 +1778,7 @@ def build():
                 bx2,
                 -1,
                 Textures.GABLE,
-                fd=DORM_WALL,
+                fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
             )
         # Door frames — ground-floor center doorways to adjacent south buildings
@@ -1797,7 +1792,7 @@ def build():
                 -1,
                 Textures.GABLE,
                 fw=8,  # thick frame bars
-                fd=DORM_WALL,
+                fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
                 crossbar=False,
                 bottom=False,
@@ -1812,7 +1807,7 @@ def build():
                 +1,
                 Textures.GABLE,
                 fw=8,  # thick frame bars
-                fd=DORM_WALL,
+                fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
                 crossbar=False,
                 bottom=False,
@@ -1860,10 +1855,10 @@ def build():
         BRUSHES.append(
             box(
                 DORM_CX - DORM_INNER_DOOR_HW,
-                seam_y - DORM_WALL,
+                seam_y - DORM.wall_t,
                 FLOOR_Z1 + seam_lift,
                 DORM_CX + DORM_INNER_DOOR_HW,
-                seam_y + DORM_WALL,
+                seam_y + DORM.wall_t,
                 FLOOR_Z2 + seam_lift,
                 Textures.GROUND,
                 tt=Textures.ROAD,
@@ -1871,12 +1866,12 @@ def build():
         )
 
     # ── Underground tunnel — full west strip from world west wall to buildings ──
-    # Extends from BRIDGE_X1 (inner face of the west sky-wall) to DORM_X1 (building
+    # Extends from BRIDGE.x1 (inner face of the west sky-wall) to DORM.x1 (building
     # west face) across the full N-S span of both dorm clusters and the gap between
     # them.  Floor is at FLOOR_Z2, ceiling at SDORM_LIFT / SDORM_LIFT+TUNN_T.
     # Above the ceiling a sloped backfill slab (at BRIDGE_DZ2 on the west side,
-    # grading down to emb_zt_tunn_e at DORM_X1) fills the hillside; streets.py no
-    # longer places any embankment in the BRIDGE_X1-to-DORM_X1 X-range for these
+    # grading down to emb_zt_tunn_e at DORM.x1) fills the hillside; streets.py no
+    # longer places any embankment in the BRIDGE.x1-to-DORM.x1 X-range for these
     # Y segments since the tunnel now owns the whole strip.
     DORM_NORTH2_Y1_tunn = DORM_NORTH_Y1 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     gap_y1, gap_y2 = DORM_SOUTH2_Y2, DORM_NORTH2_Y1_tunn
@@ -1889,7 +1884,7 @@ def build():
             [
                 # Floor — extends to world west wall
                 box(
-                    BRIDGE_X1,
+                    BRIDGE.x1,
                     DORM_SOUTH1_Y1,
                     FLOOR_Z1,
                     TUNN_X2,
@@ -1903,7 +1898,7 @@ def build():
                 # terrace so the hill reads as a clean slope with no wedge poking
                 # above the terrace; the dorm interior/terrace are untouched.
                 ramp_slab(
-                    BRIDGE_X1,
+                    BRIDGE.x1,
                     TUNN_X2,
                     DORM_SOUTH1_Y1,
                     DORM_SOUTH2_Y2,
@@ -1922,7 +1917,7 @@ def build():
             [
                 # Floor — extends to world west wall
                 box(
-                    BRIDGE_X1,
+                    BRIDGE.x1,
                     DORM_NORTH2_Y1_tunn,
                     FLOOR_Z1,
                     TUNN_X2,
@@ -1932,7 +1927,7 @@ def build():
                 ),
                 # Wedge ceiling — same profile as the south section.
                 ramp_slab(
-                    BRIDGE_X1,
+                    BRIDGE.x1,
                     TUNN_X2,
                     DORM_NORTH2_Y1_tunn,
                     DORM_NORTH_Y2,
@@ -1949,14 +1944,14 @@ def build():
 
     # Gap section — open tunnel running from world west wall through the gap between clusters
     BRUSHES.append(
-        box(BRIDGE_X1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
+        box(BRIDGE.x1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
     # Wedge ceiling for the gap section — same profile as south/north.
     # ts=SKY: the south gable end at gap_y1 is partially exposed above the
     # south section's knife edge (128 vs 177); sky texture keeps it invisible.
     BRUSHES.append(
         ramp_slab(
-            BRIDGE_X1,
+            BRIDGE.x1,
             TUNN_X2,
             gap_y1,
             gap_y2,
@@ -1973,7 +1968,7 @@ def build():
     # Same wedge-ceiling profile as the other sections; no buildings above, just ramp.
     BRUSHES.append(
         box(
-            BRIDGE_X1,
+            BRIDGE.x1,
             DORM_NORTH_Y2,
             FLOOR_Z1,
             TUNN_X2,
@@ -1984,7 +1979,7 @@ def build():
     )
     BRUSHES.append(
         ramp_slab(
-            BRIDGE_X1,
+            BRIDGE.x1,
             TUNN_X2,
             DORM_NORTH_Y2,
             CHARLES_Y2,
@@ -1999,7 +1994,7 @@ def build():
     # ── Lights for the west-side underground tunnel space ────────────────────
     # Evenly-spaced along the full N-S extent of the tunnel (DORM_SOUTH1_Y1 to
     # CHARLES_Y2), centred in the X width of the tunnel, at mid-height.
-    _tunn_light_x = (BRIDGE_X1 + DORM_X1) // 2  # centre of full tunnel width
+    _tunn_light_x = (BRIDGE.x1 + DORM.x1) // 2  # centre of full tunnel width
     _tunn_light_z = SDORM_LIFT // 2  # mid-height between floor (0) and ceiling (128)
     _tunn_y_start = DORM_SOUTH1_Y1 + 200  # 200 units from south end
     _tunn_y_end = CHARLES_Y2 - 200  # 200 units from north end

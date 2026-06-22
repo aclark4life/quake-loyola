@@ -1,20 +1,18 @@
 import math
 
 from .constants import (
+    BRIDGE,
     BRIDGE_ARCH_X,
     BRIDGE_DZ2,
     BRIDGE_PIL_HW,
     BRIDGE_PIL_OVERHANG,
-    BRIDGE_X1,
-    BRIDGE_Y1,
-    BRIDGE_Y2,
     CHARLES_CRN_R,
     CHARLES_CRN_SEGS,
     CHARLES_RAMP_W,
     CHARLES_SWALK_START,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
-    DORM_DEPTH,
+    DORM,
     DORM_EMB_X2,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
@@ -23,8 +21,6 @@ from .constants import (
     DORM_SOUTH1_Y2,
     DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
-    DORM_X1,
-    DORM_X2,
     ENNIS_CURB_W,
     ENNIS_HW,
     ENNIS_NORTH_OFFSET,
@@ -32,10 +28,10 @@ from .constants import (
     ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
+    KNOTT,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
     KNOTT_DRIVEWAY_ES_X2,
-    KNOTT_X2,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
     ROAD_X1,
@@ -125,16 +121,16 @@ def build():
             Textures.SKY,
         )
     )  # E wall
-    # N wall — split at DORM_X1 (tunnel east boundary).  The inner (south) face is
+    # N wall — split at DORM.x1 (tunnel east boundary).  The inner (south) face is
     # split ALONG the tunnel ceiling-underside line, which slopes from
-    # BRIDGE_DZ2-WALL_T at the world wall down to SDORM_LIFT at DORM_X1: ground on
+    # BRIDGE_DZ2-WALL_T at the world wall down to SDORM_LIFT at DORM.x1: ground on
     # the visible tunnel end-wall below that line, sky above it (the band above is
     # buried in the hillside slab / open sky), so no ground triangle pokes above
     # the hill.  This line is always below the hill roofline, so it stays hidden.
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
-            DORM_X1,
+            DORM.x1,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             FLOOR_Z1,
@@ -148,7 +144,7 @@ def build():
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
-            DORM_X1,
+            DORM.x1,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             BRIDGE_DZ2 - WALL_T,
@@ -160,7 +156,7 @@ def build():
     )  # N wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
         box(
-            DORM_X1,
+            DORM.x1,
             WORLD_Y2 - WALL_T,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -173,7 +169,7 @@ def build():
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
-            DORM_X1,
+            DORM.x1,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
@@ -187,7 +183,7 @@ def build():
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
-            DORM_X1,
+            DORM.x1,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             BRIDGE_DZ2 - WALL_T,
@@ -199,7 +195,7 @@ def build():
     )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
         box(
-            DORM_X1,
+            DORM.x1,
             WORLD_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -393,7 +389,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_SW_EDGE,
             FLOOR_Z2,
-            KNOTT_X2,
+            KNOTT.x2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
@@ -416,7 +412,7 @@ def build():
     TEX_DIVIDER = "sfloor3_2"
     dash_brushes = []
     # Charles Street — dashed N-S, two sections either side of bridge
-    for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE_Y1), (BRIDGE_Y2, CHARLES_Y2)]:
+    for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE.y1), (BRIDGE.y2, CHARLES_Y2)]:
         divider_y = section_y1
         dash_on = True
         while divider_y < section_y2:
@@ -653,23 +649,23 @@ def build():
     # Interpolate ramp top-Z at the building's west face so the slope is continuous
     emb_zt_at_ab_x1 = int(
         BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X1 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
+        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM.x1 - BRIDGE.x1) / (DORM_EMB_X2 - BRIDGE.x1)
     )
     # Same hill-slope interpolation at the building's east face — used where the
     # ramp must skip the (now hollow) building interior and only fill the narrow
     # east toe strip between the east wall and the embankment edge.
     emb_zt_at_dorm_x2 = int(
         BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM_X2 - BRIDGE_X1) / (DORM_EMB_X2 - BRIDGE_X1)
+        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM.x2 - BRIDGE.x1) / (DORM_EMB_X2 - BRIDGE.x1)
     )
-    # Gap segment — east of the tunnel channel only (DORM_X1 to DORM_EMB_X2).
-    # The entire strip west of DORM_X1 aligned with the dorm buildings is now open
+    # Gap segment — east of the tunnel channel only (DORM.x1 to DORM_EMB_X2).
+    # The entire strip west of DORM.x1 aligned with the dorm buildings is now open
     # tunnel volume that extends all the way to the world west wall; geometry for
     # that hollow is handled entirely in west_campus.py.
-    DORM_NORTH2_Y1 = DORM_NORTH_Y1 - DORM_DEPTH  # south face of north building 2
+    DORM_NORTH2_Y1 = DORM_NORTH_Y1 - DORM.depth  # south face of north building 2
     BRUSHES.append(
         ramp_slab(
-            DORM_X1,
+            DORM.x1,
             DORM_EMB_X2,
             DORM_SOUTH2_Y2,
             DORM_NORTH2_Y1,
@@ -682,13 +678,13 @@ def build():
             ts=Textures.SKY,  # gable ends face N/S world boundary — show sky
         )
     )
-    # North building cluster — east toe strip only (DORM_X2 to DORM_EMB_X2).
-    # The building interior (DORM_X1 to DORM_X2) is left hollow (carved out of the
+    # North building cluster — east toe strip only (DORM.x2 to DORM_EMB_X2).
+    # The building interior (DORM.x1 to DORM.x2) is left hollow (carved out of the
     # hill) so the north dorms are open rooms with a flat floor at tunnel level;
     # only the narrow strip east of the building wall is backfilled to grade.
     BRUSHES.append(
         ramp_slab(
-            DORM_X2,
+            DORM.x2,
             DORM_EMB_X2,
             DORM_NORTH2_Y1,
             DORM_NORTH_Y2,
@@ -700,14 +696,14 @@ def build():
             tt=Textures.GROUND,
         )
     )
-    # North of north building — east strip only (DORM_X1 to DORM_EMB_X2).
-    # The west strip (BRIDGE_X1..DORM_X1) is now the tunnel north extension,
-    # owned by west_campus.py, so this ramp starts at DORM_X1.
+    # North of north building — east strip only (DORM.x1 to DORM_EMB_X2).
+    # The west strip (BRIDGE.x1..DORM.x1) is now the tunnel north extension,
+    # owned by west_campus.py, so this ramp starts at DORM.x1.
     # ts=SKY: south gable end at DORM_NORTH_Y2 is partially exposed in the
-    # carved-out north dorm interior (north cluster ramp starts at DORM_X2).
+    # carved-out north dorm interior (north cluster ramp starts at DORM.x2).
     BRUSHES.append(
         ramp_slab(
-            DORM_X1,
+            DORM.x1,
             DORM_EMB_X2,
             DORM_NORTH_Y2,
             CHARLES_Y2,
@@ -722,7 +718,7 @@ def build():
     )
 
     # ── South-dorm terrace + gentler frontage hill out to Charles Street ──────────
-    # South of the bridge (Y up to BRIDGE_Y1) raise a flat terrace under the south
+    # South of the bridge (Y up to BRIDGE.y1) raise a flat terrace under the south
     # dorms + brick-wall gate, then slope gently down to grade near the road. This
     # lifts the ground at the brick wall (decreasing its visible height while its
     # top stays at the bridge deck) and gives the dorms a level pad.
@@ -736,7 +732,7 @@ def build():
     BRUSHES.extend(
         [
             box(
-                DORM_X1,
+                DORM.x1,
                 terr_y1,
                 FLOOR_Z2,
                 SDORM_WALL_X,
@@ -746,7 +742,7 @@ def build():
                 tt=Textures.GROUND,
             ),
             box(
-                DORM_X1,
+                DORM.x1,
                 SDORM_STAIR_Y2,
                 FLOOR_Z2,
                 SDORM_WALL_X,
@@ -771,7 +767,7 @@ def build():
     # north side of the bridge, matching the wall→fence strip on the east side.
     BRUSHES.append(
         ramp_slab_y(
-            DORM_X1,
+            DORM.x1,
             SDORM_WALL_X,
             SDORM_SLOPE_Y_S,
             SDORM_SLOPE_Y_N,
