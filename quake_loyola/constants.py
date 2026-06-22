@@ -260,6 +260,16 @@ class LightingPreset:
     sunlight_penumbra: str
     fog: str  # "density r g b"
 
+    def to_worldspawn(self) -> dict:
+        return {
+            "ambient": self.ambient,
+            "_sunlight": self.sunlight,
+            "_sunlight_color": self.sunlight_color,
+            "_sunlight_dir": self.sunlight_dir,
+            "_sunlight_penumbra": self.sunlight_penumbra,
+            "_fog": self.fog,
+        }
+
 
 LIGHTING_PRESETS: dict[str, LightingPreset] = {
     "dawn": LightingPreset(
@@ -625,11 +635,6 @@ WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
-    "ambient": LIGHTING.ambient,
-    "_sunlight": LIGHTING.sunlight,
-    "_sunlight_color": LIGHTING.sunlight_color,
-    "_sunlight_dir": LIGHTING.sunlight_dir,
-    "_sunlight_penumbra": LIGHTING.sunlight_penumbra,
     "dmflags": "128",
-    "_fog": LIGHTING.fog,
+    **LIGHTING.to_worldspawn(),
 }
