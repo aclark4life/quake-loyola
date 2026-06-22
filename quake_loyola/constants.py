@@ -573,3 +573,16 @@ SDORM_STAIR_X1 = (
 SDORM_STAIR_X2 = SDORM_STAIR_X1 + SDORM_STAIR_N * SDORM_STAIR_RUN  # east edge of run
 SDORM_STAIR_Y1 = DORM_SOUTH1_CY - SDORM_STAIR_HW
 SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
+
+WORLDSPAWN_FIELDS = {
+    "wad": "quake101.wad;ad.wad;makkon_building.wad",
+    "message": "Loyola Bridge & Knott Hall",
+    "sky": Textures.SKY,
+    "ambient": Lighting.AMBIENT,
+    "_sunlight": Lighting.SUNLIGHT,
+    "_sunlight_color": Lighting.SUNLIGHT_COLOR,
+    "_sunlight_dir": Lighting.SUNLIGHT_DIR,
+    "_sunlight_penumbra": Lighting.SUNLIGHT_PENUMBRA,
+    "dmflags": "128",
+    "_fog": Lighting.FOG,
+}
