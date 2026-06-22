@@ -360,8 +360,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_east_deck",
-            origin=f"{east_lower_deck_x} {int(BRIDGE_EAST_SHIFT_END)} {int(BRIDGE_DZ2 + 40)}",
-            angle="180",
+            origin="2149 -264 904",
+            angles="32 185 0",  # facing west
         )
     )
     east_lower = [
