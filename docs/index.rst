@@ -14,4 +14,5 @@ Running ``python3 generate_map.py`` (or ``just generate``) writes
    :caption: Contents
 
    overview
+   reference
    api
