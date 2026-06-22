@@ -92,100 +92,67 @@ def build():
         BRUSHES
     )  # checkpoint — trimmed below if KNOTT_ENABLED is False
 
+    def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
+        brushes.append(
+            ramp_slab_y(
+                x1,
+                x2,
+                KNOTT_DRIVEWAY_Y1,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                top_z_s,
+                top_z_n,
+                surface_tex,
+                tt=surface_tex,
+            )
+        )
+        brushes.append(
+            ramp_slab_y(
+                x1,
+                x2,
+                KNOTT_DRIVEWAY_Y1,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                KNOTT_DRIVEWAY_ZT_S,
+                KNOTT_DRIVEWAY_ZT_N,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            )
+        )
+
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
     # Sidewalks with rounded north entrance corners (like Ennis Drive)
     # Road surface — 2-unit textured overlay riding on sloped fill
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + 2,
-            KNOTT_DRIVEWAY_ZT_N + 2,
-            Textures.ROAD,
-            tt=Textures.ROAD,
-        )
-    )
-    # Road fill — solid ground under road surface
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S,
-            KNOTT_DRIVEWAY_ZT_N,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
+    road_section(
+        BRUSHES,
+        KNOTT_DRIVEWAY_RD_X1,
+        KNOTT_DRIVEWAY_RD_X2,
+        KNOTT_DRIVEWAY_ZT_S + 2,
+        KNOTT_DRIVEWAY_ZT_N + 2,
+        Textures.ROAD,
     )
 
     # West sidewalk (strip between building east wall and road) — slopes with road
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-            Textures.CEMENT,
-            tt=Textures.CEMENT,
-        )
-    )
-    # West sidewalk fill
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S,
-            KNOTT_DRIVEWAY_ZT_N,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
+    road_section(
+        BRUSHES,
+        KNOTT_DRIVEWAY_WS_X1,
+        KNOTT_DRIVEWAY_WS_X2,
+        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+        Textures.CEMENT,
     )
 
     # East sidewalk — slopes with road
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-            Textures.CEMENT,
-            tt=Textures.CEMENT,
-        )
-    )
-    # East sidewalk fill
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S,
-            KNOTT_DRIVEWAY_ZT_N,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
+    road_section(
+        BRUSHES,
+        KNOTT_DRIVEWAY_ES_X1,
+        KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+        Textures.CEMENT,
     )
 
     # Terrain east of east sidewalk — south flat + sloped main section matching sidewalk
