@@ -17,6 +17,7 @@ from dataclasses import dataclass
 #   PLAT_        Charles Street scrolling platform (func_train)
 #   ROAD_        road surface extents and markings (X/Y limits, dash/gap lengths)
 #   SHOW_        boolean feature-flag (shows/hides a map element)
+#   Lighting     worldspawn lighting / fog settings (class — Lighting.SUNLIGHT, …)
 #   Textures     texture name palette (class — Textures.BRICK, Textures.ROAD, …)
 #   WALK_        walkway connecting the bridge east end to Knott Hall 2nd floor
 #   WALL_        structural wall thickness (generic)
@@ -271,6 +272,17 @@ SCALE = 15.108
 
 SHOW_SUPPORTS = True
 WORLD_EAST_BUFFER = 512
+
+
+class Lighting:
+    """Worldspawn lighting fields — adjust these to change time of day."""
+
+    AMBIENT = "90"
+    SUNLIGHT = "140"
+    SUNLIGHT_COLOR = "255 245 210"  # warm white → midday sun
+    SUNLIGHT_DIR = "60 -60"  # pitch elevation + yaw azimuth
+    SUNLIGHT_PENUMBRA = "30"
+    FOG = "0.03 0.5 0.5 0.6"  # density r g b
 
 
 class Textures:
