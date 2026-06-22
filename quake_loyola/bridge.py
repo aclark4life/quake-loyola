@@ -1,6 +1,19 @@
 from .constants import (
     A_SEGS,
+    ARCH_RIN,
+    ARCH_ROUT,
+    ARCH_SLAB_W,
+    ARCH_STILT_H,
+    BRIDGE_ACCESS_WALK_CENTER_X,
+    BRIDGE_ACCESS_WALK_HALF_W,
+    BRIDGE_ACCESS_WALK_NORTH_OFFSET,
+    BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
+    BRIDGE_BLK_H,
+    BRIDGE_BLK_HW,
+    BRIDGE_BLK_OVH,
+    BRIDGE_BLK_PIER_CLEARANCE,
+    BRIDGE_DECK_EAST_RECESS,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
@@ -8,6 +21,7 @@ from .constants import (
     BRIDGE_EAST_SHIFT_START,
     BRIDGE_PAR_H,
     BRIDGE_PAR_W,
+    BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIL_BASE_CAP_H,
     BRIDGE_PIL_BASE_CAP_OVH,
     BRIDGE_PIL_BASE_H,
@@ -15,13 +29,34 @@ from .constants import (
     BRIDGE_PIL_CAP_H,
     BRIDGE_PIL_CAP_IN_OVH,
     BRIDGE_PIL_CAP_OUT_OVH,
+    BRIDGE_PIL_CAP_OVHNTR_R,
     BRIDGE_PIL_EXTRA,
     BRIDGE_PIL_HW,
+    BRIDGE_PIL_INNER_R,
+    BRIDGE_PIL_OUTER_R,
     BRIDGE_PIL_OVERHANG,
     BRIDGE_PIL_PYR_H,
     BRIDGE_PIL_PYR_W,
     BRIDGE_SEG_SPAN_W,
     BRIDGE_SEG_W,
+    BRIDGE_SQ_D,
+    BRIDGE_SQ_HH,
+    BRIDGE_SQ_HW,
+    BRIDGE_SUPPORT_BEAM_H,
+    BRIDGE_SUPPORT_HALF_W,
+    BRIDGE_SUPPORT_PIER_HALF_W,
+    BRIDGE_TELEPORT_ARCH_CLEARANCE,
+    BRIDGE_TELEPORT_ARCH_X1_OFFSET,
+    BRIDGE_TELEPORT_ARCH_X2_OFFSET,
+    BRIDGE_TELEPORT_DEST_Z,
+    BRIDGE_TORCH_CUP_H,
+    BRIDGE_TORCH_CUP_HW,
+    BRIDGE_TORCH_POST_H,
+    BRIDGE_TORCH_POST_HW,
+    BRIDGE_TUBE_GAP,
+    BRIDGE_TUBE_HW,
+    BRIDGE_TUBE_RISE,
+    BRIDGE_WALK_WALL,
     BRIDGE_X1,
     BRIDGE_X2,
     BRIDGE_Y1,
@@ -37,6 +72,7 @@ from .constants import (
     KNOTT_X2,
     KNOTT_Y2,
     SHOW_SUPPORTS,
+    STREET_SURFACE_T,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -78,9 +114,6 @@ def build():
     DETAIL_BRUSHES = []
     _worldspawn_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
-    # Arch slab thickness — defined early so the parapets stop at the arch face,
-    # preventing coplanar faces between the east arch posts and the parapet east edge.
-    ARCH_SLAB_W = 32
     # ── Bridge deck slab — the walkable surface across the whole span ─────────────
     # Straight section: arch terminus → easternmost pier
     BRUSHES.append(
@@ -101,7 +134,7 @@ def build():
     # longer coplanar with the arch east face (eliminating z-fighting), while the arch
     # post geometry (X=2928–2960) still covers the deck's north/south edges so there is
     # no visible overhang on either side.
-    DECK_EAST_END_X = WORLD_X2 - WALL_T - 1
+    DECK_EAST_END_X = WORLD_X2 - WALL_T - BRIDGE_DECK_EAST_RECESS
     BRUSHES.append(
         shear_box_y(
             BRIDGE_EAST_PIVOT_X,
@@ -241,11 +274,8 @@ def build():
             )
 
     # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
-    BRIDGE_BLK_HW = 24  # block half-width in X (48 units wide along bridge)
-    BRIDGE_BLK_H = 36  # block height above parapet top
-    BRIDGE_BLK_OVH = 0  # blocks flush with outer bridge wall
     BRIDGE_BLK_PIR_M = (
-        BRIDGE_PIL_HW + BRIDGE_BLK_HW + 4
+        BRIDGE_PIL_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
     )  # clearance from pier centre to block centre
 
     def add_repeated_parapet_decorations(
@@ -350,10 +380,6 @@ def build():
     )
 
     # ── Decorative squares on parapet outer faces (one per block position) ────────
-    BRIDGE_SQ_HW = 8  # half-width in X (16 units wide)
-    BRIDGE_SQ_HH = 6  # half-height in Z (12 units tall)
-    BRIDGE_SQ_D = 1  # protrusion depth (1 unit proud)
-
     def add_parapet_squares(
         x_start,
         x_end,
@@ -445,9 +471,6 @@ def build():
     )
 
     # ── Parapet handrail tubes (two 4×4 rods stacked, through parapet blocks/pillars) ─
-    BRIDGE_TUBE_HW = 2  # half-width of tube in Y and Z (4 units total)
-    BRIDGE_TUBE_RISE = 10  # raise tubes above parapet top
-    BRIDGE_TUBE_GAP = 12  # vertical gap between tube centres
     tube_ny1 = BRIDGE_Y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
     tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
     tube_sy1 = BRIDGE_Y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
@@ -563,9 +586,6 @@ def build():
     # Each pillar position now features a narrow arched pier supporting the deck.
     # Arch openings span most of the bridge N-S width (BRIDGE_Y2=136, bridge=272 units)
     # rin = half-width of clear opening; rout = outer radius of arch ring
-    BRIDGE_PIL_OUTER_R = (140, 72)  # narrower outer piers flanking road
-    BRIDGE_PIL_INNER_R = (160, 84)  # slightly wider inner piers
-    BRIDGE_PIL_CAP_OVHNTR_R = (160, 90)  # widest opening at centre
     if SHOW_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
@@ -775,24 +795,24 @@ def build():
                 # Narrow stone post (6x6) rising from pyramid tip
                 BRUSHES.append(
                     box(
-                        px - 3,
-                        torch_center_y - 3,
+                        px - BRIDGE_TORCH_POST_HW,
+                        torch_center_y - BRIDGE_TORCH_POST_HW,
                         pyramid_apex_z,
-                        px + 3,
-                        torch_center_y + 3,
-                        pyramid_apex_z + 16,
+                        px + BRIDGE_TORCH_POST_HW,
+                        torch_center_y + BRIDGE_TORCH_POST_HW,
+                        pyramid_apex_z + BRIDGE_TORCH_POST_H,
                         Textures.CEMENT,
                     )
                 )
                 # Wider brick cup/bracket at top holds the flame
                 BRUSHES.append(
                     box(
-                        px - 5,
-                        torch_center_y - 5,
-                        pyramid_apex_z + 16,
-                        px + 5,
-                        torch_center_y + 5,
-                        pyramid_apex_z + 20,
+                        px - BRIDGE_TORCH_CUP_HW,
+                        torch_center_y - BRIDGE_TORCH_CUP_HW,
+                        pyramid_apex_z + BRIDGE_TORCH_POST_H,
+                        px + BRIDGE_TORCH_CUP_HW,
+                        torch_center_y + BRIDGE_TORCH_CUP_HW,
+                        pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H,
                         Textures.BRICK,
                     )
                 )
@@ -802,20 +822,22 @@ def build():
                 # Cement fill starts 16 units east of pier face to make room for arch
                 BRUSHES.append(
                     box(
-                        x1 + 16,
+                        x1 + BRIDGE_PIER_FILL_OFFSET,
                         -a_rin,
                         FLOOR_Z2,
                         x2,
                         a_rin,
-                        int(pdeck) - 16,
+                        int(pdeck) - BRIDGE_PIER_FILL_OFFSET,
                         Textures.CEMENT,
                     )
                 )
                 # Arch-shaped teleport flush with the west face (recessed into pier)
-                teleport_stilt_height = pier_top_z - FLOOR_Z2 - a_rin - 8
+                teleport_stilt_height = (
+                    pier_top_z - FLOOR_Z2 - a_rin - BRIDGE_TELEPORT_ARCH_CLEARANCE
+                )
                 abutment_teleport_brush = arch_fill(
-                    x1 + 2,
-                    x1 + 18,
+                    x1 + BRIDGE_TELEPORT_ARCH_X1_OFFSET,
+                    x1 + BRIDGE_TELEPORT_ARCH_X2_OFFSET,
                     0.0,
                     FLOOR_Z2,
                     a_rin,
@@ -823,14 +845,11 @@ def build():
                     Textures.TELEPORT,
                     stilt_h=teleport_stilt_height,
                 )
-                abutment_teleport_dest_z = int(pdeck) + 40  # spawn height above deck
+                abutment_teleport_dest_z = (
+                    int(pdeck) + BRIDGE_TELEPORT_DEST_Z
+                )  # spawn height above deck
 
     # ── Teleport Arches at both ends of bridge ───────────────────────────────────
-    ARCH_RIN = 96
-    ARCH_ROUT = 136  # Fills the bridge width (updated to match BRIDGE_Y2=136)
-    ARCH_STILT_H = 96  # Height of straight sides before arch springs
-    # ARCH_SLAB_W already defined above (= 32)
-
     for arch_x_start, arch_center_y in [
         (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
         (
@@ -891,13 +910,12 @@ def build():
 
     # Add hint brushes to split the large open space around the bridge (vis optimization)
     # This prevents "Leaf with too many portals" errors after converting bridge to detail.
-    BRUSHES.append(box(-2, WORLD_Y1, FLOOR_Z1, 2, WORLD_Y2, WORLD_Z2, "hint"))
     BRUSHES.append(
         box(
-            BRIDGE_ARCH_X[1] - 2,
+            -STREET_SURFACE_T,
             WORLD_Y1,
             FLOOR_Z1,
-            BRIDGE_ARCH_X[1] + 2,
+            STREET_SURFACE_T,
             WORLD_Y2,
             WORLD_Z2,
             "hint",
@@ -905,10 +923,21 @@ def build():
     )
     BRUSHES.append(
         box(
-            BRIDGE_ARCH_X[2] - 2,
+            BRIDGE_ARCH_X[1] - STREET_SURFACE_T,
             WORLD_Y1,
             FLOOR_Z1,
-            BRIDGE_ARCH_X[2] + 2,
+            BRIDGE_ARCH_X[1] + STREET_SURFACE_T,
+            WORLD_Y2,
+            WORLD_Z2,
+            "hint",
+        )
+    )
+    BRUSHES.append(
+        box(
+            BRIDGE_ARCH_X[2] - STREET_SURFACE_T,
+            WORLD_Y1,
+            FLOOR_Z1,
+            BRIDGE_ARCH_X[2] + STREET_SURFACE_T,
             WORLD_Y2,
             WORLD_Z2,
             "hint",
@@ -939,10 +968,9 @@ def build():
             )
         )
         # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
-        PBCS_WALK_WALL = 32
         DETAIL_BRUSHES.append(
             ramp_slab_y(
-                WALK_X1 - PBCS_WALK_WALL,
+                WALK_X1 - BRIDGE_WALK_WALL,
                 WALK_X1,
                 BRIDGE_Y1,
                 KNOTT_Y2,
@@ -956,7 +984,7 @@ def build():
         DETAIL_BRUSHES.append(
             ramp_slab_y(
                 WALK_X2,
-                WALK_X2 + PBCS_WALK_WALL,
+                WALK_X2 + BRIDGE_WALK_WALL,
                 BRIDGE_Y1,
                 KNOTT_Y2,
                 wk_zb1,
@@ -969,7 +997,7 @@ def build():
         # Handrail tubes along walkway sides, centred in the wall thickness
         for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
             tube_base_z = WALK_ZT1 + BRIDGE_PAR_H + tube_z_offset
-            ww_cx = PBCS_WALK_WALL // 2
+            ww_cx = BRIDGE_WALK_WALL // 2
             DETAIL_BRUSHES.append(
                 box(
                     WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
@@ -1001,17 +1029,20 @@ def build():
     # Spans Y=KNOTT_Y2..BRIDGE_Y1 (KH north face → bridge south edge).
     # ════════════════════════════════════════════════════════════════════════════════
     if KNOTT_WALKWAY_ENABLED:
-        east_walk_center_x = 2120
-        east_walk_half_width = 32
+        east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
+        east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
         east_walk_y2 = (
-            BRIDGE_Y2 + BRIDGE_PIL_OVERHANG + 96 + 80
+            BRIDGE_Y2
+            + BRIDGE_PIL_OVERHANG
+            + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
+            + BRIDGE_ACCESS_WALK_NORTH_OFFSET
         )  # north anchor: ramp moved 80 units north
         terrain_z2 = int(
             KNOTT_GROUND_Z
             + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_y2 - (KNOTT_Y2 + 96))
-            / (ENNIS_SW_EDGE - (KNOTT_Y2 + 96))
+            * (east_walk_y2 - (KNOTT_Y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+            / (ENNIS_SW_EDGE - (KNOTT_Y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
         )
         # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KNOTT_X2
         east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
@@ -1019,8 +1050,8 @@ def build():
         extension_terrain_z1 = int(
             KNOTT_GROUND_Z
             + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_ext_y1 - (KNOTT_Y2 + 96))
-            / (ENNIS_SW_EDGE - (KNOTT_Y2 + 96))
+            * (east_walk_ext_y1 - (KNOTT_Y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+            / (ENNIS_SW_EDGE - (KNOTT_Y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
         )
         extension_terrain_z2 = terrain_z2
         extension_terrain_z_west = (
@@ -1049,12 +1080,12 @@ def build():
     if KNOTT_WALKWAY_ENABLED:
         # Position just under the south edge of the bridge deck
         support_y_center = BRIDGE_Y1  # south edge of bridge = -136
-        support_half_width = 16  # half-depth of beam/piers (N-S)
+        support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
         support_y1 = support_y_center - support_half_width
         support_y2 = support_y_center + support_half_width
         # Beam sits just below the walkway slab bottom
         beam_top_z = WALK_ZT1 - KNOTT_WALL  # bottom of walkway slab at bridge end
-        beam_height = 20
+        beam_height = BRIDGE_SUPPORT_BEAM_H
         beam_bottom_z = beam_top_z - beam_height
         # Span between the two bridge arch piers flanking the walkway (east span)
         beam_x1 = BRIDGE_ARCH_X[3]
@@ -1072,8 +1103,8 @@ def build():
             )
         )
         # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
-        rail_x1 = WALK_X1 - PBCS_WALK_WALL  # west rail outer edge
-        rail_x2 = WALK_X2 + PBCS_WALK_WALL  # east rail outer edge
+        rail_x1 = WALK_X1 - BRIDGE_WALK_WALL  # west rail outer edge
+        rail_x2 = WALK_X2 + BRIDGE_WALK_WALL  # east rail outer edge
         west_support_piers = [
             int(beam_x1 + (rail_x1 - beam_x1) * f) for f in (0.28, 0.63, 0.93)
         ]
@@ -1081,7 +1112,7 @@ def build():
             int(rail_x2 + (beam_x2 - rail_x2) * f) for f in (0.0, 0.45)
         ]
         support_pier_xs = west_support_piers + east_support_piers
-        support_pier_half_width = 20
+        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
         for pier_x in support_pier_xs:
             DETAIL_BRUSHES.append(
                 box(

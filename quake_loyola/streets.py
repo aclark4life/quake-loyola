@@ -8,10 +8,36 @@ from .constants import (
     BRIDGE_X1,
     BRIDGE_Y1,
     BRIDGE_Y2,
+    CHARLES_CRN_R,
+    CHARLES_CRN_SEGS,
+    CHARLES_RAMP_W,
+    CHARLES_SWALK_START,
+    CHARLES_WALK_H,
+    CHARLES_WALK_W,
+    DORM_DEPTH,
+    DORM_EMB_X2,
+    DORM_NORTH_Y1,
+    DORM_NORTH_Y2,
+    DORM_PIER_X,
+    DORM_SOUTH1_Y1,
+    DORM_SOUTH1_Y2,
+    DORM_SOUTH2_Y1,
+    DORM_SOUTH2_Y2,
     DORM_X1,
+    DORM_X2,
+    ENNIS_CURB_W,
+    ENNIS_HW,
+    ENNIS_NORTH_OFFSET,
+    ENNIS_SW_EDGE,
+    ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
+    KNOTT_DRIVEWAY_ES_X2,
     KNOTT_X2,
+    ROAD_DASH_LEN,
+    ROAD_GAP_LEN,
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
@@ -23,6 +49,10 @@ from .constants import (
     SDORM_TERRACE_X2,
     SDORM_TOE_X,
     SDORM_WALL_X,
+    STREET_CHARLES_CURB_W,
+    STREET_DIV_HW,
+    STREET_ENNIS_DIV_HW,
+    STREET_SURFACE_T,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
@@ -200,52 +230,37 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     CHARLES_Y1 = WORLD_Y1 + WALL_T
     CHARLES_Y2 = WORLD_Y2 - WALL_T
-    CHARLES_WALK_W = 80  # sidewalk width (E-W)
-    CHARLES_WALK_H = 8  # sidewalk + curb height above road
 
     # ── Ennis Road (E-W, parallel to bridge, north side) ──
     # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
     # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-    ENNIS_Y = BRIDGE_Y2 + 800  # 936: centred 800 units north of bridge north edge
-    ENNIS_HW = 160  # road half-width → 320-unit carriageway (~21 ft, matches reference)
     ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
     ENNIS_X2 = WORLD_X2_EXT - WALL_T  # dead-end at east world wall
-    ENNIS_SW_EDGE = (
-        ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - 32
-    )  # Ennis south sidewalk outer edge
     # Back road corridor X extents — defined here for road/curb brush splits below
-    KNOTT_DRIVEWAY_CORRIDOR_X1 = KNOTT_X2  # west edge of corridor gap
-    KNOTT_DRIVEWAY_CORRIDOR_X2 = (
-        KNOTT_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W
-    )  # east edge
-    ENNIS_CURB_W = 8  # south Ennis curb strip width (N-S)
 
     # Road surface — split either side of centre divider slot (div_hw wide)
-    div_hw = 4  # half-width of Charles St divider slot
-    div_ep_hw = 16  # half-width of Ennis divider slot (wider for rune1_lig2 white)
     BRUSHES.append(
         box(
             ROAD_X1,
             CHARLES_Y1,
             FLOOR_Z2,
-            -div_hw,
+            -STREET_DIV_HW,
             CHARLES_Y2,
-            FLOOR_Z2 + 2,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
     BRUSHES.append(
         box(
-            div_hw,
+            STREET_DIV_HW,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X2,
             CHARLES_Y2,
-            FLOOR_Z2 + 2,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
-    CHARLES_SWALK_START = BRIDGE_Y2 + 200  # sidewalk starts north of bridge
     # West sidewalk — north of bridge
     BRUSHES.append(
         box(
@@ -261,7 +276,7 @@ def build():
     # West curb — south section up to sidewalk start
     BRUSHES.append(
         box(
-            ROAD_X1 - 8,
+            ROAD_X1 - STREET_CHARLES_CURB_W,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X1,
@@ -276,7 +291,7 @@ def build():
             ROAD_X1 - CHARLES_WALK_W,
             CHARLES_Y1,
             FLOOR_Z2,
-            ROAD_X1 - 8,
+            ROAD_X1 - STREET_CHARLES_CURB_W,
             CHARLES_SWALK_START,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
@@ -315,8 +330,8 @@ def build():
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2,
             ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y - div_ep_hw,
-            FLOOR_Z2 + 2,
+            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
@@ -331,8 +346,8 @@ def build():
                 ENNIS_Y - ENNIS_HW,
                 FLOOR_Z2,
                 road_x2,
-                ENNIS_Y - div_ep_hw,
-                FLOOR_Z2 + 2,
+                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
             )
         )
@@ -343,8 +358,8 @@ def build():
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_CORRIDOR_X2,
-            ENNIS_Y - div_ep_hw,
-            FLOOR_Z2 + 2,
+            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
@@ -355,7 +370,7 @@ def build():
             FLOOR_Z2,
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW,
-            FLOOR_Z2 + 2,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
@@ -385,10 +400,9 @@ def build():
         )
     )
     # East segment: back road east sidewalk east to world wall
-    # KNOTT_DRIVEWAY_ES_X2 = KNOTT_X2 + CHARLES_WALK_W + 2*128 + CHARLES_WALK_W (computed inline to avoid forward-ref)
     BRUSHES.append(
         box(
-            KNOTT_X2 + CHARLES_WALK_W + 2 * 128 + CHARLES_WALK_W,
+            KNOTT_DRIVEWAY_ES_X2,
             ENNIS_SW_EDGE,
             FLOOR_Z2,
             ENNIS_X2,
@@ -400,8 +414,6 @@ def build():
 
     # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
     TEX_DIVIDER = "sfloor3_2"
-    ROAD_DASH_LEN = 64  # dash length
-    ROAD_GAP_LEN = 64  # gap length (filled with road tex)
     dash_brushes = []
     # Charles Street — dashed N-S, two sections either side of bridge
     for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE_Y1), (BRIDGE_Y2, CHARLES_Y2)]:
@@ -414,12 +426,12 @@ def build():
             divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
             dash_brushes.append(
                 box(
-                    -div_hw,
+                    -STREET_DIV_HW,
                     divider_y,
                     FLOOR_Z2,
-                    div_hw,
+                    STREET_DIV_HW,
                     next_divider_y,
-                    FLOOR_Z2 + 2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
                     divider_tex,
                 )
             )
@@ -436,11 +448,11 @@ def build():
         dash_brushes.append(
             box(
                 divider_x,
-                ENNIS_Y - div_ep_hw,
+                ENNIS_Y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2,
                 next_divider_x,
                 ENNIS_Y,
-                FLOOR_Z2 + 2,
+                FLOOR_Z2 + STREET_SURFACE_T,
                 divider_tex,
             )
         )
@@ -452,9 +464,6 @@ def build():
     # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
     # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
     # Each corner: road box fills the cut square, cement arc fans sit on top.
-    CHARLES_CRN_R = CHARLES_WALK_W  # corner radius = sidewalk width
-    CHARLES_CRN_SEGS = 12  # segments per arc (12 × 7.5° = 90°)
-
     # SE corner: far corner is at SE of cut square
     cx_se = ROAD_X2 + CHARLES_CRN_R
     cy_se = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
@@ -465,7 +474,7 @@ def build():
             FLOOR_Z2,
             cx_se,
             ENNIS_Y - ENNIS_HW,
-            FLOOR_Z2 + 2,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
@@ -505,7 +514,7 @@ def build():
             FLOOR_Z2,
             cx_ne,
             cy_ne,
-            FLOOR_Z2 + 2,
+            FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
     )
@@ -536,8 +545,6 @@ def build():
         )
 
     # ── Sidewalk ramps — smooth ground-to-sidewalk transitions ───────────────────
-    CHARLES_RAMP_W = 64  # ramp width in units
-
     # West ramp — slopes from ground up to west sidewalk edge (full N-S extent)
     BRUSHES.append(
         ramp_slab(
@@ -643,19 +650,6 @@ def build():
     # ── Embankment — hill under Dorm buildings ───────────────────────────────────
     # Large terrain feature that blocks visibility — restore worldspawn routing.
     BRUSHES = _world_brushes
-    DORM_DEPTH = 450  # building N-S depth
-    DORM_PIER_X = min(BRIDGE_ARCH_X)  # = -1100
-    DORM_X2 = DORM_PIER_X + BRIDGE_PIL_HW + 32  # east face of building  = -1031
-    # DORM_X1 imported from constants (= DORM_X2 - 576)
-    DORM_NORTH_Y2 = WORLD_Y2 - WALL_T - 150  # north building north face (shifted south)
-    DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH  # north building south face
-    DORM_SOUTH1_Y1 = WORLD_Y1 + WALL_T  # south building 1 south face = -2032
-    DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH  # south building 1 north face = -1432
-    DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2  # south building 2 south face = -1432
-    DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH  # south building 2 north face = -832
-
-    # Starts at X=-560 (clear of the -525 pier base) so arch stone is not buried there.
-    DORM_EMB_X2 = -1146  # starts just east of abutment pier, keeping stone base visible
     # Interpolate ramp top-Z at the building's west face so the slope is continuous
     emb_zt_at_ab_x1 = int(
         BRIDGE_DZ2
