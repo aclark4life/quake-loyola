@@ -463,8 +463,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_ennis_east",
-            origin=kh_roof_origin,
-            angle="90",  # facing north on KH rooftop
+            origin=f"{KNOTT.x2 - 64} {KNOTT.y2 - 64} {int(KNOTT_Z2 + 40)}",
+            angle="270",  # facing south, NE corner of KH rooftop
         )
     )
     ENTITIES.append(
