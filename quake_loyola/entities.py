@@ -458,21 +458,21 @@ def build():
     kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
     kh_roof_origin = f"{(KNOTT_STAIRS_X2 + KNOTT_SHAFT_X1) // 2} {(KNOTT_STAIRS_Y1 + KNOTT_SHAFT_Y2) // 2} {int(KNOTT_Z2 + 40)}"
 
-    # Destinations — both land on KH rooftop, facing south
+    # Destinations — both land on KH rooftop, facing west
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_ennis_east",
-            origin=f"{KNOTT.x2 - 64} {KNOTT.y2 - 64} {int(KNOTT_Z2 + 40)}",
-            angle="180",  # facing west, NE corner of KH rooftop
+            origin="2149 -264 904",
+            angles="32 185 0",  # facing west
         )
     )
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
-            origin=kh_roof_origin,
-            angle="90",  # facing north on KH rooftop
+            origin="2149 -264 904",
+            angles="32 185 0",  # facing west
         )
     )
 
