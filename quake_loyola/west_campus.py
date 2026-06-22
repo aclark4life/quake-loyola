@@ -594,79 +594,58 @@ def build():
     ) // 2  # window sill offset within a floor
     dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2  # window head offset within a floor
 
+    def dorm_window_z(fl):
+        base_z = FLOOR_Z2 + fl * DORM_FLOOR_H
+        return base_z + dorm_wz_lo, base_z + dorm_wz_hi
+
+    def dorm_window_levels(start_floor=0):
+        for fl in range(start_floor, DORM_FLOORS):
+            yield fl, *dorm_window_z(fl)
+
+    def dorm_window_openings(
+        centers, *, start_floor=0, double=False, include_window=None
+    ):
+        openings = []
+        for fl, zb, zt in dorm_window_levels(start_floor):
+            for center in centers:
+                if include_window and not include_window(center, fl):
+                    continue
+                if double:
+                    openings.append((center - DORM_WIN_HW * 2, zb, center, zt))
+                    openings.append((center, zb, center + DORM_WIN_HW * 2, zt))
+                else:
+                    openings.append(
+                        (center - DORM_WIN_HW, zb, center + DORM_WIN_HW, zt)
+                    )
+        return openings
+
     def nb_wins_xz(wx_list):
         """Window openings (all floors) for X-facing wall (south/north)."""
-        return [
-            (
-                wx - DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                wx + DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-            )
-            for fl in range(DORM_FLOORS)
-            for wx in wx_list
-        ]
+        return dorm_window_openings(wx_list)
 
     def nb_wins_yz(wy_list):
         """Window openings (all floors) for Y-facing wall (east/west)."""
-        return [
-            (
-                wy - DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                wy + DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-            )
-            for fl in range(DORM_FLOORS)
-            for wy in wy_list
-        ]
+        return dorm_window_openings(wy_list)
 
     def nb_wins_yz_west(wy_list):
         """West-face window openings — floors 0 and 1 are buried by the hillside
         (terrain reaches z=177 at the building west face), so only floor 2+ is shown."""
-        return [
-            (
-                wy - DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                wy + DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-            )
-            for fl in range(2, DORM_FLOORS)
-            for wy in wy_list
-        ]
+        return dorm_window_openings(wy_list, start_floor=2)
 
     def nb_wins_yz_double(wy_list):
         """Double window openings for Y-facing wall — two full-single-sized panes per floor."""
-        DBL_HALF_GAP = 0  # no gap between the two panes
-        result = []
-        for fl in range(DORM_FLOORS):
-            for wy in wy_list:
-                zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-                zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
-                # Each pane is a full single-window width (DORM_WIN_HW * 2)
-                result.append(
-                    (wy - DORM_WIN_HW * 2 - DBL_HALF_GAP, zb, wy - DBL_HALF_GAP, zt)
-                )
-                result.append(
-                    (wy + DBL_HALF_GAP, zb, wy + DORM_WIN_HW * 2 + DBL_HALF_GAP, zt)
-                )
-        return result
+        return dorm_window_openings(wy_list, double=True)
 
     def nb_wins_xz_upper(wx_list, x_clear=None):
         """X-facing wall windows from floor 1 up — floor 0 is buried by the
         gap embankment on the NB2 south face and NB1 north face.
         x_clear: windows with wx < x_clear also skip floor 1 (terrain still
         overlaps the floor-1 sill at the far-west window position)."""
-        return [
-            (
-                wx - DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                wx + DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-            )
-            for fl in range(1, DORM_FLOORS)
-            for wx in wx_list
-            if x_clear is None or wx >= x_clear or fl >= 2
-        ]
+        return dorm_window_openings(
+            wx_list,
+            start_floor=1,
+            include_window=lambda wx, fl: x_clear is None or wx >= x_clear or fl >= 2,
+        )
 
     # South wall (faces NB2) — door only, no windows on interior walls
     north_bldg_detail = []
@@ -695,11 +674,11 @@ def build():
             + [
                 (
                     DORM_CX - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                    zb,
                     DORM_CX + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+                    zt,
                 )
-                for fl in range(1, DORM_FLOORS)
+                for _, zb, zt in dorm_window_levels(1)
             ],
             "city2_1",
         )
@@ -775,9 +754,7 @@ def build():
             margin=DORM_WIN_MARGIN,
         )
     # Center window frames — north face, 2nd and 3rd floor
-    for fl in range(1, DORM_FLOORS):
-        zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-        zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+    for _, zb, zt in dorm_window_levels(1):
         north_bldg_detail += win_frame_xwall(
             DORM_CX - DORM_WIN_HW,
             DORM_CX + DORM_WIN_HW,
@@ -940,11 +917,11 @@ def build():
     nb2_cx_opens = [
         (
             DORM_CX - DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+            zb,
             DORM_CX + DORM_WIN_HW,
-            FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+            zt,
         )
-        for fl in range(1, DORM_FLOORS)
+        for _, zb, zt in dorm_window_levels(1)
     ]
     north2_bldg_detail = []
     # South wall — floors 0 and wx<-1652 floor 1 buried by gap embankment
@@ -1029,9 +1006,7 @@ def build():
             fd=DORM_WALL,
             margin=DORM_WIN_MARGIN,
         )
-    for fl in range(1, DORM_FLOORS):
-        zb = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo
-        zt = FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi
+    for _, zb, zt in dorm_window_levels(1):
         north2_bldg_detail += win_frame_xwall(
             DORM_CX - DORM_WIN_HW,
             DORM_CX + DORM_WIN_HW,
@@ -1199,55 +1174,19 @@ def build():
         wy_list = [by1 + (by2 - by1) * k // 4 for k in [1, 2, 3]]
 
         def wxz():
-            return [
-                (
-                    wx - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                    wx + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-                )
-                for fl in range(DORM_FLOORS)
-                for wx in wx_list
-            ]
+            return dorm_window_openings(wx_list)
 
         def wyz():
-            return [
-                (
-                    wy - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                    wy + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-                )
-                for fl in range(DORM_FLOORS)
-                for wy in wy_list
-            ]
+            return dorm_window_openings(wy_list)
 
         def wyz_west():
             """West-face windows: floor 0 is buried by the hillside after terrace lift."""
-            return [
-                (
-                    wy - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                    wy + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-                )
-                for fl in range(1, DORM_FLOORS)
-                for wy in wy_list
-            ]
+            return dorm_window_openings(wy_list, start_floor=1)
 
         def wxz_north():
             """North-face (by2) windows: floors below north_min_floor are omitted,
             and any opening that overlaps north_pier_x ± north_pier_hw is filtered."""
-            wins = [
-                (
-                    wx - DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
-                    wx + DORM_WIN_HW,
-                    FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
-                )
-                for fl in range(north_min_floor, DORM_FLOORS)
-                for wx in wx_list
-            ]
+            wins = dorm_window_openings(wx_list, start_floor=north_min_floor)
             if north_pier_x is not None:
                 wins = [
                     (xl, zb, xr, zt)
@@ -1326,11 +1265,11 @@ def build():
         mid_wxz = [
             (
                 cx - DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_lo,
+                zb,
                 cx + DORM_WIN_HW,
-                FLOOR_Z2 + fl * DORM_FLOOR_H + dorm_wz_hi,
+                zt,
             )
-            for fl in range(1, DORM_FLOORS)
+            for _, zb, zt in dorm_window_levels(1)
         ]
         brushes.extend(
             layered_wall(
