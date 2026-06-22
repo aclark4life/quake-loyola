@@ -83,6 +83,10 @@ docs: venv
     .venv/bin/sphinx-build -b html docs docs/_build/html
     @echo "Docs written to docs/_build/html/index.html"
 
+# Update the golden hash/counts in tests/test_regression.py from the current map output
+update-golden: venv
+    .venv/bin/python scripts/update_golden.py
+
 # Clean up temporary build files and test artifacts
 clean:
     rm -f {{map_name}}.bsp {{map_name}}.lit {{map_name}}.vis
