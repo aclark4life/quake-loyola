@@ -310,8 +310,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_west",
-            origin=f"{KNOTT_CX} {(KNOTT.y1 + KNOTT.y2) // 2} {int(KNOTT_Z2 + 40)}",
-            angle="180",  # facing south, on Knott Hall rooftop
+            origin="2149 -264 904",
+            angles="32 185 0",  # facing west, on KH rooftop
         )
     )
 
@@ -360,8 +360,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_east_deck",
-            origin="2149 -264 904",
-            angles="32 185 0",  # facing west
+            origin=f"{east_lower_deck_x} {int(BRIDGE_EAST_SHIFT_END)} {int(BRIDGE_DZ2 + 40)}",
+            angle="180",  # facing west, on bridge deck east end
         )
     )
     east_lower = [
