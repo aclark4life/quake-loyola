@@ -112,8 +112,9 @@ Testing
 
 ``tests/test_regression.py`` compares brush count, entity count, and the MD5
 hash of the generated ``.map`` text against known-good golden values.
-Changing any geometry or constant will break these tests; update the golden
-values deliberately (and review the diff) whenever the map intentionally changes.
+Changing any geometry or constant will break these tests; run ``just
+update-golden`` to recompute and patch the golden values automatically, then
+review the diff before committing.
 
 ``tests/test_mapdata.py`` and ``tests/test_geometry.py`` provide unit tests
 for the data model and shape constructors respectively.
