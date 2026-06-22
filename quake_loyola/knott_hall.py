@@ -95,7 +95,6 @@ from .constants import (
     deck_top_z,
 )
 from .geometry import (
-    arch_wall_y,
     box,
     brush_ent,
     layered_wall,
@@ -1891,33 +1890,6 @@ def build():
             )
 
     # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
-    # ── N/S arch stone wall panels (must be added to B before worldspawn assembly) ──
-    CHARLES_ARCH_RIN_PRE = 256  # inner radius = road half-width
-    CHARLES_ARCH_ROUT_PRE = 312  # outer radius
-    CHARLES_ARCH_STILT_PRE = 96  # stilt height
-    CHARLES_ARCH_W_PRE = 48  # arch thickness in Y
-    cs_arch_top_pre = FLOOR_Z2 + CHARLES_ARCH_STILT_PRE + CHARLES_ARCH_RIN_PRE
-
-    for pre_syb, pre_syf in [
-        (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W_PRE),
-        (CHARLES_Y2 - CHARLES_ARCH_W_PRE, CHARLES_Y2),
-    ]:
-        # Stone arch posts + ring
-        DETAIL_BRUSHES.extend(
-            arch_wall_y(
-                pre_syb,
-                pre_syf,
-                WORLD_X1 + WALL_T,
-                WORLD_X2 - WALL_T,
-                FLOOR_Z2,
-                cs_arch_top_pre,
-                CHARLES_ARCH_RIN_PRE,
-                CHARLES_ARCH_ROUT_PRE,
-                A_SEGS,
-                Textures.PILLAR,
-                stilt_h=CHARLES_ARCH_STILT_PRE,
-            )
-        )
     if letter_brushes:
         ENTITIES.append(brush_ent("func_detail", letter_brushes))
     if DETAIL_BRUSHES:
