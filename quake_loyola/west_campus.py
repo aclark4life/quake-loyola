@@ -1,6 +1,7 @@
 from .constants import (
     BRIDGE_DZ2,
     BRIDGE_X1,
+    CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_EMB_X2,
@@ -19,8 +20,27 @@ from .constants import (
     DORM_WIN_MARGIN,
     DORM_X1,
     DORM_X2,
+    ENNIS_CEMENT_X1,
+    ENNIS_CEMENT_X2,
+    ENNIS_GATE_X1,
+    ENNIS_GATE_X2,
+    ENNIS_HW,
+    ENNIS_PIL_BELL2_H,
+    ENNIS_PIL_BELL2_HW,
+    ENNIS_PIL_CAP_H,
+    ENNIS_PIL_CAP_OVH,
+    ENNIS_PIL_HW,
+    ENNIS_PIL_POST_H,
+    ENNIS_PIL_X1,
+    ENNIS_WALL_H,
+    ENNIS_WALL_NY,
+    ENNIS_WALL_PIL_H,
+    ENNIS_WALL_PIL_HW,
+    ENNIS_WALL_T,
+    ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
+    ROAD_X2,
     SDORM_LIFT,
     SDORM_SLOPE_Y_N,
     SDORM_SLOPE_Y_S,
@@ -42,12 +62,485 @@ from .geometry import (
     gable_slats,
     layered_wall,
     layered_wall_y,
+    pyramid,
     ramp_slab,
     ramp_slab_y,
     win_frame_xwall,
     win_frame_ywall,
 )
 from .utils import iron_fence
+
+
+def build_ennis_entrance_features():
+    """Return the Ennis entrance/wall details that belong with west-campus geometry."""
+    brushes = []
+    entities = []
+
+    for pillar_y in (
+        ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW,
+        ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW,
+    ):
+        ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
+        cap_half_width = ENNIS_PIL_HW + ENNIS_PIL_CAP_OVH
+        base_height = ENNIS_PIL_POST_H // 3
+        brushes.append(
+            box(
+                ennis_pil_cx - cap_half_width,
+                pillar_y - cap_half_width,
+                FLOOR_Z2,
+                ennis_pil_cx + cap_half_width,
+                pillar_y + cap_half_width,
+                FLOOR_Z2 + base_height,
+                Textures.WHITE_STONE,
+            )
+        )
+        brushes.append(
+            box(
+                ENNIS_PIL_X1,
+                pillar_y - ENNIS_PIL_HW,
+                FLOOR_Z2 + base_height,
+                ENNIS_PIL_X1 + 2 * ENNIS_PIL_HW,
+                pillar_y + ENNIS_PIL_HW,
+                FLOOR_Z2 + ENNIS_PIL_POST_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        cap_z = FLOOR_Z2 + ENNIS_PIL_POST_H
+        brushes.append(
+            box(
+                ennis_pil_cx - cap_half_width,
+                pillar_y - cap_half_width,
+                cap_z,
+                ennis_pil_cx + cap_half_width,
+                pillar_y + cap_half_width,
+                cap_z + ENNIS_PIL_CAP_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        bell2_z = cap_z + ENNIS_PIL_CAP_H
+        brushes.append(
+            box(
+                ennis_pil_cx - ENNIS_PIL_BELL2_HW,
+                pillar_y - ENNIS_PIL_BELL2_HW,
+                bell2_z,
+                ennis_pil_cx + ENNIS_PIL_BELL2_HW,
+                pillar_y + ENNIS_PIL_BELL2_HW,
+                bell2_z + ENNIS_PIL_BELL2_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        pillar_apex_z = bell2_z + ENNIS_PIL_BELL2_H
+        brushes.append(
+            box(
+                ennis_pil_cx - 3,
+                pillar_y - 3,
+                pillar_apex_z,
+                ennis_pil_cx + 3,
+                pillar_y + 3,
+                pillar_apex_z + 16,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                ennis_pil_cx - 5,
+                pillar_y - 5,
+                pillar_apex_z + 16,
+                ennis_pil_cx + 5,
+                pillar_y + 5,
+                pillar_apex_z + 20,
+                Textures.BRICK,
+            )
+        )
+
+    ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + 48
+    bwex2 = ENNIS_GATE_X1
+    brushes.append(
+        box(
+            ennis_wall_x1,
+            ENNIS_WALL_NY,
+            FLOOR_Z2,
+            bwex2,
+            ENNIS_WALL_NY + ENNIS_WALL_T,
+            FLOOR_Z2 + ENNIS_WALL_H,
+            "city2_1",
+        )
+    )
+    bw_mid_y = (ENNIS_WALL_NY + CHARLES_Y2) // 2
+    brushes.append(
+        box(
+            ennis_wall_x1,
+            ENNIS_WALL_NY,
+            FLOOR_Z2,
+            ennis_wall_x1 + ENNIS_WALL_T,
+            bw_mid_y,
+            FLOOR_Z2 + ENNIS_WALL_H,
+            "city2_1",
+        )
+    )
+
+    gate_fence_x1 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1
+    gate_fence_x2 = gate_fence_x1 + 2
+    gate_fence_height = 96
+    gate_fence_spacing = 16
+    gate_fence_tex = "metal4_4"
+    brushes.append(
+        box(
+            gate_fence_x1,
+            bw_mid_y,
+            FLOOR_Z2 + gate_fence_height - 28,
+            gate_fence_x2,
+            CHARLES_Y2,
+            FLOOR_Z2 + gate_fence_height - 26,
+            gate_fence_tex,
+        )
+    )
+    gate_picket_y = bw_mid_y
+    gate_picket_index = 0
+    while gate_picket_y + 2 <= CHARLES_Y2:
+        gate_picket_width = 8 if gate_picket_index % 10 == 0 else 2
+        brushes.append(
+            box(
+                gate_fence_x1,
+                gate_picket_y,
+                FLOOR_Z2,
+                gate_fence_x2,
+                gate_picket_y + gate_picket_width,
+                FLOOR_Z2 + gate_fence_height,
+                gate_fence_tex,
+            )
+        )
+        gate_picket_y += gate_fence_spacing
+        gate_picket_index += 1
+
+    panel_x1 = ennis_wall_x1 - 2
+    panel_x2 = ennis_wall_x1
+    panel_bar_thickness = 2
+    panel_outer_width = 48
+    panel_outer_height = 28
+    panel_inner_width = 28
+    panel_inner_height = 12
+    panel_z1 = FLOOR_Z2 + ENNIS_WALL_H
+    panel_z_center = panel_z1 + panel_outer_height // 2
+    panel_available_span = bw_mid_y - ENNIS_WALL_NY
+    panel_count = max(
+        1, (panel_available_span + panel_outer_width) // (panel_outer_width + 8)
+    )
+    panel_spacing = panel_available_span // panel_count
+    panel_center_y = ENNIS_WALL_NY + panel_spacing // 2
+    panels_drawn = 0
+    while panels_drawn < panel_count:
+        y1_o = panel_center_y - panel_outer_width // 2
+        y2_o = panel_center_y + panel_outer_width // 2
+        z1_o = panel_z_center - panel_outer_height // 2
+        z2_o = panel_z_center + panel_outer_height // 2
+        y1_i = panel_center_y - panel_inner_width // 2
+        y2_i = panel_center_y + panel_inner_width // 2
+        z1_i = panel_z_center - panel_inner_height // 2
+        z2_i = panel_z_center + panel_inner_height // 2
+        brushes.extend(
+            [
+                box(
+                    panel_x1,
+                    y1_o,
+                    z1_o,
+                    panel_x2,
+                    y2_o,
+                    z1_o + panel_bar_thickness,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_o,
+                    z2_o - panel_bar_thickness,
+                    panel_x2,
+                    y2_o,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_o,
+                    z1_o,
+                    panel_x2,
+                    y1_o + panel_bar_thickness,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y2_o - panel_bar_thickness,
+                    z1_o,
+                    panel_x2,
+                    y2_o,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z1_i,
+                    panel_x2,
+                    y2_i,
+                    z1_i + panel_bar_thickness,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z2_i - panel_bar_thickness,
+                    panel_x2,
+                    y2_i,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z1_i,
+                    panel_x2,
+                    y1_i + panel_bar_thickness,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y2_i - panel_bar_thickness,
+                    z1_i,
+                    panel_x2,
+                    y2_i,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y1_o,
+                    y1_i,
+                    z1_o,
+                    z1_i,
+                    z1_o + panel_bar_thickness,
+                    z1_i + panel_bar_thickness,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y2_i,
+                    y2_o,
+                    z1_i,
+                    z1_o,
+                    z1_i + panel_bar_thickness,
+                    z1_o + panel_bar_thickness,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y1_o,
+                    y1_i,
+                    z2_o - panel_bar_thickness,
+                    z2_i - panel_bar_thickness,
+                    z2_o,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y2_i,
+                    y2_o,
+                    z2_i - panel_bar_thickness,
+                    z2_o - panel_bar_thickness,
+                    z2_i,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+        conn_y2_p = panel_center_y + panel_spacing - panel_outer_width // 2
+        if panels_drawn + 1 < panel_count:
+            brushes.append(
+                box(
+                    panel_x1,
+                    y2_o,
+                    panel_z_center - panel_bar_thickness // 2,
+                    panel_x2,
+                    conn_y2_p,
+                    panel_z_center + panel_bar_thickness // 2,
+                    gate_fence_tex,
+                )
+            )
+        panel_center_y += panel_spacing
+        panels_drawn += 1
+
+    bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
+    bw_cy = ENNIS_WALL_NY + ENNIS_WALL_T // 2
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PIL_HW,
+            bw_cy - ENNIS_WALL_PIL_HW,
+            FLOOR_Z2,
+            bw_cx + ENNIS_WALL_PIL_HW,
+            bw_cy + ENNIS_WALL_PIL_HW,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H,
+            "city2_1",
+        )
+    )
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PIL_HW,
+            bw_cy - ENNIS_WALL_PIL_HW,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H,
+            bw_cx + ENNIS_WALL_PIL_HW,
+            bw_cy + ENNIS_WALL_PIL_HW,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H + 6,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PIL_HW - 1,
+            bw_cy - ENNIS_WALL_PIL_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H + 6,
+            bw_cx + ENNIS_WALL_PIL_HW + 1,
+            bw_cy + ENNIS_WALL_PIL_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H + 10,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        pyramid(
+            bw_cx - ENNIS_WALL_PIL_HW - 1,
+            bw_cy - ENNIS_WALL_PIL_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H + 10,
+            bw_cx + ENNIS_WALL_PIL_HW + 1,
+            bw_cy + ENNIS_WALL_PIL_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PIL_H + 16,
+            Textures.CEMENT,
+        )
+    )
+
+    east_gate_y1 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1
+    east_gate_y2 = east_gate_y1 + 2
+    east_gate_brushes = [
+        box(
+            ENNIS_GATE_X1,
+            east_gate_y1,
+            FLOOR_Z2 + gate_fence_height - 28,
+            ENNIS_GATE_X2,
+            east_gate_y2,
+            FLOOR_Z2 + gate_fence_height - 26,
+            gate_fence_tex,
+        )
+    ]
+    east_gate_picket_x = ENNIS_GATE_X1
+    east_gate_picket_index = 0
+    while east_gate_picket_x + 2 <= ENNIS_GATE_X2:
+        east_gate_picket_width = 8 if east_gate_picket_index % 10 == 0 else 2
+        east_gate_brushes.append(
+            box(
+                east_gate_picket_x,
+                east_gate_y1,
+                FLOOR_Z2,
+                east_gate_picket_x + east_gate_picket_width,
+                east_gate_y2,
+                FLOOR_Z2 + gate_fence_height,
+                gate_fence_tex,
+            )
+        )
+        east_gate_picket_x += gate_fence_spacing
+        east_gate_picket_index += 1
+
+    cement_wall_y1 = ENNIS_WALL_NY
+    cement_wall_y2 = ENNIS_WALL_NY + ENNIS_WALL_T
+    cement_wall_height = 32
+    cement_wall_pillar_half_width = 14
+    cement_wall_pillar_height = cement_wall_height + 16
+    brushes.append(
+        box(
+            ENNIS_CEMENT_X1,
+            cement_wall_y1,
+            FLOOR_Z2,
+            ENNIS_CEMENT_X2,
+            cement_wall_y2,
+            FLOOR_Z2 + cement_wall_height,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        box(
+            ENNIS_CEMENT_X1,
+            cement_wall_y1 - 2,
+            FLOOR_Z2 + cement_wall_height,
+            ENNIS_CEMENT_X2,
+            cement_wall_y2 + 2,
+            FLOOR_Z2 + cement_wall_height + 6,
+            Textures.CEMENT,
+        )
+    )
+    for pillar_x in (ENNIS_CEMENT_X1, ENNIS_CEMENT_X2):
+        pillar_center_y = (cement_wall_y1 + cement_wall_y2) // 2
+        brushes.append(
+            box(
+                pillar_x - cement_wall_pillar_half_width,
+                pillar_center_y - cement_wall_pillar_half_width,
+                FLOOR_Z2,
+                pillar_x + cement_wall_pillar_half_width,
+                pillar_center_y + cement_wall_pillar_half_width,
+                FLOOR_Z2 + cement_wall_pillar_height,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - cement_wall_pillar_half_width - 2,
+                pillar_center_y - cement_wall_pillar_half_width - 2,
+                FLOOR_Z2 + cement_wall_pillar_height,
+                pillar_x + cement_wall_pillar_half_width + 2,
+                pillar_center_y + cement_wall_pillar_half_width + 2,
+                FLOOR_Z2 + cement_wall_pillar_height + 6,
+                Textures.CEMENT,
+            )
+        )
+        lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + 6
+        brushes.append(
+            box(
+                pillar_x - 3,
+                pillar_center_y - 3,
+                lamppost_base_z,
+                pillar_x + 3,
+                pillar_center_y + 3,
+                lamppost_base_z + 160,
+                Textures.PILLAR,
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - 4,
+                pillar_center_y - 4,
+                lamppost_base_z + 160,
+                pillar_x + 4,
+                pillar_center_y + 4,
+                lamppost_base_z + 176,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - 7,
+                pillar_center_y - 7,
+                lamppost_base_z + 176,
+                pillar_x + 7,
+                pillar_center_y + 7,
+                lamppost_base_z + 180,
+                Textures.CEMENT,
+            )
+        )
+
+    if east_gate_brushes:
+        entities.append(brush_ent("func_detail", east_gate_brushes))
+    return brushes, entities
 
 
 def build():
