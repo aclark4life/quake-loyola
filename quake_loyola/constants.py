@@ -576,7 +576,7 @@ SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
 
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
-    "message": "Loyola University Maryland - Charles Street Bridge and Ennis Drive",
+    "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
     "ambient": Lighting.AMBIENT,
     "_sunlight": Lighting.SUNLIGHT,
