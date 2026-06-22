@@ -40,22 +40,52 @@ from .constants import (
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENABLED,
+    KNOTT_ENT_HALF_W,
     KNOTT_FLOOR_H,
     KNOTT_FLOORS,
+    KNOTT_FRONT_WINDOW_HALF_W,
+    KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
     KNOTT_GROUND_Z,
+    KNOTT_MULLION_PRO,
+    KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
+    KNOTT_RAIL_H,
+    KNOTT_RAIL_TEX,
+    KNOTT_SHAFT_WALL,
     KNOTT_SHAFT_X1,
     KNOTT_SHAFT_X2,
     KNOTT_SHAFT_Y1,
     KNOTT_SHAFT_Y2,
+    KNOTT_SIDE_WINDOW_DIV_W,
+    KNOTT_SIDE_WINDOW_HALF_W,
+    KNOTT_SIDE_WINDOW_INNER_LEFT,
+    KNOTT_SIDE_WINDOW_INNER_RIGHT,
+    KNOTT_SIDE_WINDOW_PROTRUSION,
+    KNOTT_SIGN_H,
+    KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
     KNOTT_SIGN_PX_W,
     KNOTT_SIGN_TEXT,
+    KNOTT_SIGN_Z_OFFSET,
+    KNOTT_STAIR_CAP_RAISE,
+    KNOTT_STAIR_CAP_W,
+    KNOTT_STAIR_OFFSET,
+    KNOTT_STAIR_RAIL_EXTENSION,
+    KNOTT_STAIR_RAIL_POST_D,
+    KNOTT_STAIR_RAIL_POST_W,
+    KNOTT_STAIRS_HALF_N,
     KNOTT_STAIRS_MID_Y,
+    KNOTT_STAIRS_POST_W,
+    KNOTT_STAIRS_RAIL_H,
+    KNOTT_STAIRS_RAIL_T,
+    KNOTT_STAIRS_STEP_R,
+    KNOTT_STAIRS_TREAD_X,
     KNOTT_STAIRS_X1,
     KNOTT_STAIRS_X2,
     KNOTT_STAIRS_Y1,
     KNOTT_STAIRS_Y2,
+    KNOTT_STEP_DEPTH,
+    KNOTT_STEP_N,
     KNOTT_WALL,
     KNOTT_X1,
     KNOTT_X2,
@@ -64,6 +94,7 @@ from .constants import (
     KNOTT_Z2,
     WALK_ZT2,
     WALL_T,
+    WIN_HALF,
     WORLD_X1,
     WORLD_X2,
     WORLD_X2_EXT,
@@ -371,12 +402,12 @@ def build():
     KNOTT_BIY2 = KNOTT_Y2 - KNOTT_WALL  # interior north = -272
 
     # Entrance doorway — pinned to original building centre, not current KNOTT_CX
-    KNOTT_ENT_X1, KNOTT_ENT_X2 = KNOTT_ORIG_CX - 64, KNOTT_ORIG_CX + 64
+    KNOTT_ENT_X1, KNOTT_ENT_X2 = (
+        KNOTT_ORIG_CX - KNOTT_ENT_HALF_W,
+        KNOTT_ORIG_CX + KNOTT_ENT_HALF_W,
+    )
 
     # ── Entrance staircase ────────────────────────────────────────────────────────
-    KNOTT_STEP_N = 5
-    KNOTT_STEP_DEPTH = 24  # tread depth
-    KNOTT_STAIR_OFFSET = 384  # distance from north wall to stair base
     stair_base_z = FLOOR_Z2 + CHARLES_WALK_H  # steps start at apron surface height (8)
 
     # Flat cement platform between building and stairs
@@ -430,11 +461,9 @@ def build():
 
     # ── Stair side caps (cement cheek walls) ─────────────────────────────────────
     # Solid sloped cement walls on each side of the staircase, top follows stair slope.
-    cap_width = 24  # cheek wall thickness (X)
-    cap_raise = 16  # extra height above stair slope
     for cap_x1, cap_x2 in [
-        (KNOTT_ENT_X1 - cap_width, KNOTT_ENT_X1),  # west cheek
-        (KNOTT_ENT_X2, KNOTT_ENT_X2 + cap_width),  # east cheek
+        (KNOTT_ENT_X1 - KNOTT_STAIR_CAP_W, KNOTT_ENT_X1),  # west cheek
+        (KNOTT_ENT_X2, KNOTT_ENT_X2 + KNOTT_STAIR_CAP_W),  # east cheek
     ]:
         BRUSHES.append(
             ramp_slab_y(
@@ -444,23 +473,18 @@ def build():
                 stair_y_end,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                KNOTT_GROUND_Z + cap_raise,
-                stair_base_z + cap_raise,
+                KNOTT_GROUND_Z + KNOTT_STAIR_CAP_RAISE,
+                stair_base_z + KNOTT_STAIR_CAP_RAISE,
                 Textures.CEMENT,
             )
         )
 
     # ── Stair railings ────────────────────────────────────────────────────────────
-    KNOTT_RAIL_H = 72  # stair handrail height
-    KNOTT_RAIL_TEX = "metal4_4"
-    post_width = 8  # post face width (X) — wide flat-facing
-    post_depth = 2  # post depth (Y)
-    level_extension = 20  # length of level rail extension at top and bottom
     for rail_x_base, is_west_side in [(KNOTT_ENT_X1, True), (KNOTT_ENT_X2, False)]:
         rail_top_z_at_platform = KNOTT_GROUND_Z + KNOTT_RAIL_H - 28
         rail_top_z_at_apron = stair_base_z + KNOTT_RAIL_H - 28
-        rail_x1 = rail_x_base - post_width if is_west_side else rail_x_base
-        rail_x2 = rail_x_base if is_west_side else rail_x_base + post_width
+        rail_x1 = rail_x_base - KNOTT_STAIR_RAIL_POST_W if is_west_side else rail_x_base
+        rail_x2 = rail_x_base if is_west_side else rail_x_base + KNOTT_STAIR_RAIL_POST_W
 
         # Sloped cross rail
         DETAIL_BRUSHES.append(
@@ -481,7 +505,7 @@ def build():
         DETAIL_BRUSHES.append(
             box(
                 rail_x1,
-                stair_y0 - level_extension,
+                stair_y0 - KNOTT_STAIR_RAIL_EXTENSION,
                 rail_top_z_at_platform,
                 rail_x2,
                 stair_y0,
@@ -496,7 +520,7 @@ def build():
                 stair_y_end,
                 rail_top_z_at_apron,
                 rail_x2,
-                stair_y_end + level_extension,
+                stair_y_end + KNOTT_STAIR_RAIL_EXTENSION,
                 rail_top_z_at_apron + 2,
                 KNOTT_RAIL_TEX,
             )
@@ -513,7 +537,7 @@ def build():
                     post_y,
                     post_z,
                     rail_x2,
-                    post_y + post_depth,
+                    post_y + KNOTT_STAIR_RAIL_POST_D,
                     post_z + KNOTT_RAIL_H - 26,
                     KNOTT_RAIL_TEX,
                 )
@@ -522,10 +546,6 @@ def build():
     # West stairwell extents defined after INDENT below
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
-    WIN_HALF = 24  # half-width of recessed corner windows
-    KNOTT_MULLION_W = 12  # mullion width
-    KNOTT_MULLION_PRO = 12  # mullion protrusion depth
-
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
     # Main south face — hallway openings cut through at each floor level
     s_wall_openings = [
@@ -678,15 +698,15 @@ def build():
     ]  # walkway entrance
     win_n = [
         (
-            KNOTT_ORIG_CX - 48,
+            KNOTT_ORIG_CX - KNOTT_FRONT_WINDOW_HALF_W,
             KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2,
-            KNOTT_ORIG_CX - 6,
+            KNOTT_ORIG_CX - KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
             KNOTT_Z2,
         ),
         (
-            KNOTT_ORIG_CX + 6,
+            KNOTT_ORIG_CX + KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
             KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2,
-            KNOTT_ORIG_CX + 48,
+            KNOTT_ORIG_CX + KNOTT_FRONT_WINDOW_HALF_W,
             KNOTT_Z2,
         ),
     ]  # two window slots centered over entrance doorway, split by center mullion
@@ -810,8 +830,11 @@ def build():
             )
         )
     # Main front wall window win_n: mullions on each side and center post
-    win_n_x1, win_n_x2 = KNOTT_ORIG_CX - 48, KNOTT_ORIG_CX + 48
-    win_n_mid = KNOTT_ORIG_CX - 6  # left edge of center mullion
+    win_n_x1, win_n_x2 = (
+        KNOTT_ORIG_CX - KNOTT_FRONT_WINDOW_HALF_W,
+        KNOTT_ORIG_CX + KNOTT_FRONT_WINDOW_HALF_W,
+    )
+    win_n_mid = KNOTT_ORIG_CX - KNOTT_FRONT_WINDOW_MULLION_HALF_GAP
     for mx in [win_n_x1 - KNOTT_MULLION_W, win_n_mid, win_n_x2]:
         DETAIL_BRUSHES.append(
             box(
@@ -829,12 +852,16 @@ def build():
     # Protruding cement slab, sized to fit pixel-font lettering
     knott_sign_char_w = (4 + 1) * KNOTT_SIGN_PX_W
     knott_sign_total_w = len(KNOTT_SIGN_TEXT) * knott_sign_char_w - KNOTT_SIGN_PX_W
-    knott_sign_half_w = knott_sign_total_w // 2 + 4  # 4 unit padding each side = 222
+    knott_sign_half_w = (
+        knott_sign_total_w // 2 + KNOTT_SIGN_PADDING
+    )  # padding each side = 222
     knott_sign_cx = (
         KNOTT_X2 - INDENT - knott_sign_half_w
     )  # east edge flush with wall end
-    knott_sign_z1 = KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + 20  # just above 2nd floor line
-    knott_sign_z2 = knott_sign_z1 + 48  # 48 units tall
+    knott_sign_z1 = (
+        KNOTT_GROUND_Z + KNOTT_FLOOR_H * 2 + KNOTT_SIGN_Z_OFFSET
+    )  # just above 2nd floor line
+    knott_sign_z2 = knott_sign_z1 + KNOTT_SIGN_H
     BRUSHES.append(
         box(
             knott_sign_cx - knott_sign_half_w,
@@ -852,14 +879,14 @@ def build():
 
     # East wall — three 120-unit wide floor-to-ceiling windows, matching west side
     # Shared window layout variables (used for both east and west walls)
-    ww_half = 120
+    ww_half = KNOTT_SIDE_WINDOW_HALF_W
     ww_wall_y1, ww_wall_y2 = KNOTT_Y1, KNOTT_Y2 - INDENT
     ww_quarter = (ww_wall_y2 - ww_wall_y1) // 4
     ww_c1 = ww_wall_y1 + ww_quarter
     ww_c2 = ww_wall_y1 + 2 * ww_quarter
     ww_c3 = ww_wall_y1 + 3 * ww_quarter
-    ww_div_w = 12
-    ww_protrude = 12
+    ww_div_w = KNOTT_SIDE_WINDOW_DIV_W
+    ww_protrude = KNOTT_SIDE_WINDOW_PROTRUSION
     BRUSHES.extend(
         layered_wall_y(
             ww_wall_y1,
@@ -895,8 +922,8 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for mullion_y in [
             window_center_y - ww_half,  # left edge
-            window_center_y - 48,  # interior left
-            window_center_y + 36,  # interior right
+            window_center_y - KNOTT_SIDE_WINDOW_INNER_LEFT,  # interior left
+            window_center_y + KNOTT_SIDE_WINDOW_INNER_RIGHT,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
             DETAIL_BRUSHES.append(
@@ -980,8 +1007,8 @@ def build():
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for mullion_y in [
             window_center_y - ww_half,  # left edge
-            window_center_y - 48,  # interior left
-            window_center_y + 36,  # interior right
+            window_center_y - KNOTT_SIDE_WINDOW_INNER_LEFT,  # interior left
+            window_center_y + KNOTT_SIDE_WINDOW_INNER_RIGHT,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
             DETAIL_BRUSHES.append(
@@ -1306,7 +1333,7 @@ def build():
 
     # ── Elevator Shaft Enclosure ──────────────────────────────────────────────
     # Walls around the lift shaft (KNOTT_SHAFT_X1..KNOTT_SHAFT_X2, KNOTT_SHAFT_Y1..KNOTT_SHAFT_Y2)
-    shaft_wall = 8
+    shaft_wall = KNOTT_SHAFT_WALL
     # Door opening dimensions per floor (used for both wall openings and func_door entities)
     shaft_door_h = KNOTT_FLOOR_H  # door height matches floor-to-floor height
     shaft_door_openings = [

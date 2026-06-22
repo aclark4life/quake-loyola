@@ -4,27 +4,68 @@ from .constants import (
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
+    DORM_BRICK_GATE_H,
+    DORM_BRICK_PILLAR_CAP_H,
+    DORM_BRICK_PILLAR_CAP_OVH,
+    DORM_BRICK_PILLAR_GAP,
+    DORM_BRICK_PILLAR_H_OFFSET,
+    DORM_BRICK_PILLAR_PROUD,
+    DORM_BRICK_PILLAR_SEPARATION,
+    DORM_BRICK_PILLAR_W,
+    DORM_BRICK_WALL_HALF_W,
+    DORM_DOOR_H,
+    DORM_DOOR_OFF,
+    DORM_DOOR_W,
     DORM_EMB_X2,
+    DORM_ENT_H,
+    DORM_ENT_HW,
     DORM_FLOOR_H,
     DORM_FLOORS,
+    DORM_FRONT_WALKWAY_FENCE_OFFSET,
+    DORM_FRONT_WALKWAY_H,
+    DORM_FRONT_WALKWAY_W,
+    DORM_GABLE_DEPTH,
     DORM_H,
+    DORM_INNER_DOOR_H,
+    DORM_INNER_DOOR_HW,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
     DORM_PIER_X,
     DORM_ROOF_H,
+    DORM_SLAB_T,
     DORM_SOUTH1_Y1,
     DORM_SOUTH1_Y2,
     DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
+    DORM_WALL,
     DORM_WALL_S_Y2,
+    DORM_WIN_HH,
+    DORM_WIN_HW,
     DORM_WIN_MARGIN,
     DORM_X1,
     DORM_X2,
+    ENNIS_CEMENT_WALL_CAP_H,
+    ENNIS_CEMENT_WALL_CAP_OVH,
+    ENNIS_CEMENT_WALL_H,
+    ENNIS_CEMENT_WALL_LAMP_POST_H,
+    ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+    ENNIS_CEMENT_WALL_PILLAR_HW,
     ENNIS_CEMENT_X1,
     ENNIS_CEMENT_X2,
+    ENNIS_GATE_FENCE_BAR_T,
+    ENNIS_GATE_FENCE_HEIGHT,
+    ENNIS_GATE_FENCE_POST_W,
+    ENNIS_GATE_FENCE_SPACING,
+    ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+    ENNIS_GATE_FENCE_TOP_RAIL_T,
     ENNIS_GATE_X1,
     ENNIS_GATE_X2,
     ENNIS_HW,
+    ENNIS_PANEL_GAP,
+    ENNIS_PANEL_INNER_H,
+    ENNIS_PANEL_INNER_W,
+    ENNIS_PANEL_OUTER_H,
+    ENNIS_PANEL_OUTER_W,
     ENNIS_PIL_BELL2_H,
     ENNIS_PIL_BELL2_HW,
     ENNIS_PIL_CAP_H,
@@ -37,7 +78,13 @@ from .constants import (
     ENNIS_WALL_PIL_H,
     ENNIS_WALL_PIL_HW,
     ENNIS_WALL_T,
+    ENNIS_WALL_X_OFFSET,
     ENNIS_Y,
+    FENCE_H,
+    FENCE_SPACING,
+    FENCE_TEX,
+    FENCE_X1,
+    FENCE_X2,
     FLOOR_Z1,
     FLOOR_Z2,
     ROAD_X2,
@@ -153,7 +200,7 @@ def build_ennis_entrance_features():
             )
         )
 
-    ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + 48
+    ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bwex2 = ENNIS_GATE_X1
     brushes.append(
         box(
@@ -180,25 +227,30 @@ def build_ennis_entrance_features():
     )
 
     gate_fence_x1 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1
-    gate_fence_x2 = gate_fence_x1 + 2
-    gate_fence_height = 96
-    gate_fence_spacing = 16
+    gate_fence_x2 = gate_fence_x1 + ENNIS_GATE_FENCE_BAR_T
     gate_fence_tex = "metal4_4"
     brushes.append(
         box(
             gate_fence_x1,
             bw_mid_y,
-            FLOOR_Z2 + gate_fence_height - 28,
+            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
             gate_fence_x2,
             CHARLES_Y2,
-            FLOOR_Z2 + gate_fence_height - 26,
+            FLOOR_Z2
+            + ENNIS_GATE_FENCE_HEIGHT
+            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+            + ENNIS_GATE_FENCE_TOP_RAIL_T,
             gate_fence_tex,
         )
     )
     gate_picket_y = bw_mid_y
     gate_picket_index = 0
     while gate_picket_y + 2 <= CHARLES_Y2:
-        gate_picket_width = 8 if gate_picket_index % 10 == 0 else 2
+        gate_picket_width = (
+            ENNIS_GATE_FENCE_POST_W
+            if gate_picket_index % 10 == 0
+            else ENNIS_GATE_FENCE_BAR_T
+        )
         brushes.append(
             box(
                 gate_fence_x1,
@@ -206,38 +258,35 @@ def build_ennis_entrance_features():
                 FLOOR_Z2,
                 gate_fence_x2,
                 gate_picket_y + gate_picket_width,
-                FLOOR_Z2 + gate_fence_height,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
                 gate_fence_tex,
             )
         )
-        gate_picket_y += gate_fence_spacing
+        gate_picket_y += ENNIS_GATE_FENCE_SPACING
         gate_picket_index += 1
 
-    panel_x1 = ennis_wall_x1 - 2
+    panel_x1 = ennis_wall_x1 - ENNIS_GATE_FENCE_BAR_T
     panel_x2 = ennis_wall_x1
-    panel_bar_thickness = 2
-    panel_outer_width = 48
-    panel_outer_height = 28
-    panel_inner_width = 28
-    panel_inner_height = 12
     panel_z1 = FLOOR_Z2 + ENNIS_WALL_H
-    panel_z_center = panel_z1 + panel_outer_height // 2
+    panel_z_center = panel_z1 + ENNIS_PANEL_OUTER_H // 2
     panel_available_span = bw_mid_y - ENNIS_WALL_NY
     panel_count = max(
-        1, (panel_available_span + panel_outer_width) // (panel_outer_width + 8)
+        1,
+        (panel_available_span + ENNIS_PANEL_OUTER_W)
+        // (ENNIS_PANEL_OUTER_W + ENNIS_PANEL_GAP),
     )
     panel_spacing = panel_available_span // panel_count
     panel_center_y = ENNIS_WALL_NY + panel_spacing // 2
     panels_drawn = 0
     while panels_drawn < panel_count:
-        y1_o = panel_center_y - panel_outer_width // 2
-        y2_o = panel_center_y + panel_outer_width // 2
-        z1_o = panel_z_center - panel_outer_height // 2
-        z2_o = panel_z_center + panel_outer_height // 2
-        y1_i = panel_center_y - panel_inner_width // 2
-        y2_i = panel_center_y + panel_inner_width // 2
-        z1_i = panel_z_center - panel_inner_height // 2
-        z2_i = panel_z_center + panel_inner_height // 2
+        y1_o = panel_center_y - ENNIS_PANEL_OUTER_W // 2
+        y2_o = panel_center_y + ENNIS_PANEL_OUTER_W // 2
+        z1_o = panel_z_center - ENNIS_PANEL_OUTER_H // 2
+        z2_o = panel_z_center + ENNIS_PANEL_OUTER_H // 2
+        y1_i = panel_center_y - ENNIS_PANEL_INNER_W // 2
+        y2_i = panel_center_y + ENNIS_PANEL_INNER_W // 2
+        z1_i = panel_z_center - ENNIS_PANEL_INNER_H // 2
+        z2_i = panel_z_center + ENNIS_PANEL_INNER_H // 2
         brushes.extend(
             [
                 box(
@@ -246,13 +295,13 @@ def build_ennis_entrance_features():
                     z1_o,
                     panel_x2,
                     y2_o,
-                    z1_o + panel_bar_thickness,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
                     gate_fence_tex,
                 ),
                 box(
                     panel_x1,
                     y1_o,
-                    z2_o - panel_bar_thickness,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
                     panel_x2,
                     y2_o,
                     z2_o,
@@ -263,13 +312,13 @@ def build_ennis_entrance_features():
                     y1_o,
                     z1_o,
                     panel_x2,
-                    y1_o + panel_bar_thickness,
+                    y1_o + ENNIS_GATE_FENCE_BAR_T,
                     z2_o,
                     gate_fence_tex,
                 ),
                 box(
                     panel_x1,
-                    y2_o - panel_bar_thickness,
+                    y2_o - ENNIS_GATE_FENCE_BAR_T,
                     z1_o,
                     panel_x2,
                     y2_o,
@@ -282,13 +331,13 @@ def build_ennis_entrance_features():
                     z1_i,
                     panel_x2,
                     y2_i,
-                    z1_i + panel_bar_thickness,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
                     gate_fence_tex,
                 ),
                 box(
                     panel_x1,
                     y1_i,
-                    z2_i - panel_bar_thickness,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
                     panel_x2,
                     y2_i,
                     z2_i,
@@ -299,13 +348,13 @@ def build_ennis_entrance_features():
                     y1_i,
                     z1_i,
                     panel_x2,
-                    y1_i + panel_bar_thickness,
+                    y1_i + ENNIS_GATE_FENCE_BAR_T,
                     z2_i,
                     gate_fence_tex,
                 ),
                 box(
                     panel_x1,
-                    y2_i - panel_bar_thickness,
+                    y2_i - ENNIS_GATE_FENCE_BAR_T,
                     z1_i,
                     panel_x2,
                     y2_i,
@@ -319,8 +368,8 @@ def build_ennis_entrance_features():
                     y1_i,
                     z1_o,
                     z1_i,
-                    z1_o + panel_bar_thickness,
-                    z1_i + panel_bar_thickness,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
                     gate_fence_tex,
                 ),
                 ramp_slab_y(
@@ -330,8 +379,8 @@ def build_ennis_entrance_features():
                     y2_o,
                     z1_i,
                     z1_o,
-                    z1_i + panel_bar_thickness,
-                    z1_o + panel_bar_thickness,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
                     gate_fence_tex,
                 ),
                 ramp_slab_y(
@@ -339,8 +388,8 @@ def build_ennis_entrance_features():
                     panel_x2,
                     y1_o,
                     y1_i,
-                    z2_o - panel_bar_thickness,
-                    z2_i - panel_bar_thickness,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
                     z2_o,
                     z2_i,
                     gate_fence_tex,
@@ -350,24 +399,24 @@ def build_ennis_entrance_features():
                     panel_x2,
                     y2_i,
                     y2_o,
-                    z2_i - panel_bar_thickness,
-                    z2_o - panel_bar_thickness,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
                     z2_i,
                     z2_o,
                     gate_fence_tex,
                 ),
             ]
         )
-        conn_y2_p = panel_center_y + panel_spacing - panel_outer_width // 2
+        conn_y2_p = panel_center_y + panel_spacing - ENNIS_PANEL_OUTER_W // 2
         if panels_drawn + 1 < panel_count:
             brushes.append(
                 box(
                     panel_x1,
                     y2_o,
-                    panel_z_center - panel_bar_thickness // 2,
+                    panel_z_center - ENNIS_GATE_FENCE_BAR_T // 2,
                     panel_x2,
                     conn_y2_p,
-                    panel_z_center + panel_bar_thickness // 2,
+                    panel_z_center + ENNIS_GATE_FENCE_BAR_T // 2,
                     gate_fence_tex,
                 )
             )
@@ -427,17 +476,24 @@ def build_ennis_entrance_features():
         box(
             ENNIS_GATE_X1,
             east_gate_y1,
-            FLOOR_Z2 + gate_fence_height - 28,
+            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
             ENNIS_GATE_X2,
             east_gate_y2,
-            FLOOR_Z2 + gate_fence_height - 26,
+            FLOOR_Z2
+            + ENNIS_GATE_FENCE_HEIGHT
+            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+            + ENNIS_GATE_FENCE_TOP_RAIL_T,
             gate_fence_tex,
         )
     ]
     east_gate_picket_x = ENNIS_GATE_X1
     east_gate_picket_index = 0
     while east_gate_picket_x + 2 <= ENNIS_GATE_X2:
-        east_gate_picket_width = 8 if east_gate_picket_index % 10 == 0 else 2
+        east_gate_picket_width = (
+            ENNIS_GATE_FENCE_POST_W
+            if east_gate_picket_index % 10 == 0
+            else ENNIS_GATE_FENCE_BAR_T
+        )
         east_gate_brushes.append(
             box(
                 east_gate_picket_x,
@@ -445,18 +501,18 @@ def build_ennis_entrance_features():
                 FLOOR_Z2,
                 east_gate_picket_x + east_gate_picket_width,
                 east_gate_y2,
-                FLOOR_Z2 + gate_fence_height,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
                 gate_fence_tex,
             )
         )
-        east_gate_picket_x += gate_fence_spacing
+        east_gate_picket_x += ENNIS_GATE_FENCE_SPACING
         east_gate_picket_index += 1
 
     cement_wall_y1 = ENNIS_WALL_NY
     cement_wall_y2 = ENNIS_WALL_NY + ENNIS_WALL_T
-    cement_wall_height = 32
-    cement_wall_pillar_half_width = 14
-    cement_wall_pillar_height = cement_wall_height + 16
+    cement_wall_height = ENNIS_CEMENT_WALL_H
+    cement_wall_pillar_half_width = ENNIS_CEMENT_WALL_PILLAR_HW
+    cement_wall_pillar_height = cement_wall_height + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
     brushes.append(
         box(
             ENNIS_CEMENT_X1,
@@ -471,11 +527,11 @@ def build_ennis_entrance_features():
     brushes.append(
         box(
             ENNIS_CEMENT_X1,
-            cement_wall_y1 - 2,
+            cement_wall_y1 - ENNIS_CEMENT_WALL_CAP_OVH,
             FLOOR_Z2 + cement_wall_height,
             ENNIS_CEMENT_X2,
-            cement_wall_y2 + 2,
-            FLOOR_Z2 + cement_wall_height + 6,
+            cement_wall_y2 + ENNIS_CEMENT_WALL_CAP_OVH,
+            FLOOR_Z2 + cement_wall_height + ENNIS_CEMENT_WALL_CAP_H,
             Textures.CEMENT,
         )
     )
@@ -494,16 +550,20 @@ def build_ennis_entrance_features():
         )
         brushes.append(
             box(
-                pillar_x - cement_wall_pillar_half_width - 2,
-                pillar_center_y - cement_wall_pillar_half_width - 2,
+                pillar_x - cement_wall_pillar_half_width - ENNIS_CEMENT_WALL_CAP_OVH,
+                pillar_center_y
+                - cement_wall_pillar_half_width
+                - ENNIS_CEMENT_WALL_CAP_OVH,
                 FLOOR_Z2 + cement_wall_pillar_height,
-                pillar_x + cement_wall_pillar_half_width + 2,
-                pillar_center_y + cement_wall_pillar_half_width + 2,
-                FLOOR_Z2 + cement_wall_pillar_height + 6,
+                pillar_x + cement_wall_pillar_half_width + ENNIS_CEMENT_WALL_CAP_OVH,
+                pillar_center_y
+                + cement_wall_pillar_half_width
+                + ENNIS_CEMENT_WALL_CAP_OVH,
+                FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H,
                 Textures.CEMENT,
             )
         )
-        lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + 6
+        lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H
         brushes.append(
             box(
                 pillar_x - 3,
@@ -511,7 +571,7 @@ def build_ennis_entrance_features():
                 lamppost_base_z,
                 pillar_x + 3,
                 pillar_center_y + 3,
-                lamppost_base_z + 160,
+                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
                 Textures.PILLAR,
             )
         )
@@ -519,10 +579,12 @@ def build_ennis_entrance_features():
             box(
                 pillar_x - 4,
                 pillar_center_y - 4,
-                lamppost_base_z + 160,
+                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
                 pillar_x + 4,
                 pillar_center_y + 4,
-                lamppost_base_z + 176,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
                 Textures.CEMENT,
             )
         )
@@ -530,10 +592,15 @@ def build_ennis_entrance_features():
             box(
                 pillar_x - 7,
                 pillar_center_y - 7,
-                lamppost_base_z + 176,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
                 pillar_x + 7,
                 pillar_center_y + 7,
-                lamppost_base_z + 180,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
+                + ENNIS_GATE_FENCE_TOP_RAIL_T * 2,
                 Textures.CEMENT,
             )
         )
@@ -547,14 +614,6 @@ def build():
     BRUSHES = []
     ENTITIES = []
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
-    DORM_WALL = 16  # wall thickness
-    DORM_WIN_HW = 36  # window half-width
-    DORM_WIN_HH = 44  # window half-height
-    DORM_ENT_HW = 48  # entrance half-width (96-unit wide doorway)
-    DORM_ENT_H = 100  # entrance height
-    DORM_INNER_DOOR_HW = 56  # half-width of doorway between adjacent buildings
-    DORM_INNER_DOOR_H = 128  # height of doorway between adjacent buildings
-
     # Underground tunnel — dimensions and embankment interpolation
     TUNN_T = DORM_WALL  # wall/ceiling/floor thickness (= 16)
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
@@ -842,7 +901,6 @@ def build():
     # Recess the roof-slab gable ends inward so the slats fill the gap with their
     # outer face flush with the wall below; grooves between planks reveal the
     # recessed slab behind them (relief) without protruding past the wall.
-    DORM_GABLE_DEPTH = 6
     DORM_NB_SY1 = DORM_NORTH_Y1  # south end abuts building 2 — full slab, no recess
     DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
     # West slope: flat bottom at eave_z, top slopes up to ridge
@@ -1954,11 +2012,6 @@ def build():
         )
 
     # Iron fence along east face of west buildings ──────────────────────────
-    FENCE_X1 = DORM_X2 + 216  # pushed further east to sit outside the front walkway
-    FENCE_X2 = FENCE_X1 + 2  # picket/rail thickness
-    FENCE_H = 96  # fence height
-    FENCE_SPACING = 16  # picket center-to-center
-    FENCE_TEX = "metal4_4"
     fence_brushes = []
 
     def fence_base_at(y):
@@ -2018,16 +2071,13 @@ def build():
 
     # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
     # Door is centered 160 units north of dorm 2; pillars and iron fence are detail.
-    wall_hw = 12  # half-thickness (thinner than pier)
-    DORM_DOOR_W = 80  # door opening width
-    DORM_DOOR_OFF = 160  # distance from dorm 2 north face to door centre
-    DORM_DOOR_H = 128  # door opening height
+    wall_hw = DORM_BRICK_WALL_HALF_W  # half-thickness (thinner than pier)
     wall_start_y = DORM_SOUTH2_Y2  # wall stops at north face of dorm 2
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF
     # Gate opening now sits on the raised terrace (its sill is buried in the pad);
     # the wall top stays at the bridge deck so the wall just reads as shorter.
     gate_base = FLOOR_Z2 + SDORM_LIFT
-    gate_top = gate_base + 96
+    gate_top = gate_base + DORM_BRICK_GATE_H
     # Brick wall body (worldspawn — seals the level)
     BRUSHES.append(
         box(
@@ -2064,17 +2114,30 @@ def build():
     )
     # Brick pillars + iron fence (func_detail — non-sealing)
     wall_detail = []
-    pillar_w = 56
-    pillar_proud = 6
-    pillar_h = BRIDGE_DZ2 + 80
+    pillar_w = DORM_BRICK_PILLAR_W
+    pillar_proud = DORM_BRICK_PILLAR_PROUD
+    pillar_h = BRIDGE_DZ2 + DORM_BRICK_PILLAR_H_OFFSET
     px1 = DORM_PIER_X - wall_hw - pillar_proud
     px2 = DORM_PIER_X + wall_hw + pillar_proud
-    cap_h = 10
-    cap_overhang = 1
+    cap_h = DORM_BRICK_PILLAR_CAP_H
+    cap_overhang = DORM_BRICK_PILLAR_CAP_OVH
     door_north = s_door_y + DORM_DOOR_W // 2
     for py1, py2 in [
-        (door_north + 96, door_north + 96 + pillar_w),
-        (door_north + 96 + pillar_w + 380, door_north + 96 + pillar_w + 380 + pillar_w),
+        (
+            door_north + DORM_BRICK_PILLAR_GAP,
+            door_north + DORM_BRICK_PILLAR_GAP + pillar_w,
+        ),
+        (
+            door_north
+            + DORM_BRICK_PILLAR_GAP
+            + pillar_w
+            + DORM_BRICK_PILLAR_SEPARATION,
+            door_north
+            + DORM_BRICK_PILLAR_GAP
+            + pillar_w
+            + DORM_BRICK_PILLAR_SEPARATION
+            + pillar_w,
+        ),
     ]:
         # Base extends to grade so the pillar still meets the ground where the
         # wall→fence strip declines north of the south pillar.
@@ -2110,9 +2173,12 @@ def build():
 
     # ── Raised stone walkway: narrow strip set off the dorm face (sits just
     #    inside the fence), with a spur running north to the brick-wall door ────
-    WALKWAY_H = 6
-    WALK_X2 = FENCE_X1 - 40  # outer edge, a little inside the fence line
-    WALK_X1 = WALK_X2 - 96  # narrow strip, leaving a gap to the dorm face
+    WALK_X2 = (
+        FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET
+    )  # outer edge, a little inside the fence line
+    WALK_X1 = (
+        WALK_X2 - DORM_FRONT_WALKWAY_W
+    )  # narrow strip, leaving a gap to the dorm face
     walk = [
         # Frontage parallel to the dorm east face
         box(
@@ -2121,7 +2187,7 @@ def build():
             FLOOR_Z2 + SDORM_LIFT,
             WALK_X2,
             DORM_SOUTH2_Y2,
-            FLOOR_Z2 + SDORM_LIFT + WALKWAY_H,
+            FLOOR_Z2 + SDORM_LIFT + DORM_FRONT_WALKWAY_H,
             Textures.STONE,
         ),
         # Spur north from the dorm corner to the brick-wall door (east side of wall)
@@ -2131,7 +2197,7 @@ def build():
             FLOOR_Z2 + SDORM_LIFT,
             WALK_X2,
             door_north,
-            FLOOR_Z2 + SDORM_LIFT + WALKWAY_H,
+            FLOOR_Z2 + SDORM_LIFT + DORM_FRONT_WALKWAY_H,
             Textures.STONE,
         ),
     ]
