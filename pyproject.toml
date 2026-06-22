@@ -3,6 +3,7 @@ select = ["I"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
+docs = ["furo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
