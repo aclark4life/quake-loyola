@@ -122,6 +122,14 @@ def build():
             )
         )
 
+    def floor_levels():
+        for floor_index in range(KNOTT_FLOORS):
+            fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
+            fz2 = fz1 + KNOTT_FLOOR_H
+            fz_surf = fz1 + KNOTT_WALL
+            fz_mid = fz1 + KNOTT_FLOOR_H // 2
+            yield floor_index, fz1, fz2, fz_surf, fz_mid
+
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
     # Sidewalks with rounded north entrance corners (like Ennis Drive)
@@ -632,8 +640,9 @@ def build():
         )
     # Horizontal mullions — SW and SE south-face indentation windows, matching east/west walls
     for wx in [sw_win_cx, se_win_cx]:
-        for fl in range(1, KNOTT_FLOORS):
-            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+        for floor_index, _, _, _, mz in floor_levels():
+            if floor_index == 0:
+                continue
             DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
@@ -647,16 +656,15 @@ def build():
             )
     # Floor-level mullions — SW and SE south-face windows
     for wx in [sw_win_cx, se_win_cx]:
-        for fl in range(1, KNOTT_FLOORS + 1):
-            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        for _, _, fz, _, _ in floor_levels():
             DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
                     KNOTT_Y1 + INDENT - KNOTT_WALL,
-                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    fz - 4,
                     wx + WIN_HALF,
                     KNOTT_Y1 + INDENT + KNOTT_MULLION_PRO,
-                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
+                    fz,
                     Textures.RAIL,
                 )
             )
@@ -906,8 +914,9 @@ def build():
     # Horizontal mullions — centered in each floor span for contrast, players still fit through
     # Mid-floor Z leaves ~85 units clearance each side (player height = 56)
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KNOTT_FLOORS):
-            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+        for floor_index, _, _, _, mz in floor_levels():
+            if floor_index == 0:
+                continue
             DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X2 - KNOTT_WALL,
@@ -921,16 +930,15 @@ def build():
             )
     # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KNOTT_FLOORS + 1):
-            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        for _, _, fz, _, _ in floor_levels():
             DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X2 - KNOTT_WALL,
                     window_center_y - ww_half,
-                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    fz - 4,
                     KNOTT_X2 + ww_protrude,
                     window_center_y + ww_half,
-                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
+                    fz,
                     Textures.RAIL,
                 )
             )
@@ -990,8 +998,9 @@ def build():
 
     # Horizontal mullions — west wall, matching east
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KNOTT_FLOORS):
-            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+        for floor_index, _, _, _, mz in floor_levels():
+            if floor_index == 0:
+                continue
             DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X1 - ww_protrude,
@@ -1005,23 +1014,23 @@ def build():
             )
     # Floor-level mullions — west wall
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
-        for fl in range(1, KNOTT_FLOORS + 1):
-            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        for _, _, fz, _, _ in floor_levels():
             DETAIL_BRUSHES.append(
                 box(
                     KNOTT_X1 - ww_protrude,
                     window_center_y - ww_half,
-                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    fz - 4,
                     KNOTT_X1 + KNOTT_WALL,
                     window_center_y + ww_half,
-                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
+                    fz,
                     Textures.RAIL,
                 )
             )
 
     # Horizontal mullions — win_n narrow slot window on main north face (floors 2–3)
-    for fl in range(2, KNOTT_FLOORS):
-        mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+    for floor_index, _, _, _, mz in floor_levels():
+        if floor_index < 2:
+            continue
         DETAIL_BRUSHES.append(
             box(
                 win_n_x1,
@@ -1034,17 +1043,18 @@ def build():
             )
         )
     # Floor-level mullions — win_n
-    for fl in range(2, KNOTT_FLOORS + 1):
-        fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+    for floor_index, _, fz, _, _ in floor_levels():
+        if floor_index < 1:
+            continue
         if fz <= KNOTT_Z2:
             DETAIL_BRUSHES.append(
                 box(
                     win_n_x1,
                     KNOTT_Y2 - KNOTT_WALL,
-                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    fz - 4,
                     win_n_x2,
                     KNOTT_Y2 + KNOTT_MULLION_PRO,
-                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
+                    fz,
                     Textures.RAIL,
                 )
             )
@@ -1053,8 +1063,9 @@ def build():
         (nw_win_cx2, WIN_HALF),
         (ne_win_cx, WIN_HALF),
     ]:
-        for fl in range(1, KNOTT_FLOORS):
-            mz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H + KNOTT_FLOOR_H // 2
+        for floor_index, _, _, _, mz in floor_levels():
+            if floor_index == 0:
+                continue
             DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
@@ -1072,16 +1083,15 @@ def build():
         (nw_win_cx2, WIN_HALF),
         (ne_win_cx, WIN_HALF),
     ]:
-        for fl in range(1, KNOTT_FLOORS + 1):
-            fz = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
+        for _, _, fz, _, _ in floor_levels():
             DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
                     KNOTT_Y2 - INDENT - KNOTT_MULLION_PRO,
-                    fz - 4 if fl > 0 else KNOTT_GROUND_Z,
+                    fz - 4,
                     window_center_x + window_half_width,
                     KNOTT_Y2 - INDENT + KNOTT_WALL,
-                    (fz if fl > 0 else KNOTT_GROUND_Z + 4),
+                    fz,
                     Textures.RAIL,
                 )
             )
@@ -1364,11 +1374,11 @@ def build():
     west_shaft_door_openings = [
         (
             KNOTT_SHAFT_Y1 + 16,  # same Y extents as east shaft doorway
-            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H,
+            fz1,
             KNOTT_SHAFT_Y2 - 16,
-            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + shaft_door_h,
+            fz1 + shaft_door_h,
         )
-        for floor_index in range(KNOTT_FLOORS)
+        for _, fz1, _, _, _ in floor_levels()
     ]
 
     # West stairwell North wall (internal, solid)
@@ -1445,10 +1455,7 @@ def build():
     stair_x2 = (
         stair_x1 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_TREAD_X
     )  # east edge of stairs
-    for floor_index in range(KNOTT_FLOORS):
-        floor_z0 = (
-            KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_WALL
-        )  # floor surface Z
+    for _, _, _, floor_z0, _ in floor_levels():
         half_flight_z = (
             floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
         )  # half-floor Z (floor_z0 + 80)
@@ -1536,8 +1543,7 @@ def build():
     KNOTT_STAIRS_POST_W = 4  # square post cross-section
     KNOTT_STAIRS_RAIL_T = 4  # cross-rail bar thickness
 
-    for floor_index in range(KNOTT_FLOORS):
-        floor_z0 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H + KNOTT_WALL
+    for _, _, _, floor_z0, _ in floor_levels():
         half_flight_z = floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
         top_flight_z = half_flight_z + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
 
@@ -1637,9 +1643,7 @@ def build():
         (KNOTT_SHAFT_Y1, KNOTT_GROUND_Z, KNOTT_SHAFT_Y2, KNOTT_Z2)
     ]  # shaft gap always open
 
-    for floor_index in range(KNOTT_FLOORS):
-        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT_FLOOR_H
-        fz_surf = fz1 + KNOTT_WALL  # top of floor slab
+    for floor_index, fz1, _, fz_surf, _ in floor_levels():
         split = KNOTT_ROOM_SPLITS[floor_index]
         sr_yc = (KNOTT_BIY1 + split) // 2  # south room Y center
         nr_yc = (split + KNOTT_WALL + KNOTT_BIY2) // 2  # north room Y center
@@ -1681,11 +1685,8 @@ def build():
     )
 
     # Partition walls per floor (divide each side into 2 rooms, with connecting door)
-    for fl in range(KNOTT_FLOORS):
-        fz1 = KNOTT_GROUND_Z + fl * KNOTT_FLOOR_H
-        fz2 = fz1 + KNOTT_FLOOR_H
-        fz_surf = fz1 + KNOTT_WALL
-        split = KNOTT_ROOM_SPLITS[fl]
+    for floor_index, fz1, fz2, fz_surf, _ in floor_levels():
+        split = KNOTT_ROOM_SPLITS[floor_index]
         sp_y2 = split + KNOTT_WALL
         pdz2 = fz_surf + 96
         # West side partition wall with connecting door
