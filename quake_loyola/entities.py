@@ -1158,6 +1158,20 @@ def build():
         )
     ENTITIES.append(brush_ent("func_detail", charles_giant_tree_brushes))
 
+    # ── Medium trees in front of the south dorm, set back from Charles Street ─────
+    # Two trees, bigger and spread wider: positioned at outer thirds of the full
+    # south-dorm Y span and pulled further back (west) from the road.
+    sdorm_front_tree_height = 520
+    sdorm_front_tree_x = ROAD_X1 - 400  # further back toward the dorm
+    sdorm_front_tree_y1 = DORM_SOUTH1_Y1 + 150  # near south end of dorm span
+    sdorm_front_tree_y2 = DORM_SOUTH2_Y2 - 150  # near north end of dorm span
+    sdorm_front_tree_brushes = []
+    for tree_y in (sdorm_front_tree_y1, sdorm_front_tree_y2):
+        sdorm_front_tree_brushes += make_giant_tree(
+            sdorm_front_tree_x, tree_y, FLOOR_Z2, sdorm_front_tree_height
+        )
+    ENTITIES.append(brush_ent("func_detail", sdorm_front_tree_brushes))
+
     # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
     # Scattered grid: base spacing ~350 units with per-tree random jitter up to
     # ±120 units in X and Y so the forest looks natural, not uniform.
