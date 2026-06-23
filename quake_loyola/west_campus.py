@@ -1299,7 +1299,6 @@ def build():
                         SDORM_STAIR_Y2,
                         (i + 1) * SDORM_STAIR_RISE - SDORM_LIFT,
                         Textures.GROUND,
-                        tt=Textures.ROAD,
                     )
                 )
         else:
