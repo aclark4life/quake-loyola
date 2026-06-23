@@ -851,6 +851,53 @@ def build():
         )
     )
 
+    # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
+    CHARLES_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
+    # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
+    CHARLES_LAMP_POST_XS = [
+        2158,
+        1246,
+    ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
+    CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - 160]
+    for lamp_x in CHARLES_LAMP_POST_XS:
+        for lamp_y in CHARLES_LAMP_POST_YS:
+            pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
+            # Narrow shaft
+            DETAIL_BRUSHES.append(
+                box(
+                    lamp_x - 2,
+                    lamp_y - 2,
+                    FLOOR_Z2,
+                    lamp_x + 2,
+                    lamp_y + 2,
+                    pole_top_z,
+                    Textures.PILLAR,
+                )
+            )
+            # Torch top — narrow post + brick cup (matches bridge pillar torches)
+            DETAIL_BRUSHES.append(
+                box(
+                    lamp_x - 3,
+                    lamp_y - 3,
+                    pole_top_z,
+                    lamp_x + 3,
+                    lamp_y + 3,
+                    pole_top_z + 16,
+                    Textures.CEMENT,
+                )
+            )
+            DETAIL_BRUSHES.append(
+                box(
+                    lamp_x - 5,
+                    lamp_y - 5,
+                    pole_top_z + 16,
+                    lamp_x + 5,
+                    lamp_y + 5,
+                    pole_top_z + 20,
+                    Textures.BRICK,
+                )
+            )
+
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES

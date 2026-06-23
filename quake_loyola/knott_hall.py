@@ -1,42 +1,14 @@
-import math
-
 from .constants import (
-    A_SEGS,
     BRIDGE,
-    BRIDGE_DZ2,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
-    CHARLES_CRN_SEGS,
-    CHARLES_WALK_H,
-    CHARLES_WALK_W,
-    CHARLES_Y1,
-    CHARLES_Y2,
     DRAW_BRIDGE_FASCIA_TEXT,
-    ENNIS_HW,
-    ENNIS_Y,
     FASCIA_FONT,
     FLOOR_Z1,
     FLOOR_Z2,
     INDENT,
     KNOTT,
-    KNOTT_DRIVEWAY_CURB_CRN_R,
-    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
-    KNOTT_DRIVEWAY_ES_X1,
-    KNOTT_DRIVEWAY_ES_X2,
-    KNOTT_DRIVEWAY_EXT_Y1,
-    KNOTT_DRIVEWAY_EXT_Y2,
-    KNOTT_DRIVEWAY_JCX_E,
-    KNOTT_DRIVEWAY_JCX_W,
-    KNOTT_DRIVEWAY_JCY,
-    KNOTT_DRIVEWAY_RD_X1,
-    KNOTT_DRIVEWAY_RD_X2,
-    KNOTT_DRIVEWAY_WS_X1,
-    KNOTT_DRIVEWAY_WS_X2,
-    KNOTT_DRIVEWAY_Y1,
-    KNOTT_DRIVEWAY_Y2,
-    KNOTT_DRIVEWAY_ZT_N,
-    KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENABLED,
     KNOTT_ENT_HALF_W,
     KNOTT_FRONT_WINDOW_HALF_W,
@@ -76,10 +48,6 @@ from .constants import (
     WALK_ZT2,
     WALL_T,
     WIN_HALF,
-    WORLD_X1,
-    WORLD_X2,
-    WORLD_X2_EXT,
-    WORLD_Y1,
     Textures,
     deck_top_z,
 )
@@ -91,7 +59,6 @@ from .geometry import (
     ramp_slab,
     ramp_slab_y,
     render_text_flat,
-    tri_prism,
 )
 
 
@@ -103,36 +70,6 @@ def build():
         BRUSHES
     )  # checkpoint — trimmed below if KNOTT_ENABLED is False
 
-    def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
-        brushes.append(
-            ramp_slab_y(
-                x1,
-                x2,
-                KNOTT_DRIVEWAY_Y1,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                top_z_s,
-                top_z_n,
-                surface_tex,
-                tt=surface_tex,
-            )
-        )
-        brushes.append(
-            ramp_slab_y(
-                x1,
-                x2,
-                KNOTT_DRIVEWAY_Y1,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                KNOTT_DRIVEWAY_ZT_S,
-                KNOTT_DRIVEWAY_ZT_N,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            )
-        )
-
     def floor_levels():
         for floor_index in range(KNOTT.floors):
             fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
@@ -140,241 +77,6 @@ def build():
             fz_surf = fz1 + KNOTT.wall_t
             fz_mid = fz1 + KNOTT.floor_h // 2
             yield floor_index, fz1, fz2, fz_surf, fz_mid
-
-    # ══════════════════════════════════════════════════════════════════════════════
-    # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
-    # Sidewalks with rounded north entrance corners (like Ennis Drive)
-    # Road surface — 2-unit textured overlay riding on sloped fill
-    road_section(
-        BRUSHES,
-        KNOTT_DRIVEWAY_RD_X1,
-        KNOTT_DRIVEWAY_RD_X2,
-        KNOTT_DRIVEWAY_ZT_S + 2,
-        KNOTT_DRIVEWAY_ZT_N + 2,
-        Textures.ROAD,
-    )
-
-    # West sidewalk (strip between building east wall and road) — slopes with road
-    road_section(
-        BRUSHES,
-        KNOTT_DRIVEWAY_WS_X1,
-        KNOTT_DRIVEWAY_WS_X2,
-        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-
-    # East sidewalk — slopes with road
-    road_section(
-        BRUSHES,
-        KNOTT_DRIVEWAY_ES_X1,
-        KNOTT_DRIVEWAY_ES_X2,
-        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-
-    # Terrain east of east sidewalk — south flat + sloped main section matching sidewalk
-    # South extension: flat at hill level
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            WORLD_X2_EXT - WALL_T,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-    # Main back road section: slopes with the sidewalk (88 at south → 8 at north)
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_ES_X2,
-            WORLD_X2_EXT - WALL_T,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-
-    # ── South extension — road + east sidewalk behind Knott Hall to world edge ──
-    BRUSHES.append(
-        box(
-            KNOTT.x1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + 2,
-            Textures.ROAD,
-        )
-    )
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
-    # Flat road surface
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    # West sidewalk
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    # East sidewalk
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    # Terrain east of east sidewalk — sealing ground recessed to floor level so the
-    # decorative detail surfaces (cement walk / mulch / Ennis verge) laid on top at
-    # sidewalk height (FLOOR_Z2 + CHARLES_WALK_H) are the visible surface, not this ground.
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z1,
-            WORLD_X2_EXT - WALL_T,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            Textures.GROUND,
-        )
-    )
-
-    # Road patch filling the gap between back road end (Y=328) and Ennis road (Y=408)
-    # (This was previously the Ennis south sidewalk; now it's part of the road junction)
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            ENNIS_Y - ENNIS_HW,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-
-    # ── Rounded corners where back road meets Ennis south (inside the junction) ───
-    # Centers at the back-road-facing (south) corners so the curved face points toward
-    # the back road — matching the Charles/Ennis corner style.
-    # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_JCY,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(0 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS)
-        angle_end = math.radians(
-            0 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        arc_x0 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
-            angle_start
-        )
-        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
-            angle_start
-        )
-        arc_x1 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
-        BRUSHES.append(
-            tri_prism(
-                KNOTT_DRIVEWAY_JCX_W,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
-            )
-        )
-
-    # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_JCY,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(
-            90 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        angle_end = math.radians(
-            90 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        arc_x0 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
-            angle_start
-        )
-        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
-            angle_start
-        )
-        arc_x1 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
-        BRUSHES.append(
-            tri_prism(
-                KNOTT_DRIVEWAY_JCX_E,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
-            )
-        )
 
     bix1 = KNOTT.x1 + KNOTT.wall_t  # interior west
     bix2 = KNOTT.x2 - KNOTT.wall_t  # interior east
@@ -1692,53 +1394,6 @@ def build():
         if DRAW_BRIDGE_FASCIA_TEXT
         else []
     )
-
-    # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-    CHARLES_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
-    # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
-    CHARLES_LAMP_POST_XS = [
-        2158,
-        1246,
-    ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
-    CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - 160]
-    for lamp_x in CHARLES_LAMP_POST_XS:
-        for lamp_y in CHARLES_LAMP_POST_YS:
-            pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
-            # Narrow shaft
-            DETAIL_BRUSHES.append(
-                box(
-                    lamp_x - 2,
-                    lamp_y - 2,
-                    FLOOR_Z2,
-                    lamp_x + 2,
-                    lamp_y + 2,
-                    pole_top_z,
-                    Textures.PILLAR,
-                )
-            )
-            # Torch top — narrow post + brick cup (matches bridge pillar torches)
-            DETAIL_BRUSHES.append(
-                box(
-                    lamp_x - 3,
-                    lamp_y - 3,
-                    pole_top_z,
-                    lamp_x + 3,
-                    lamp_y + 3,
-                    pole_top_z + 16,
-                    Textures.CEMENT,
-                )
-            )
-            DETAIL_BRUSHES.append(
-                box(
-                    lamp_x - 5,
-                    lamp_y - 5,
-                    pole_top_z + 16,
-                    lamp_x + 5,
-                    lamp_y + 5,
-                    pole_top_z + 20,
-                    Textures.BRICK,
-                )
-            )
 
     # ── Under-bridge pendant lights — one per span, no brush geometry ─────────────
     if letter_brushes:
