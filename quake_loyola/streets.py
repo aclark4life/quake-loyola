@@ -43,6 +43,7 @@ from .constants import (
     SDORM_LIFT,
     SDORM_SLOPE_Y_N,
     SDORM_SLOPE_Y_S,
+    SDORM_STAIR_X1,
     SDORM_STAIR_X2,
     SDORM_STAIR_Y1,
     SDORM_STAIR_Y2,
@@ -172,23 +173,21 @@ def build():
             Textures.SKY,
         )
     )  # N wall east of tunnel
-    # S wall — mirror of N wall split (ground below the ceiling-underside line, sky above).
+    # S wall — flat inner cap at the tunnel mouth seals the vis gap that the old
+    # sloped ramp_slab left between the portal wedge and the tunnel ceiling.
+    # Spans only the tunnel opening (x: outer west wall → stairwell west edge;
+    # y: one wall-thickness inside the south world wall) up to the ceiling height.
     BRUSHES.append(
-        ramp_slab(
-            WORLD_X1,
-            DORM.x1,
-            WORLD_Y1,
+        box(
+            WORLD_X1 + WALL_T,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            FLOOR_Z1,
+            SDORM_STAIR_X1,
+            WORLD_Y1 + 2 * WALL_T,
             BRIDGE_DZ2 - WALL_T,
-            SDORM_LIFT,
-            Textures.SKY,
-            tt=Textures.GROUND,  # sloped top visible at tunnel exit → ground
-            te=Textures.GROUND,  # east end-cap at tunnel opening → ground
-            ts=Textures.GROUND,  # inner north face = tunnel end-wall → ground
+            Textures.GROUND,
         )
-    )  # S wall tunnel portal (ground up to the ceiling-underside line)
+    )  # S wall tunnel portal (flat inner cap)
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
