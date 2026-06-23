@@ -99,6 +99,20 @@ Builds Sphinx HTML documentation into `docs/_build/html/`.
 3. Always commit **and** push together — never commit without pushing
 4. If the map geometry changes, run `just update-golden` to update the golden hash and counts in the regression tests
 
+### Co-commit authorship
+When committing on behalf of the user, always list the user as the **primary author** and the AI assistant as a **co-author** using the `Co-authored-by:` trailer:
+
+```
+git commit --author="Jeffrey 'Alex' Clark <aclark@aclark.net>" -F <msg-file>
+```
+
+Commit message trailer:
+```
+Co-authored-by: Augment <augment@augmentcode.com>
+```
+
+Never make the AI assistant the primary author.
+
 ### Doc changes
 1. Create a new branch
 2. Commit and push to that branch
