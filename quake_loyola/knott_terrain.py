@@ -290,19 +290,22 @@ def build():
                 Textures.GROUND,
             )
         )
-        # East of entrance: flat platform at walkway level + steps going east down to ground
+        # East of entrance: flat platform flush with interior ground floor + steps going east down to ground
+        platform_top_z = (
+            KNOTT_GROUND_Z + KNOTT.wall_t
+        )  # flush with interior ground-floor surface (= 80)
         east_platform_x1 = east_ramp_x1  # KNOTT_ENT_X2
         east_platform_x2 = KNOTT.x2
         east_step_count = 4
         east_step_rise = (
-            KNOTT_GROUND_Z - (FLOOR_Z2 + CHARLES_WALK_H)
+            platform_top_z - (FLOOR_Z2 + CHARLES_WALK_H)
         ) // east_step_count
         east_step_depth = 24
         east_steps_width = east_step_count * east_step_depth
         east_steps_x1 = (
             east_platform_x2 - east_steps_width
         )  # steps recessed, end flush with east wall
-        # Flat platform at KNOTT_GROUND_Z (west of steps)
+        # Flat platform at platform_top_z (west of steps) — flush with entrance plaza and interior floor
         BRUSHES.append(
             box(
                 east_platform_x1,
@@ -310,13 +313,13 @@ def build():
                 FLOOR_Z1,
                 east_steps_x1,
                 KNOTT.y2 + east_platform_depth,
-                KNOTT_GROUND_Z,
+                platform_top_z,
                 Textures.CEMENT,
             )
         )
         # Steps going east (downhill in X), flush with KH east wall
         for step_index in range(east_step_count):
-            step_z = KNOTT_GROUND_Z - (step_index + 1) * east_step_rise
+            step_z = platform_top_z - (step_index + 1) * east_step_rise
             step_x1 = east_steps_x1 + step_index * east_step_depth
             step_x2 = step_x1 + east_step_depth
             BRUSHES.append(

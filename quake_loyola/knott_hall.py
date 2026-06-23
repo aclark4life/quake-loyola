@@ -400,6 +400,9 @@ def build():
 
     # ── Entrance staircase ────────────────────────────────────────────────────────
     stair_base_z = FLOOR_Z2 + CHARLES_WALK_H  # steps start at apron surface height (8)
+    platform_top_z = (
+        KNOTT_GROUND_Z + KNOTT.wall_t
+    )  # flush with interior ground-floor surface
 
     # Flat cement platform between building and stairs
     BRUSHES.append(
@@ -409,7 +412,7 @@ def build():
             FLOOR_Z2,
             KNOTT_ENT_X2,
             KNOTT.y2 + KNOTT_STAIR_OFFSET,
-            KNOTT_GROUND_Z,
+            platform_top_z,
             Textures.CEMENT,
         )
     )
@@ -421,7 +424,7 @@ def build():
     for stair_index in range(KNOTT_STEP_N):
         step_top_z = (
             stair_base_z
-            + (KNOTT_GROUND_Z - stair_base_z) * (stair_index + 1) // KNOTT_STEP_N
+            + (platform_top_z - stair_base_z) * (stair_index + 1) // KNOTT_STEP_N
         )
         step_north_y = stair_y0 + (KNOTT_STEP_N - stair_index) * KNOTT_STEP_DEPTH
         BRUSHES.append(
@@ -464,7 +467,7 @@ def build():
                 stair_y_end,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                KNOTT_GROUND_Z + KNOTT_STAIR_CAP_RAISE,
+                platform_top_z + KNOTT_STAIR_CAP_RAISE,
                 stair_base_z + KNOTT_STAIR_CAP_RAISE,
                 Textures.CEMENT,
             )
@@ -472,7 +475,7 @@ def build():
 
     # ── Stair railings ────────────────────────────────────────────────────────────
     for rail_x_base, is_west_side in [(KNOTT_ENT_X1, True), (KNOTT_ENT_X2, False)]:
-        rail_top_z_at_platform = KNOTT_GROUND_Z + KNOTT_RAIL_H - 28
+        rail_top_z_at_platform = platform_top_z + KNOTT_RAIL_H - 28
         rail_top_z_at_apron = stair_base_z + KNOTT_RAIL_H - 28
         rail_x1 = rail_x_base - KNOTT_STAIR_RAIL_POST_W if is_west_side else rail_x_base
         rail_x2 = rail_x_base if is_west_side else rail_x_base + KNOTT_STAIR_RAIL_POST_W
@@ -519,7 +522,7 @@ def build():
 
         # Posts — wide flat-facing
         for post_y, post_z in [
-            (stair_y0, KNOTT_GROUND_Z),
+            (stair_y0, platform_top_z),
             (stair_y_end, stair_base_z),
         ]:
             DETAIL_BRUSHES.append(
