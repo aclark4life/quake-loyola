@@ -14,6 +14,10 @@ from .constants import (
     CHARLES_WALK_W,
     DORM,
     DORM_EMB_X2,
+    DORM_FRONT_WALKWAY_SPUR_X1,
+    DORM_FRONT_WALKWAY_SPUR_Y2,
+    DORM_FRONT_WALKWAY_X1,
+    DORM_FRONT_WALKWAY_X2,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
     DORM_PIER_X,
@@ -788,17 +792,56 @@ def build():
     # Strip between the brick wall and the front fence: flat crest south of the
     # wall's south pillar, then declining north (below) so this strip drops to
     # grade toward the bridge along with the fence instead of ending in a cliff.
-    BRUSHES.append(
-        box(
-            SDORM_WALL_X,
-            terr_y1,
-            FLOOR_Z2,
-            SDORM_TERRACE_X2,
-            SDORM_SLOPE_Y_S,
-            terr_top,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
+    # The L-shaped front-walkway footprint (frontage + spur to the brick-wall
+    # door) is carved out of this crest so the flush stone path (west_campus.py)
+    # can fill it level with the surrounding ground; these four pieces frame it.
+    BRUSHES.extend(
+        [
+            # West of the frontage (dorm-face gap)
+            box(
+                SDORM_WALL_X,
+                terr_y1,
+                FLOOR_Z2,
+                DORM_FRONT_WALKWAY_X1,
+                DORM_SOUTH2_Y2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            # West of the spur (between brick wall and spur)
+            box(
+                SDORM_WALL_X,
+                DORM_SOUTH2_Y2,
+                FLOOR_Z2,
+                DORM_FRONT_WALKWAY_SPUR_X1,
+                DORM_FRONT_WALKWAY_SPUR_Y2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            # East of the path (strip toward the fence), full footprint depth
+            box(
+                DORM_FRONT_WALKWAY_X2,
+                terr_y1,
+                FLOOR_Z2,
+                SDORM_TERRACE_X2,
+                DORM_FRONT_WALKWAY_SPUR_Y2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            # North of the path (between the spur's north jamb and the slope)
+            box(
+                SDORM_WALL_X,
+                DORM_FRONT_WALKWAY_SPUR_Y2,
+                FLOOR_Z2,
+                SDORM_TERRACE_X2,
+                SDORM_SLOPE_Y_S,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+        ]
     )
     # N-S decline of the wall→fence strip: crest (terr_top) at the south pillar
     # down to grade at the north side of the bridge, flat across the strip width.

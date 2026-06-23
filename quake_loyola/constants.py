@@ -83,7 +83,6 @@ CHARLES_WALK_W = 80
 DORM_DEPTH = 450
 DORM_FENCE_OFFSET = 216
 DORM_FRONT_WALKWAY_FENCE_OFFSET = 40
-DORM_FRONT_WALKWAY_H = 6
 DORM_FRONT_WALKWAY_W = 96
 DORM_GABLE_DEPTH = 6
 DORM_INNER_DOOR_H = 128
@@ -667,6 +666,20 @@ SDORM_STAIR_X1 = (
 SDORM_STAIR_X2 = SDORM_STAIR_X1 + SDORM_STAIR_N * SDORM_STAIR_RUN  # east edge of run
 SDORM_STAIR_Y1 = DORM_SOUTH1_CY - SDORM_STAIR_HW
 SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
+
+# Front stone walkway footprint — a flush paved path inlaid into the dorm terrace
+# (top level with the surrounding ground). Shared by the path fill (west_campus.py)
+# and the matching terrace carve (streets.py) so the two stay aligned.
+DORM_FRONT_WALKWAY_X2 = FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET  # outer (east) edge
+DORM_FRONT_WALKWAY_X1 = (
+    DORM_FRONT_WALKWAY_X2 - DORM_FRONT_WALKWAY_W
+)  # inner (west) edge
+DORM_FRONT_WALKWAY_SPUR_X1 = (
+    DORM_PIER_X + DORM_BRICK_WALL_HALF_W
+)  # spur west = wall E face
+DORM_FRONT_WALKWAY_SPUR_Y2 = (
+    DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2
+)  # spur runs north to the brick-wall door's north jamb
 
 _fog = (
     make_fog(FOG_DENSITY, *[float(x) for x in LIGHTING.fog.split()[1:]])

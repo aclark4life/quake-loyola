@@ -20,9 +20,10 @@ from .constants import (
     DORM_EMB_X2,
     DORM_ENT_H,
     DORM_ENT_HW,
-    DORM_FRONT_WALKWAY_FENCE_OFFSET,
-    DORM_FRONT_WALKWAY_H,
-    DORM_FRONT_WALKWAY_W,
+    DORM_FRONT_WALKWAY_SPUR_X1,
+    DORM_FRONT_WALKWAY_SPUR_Y2,
+    DORM_FRONT_WALKWAY_X1,
+    DORM_FRONT_WALKWAY_X2,
     DORM_GABLE_DEPTH,
     DORM_H,
     DORM_INNER_DOOR_H,
@@ -2149,36 +2150,32 @@ def build():
     )
     ENTITIES.append(brush_ent("func_detail", wall_detail))
 
-    # ── Raised stone walkway: narrow strip set off the dorm face (sits just
-    #    inside the fence), with a spur running north to the brick-wall door ────
-    WALK_X2 = (
-        FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET
-    )  # outer edge, a little inside the fence line
-    WALK_X1 = (
-        WALK_X2 - DORM_FRONT_WALKWAY_W
-    )  # narrow strip, leaving a gap to the dorm face
+    # ── Flush stone walkway: a paved path inlaid into the terrace in front of the
+    #    dorms (top level with the surrounding ground), with a spur running north
+    #    to the brick-wall door. These full-height blocks fill the matching
+    #    footprint carved out of the terrace crest in streets.py. ───────────────
     walk = [
         # Frontage parallel to the dorm east face
         box(
-            WALK_X1,
+            DORM_FRONT_WALKWAY_X1,
             DORM_SOUTH1_Y1,
-            FLOOR_Z2 + SDORM_LIFT,
-            WALK_X2,
+            FLOOR_Z2,
+            DORM_FRONT_WALKWAY_X2,
             DORM_SOUTH2_Y2,
-            FLOOR_Z2 + SDORM_LIFT + DORM_FRONT_WALKWAY_H,
+            FLOOR_Z2 + SDORM_LIFT,
             Textures.STONE,
         ),
         # Spur north from the dorm corner to the brick-wall door (east side of wall)
         box(
-            DORM_PIER_X + wall_hw,
+            DORM_FRONT_WALKWAY_SPUR_X1,
             DORM_SOUTH2_Y2,
+            FLOOR_Z2,
+            DORM_FRONT_WALKWAY_X2,
+            DORM_FRONT_WALKWAY_SPUR_Y2,
             FLOOR_Z2 + SDORM_LIFT,
-            WALK_X2,
-            door_north,
-            FLOOR_Z2 + SDORM_LIFT + DORM_FRONT_WALKWAY_H,
             Textures.STONE,
         ),
     ]
-    ENTITIES.append(brush_ent("func_detail", walk))
+    BRUSHES.extend(walk)
 
     return BRUSHES, ENTITIES
