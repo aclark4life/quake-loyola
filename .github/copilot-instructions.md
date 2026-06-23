@@ -94,8 +94,12 @@ Builds Sphinx HTML documentation into `docs/_build/html/`.
 ## Agent workflow
 
 ### Map changes
-1. After every prompted change: `python generate_map.py && just compile-fast && just deploy`
-2. Wait for explicit confirmation before committing
+1. After every prompted change, always run the full pipeline — no exceptions, even for leak checks or intermediate validation:
+   ```bash
+   just generate && just compile-fast && just deploy
+   ```
+2. Never run `qbsp` alone as a substitute for the full pipeline. `compile-fast` runs `qbsp` → `vis -fast` → `light`; skipping `vis` or `light` leaves a stale `.bsp` in the Quake maps folder.
+3. Wait for explicit confirmation before committing
 3. Always commit **and** push together — never commit without pushing
 4. If the map geometry changes, run `just update-golden` to update the golden hash and counts in the regression tests
 
