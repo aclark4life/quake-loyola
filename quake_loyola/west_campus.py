@@ -1931,8 +1931,6 @@ def build():
         box(BRIDGE.x1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
     )
     # Wedge ceiling for the gap section — same profile as south/north.
-    # ts=SKY: the south gable end at gap_y1 is partially exposed above the
-    # south section's knife edge (128 vs 177); sky texture keeps it invisible.
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
@@ -1944,7 +1942,7 @@ def build():
             BRIDGE_DZ2,
             emb_zt_tunn_e,
             Textures.GROUND,
-            ts=Textures.SKY,
+            ts=Textures.GROUND,
         )
     )
 
