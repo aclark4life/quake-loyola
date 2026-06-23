@@ -419,17 +419,19 @@ def build():
             "dest_dorm_roof",
         ),  # north arch → dorm rooftop
     ]:
-        # Arch-shaped trigger — matches the opening so stone ring surfaces stay walkable
-        north_south_trigger_brushes = arch_fill_y(
-            trigger_y1,
-            trigger_y2,
-            0.0,
-            FLOOR_Z2 + 4,
-            CHARLES_ARCH_RIN,
-            A_SEGS,
-            Textures.TELEPORT,
-            stilt_h=CHARLES_ARCH_STILT,
-        )
+        # Box trigger — covers only the walkable passage (below the arch crown)
+        # so players can stand on the stone arch ring without being teleported.
+        north_south_trigger_brushes = [
+            box(
+                -CHARLES_ARCH_RIN + CHARLES_ARCH_TRIG_INSET,
+                trigger_y1,
+                FLOOR_Z2,
+                CHARLES_ARCH_RIN - CHARLES_ARCH_TRIG_INSET,
+                trigger_y2,
+                FLOOR_Z2 + CHARLES_ARCH_STILT + 128,
+                Textures.TELEPORT,
+            )
+        ]
         ENTITIES.append(
             brush_ent(
                 "trigger_teleport", north_south_trigger_brushes, target=arch_target
