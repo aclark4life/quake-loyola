@@ -546,7 +546,7 @@ def build():
         ENNIS_HW,
         ENNIS_ARCH_ROUT,
         A_SEGS,
-        Textures.STONE,
+        Textures.PILLAR,
         stilt_h=ENNIS_ARCH_STILT,
         yc=float(ENNIS_Y),
         freestanding=True,
@@ -595,7 +595,7 @@ def build():
         KNOTT.driveway_hw,
         KH_ARCH_ROUT,
         A_SEGS,
-        Textures.STONE,
+        Textures.PILLAR,
         stilt_h=KH_DRIVE_ARCH_STILT,
         xc=float(kh_drive_cx),
     )
@@ -1362,11 +1362,11 @@ def build():
             )
         )
 
-    # Quad damage at the hill top (south end of back road) — reward for the full loop
+    # Quad damage in the middle of the tunnel
     ENTITIES.append(
         ent(
             "item_artifact_super_damage",
-            origin=f"{CHARLES_PLT_BR_X} {KNOTT_DRIVEWAY_Y1} {platform_z_backroad_south + CHARLES_PLT_H + 18}",
+            origin=f"{(BRIDGE.x1 + DORM.x1) // 2} {(CHARLES_Y1 + CHARLES_Y2) // 2} {FLOOR_Z2 + 32}",
         )
     )
 

@@ -340,13 +340,18 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
         sunlight_penumbra="20",
         fog=make_fog(FogDensity.OFF, 0.5, 0.5, 0.6),
     ),
+    "afternoon": LightingPreset(
+        ambient="75",
+        sunlight="160",
+        sunlight_color="255 220 170",  # warm afternoon white
+        sunlight_dir="35 -180",  # ~35° altitude, sun due south (Baltimore ~39°N)
+        sunlight_penumbra="25",
+        fog=make_fog(FogDensity.LOW, 0.5, 0.5, 0.6),
+    ),
 }
 
-LIGHTING = LIGHTING_PRESETS["dawn"]
-FOG_DENSITY: float | None = (
-    # None  # override preset fog density: FogDensity.LOW/MED/HIGH/OFF
-    FogDensity.LOW
-)
+LIGHTING = LIGHTING_PRESETS["afternoon"]
+FOG_DENSITY: float | None = None  # use preset fog density
 
 
 class Textures:
