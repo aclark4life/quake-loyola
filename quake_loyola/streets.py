@@ -187,7 +187,7 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             Textures.GROUND,
         )
-    )  # S wall tunnel portal (flat inner cap)
+    )  # S wall tunnel portal (flat inner cap — one wall-thickness inside south world wall)
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
@@ -732,7 +732,7 @@ def build():
     # lifts the ground at the brick wall (decreasing its visible height while its
     # top stays at the bridge deck) and gives the dorms a level pad.
     terr_top = FLOOR_Z2 + SDORM_LIFT
-    terr_y1 = WORLD_Y1 + WALL_T
+    terr_y1 = DORM_SOUTH1_Y1  # dorm terrace south edge stays at dorm position
     # Flat terrace pad — west of the brick wall (under the south dorms): level
     # crest south of the wall's south pillar, then declining north (below) so the
     # ground west of the wall drops to the bridge symmetrically with the east side.
