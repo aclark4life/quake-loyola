@@ -138,6 +138,8 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
+            tt=Textures.GROUND,  # sloped top visible at tunnel exit → ground
+            te=Textures.GROUND,  # east end-cap at tunnel opening → ground
             ts=Textures.GROUND,  # inner south face = tunnel end-wall → ground
         )
     )  # N wall tunnel portal (ground up to the ceiling-underside line)
@@ -152,8 +154,10 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
+            tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
+            ts=Textures.GROUND,  # inner south face visible from tunnel → ground
         )
-    )  # N wall above the tunnel end-wall (sky, up to the world ceiling)
+    )  # N wall above the tunnel end-wall
     BRUSHES.append(
         box(
             DORM.x1,
@@ -177,6 +181,8 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
+            tt=Textures.GROUND,  # sloped top visible at tunnel exit → ground
+            te=Textures.GROUND,  # east end-cap at tunnel opening → ground
             ts=Textures.GROUND,  # inner north face = tunnel end-wall → ground
         )
     )  # S wall tunnel portal (ground up to the ceiling-underside line)
@@ -191,8 +197,10 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
+            tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
+            ts=Textures.GROUND,  # inner north face visible from tunnel → ground
         )
-    )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
+    )  # S wall above the tunnel end-wall
     BRUSHES.append(
         box(
             DORM.x1,
@@ -675,7 +683,7 @@ def build():
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
-            ts=Textures.SKY,  # gable ends face N/S world boundary — show sky
+            ts=Textures.GROUND,  # gable ends at tunnel N/S boundaries
         )
     )
     # North building cluster — east toe strip only (DORM.x2 to DORM_EMB_X2).
@@ -713,7 +721,7 @@ def build():
             FLOOR_Z2,
             Textures.GROUND,
             tt=Textures.GROUND,
-            ts=Textures.SKY,  # gable end visible behind north dorms — show sky
+            ts=Textures.GROUND,  # gable end at tunnel north boundary
         )
     )
 
