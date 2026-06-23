@@ -74,8 +74,9 @@ called in order by :func:`generate_map.build_map`:
      - South and north dormitory buildings (walls, floors, roofs, windows,
        the tunnel underneath them, stairwell, iron fences).
    * - :mod:`quake_loyola.bridge`
-     - The pedestrian bridge deck, arch ribs, pillars, railings, and the
-       east/west walkway approaches.
+     - The pedestrian bridge deck, arch ribs, pillars, railings, the
+       east/west walkway approaches, and the "LOYOLA UNIVERSITY MARYLAND"
+       parapet fascia lettering.
    * - :mod:`quake_loyola.knott_terrain`
      - The Knott Hall hillside terrain, driveway corridor, and retaining
        walls on the east side of Charles Street.

@@ -1,3 +1,18 @@
+"""
+bridge — pedestrian bridge over Charles Street.
+
+Bridge structure spanning Charles Street between west campus and Knott Hall:
+  • Arched deck slab and span segments following the deck_top_z curve
+  • Parapet walls with decorative blocks and raised squares
+  • Arch ribs/voussoirs, pillars, piers, and support beams
+  • Teleport arches at the abutments and vis hint brushes
+  • The "LOYOLA UNIVERSITY MARYLAND" parapet fascia lettering
+
+Kept separate from knott_terrain.py (Knott Hall terrain) and
+knott_hall.py (building walls, floors, interior) so each module has
+a single clear responsibility.
+"""
+
 from .constants import (
     A_SEGS,
     ARCH_RIN,

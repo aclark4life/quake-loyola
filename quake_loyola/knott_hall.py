@@ -1,3 +1,18 @@
+"""
+knott_hall — Knott Hall building shell.
+
+The Knott Hall building structure itself:
+  • Outer walls with indented corners and recessed windows
+  • Front/side window openings, mullions, and the sign plaque lettering
+  • Per-floor slabs, interior hallway walls, and room partitions
+  • West switchback stairwell with landings and iron railings
+  • Roof
+
+Exterior approach geometry (entrance plaza, stairs, sidewalks, back road,
+lamp posts) lives in knott_terrain.py and streets.py so each module has
+a single clear responsibility.
+"""
+
 from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
