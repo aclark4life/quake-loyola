@@ -14,7 +14,6 @@ from .constants import (
     CHARLES_Y2,
     DRAW_BRIDGE_FASCIA_TEXT,
     ENNIS_HW,
-    ENNIS_SW_EDGE,
     ENNIS_Y,
     FASCIA_FONT,
     FLOOR_Z1,
@@ -46,8 +45,6 @@ from .constants import (
     KNOTT_MULLION_PRO,
     KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
-    KNOTT_RAIL_H,
-    KNOTT_RAIL_TEX,
     KNOTT_SHAFT_WALL,
     KNOTT_SHAFT_X1,
     KNOTT_SHAFT_X2,
@@ -64,12 +61,6 @@ from .constants import (
     KNOTT_SIGN_PX_W,
     KNOTT_SIGN_TEXT,
     KNOTT_SIGN_Z_OFFSET,
-    KNOTT_STAIR_CAP_RAISE,
-    KNOTT_STAIR_CAP_W,
-    KNOTT_STAIR_OFFSET,
-    KNOTT_STAIR_RAIL_EXTENSION,
-    KNOTT_STAIR_RAIL_POST_D,
-    KNOTT_STAIR_RAIL_POST_W,
     KNOTT_STAIRS_HALF_N,
     KNOTT_STAIRS_MID_Y,
     KNOTT_STAIRS_POST_W,
@@ -81,8 +72,6 @@ from .constants import (
     KNOTT_STAIRS_X2,
     KNOTT_STAIRS_Y1,
     KNOTT_STAIRS_Y2,
-    KNOTT_STEP_DEPTH,
-    KNOTT_STEP_N,
     KNOTT_Z2,
     WALK_ZT2,
     WALL_T,
@@ -397,147 +386,6 @@ def build():
         KNOTT_ORIG_CX - KNOTT_ENT_HALF_W,
         KNOTT_ORIG_CX + KNOTT_ENT_HALF_W,
     )
-
-    # ── Entrance staircase ────────────────────────────────────────────────────────
-    stair_base_z = FLOOR_Z2 + CHARLES_WALK_H  # steps start at apron surface height (8)
-    platform_top_z = (
-        KNOTT_GROUND_Z + KNOTT.wall_t
-    )  # flush with interior ground-floor surface
-
-    # Flat cement platform between building and stairs
-    BRUSHES.append(
-        box(
-            KNOTT_ENT_X1,
-            KNOTT.y2,
-            FLOOR_Z2,
-            KNOTT_ENT_X2,
-            KNOTT.y2 + KNOTT_STAIR_OFFSET,
-            platform_top_z,
-            Textures.CEMENT,
-        )
-    )
-
-    stair_y0 = KNOTT.y2 + KNOTT_STAIR_OFFSET  # south edge of staircase
-    stair_y_end = (
-        stair_y0 + KNOTT_STEP_N * KNOTT_STEP_DEPTH
-    )  # north end of stairs (ground level)
-    for stair_index in range(KNOTT_STEP_N):
-        step_top_z = (
-            stair_base_z
-            + (platform_top_z - stair_base_z) * (stair_index + 1) // KNOTT_STEP_N
-        )
-        step_north_y = stair_y0 + (KNOTT_STEP_N - stair_index) * KNOTT_STEP_DEPTH
-        BRUSHES.append(
-            box(
-                KNOTT_ENT_X1,
-                stair_y0,
-                stair_base_z,
-                KNOTT_ENT_X2,
-                step_north_y,
-                step_top_z,
-                Textures.CEMENT,
-                tt=Textures.CEMENT,
-            )
-        )
-
-    # Cement sidewalk from stair base to Ennis south sidewalk — flush with ground fill
-    BRUSHES.append(
-        box(
-            KNOTT_ENT_X1,
-            stair_y_end,
-            FLOOR_Z1,
-            KNOTT_ENT_X2,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    # ── Stair side caps (cement cheek walls) ─────────────────────────────────────
-    # Solid sloped cement walls on each side of the staircase, top follows stair slope.
-    for cap_x1, cap_x2 in [
-        (KNOTT_ENT_X1 - KNOTT_STAIR_CAP_W, KNOTT_ENT_X1),  # west cheek
-        (KNOTT_ENT_X2, KNOTT_ENT_X2 + KNOTT_STAIR_CAP_W),  # east cheek
-    ]:
-        BRUSHES.append(
-            ramp_slab_y(
-                cap_x1,
-                cap_x2,
-                stair_y0,
-                stair_y_end,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                platform_top_z + KNOTT_STAIR_CAP_RAISE,
-                stair_base_z + KNOTT_STAIR_CAP_RAISE,
-                Textures.CEMENT,
-            )
-        )
-
-    # ── Stair railings ────────────────────────────────────────────────────────────
-    for rail_x_base, is_west_side in [(KNOTT_ENT_X1, True), (KNOTT_ENT_X2, False)]:
-        rail_top_z_at_platform = platform_top_z + KNOTT_RAIL_H - 28
-        rail_top_z_at_apron = stair_base_z + KNOTT_RAIL_H - 28
-        rail_x1 = rail_x_base - KNOTT_STAIR_RAIL_POST_W if is_west_side else rail_x_base
-        rail_x2 = rail_x_base if is_west_side else rail_x_base + KNOTT_STAIR_RAIL_POST_W
-
-        # Sloped cross rail
-        DETAIL_BRUSHES.append(
-            ramp_slab_y(
-                rail_x1,
-                rail_x2,
-                stair_y0,
-                stair_y_end,
-                rail_top_z_at_platform,
-                rail_top_z_at_apron,
-                rail_top_z_at_platform + 2,
-                rail_top_z_at_apron + 2,
-                KNOTT_RAIL_TEX,
-            )
-        )
-
-        # Horizontal extension at top (level with platform floor)
-        DETAIL_BRUSHES.append(
-            box(
-                rail_x1,
-                stair_y0 - KNOTT_STAIR_RAIL_EXTENSION,
-                rail_top_z_at_platform,
-                rail_x2,
-                stair_y0,
-                rail_top_z_at_platform + 2,
-                KNOTT_RAIL_TEX,
-            )
-        )
-        # Horizontal extension at bottom (level with apron floor)
-        DETAIL_BRUSHES.append(
-            box(
-                rail_x1,
-                stair_y_end,
-                rail_top_z_at_apron,
-                rail_x2,
-                stair_y_end + KNOTT_STAIR_RAIL_EXTENSION,
-                rail_top_z_at_apron + 2,
-                KNOTT_RAIL_TEX,
-            )
-        )
-
-        # Posts — wide flat-facing
-        for post_y, post_z in [
-            (stair_y0, platform_top_z),
-            (stair_y_end, stair_base_z),
-        ]:
-            DETAIL_BRUSHES.append(
-                box(
-                    rail_x1,
-                    post_y,
-                    post_z,
-                    rail_x2,
-                    post_y + KNOTT_STAIR_RAIL_POST_D,
-                    post_z + KNOTT_RAIL_H - 26,
-                    KNOTT_RAIL_TEX,
-                )
-            )
-
-    # West stairwell extents defined after INDENT below
 
     # ── Outer walls ──────────────────────────────────────────────────────────────
     # South wall — mirrors north wall: indented SW/SE corners with recessed windows
