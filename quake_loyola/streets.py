@@ -155,7 +155,6 @@ def build():
             WORLD_Z2,
             Textures.SKY,
             tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
-            ts=Textures.GROUND,  # inner south face visible from tunnel → ground
         )
     )  # N wall above the tunnel end-wall
     BRUSHES.append(
@@ -198,7 +197,6 @@ def build():
             WORLD_Z2,
             Textures.SKY,
             tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
-            ts=Textures.GROUND,  # inner north face visible from tunnel → ground
         )
     )  # S wall above the tunnel end-wall
     BRUSHES.append(
