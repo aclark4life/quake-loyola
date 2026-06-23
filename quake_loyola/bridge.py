@@ -20,6 +20,9 @@ from .constants import (
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_EAST_SHIFT_START,
+    BRIDGE_FASCIA_PX_H,
+    BRIDGE_FASCIA_PX_W,
+    BRIDGE_FASCIA_TEXT,
     BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIL_BASE_CAP_H,
@@ -58,7 +61,9 @@ from .constants import (
     BRIDGE_TUBE_RISE,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
+    DRAW_BRIDGE_FASCIA_TEXT,
     ENNIS_SW_EDGE,
+    FASCIA_FONT,
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
@@ -324,12 +329,14 @@ def build():
             x_end,
             n,
             x_half_width=BRIDGE_BLK_HW,
-            z_at_center=lambda cx: min(
-                deck_top_z(cx - BRIDGE_BLK_HW),
-                deck_top_z(cx),
-                deck_top_z(cx + BRIDGE_BLK_HW),
-            )
-            + BRIDGE.parapet_h,
+            z_at_center=lambda cx: (
+                min(
+                    deck_top_z(cx - BRIDGE_BLK_HW),
+                    deck_top_z(cx),
+                    deck_top_z(cx + BRIDGE_BLK_HW),
+                )
+                + BRIDGE.parapet_h
+            ),
             north_brush=lambda cx, sy, bz: box(
                 cx - BRIDGE_BLK_HW,
                 BRIDGE.y2 - BRIDGE_PAR_W + sy,
@@ -389,15 +396,17 @@ def build():
             x_end,
             n,
             x_half_width=BRIDGE_SQ_HW,
-            z_at_center=lambda cx: int(
-                min(
-                    deck_top_z(cx - BRIDGE_SQ_HW),
-                    deck_top_z(cx),
-                    deck_top_z(cx + BRIDGE_SQ_HW),
+            z_at_center=lambda cx: (
+                int(
+                    min(
+                        deck_top_z(cx - BRIDGE_SQ_HW),
+                        deck_top_z(cx),
+                        deck_top_z(cx + BRIDGE_SQ_HW),
+                    )
                 )
-            )
-            + BRIDGE.parapet_h
-            + BRIDGE_BLK_H // 2,
+                + BRIDGE.parapet_h
+                + BRIDGE_BLK_H // 2
+            ),
             north_brush=lambda cx, sy, bz: box(
                 cx - BRIDGE_SQ_HW,
                 BRIDGE.y2 + sy,
@@ -1134,6 +1143,98 @@ def build():
             )
         )
         ENTITIES.append(brush_ent("func_illusionary", abutment_teleport_brush))
+
+    # ── "LOYOLA UNIVERSITY MARYLAND" bridge fascia lettering ─────────────────────
+    # Fascia panel follows the arch: one box per character hanging from deck_bot_z(x)
+    # First letter of each word (L, U, M) stays at full pixel size; the rest shrink slightly.
+    _cols = 4
+    _small_px = BRIDGE_FASCIA_PX_W - 1  # one unit smaller than full size
+    _n = len(BRIDGE_FASCIA_TEXT)
+    # Word-initial positions in the forward text (L=0, U=7, M=18)
+    _capital_pos = {
+        i
+        for i, ch in enumerate(BRIDGE_FASCIA_TEXT)
+        if ch != " " and (i == 0 or BRIDGE_FASCIA_TEXT[i - 1] == " ")
+    }
+    # Mirror positions for the reversed text used on the north face
+    _capital_pos_rev = {_n - 1 - i for i in _capital_pos}
+
+    def _char_pw(i):
+        return BRIDGE_FASCIA_PX_W if i in _capital_pos else _small_px
+
+    total_w = sum((_cols + 1) * _char_pw(i) for i in range(_n)) - _char_pw(_n - 1)
+    text_x0 = 0 - total_w // 2
+
+    # No separate background fascia boxes — parapet wall face is the backdrop
+
+    def render_text_fascia(
+        text, x0, y_face, px_w, px_h, depth, tex, mirror=False, cap_pos=None
+    ):
+        """Render text as pixel-font raised boxes on a fascia face.
+        Each character's Z is computed from deck_top_z(x) so letters follow the arch curve.
+        cap_pos: set of character indices that render at full px size (others shrink by 1).
+        mirror=True flips each glyph horizontally (needed for north-facing surface)."""
+        cols = 4
+        rows = 6
+        small_pw = px_w - 1
+        small_ph = px_h - 1
+        if cap_pos is None:
+            cap_pos = _capital_pos
+
+        brushes = []
+        cx = x0
+        for ci, ch in enumerate(text):
+            cpw = px_w if ci in cap_pos else small_pw
+            cph = px_h if ci in cap_pos else small_ph
+            char_w = (cols + 1) * cpw
+
+            bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
+            x_mid = cx + (cols * cpw) / 2
+            z_top_cap = int(deck_top_z(x_mid)) + BRIDGE.parapet_h - 14
+            # Bottom-align smaller glyphs with capitals
+            z_top = z_top_cap - rows * (px_h - cph)
+
+            for row_i, row_bits in enumerate(bitmap):
+                z = z_top - row_i * cph
+                for col_i in range(cols):
+                    src_col = (cols - 1 - col_i) if mirror else col_i
+                    if row_bits & (1 << (cols - 1 - src_col)):
+                        px = cx + col_i * cpw
+                        brushes.append(
+                            box(px, y_face - depth, z - cph, px + cpw, y_face, z, tex)
+                        )
+            cx += char_w
+        return brushes
+
+    letter_brushes = (
+        (
+            render_text_fascia(
+                BRIDGE_FASCIA_TEXT,
+                x0=text_x0,
+                y_face=BRIDGE.y1,
+                px_w=BRIDGE_FASCIA_PX_W,
+                px_h=BRIDGE_FASCIA_PX_H,
+                depth=1,
+                tex=Textures.RAIL,
+            )
+            + render_text_fascia(
+                BRIDGE_FASCIA_TEXT[::-1],
+                x0=text_x0,
+                y_face=BRIDGE.y2 + 1,
+                px_w=BRIDGE_FASCIA_PX_W,
+                px_h=BRIDGE_FASCIA_PX_H,
+                depth=1,
+                tex=Textures.RAIL,
+                mirror=True,
+                cap_pos=_capital_pos_rev,
+            )
+        )
+        if DRAW_BRIDGE_FASCIA_TEXT
+        else []
+    )
+    if letter_brushes:
+        ENTITIES.append(brush_ent("func_detail", letter_brushes))
+
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES
