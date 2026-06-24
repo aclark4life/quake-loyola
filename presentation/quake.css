@@ -1,0 +1,248 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Quake-themed reveal.js skin for quake-loyola
+   Dark, sooty backdrop · ember-orange + blood-red accents · Trajan-style titles
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --q-bg:      #0b0a09;
+  --q-bg2:     #15110d;
+  --q-panel:   #1c1712;
+  --q-border:  #3a2c1f;
+  --q-text:    #d8cfc4;
+  --q-muted:   #9a8f82;
+  --q-ember:   #ff7a18;
+  --q-ember2:  #ffb347;
+  --q-blood:   #c0392b;
+  --q-rust:    #b5651d;
+  --q-steel:   #8fa3ad;
+}
+
+/* ── Backdrop ──────────────────────────────────────────────────────────── */
+.reveal-viewport {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(255, 122, 24, 0.10), transparent 55%),
+    radial-gradient(ellipse at 50% 120%, rgba(192, 57, 43, 0.12), transparent 60%),
+    linear-gradient(180deg, #0d0b0a 0%, #060505 100%);
+}
+
+.reveal {
+  font-family: "Spectral", Georgia, "Times New Roman", serif;
+  font-size: 32px;
+  color: var(--q-text);
+}
+
+/* Subtle grain/scanline overlay for that old-engine feel */
+.reveal-viewport::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg, rgba(0, 0, 0, 0.18) 0px, rgba(0, 0, 0, 0.18) 1px,
+    transparent 1px, transparent 3px);
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  z-index: 9999;
+}
+
+/* ── Headings ──────────────────────────────────────────────────────────── */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  line-height: 1.08;
+  margin: 0 0 0.5em 0;
+  color: var(--q-ember2);
+  text-shadow:
+    0 0 1px #000,
+    0 2px 0 #1a0e04,
+    0 0 18px rgba(255, 122, 24, 0.45),
+    0 0 42px rgba(192, 57, 43, 0.35);
+}
+
+.reveal h1 {
+  font-size: 2.5em;
+  background: linear-gradient(180deg, #ffd9a0 0%, var(--q-ember) 45%, var(--q-blood) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 10px rgba(192, 57, 43, 0.5));
+}
+
+.reveal h2 { font-size: 1.7em; }
+.reveal h3 { font-size: 1.15em; color: var(--q-rust); }
+
+.reveal .subtitle {
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-size: 0.62em;
+  color: var(--q-steel);
+  text-shadow: none;
+}
+
+/* ── Body elements ─────────────────────────────────────────────────────── */
+.reveal p,
+.reveal li { line-height: 1.4; }
+
+.reveal a {
+  color: var(--q-ember);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(255, 122, 24, 0.5);
+}
+.reveal a:hover { color: var(--q-ember2); }
+
+.reveal strong { color: var(--q-ember2); font-weight: 700; }
+.reveal em { color: var(--q-steel); font-style: italic; }
+
+.reveal ul { list-style: none; margin-left: 0.2em; }
+.reveal ul li {
+  position: relative;
+  padding-left: 1.3em;
+  margin-bottom: 0.35em;
+}
+.reveal ul li::before {
+  content: "\25B8";              /* ▸ */
+  position: absolute;
+  left: 0;
+  color: var(--q-blood);
+  text-shadow: 0 0 8px rgba(192, 57, 43, 0.7);
+}
+
+.reveal .muted { color: var(--q-muted); }
+.reveal .ember { color: var(--q-ember); }
+.reveal .small { font-size: 0.72em; }
+
+/* ── Code ──────────────────────────────────────────────────────────────── */
+.reveal code,
+.reveal pre {
+  font-family: "Share Tech Mono", "JetBrains Mono", monospace;
+}
+.reveal :not(pre) > code {
+  color: var(--q-ember2);
+  background: rgba(255, 122, 24, 0.08);
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 122, 24, 0.18);
+}
+.reveal pre {
+  width: 92%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  font-size: 0.5em;
+}
+.reveal pre code {
+  background: #0c0a08;
+  border: 1px solid var(--q-border);
+  border-left: 4px solid var(--q-ember);
+  border-radius: 4px;
+  padding: 1em 1.2em;
+  max-height: 520px;
+}
+
+/* ── Panels / cards ────────────────────────────────────────────────────── */
+.reveal .panel {
+  background: linear-gradient(180deg, var(--q-panel), var(--q-bg2));
+  border: 1px solid var(--q-border);
+  border-top: 3px solid var(--q-rust);
+  border-radius: 6px;
+  padding: 0.7em 0.9em;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.reveal .grid {
+  display: grid;
+  gap: 0.7em;
+}
+.reveal .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.reveal .grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.reveal .tag {
+  display: inline-block;
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.5em;
+  color: var(--q-bg);
+  background: linear-gradient(180deg, var(--q-ember2), var(--q-rust));
+  padding: 0.2em 0.7em;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+/* ── Hero / title slide ────────────────────────────────────────────────── */
+.reveal .hero {
+  position: relative;
+}
+.reveal section.title-slide {
+  text-align: center;
+}
+.reveal .hero-img {
+  position: absolute;
+  inset: 0;
+  background-image: url("../screenshot.png");
+  background-size: cover;
+  background-position: center 35%;
+  opacity: 0.34;
+  filter: saturate(0.8) contrast(1.05);
+  z-index: -1;
+  border-radius: 8px;
+}
+
+/* ── Figures ───────────────────────────────────────────────────────────── */
+.reveal figure { margin: 0; }
+.reveal figure img {
+  border: 1px solid var(--q-border);
+  border-radius: 6px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.65);
+  max-height: 460px;
+}
+.reveal figcaption {
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.5em;
+  color: var(--q-muted);
+  margin-top: 0.5em;
+}
+
+/* ── Stat blocks ───────────────────────────────────────────────────────── */
+.reveal .stat {
+  font-family: "Cinzel", serif;
+  font-size: 2.2em;
+  color: var(--q-ember2);
+  text-shadow: 0 0 18px rgba(255, 122, 24, 0.5);
+  line-height: 1;
+}
+.reveal .stat-label {
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.5em;
+  color: var(--q-muted);
+}
+
+/* ── Controls / progress ───────────────────────────────────────────────── */
+.reveal .progress { color: var(--q-ember); height: 4px; }
+.reveal .controls { color: var(--q-rust); }
+.reveal .slide-number {
+  background: transparent;
+  color: var(--q-muted);
+  font-family: "Share Tech Mono", monospace;
+}
+
+/* Footer brand */
+.reveal .brand {
+  position: fixed;
+  bottom: 14px;
+  left: 18px;
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 13px;
+  color: rgba(154, 143, 130, 0.6);
+  z-index: 50;
+}
