@@ -193,6 +193,17 @@
     linear-gradient(180deg, rgba(6, 5, 5, 0.55) 0%, rgba(6, 5, 5, 0.78) 100%);
 }
 
+/* Text scrim — keeps left-aligned content legible over a full-bleed image */
+.reveal .scrim {
+  background: linear-gradient(180deg, rgba(10, 8, 7, 0.82), rgba(10, 8, 7, 0.88));
+  border: 1px solid var(--q-border);
+  border-left: 4px solid var(--q-ember);
+  border-radius: 8px;
+  padding: 0.9em 1.2em;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  text-align: left;
+}
+
 /* ── Figures ───────────────────────────────────────────────────────────── */
 .reveal figure { margin: 0; }
 .reveal figure img {
