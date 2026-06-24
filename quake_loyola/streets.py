@@ -892,48 +892,37 @@ def build():
             tt=Textures.GROUND,
         )
     )
-    # ── South extension of the terrace slopes ───────────────────────────────────────
-    # Continue the hillside southward from the terrace south edge (y=terr_y1) all
-    # the way to the new south world boundary (CHARLES_Y1), mirroring the north-side
-    # decline that falls from terr_top to grade at the bridge.
+    # ── South extension of the terrace + frontage hill ───────────────────────────
+    # Continue the SAME cross-section southward from the terrace south edge
+    # (y=terr_y1) to the new south world boundary (CHARLES_Y1): a flat pad at
+    # terr_top from the dorm face out to the fence line, then the frontage hill
+    # ramping down (in X) to grade at the road. This keeps the slope going at its
+    # existing gradient — like Charles Street simply continuing south — instead of
+    # descending gently to grade in the Y direction.
     BRUSHES.extend(
         [
-            # West section: dorm-pad strip, slopes south to grade
-            ramp_slab_y(
+            # Flat terrace pad — dorm face to fence line
+            box(
                 DORM.x1,
-                SDORM_WALL_X,
                 CHARLES_Y1,
-                terr_y1,
-                FLOOR_Z1,
-                FLOOR_Z1,
                 FLOOR_Z2,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            # East strip: wall-to-fence strip, slopes south to grade
-            ramp_slab_y(
-                SDORM_WALL_X,
                 SDORM_TERRACE_X2,
-                CHARLES_Y1,
                 terr_y1,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                FLOOR_Z2,
                 terr_top,
                 Textures.GROUND,
                 tt=Textures.GROUND,
             ),
-            # Frontage corner wedge: diagonal ramp descending south-east to grade.
-            # High at the (fence, terrace-south) corner; falls to grade along both
-            # the south edge (CHARLES_Y1) and the road edge (SDORM_TOE_X).
-            corner_ramp(
+            # Frontage hill — fence line down (in X) to grade at the road,
+            # mirroring the section north of terr_y1 so the two meet seamlessly.
+            ramp_slab(
                 SDORM_TERRACE_X2,
                 SDORM_TOE_X,
-                terr_y1,
                 CHARLES_Y1,
-                FLOOR_Z1,
+                terr_y1,
+                FLOOR_Z2,
+                FLOOR_Z2,
                 terr_top,
+                FLOOR_Z2,
                 Textures.GROUND,
                 tt=Textures.GROUND,
             ),
