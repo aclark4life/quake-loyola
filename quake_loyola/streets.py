@@ -892,6 +892,53 @@ def build():
             tt=Textures.GROUND,
         )
     )
+    # ── South extension of the terrace slopes ───────────────────────────────────────
+    # Continue the hillside southward from the terrace south edge (y=terr_y1) all
+    # the way to the new south world boundary (CHARLES_Y1), mirroring the north-side
+    # decline that falls from terr_top to grade at the bridge.
+    BRUSHES.extend(
+        [
+            # West section: dorm-pad strip, slopes south to grade
+            ramp_slab_y(
+                DORM.x1,
+                SDORM_WALL_X,
+                CHARLES_Y1,
+                terr_y1,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                FLOOR_Z2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            # East strip: wall-to-fence strip, slopes south to grade
+            ramp_slab_y(
+                SDORM_WALL_X,
+                SDORM_TERRACE_X2,
+                CHARLES_Y1,
+                terr_y1,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                FLOOR_Z2,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+            # Frontage corner wedge: diagonal ramp descending south-east to grade.
+            # High at the (fence, terrace-south) corner; falls to grade along both
+            # the south edge (CHARLES_Y1) and the road edge (SDORM_TOE_X).
+            corner_ramp(
+                SDORM_TERRACE_X2,
+                SDORM_TOE_X,
+                terr_y1,
+                CHARLES_Y1,
+                FLOOR_Z1,
+                terr_top,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            ),
+        ]
+    )
 
     # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
     CHARLES_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
