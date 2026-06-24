@@ -126,7 +126,7 @@ AI agent instructions
 ``.github/copilot-instructions.md`` is the canonical reference for AI coding
 agents (GitHub Copilot IDE, Copilot CLI, and others).  It covers the full
 project layout, all ``just`` recipes, coding conventions, and the expected
-workflow for map changes versus documentation changes.
+map-change and commit workflow.
 
 ``AGENTS.md`` at the repo root is a one-line pointer to that file, providing
 compatibility with agents that look for ``AGENTS.md`` by convention.

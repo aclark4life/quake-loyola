@@ -121,8 +121,3 @@ Co-authored-by: Augment <augment@augmentcode.com>
 ```
 
 Never make the AI assistant the primary author.
-
-### Doc changes
-1. Create a new branch
-2. Commit and push to that branch
-3. Open a PR — do not merge directly to main
