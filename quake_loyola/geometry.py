@@ -27,8 +27,9 @@ def box(
     tn=None,
 ):
     """Axis-aligned rectangular brush.
-    tex=all sides (default).  Per-face overrides:
-      tt=top, tb=bottom, tw=-X (west), te=+X (east), ts=-Y (south), tn=+Y (north).
+
+    ``tex`` sets all six faces. Per-face overrides: ``tt`` top, ``tb`` bottom,
+    ``tw`` −X (west), ``te`` +X (east), ``ts`` −Y (south), ``tn`` +Y (north).
     """
     tt = tt or tex
     tb = tb or tex
