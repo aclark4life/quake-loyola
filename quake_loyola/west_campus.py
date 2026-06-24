@@ -1974,14 +1974,46 @@ def build():
         )
     )
 
+    # South extension — from the south building's south face to the world south wall.
+    # Mirrors the north extension so the west-side hillside slope continues all the
+    # way to the new south boundary instead of stopping at the south dorm. Meets the
+    # extended south terrace flush at the east (knife edge at SDORM_LIFT); the south
+    # tunnel mouth is sealed by the S-wall inner cap in streets.py (CHARLES_Y1 +
+    # one wall thickness), so the floor/wedge stop at its north face.
+    BRUSHES.append(
+        box(
+            BRIDGE.x1,
+            CHARLES_Y1 + TUNN_T,
+            FLOOR_Z1,
+            TUNN_X2,
+            DORM_SOUTH1_Y1,
+            FLOOR_Z2,
+            Textures.GROUND,
+        )
+    )
+    BRUSHES.append(
+        ramp_slab(
+            BRIDGE.x1,
+            TUNN_X2,
+            CHARLES_Y1 + TUNN_T,
+            DORM_SOUTH1_Y1,
+            BRIDGE_DZ2 - TUNN_T,
+            SDORM_LIFT,
+            BRIDGE_DZ2,
+            SDORM_LIFT,
+            Textures.GROUND,
+            ts=Textures.GROUND,
+        )
+    )
+
     # ── Lights for the west-side underground tunnel space ────────────────────
-    # Evenly-spaced along the full N-S extent of the tunnel (DORM_SOUTH1_Y1 to
+    # Evenly-spaced along the full N-S extent of the tunnel (south world wall to
     # CHARLES_Y2), centred in the X width of the tunnel, at mid-height.
     _tunn_light_x = (BRIDGE.x1 + DORM.x1) // 2  # centre of full tunnel width
     _tunn_light_z = SDORM_LIFT // 2  # mid-height between floor (0) and ceiling (128)
-    _tunn_y_start = DORM_SOUTH1_Y1 + 200  # 200 units from south end
+    _tunn_y_start = CHARLES_Y1 + 200  # 200 units from south end
     _tunn_y_end = CHARLES_Y2 - 200  # 200 units from north end
-    _tunn_light_count = 7
+    _tunn_light_count = 9
     for _i in range(_tunn_light_count):
         _ly = _tunn_y_start + (_tunn_y_end - _tunn_y_start) * _i // (
             _tunn_light_count - 1
