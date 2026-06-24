@@ -15,7 +15,6 @@ a single clear responsibility.
 
 from .constants import (
     FLOOR_Z1,
-    FLOOR_Z2,
     INDENT,
     KNOTT,
     KNOTT_ENABLED,
@@ -26,6 +25,7 @@ from .constants import (
     KNOTT_MULLION_PRO,
     KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
+    KNOTT_ROOM_SPLITS,
     KNOTT_SHAFT_WALL,
     KNOTT_SHAFT_X1,
     KNOTT_SHAFT_X2,
@@ -55,7 +55,6 @@ from .constants import (
     KNOTT_STAIRS_Y2,
     KNOTT_Z2,
     WALK_ZT2,
-    WALL_T,
     WIN_HALF,
     Textures,
 )
@@ -65,7 +64,6 @@ from .geometry import (
     layered_wall,
     layered_wall_y,
     ramp_slab,
-    ramp_slab_y,
     render_text_flat,
 )
 
@@ -1021,11 +1019,6 @@ def build():
     # Step 0 of north lane and step 7 of south lane extend east to KNOTT_STAIRS_X2 so the
     # door at each floor connects directly to the staircase.
     # Loop runs KNOTT.floors times (fl 0→4) — top flight exits onto building roof.
-    KNOTT_STAIRS_HALF_N = 8
-    KNOTT_STAIRS_STEP_R = KNOTT.floor_h // (
-        2 * KNOTT_STAIRS_HALF_N
-    )  # rise per step, derived from floor height (≤ 18-unit Quake limit)
-    KNOTT_STAIRS_TREAD_X = 24  # compressed tread depth: 8 × 24 = 192
     PLAT_H = 8  # platform slab thickness
     stair_cx = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # shaft X centre
     stair_x1 = (
@@ -1118,10 +1111,6 @@ def build():
     # 2 end posts + 1 sloped cross rail per half-flight, central divider (KNOTT_STAIRS_MID_Y).
     # Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
     # they never land on a tread.  Cross rail spans the full stair band between them.
-    KNOTT_STAIRS_RAIL_H = 72  # handrail height above landing surface (bottom of rail = 68u, clears 56u player)
-    KNOTT_STAIRS_POST_W = 4  # square post cross-section
-    KNOTT_STAIRS_RAIL_T = 4  # cross-rail bar thickness
-
     for _, _, _, floor_z0, _ in floor_levels():
         half_flight_z = floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
         top_flight_z = half_flight_z + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
@@ -1207,8 +1196,6 @@ def build():
         )
 
     # Partition Y splits vary per floor so each floor has different room proportions.
-    KNOTT_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]  # partition Y per floor
-
     wx1, wx2 = bix1, KNOTT_ENT_X1 - KNOTT.wall_t  # west room X extents (1282..1506)
     ex1, ex2 = KNOTT_ENT_X2 + KNOTT.wall_t, bix2  # east room X extents (1666..1890)
     KNOTT_WEST_ROOM_CX = (wx1 + wx2) // 2  # west room X center = 1394

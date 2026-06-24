@@ -2,10 +2,7 @@ import math
 
 from .constants import (
     BRIDGE,
-    BRIDGE_ARCH_X,
     BRIDGE_DZ2,
-    BRIDGE_PIL_HW,
-    BRIDGE_PIL_OVERHANG,
     CHARLES_CRN_R,
     CHARLES_CRN_SEGS,
     CHARLES_RAMP_W,
@@ -20,14 +17,10 @@ from .constants import (
     DORM_FRONT_WALKWAY_X2,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
-    DORM_PIER_X,
     DORM_SOUTH1_Y1,
-    DORM_SOUTH1_Y2,
-    DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
     ENNIS_CURB_W,
     ENNIS_HW,
-    ENNIS_NORTH_OFFSET,
     ENNIS_SW_EDGE,
     ENNIS_Y,
     FLOOR_Z1,
@@ -43,7 +36,6 @@ from .constants import (
     SDORM_LIFT,
     SDORM_SLOPE_Y_N,
     SDORM_SLOPE_Y_S,
-    SDORM_STAIR_X1,
     SDORM_STAIR_X2,
     SDORM_STAIR_Y1,
     SDORM_STAIR_Y2,
@@ -427,7 +419,7 @@ def build():
     )
 
     # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
-    TEX_DIVIDER = "sfloor3_2"
+    TEX_DIVIDER = Textures.DIVIDER
     dash_brushes = []
     # Charles Street — dashed N-S, two sections either side of bridge
     for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE.y1), (BRIDGE.y2, CHARLES_Y2)]:

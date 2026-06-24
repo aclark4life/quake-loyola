@@ -47,7 +47,6 @@ from .constants import (
     BRIDGE_PIL_CAP_H,
     BRIDGE_PIL_CAP_IN_OVH,
     BRIDGE_PIL_CAP_OUT_OVH,
-    BRIDGE_PIL_CAP_OVHNTR_R,
     BRIDGE_PIL_EXTRA,
     BRIDGE_PIL_HW,
     BRIDGE_PIL_INNER_R,
@@ -75,7 +74,6 @@ from .constants import (
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
     CHARLES_WALK_H,
-    CHARLES_WALK_W,
     DRAW_BRIDGE_FASCIA_TEXT,
     ENNIS_SW_EDGE,
     FASCIA_FONT,
@@ -621,10 +619,10 @@ def build():
             # is flush with the bridge underside across the full pier X extent.
             pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
 
-            # Arch opening varies by pillar type (outer / inner / centre)
-            if px == 0:
-                a_rout, a_rin = BRIDGE_PIL_CAP_OVHNTR_R
-            elif abs(px) == max(abs(p) for p in BRIDGE_ARCH_X):
+            # Arch opening varies by pillar type. The two end abutments (the
+            # westernmost and easternmost piers) use the wider outer radii;
+            # the interior piers use the inner radii.
+            if px in (min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)):
                 a_rout, a_rin = BRIDGE_PIL_OUTER_R
             else:
                 a_rout, a_rin = BRIDGE_PIL_INNER_R
@@ -646,21 +644,19 @@ def build():
 
             # Ramped plinth: outer piers ramp up on their outward face so players
             # can run up from outside. East piers: high east side; west piers: high west side.
-            # Central / road piers get a flat plinth.
+            # No pier sits at x=0, so every pier gets a ramped plinth.
             if px > 0:
                 # East of road — ramp slopes up toward east (low at x1, high at x2)
                 base_ramp = (
                     FLOOR_Z2 + BRIDGE_PIL_BASE_H,
                     FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H,
                 )
-            elif px < 0:
+            else:
                 # West of road — ramp slopes up toward west (high at x1, low at x2)
                 base_ramp = (
                     FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H,
                     FLOOR_Z2 + BRIDGE_PIL_BASE_H,
                 )
-            else:
-                base_ramp = None  # centre pier — flat plinth
 
             # Add pier structure — easternmost pier gets a square opening, rest are arched
             if px == max(BRIDGE_ARCH_X):

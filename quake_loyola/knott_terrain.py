@@ -75,14 +75,17 @@ def build():
     DETAIL_BRUSHES = []
 
     def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
+        # Thin surface overlay riding on top of the GROUND fill: its bottom sits
+        # at the fill top (KNOTT_DRIVEWAY_ZT_*) so the visible sloped sides show
+        # GROUND below and the surface texture only on the thin top layer.
         brushes.append(
             ramp_slab_y(
                 x1,
                 x2,
                 KNOTT_DRIVEWAY_Y1,
                 KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
+                KNOTT_DRIVEWAY_ZT_S,
+                KNOTT_DRIVEWAY_ZT_N,
                 top_z_s,
                 top_z_n,
                 surface_tex,
