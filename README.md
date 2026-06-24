@@ -50,6 +50,15 @@ TrenchBroom setup, and architecture overview — is in the Sphinx docs:
 just docs   # builds docs/_build/html/index.html
 ```
 
+## Presentation
+
+A Quake-themed [reveal.js](https://revealjs.com/) slide deck introduces the
+project (`presentation/index.html`):
+
+```bash
+just present   # serves http://localhost:8000/presentation/
+```
+
 ## Project layout
 
 | Path | Purpose |
@@ -59,3 +68,4 @@ just docs   # builds docs/_build/html/index.html
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes |
 | `docs/` | Sphinx documentation |
+| `presentation/` | Quake-themed reveal.js slide deck |

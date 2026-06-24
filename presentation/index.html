@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QUAKE · LOYOLA — Building a Quake map in pure Python</title>
+
+  <!-- reveal.js core (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+  <!-- code highlighting theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css" />
+  <!-- fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Oswald:wght@400;600&family=Share+Tech+Mono&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <!-- custom Quake skin -->
+  <link rel="stylesheet" href="quake.css" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1 · TITLE -->
+      <section class="title-slide hero" data-background-color="#060505">
+        <div class="hero-img"></div>
+        <p class="subtitle">A Quake 1 deathmatch map &mdash; generated entirely from Python</p>
+        <h1>Quake&nbsp;&middot;&nbsp;Loyola</h1>
+        <p class="muted">The pedestrian bridge &amp; Knott Hall at<br />Loyola University Maryland</p>
+        <p class="small muted">↓ / Space to advance &nbsp;·&nbsp; Esc for overview</p>
+      </section>
+
+      <!-- 2 · WHAT IS THIS -->
+      <section>
+        <h2>What is this?</h2>
+        <div class="grid cols-2" style="align-items:center;">
+          <div>
+            <ul>
+              <li>A playable <strong>Quake 1</strong> deathmatch level&hellip;</li>
+              <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
+                campus bridge over Charles Street and the 1896 <strong>Knott Hall</strong>.</li>
+              <li>Every brush, light, and spawn point is emitted by
+                <strong>Python code</strong> &mdash; no hand-editing in an editor.</li>
+            </ul>
+          </div>
+          <figure>
+            <img src="../screenshot.png" alt="In-game render of the Loyola bridge map" />
+            <figcaption>In-engine render &mdash; Knott Hall &amp; the arched bridge</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- 3 · THE REAL PLACE -->
+      <section>
+        <h2>The real place</h2>
+        <div class="grid cols-2" style="align-items:center;">
+          <figure>
+            <img src="../ref/bridge04.png" alt="The real pedestrian bridge at Loyola" />
+            <figcaption>The real bridge &mdash; note the &ldquo;&hellip;Maryland&rdquo; fascia</figcaption>
+          </figure>
+          <div>
+            <ul>
+              <li>Loyola's <strong>Evergreen</strong> campus, north Baltimore
+                <span class="muted small">(39&deg;20&prime;46&Prime;N, 76&deg;37&prime;08&Prime;W)</span></li>
+              <li>A Collegiate-Gothic <strong>arched stone bridge</strong> spans
+                North Charles Street, linking west &amp; east campus.</li>
+              <li><strong>Knott Hall</strong> &mdash; the oldest building on campus
+                &mdash; sits just to the east.</li>
+              <li>The map even reproduces the carved
+                <em>&ldquo;LOYOLA UNIVERSITY MARYLAND&rdquo;</em> parapet lettering.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · THE TWIST -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">The twist</p>
+        <h2>100% Python &mdash; no manual brushwork</h2>
+        <p>One command assembles the whole world and writes a Quake
+          <code>.map</code> file:</p>
+        <pre><code class="language-bash" data-trim>
+python3 generate_map.py      # → loyola.map
+# or simply:
+just generate
+        </code></pre>
+        <p class="small muted">Each area module contributes geometry; the builder
+          serialises it to the text-based <code>.map</code> format Quake compilers understand.</p>
+      </section>
+
+      <!-- 5 · ARCHITECTURE / DATA MODEL -->
+      <section>
+        <h2>The data model</h2>
+        <p class="small muted">Three dataclasses in <code>quake_loyola.mapdata</code> describe everything:</p>
+        <div class="grid cols-3">
+          <div class="panel"><span class="tag">Face</span>
+            <p class="small">Three coplanar points define a half-space, plus a
+              texture &amp; alignment.</p></div>
+          <div class="panel"><span class="tag">Brush</span>
+            <p class="small">An ordered list of faces bounding one convex solid.</p></div>
+          <div class="panel"><span class="tag">Entity</span>
+            <p class="small">A <code>classname</code> + key/values, optionally with
+              brushes (e.g. <code>func_detail</code>).</p></div>
+        </div>
+        <p class="small" style="margin-top:0.6em;"><strong>MapBuilder</strong> collects
+          world brushes &amp; entities, then <code>to_map()</code> serialises the scene.</p>
+      </section>
+
+      <!-- 6 · GEOMETRY PRIMITIVES -->
+      <section>
+        <h2>Geometry primitives</h2>
+        <p class="small muted">Shape constructors in <code>quake_loyola.geometry</code> return brushes:</p>
+        <div class="grid cols-2">
+          <ul class="small">
+            <li><code>box(...)</code> &mdash; axis-aligned prism</li>
+            <li><code>ramp_slab(...)</code> &mdash; sloped wedge (X / Y)</li>
+            <li><code>pyramid(...)</code> &mdash; gable roofs &amp; caps</li>
+          </ul>
+          <ul class="small">
+            <li><code>arch_seg(...)</code> &mdash; one voussoir of an arch</li>
+            <li><code>arch_wall(...)</code> &mdash; a full arched pier</li>
+            <li><code>layered_wall(...)</code> &mdash; multi-storey wall w/ openings</li>
+          </ul>
+        </div>
+        <pre><code class="language-python" data-trim>
+# The arched bridge deck follows a parabola:
+def deck_top_z(x):
+    return BRIDGE_DZ2 + arch_z_at(x)   # crown rises BRIDGE_ARCH_RISE (144u)
+        </code></pre>
+      </section>
+
+      <!-- 7 · AREA MODULES (vertical stack) -->
+      <section>
+        <section>
+          <h2>Area modules</h2>
+          <p class="small muted">Each module exposes <code>build() → (brushes, entities)</code>;
+            <code>generate_map.py</code> merges them all.</p>
+          <div class="grid cols-2 small">
+            <div class="panel"><strong>bridge</strong> · deck, arch ribs, piers, parapets, fascia lettering</div>
+            <div class="panel"><strong>knott_hall</strong> · facade, windows, mullions, interior</div>
+            <div class="panel"><strong>knott_terrain</strong> · hillside, driveway, retaining walls</div>
+            <div class="panel"><strong>streets</strong> · Charles St, curbs, sky walls</div>
+            <div class="panel"><strong>west_campus</strong> · dorms, tunnel, fences</div>
+            <div class="panel"><strong>entities</strong> · spawns, pickups, lights, teleports</div>
+          </div>
+          <p class="small muted">↓ how the pieces fit together</p>
+        </section>
+        <section>
+          <h3>Spatial hierarchy</h3>
+          <pre><code class="language-text" data-trim>
+World shell
+├── Charles Street (N–S road)  ── arch teleport gates
+├── West campus  (dorms, abutment building, iron fence)
+├── Bridge (E–W span, deck top Z 240 → 384 at crown)
+│   ├── Arch deck · parapets · 5 stone piers
+│   └── West / East teleport arches
+├── Walkway  → Knott Hall 2nd floor
+└── Knott Hall (X 1206–2238, 5 floors + elevator)
+          </code></pre>
+        </section>
+      </section>
+
+      <!-- 8 · NAMING CONVENTIONS -->
+      <section>
+        <h2>Naming conventions</h2>
+        <p class="small muted">Constants read as <code>AREA_FEATURE_SUFFIX</code> &mdash;
+          once you know the vocabulary, names self-describe.</p>
+        <div class="grid cols-2 small">
+          <div class="panel">
+            <span class="tag">Axis / size</span>
+            <p><code>X1/X2</code> box min/max · <code>CX/CY</code> centre ·
+              <code>DZ1/DZ2</code> deck Z · <code>H/HW</code> height/half-width ·
+              <code>T/R/D</code> thickness/radius/depth</p>
+          </div>
+          <div class="panel">
+            <span class="tag">Features</span>
+            <p><code>PILLAR · BLK · PYR · WIN · ENT</code> ·
+              <code>DRIVEWAY_WS/RD/ES</code> (W→E) · <code>KH</code> Knott Hall</p>
+          </div>
+        </div>
+        <p class="small">Example: <code>BRIDGE_PILLAR_CAP_OVH</code> =
+          <em>bridge pillar cap overhang</em>. Full legend lives in
+          <code>constants.py</code> &amp; the docs.</p>
+      </section>
+
+      <!-- 9 · BUILD PIPELINE -->
+      <section>
+        <h2>The build pipeline</h2>
+        <pre><code class="language-text" data-trim>
+generate_map.py   →  loyola.map      (Python assembles the world)
+      │
+   qbsp           →  loyola.bsp      (brushes → BSP tree)
+      │
+   vis            →  PVS             (potentially-visible sets)
+      │
+   light          →  loyola.lit      (ray-traced sun + dynamic lights)
+      │
+   deploy         →  /Applications/id1/maps/
+        </code></pre>
+        <p class="small"><code>just compile-fast</code> for iteration ·
+          <code>just compile</code> for a full vis pass before release.</p>
+      </section>
+
+      <!-- 10 · TESTING -->
+      <section>
+        <h2>Reproducible &amp; tested</h2>
+        <div class="grid cols-3" style="margin-bottom:0.5em;">
+          <div><div class="stat">28</div><div class="stat-label">unit + regression tests</div></div>
+          <div><div class="stat">MD5</div><div class="stat-label">golden map hash</div></div>
+          <div><div class="stat">822</div><div class="stat-label">brushes, deterministic</div></div>
+        </div>
+        <ul class="small">
+          <li><code>test_geometry.py</code> &amp; <code>test_mapdata.py</code> &mdash; primitives &amp; serialisation.</li>
+          <li><code>test_regression.py</code> &mdash; locks brush/entity counts and the map's MD5.</li>
+          <li>Change geometry → <code>just update-golden</code> regenerates the expected values.</li>
+        </ul>
+      </section>
+
+      <!-- 11 · PLAY IT -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">Frag time</p>
+        <h2>Play it</h2>
+        <pre><code class="language-bash" data-trim>
+just                       # setup → generate → compile-fast → deploy
+quake -game id1 +map loyola
+        </code></pre>
+        <ul class="small">
+          <li><strong>Deathmatch spawns</strong> scattered across bridge, campus &amp; hall.</li>
+          <li><strong>Rocket launchers</strong> on the deck and Knott Hall floors.</li>
+          <li><strong>Teleport arches</strong> warp you to rooftops &amp; the deck crown.</li>
+        </ul>
+      </section>
+
+      <!-- 12 · LINKS -->
+      <section>
+        <h2>Dig deeper</h2>
+        <div class="grid cols-2">
+          <div class="panel">
+            <span class="tag">Code</span>
+            <p class="small"><a href="https://github.com/aclark4life/quake-loyola">github.com/aclark4life/quake-loyola</a></p>
+          </div>
+          <div class="panel">
+            <span class="tag">Docs</span>
+            <p class="small"><a href="https://quake-loyola.readthedocs.io/">quake-loyola.readthedocs.io</a><br />
+              layout · terminology · textures · pipeline</p>
+          </div>
+        </div>
+        <p class="small muted" style="margin-top:0.6em;">Built with Python · ericw-tools ·
+          <code>just</code> · pytest · Sphinx</p>
+      </section>
+
+      <!-- 13 · CLOSING -->
+      <section class="title-slide hero" data-background-color="#060505">
+        <div class="hero-img"></div>
+        <h1>Frag on.</h1>
+        <p class="subtitle">Questions?</p>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="brand">Quake&nbsp;·&nbsp;Loyola</div>
+
+  <!-- reveal.js + plugins (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: "c/t",
+      transition: "fade",
+      transitionSpeed: "slow",
+      backgroundTransition: "fade",
+      controls: true,
+      progress: true,
+      center: true,
+      plugins: [RevealHighlight, RevealNotes],
+    });
+  </script>
+</body>
+</html>

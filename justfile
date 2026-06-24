@@ -83,6 +83,11 @@ docs: venv
     .venv/bin/sphinx-build -b html docs docs/_build/html
     @echo "Docs written to docs/_build/html/index.html"
 
+# Serve the reveal.js project presentation at http://localhost:8000/presentation/
+present:
+    @echo "Serving presentation at http://localhost:8000/presentation/ (Ctrl-C to stop)"
+    python3 -m http.server 8000
+
 # Update the golden hash/counts in tests/test_regression.py from the current map output
 update-golden: venv
     .venv/bin/python scripts/update_golden.py
