@@ -707,7 +707,6 @@ def build():
         # Bridge deck — one per span
         f"{(BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
         f"{(BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2} {BRIDGE.y2 - 24} {BRIDGE_DECK_Z}",  # span 2 south edge
-        f"{(BRIDGE_ARCH_X[1] + BRIDGE_ARCH_X[2]) // 2} {BRIDGE.y1 + 24} {BRIDGE_DECK_Z}",  # span 3 north edge
         f"{(BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2} 0 {BRIDGE_DECK_Z}",  # span 4
         f"{(BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2} 0 {BRIDGE_DECK_Z}",  # span 5 (east angled)
     ]:
