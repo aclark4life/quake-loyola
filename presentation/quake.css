@@ -160,6 +160,53 @@
 .reveal .grid.cols-2 { grid-template-columns: 1fr 1fr; }
 .reveal .grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 
+/* ── Numbered timeline (How it grew) ───────────────────────────────────── */
+.reveal .timeline {
+  counter-reset: tlstep;
+  row-gap: 1em;
+  column-gap: 1.6em;
+  margin-top: 0.4em;
+}
+.reveal .timeline .panel {
+  counter-increment: tlstep;
+  position: relative;
+  overflow: visible;
+}
+/* Step number badge, top-left of each tile */
+.reveal .timeline .panel::before {
+  content: counter(tlstep);
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--q-ember2), var(--q-rust));
+  color: var(--q-bg);
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 0.78em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(255, 122, 24, 0.65), 0 2px 4px rgba(0, 0, 0, 0.6);
+  z-index: 4;
+}
+/* Arrow to the right of every tile, pointing to the next step */
+.reveal .timeline .panel::after {
+  content: "\27A4";              /* ➤ */
+  position: absolute;
+  right: -1.15em;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--q-ember);
+  font-size: 1.05em;
+  text-shadow: 0 0 10px rgba(255, 122, 24, 0.8);
+  z-index: 4;
+}
+/* The last tile has no successor — drop its arrow */
+.reveal .timeline .panel:last-child::after { content: none; }
+
 .reveal .tag {
   display: inline-block;
   font-family: "Oswald", sans-serif;
