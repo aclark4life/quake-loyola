@@ -71,6 +71,7 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 ## Key conventions
 
 - **Coordinate system** — Quake standard: X = east, Y = south, Z = up. All constants use Quake units (1 unit ≈ 1 inch).
+- **Naming conventions** — constant names are `AREA_FEATURE_SUFFIX`. Common suffixes: `X1/X2 Y1/Y2 Z1/Z2` = box min/max on an axis (1 = lower); `DZ1/DZ2` = deck Z bottom/top; `ZB/ZT` = z bottom/top; `CX/CY` = centre; `XS/YS` = list of positions; `N/S/E`/`NY` = compass direction; `H/HH` = height/half-height; `W/HW` = width/half-width; `T` thickness, `R` radius, `D` depth; `OVH` overhang, `PROUD` protrusion. Feature abbrevs: `PILLAR BLK SQ PYR ENT WIN DIV PLT BR`, `DRIVEWAY_WS/RD/ES` (west→east), `BIY` (Knott inner wall face), `ORIG` (pre-extension), `KH` (Knott Hall). Full legend: module docstring of `quake_loyola/constants.py` and `docs/reference.rst`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `generate_map.py` calls every module's `build()` and merges results.
 - **Texture names** — defined in `quake_loyola/constants.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
 - **No side effects in modules** — area modules must not write files or print output; all I/O lives in `generate_map.py`.
