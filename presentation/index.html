@@ -87,6 +87,48 @@ just generate
           The code itself was written <strong>with AI assistance</strong>.</p>
       </section>
 
+      <!-- 4b · EVOLUTION -->
+      <section>
+        <section>
+          <h2>How it grew</h2>
+          <p class="small muted">From a single script to a tested Python package &mdash;
+            ~640 commits over a month.</p>
+          <div class="grid cols-2 small" style="text-align:left;">
+            <div class="panel"><span class="tag">May 23</span>
+              <p><strong>Born as one file.</strong> A 256-line
+                <code>generate_map.py</code> &mdash; the first map compiles cleanly.</p></div>
+            <div class="panel"><span class="tag">May 24&ndash;26</span>
+              <p><strong>Rapid world-building.</strong> Arched deck, stone piers,
+                teleport gateways, Knott Hall + a working elevator.</p></div>
+            <div class="panel"><span class="tag">May 27</span>
+              <p><strong>Tooling.</strong> A <code>justfile</code> wires up
+                generate → compile → deploy.</p></div>
+            <div class="panel"><span class="tag">Jun 12</span>
+              <p><strong>The big split.</strong> The monolith &mdash; now
+                <strong>6,205 lines</strong> &mdash; breaks into focused modules.</p></div>
+            <div class="panel"><span class="tag">Jun 13</span>
+              <p><strong>A real package.</strong> Modules move into
+                <code>quake_loyola/</code>; <strong>pytest</strong> and
+                <strong>GitHub Actions CI</strong> (test + compile on every push) land.</p></div>
+            <div class="panel"><span class="tag">Jun 14&ndash;23</span>
+              <p><strong>Hardened.</strong> Terrain module, MD5 regression golden,
+                a tag-triggered <strong>release</strong> workflow, and Sphinx docs on
+                <strong>Read the Docs</strong>.</p></div>
+          </div>
+          <p class="small muted">↓ the shape of that change</p>
+        </section>
+        <section>
+          <h3>One file &rarr; eleven modules</h3>
+          <div class="grid cols-3" style="margin:0.6em 0;">
+            <div><div class="stat">6,205</div><div class="stat-label">lines in the single file at its peak</div></div>
+            <div><div class="stat">11</div><div class="stat-label">focused modules today (~10.3k LOC)</div></div>
+            <div><div class="stat">28</div><div class="stat-label">tests guarding behaviour</div></div>
+          </div>
+          <p class="small muted">Same deterministic output &mdash; now readable,
+            testable, and <strong>verified by CI</strong> on every push.</p>
+        </section>
+      </section>
+
       <!-- 5 · ARCHITECTURE / DATA MODEL -->
       <section>
         <h2>The data model</h2>
