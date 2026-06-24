@@ -173,21 +173,24 @@ def build():
             Textures.SKY,
         )
     )  # N wall east of tunnel
-    # S wall — flat inner cap at the tunnel mouth seals the vis gap that the old
-    # sloped ramp_slab left between the portal wedge and the tunnel ceiling.
-    # Spans only the tunnel opening (x: outer west wall → stairwell west edge;
-    # y: one wall-thickness inside the south world wall) up to the ceiling height.
+    # S wall — lower ramp mirrors the north-wall tunnel-portal pair: ground from
+    # FLOOR_Z1 up to the sloped hillside underside (BRIDGE_DZ2-WALL_T west,
+    # SDORM_LIFT east), sealing the tunnel mouth and showing the hillside slope face.
     BRUSHES.append(
-        box(
-            WORLD_X1 + WALL_T,
+        ramp_slab(
+            WORLD_X1,
+            DORM.x1,
+            WORLD_Y1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            SDORM_STAIR_X1,
-            WORLD_Y1 + 2 * WALL_T,
+            FLOOR_Z1,
             BRIDGE_DZ2 - WALL_T,
-            Textures.GROUND,
+            SDORM_LIFT,
+            Textures.SKY,
+            tt=Textures.GROUND,  # sloped top face — hillside slope visible at tunnel mouth
+            ts=Textures.GROUND,  # ±Y gable ends — tunnel end-wall ground texture
         )
-    )  # S wall tunnel portal (flat inner cap — one wall-thickness inside south world wall)
+    )  # S wall tunnel portal lower (sloped ground up to hillside underside)
     BRUSHES.append(
         ramp_slab(
             WORLD_X1,
