@@ -23,6 +23,65 @@ University Maryland's Evergreen campus in northern Baltimore
 Terminology
 -----------
 
+Naming conventions
+~~~~~~~~~~~~~~~~~~~
+
+Constant names follow the pattern ``AREA_FEATURE_SUFFIX`` (e.g.
+``BRIDGE_PILLAR_CAP_OVH`` = bridge pillar cap overhang). The full legend also
+lives in the module docstring of :mod:`quake_loyola.constants`.
+
+**Area prefixes:** ``BRIDGE_``, ``KNOTT_``, ``ENNIS_``, ``DORM_``,
+``CHARLES_``, ``STREET_``, ``ROAD_``, ``WORLD_``, ``ARCH_``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Suffix
+     - Meaning
+   * - ``X1``/``X2``, ``Y1``/``Y2``, ``Z1``/``Z2``
+     - Min/max extent of a box along that axis (``1`` = lower coordinate,
+       ``2`` = higher).
+   * - ``DZ1``/``DZ2``
+     - Bridge deck Z bottom / top.
+   * - ``ZB``/``ZT``
+     - Z bottom / Z top of a feature.
+   * - ``CX``/``CY``
+     - Centre X / centre Y of a feature.
+   * - ``XS``/``YS``
+     - A *list* (plural) of X or Y positions.
+   * - ``N``/``S``/``E`` (e.g. ``NY``)
+     - Compass direction (Quake: −Y = north, +Y = south, +X = east);
+       ``NY`` = north-edge Y.
+   * - ``H`` / ``HH``
+     - Height / half-height.
+   * - ``W`` / ``HW``
+     - Width / half-width.
+   * - ``T`` / ``R`` / ``D``
+     - Thickness / radius / depth.
+   * - ``OVH`` / ``EXTRA`` / ``PROUD``
+     - Overhang / extra padding / how far a feature protrudes from its face.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Feature
+     - Meaning
+   * - ``PILLAR`` / ``BLK`` / ``SQ`` / ``PYR``
+     - Pillar / block / square / pyramid.
+   * - ``ENT`` / ``WIN`` / ``DIV`` / ``PLT`` / ``BR``
+     - Entrance / window / road divider / platform / back road.
+   * - ``DRIVEWAY_WS`` / ``_RD`` / ``_ES``
+     - West-side / road / east-side sections of the Knott driveway
+       (ordered west→east).
+   * - ``BIY``
+     - Knott building-interior Y (inner wall face).
+   * - ``ORIG``
+     - Original (pre-extension) reference, e.g. ``KNOTT_ORIG_CX``.
+   * - ``KH``
+     - Knott Hall (e.g. the ``FLOOR_KH`` texture).
+
 Bridge structure
 ~~~~~~~~~~~~~~~~
 

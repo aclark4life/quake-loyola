@@ -1,3 +1,44 @@
+"""Shared numeric constants, the ``Textures`` table, and bridge-deck helpers.
+
+Naming conventions
+==================
+
+Identifiers are built from an **area prefix** + **feature** + **dimension/axis
+suffix**. Once the vocabulary below is known, most names are self-describing
+(e.g. ``BRIDGE_PILLAR_CAP_OVH`` = bridge pillar cap overhang).
+
+Area prefixes
+    ``BRIDGE_``, ``KNOTT_``, ``ENNIS_``, ``DORM_``, ``CHARLES_``, ``STREET_``,
+    ``ROAD_``, ``WORLD_``, ``ARCH_`` — which part of the map the value belongs to.
+
+Axis & position suffixes
+    - ``X1``/``X2``, ``Y1``/``Y2``, ``Z1``/``Z2`` — min/max extent of a box along
+      that axis (``1`` = lower coordinate, ``2`` = higher).
+    - ``DZ1``/``DZ2`` — bridge deck Z bottom / top.
+    - ``ZB``/``ZT`` — Z bottom / Z top of a feature.
+    - ``CX``/``CY`` — centre X / centre Y of a feature.
+    - ``XS``/``YS`` — a *list* (plural) of X or Y positions.
+    - ``N``/``S``/``E`` — compass direction (Quake: −Y = north, +Y = south,
+      +X = east); combined forms like ``NY`` mean "north-edge Y".
+
+Dimension suffixes
+    - ``H`` height, ``HH`` half-height.
+    - ``W`` width, ``HW`` half-width.
+    - ``T`` thickness, ``R`` radius, ``D`` depth.
+    - ``OVH`` overhang, ``EXTRA`` extra length/padding, ``PROUD`` how far a
+      feature protrudes from its face.
+
+Feature abbreviations
+    - ``PILLAR`` pillar, ``BLK`` block, ``SQ`` square, ``PYR`` pyramid.
+    - ``ENT`` entrance, ``WIN`` window, ``DIV`` road divider, ``PLT`` platform,
+      ``BR`` back road.
+    - ``DRIVEWAY_WS``/``_RD``/``_ES`` — west-side / road / east-side sections of
+      the Knott driveway (ordered west→east).
+    - ``BIY`` Knott building-interior Y (inner wall face).
+    - ``ORIG`` original (pre-extension) reference, e.g. ``KNOTT_ORIG_CX``.
+    - ``KH`` Knott Hall (e.g. the ``FLOOR_KH`` texture).
+"""
+
 import math
 from dataclasses import dataclass
 
