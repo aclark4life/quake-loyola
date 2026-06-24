@@ -3,8 +3,8 @@
 [![Documentation Status](https://readthedocs.org/projects/quake-loyola/badge/?version=latest)](https://quake-loyola.readthedocs.io/en/latest/)
 [![View on Google Maps](https://img.shields.io/badge/Google%20Maps-View%20Location-4285F4?logo=googlemaps&logoColor=white)](https://maps.app.goo.gl/11RogWQzgmQgVPTQ6)
 
-A Quake 1 deathmatch map of the pedestrian bridge and Knott Hall at Loyola
-University Maryland, generated entirely from Python.
+A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott
+Hall at Loyola University Maryland, generated from Python with AI assistance.
 
 ![Screenshot](screenshot.png)
 

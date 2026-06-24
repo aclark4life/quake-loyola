@@ -174,22 +174,23 @@
 }
 
 /* ── Hero / title slide ────────────────────────────────────────────────── */
-.reveal .hero {
-  position: relative;
-}
 .reveal section.title-slide {
   text-align: center;
 }
-.reveal .hero-img {
+.reveal section.title-slide > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Darken + warm the full-bleed screenshot background so titles stay legible */
+.reveal .backgrounds .slide-background.present
+  .slide-background-content::after {
+  content: "";
   position: absolute;
   inset: 0;
-  background-image: url("../screenshot.png");
-  background-size: cover;
-  background-position: center 35%;
-  opacity: 0.34;
-  filter: saturate(0.8) contrast(1.05);
-  z-index: -1;
-  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255, 122, 24, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(6, 5, 5, 0.55) 0%, rgba(6, 5, 5, 0.78) 100%);
 }
 
 /* ── Figures ───────────────────────────────────────────────────────────── */

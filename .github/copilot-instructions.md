@@ -1,6 +1,6 @@
 # AGENTS.md — quake-loyola
 
-A Quake 1 deathmatch map of the pedestrian bridge and Knott Hall at Loyola University Maryland, generated entirely from Python.
+A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Hall at Loyola University Maryland, generated from Python with AI assistance.
 
 ## Project layout
 
