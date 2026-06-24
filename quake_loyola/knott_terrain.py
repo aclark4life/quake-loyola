@@ -17,7 +17,7 @@ import math
 
 from .constants import (
     BRIDGE,
-    BRIDGE_PIL_OVERHANG,
+    BRIDGE_PILLAR_OVERHANG,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_HW,
@@ -470,8 +470,8 @@ def build():
         )
         # Seg2 (east of entrance to NE indent)
         # east_walk_ext_y1_val / east_walk_ext_y2_val bracket the E-W ramp (Y=264..328)
-        east_walk_ext_y1_val = BRIDGE.y2 + BRIDGE_PIL_OVERHANG + 96 + 80 - 64  # 264
-        east_walk_ext_y2_val = BRIDGE.y2 + BRIDGE_PIL_OVERHANG + 96 + 80  # 328
+        east_walk_ext_y1_val = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + 96 + 80 - 64  # 264
+        east_walk_ext_y2_val = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + 96 + 80  # 328
 
         # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
         def terrain_z_at(y):

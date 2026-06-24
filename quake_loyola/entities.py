@@ -9,12 +9,12 @@ from .constants import (
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
-    BRIDGE_PIL_BASE_H,
-    BRIDGE_PIL_BASE_RAMP_H,
-    BRIDGE_PIL_CAP_H,
-    BRIDGE_PIL_EXTRA,
-    BRIDGE_PIL_HW,
-    BRIDGE_PIL_PYR_H,
+    BRIDGE_PILLAR_BASE_H,
+    BRIDGE_PILLAR_BASE_RAMP_H,
+    BRIDGE_PILLAR_CAP_H,
+    BRIDGE_PILLAR_EXTRA,
+    BRIDGE_PILLAR_HW,
+    BRIDGE_PILLAR_PYR_H,
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
     CHARLES_LAMP_POST_YS,
@@ -35,12 +35,12 @@ from .constants import (
     ENNIS_GATE_X1,
     ENNIS_GATE_X2,
     ENNIS_HW,
-    ENNIS_PIL_BELL2_H,
-    ENNIS_PIL_CAP_H,
-    ENNIS_PIL_HW,
-    ENNIS_PIL_POST_H,
-    ENNIS_PIL_X1,
-    ENNIS_PIL_ZB,
+    ENNIS_PILLAR_BELL2_H,
+    ENNIS_PILLAR_CAP_H,
+    ENNIS_PILLAR_HW,
+    ENNIS_PILLAR_POST_H,
+    ENNIS_PILLAR_X1,
+    ENNIS_PILLAR_ZB,
     ENNIS_WALL_NY,
     ENNIS_WALL_T,
     ENNIS_Y,
@@ -896,9 +896,9 @@ def build():
             pcap = (
                 pbase
                 + BRIDGE.parapet_h
-                + BRIDGE_PIL_EXTRA
-                + BRIDGE_PIL_CAP_H
-                + BRIDGE_PIL_PYR_H
+                + BRIDGE_PILLAR_EXTRA
+                + BRIDGE_PILLAR_CAP_H
+                + BRIDGE_PILLAR_PYR_H
             )  # top of pyramid
             cy_n = BRIDGE.y2 - BRIDGE_PAR_W // 2  # centred on north pillar cap
             cy_s = BRIDGE.y1 + BRIDGE_PAR_W // 2  # centred on south pillar cap
@@ -961,12 +961,16 @@ def build():
 
     # Ennis entrance pillar torches — flame above brick cup on each stone pillar
     ennis_pil_flame_z = (
-        ENNIS_PIL_ZB + ENNIS_PIL_POST_H + ENNIS_PIL_CAP_H + ENNIS_PIL_BELL2_H + 20
+        ENNIS_PILLAR_ZB
+        + ENNIS_PILLAR_POST_H
+        + ENNIS_PILLAR_CAP_H
+        + ENNIS_PILLAR_BELL2_H
+        + 20
     )
-    ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
+    ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
     for pillar_y in (
-        ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW,
-        ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW,
+        ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
+        ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW,
     ):
         ENTITIES.append(
             ent(
@@ -999,7 +1003,7 @@ def build():
         if pier_x == BRIDGE_ARCH_X[0]:
             continue
         pier_light_z = (
-            FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H + 60
+            FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H + 60
         )  # just above the plinth top, low in the arch
         ENTITIES.append(
             ent(
@@ -1014,25 +1018,25 @@ def build():
 
     # Cement arch on east face of abutment pier (-1246) — three lights for good coverage
     abutment_pier_x = min(BRIDGE_ARCH_X)  # = -1246
-    abutment_arch_z = FLOOR_Z2 + BRIDGE_PIL_BASE_H + 60  # mid-height of arch opening
+    abutment_arch_z = FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + 60  # mid-height of arch opening
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} 0 {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} 0 {abutment_arch_z}",
             light="700",
         )
     )
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} {BRIDGE.y2 // 2} {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} {BRIDGE.y2 // 2} {abutment_arch_z}",
             light="500",
         )
     )
     ENTITIES.append(
         ent(
             "light",
-            origin=f"{abutment_pier_x + BRIDGE_PIL_HW + 32} {BRIDGE.y1 // 2} {abutment_arch_z}",
+            origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} {BRIDGE.y1 // 2} {abutment_arch_z}",
             light="500",
         )
     )
