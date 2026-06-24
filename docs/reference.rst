@@ -92,20 +92,19 @@ Bridge structure
    * - Term
      - Description
    * - **Arch span**
-     - The curved section of the bridge deck (PB_X1 to PB_X2, 1050 units).
-       The deck surface follows a parabolic arch rising 106 units at the centre.
+     - The curved deck section, X ∈ [−1246, +1246] (``BRIDGE_ARCH_X[0]`` …
+       ``BRIDGE_ARCH_X[3]``), following a parabola that rises to the crown at X=0.
    * - **Flat approach**
-     - Straight deck sections extending from each end of the arch span to the
-       world boundary. Deck sits at constant Z.
+     - Straight deck west of −1246, extending to the world wall at constant Z.
    * - **Deck**
-     - The walkable bridge surface. ``dtop(x)`` = top face Z; ``dbot(x)`` =
-       bottom face Z. Deck slab thickness is 16 units.
+     - The walkable surface. ``deck_top_z(x)`` = top face Z, ``deck_bot_z(x)`` =
+       bottom face Z; slab thickness ``BRIDGE_DZ2 − BRIDGE_DZ1`` = 16 units.
    * - **Arch rise**
-     - How far the deck centre is raised above the endpoints
-       (``PB_ARCH_RISE = 106`` units ≈ 7 ft).
+     - Height the deck crown is raised above the flat datum
+       (``BRIDGE_ARCH_RISE = 144`` units).
    * - **Parapet**
-     - Low stone wall running along the north and south edges of the deck,
-       32 units tall. Players can jump onto it.
+     - Low stone wall along the deck's north/south edges,
+       ``BRIDGE_PAR_H = 40`` units tall. Players can jump onto it.
 
 Pier numbering
 ~~~~~~~~~~~~~~
@@ -138,7 +137,7 @@ consistently in the code (``PIER1_X`` … ``PIER5_X``).
      - ``PIER4_X``
      - 1246
      - West KH pier — marks the eastern end of the main arch span
-       (``PB_X2 = KH_PIER_X``).
+       (``BRIDGE_X2 = KNOTT_PIER_X``).
    * - **Pier 5**
      - ``PIER5_X``
      - 2206
@@ -175,16 +174,16 @@ Pier / pillar components
        the arch opening above ground on tall piers.
    * - **Arch crown**
      - The topmost point of the arch ring (``sprz + rout``). Should be flush
-       with the deck underside (``dbot``).
+       with the deck underside (``deck_bot_z``).
    * - **Cap**
      - Solid box filling the area above the arch inner crown and below the deck
        underside, bridging the gap in the centre of the opening.
    * - **Pillar post**
-     - Stone column above the deck surface, extending ``PB_PIL_EXTRA`` units
-       above the parapet.
+     - Stone column above the deck surface, extending ``BRIDGE_PILLAR_EXTRA``
+       units above the parapet.
    * - **Overhang**
      - How far the pier stone extends beyond the bridge's N/S edges
-       (``PB_PIL_OVERHANG = 16`` units).
+        (``BRIDGE_PILLAR_OVERHANG = 16`` units).
 
 Knott Hall
 ~~~~~~~~~~
@@ -210,13 +209,13 @@ Knott Hall
      - The cement support structure under the bridge approach in front of Knott
        Hall. Consists of a horizontal cap beam running along the south bridge
        edge (Pier 4 → Pier 5) with 5 vertical drop piers reaching to ground
-       level. Only present when ``KH_WALKWAY_ENABLED = True``.
+       level. Only present when ``KNOTT_WALKWAY_ENABLED = True``.
    * - **Accessible walkway**
      - The small N-S cement path running along the west face of Pier 5, from
        the Knott Hall north face up to the bridge south edge. A short E-W ramp
        at the north end wraps around Pier 5 and connects to the back-road west
        sidewalk. Generated alongside the main walkway when
-       ``KH_WALKWAY_ENABLED = True``.
+       ``KNOTT_WALKWAY_ENABLED = True``.
 
 Street / road
 ~~~~~~~~~~~~~
@@ -249,11 +248,12 @@ Map layout
                  ↑arch              arch↑
          5 stone pillars supporting the span
 
-- **Bridge span**: 1050-unit arched span (69.5 ft), deck at Z 128–144.
+- **Bridge span**: arched deck over Charles Street, crown at X=0; deck top
+  ranges Z 240 (flat approach) → 384 (crown).
 - **Entry arch gates**: Semicircular stone arch portals at each end with
   teleport fields.
 - **Stone pillars**: 5 supporting piers with narrow arched openings.
-- **Knott Hall**: A 4-story brutalist tower on the south campus, featuring
+- **Knott Hall**: A 5-story tower on the south campus, featuring
   vertical "fins" on its north facade.
 - **Charles Street**: Road surface running N-S under the bridge.
 - **Sky**: ``sky1`` ceiling, sealed outer box.
@@ -277,17 +277,17 @@ Spatial hierarchy
    │   ├── South building 1 & South building 2
    │   └── Iron fence (east face of west buildings)
    ├── Embankment (sloped ground ramp from road level up to bridge deck Z)
-   ├── Bridge (E–W span over Charles Street, Z 208 → 320 at crown)
-   │   ├── Arch deck (32 segments PB_X1 → PB_X2, parabolic rise)
+   ├── Bridge (E–W span over Charles Street, deck top Z 240 → 384 at crown)
+   │   ├── Arch deck (span segments BRIDGE_X1 → BRIDGE_X2, parabolic rise)
    │   ├── Parapet walls (N & S edges, full span)
-   │   ├── Stone piers ×5 (at PB_ARCH_X[] positions)
+   │   ├── Stone piers ×5 (at BRIDGE_ARCH_X[] positions)
    │   │   └── each: arch wall → voussoir ring → cap → pillar post
-   │   ├── West teleport arch (X = PB_X1 / west world wall)
+   │   ├── West teleport arch (X = BRIDGE_X1 / west world wall)
    │   └── East teleport arch (X = east world wall)
    ├── Walkway (flat slab, bridge east end → Knott Hall 2nd floor)
    │   ├── Walkway bent (cap beam + 5 drop piers)
    │   └── Accessible walkway (N-S path along Pier 5 + E-W ramp)
-   ├── Knott Hall (south campus tower, X 1266–1906)
+   ├── Knott Hall (south campus tower, X 1206–2238)
    │   ├── Outer walls (5 floors + roof)
    │   ├── Interior floors, hallway & rooms
    │   ├── Elevator (func_plat) inside lift shaft
@@ -321,11 +321,17 @@ Teleport connections
      - ``dest_abutment_deck``
      - Bridge deck above abutment pier
    * - Charles St south arch gate
-     - ``dest_bridge_mid``
-     - Bridge deck centre
+     - ``dest_south_dorm_roof``
+     - South dorm A-frame ridge
    * - Charles St north arch gate
-     - ``dest_bridge_mid``
-     - Bridge deck centre
+     - ``dest_dorm_roof``
+     - North dorm A-frame ridge
+   * - Ennis east arch (east world wall)
+     - ``dest_kh_drive_south``
+     - Knott Hall rooftop
+   * - Knott driveway arch
+     - ``dest_ennis_east``
+     - Knott Hall rooftop
 
 Structural dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -339,43 +345,43 @@ cascades.
 
    * - Constant
      - Objects affected
-   * - ``CS_CRN_R``, ``CS_CRN_SEGS``
+   * - ``CHARLES_CRN_R``, ``CHARLES_CRN_SEGS``
      - Charles/Ennis and Knott back-road corner radii / arc tessellation.
-   * - ``CS_RAMP_W``
+   * - ``CHARLES_RAMP_W``
      - Charles Street sidewalk ramp width; affects the east/west curb ramps.
-   * - ``CS_WALK_H``, ``CS_WALK_W``
+   * - ``CHARLES_WALK_H``, ``CHARLES_WALK_W``
      - Charles Street sidewalk height/width; cascade into Ennis curbs, the
-       Ennis wall setback, RH fence placement, Knott Hall terrain ramps, and
+       Ennis wall setback, fence placement, Knott Hall terrain ramps, and
        the back-road sidewalks.
-   * - ``CS_Y1``, ``CS_Y2``
+   * - ``CHARLES_Y1``, ``CHARLES_Y2``
      - Charles Street south/north extents; anchor road surface, sidewalk/fence
        spans, embankment ends, and north/south street arch teleports.
-   * - ``KH_FLOOR_H``
+   * - ``KNOTT_FLOOR_H``
      - All Knott Hall floor Z levels, walkway alignment, spawn heights, weapon
        placement.
-   * - ``KH_PIER_X``
-     - Fixed Knott Hall-side bridge pier; anchors ``PB_X2``,
-       ``PB_ARCH_X[3]``, and east lamp placement.
-   * - ``KH_X1/X2``, ``KH_Y1/Y2``
+   * - ``KNOTT_PIER_X``
+     - Fixed Knott Hall-side bridge pier; anchors ``BRIDGE_X2``,
+       ``BRIDGE_ARCH_X[3]``, and east lamp placement.
+   * - ``KNOTT_X1/X2``, ``KNOTT_Y1/Y2``
      - Knott Hall footprint; moving it requires updating walkway, back road,
        hill terrain, east-arch teleport destination.
-   * - ``PB_ARCH_RISE``
+   * - ``BRIDGE_ARCH_RISE``
      - Deck crown height; shifts pier heights per X, deck spawn Z,
        parapet-top Z.
-   * - ``PB_ARCH_X[]``
-     - Pier X positions; ``PB_ARCH_X[0]`` pins the abutment building X.
-   * - ``PB_DZ1``, ``PB_DZ2``
+   * - ``BRIDGE_ARCH_X[]``
+     - Pier X positions; ``BRIDGE_ARCH_X[0]`` pins the abutment building X.
+   * - ``BRIDGE_DZ1``, ``BRIDGE_DZ2``
      - Flat deck Z, all pier heights, teleport arch spring height, walkway Z.
-   * - ``PB_PIL_HW``
+   * - ``BRIDGE_PILLAR_HW``
      - Pier post half-width; affects arch wall extents, cap size, overhang,
        and brick wall X positions.
-   * - ``PB_Y1``, ``PB_Y2``
+   * - ``BRIDGE_Y1``, ``BRIDGE_Y2``
      - Parapet N/S position, teleport arch Y opening size, walkway Y start,
        Ennis Road reference Y.
-   * - ``RH_FLOORS``
-     - Residence hall floor count; shared by all four RH buildings.
+   * - ``DORM_FLOORS``
+     - Dormitory floor count; shared by all west-campus residence buildings.
    * - ``WORLD_X1/X2``
-     - Derives ``PB_X1``; resizing the world changes the arch span and all
+     - Derives ``BRIDGE_X1``; resizing the world changes the arch span and all
        wall-relative positions.
 
 Textures
@@ -384,24 +390,38 @@ Textures
 All textures come from the community WADs. Download ``quake101.wad``,
 ``ad.wad``, and ``makkon_building.wad`` and place them alongside the ``.map``
 file before compiling (``just setup`` downloads the first two automatically).
+Names below are the ``Textures.*`` constants in :mod:`quake_loyola.constants`.
 
 .. list-table::
    :header-rows: 1
-   :widths: 40 60
+   :widths: 45 30 25
 
    * - Surface
+     - ``Textures`` field
      - Texture name
-   * - Bridge deck
+   * - Bridge deck, stone, cement
+     - ``FLOOR`` / ``STONE`` / ``CEMENT``
      - ``sfloor3_2``
-   * - Stone pillars, arch
-     - ``city6_7``
-   * - Knott Hall walls
-     - ``tech03_1``
+   * - Pillars, arches, walls
+     - ``PILLAR`` / ``WALL``
+     - ``city2_7``
+   * - Building facades
+     - ``BUILDING``
+     - ``city2_1``
+   * - Brickwork
+     - ``BRICK``
+     - ``bricka2_1``
+   * - Ground / embankment
+     - ``GROUND``
+     - ``ground1_1``
    * - Road surface
-     - ``stone1_7``
-   * - Ravine floor
-     - ``rock1_2``
+     - ``ROAD``
+     - ``azfloor1_1``
+   * - Roofs
+     - ``ROOF``
+     - ``roofkell1``
    * - Sky surfaces
+     - ``SKY``
      - ``sky1``
 
 Entities
@@ -415,16 +435,16 @@ Entities
      - Qty
      - Location
    * - ``info_player_deathmatch``
-     - 14
+     - 22
      - Scattered across bridge, campus, and hall.
    * - ``weapon_rocketlauncher``
-     - 4
-     - Bridge deck, Knott Hall (Floors 1 & 3), east campus.
+     - 19
+     - Bridge deck, Knott Hall floors, and campus.
    * - ``item_health``
-     - 3
-     - Bridge deck, hall entrance, hall 2nd floor.
+     - 14
+     - Bridge deck, hall entrance, and hall floors.
    * - ``light``
-     - ~20
+     - ~480
      - Pillar caps, hall interior/exterior, road, and teleport arches.
    * - ``func_plat``
      - 1
@@ -451,7 +471,8 @@ Manual compilation (without just)
 
 Download **ericw-tools v0.18.1** from
 `github.com/ericwa/ericw-tools/releases <https://github.com/ericwa/ericw-tools/releases>`_
-and place ``quake101.wad`` alongside the ``.map`` file, then:
+and place ``quake101.wad``, ``ad.wad``, and ``makkon_building.wad`` alongside
+the ``.map`` file, then:
 
 .. code-block:: bash
 
