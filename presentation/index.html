@@ -22,9 +22,11 @@
     <div class="slides">
 
       <!-- 1 · TITLE -->
-      <section class="title-slide hero" data-background-color="#060505">
-        <div class="hero-img"></div>
-        <p class="subtitle">A Quake 1 deathmatch map &mdash; generated entirely from Python</p>
+      <section class="title-slide"
+               data-background-image="../screenshot.png"
+               data-background-size="cover"
+               data-background-position="center 38%">
+        <p class="subtitle">A Quake 1 single-player &amp; deathmatch map &mdash; generated from Python, with AI</p>
         <h1>Quake&nbsp;&middot;&nbsp;Loyola</h1>
         <p class="muted">The pedestrian bridge &amp; Knott Hall at<br />Loyola University Maryland</p>
         <p class="small muted">↓ / Space to advance &nbsp;·&nbsp; Esc for overview</p>
@@ -36,11 +38,12 @@
         <div class="grid cols-2" style="align-items:center;">
           <div>
             <ul>
-              <li>A playable <strong>Quake 1</strong> deathmatch level&hellip;</li>
+              <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
               <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
                 campus bridge over Charles Street and the 1896 <strong>Knott Hall</strong>.</li>
               <li>Every brush, light, and spawn point is emitted by
-                <strong>Python code</strong> &mdash; no hand-editing in an editor.</li>
+                <strong>Python code</strong> (written with <strong>AI assistance</strong>)
+                &mdash; no hand-editing in an editor.</li>
             </ul>
           </div>
           <figure>
@@ -76,7 +79,7 @@
       <!-- 4 · THE TWIST -->
       <section data-background-color="#0a0807">
         <p class="subtitle">The twist</p>
-        <h2>100% Python &mdash; no manual brushwork</h2>
+        <h2>Python &mdash; no manual brushwork</h2>
         <p>One command assembles the whole world and writes a Quake
           <code>.map</code> file:</p>
         <pre><code class="language-bash" data-trim>
@@ -85,7 +88,8 @@ python3 generate_map.py      # → loyola.map
 just generate
         </code></pre>
         <p class="small muted">Each area module contributes geometry; the builder
-          serialises it to the text-based <code>.map</code> format Quake compilers understand.</p>
+          serialises it to the text-based <code>.map</code> format Quake compilers understand.
+          The code itself was written <strong>with AI assistance</strong>.</p>
       </section>
 
       <!-- 5 · ARCHITECTURE / DATA MODEL -->
@@ -225,7 +229,7 @@ just                       # setup → generate → compile-fast → deploy
 quake -game id1 +map loyola
         </code></pre>
         <ul class="small">
-          <li><strong>Deathmatch spawns</strong> scattered across bridge, campus &amp; hall.</li>
+          <li><strong>Single-player &amp; deathmatch spawns</strong> across bridge, campus &amp; hall.</li>
           <li><strong>Rocket launchers</strong> on the deck and Knott Hall floors.</li>
           <li><strong>Teleport arches</strong> warp you to rooftops &amp; the deck crown.</li>
         </ul>
@@ -250,8 +254,10 @@ quake -game id1 +map loyola
       </section>
 
       <!-- 13 · CLOSING -->
-      <section class="title-slide hero" data-background-color="#060505">
-        <div class="hero-img"></div>
+      <section class="title-slide"
+               data-background-image="../screenshot.png"
+               data-background-size="cover"
+               data-background-position="center 38%">
         <h1>Frag on.</h1>
         <p class="subtitle">Questions?</p>
       </section>
