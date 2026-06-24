@@ -50,6 +50,7 @@ from .constants import (
     KNOTT_BIY2,
     KNOTT_CX,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_ES_X2,
     KNOTT_DRIVEWAY_RD_X1,
     KNOTT_DRIVEWAY_RD_X2,
     KNOTT_DRIVEWAY_Y1,
@@ -1157,6 +1158,37 @@ def build():
             charles_tree_row_far_x, tree_y, FLOOR_Z2, charles_tree_height
         )
     ENTITIES.append(brush_ent("func_detail", charles_giant_tree_brushes))
+
+    # ── Giant trees along KH driveway east side — from the bridge south ──────────
+    # Big trees just outside the east sidewalk (KNOTT_DRIVEWAY_ES_X2), running south
+    # to the KH south face (KNOTT_DRIVEWAY_Y1).  First tree is set one spacing-step
+    # south of the bridge so its canopy clears the bridge deck.  Per-tree jitter in
+    # X/Y/height (fixed seed) keeps the row natural rather than perfectly regular.
+    # Z tracks the road slope in the KH section; flat at FLOOR_Z2 north of KH.
+    import random as kh_tree_rng
+
+    kh_tree_rng.seed(7)  # fixed seed for reproducible jittered layout
+    kh_drive_tree_x = KNOTT_DRIVEWAY_ES_X2 + 80  # centre clear of east sidewalk
+    kh_drive_tree_spacing = 300
+    kh_drive_tree_height = KNOTT_Z2 + 40  # a touch taller than Knott Hall
+    kh_drive_tree_brushes = []
+    kh_grid_y = BRIDGE.y1 - kh_drive_tree_spacing
+    while kh_grid_y >= KNOTT_DRIVEWAY_Y1:
+        tree_x = kh_drive_tree_x + kh_tree_rng.randint(-40, 40)
+        tree_y = kh_grid_y + kh_tree_rng.randint(-80, 80)
+        tree_h = kh_drive_tree_height + kh_tree_rng.randint(-60, 60)
+        if tree_y >= KNOTT_DRIVEWAY_Y2:  # flat extension (north of KH)
+            tree_z = FLOOR_Z2
+        else:  # sloped back-road section alongside KH
+            kh_t = (KNOTT_DRIVEWAY_Y2 - tree_y) / (
+                KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
+            )
+            tree_z = int(
+                KNOTT_DRIVEWAY_ZT_N + kh_t * (KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N)
+            )
+        kh_drive_tree_brushes += make_giant_tree(tree_x, tree_y, tree_z, tree_h)
+        kh_grid_y -= kh_drive_tree_spacing
+    ENTITIES.append(brush_ent("func_detail", kh_drive_tree_brushes))
 
     # ── Medium trees in front of the south dorm, set back from Charles Street ─────
     # Two trees, bigger and spread wider: positioned at outer thirds of the full
