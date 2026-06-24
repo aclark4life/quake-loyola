@@ -34,7 +34,6 @@ BRIDGE_PIL_BASE_RAMP_H = 40
 BRIDGE_PIL_CAP_H = 12
 BRIDGE_PIL_CAP_IN_OVH = 4
 BRIDGE_PIL_CAP_OUT_OVH = 20
-BRIDGE_PIL_CAP_OVHNTR_R = (160, 90)
 BRIDGE_PIL_EXTRA = 64
 BRIDGE_PIER_FILL_OFFSET = 16
 BRIDGE_PIL_INNER_R = (160, 84)
@@ -355,6 +354,7 @@ FOG_DENSITY: float | None = None  # use preset fog density
 
 class Textures:
     BRICK = "bricka2_1"
+    BUILDING = "city2_1"
     CEMENT = "sfloor3_2"
     EXIT = "z_exit"
     DIVIDER = "sfloor3_2"

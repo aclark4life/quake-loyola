@@ -561,7 +561,7 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
 
 def make_tree(cx, cy, base_z):
     """Cartoon tree: brown trunk + three stacked ground-texture pyramids."""
-    TEX_TRUNK = "bricka2_1"
+    TEX_TRUNK = Textures.BRICK
     TEX_FOLIAGE = Textures.GROUND
     brushes = []
     # Trunk — 10×10, 56 units tall
@@ -589,7 +589,7 @@ def make_tree(cx, cy, base_z):
 
 def make_giant_tree(cx, cy, base_z, total_h=700):
     """Giant cartoon tree scaled to total_h units — trunk + three stacked foliage layers."""
-    TEX_TRUNK = "bricka2_1"
+    TEX_TRUNK = Textures.BRICK
     TEX_FOLIAGE = Textures.GROUND
     brushes = []
     trunk_h = int(total_h * 0.45)
@@ -1027,6 +1027,9 @@ def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=Fa
     depth: how far each pixel box protrudes in +Y from y_face.
     mirror=True flips each glyph horizontally — combine with text[::-1] to make
     text readable on a surface viewed from the -Y direction (e.g., north face).
+
+    Consecutive lit pixels in a row are merged into a single box so dense glyphs
+    (e.g. E) don't generate internal T-junctions that sparkle/garble at render time.
     """
     cols = 4
     rows = 6
@@ -1037,11 +1040,17 @@ def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=Fa
         cx = x0 + ci * char_w
         for row_i, row_bits in enumerate(bitmap):
             z = z_base + (rows - 1 - row_i) * px_h
-            for col_i in range(cols):
+            run_start = None
+            for col_i in range(cols + 1):
                 src_col = (cols - 1 - col_i) if mirror else col_i
-                if row_bits & (1 << (cols - 1 - src_col)):
-                    px = cx + col_i * px_w
+                lit = col_i < cols and (row_bits & (1 << (cols - 1 - src_col)))
+                if lit and run_start is None:
+                    run_start = col_i
+                elif not lit and run_start is not None:
+                    px1 = cx + run_start * px_w
+                    px2 = cx + col_i * px_w
                     brushes.append(
-                        box(px, y_face, z, px + px_w, y_face + depth, z + px_h, tex)
+                        box(px1, y_face, z, px2, y_face + depth, z + px_h, tex)
                     )
+                    run_start = None
     return brushes

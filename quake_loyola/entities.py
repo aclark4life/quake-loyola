@@ -485,7 +485,6 @@ def build():
     ARCH_TRIG_INSET = 8  # keep triggers off the walls/floor
 
     kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
-    kh_roof_origin = f"{(KNOTT_STAIRS_X2 + KNOTT_SHAFT_X1) // 2} {(KNOTT_STAIRS_Y1 + KNOTT_SHAFT_Y2) // 2} {int(KNOTT_Z2 + 40)}"
 
     # Destinations — both land on KH rooftop, facing west
     ENTITIES.append(
@@ -1750,7 +1749,7 @@ def build():
     ENTITIES.append(
         ent(
             "info_intermission",
-            origin=f"-361 -500 350",  # south of bridge center, slightly elevated
+            origin="-361 -500 350",  # south of bridge center, slightly elevated
             mangle="-10 75 0",  # pitch=-10 (nearly level), yaw=75 (mostly north, nudged east)
         )
     )
