@@ -242,6 +242,27 @@ generate_map.py   →  loyola.map      (Python assembles the world)
           <code>just compile</code> for a full vis pass before release.</p>
       </section>
 
+      <!-- 9b · TRENCHBROOM -->
+      <section data-background-image="../ref/trenchbroom.png"
+               data-background-size="cover"
+               data-background-position="center">
+        <div class="scrim">
+          <h2>Open it in TrenchBroom</h2>
+          <ul>
+            <li>The generated <code>loyola.map</code> loads straight into
+              <strong>TrenchBroom</strong> &mdash; brushes, entities &amp;
+              textures all editable by hand.</li>
+            <li>Great for <strong>eyeballing geometry</strong>, checking spawns,
+              and spotting leaks the compiler would flag.</li>
+            <li>In some cases we've <strong>back-ported edits</strong> &mdash;
+              tweak a brush in TrenchBroom, then fold the change back into the
+              Python so the source stays the single source of truth.</li>
+            <li>Round-trips cleanly: Python&nbsp;&rarr;&nbsp;<code>.map</code>
+              &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
+          </ul>
+        </div>
+      </section>
+
       <!-- 10 · TESTING -->
       <section>
         <h2>Reproducible &amp; tested</h2>
