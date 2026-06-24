@@ -61,17 +61,17 @@ from .constants import (
     ENNIS_PANEL_INNER_W,
     ENNIS_PANEL_OUTER_H,
     ENNIS_PANEL_OUTER_W,
-    ENNIS_PIL_BELL2_H,
-    ENNIS_PIL_BELL2_HW,
-    ENNIS_PIL_CAP_H,
-    ENNIS_PIL_CAP_OVH,
-    ENNIS_PIL_HW,
-    ENNIS_PIL_POST_H,
-    ENNIS_PIL_X1,
+    ENNIS_PILLAR_BELL2_H,
+    ENNIS_PILLAR_BELL2_HW,
+    ENNIS_PILLAR_CAP_H,
+    ENNIS_PILLAR_CAP_OVH,
+    ENNIS_PILLAR_HW,
+    ENNIS_PILLAR_POST_H,
+    ENNIS_PILLAR_X1,
     ENNIS_WALL_H,
     ENNIS_WALL_NY,
-    ENNIS_WALL_PIL_H,
-    ENNIS_WALL_PIL_HW,
+    ENNIS_WALL_PILLAR_H,
+    ENNIS_WALL_PILLAR_HW,
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_Y,
@@ -118,12 +118,12 @@ def build_ennis_entrance_features():
     entities = []
 
     for pillar_y in (
-        ENNIS_Y - ENNIS_HW - ENNIS_PIL_HW,
-        ENNIS_Y + ENNIS_HW + ENNIS_PIL_HW,
+        ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
+        ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW,
     ):
-        ennis_pil_cx = ENNIS_PIL_X1 + ENNIS_PIL_HW
-        cap_half_width = ENNIS_PIL_HW + ENNIS_PIL_CAP_OVH
-        base_height = ENNIS_PIL_POST_H // 3
+        ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
+        cap_half_width = ENNIS_PILLAR_HW + ENNIS_PILLAR_CAP_OVH
+        base_height = ENNIS_PILLAR_POST_H // 3
         brushes.append(
             box(
                 ennis_pil_cx - cap_half_width,
@@ -137,16 +137,16 @@ def build_ennis_entrance_features():
         )
         brushes.append(
             box(
-                ENNIS_PIL_X1,
-                pillar_y - ENNIS_PIL_HW,
+                ENNIS_PILLAR_X1,
+                pillar_y - ENNIS_PILLAR_HW,
                 FLOOR_Z2 + base_height,
-                ENNIS_PIL_X1 + 2 * ENNIS_PIL_HW,
-                pillar_y + ENNIS_PIL_HW,
-                FLOOR_Z2 + ENNIS_PIL_POST_H,
+                ENNIS_PILLAR_X1 + 2 * ENNIS_PILLAR_HW,
+                pillar_y + ENNIS_PILLAR_HW,
+                FLOOR_Z2 + ENNIS_PILLAR_POST_H,
                 Textures.WHITE_STONE,
             )
         )
-        cap_z = FLOOR_Z2 + ENNIS_PIL_POST_H
+        cap_z = FLOOR_Z2 + ENNIS_PILLAR_POST_H
         brushes.append(
             box(
                 ennis_pil_cx - cap_half_width,
@@ -154,23 +154,23 @@ def build_ennis_entrance_features():
                 cap_z,
                 ennis_pil_cx + cap_half_width,
                 pillar_y + cap_half_width,
-                cap_z + ENNIS_PIL_CAP_H,
+                cap_z + ENNIS_PILLAR_CAP_H,
                 Textures.WHITE_STONE,
             )
         )
-        bell2_z = cap_z + ENNIS_PIL_CAP_H
+        bell2_z = cap_z + ENNIS_PILLAR_CAP_H
         brushes.append(
             box(
-                ennis_pil_cx - ENNIS_PIL_BELL2_HW,
-                pillar_y - ENNIS_PIL_BELL2_HW,
+                ennis_pil_cx - ENNIS_PILLAR_BELL2_HW,
+                pillar_y - ENNIS_PILLAR_BELL2_HW,
                 bell2_z,
-                ennis_pil_cx + ENNIS_PIL_BELL2_HW,
-                pillar_y + ENNIS_PIL_BELL2_HW,
-                bell2_z + ENNIS_PIL_BELL2_H,
+                ennis_pil_cx + ENNIS_PILLAR_BELL2_HW,
+                pillar_y + ENNIS_PILLAR_BELL2_HW,
+                bell2_z + ENNIS_PILLAR_BELL2_H,
                 Textures.WHITE_STONE,
             )
         )
-        pillar_apex_z = bell2_z + ENNIS_PIL_BELL2_H
+        pillar_apex_z = bell2_z + ENNIS_PILLAR_BELL2_H
         brushes.append(
             box(
                 ennis_pil_cx - 3,
@@ -421,45 +421,45 @@ def build_ennis_entrance_features():
     bw_cy = ENNIS_WALL_NY + ENNIS_WALL_T // 2
     brushes.append(
         box(
-            bw_cx - ENNIS_WALL_PIL_HW,
-            bw_cy - ENNIS_WALL_PIL_HW,
+            bw_cx - ENNIS_WALL_PILLAR_HW,
+            bw_cy - ENNIS_WALL_PILLAR_HW,
             FLOOR_Z2,
-            bw_cx + ENNIS_WALL_PIL_HW,
-            bw_cy + ENNIS_WALL_PIL_HW,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H,
+            bw_cx + ENNIS_WALL_PILLAR_HW,
+            bw_cy + ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H,
             Textures.BUILDING,
         )
     )
     brushes.append(
         box(
-            bw_cx - ENNIS_WALL_PIL_HW,
-            bw_cy - ENNIS_WALL_PIL_HW,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H,
-            bw_cx + ENNIS_WALL_PIL_HW,
-            bw_cy + ENNIS_WALL_PIL_HW,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H + 6,
+            bw_cx - ENNIS_WALL_PILLAR_HW,
+            bw_cy - ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H,
+            bw_cx + ENNIS_WALL_PILLAR_HW,
+            bw_cy + ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 6,
             Textures.CEMENT,
         )
     )
     brushes.append(
         box(
-            bw_cx - ENNIS_WALL_PIL_HW - 1,
-            bw_cy - ENNIS_WALL_PIL_HW - 1,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H + 6,
-            bw_cx + ENNIS_WALL_PIL_HW + 1,
-            bw_cy + ENNIS_WALL_PIL_HW + 1,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H + 10,
+            bw_cx - ENNIS_WALL_PILLAR_HW - 1,
+            bw_cy - ENNIS_WALL_PILLAR_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 6,
+            bw_cx + ENNIS_WALL_PILLAR_HW + 1,
+            bw_cy + ENNIS_WALL_PILLAR_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 10,
             Textures.CEMENT,
         )
     )
     brushes.append(
         pyramid(
-            bw_cx - ENNIS_WALL_PIL_HW - 1,
-            bw_cy - ENNIS_WALL_PIL_HW - 1,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H + 10,
-            bw_cx + ENNIS_WALL_PIL_HW + 1,
-            bw_cy + ENNIS_WALL_PIL_HW + 1,
-            FLOOR_Z2 + ENNIS_WALL_PIL_H + 16,
+            bw_cx - ENNIS_WALL_PILLAR_HW - 1,
+            bw_cy - ENNIS_WALL_PILLAR_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 10,
+            bw_cx + ENNIS_WALL_PILLAR_HW + 1,
+            bw_cy + ENNIS_WALL_PILLAR_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 16,
             Textures.CEMENT,
         )
     )

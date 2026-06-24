@@ -40,20 +40,20 @@ from .constants import (
     BRIDGE_FASCIA_TEXT,
     BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
-    BRIDGE_PIL_BASE_CAP_H,
-    BRIDGE_PIL_BASE_CAP_OVH,
-    BRIDGE_PIL_BASE_H,
-    BRIDGE_PIL_BASE_RAMP_H,
-    BRIDGE_PIL_CAP_H,
-    BRIDGE_PIL_CAP_IN_OVH,
-    BRIDGE_PIL_CAP_OUT_OVH,
-    BRIDGE_PIL_EXTRA,
-    BRIDGE_PIL_HW,
-    BRIDGE_PIL_INNER_R,
-    BRIDGE_PIL_OUTER_R,
-    BRIDGE_PIL_OVERHANG,
-    BRIDGE_PIL_PYR_H,
-    BRIDGE_PIL_PYR_W,
+    BRIDGE_PILLAR_BASE_CAP_H,
+    BRIDGE_PILLAR_BASE_CAP_OVH,
+    BRIDGE_PILLAR_BASE_H,
+    BRIDGE_PILLAR_BASE_RAMP_H,
+    BRIDGE_PILLAR_CAP_H,
+    BRIDGE_PILLAR_CAP_IN_OVH,
+    BRIDGE_PILLAR_CAP_OUT_OVH,
+    BRIDGE_PILLAR_EXTRA,
+    BRIDGE_PILLAR_HW,
+    BRIDGE_PILLAR_INNER_R,
+    BRIDGE_PILLAR_OUTER_R,
+    BRIDGE_PILLAR_OVERHANG,
+    BRIDGE_PILLAR_PYR_H,
+    BRIDGE_PILLAR_PYR_W,
     BRIDGE_SEG_SPAN_W,
     BRIDGE_SEG_W,
     BRIDGE_SQ_D,
@@ -286,7 +286,7 @@ def build():
 
     # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
     BRIDGE_BLK_PIR_M = (
-        BRIDGE_PIL_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
+        BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
     )  # clearance from pier centre to block centre
 
     def add_repeated_parapet_decorations(
@@ -607,13 +607,13 @@ def build():
                 continue
             pdeck = deck_top_z(px)  # deck surface at this X
             ppar = pdeck + BRIDGE.parapet_h  # parapet top
-            ppil = ppar + BRIDGE_PIL_EXTRA  # pillar post top
-            pcap = ppil + BRIDGE_PIL_CAP_H  # cap slab top
+            ppil = ppar + BRIDGE_PILLAR_EXTRA  # pillar post top
+            pcap = ppil + BRIDGE_PILLAR_CAP_H  # cap slab top
             cy_n = BRIDGE.y2 - BRIDGE_PAR_W // 2  # north cap centre Y
             cy_s = BRIDGE.y1 + BRIDGE_PAR_W // 2  # south cap centre Y
 
             # Width of the pier in X (matches pillar post width)
-            x1, x2 = px - BRIDGE_PIL_HW, px + BRIDGE_PIL_HW
+            x1, x2 = px - BRIDGE_PILLAR_HW, px + BRIDGE_PILLAR_HW
 
             # Ceiling Z — use the higher of the two pier face deck-bottoms so stone
             # is flush with the bridge underside across the full pier X extent.
@@ -623,9 +623,9 @@ def build():
             # westernmost and easternmost piers) use the wider outer radii;
             # the interior piers use the inner radii.
             if px in (min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)):
-                a_rout, a_rin = BRIDGE_PIL_OUTER_R
+                a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
             else:
-                a_rout, a_rin = BRIDGE_PIL_INNER_R
+                a_rout, a_rin = BRIDGE_PILLAR_INNER_R
             a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
             if a_stilt < 0:
                 # Arch would overshoot the bridge bottom; cap rout so the crown
@@ -634,9 +634,9 @@ def build():
                 a_stilt = 0
 
             # Pin outer pier wall to exactly match the pillar tops above deck.
-            # Cap a_rout so the arch ring never extends past BRIDGE.y2 + BRIDGE_PIL_OVERHANG;
+            # Cap a_rout so the arch ring never extends past BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG;
             # if rout was trimmed, recompute stilt so the arch crown still meets the deck.
-            max_outer_radius = BRIDGE.y2 + BRIDGE_PIL_OVERHANG
+            max_outer_radius = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
             if a_rout > max_outer_radius:
                 a_rout = max_outer_radius
                 a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
@@ -648,20 +648,20 @@ def build():
             if px > 0:
                 # East of road — ramp slopes up toward east (low at x1, high at x2)
                 base_ramp = (
-                    FLOOR_Z2 + BRIDGE_PIL_BASE_H,
-                    FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H,
+                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
+                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H,
                 )
             else:
                 # West of road — ramp slopes up toward west (high at x1, low at x2)
                 base_ramp = (
-                    FLOOR_Z2 + BRIDGE_PIL_BASE_RAMP_H,
-                    FLOOR_Z2 + BRIDGE_PIL_BASE_H,
+                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H,
+                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
                 )
 
             # Add pier structure — easternmost pier gets a square opening, rest are arched
             if px == max(BRIDGE_ARCH_X):
-                # Overhang must reach BRIDGE.y2+BRIDGE_PIL_OVERHANG to match pillar tops above deck
-                sq_overhang = BRIDGE.y2 + BRIDGE_PIL_OVERHANG - a_rin
+                # Overhang must reach BRIDGE.y2+BRIDGE_PILLAR_OVERHANG to match pillar tops above deck
+                sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
                 BRUSHES.extend(
                     square_wall(
                         x1,
@@ -673,7 +673,7 @@ def build():
                         a_rin,
                         Textures.PILLAR,
                         overhang=sq_overhang,
-                        base_h=BRIDGE_PIL_BASE_H,
+                        base_h=BRIDGE_PILLAR_BASE_H,
                     )
                 )
             else:
@@ -691,27 +691,27 @@ def build():
                         Textures.PILLAR,
                         stilt_h=a_stilt,
                         overhang=arch_overhang,
-                        base_h=BRIDGE_PIL_BASE_H,
+                        base_h=BRIDGE_PILLAR_BASE_H,
                         base_ramp=base_ramp,
                         base_cap_h=0
                         if px == min(BRIDGE_ARCH_X)
-                        else BRIDGE_PIL_BASE_CAP_H,
+                        else BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
-                        base_cap_ovh=BRIDGE_PIL_BASE_CAP_OVH,
+                        base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                     )
                 )
 
-            # Pillar tops (above deck, extend BRIDGE_PIL_OVERHANG past bridge edges and inward)
+            # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
-                BRIDGE.y2 + BRIDGE_PIL_OVERHANG
+                BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
             )  # always overhang past bridge edge
             # North pillar top
             BRUSHES.append(
                 box(
-                    px - BRIDGE_PIL_HW,
-                    BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_PIL_OVERHANG,
+                    px - BRIDGE_PILLAR_HW,
+                    BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
                     pdeck,
-                    px + BRIDGE_PIL_HW,
+                    px + BRIDGE_PILLAR_HW,
                     pier_outer_y,
                     ppil,
                     Textures.PILLAR,
@@ -721,11 +721,11 @@ def build():
             # South pillar top
             BRUSHES.append(
                 box(
-                    px - BRIDGE_PIL_HW,
+                    px - BRIDGE_PILLAR_HW,
                     -pier_outer_y,
                     pdeck,
-                    px + BRIDGE_PIL_HW,
-                    BRIDGE.y1 + BRIDGE_PAR_W + BRIDGE_PIL_OVERHANG,
+                    px + BRIDGE_PILLAR_HW,
+                    BRIDGE.y1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
                     ppil,
                     Textures.PILLAR,
                 )
@@ -743,18 +743,24 @@ def build():
             )  # south
 
             # Cement cap slab + pyramid on top of each stone pillar post
-            cap_x1, cap_x2 = px - BRIDGE_PIL_PYR_W, px + BRIDGE_PIL_PYR_W
+            cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
             north_cap_y1 = (
-                BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_PIL_OVERHANG - BRIDGE_PIL_CAP_IN_OVH
+                BRIDGE.y2
+                - BRIDGE_PAR_W
+                - BRIDGE_PILLAR_OVERHANG
+                - BRIDGE_PILLAR_CAP_IN_OVH
             )  # inward past pillar post
             north_cap_y2 = (
-                BRIDGE.y2 + BRIDGE_PIL_CAP_OUT_OVH
+                BRIDGE.y2 + BRIDGE_PILLAR_CAP_OUT_OVH
             )  # outward (north/road-facing) edge
             south_cap_y1 = (
-                BRIDGE.y1 - BRIDGE_PIL_CAP_OUT_OVH
+                BRIDGE.y1 - BRIDGE_PILLAR_CAP_OUT_OVH
             )  # outward (south/road-facing) edge
             south_cap_y2 = (
-                BRIDGE.y1 + BRIDGE_PAR_W + BRIDGE_PIL_OVERHANG + BRIDGE_PIL_CAP_IN_OVH
+                BRIDGE.y1
+                + BRIDGE_PAR_W
+                + BRIDGE_PILLAR_OVERHANG
+                + BRIDGE_PILLAR_CAP_IN_OVH
             )  # inward past pillar post
             # Cap slabs (flat cement base)
             BRUSHES.append(
@@ -787,7 +793,7 @@ def build():
                     pcap,
                     cap_x2,
                     north_cap_y2,
-                    pcap + BRIDGE_PIL_PYR_H,
+                    pcap + BRIDGE_PILLAR_PYR_H,
                     Textures.CEMENT,
                 )
             )
@@ -798,12 +804,12 @@ def build():
                     pcap,
                     cap_x2,
                     south_cap_y2,
-                    pcap + BRIDGE_PIL_PYR_H,
+                    pcap + BRIDGE_PILLAR_PYR_H,
                     Textures.CEMENT,
                 )
             )
             # Torch bases above pyramid apex — narrow post + wide cup
-            pyramid_apex_z = pcap + BRIDGE_PIL_PYR_H
+            pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
             for torch_center_y in [cy_n, cy_s]:
                 # Narrow stone post (6x6) rising from pyramid tip
                 BRUSHES.append(
@@ -877,7 +883,7 @@ def build():
         BRUSHES.append(
             box(
                 arch_x1,
-                BRIDGE.y1 - BRIDGE_PIL_OVERHANG + arch_center_y,
+                BRIDGE.y1 - BRIDGE_PILLAR_OVERHANG + arch_center_y,
                 FLOOR_Z2,
                 arch_x2,
                 BRIDGE.y1 + arch_post_width + arch_center_y,
@@ -892,7 +898,7 @@ def build():
                 BRIDGE.y2 - arch_post_width + arch_center_y,
                 FLOOR_Z2,
                 arch_x2,
-                BRIDGE.y2 + BRIDGE_PIL_OVERHANG + arch_center_y,
+                BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + arch_center_y,
                 arch_spring_z,
                 Textures.PILLAR,
             )
@@ -907,7 +913,7 @@ def build():
                     arch_center_y,
                     float(arch_spring_z),
                     ARCH_RIN,
-                    ARCH_ROUT + BRIDGE_PIL_OVERHANG,
+                    ARCH_ROUT + BRIDGE_PILLAR_OVERHANG,
                     i * arch_segment_angle,
                     (i + 1) * arch_segment_angle,
                     Textures.PILLAR,
@@ -1047,7 +1053,7 @@ def build():
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
         east_walk_y2 = (
             BRIDGE.y2
-            + BRIDGE_PIL_OVERHANG
+            + BRIDGE_PILLAR_OVERHANG
             + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
             + BRIDGE_ACCESS_WALK_NORTH_OFFSET
         )  # north anchor: ramp moved 80 units north
