@@ -99,9 +99,13 @@ Builds Sphinx HTML documentation into `docs/_build/html/`.
    just generate && just compile-fast && just deploy
    ```
 2. Never run `qbsp` alone as a substitute for the full pipeline. `compile-fast` runs `qbsp` → `vis -fast` → `light`; skipping `vis` or `light` leaves a stale `.bsp` in the Quake maps folder.
-3. Wait for explicit confirmation before committing
-3. Always commit **and** push together — never commit without pushing
-4. If the map geometry changes, run `just update-golden` to update the golden hash and counts in the regression tests
+3. **Always run `just deploy` after every compile.** Skipping it leaves the in-game build out of sync with the compiled `.bsp`; in-game testing will reflect old geometry even though the source and local `.bsp` are up to date.
+4. Wait for explicit confirmation before committing
+5. Always commit **and** push together — never commit without pushing
+6. If the map geometry changes, run the full verification pipeline including deploy:
+   ```bash
+   just generate && just compile-fast && just deploy && just update-golden && just test
+   ```
 
 ### Co-commit authorship
 When committing on behalf of the user, always list the user as the **primary author** and the AI assistant as a **co-author** using the `Co-authored-by:` trailer:
