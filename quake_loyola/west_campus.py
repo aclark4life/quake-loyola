@@ -1983,7 +1983,7 @@ def build():
     BRUSHES.append(
         box(
             BRIDGE.x1,
-            CHARLES_Y1 + TUNN_T,
+            CHARLES_Y1,
             FLOOR_Z1,
             TUNN_X2,
             DORM_SOUTH1_Y1,
@@ -1995,7 +1995,7 @@ def build():
         ramp_slab(
             BRIDGE.x1,
             TUNN_X2,
-            CHARLES_Y1 + TUNN_T,
+            CHARLES_Y1,
             DORM_SOUTH1_Y1,
             BRIDGE_DZ2 - TUNN_T,
             SDORM_LIFT,
