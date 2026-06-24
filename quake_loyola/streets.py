@@ -132,10 +132,12 @@ def build():
     # the visible tunnel end-wall below that line, sky above it (the band above is
     # buried in the hillside slab / open sky), so no ground triangle pokes above
     # the hill.  This line is always below the hill roofline, so it stays hidden.
+    # Shifted one wall-thickness east (WORLD_X1 → BRIDGE.x1) to align with the tunnel
+    # west edge and seal the sky leak, matching the south-wall fix.
     BRUSHES.append(
         ramp_slab(
-            WORLD_X1,
-            DORM.x1,
+            BRIDGE.x1,
+            DORM.x1 + WALL_T,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             FLOOR_Z1,
@@ -150,8 +152,8 @@ def build():
     )  # N wall tunnel portal (ground up to the ceiling-underside line)
     BRUSHES.append(
         ramp_slab(
-            WORLD_X1,
-            DORM.x1,
+            BRIDGE.x1,
+            DORM.x1 + WALL_T,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             BRIDGE_DZ2 - WALL_T,
@@ -176,10 +178,14 @@ def build():
     # S wall — lower ramp mirrors the north-wall tunnel-portal pair: ground from
     # FLOOR_Z1 up to the sloped hillside underside (BRIDGE_DZ2-WALL_T west,
     # SDORM_LIFT east), sealing the tunnel mouth and showing the hillside slope face.
+    # Shifted one wall-thickness east of the world wall (WORLD_X1 → BRIDGE.x1) so the
+    # slope's high end (BRIDGE_DZ2-WALL_T) lands at the tunnel's west edge (BRIDGE.x1)
+    # instead of behind the wall — otherwise the slope sat below the ceiling at the
+    # tunnel mouth and left a sliver of sky visible inside the tunnel.
     BRUSHES.append(
         ramp_slab(
-            WORLD_X1,
-            DORM.x1,
+            BRIDGE.x1,
+            DORM.x1 + WALL_T,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
@@ -193,8 +199,8 @@ def build():
     )  # S wall tunnel portal lower (sloped ground up to hillside underside)
     BRUSHES.append(
         ramp_slab(
-            WORLD_X1,
-            DORM.x1,
+            BRIDGE.x1,
+            DORM.x1 + WALL_T,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             BRIDGE_DZ2 - WALL_T,
@@ -204,7 +210,7 @@ def build():
             Textures.SKY,
             tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
         )
-    )  # S wall above the tunnel end-wall
+    )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
         box(
             DORM.x1,
