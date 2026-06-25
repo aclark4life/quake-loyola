@@ -26,9 +26,9 @@
                data-background-image="../screenshot.png"
                data-background-size="cover"
                data-background-position="center 38%">
-        <p class="subtitle">A Quake 1 single-player &amp; deathmatch map &mdash; generated from Python, with AI</p>
+        <p class="subtitle">A Quake 1 single-player &amp; deathmatch map &mdash; generated from Python with AI assistance</p>
         <h1>Quake&nbsp;&middot;&nbsp;Loyola</h1>
-        <p class="muted">The pedestrian bridge &amp; Knott Hall at<br />Loyola University Maryland</p>
+        <p class="muted">The pedestrian bridge, Knott Hall, Seton &amp; Hopkins Court at<br />Loyola University Maryland</p>
         <p class="small muted">↓ / Space to advance &nbsp;·&nbsp; Esc for overview</p>
       </section>
 
@@ -41,14 +41,35 @@
           <ul>
             <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
             <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
-              campus bridge over Charles Street and the 1896 <strong>Knott Hall</strong>.</li>
+              campus bridge over Charles Street, the 1896 <strong>Knott Hall</strong>,
+              and the <strong>Seton &amp; Hopkins Court</strong> dorms on west campus.</li>
             <li>Every brush, light, and spawn point is emitted by
               <strong>Python code</strong> (written with <strong>AI assistance</strong>)
               &mdash; no hand-editing in an editor.</li>
-            <li>It's also an <strong>experiment</strong>: exploring what AI can do,
+            <li>An <strong>exploration</strong> of what AI can do,
               and working to <strong>understand the code</strong> it writes along the way.</li>
           </ul>
         </div>
+      </section>
+
+      <!-- 2b · HOW IS THIS DONE -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">The workflow</p>
+        <h2>How is this done?</h2>
+        <ul>
+          <li><strong>Mostly prompting</strong> &mdash; describing geometry in
+            plain language and letting the AI emit the Python.</li>
+          <li><strong>Reference photos</strong> in <code>ref/</code> &mdash; real
+            shots of the bridge, hall &amp; dorms guide proportions and detail
+            &mdash; alongside screenshots from a Quake map I built in the
+            <strong>90s</strong> whose source code is long lost.</li>
+          <li><strong>TrenchBroom round-trips</strong> &mdash; open
+            <code>loyola.map</code>, eyeball or tweak geometry, then fold changes
+            back into the Python.</li>
+          <li><strong>Quake's <code>viewpos</code></strong> &mdash; print the
+            player's coordinates in-game to capture exact spots for spawns,
+            teleports &amp; props.</li>
+        </ul>
       </section>
 
       <!-- 3 · THE REAL PLACE -->
@@ -64,10 +85,25 @@
               North Charles Street, linking west &amp; east campus.</li>
             <li><strong>Knott Hall</strong> &mdash; the oldest building on campus
               &mdash; sits just to the east.</li>
+            <li><strong>Seton &amp; Hopkins Court</strong> &mdash; the west-campus
+              dorms &mdash; anchor the other end of the bridge.</li>
             <li>The map even reproduces the carved
               <em>&ldquo;LOYOLA UNIVERSITY MARYLAND&rdquo;</em> parapet lettering
               &mdash; visible on the real bridge behind.</li>
           </ul>
+        </div>
+      </section>
+
+      <!-- 3b · DEMO VIDEO -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">See it in motion</p>
+        <h2>Demo</h2>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/FVDycB9wwEU"
+                  title="Quake · Loyola demo"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen></iframe>
         </div>
       </section>
 
@@ -129,6 +165,27 @@ just generate
         </section>
       </section>
 
+      <!-- 4c · TRENCHBROOM -->
+      <section data-background-image="../ref/trenchbroom.png"
+               data-background-size="cover"
+               data-background-position="center">
+        <div class="scrim">
+          <h2>Open it in TrenchBroom</h2>
+          <ul>
+            <li>The generated <code>loyola.map</code> loads straight into
+              <strong>TrenchBroom</strong> &mdash; brushes, entities &amp;
+              textures all editable by hand.</li>
+            <li>Great for <strong>eyeballing geometry</strong>, checking spawns,
+              and spotting leaks the compiler would flag.</li>
+            <li>In some cases we've <strong>back-ported edits</strong> &mdash;
+              tweak a brush in TrenchBroom, then fold the change back into the
+              Python so the source stays the single source of truth.</li>
+            <li>Round-trips cleanly: Python&nbsp;&rarr;&nbsp;<code>.map</code>
+              &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
+          </ul>
+        </div>
+      </section>
+
       <!-- 5 · ARCHITECTURE / DATA MODEL -->
       <section>
         <h2>The data model</h2>
@@ -145,6 +202,29 @@ just generate
         </div>
         <p class="small" style="margin-top:0.6em;"><strong>MapBuilder</strong> collects
           world brushes &amp; entities, then <code>to_map()</code> serialises the scene.</p>
+      </section>
+
+      <!-- 5b · MAPBUILDER -->
+      <section>
+        <h2>The <code>MapBuilder</code></h2>
+        <p class="small muted">Each area module hands its brushes &amp; entities to one
+          collector; <code>to_map()</code> serialises the whole scene.</p>
+        <pre><code class="language-python" data-trim>
+class MapBuilder:
+    """Accumulates world brushes and entities, then serializes a .map document."""
+
+    def __init__(self):
+        self.brushes = []   # worldspawn geometry
+        self.entities = []  # point + brush entities
+
+    def add_brushes(self, brushes):  self.brushes.extend(brushes)
+    def add_entities(self, entities): self.entities.extend(entities)
+
+    def to_map(self, worldspawn_fields) -> str:
+        world = Entity("worldspawn", dict(worldspawn_fields), self.brushes)
+        blocks = [world.to_map()] + [e.to_map() for e in self.entities]
+        return "\n\n".join(blocks) + "\n"
+        </code></pre>
       </section>
 
       <!-- 6 · GEOMETRY PRIMITIVES -->
@@ -173,16 +253,16 @@ def deck_top_z(x):
       <!-- 7 · AREA MODULES (vertical stack) -->
       <section>
         <section>
-          <h2>Area modules</h2>
+          <h2>Python modules for each area of the map</h2>
           <p class="small muted">Each module exposes <code>build() → (brushes, entities)</code>;
             <code>generate_map.py</code> merges them all.</p>
           <div class="grid cols-2 small">
-            <div class="panel"><strong>bridge</strong> · deck, arch ribs, piers, parapets, fascia lettering</div>
-            <div class="panel"><strong>knott_hall</strong> · facade, windows, mullions, interior</div>
-            <div class="panel"><strong>knott_terrain</strong> · hillside, driveway, retaining walls</div>
-            <div class="panel"><strong>streets</strong> · Charles St, curbs, sky walls</div>
-            <div class="panel"><strong>west_campus</strong> · dorms, tunnel, fences</div>
-            <div class="panel"><strong>entities</strong> · spawns, pickups, lights, teleports</div>
+            <div class="panel"><strong>bridge.py</strong> · deck, arch ribs, piers, parapets, fascia lettering</div>
+            <div class="panel"><strong>knott_hall.py</strong> · facade, windows, mullions, interior</div>
+            <div class="panel"><strong>knott_terrain.py</strong> · hillside, driveway, retaining walls</div>
+            <div class="panel"><strong>streets.py</strong> · Charles St, curbs, sky walls</div>
+            <div class="panel"><strong>west_campus.py</strong> · dorms, tunnel, fences</div>
+            <div class="panel"><strong>entities.py</strong> · spawns, pickups, lights, teleports</div>
           </div>
           <p class="small muted">↓ how the pieces fit together</p>
         </section>
@@ -204,7 +284,7 @@ World shell
       <!-- 8 · NAMING CONVENTIONS -->
       <section>
         <h2>Naming conventions</h2>
-        <p class="small muted">Constants read as <code>AREA_FEATURE_SUFFIX</code> &mdash;
+        <p class="small muted">Constants read as <code>&lt;AREA&gt;_&lt;FEATURE&gt;_&lt;SUFFIX&gt;</code> &mdash;
           once you know the vocabulary, names self-describe.</p>
         <div class="grid cols-2 small">
           <div class="panel">
@@ -224,6 +304,37 @@ World shell
           <code>constants.py</code> &amp; the docs.</p>
       </section>
 
+      <!-- 8b · UNDERSTANDING THE CODE -->
+      <section>
+        <h2>Understanding the code</h2>
+        <div class="grid cols-2">
+          <ul class="small">
+            <li><strong>Procedural at heart</strong> &mdash; the world is built by
+              <em>functions that emit geometry</em>, not a tree of objects. Each
+              module's <code>build()</code> returns plain
+              <code>(brushes, entities)</code>.</li>
+            <li><strong>OOP where it earns its keep</strong> &mdash;
+              <code>@dataclass</code> <code>Face</code> / <code>Brush</code> /
+              <code>Entity</code> model the <code>.map</code> format;
+              <code>MapBuilder</code> collects &amp; serialises it.</li>
+            <li><strong>Spec dataclasses</strong> &mdash;
+              <code>BridgeSpec</code>, <code>KnottSpec</code>,
+              <code>DormSpec</code>, <code>LightingPreset</code> bundle related
+              constants into one tidy value.</li>
+          </ul>
+          <ul class="small">
+            <li><strong>Generators</strong> &mdash; <code>yield</code> walks floors,
+              arch voussoirs &amp; window rows lazily instead of building big lists.</li>
+            <li><strong>Pure modules</strong> &mdash; no I/O or globals; geometry in,
+              geometry out, so everything is testable &amp; deterministic.</li>
+            <li><strong>One source of truth</strong> &mdash; every dimension lives
+              in <code>constants.py</code>, which keeps the math honest.</li>
+          </ul>
+        </div>
+        <p class="small muted">Quake brushes are inherently <em>data</em> &mdash; so a
+          functional, data-first style fits better than deep class hierarchies.</p>
+      </section>
+
       <!-- 9 · BUILD PIPELINE -->
       <section>
         <h2>The build pipeline</h2>
@@ -240,27 +351,6 @@ generate_map.py   →  loyola.map      (Python assembles the world)
         </code></pre>
         <p class="small"><code>just compile-fast</code> for iteration ·
           <code>just compile</code> for a full vis pass before release.</p>
-      </section>
-
-      <!-- 9b · TRENCHBROOM -->
-      <section data-background-image="../ref/trenchbroom.png"
-               data-background-size="cover"
-               data-background-position="center">
-        <div class="scrim">
-          <h2>Open it in TrenchBroom</h2>
-          <ul>
-            <li>The generated <code>loyola.map</code> loads straight into
-              <strong>TrenchBroom</strong> &mdash; brushes, entities &amp;
-              textures all editable by hand.</li>
-            <li>Great for <strong>eyeballing geometry</strong>, checking spawns,
-              and spotting leaks the compiler would flag.</li>
-            <li>In some cases we've <strong>back-ported edits</strong> &mdash;
-              tweak a brush in TrenchBroom, then fold the change back into the
-              Python so the source stays the single source of truth.</li>
-            <li>Round-trips cleanly: Python&nbsp;&rarr;&nbsp;<code>.map</code>
-              &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
-          </ul>
-        </div>
       </section>
 
       <!-- 10 · TESTING -->
@@ -283,20 +373,20 @@ generate_map.py   →  loyola.map      (Python assembles the world)
         <p class="subtitle">Frag time</p>
         <h2>Play it</h2>
         <pre><code class="language-bash" data-trim>
-just                       # setup → generate → compile-fast → deploy
+just all                   # setup → generate → compile-fast → deploy
 quake -game id1 +map loyola
         </code></pre>
         <ul class="small">
           <li><strong>Single-player &amp; deathmatch spawns</strong> across bridge, campus &amp; hall.</li>
           <li><strong>Rocket launchers</strong> on the deck and Knott Hall floors.</li>
-          <li><strong>Teleport arches</strong> warp you to rooftops &amp; the deck crown.</li>
+          <li><strong>Teleport arches</strong> warp you to rooftops, decks &amp; abutments.</li>
         </ul>
       </section>
 
       <!-- 12 · LINKS -->
       <section>
         <h2>Dig deeper</h2>
-        <div class="grid cols-2">
+        <div class="grid cols-3">
           <div class="panel">
             <span class="tag">Code</span>
             <p class="small"><a href="https://github.com/aclark4life/quake-loyola">github.com/aclark4life/quake-loyola</a></p>
@@ -306,9 +396,39 @@ quake -game id1 +map loyola
             <p class="small"><a href="https://quake-loyola.readthedocs.io/">quake-loyola.readthedocs.io</a><br />
               layout · terminology · textures · pipeline</p>
           </div>
+          <div class="panel">
+            <span class="tag">Release</span>
+            <p class="small"><a href="https://github.com/aclark4life/quake-loyola/releases/tag/v0.2.0">v0.2.0</a><br />
+              latest tagged build</p>
+          </div>
         </div>
         <p class="small muted" style="margin-top:0.6em;">Built with Python · ericw-tools ·
-          <code>just</code> · pytest · Sphinx</p>
+          just · pytest · Sphinx · AI</p>
+      </section>
+
+      <!-- 12b · WHAT COULD BE BETTER -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">Room to grow</p>
+        <h2>What could make this even better?</h2>
+        <ul class="small">
+          <li><strong>Tighter real-world accuracy</strong> &mdash; proportions
+            still lean on eyeballed reference photos.</li>
+          <li><strong>Automated reference gathering</strong> &mdash; imagine
+            <strong>Claude driving Playwright</strong> to browse
+            <strong>Google Maps</strong>, pull Street View angles &amp;
+            measurements, and feed them straight into the geometry.</li>
+          <li><strong>Static type checking</strong> &mdash; most geometry
+            functions are still untyped; adding <strong>type hints + mypy</strong>
+            (e.g. a <code>Vec3</code> alias, <code>-&gt; list[Brush]</code>
+            returns) would catch argument-order &amp; unit bugs in CI instead of
+            after the fact.</li>
+          <li><strong>Realistic trees</strong> &mdash; the current foliage is
+            crude; proper models or denser <code>func</code> detail would make
+            the campus greenery far more convincing.</li>
+          <li><strong>Less manual round-tripping</strong> &mdash; close the loop
+            so TrenchBroom tweaks &amp; <code>viewpos</code> captures flow back
+            into the Python automatically.</li>
+        </ul>
       </section>
 
       <!-- 13 · CLOSING -->
@@ -316,7 +436,8 @@ quake -game id1 +map loyola
                data-background-image="../screenshot.png"
                data-background-size="cover"
                data-background-position="center 38%">
-        <h1>Frag on.</h1>
+        <h1>Happy 30th Quake!</h1>
+        <p class="subtitle">Thanks for playing.</p>
         <p class="subtitle">Questions?</p>
       </section>
 
