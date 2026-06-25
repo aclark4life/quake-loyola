@@ -129,7 +129,7 @@
             <li><strong><code>bridge.py</code></strong> &mdash; a bridge-specific
               <code>render_text_fascia()</code> that additionally queries
               <code>deck_top_z(x)</code> so each letter's Z follows the arch curve.</li>
-            <li>A <code>1</code> in the binary pattern for a row means: draw a
+            <li>A <strong>set bit</strong> in a row means: draw a
               pixel block there &mdash; emitting a small raised
               <strong>Quake brush</strong>; consecutive pixels in a row are
               merged into one box to avoid T-junction sparkling.</li>
@@ -187,22 +187,44 @@
         </ul>
       </section>
 
-      <!-- 3a · ARE WE BETTER OFF -->
-      <section data-background-color="#0a0807">
-        <p class="subtitle">Then vs. now</p>
-        <h2>Is this better?</h2>
-        <ul>
-          <li>Back in the <strong>90s</strong>, a level like this meant
-            <strong>days, weeks, or months</strong> hunched over an editor &mdash;
-            placing every brush, vertex, and texture by hand.</li>
-          <li>Lose the source &mdash; as I did with my original map &mdash; and
-            <strong>all that work was simply gone</strong>.</li>
-          <li>Now the whole world is <strong>described in Python</strong> and
-            rebuilt with one command &mdash; <em>version-controlled</em>,
-            <em>diffable</em>, and <em>regenerable</em> in seconds.</li>
-          <li>With <strong>AI</strong> doing much of the typing, the bottleneck
-            shifts from <em>labour</em> to <em>ideas</em>.</li>
-        </ul>
+      <!-- 3a · ARE WE BETTER OFF (vertical group) -->
+      <section>
+        <section data-background-color="#0a0807">
+          <p class="subtitle">Then vs. now</p>
+          <h2>Is this better?</h2>
+          <ul>
+            <li>Back in the <strong>90s</strong>, a level like this meant
+              <strong>days, weeks, or months</strong> hunched over an editor &mdash;
+              placing every brush, vertex, and texture by hand.</li>
+            <li>Lose the source &mdash; as I did with my original map &mdash; and
+              <strong>all that work was simply gone</strong>.</li>
+            <li>Now the whole world is <strong>described in Python</strong> and
+              rebuilt with one command &mdash; <em>version-controlled</em>,
+              <em>diffable</em>, and <em>regenerable</em> in seconds.</li>
+            <li>With <strong>AI</strong> doing much of the typing, the bottleneck
+              shifts from <em>labour</em> to <em>ideas</em>.</li>
+          </ul>
+        </section>
+
+        <!-- 3a-b · ARCHITECTURE -->
+        <section data-background-color="#0a0807">
+          <p class="subtitle">Unexpected lesson</p>
+          <h2>Architecture?!?</h2>
+          <p class="small">Prompting the AI to build real buildings means learning
+            what the parts are actually called.</p>
+          <table class="small" style="width:100%;border-collapse:collapse;border:2px solid #b5651d;background:#1c1712;font-family:'Share Tech Mono','JetBrains Mono',monospace">
+            <tr style="background:#3a2c1f"><th style="text-align:left;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">Term</th><th style="text-align:left;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">What it is</th></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Parapet</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The low protective wall running along the top edge of the bridge deck</td></tr>
+            <tr style="background:#15110d"><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Fascia</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The flat face of the parapet — where <em>LOYOLA UNIVERSITY MARYLAND</em> is carved</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Pier</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">A vertical support column that carries the arch spans over Charles Street</td></tr>
+            <tr style="background:#15110d"><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Voussoir</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">One wedge-shaped block in an arch ring; the arch is assembled from many of these</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Mullion</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">A vertical (or horizontal) divider strip between window panes</td></tr>
+            <tr style="background:#15110d"><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Lintel</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The horizontal beam spanning the top of a door or window opening</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Transom</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">A small window above a door, divided by mullions into panes</td></tr>
+            <tr style="background:#15110d"><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Embankment</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The sloped earthwork that rises up to meet the bridge on the west side</td></tr>
+            <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Sill</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The horizontal ledge at the base of a window opening</td></tr>
+          </table>
+        </section>
       </section>
 
       <!-- 4 · THE TWIST -->
