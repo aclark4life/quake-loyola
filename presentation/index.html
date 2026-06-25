@@ -28,51 +28,11 @@
                data-background-position="center 38%">
         <p class="subtitle">A Quake 1 single-player &amp; deathmatch map &mdash; generated from Python with AI assistance</p>
         <h1>Quake&nbsp;&middot;&nbsp;Loyola</h1>
-        <p class="muted">The pedestrian bridge, Knott Hall, Seton &amp; Hopkins Court at<br />Loyola University Maryland</p>
+        <p class="muted">The pedestrian bridge, Knott Hall, Seton &amp; Hopkins Court dormitories at<br />Loyola University Maryland</p>
         <p class="small muted">↓ / Space to advance &nbsp;·&nbsp; Esc for overview</p>
       </section>
 
-      <!-- 2 · WHAT IS THIS -->
-      <section data-background-image="../screenshot.png"
-               data-background-size="cover"
-               data-background-position="center 38%">
-        <div class="scrim">
-          <h2>What is this?</h2>
-          <ul>
-            <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
-            <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
-              campus bridge over Charles Street, the 1896 <strong>Knott Hall</strong>,
-              and the <strong>Seton &amp; Hopkins Court</strong> dorms on west campus.</li>
-            <li>Every brush, light, and spawn point is emitted by
-              <strong>Python code</strong> (written with <strong>AI assistance</strong>)
-              &mdash; no hand-editing in an editor.</li>
-            <li>An <strong>exploration</strong> of what AI can do,
-              and working to <strong>understand the code</strong> it writes along the way.</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- 2b · HOW IS THIS DONE -->
-      <section data-background-color="#0a0807">
-        <p class="subtitle">The workflow</p>
-        <h2>How is this done?</h2>
-        <ul>
-          <li><strong>Mostly prompting</strong> &mdash; describing geometry in
-            plain language and letting the AI emit the Python.</li>
-          <li><strong>Reference photos</strong> in <code>ref/</code> &mdash; real
-            shots of the bridge, hall &amp; dorms guide proportions and detail
-            &mdash; alongside screenshots from a Quake map I built in the
-            <strong>90s</strong> whose source code is long lost.</li>
-          <li><strong>TrenchBroom round-trips</strong> &mdash; open
-            <code>loyola.map</code>, eyeball or tweak geometry, then fold changes
-            back into the Python.</li>
-          <li><strong>Quake's <code>viewpos</code></strong> &mdash; print the
-            player's coordinates in-game to capture exact spots for spawns,
-            teleports &amp; props.</li>
-        </ul>
-      </section>
-
-      <!-- 3 · THE REAL PLACE -->
+      <!-- 2 · THE REAL PLACE -->
       <section data-background-image="../ref/bridge04.png"
                data-background-size="cover"
                data-background-position="center">
@@ -94,7 +54,7 @@
         </div>
       </section>
 
-      <!-- 3b · DEMO VIDEO -->
+      <!-- 2b · DEMO VIDEO -->
       <section data-background-color="#0a0807">
         <p class="subtitle">See it in motion</p>
         <h2>Demo</h2>
@@ -105,6 +65,83 @@
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowfullscreen></iframe>
         </div>
+      </section>
+
+      <!-- 3 · WHAT IS THIS -->
+      <section data-background-image="../screenshot.png"
+               data-background-size="cover"
+               data-background-position="center 38%">
+        <div class="scrim">
+          <h2>What is this?</h2>
+          <ul>
+            <li>An <strong>exploration</strong> of what AI can do,
+              and working to <strong>understand the code</strong> it writes along the way.</li>
+            <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
+            <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
+              campus bridge over Charles Street, the 1896 <strong>Knott Hall</strong>,
+              and the <strong>Seton &amp; Hopkins Court dormitories</strong> on west campus.</li>
+            <li>Every brush, light, and spawn point is emitted by
+              <strong>Python code</strong> (written with <strong>AI assistance</strong>)
+              &mdash; no hand-editing in an editor.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 3a · WHY IS THIS -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">The motivation</p>
+        <h2>Why is this?</h2>
+        <ul>
+          <li>I've long wanted to <strong>recreate this map</strong> &mdash; the
+            campus bridge and dorms I first built in Quake back in the
+            <strong>90s</strong>, whose source is long gone.</li>
+          <li>I've been <strong>experimenting with map generators</strong> since
+            the <strong>early days of AI</strong> &mdash; the idea of describing a
+            world in code and letting a machine help build it.</li>
+          <li>For years the tooling just <strong>wasn't good enough</strong> &mdash;
+            it would stall, hallucinate geometry, or lose the thread.</li>
+          <li>Only <strong>recently</strong> has AI become capable enough to
+            actually <strong>see it through</strong> &mdash; and that's what made
+            this map possible.</li>
+        </ul>
+      </section>
+
+      <!-- 2b · HOW IS THIS DONE -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">The workflow</p>
+        <h2>How is this?</h2>
+        <ul>
+          <li><strong>Mostly prompting</strong> &mdash; describing geometry in
+            plain language and letting the AI emit the Python.</li>
+          <li><strong>Reference photos</strong> in <code>ref/</code> &mdash; real
+            shots of the bridge, hall &amp; dorms guide proportions and detail
+            &mdash; alongside screenshots from a Quake map I built in the
+            <strong>90s</strong> whose source code is long lost.</li>
+          <li><strong>Quake's <code>viewpos</code></strong> &mdash; print the
+            player's coordinates in-game to capture exact spots for spawns,
+            teleports &amp; props.</li>
+          <li><strong>TrenchBroom round-trips</strong> &mdash; open
+            <code>loyola.map</code>, eyeball or tweak geometry, then fold changes
+            back into the Python.</li>
+        </ul>
+      </section>
+
+      <!-- 3a · ARE WE BETTER OFF -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">Then vs. now</p>
+        <h2>Are we better off?</h2>
+        <ul>
+          <li>Back in the <strong>90s</strong>, a level like this meant
+            <strong>days, weeks, or months</strong> hunched over an editor &mdash;
+            placing every brush, vertex, and texture by hand.</li>
+          <li>Lose the source &mdash; as I did with my original map &mdash; and
+            <strong>all that work was simply gone</strong>.</li>
+          <li>Now the whole world is <strong>described in Python</strong> and
+            rebuilt with one command &mdash; <em>version-controlled</em>,
+            <em>diffable</em>, and <em>regenerable</em> in seconds.</li>
+          <li>With <strong>AI</strong> doing much of the typing, the bottleneck
+            shifts from <em>labour</em> to <em>ideas</em>.</li>
+        </ul>
       </section>
 
       <!-- 4 · THE TWIST -->
@@ -284,7 +321,7 @@ World shell
       <!-- 8 · NAMING CONVENTIONS -->
       <section>
         <h2>Naming conventions</h2>
-        <p class="small muted">Constants read as <code>&lt;AREA&gt;_&lt;FEATURE&gt;_&lt;SUFFIX&gt;</code> &mdash;
+        <p class="small muted">Constants are defined as <code>&lt;AREA&gt;_&lt;FEATURE&gt;_&lt;SUFFIX&gt;</code> &mdash;
           once you know the vocabulary, names self-describe.</p>
         <div class="grid cols-2 small">
           <div class="panel">
@@ -333,6 +370,31 @@ World shell
         </div>
         <p class="small muted">Quake brushes are inherently <em>data</em> &mdash; so a
           functional, data-first style fits better than deep class hierarchies.</p>
+      </section>
+
+      <!-- 8c · GENERATE_MAP -->
+      <section>
+        <h2><code>generate_map.py</code></h2>
+        <p class="small muted">The whole entry point &mdash; loop every module,
+          collect its geometry, serialise one <code>.map</code>:</p>
+        <pre><code class="language-python" data-trim>
+MODULES = [streets, west_campus, bridge, knott_terrain, knott_hall, entities]
+
+def build_map():
+    """Collect every module's geometry into a MapBuilder."""
+    mb = MapBuilder()
+    for mod in MODULES:
+        brushes, ents = mod.build()
+        mb.add_brushes(brushes)
+        mb.add_entities(ents)
+    return mb
+
+def main():
+    mb = build_map()
+    with open("loyola.map", "w") as f:
+        f.write(mb.to_map(WORLDSPAWN_FIELDS))
+    print(f"loyola.map written — {len(mb.brushes)} brushes, {len(mb.entities)} entities")
+        </code></pre>
       </section>
 
       <!-- 9 · BUILD PIPELINE -->
