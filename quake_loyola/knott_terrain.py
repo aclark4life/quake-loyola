@@ -225,10 +225,22 @@ def build():
             KNOTT_DRIVEWAY_WS_X1,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
             KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
+        )
+    )
+    # Cement curb strip along road edge of the ground section
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
         )
     )
     # East sidewalk
