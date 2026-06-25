@@ -187,6 +187,9 @@ ENNIS_WALL_PILLAR_HW = 14
 ENNIS_WALL_T = 8
 ENNIS_WALL_X_OFFSET = 48
 
+# Pixel-font bitmaps for fascia lettering. Each entry is a list of rows (top→bottom),
+# where each row is a 4-bit Python integer: 1 = draw a block, 0 = empty space.
+# The geometry modules read these values and emit Quake brush boxes for each set bit.
 FASCIA_FONT = {
     "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
     "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],
