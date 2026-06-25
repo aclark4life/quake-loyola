@@ -99,7 +99,7 @@
 .reveal strong { color: var(--q-ember2); font-weight: 700; }
 .reveal em { color: var(--q-steel); font-style: italic; }
 
-.reveal ul { list-style: none; margin-left: 0.2em; }
+.reveal ul { list-style: none; margin-left: 0.2em; text-align: left; }
 .reveal ul li {
   position: relative;
   padding-left: 1.3em;
@@ -331,9 +331,12 @@
   height: 100%;
 }
 
-/* Down-arrow cue on slides that have vertical sub-slides */
+/* Down-arrow cue on slides that have vertical sub-slides.
+   position:fixed inside a CSS-transformed ancestor (.slides) is anchored
+   to that ancestor, so the arrow always sits at the slide viewport bottom
+   regardless of how much content the current section contains. */
 .down-cue {
-  position: absolute;
+  position: fixed;
   bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
@@ -344,6 +347,7 @@
   pointer-events: none;
   font-family: "Share Tech Mono", monospace;
   letter-spacing: 0;
+  z-index: 20;
 }
 @keyframes bounce-down {
   0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.75; }
