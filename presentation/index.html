@@ -44,7 +44,7 @@
       <!-- 1b2 · PRECEDED IN SPIRIT -->
       <section data-background-color="#0a0807">
         <p class="subtitle">Preceded in spirit by</p>
-        <h2>Earlier AI-built experiments</h2>
+        <h2>Previous AI-first projects</h2>
         <div class="grid cols-2 small">
           <div class="panel"><span class="tag">dbx-python-cli</span>
             <p class="small">A command-line tool for DBX Python development tasks.</p>
@@ -87,27 +87,58 @@
         </div>
       </section>
 
-      <!-- 3 · WHAT IS THIS -->
-      <section data-background-image="../screenshot.png"
-               data-background-size="cover"
-               data-background-position="center 38%">
-        <div class="scrim">
-          <h2>What is this?</h2>
-          <ul>
-            <li>An <strong>exploration</strong> of what AI can do,
-              and working to <strong>understand the code</strong> it writes along the way.</li>
-            <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
-            <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
-              campus bridge over Charles Street, the 1896 <strong>Knott Hall</strong>,
-              and the <strong>Seton &amp; Hopkins Court dormitories</strong> on west campus.</li>
-            <li>Every brush, light, and spawn point is emitted by
-              <strong>Python code</strong> (written with <strong>AI assistance</strong>)
-              &mdash; no hand-editing in an editor.</li>
-            <li>It even reproduces the carved
-              <em>&ldquo;LOYOLA UNIVERSITY MARYLAND&rdquo;</em> parapet lettering
-              from the real bridge.</li>
+      <!-- 3 · WHAT IS THIS (vertical group) -->
+      <section>
+        <section data-background-image="../screenshot.png"
+                 data-background-size="cover"
+                 data-background-position="center 38%">
+          <div class="scrim">
+            <h2>What is this?</h2>
+            <ul>
+              <li>An <strong>exploration</strong> of what AI can do
+                and working to <strong>understand the code</strong> it writes along the way.</li>
+              <li>A playable <strong>Quake 1</strong> single-player &amp; deathmatch level&hellip;</li>
+              <li>&hellip;that recreates a <strong>real place</strong>: Loyola's
+                campus bridge over Charles Street, the 1896 <strong>Knott Hall</strong>,
+                and the <strong>Seton &amp; Hopkins Court dormitories</strong> on west campus.</li>
+              <li>Every brush, light, and spawn point is emitted by
+                <strong>Python code</strong> (written with <strong>AI assistance</strong>)
+                &mdash; no hand-editing in an editor.</li>
+              <li>It even reproduces the carved
+                <em>&ldquo;LOYOLA UNIVERSITY MARYLAND&rdquo;</em> parapet lettering
+                from the real bridge.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- 3b · FASCIA TEXT -->
+        <section data-background-color="#0a0807">
+          <p class="subtitle">A detail</p>
+          <h2>How the fascia text is made</h2>
+          <ul class="small">
+            <li><strong><code>constants.py</code></strong> &mdash; defines the
+              <code>FASCIA_FONT</code> bitmap dictionary and the
+              <code>BRIDGE_FASCIA_TEXT</code> string. Each entry is a list of
+              binary row patterns, e.g. the letter <code>L</code>:
+              <pre><code>"L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1111]</code></pre>
+            </li>
+            <li><strong><code>geometry.py</code></strong> &mdash; general-purpose
+              <code>render_text_flat()</code> and <code>render_text_vertical()</code>
+              functions that walk the bitmap and emit merged brush runs for any
+              flat wall surface.</li>
+            <li><strong><code>bridge.py</code></strong> &mdash; a bridge-specific
+              <code>render_text_fascia()</code> that additionally queries
+              <code>deck_top_z(x)</code> so each letter's Z follows the arch curve.</li>
+            <li>A <code>1</code> in the binary pattern for a row means: draw a
+              pixel block there &mdash; emitting a small raised
+              <strong>Quake brush</strong>; consecutive pixels in a row are
+              merged into one box to avoid T-junction sparkling.</li>
+            <li>Word-initial capitals render at full pixel size; other letters
+              shrink by one unit so spacing stays proportional.</li>
+            <li>The north face mirrors each glyph horizontally so the letters
+              read correctly from both sides of the bridge.</li>
           </ul>
-        </div>
+        </section>
       </section>
 
       <!-- 3a · WHY IS THIS -->
@@ -177,7 +208,7 @@
       <!-- 4 · THE TWIST -->
       <section data-background-color="#0a0807">
         <p class="subtitle">Look ma, no editor</p>
-        <h2>Python &mdash; no manual editing</h2>
+        <h2>All Python &mdash; no manual editing</h2>
         <p>One command assembles the whole world and writes a Quake
           <code>.map</code> file:</p>
         <pre><code class="language-bash" data-trim>
