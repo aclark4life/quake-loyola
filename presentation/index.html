@@ -32,6 +32,15 @@
         <p class="small muted">↓ / Space to advance &nbsp;·&nbsp; Esc for overview</p>
       </section>
 
+      <!-- 1b · TAGLINE -->
+      <section data-background-color="#0a0807">
+        <h2>
+          <span>Serious lessons</span>
+          <span class="fragment">from a not so serious task:</span>
+          <span class="fragment">building a Quake map generator.</span>
+        </h2>
+      </section>
+
       <!-- 2 · THE REAL PLACE -->
       <section data-background-image="../ref/bridge04.png"
                data-background-size="cover"
@@ -128,8 +137,8 @@
             player's coordinates in-game to capture exact spots for spawns,
             teleports &amp; props.</li>
           <li><strong>TrenchBroom round-trips</strong> &mdash; open
-            <code>loyola.map</code>, eyeball or tweak geometry, then fold changes
-            back into the Python.</li>
+            <code>loyola.map</code>, eyeball or tweak geometry, then tell the AI to
+            fold changes back into the Python.</li>
         </ul>
       </section>
 
@@ -478,7 +487,7 @@ quake -game id1 +map loyola
       <!-- 12b · WHAT COULD BE BETTER -->
       <section data-background-color="#0a0807">
         <p class="subtitle">Room to grow</p>
-        <h2>What could make this even better?</h2>
+        <h2>What could make this better?</h2>
         <div class="grid cols-3" style="font-size:0.8em;">
           <div class="panel">
             <span class="tag">AI</span>
@@ -506,6 +515,53 @@ quake -game id1 +map loyola
                 make the campus greenery far more convincing.</li>
             </ul>
           </div>
+        </div>
+      </section>
+
+      <!-- 12c · ABOUT THOSE ROBOTS -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">Lessons learned</p>
+        <h2>About those robots&hellip;</h2>
+        <ul class="small">
+          <li><strong>Great at the tedious parts</strong> &mdash; emitting
+            hundreds of brushes, wiring up entities, refactoring a 6,000-line
+            script into a package.</li>
+          <li><strong>Still needs a human in the loop</strong> &mdash; it guesses
+            wrong, drifts, and happily writes confidently-broken geometry; you
+            have to <strong>verify</strong> (compile, test, walk the map).</li>
+          <li><strong>You own the code</strong> &mdash; if you can't read and
+            reason about what it wrote, you can't trust, fix, or extend it.</li>
+          <li><strong>Shared vocabulary &amp; tests are leverage</strong> &mdash;
+            naming conventions, golden MD5, and CI keep the AI honest.</li>
+          <li><strong>The bottleneck is now ideas</strong> &mdash; the work
+            shifts from typing to <em>deciding what to build</em>.</li>
+        </ul>
+      </section>
+
+      <!-- 12d · AGENTS.md -->
+      <section>
+        <p class="subtitle">The rulebook</p>
+        <h2><code>AGENTS.md</code> &amp; copilot-instructions</h2>
+        <p class="small muted">One file the AI reads first &mdash; it teaches the
+          agent how this repo works, so prompts stay short.</p>
+        <div class="grid cols-2 small">
+          <div class="panel"><span class="tag">Map</span>
+            <p class="small">Project layout &amp; what each module owns; the
+              <code>build() → (brushes, entities)</code> contract; coordinate
+              system (X east, Y south, Z up); <code>Textures.*</code> constants;
+              no side effects in modules.</p></div>
+          <div class="panel"><span class="tag">Naming</span>
+            <p class="small">The <code>&lt;AREA&gt;_&lt;FEATURE&gt;_&lt;SUFFIX&gt;</code>
+              glossary &mdash; suffixes, compass &amp; feature abbreviations &mdash;
+              the shared vocabulary humans &amp; AI both use.</p></div>
+          <div class="panel"><span class="tag">Workflow</span>
+            <p class="small">The full pipeline every change must run
+              (<code>generate → compile-fast → deploy</code>); never run
+              <code>qbsp</code> alone; update golden + test on geometry changes.</p></div>
+          <div class="panel"><span class="tag">Process</span>
+            <p class="small">Wait for confirmation before committing; always
+              commit <em>and</em> push together; user is primary author, AI is
+              <code>Co-authored-by</code>.</p></div>
         </div>
       </section>
 
