@@ -962,7 +962,13 @@ def build():
             "hint",
         )
     )
-    BRUSHES.append(box(WORLD_X1, -140, FLOOR_Z1, WORLD_X2, -136, WORLD_Z2, "hint"))
+    # North edge hint: limited to the straight section only (x≤BRIDGE_EAST_PIVOT_X).
+    # In the angled east section the north parapet shifts northward (more negative Y), so
+    # extending this hint beyond the pivot would place it inside the sheared parapet brush,
+    # causing qbsp to cull the parapet's outer face (see-through wall bug).
+    BRUSHES.append(
+        box(WORLD_X1, -140, FLOOR_Z1, BRIDGE_EAST_PIVOT_X, -136, WORLD_Z2, "hint")
+    )
     BRUSHES.append(box(WORLD_X1, 136, FLOOR_Z1, WORLD_X2, 140, WORLD_Z2, "hint"))
 
     # ════════════════════════════════════════════════════════════════════════════════
