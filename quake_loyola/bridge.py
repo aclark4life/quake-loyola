@@ -1097,8 +1097,11 @@ def build():
     # visible under the KH bridge approach (ref: bridge01).
     # ════════════════════════════════════════════════════════════════════════════════
     if KNOTT_WALKWAY_ENABLED:
-        # Position just under the south edge of the bridge deck
-        support_y_center = BRIDGE.y1  # south edge of bridge = -136
+        # Position just under the south edge of the bridge deck, shifted north
+        # so the beam sits fully under the deck (south face flush with deck edge)
+        support_y_center = (
+            BRIDGE.y1 + BRIDGE_SUPPORT_HALF_W
+        )  # flush with south deck edge
         support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
         support_y1 = support_y_center - support_half_width
         support_y2 = support_y_center + support_half_width
