@@ -167,7 +167,7 @@
         <p>One command assembles the whole world and writes a Quake
           <code>.map</code> file:</p>
         <pre><code class="language-bash" data-trim>
-python3 generate_map.py      # → loyola.map
+python generate_map.py      # → loyola.map
 # or simply:
 just generate
         </code></pre>
@@ -195,6 +195,24 @@ just generate
               &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
           </ul>
         </div>
+      </section>
+
+      <!-- 9 · BUILD PIPELINE -->
+      <section>
+        <h2>The build pipeline</h2>
+        <pre><code class="language-text" data-trim>
+generate_map.py   →  loyola.map      (Python assembles the world)
+      │
+   qbsp           →  loyola.bsp      (brushes → BSP tree)
+      │
+   vis            →  PVS             (potentially-visible sets)
+      │
+   light          →  loyola.lit      (ray-traced sun + dynamic lights)
+      │
+   deploy         →  /Applications/id1/maps/
+        </code></pre>
+        <p class="small"><code>just compile-fast</code> for iteration ·
+          <code>just compile</code> for a full vis pass before release.</p>
       </section>
 
       <!-- 4b · EVOLUTION -->
@@ -411,24 +429,6 @@ def main():
         f.write(mb.to_map(WORLDSPAWN_FIELDS))
     print(f"loyola.map written — {len(mb.brushes)} brushes, {len(mb.entities)} entities")
         </code></pre>
-      </section>
-
-      <!-- 9 · BUILD PIPELINE -->
-      <section>
-        <h2>The build pipeline</h2>
-        <pre><code class="language-text" data-trim>
-generate_map.py   →  loyola.map      (Python assembles the world)
-      │
-   qbsp           →  loyola.bsp      (brushes → BSP tree)
-      │
-   vis            →  PVS             (potentially-visible sets)
-      │
-   light          →  loyola.lit      (ray-traced sun + dynamic lights)
-      │
-   deploy         →  /Applications/id1/maps/
-        </code></pre>
-        <p class="small"><code>just compile-fast</code> for iteration ·
-          <code>just compile</code> for a full vis pass before release.</p>
       </section>
 
       <!-- 10 · TESTING -->
