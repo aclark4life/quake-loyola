@@ -103,15 +103,14 @@
                 and the <strong>Seton &amp; Hopkins Court dormitories</strong> on west campus.</li>
               <li>Every brush, light, and spawn point is emitted by
                 <strong>Python code</strong> (written with <strong>AI assistance</strong>)
-                &mdash; no hand-editing in an editor.</li>
+                &mdash; no hand-editing in an editor (e.g. TrenchBroom).</li>
               <li>It even reproduces the carved
                 <em>&ldquo;LOYOLA UNIVERSITY MARYLAND&rdquo;</em> parapet lettering
                 from the real bridge.</li>
             </ul>
           </div>
+          <span class="down-cue">▼</span>
         </section>
-
-        <!-- 3b · FASCIA TEXT -->
         <section data-background-color="#0a0807">
           <p class="subtitle">A detail</p>
           <h2>How the fascia text is made</h2>
@@ -201,19 +200,18 @@
             <li>Now the whole world is <strong>described in Python</strong> and
               rebuilt with one command &mdash; <em>version-controlled</em>,
               <em>diffable</em>, and <em>regenerable</em> in seconds.</li>
-            <li>With <strong>AI</strong> doing much of the typing, the bottleneck
+            <li>With <strong>AI</strong> doing much of the work, the bottleneck
               shifts from <em>labour</em> to <em>ideas</em>.</li>
           </ul>
+          <span class="down-cue">▼</span>
         </section>
-
-        <!-- 3a-b · ARCHITECTURE -->
         <section data-background-color="#0a0807">
           <p class="subtitle">Unexpected lesson</p>
           <h2>Architecture?!?</h2>
           <p class="small">Prompting the AI to build real buildings means learning
             what the parts are actually called.</p>
           <table class="small" style="width:100%;border-collapse:collapse;border:2px solid #b5651d;background:#1c1712;font-family:'Share Tech Mono','JetBrains Mono',monospace">
-            <tr style="background:#3a2c1f"><th style="text-align:left;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">Term</th><th style="text-align:left;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">What it is</th></tr>
+            <tr style="background:#3a2c1f"><th style="text-align:center;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">Term</th><th style="text-align:center;padding:5px 10px;border:1px solid #b5651d;color:#ff7a18;text-transform:uppercase;letter-spacing:.05em">Definition</th></tr>
             <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Parapet</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The low protective wall running along the top edge of the bridge deck</td></tr>
             <tr style="background:#15110d"><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Fascia</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">The flat face of the parapet — where <em>LOYOLA UNIVERSITY MARYLAND</em> is carved</td></tr>
             <tr><td style="padding:4px 10px;border:1px solid #3a2c1f;color:#ffb347"><strong>Pier</strong></td><td style="padding:4px 10px;border:1px solid #3a2c1f">A vertical support column that carries the arch spans over Charles Street</td></tr>
@@ -243,25 +241,48 @@ just generate
           The code itself was written <strong>with AI assistance</strong>.</p>
       </section>
 
-      <!-- 4c · TRENCHBROOM -->
-      <section data-background-image="../ref/trenchbroom.png"
-               data-background-size="cover"
-               data-background-position="center">
-        <div class="scrim">
-          <h2>Open it in TrenchBroom</h2>
+      <!-- 4c · TRENCHBROOM (vertical group) -->
+      <section>
+        <section data-background-image="../ref/trenchbroom.png"
+                 data-background-size="cover"
+                 data-background-position="center">
+          <div class="scrim">
+            <h2>Open it in TrenchBroom</h2>
+            <ul>
+              <li>The generated <code>loyola.map</code> loads straight into
+                <strong>TrenchBroom</strong> &mdash; brushes, entities &amp;
+                textures all editable by hand.</li>
+              <li>Great for <strong>eyeballing geometry</strong>, checking spawns,
+                and spotting leaks the compiler would flag.</li>
+              <li>In some cases we've <strong>back-ported edits</strong> &mdash;
+                tweak a brush in TrenchBroom, then fold the change back into the
+                Python so the source stays the single source of truth.</li>
+              <li>Round-trips cleanly: Python&nbsp;&rarr;&nbsp;<code>.map</code>
+                &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
+            </ul>
+          </div>
+          <span class="down-cue">▼</span>
+        </section>
+
+        <!-- 4c-b · TRENCHBROOM + AI -->
+        <section data-background-color="#0a0807">
+          <p class="subtitle">AI + TrenchBroom</p>
+          <h2>AI helps with the setup too</h2>
           <ul>
-            <li>The generated <code>loyola.map</code> loads straight into
-              <strong>TrenchBroom</strong> &mdash; brushes, entities &amp;
-              textures all editable by hand.</li>
-            <li>Great for <strong>eyeballing geometry</strong>, checking spawns,
-              and spotting leaks the compiler would flag.</li>
-            <li>In some cases we've <strong>back-ported edits</strong> &mdash;
-              tweak a brush in TrenchBroom, then fold the change back into the
-              Python so the source stays the single source of truth.</li>
-            <li>Round-trips cleanly: Python&nbsp;&rarr;&nbsp;<code>.map</code>
-              &nbsp;&rarr;&nbsp;TrenchBroom&nbsp;&rarr;&nbsp;Python.</li>
+            <li>TrenchBroom requires a <strong>game configuration</strong> &mdash;
+              a <code>.cfg</code> file describing entity definitions, WAD paths,
+              and compile tools. The AI wrote and debugged this from scratch.</li>
+            <li>Entity definitions (<code>.fgd</code>) tell TrenchBroom what
+              properties each Quake entity has. The AI generated a working
+              <code>.fgd</code> so spawns and lights display with correct labels.</li>
+            <li>Compile tool paths and <strong>custom compile profiles</strong>
+              (fast vis, full vis, light) were set up via AI-assisted iteration
+              &mdash; no reading through ericw-tools docs by hand.</li>
+            <li>Even the <strong>texture browser</strong> required pointing
+              TrenchBroom at the right WAD files &mdash; the AI knew which
+              settings to change.</li>
           </ul>
-        </div>
+        </section>
       </section>
 
       <!-- 9 · BUILD PIPELINE -->
@@ -311,6 +332,7 @@ generate_map.py   →  loyola.map      (Python assembles the world)
                 <strong>Read the Docs</strong>.</p></div>
           </div>
           <p class="small muted">↓ the shape of that change</p>
+          <span class="down-cue">▼</span>
         </section>
         <section>
           <h3>One file &rarr; eleven modules</h3>
@@ -324,22 +346,46 @@ generate_map.py   →  loyola.map      (Python assembles the world)
         </section>
       </section>
 
-      <!-- 5 · ARCHITECTURE / DATA MODEL -->
+      <!-- 5 · ARCHITECTURE / DATA MODEL (vertical group) -->
       <section>
-        <h2>The data model</h2>
-        <p class="small muted">Three dataclasses in <code>quake_loyola.mapdata</code> describe everything:</p>
-        <div class="grid cols-3">
-          <div class="panel"><span class="tag">Face</span>
-            <p class="small">Three coplanar points define a half-space, plus a
-              texture &amp; alignment.</p></div>
-          <div class="panel"><span class="tag">Brush</span>
-            <p class="small">An ordered list of faces bounding one convex solid.</p></div>
-          <div class="panel"><span class="tag">Entity</span>
-            <p class="small">A <code>classname</code> + key/values, optionally with
-              brushes (e.g. <code>func_detail</code>).</p></div>
-        </div>
-        <p class="small" style="margin-top:0.6em;"><strong>MapBuilder</strong> collects
-          world brushes &amp; entities, then <code>to_map()</code> serialises the scene.</p>
+        <section>
+          <h2>The data model</h2>
+          <p class="small muted">Three dataclasses in <code>quake_loyola.mapdata</code> describe everything:</p>
+          <div class="grid cols-3">
+            <div class="panel"><span class="tag">Face</span>
+              <p class="small">Three coplanar points define a half-space, plus a
+                texture &amp; alignment.</p></div>
+            <div class="panel"><span class="tag">Brush</span>
+              <p class="small">An ordered list of faces bounding one convex solid.</p></div>
+            <div class="panel"><span class="tag">Entity</span>
+              <p class="small">A <code>classname</code> + key/values, optionally with
+                brushes (e.g. <code>func_detail</code>).</p></div>
+          </div>
+          <p class="small" style="margin-top:0.6em;"><strong>MapBuilder</strong> collects
+            world brushes &amp; entities, then <code>to_map()</code> serialises the scene.</p>
+          <span class="down-cue">▼</span>
+        </section>
+
+        <!-- 5b · HALF-SPACE -->
+        <section data-background-color="#0a0807">
+          <p class="subtitle">A key concept</p>
+          <h2>What is a half-space?</h2>
+          <ul>
+            <li>An infinite plane divides all of 3D space into two halves &mdash;
+              everything on one side, and everything on the other.</li>
+            <li>Each <strong>Face</strong> in a Quake brush defines one such plane
+              (via three coplanar points). The half-space is the region
+              <em>behind</em> that plane (pointing inward).</li>
+            <li>A <strong>Brush</strong> is the <em>intersection</em> of several
+              half-spaces &mdash; "the region that is simultaneously behind
+              all these planes."</li>
+            <li>Because the intersection of half-spaces is always
+              <strong>convex</strong>, Quake brushes must also be convex &mdash;
+              no concave shapes allowed in a single brush.</li>
+            <li>Complex concave geometry is built by
+              <strong>combining multiple brushes</strong>, each one convex.</li>
+          </ul>
+        </section>
       </section>
 
       <!-- 6 · GEOMETRY PRIMITIVES -->
@@ -605,7 +651,31 @@ quake -game id1 +map loyola
         </ul>
       </section>
 
-      <!-- 12d · AGENTS.md -->
+      <!-- 12d · GOLDEN HASH -->
+      <section data-background-color="#0a0807">
+        <p class="subtitle">Keeping AI honest</p>
+        <h2>The golden hash</h2>
+        <ul class="small">
+          <li>Every time the map is generated, <code>test_regression.py</code>
+            computes an <strong>MD5 of the full <code>.map</code> text</strong>
+            and compares it to a known-good value hardcoded in the test.</li>
+          <li>It also checks exact <strong>brush and entity counts</strong>
+            (currently 822 brushes, 531 entities).</li>
+          <li>If the AI silently changes geometry &mdash; misplaces a brush,
+            drops a room, changes a texture &mdash; the hash
+            <strong>fails immediately in CI</strong> before anyone has to
+            open the map in-game.</li>
+          <li>Updating the hash is a <strong>deliberate act</strong>: you run
+            <code>just update-golden</code>, review the <code>.map</code>
+            diff in version control, and decide whether the change is
+            intentional.</li>
+          <li>It also enforces <strong>determinism</strong> &mdash; a separate
+            test checks that calling the generator twice produces the same
+            output, so there are no hidden random or time-dependent brushes.</li>
+        </ul>
+      </section>
+
+      <!-- 12e · AGENTS.md -->
       <section>
         <p class="subtitle">The rulebook</p>
         <h2><code>AGENTS.md</code> &amp; copilot-instructions</h2>
@@ -637,7 +707,7 @@ quake -game id1 +map loyola
                data-background-image="../screenshot.png"
                data-background-size="cover"
                data-background-position="center 38%">
-        <h1>Happy 30th Quake!</h1>
+        <h1>Happy 30th Quake! <span style="font-size:0.55em;opacity:0.75">(Shareware released June 22, 1996 &mdash; full retail July 22, 1996)</span></h1>
         <p class="subtitle">Thanks for playing.</p>
         <p class="subtitle">Questions?</p>
       </section>
