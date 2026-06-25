@@ -207,16 +207,28 @@ def build():
             Textures.ROAD,
         )
     )
-    # West sidewalk
+    # West sidewalk — cement from back road up to the E/W Ennis approach sidewalk
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
+        )
+    )
+    # West sidewalk — ground from E/W Ennis approach sidewalk to NW junction corner
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_WS_X1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.GROUND,
         )
     )
     # East sidewalk
