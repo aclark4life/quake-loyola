@@ -693,6 +693,35 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     )
 
 
+def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """One wedge segment of a horizontal curved ring lying in the X-Y plane, extruded in Z.
+    Derived from arch_seg via the coordinate mapping (arch_x→curb_z, arch_y→curb_x,
+    arch_z→curb_y): each point (a,b,c) in arch_seg becomes (b,c,a) in curb_seg.
+    Uses midpoint-normal tangent planes for inner/outer faces — no polygon jagging.
+    Center at (cx, cy); angles measured CCW from +X."""
+    t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    xi, yi = cx + rin * cm, cy + rin * sm
+    xo, yo = cx + rout * cm, cy + rout * sm
+    return Brush(
+        [
+            Face((cx, cy, z2), (cx, cy + 1, z2), (cx + 1, cy, z2), tex),  # top cap
+            Face((cx, cy, z1), (cx + 1, cy, z1), (cx, cy + 1, z1), tex),  # bottom cap
+            Face((cx, cy, z2), (cx + c1, cy + s1, z2), (cx, cy, z1), tex),  # radial t1
+            Face((cx, cy, z2), (cx, cy, z1), (cx + c2, cy + s2, z2), tex),  # radial t2
+            Face(
+                (xi, yi, z2), (xi, yi, z1), (xi - sm, yi + cm, z2), tex
+            ),  # inner curved
+            Face(
+                (xo, yo, z2), (xo - sm, yo + cm, z2), (xo, yo, z1), tex
+            ),  # outer curved
+        ]
+    )
+
+
 def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Solid pie-slice brush for filling the interior of an arch (no inner hole).
     Used to create func_illusionary teleport glows and solid arch infill."""

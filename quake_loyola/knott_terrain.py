@@ -20,6 +20,7 @@ from .constants import (
     BRIDGE_PILLAR_OVERHANG,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
+    ENNIS_CURB_W,
     ENNIS_HW,
     ENNIS_SW_EDGE,
     ENNIS_Y,
@@ -66,7 +67,7 @@ from .constants import (
     WORLD_Y1,
     Textures,
 )
-from .geometry import box, brush_ent, ramp_slab, ramp_slab_y, tri_prism
+from .geometry import box, brush_ent, curb_seg, ramp_slab, ramp_slab_y, tri_prism
 
 
 def build():
@@ -274,29 +275,41 @@ def build():
             Textures.ROAD,
         )
     )
+    _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
+    _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
+    _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
+    # GROUND fill — pie slices from centre to INNER radius only
     for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(0 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS)
-        angle_end = math.radians(
-            0 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        arc_x0 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
-            angle_start
-        )
-        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
-            angle_start
-        )
-        arc_x1 = KNOTT_DRIVEWAY_JCX_W + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
+        a0 = corner_index * _seg_deg
+        a1 = (corner_index + 1) * _seg_deg
+        t0, t1 = math.radians(a0), math.radians(a1)
         BRUSHES.append(
             tri_prism(
                 KNOTT_DRIVEWAY_JCX_W,
                 KNOTT_DRIVEWAY_EXT_Y2,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
+                KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t0),
+                KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t0),
+                KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t1),
+                KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+    # CEMENT curb ring — inner to outer radius, wedge segments with tangent-plane faces
+    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+        a0 = corner_index * _seg_deg
+        a1 = (corner_index + 1) * _seg_deg
+        BRUSHES.append(
+            curb_seg(
+                KNOTT_DRIVEWAY_JCX_W,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                _r_inner,
+                _r_outer,
+                a0,
+                a1,
                 Textures.CEMENT,
             )
         )
