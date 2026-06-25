@@ -116,10 +116,8 @@
           <h2>How the fascia text is made</h2>
           <ul class="small">
             <li><strong><code>constants.py</code></strong> &mdash; defines the
-              <code>FASCIA_FONT</code> bitmap dictionary and the
-              <code>BRIDGE_FASCIA_TEXT</code> string. Each entry is a list of
-              binary row patterns, e.g. the letter <code>L</code>:
-              <pre><code>"L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1111]</code></pre>
+              <code>FASCIA_FONT</code> bitmap dictionary and the text string:
+              <pre><code>BRIDGE_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"</code></pre>
             </li>
             <li><strong><code>geometry.py</code></strong> &mdash; general-purpose
               <code>render_text_flat()</code> and <code>render_text_vertical()</code>
@@ -127,7 +125,9 @@
               flat wall surface.</li>
             <li><strong><code>bridge.py</code></strong> &mdash; a bridge-specific
               <code>render_text_fascia()</code> that additionally queries
-              <code>deck_top_z(x)</code> so each letter's Z follows the arch curve.</li>
+              <code>deck_top_z(x)</code> so each letter's Z follows the arch curve.
+              Called twice: once for the south face, and once with
+              <code>text[::-1]</code> and <code>mirror=True</code> for the north face.</li>
             <li>A <strong>set bit</strong> in a row means: draw a
               pixel block there &mdash; emitting a small raised
               <strong>Quake brush</strong>; consecutive pixels in a row are
@@ -137,10 +137,44 @@
             <li>The north face mirrors each glyph horizontally so the letters
               read correctly from both sides of the bridge.</li>
           </ul>
+          <span class="down-cue">▼</span>
+        </section>
+
+        <!-- 3b-2 · FASCIA FONT TABLE -->
+        <section data-background-color="#0a0807">
+          <p class="subtitle">The alphabet</p>
+          <h2>FASCIA_FONT</h2>
+          <pre><code class="language-python" data-trim>
+FASCIA_FONT = {
+    "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
+    "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],
+    "C": [0b0111, 0b1000, 0b1000, 0b1000, 0b0111, 0b0000],
+    "D": [0b1110, 0b1001, 0b1001, 0b1001, 0b1110, 0b0000],
+    "E": [0b1111, 0b1000, 0b1110, 0b1000, 0b1111, 0b0000],
+    "F": [0b1111, 0b1000, 0b1110, 0b1000, 0b1000, 0b0000],
+    "G": [0b0111, 0b1000, 0b1011, 0b1001, 0b0111, 0b0000],
+    "H": [0b1001, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
+    "I": [0b1110, 0b0100, 0b0100, 0b0100, 0b1110, 0b0000],
+    "J": [0b0011, 0b0001, 0b0001, 0b1001, 0b0110, 0b0000],
+    "K": [0b1001, 0b1010, 0b1100, 0b1010, 0b1001, 0b0000],
+    "L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1111, 0b0000],
+    "M": [0b1001, 0b1111, 0b1111, 0b1001, 0b1001, 0b0000],
+    "N": [0b1001, 0b1101, 0b1011, 0b1001, 0b1001, 0b0000],
+    "O": [0b0110, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
+    "P": [0b1110, 0b1001, 0b1110, 0b1000, 0b1000, 0b0000],
+    "R": [0b1110, 0b1001, 0b1110, 0b1010, 0b1001, 0b0000],
+    "S": [0b0111, 0b1000, 0b0110, 0b0001, 0b1110, 0b0000],
+    "T": [0b1111, 0b0100, 0b0100, 0b0100, 0b0100, 0b0000],
+    "U": [0b1001, 0b1001, 0b1001, 0b1001, 0b0110, 0b0000],
+    "V": [0b1001, 0b1001, 0b1001, 0b0110, 0b0110, 0b0000],
+    "W": [0b1001, 0b1001, 0b1111, 0b1111, 0b1001, 0b0000],
+    "X": [0b1001, 0b0110, 0b0110, 0b0110, 0b1001, 0b0000],
+    "Y": [0b1001, 0b0110, 0b0100, 0b0100, 0b0100, 0b0000],
+    " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
+}
+          </code></pre>
         </section>
       </section>
-
-      <!-- 3a · WHY IS THIS -->
       <section data-background-color="#0a0807">
         <p class="subtitle">The motivation</p>
         <h2>Why is this?</h2>
@@ -331,7 +365,6 @@ generate_map.py   →  loyola.map      (Python assembles the world)
                 a tag-triggered <strong>release</strong> workflow, and Sphinx docs on
                 <strong>Read the Docs</strong>.</p></div>
           </div>
-          <p class="small muted">↓ the shape of that change</p>
           <span class="down-cue">▼</span>
         </section>
         <section>

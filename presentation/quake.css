@@ -349,3 +349,12 @@
   0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.75; }
   50%       { transform: translateX(-50%) translateY(8px); opacity: 1;    }
 }
+
+/* Fascia font bitmap grid */
+.fascia-grid { display:flex; flex-wrap:wrap; gap:10px 14px; justify-content:center; }
+.fascia-char { text-align:center; }
+.fascia-bmp  { border-collapse:collapse; margin:0 auto; }
+.fascia-bmp td { width:7px; height:7px; padding:0; border:1px solid #0b0a09; }
+.fascia-bmp .px-on  { background:#ff7a18; }
+.fascia-bmp .px-off { background:#1c1712; }
+.fascia-label { font-family:"Share Tech Mono",monospace; font-size:0.55em; color:#ffb347; margin-top:2px; }
