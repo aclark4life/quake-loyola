@@ -5,8 +5,10 @@ ericw_version := "v0.18.1"
 ericw_os      := if os() == "macos" { "Darwin" } else { "Linux" }
 ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version + "-" + ericw_os
 tools_bin     := ericw_dir + "/bin"
-quake_dir := "/Applications/id1"
-maps_dir  := quake_dir + "/maps"
+gmqcc_bin  := justfile_directory() + "/.tools/gmqcc/gmqcc"
+progs_src  := justfile_directory() + "/qc/progs.src"
+quake_dir  := "/Applications/id1"
+maps_dir   := quake_dir + "/maps"
 map_name  := "loyola"
 
 # Show available recipes
@@ -92,11 +94,21 @@ present:
 update-golden: venv
     .venv/bin/python scripts/update_golden.py
 
+# Compile QuakeC source in qc/ into progs.dat using gmqcc
+compile-qc:
+    cd qc && {{gmqcc_bin}} -std=fteqcc -o ../progs.dat \
+        defs.qc subs.qc combat.qc items.qc weapons.qc world.qc \
+        client.qc player.qc doors.qc buttons.qc triggers.qc plats.qc misc.qc server.qc
+
+# Deploy progs.dat to the Quake id1 directory (overrides stock game logic)
+deploy-qc:
+    cp progs.dat {{quake_dir}}/
+
 # Clean up temporary build files and test artifacts
 clean:
     rm -f {{map_name}}.bsp {{map_name}}.lit {{map_name}}.vis
+    rm -f progs.dat
     rm -f test.bsp
     rm -f test_*.json
     rm -f *.log *.prt *.pts *.wad
     find . -name "__pycache__" -type d -exec rm -rf {} +
-
