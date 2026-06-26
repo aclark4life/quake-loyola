@@ -1131,10 +1131,27 @@ def build():
     # ── Featured pixel-art tree — NW side of Charles Street, in front of dorms ──
     # Single large voxel tree; 20-col × 45-row "large" profile at vox_size=8 gives
     # 160 units wide × 360 units tall (tops the bridge deck at 240).
+    _tree_cx = ROAD_X1 - 400
+    _tree_cy = ENNIS_WALL_NY - 80
     all_tree_brushes = make_pixel_tree(
-        ROAD_X1 - 400, ENNIS_WALL_NY - 80, FLOOR_Z2, profile="large", vox_size=8, fins=4
+        _tree_cx, _tree_cy, FLOOR_Z2, profile="large", vox_size=8, fins=4
     )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
+
+    # Three lights to illuminate the pixel tree: one uplight at the base,
+    # two at mid-crown on opposite sides for even coverage.
+    for _lx, _ly, _lz, _intensity in [
+        (_tree_cx, _tree_cy, FLOOR_Z2 + 24, 150),  # uplight — base
+        (_tree_cx - 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown west
+        (_tree_cx + 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown east
+    ]:
+        ENTITIES.append(
+            ent("light", origin=f"{_lx} {_ly} {_lz}", light=str(_intensity))
+        )
+    # Small flame at the base for a warm glow
+    ENTITIES.append(
+        ent("light_flame_small_yellow", origin=f"{_tree_cx} {_tree_cy} {FLOOR_Z2 + 16}")
+    )
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
     # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
