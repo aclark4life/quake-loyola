@@ -1265,9 +1265,12 @@ def build():
             (cx - px) ** 2 + (cy - py) ** 2 >= et_min_dist**2 for px, py in et_placed
         ):
             et_placed.append((cx, cy))
-            east_tele_brushes += make_giant_tree(
-                cx, cy, FLOOR_Z2, east_side_tree_height
-            )
+    # Remove the trees nearest to (3349, -195) and (3215, -461)
+    for target in ((3349, -195), (3215, -461)):
+        et_placed.sort(key=lambda p, t=target: (p[0] - t[0]) ** 2 + (p[1] - t[1]) ** 2)
+        et_placed = et_placed[1:]
+    for cx, cy in et_placed:
+        east_tele_brushes += make_giant_tree(cx, cy, FLOOR_Z2, east_side_tree_height)
     ENTITIES.append(brush_ent("func_detail", east_tele_brushes))
 
     bush_positions = [
