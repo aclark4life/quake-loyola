@@ -100,6 +100,7 @@ from .geometry import (
     arch_wall_y,
     box,
     brush_ent,
+    east_y_shift,
     ent,
     make_bush,
     make_giant_tree,
@@ -341,8 +342,8 @@ def build():
 
     # East arch trigger → west destination (shifted south to match angled span)
     east_brushes = arch_fill(
-        WORLD_X2 - WALL_T - ARCH_SLAB_W,
-        WORLD_X2 - WALL_T,
+        WORLD_X2_EXT - WALL_T - ARCH_SLAB_W,
+        WORLD_X2_EXT - WALL_T,
         BRIDGE_EAST_SHIFT_END,
         BRIDGE_DZ2,
         ARCH_RIN,
@@ -354,8 +355,8 @@ def build():
     ENTITIES.append(brush_ent("func_illusionary", east_brushes))
 
     # East lower trigger (ground floor — teleports up to bridge deck above)
-    elx1 = WORLD_X2 - WALL_T - ARCH_SLAB_W
-    elx2 = WORLD_X2 - WALL_T
+    elx1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
+    elx2 = WORLD_X2_EXT - WALL_T
     east_lower_deck_x = elx1 - 64  # west of the arch, on the flat deck approach
     ENTITIES.append(
         ent(
@@ -900,8 +901,13 @@ def build():
                 + BRIDGE_PILLAR_CAP_H
                 + BRIDGE_PILLAR_PYR_H
             )  # top of pyramid
-            cy_n = BRIDGE.y2 - BRIDGE_PAR_W // 2  # centred on north pillar cap
-            cy_s = BRIDGE.y1 + BRIDGE_PAR_W // 2  # centred on south pillar cap
+            py_shift = east_y_shift(px)
+            cy_n = (
+                BRIDGE.y2 + py_shift - BRIDGE_PAR_W // 2
+            )  # centred on north pillar cap
+            cy_s = (
+                BRIDGE.y1 + py_shift + BRIDGE_PAR_W // 2
+            )  # centred on south pillar cap
             # Flames on pillar tops — raised above pyramid apex so they visually sit on top
             ENTITIES.append(
                 ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
