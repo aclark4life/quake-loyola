@@ -1132,7 +1132,7 @@ def build():
     # Single large voxel tree; 20-col × 45-row "large" profile at vox_size=8 gives
     # 160 units wide × 360 units tall (tops the bridge deck at 240).
     all_tree_brushes = make_pixel_tree(
-        ROAD_X1 - 400, ENNIS_WALL_NY - 80, FLOOR_Z2, profile="large", vox_size=8
+        ROAD_X1 - 400, ENNIS_WALL_NY - 80, FLOOR_Z2, profile="large", vox_size=8, fins=4
     )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
