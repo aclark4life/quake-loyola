@@ -1128,30 +1128,31 @@ def build():
                         )
                     )
 
-    # ── Featured pixel-art tree — NW side of Charles Street, in front of dorms ──
-    # Single large voxel tree; 20-col × 45-row "large" profile at vox_size=8 gives
-    # 160 units wide × 360 units tall (tops the bridge deck at 240).
-    _tree_cx = ROAD_X1 - 400
-    _tree_cy = ENNIS_WALL_NY - 80
+    # ── Featured pixel-art tree — in front of Knott Hall ────────────────────────
+    # Centred on KH's Y midpoint, set just west of the KH facade.
+    _tree_cx = KNOTT.x1 - 200
+    _tree_cy = (KNOTT.y1 + KNOTT.y2) // 2
     all_tree_brushes = make_pixel_tree(
-        _tree_cx, _tree_cy, FLOOR_Z2, profile="large", vox_size=8, fins=8, trunk_fins=16
+        _tree_cx,
+        _tree_cy,
+        FLOOR_Z2,
+        profile="large",
+        vox_size=8,
+        trunk_solid=True,
+        ring_segs=12,
     )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
     # Three lights to illuminate the pixel tree: one uplight at the base,
     # two at mid-crown on opposite sides for even coverage.
+    # Two lights at mid-crown on opposite sides for even illumination coverage.
     for _lx, _ly, _lz, _intensity in [
-        (_tree_cx, _tree_cy, FLOOR_Z2 + 24, 150),  # uplight — base
         (_tree_cx - 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown west
         (_tree_cx + 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown east
     ]:
         ENTITIES.append(
             ent("light", origin=f"{_lx} {_ly} {_lz}", light=str(_intensity))
         )
-    # Small flame at the base for a warm glow
-    ENTITIES.append(
-        ent("light_flame_small_yellow", origin=f"{_tree_cx} {_tree_cy} {FLOOR_Z2 + 16}")
-    )
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
     # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
@@ -1162,10 +1163,8 @@ def build():
     charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560  # closer to KH
     # Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
     charles_tree_row2_ys = [int(KNOTT.y1 + knott_tree_span * f) for f in (0.25, 0.75)]
-    # Row of 3 — far row, 3 trees at 15%, 50%, 85%
-    charles_tree_row3_ys = [
-        int(KNOTT.y1 + knott_tree_span * f) for f in (0.15, 0.5, 0.85)
-    ]
+    # Row of 3 — far row; skip 50% (y=-1072) — replaced by the pixel tree
+    charles_tree_row3_ys = [int(KNOTT.y1 + knott_tree_span * f) for f in (0.15, 0.85)]
     charles_giant_tree_brushes = []
     for tree_y in charles_tree_row2_ys:
         charles_giant_tree_brushes += make_giant_tree(
