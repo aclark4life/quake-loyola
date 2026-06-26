@@ -243,13 +243,37 @@ def build():
             Textures.CEMENT,
         )
     )
-    # East sidewalk
+    # East sidewalk — cement from back road down to E/W Ennis approach sidewalk
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X1,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    # East sidewalk — mulch from E/W sidewalk to south junction corner
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_EXT_Y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.MULCH,
+        )
+    )
+    # Cement curb strip on road-facing (west) edge of the mulch section
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_ES_X1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
             KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
@@ -338,7 +362,7 @@ def build():
             )
         )
 
-    # East junction corner: center at SE corner (2322, 328), arc sweeps 90°→180°
+    # East junction corner: center at SE corner of east sidewalk, arc sweeps 90°→180°
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X1,
@@ -350,31 +374,38 @@ def build():
             Textures.ROAD,
         )
     )
+    _er_outer = KNOTT_DRIVEWAY_CURB_CRN_R
+    _er_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
+    _e_seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
     for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        angle_start = math.radians(
-            90 + corner_index * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        angle_end = math.radians(
-            90 + (corner_index + 1) * 90 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-        )
-        arc_x0 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(
-            angle_start
-        )
-        arc_y0 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(
-            angle_start
-        )
-        arc_x1 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_CRN_R * math.cos(angle_end)
-        arc_y1 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_CRN_R * math.sin(angle_end)
+        ea0 = 90 + corner_index * _e_seg_deg
+        ea1 = 90 + (corner_index + 1) * _e_seg_deg
+        t0, t1 = math.radians(ea0), math.radians(ea1)
+        # MULCH fill — pie slices from centre to inner radius
         BRUSHES.append(
             tri_prism(
                 KNOTT_DRIVEWAY_JCX_E,
                 KNOTT_DRIVEWAY_EXT_Y2,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
+                KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t0),
+                KNOTT_DRIVEWAY_EXT_Y2 + _er_inner * math.sin(t0),
+                KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t1),
+                KNOTT_DRIVEWAY_EXT_Y2 + _er_inner * math.sin(t1),
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.MULCH,
+            )
+        )
+        # CEMENT curb ring — inner to outer radius
+        BRUSHES.append(
+            curb_seg(
+                KNOTT_DRIVEWAY_JCX_E,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                _er_inner,
+                _er_outer,
+                ea0,
+                ea1,
                 Textures.CEMENT,
             )
         )
