@@ -1,4 +1,5 @@
 import math
+import random
 
 from .constants import (
     BRIDGE,
@@ -58,6 +59,7 @@ from .geometry import (
     box,
     brush_ent,
     corner_ramp,
+    make_tree,
     ramp_slab,
     ramp_slab_y,
     tri_prism,
@@ -631,6 +633,28 @@ def build():
                 vtex,
             )
         )
+
+    # 3 trees randomly scattered across east mulch verge, min 200 units apart
+    _rng = random.Random(42)
+    _margin = 40
+    _min_dist = 200
+    _ev_positions = []
+    _attempts = 0
+    while len(_ev_positions) < 3 and _attempts < 1000:
+        _attempts += 1
+        _tx = _rng.randint(KNOTT_DRIVEWAY_CORRIDOR_X2 + _margin, ENNIS_X2 - _margin)
+        _ty = _rng.randint(
+            ENNIS_SW_EDGE + CHARLES_WALK_W + _margin,
+            ENNIS_Y - ENNIS_HW - ENNIS_CURB_W - _margin,
+        )
+        if all(
+            (_tx - _px) ** 2 + (_ty - _py) ** 2 >= _min_dist**2
+            for _px, _py in _ev_positions
+        ):
+            _ev_positions.append((_tx, _ty))
+    for _tx, _ty in _ev_positions:
+        for _b in make_tree(_tx, _ty, FLOOR_Z2 + CHARLES_WALK_H):
+            BRUSHES.append(_b)
 
     # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
     for vx1, vx2 in [
