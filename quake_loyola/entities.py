@@ -1134,7 +1134,7 @@ def build():
     _tree_cx = ROAD_X1 - 400
     _tree_cy = ENNIS_WALL_NY - 80
     all_tree_brushes = make_pixel_tree(
-        _tree_cx, _tree_cy, FLOOR_Z2, profile="large", vox_size=8, fins=6, trunk_fins=12
+        _tree_cx, _tree_cy, FLOOR_Z2, profile="large", vox_size=8, fins=8, trunk_fins=16
     )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
