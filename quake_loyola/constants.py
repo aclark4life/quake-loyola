@@ -736,6 +736,58 @@ _fog = (
     else LIGHTING.fog
 )
 
+# ── Voxel tree profiles ──────────────────────────────────────────────────────
+# Each profile is a list of strings rendered top-to-bottom (index 0 = crown tip).
+# Characters: 'L' = leaf (GROUND), 'B' = branch (MULCH), 'T' = trunk (MULCH),
+#             ' ' = empty.  All strings in a profile must be the same width.
+# Rendered by geometry.make_pixel_tree() as two perpendicular crossed fins.
+TREE_PROFILES: dict[str, list[str]] = {
+    # Narrow columnar tree — Baltimore ginkgo / street tree style
+    "street": [
+        "  LLL  ",
+        " LLLLL ",
+        "LLLLLLL",
+        " LLLLL ",
+        "  LLL  ",
+        "  BBB  ",
+        "  TTT  ",
+        "  TTT  ",
+        "  TTT  ",
+        "  TTT  ",
+    ],
+    # Broad-crowned deciduous tree — red maple / oak style
+    "deciduous": [
+        "   LLL   ",
+        "  LLLLL  ",
+        " LLLLLLL ",
+        "LLLLLLLLL",
+        " LLLLLLL ",
+        "  LLLLL  ",
+        "   LBL   ",
+        "   TTT   ",
+        "   TTT   ",
+        "   TTT   ",
+        "   TTT   ",
+        "   TTT   ",
+    ],
+    # Conifer — pine / fir style
+    "pine": [
+        "    L    ",
+        "   LLL   ",
+        "  LLLLL  ",
+        " LLLLLLL ",
+        "  LLLLL  ",
+        " LLLLLLL ",
+        "LLLLLLLLL",
+        "   BBB   ",
+        "   TTT   ",
+        "   TTT   ",
+        "   TTT   ",
+        "   TTT   ",
+    ],
+}
+
+
 WORLDSPAWN_FIELDS = {
     "wad": "quake101.wad;ad.wad;makkon_building.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
