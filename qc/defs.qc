@@ -42,10 +42,6 @@ entity          world;
 float           time;
 float           frametime;
 
-entity          newmis;                         // if this is set, the entity that just
-								// run created a new missile that should
-								// be simulated immediately
-
 
 float           force_retouch;          // force all entities to touch triggers
 								// next frame.  this is needed because
@@ -56,6 +52,10 @@ float           force_retouch;          // force all entities to touch triggers
 								// decremented each frame, so set to 2
 								// to guarantee everything is touched
 string          mapname;
+
+float           deathmatch;             // 0, 1, or 2
+float           coop;                   // 0 or 1
+float           teamplay;               // teamplay mode
 
 float           serverflags;            // propagated from level to level, used to
 								// keep track of completed episodes
@@ -116,6 +116,9 @@ void()          SetChangeParms;                 // call to set parms for self so
 void            end_sys_globals;                // flag for structure dumping
 //================================================
 
+// Non-system globals (not part of globalvars_t):
+entity          newmis;                         // missile spawned this frame
+
 /*
 ==============================================================================
 
@@ -131,7 +134,6 @@ void            end_sys_globals;                // flag for structure dumping
 .vector         absmin, absmax; // *** origin + mins / maxs
 
 .float          ltime;                  // local time for entity
-.float          lastruntime;    // *** to allow entities to run out of sequence
 
 .float          movetype;
 .float          solid;
@@ -141,6 +143,7 @@ void            end_sys_globals;                // flag for structure dumping
 .vector         velocity;
 .vector         angles;
 .vector         avelocity;
+.vector         punchangle;             // temporary pitch change from damage or recoil
 
 .string         classname;              // spawn function
 .string         model;
@@ -187,6 +190,7 @@ void            end_sys_globals;                // flag for structure dumping
 
 .float          fixangle;
 .vector         v_angle;                // view / targeting angle for players
+.float          idealpitch;             // calculated pitch to lookup
 
 .string         netname;
 
@@ -462,10 +466,8 @@ float   framecount;
 //
 // cvars checked each frame
 //
-float           teamplay;
 float           timelimit;
 float           fraglimit;
-float           deathmatch;
 float           rj;
 
 //================================================

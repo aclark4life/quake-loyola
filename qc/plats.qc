@@ -266,20 +266,15 @@ void() train_use =
 void() train_rotate_riders =
 {
 	local entity	rider;
-	local float		new_yaw;
 
-	new_yaw = self.train_yaw;
-
-	rider = findradius (self.origin, 512);
+	// Debug: rotate every player unconditionally so we can verify fixangle works.
+	rider = find (world, classname, "player");
 	while (rider)
 	{
-		if (rider.classname == "player" && rider.groundentity == self)
-		{
-			rider.v_angle_y = new_yaw;
-			rider.angles_y  = new_yaw;
-			rider.fixangle   = TRUE;
-		}
-		rider = rider.chain;
+		rider.angles_y  = self.train_yaw;
+		rider.v_angle_y = self.train_yaw;
+		rider.fixangle  = TRUE;
+		rider = find (rider, classname, "player");
 	}
 };
 

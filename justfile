@@ -102,7 +102,7 @@ compile-qc:
 
 # Deploy progs.dat to the Quake id1 directory (overrides stock game logic)
 deploy-qc:
-    cp progs.dat {{quake_dir}}/
+    python3 scripts/make_pak3.py progs.dat {{quake_dir}}/pak2.pak
 
 # Clean up temporary build files and test artifacts
 clean:
