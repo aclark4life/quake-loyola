@@ -789,23 +789,33 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     ]
 
 
-def square_wall(x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_h=0):
-    """Stone wall with a rectangular (square-topped) opening centred at Y=0.
+def square_wall(
+    x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_h=0, yc=0.0
+):
+    """Stone wall with a rectangular (square-topped) opening centred at Y=yc (default 0).
     open_hw: half-width of the opening in Y.
-    overhang: extra Y extent on pillar portions beyond ±open_hw.
+    overhang: extra Y extent on pillar portions beyond open_hw.
     base_h: solid plinth height at ground level.
     """
     brushes = []
     ext = open_hw + overhang
-    if y1 < -ext:
-        brushes.append(box(x1, y1, floor_z, x2, -ext, ceil_z, tex))
-    if y2 > ext:
-        brushes.append(box(x1, ext, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(box(x1, -ext, floor_z, x2, -open_hw, ceil_z, tex))  # south pillar
-    brushes.append(box(x1, open_hw, floor_z, x2, ext, ceil_z, tex))  # north pillar
-    brushes.append(box(x1, -open_hw, ceil_z - 16, x2, open_hw, ceil_z, tex))  # lintel
+    if y1 < yc - ext:
+        brushes.append(box(x1, y1, floor_z, x2, yc - ext, ceil_z, tex))
+    if y2 > yc + ext:
+        brushes.append(box(x1, yc + ext, floor_z, x2, y2, ceil_z, tex))
+    brushes.append(
+        box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex)
+    )  # south pillar
+    brushes.append(
+        box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex)
+    )  # north pillar
+    brushes.append(
+        box(x1, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
+    )  # lintel
     if base_h > 0:
-        brushes.append(box(x1, -open_hw, floor_z, x2, open_hw, floor_z + base_h, tex))
+        brushes.append(
+            box(x1, yc - open_hw, floor_z, x2, yc + open_hw, floor_z + base_h, tex)
+        )
     return brushes
 
 
