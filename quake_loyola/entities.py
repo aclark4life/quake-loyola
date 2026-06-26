@@ -104,6 +104,7 @@ from .geometry import (
     ent,
     make_bush,
     make_giant_tree,
+    make_pixel_tree,
     make_tree,
     render_text_flat,
     render_text_flat_x,
@@ -1127,20 +1128,16 @@ def build():
                         )
                     )
 
-    # ── Cartoon trees as func_detail ─────────────────────────────────────────────
-    # Positions based on ref photos:
-    # - Dense forest behind cement/iron wall north of Ennis (bridge13, bridge02)
-    # - Large trees flanking Knott Hall on west side (bridge01, bridge10)
-    # - Trees along Ennis Parallel campus road (bridge02)
+    # ── Pixel-art trees along Ennis Parallel (campus side) ───────────────────
+    # Three street-style voxel trees west of Charles Street, near the Ennis wall.
     tree_positions = [
-        # Along Ennis Parallel (campus side, west of Charles St — bridge02)
         (ROAD_X1 - 200, ENNIS_WALL_NY - 100),
         (ROAD_X1 - 400, ENNIS_WALL_NY - 80),
         (ROAD_X1 - 600, ENNIS_WALL_NY - 120),
     ]
     all_tree_brushes = []
     for tree_x, tree_y in tree_positions:
-        all_tree_brushes += make_tree(tree_x, tree_y, FLOOR_Z2)
+        all_tree_brushes += make_pixel_tree(tree_x, tree_y, FLOOR_Z2, profile="street")
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────

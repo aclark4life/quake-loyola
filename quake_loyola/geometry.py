@@ -4,6 +4,7 @@ from .constants import (
     BRIDGE_ARCH_X,
     BRIDGE_EAST_SPAN_ANGLE,
     FASCIA_FONT,
+    TREE_PROFILES,
     Textures,
 )
 from .mapdata import Brush, Entity, Face
@@ -668,6 +669,88 @@ def make_bush(cx, cy, base_z, size=24):
             Textures.GROUND,
         )
     )
+    return brushes
+
+
+def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24):
+    """Voxel tree rendered as two perpendicular crossed fins (XZ and YZ planes).
+
+    The tree profile is a list of strings from top to bottom (index 0 = crown
+    tip).  Each character specifies the voxel material:
+      'L' = leaf  (GROUND texture)
+      'B' = branch (MULCH texture)
+      'T' = trunk  (MULCH texture)
+      ' ' = empty
+
+    Two fins are generated:
+      XZ fin — profile spread along X, extruded one voxel thick in ±Y
+      YZ fin — same profile spread along Y, extruded one voxel thick in ±X
+
+    Consecutive same-texture voxels within a row are merged into one box to
+    minimise T-junctions (same optimisation as render_text_flat).
+
+    Args:
+        cx, cy   : tree centre in the XY plane
+        base_z   : bottom Z of the lowest voxel row
+        profile  : key into TREE_PROFILES dict, or a list of strings directly
+        vox_size : Quake units per voxel (default 24 ≈ 2 ft)
+    """
+    _TEX = {
+        "L": Textures.GROUND,
+        "B": Textures.MULCH,
+        "T": Textures.MULCH,
+    }
+
+    prof = TREE_PROFILES[profile] if isinstance(profile, str) else profile
+    rows = len(prof)
+    cols = max(len(r) for r in prof)
+    half = vox_size // 2
+    half_cols = cols // 2
+
+    brushes = []
+
+    for fin_axis in ("x", "y"):
+        for row_i, row_str in enumerate(prof):
+            z0 = base_z + (rows - 1 - row_i) * vox_size
+            z1 = z0 + vox_size
+            run_start = None
+            run_tex = None
+            for col_i in range(cols + 1):  # +1 to flush the final run
+                ch = row_str[col_i] if col_i < len(row_str) else " "
+                tex = _TEX.get(ch)
+                if tex is not None and tex == run_tex:
+                    pass  # extend current run
+                else:
+                    if run_start is not None:
+                        d0 = (run_start - half_cols) * vox_size
+                        d1 = (col_i - half_cols) * vox_size
+                        if fin_axis == "x":
+                            brushes.append(
+                                box(
+                                    cx + d0,
+                                    cy - half,
+                                    z0,
+                                    cx + d1,
+                                    cy + half,
+                                    z1,
+                                    run_tex,
+                                )
+                            )
+                        else:
+                            brushes.append(
+                                box(
+                                    cx - half,
+                                    cy + d0,
+                                    z0,
+                                    cx + half,
+                                    cy + d1,
+                                    z1,
+                                    run_tex,
+                                )
+                            )
+                    run_start = col_i if tex is not None else None
+                    run_tex = tex
+
     return brushes
 
 
