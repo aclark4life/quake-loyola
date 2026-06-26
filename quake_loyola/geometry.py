@@ -672,7 +672,9 @@ def make_bush(cx, cy, base_z, size=24):
     return brushes
 
 
-def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
+def make_pixel_tree(
+    cx, cy, base_z, profile="street", vox_size=24, fins=2, trunk_fins=None
+):
     """Voxel tree rendered as evenly-spaced billboard fins around a vertical axis.
 
     The tree profile is a list of strings from top to bottom (index 0 = crown
@@ -682,21 +684,21 @@ def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
       'T' = trunk  (MULCH texture)
       ' ' = empty
 
-    fins: number of fins spread evenly from 0° to 180° (default 2 = cross).
-      fins=2 — two perpendicular fins (XZ and YZ) — classic cross shape
-      fins=4 — adds 45° and 135° diagonals, filling the cross gaps
-      fins=6 — 30° spacing, nearly solid appearance
+    fins: number of fins for crown rows (rows containing 'L').
+    trunk_fins: fins for trunk/branch rows (no 'L'); defaults to fins.
+      Trunk is a thin cylinder so needs more fins than the wide leafy crown.
 
     Axis-aligned fins (0° / 90°) use row-merging to minimise brush count and
     T-junctions.  Diagonal fins place one box per voxel (merged diagonal runs
     would create oversized rectangular blobs instead of thin strips).
 
     Args:
-        cx, cy   : tree centre in the XY plane
-        base_z   : bottom Z of the lowest voxel row
-        profile  : key into TREE_PROFILES dict, or a list of strings directly
-        vox_size : Quake units per voxel (default 24 ≈ 2 ft)
-        fins     : number of fins (default 2)
+        cx, cy      : tree centre in the XY plane
+        base_z      : bottom Z of the lowest voxel row
+        profile     : key into TREE_PROFILES dict, or a list of strings directly
+        vox_size    : Quake units per voxel (default 24)
+        fins        : fins for leafy crown rows (default 2)
+        trunk_fins  : fins for trunk/branch rows; None = same as fins
     """
     _TEX = {
         "L": Textures.GROUND,
@@ -709,33 +711,34 @@ def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
     cols = max(len(r) for r in prof)
     half = vox_size // 2
     half_cols = cols // 2
+    _trunk_fins = trunk_fins if trunk_fins is not None else fins
 
     brushes = []
 
-    for k in range(fins):
-        angle = math.pi * k / fins
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
-        axis_aligned = abs(sin_a) < 1e-9 or abs(cos_a) < 1e-9
+    for row_i, row_str in enumerate(prof):
+        z0 = base_z + (rows - 1 - row_i) * vox_size
+        z1 = z0 + vox_size
+        row_fins = fins if "L" in row_str else _trunk_fins
 
-        for row_i, row_str in enumerate(prof):
-            z0 = base_z + (rows - 1 - row_i) * vox_size
-            z1 = z0 + vox_size
+        for k in range(row_fins):
+            angle = math.pi * k / row_fins
+            cos_a = math.cos(angle)
+            sin_a = math.sin(angle)
+            axis_aligned = abs(sin_a) < 1e-9 or abs(cos_a) < 1e-9
 
             if axis_aligned:
-                # Axis-aligned fin: merge same-texture runs to minimise brushes.
                 run_start = None
                 run_tex = None
-                for col_i in range(cols + 1):  # +1 to flush the final run
+                for col_i in range(cols + 1):
                     ch = row_str[col_i] if col_i < len(row_str) else " "
                     tex = _TEX.get(ch)
                     if tex is not None and tex == run_tex:
-                        pass  # extend run
+                        pass
                     else:
                         if run_start is not None:
                             d0 = (run_start - half_cols) * vox_size
                             d1 = (col_i - half_cols) * vox_size
-                            if abs(sin_a) < 1e-9:  # 0° — spread along X
+                            if abs(sin_a) < 1e-9:
                                 brushes.append(
                                     box(
                                         cx + d0,
@@ -747,7 +750,7 @@ def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
                                         run_tex,
                                     )
                                 )
-                            else:  # 90° — spread along Y
+                            else:
                                 brushes.append(
                                     box(
                                         cx - half,
@@ -762,8 +765,6 @@ def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
                         run_start = col_i if tex is not None else None
                         run_tex = tex
             else:
-                # Diagonal fin: one box per voxel placed along the rotated axis.
-                # Each box is vox_size × vox_size in XY, centred on the diagonal.
                 for col_i, ch in enumerate(row_str):
                     tex = _TEX.get(ch)
                     if tex:
