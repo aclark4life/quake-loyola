@@ -672,8 +672,50 @@ def make_bush(cx, cy, base_z, size=24):
     return brushes
 
 
+def _octagon_column(cx, cy, z0, z1, radius, tex):
+    """Single octagonal-prism Brush approximating a vertical cylinder.
+
+    8 side faces at 45° intervals; one brush for the full height z0→z1.
+    Face normals point inward (toward the solid centre) per Quake .map convention
+    where cross-product (p2-p1)×(p3-p1) points toward the solid interior.
+
+    circumradius = radius  (distance from axis to each corner vertex)
+    inradius     = radius * cos(π/8) ≈ 0.924 * radius  (face midpoint distance)
+    """
+    faces = []
+    N = 8
+    for i in range(N):
+        theta = math.pi * 2 * i / N
+        cos_t = math.cos(theta)
+        sin_t = math.sin(theta)
+        qx = cx + radius * cos_t
+        qy = cy + radius * sin_t
+        # p1=Q@z0, p2=Q@z0+1 (+Z), p3=Q+tangent (-sin,cos,0)
+        # cross=(0,0,1)×(-sin_t,cos_t,0)=(-cos_t,-sin_t,0)=inward ✓
+        faces.append(
+            Face((qx, qy, z0), (qx, qy, z0 + 1), (qx - sin_t, qy + cos_t, z0), tex)
+        )
+    # Top face  (z=z1): cross must point -Z (inward = downward)
+    # (1,0,0)×(0,-1,0)=(0,0,-1) ✓
+    faces.append(Face((cx, cy, z1), (cx + 1, cy, z1), (cx, cy - 1, z1), tex))
+    # Bottom face (z=z0): cross must point +Z (inward = upward)
+    # (1,0,0)×(0,1,0)=(0,0,1) ✓
+    faces.append(Face((cx, cy, z0), (cx + 1, cy, z0), (cx, cy + 1, z0), tex))
+    return Brush(faces)
+
+
 def make_pixel_tree(
-    cx, cy, base_z, profile="street", vox_size=24, fins=2, trunk_fins=None
+    cx,
+    cy,
+    base_z,
+    profile="street",
+    vox_size=24,
+    fins=2,
+    trunk_fins=None,
+    trunk_solid=False,
+    fin_jitter=0.0,
+    fin_seed=0,
+    ring_segs=0,
 ):
     """Voxel tree rendered as evenly-spaced billboard fins around a vertical axis.
 
@@ -684,22 +726,33 @@ def make_pixel_tree(
       'T' = trunk  (MULCH texture)
       ' ' = empty
 
-    fins: number of fins for crown rows (rows containing 'L').
-    trunk_fins: fins for trunk/branch rows (no 'L'); defaults to fins.
-      Trunk is a thin cylinder so needs more fins than the wide leafy crown.
-
-    Axis-aligned fins (0° / 90°) use row-merging to minimise brush count and
-    T-junctions.  Diagonal fins place one box per voxel (merged diagonal runs
-    would create oversized rectangular blobs instead of thin strips).
+    fins        : fins for leafy crown rows (rows containing 'L').
+    trunk_fins  : fins for trunk/branch rows (no 'L'); defaults to fins.
+    trunk_solid : when True, trunk rows (no 'L') are rendered as a round
+                  voxel-circle column.  The radius is derived from the widest
+                  solid run in the trunk profile rows.
+    fin_jitter  : 0..1 — maximum random angular offset per fin as a fraction
+                  of the fin spacing.  Breaks the star pattern; use 0.3–0.5.
+    fin_seed    : RNG seed for fin_jitter (default 0, reproducible).
+    ring_segs   : when > 0, crown rows are rendered as horizontal ring slices
+                  (ring_segs curb_seg wedges per row, covering 360°) instead
+                  of billboard fins.  This gives a truly circular cross-section
+                  at every height with no gaps.  The outer radius per row is
+                  derived from the widest 'L' span in the profile string.
 
     Args:
-        cx, cy      : tree centre in the XY plane
-        base_z      : bottom Z of the lowest voxel row
-        profile     : key into TREE_PROFILES dict, or a list of strings directly
-        vox_size    : Quake units per voxel (default 24)
-        fins        : fins for leafy crown rows (default 2)
-        trunk_fins  : fins for trunk/branch rows; None = same as fins
+        cx, cy       : tree centre in the XY plane
+        base_z       : bottom Z of the lowest voxel row
+        profile      : key into TREE_PROFILES dict, or a list of strings directly
+        vox_size     : Quake units per voxel (default 24)
+        fins         : fins for leafy crown rows (default 2)
+        trunk_fins   : fins for trunk/branch rows; None = same as fins
+        trunk_solid  : render trunk as round voxel-circle column (default False)
+        fin_jitter   : random angular jitter fraction (default 0.0 = even spacing)
+        fin_seed     : RNG seed for reproducible jitter (default 0)
     """
+    import random as _rng
+
     _TEX = {
         "L": Textures.GROUND,
         "B": Textures.MULCH,
@@ -715,16 +768,68 @@ def make_pixel_tree(
 
     brushes = []
 
+    # Build round octagonal trunk as a single Brush spanning all trunk rows.
+    if trunk_solid:
+        trunk_row_indices = [i for i, r in enumerate(prof) if "L" not in r]
+        if trunk_row_indices:
+            top_i = trunk_row_indices[0]  # smallest index = highest Z
+            bot_i = trunk_row_indices[-1]  # largest index  = lowest Z
+            trunk_z1 = base_z + (rows - 1 - top_i) * vox_size + vox_size
+            trunk_z0 = base_z + (rows - 1 - bot_i) * vox_size
+            trunk_widths = []
+            for row_str in prof:
+                if "L" not in row_str:
+                    solid = [i for i, ch in enumerate(row_str) if _TEX.get(ch)]
+                    if solid:
+                        trunk_widths.append(len(solid))
+            r_vox = max(max(trunk_widths, default=4) // 2, 1)
+            radius = r_vox * vox_size
+            brushes.append(
+                _octagon_column(cx, cy, trunk_z0, trunk_z1, radius, Textures.MULCH)
+            )
+
+    _rng.seed(fin_seed)
+
     for row_i, row_str in enumerate(prof):
         z0 = base_z + (rows - 1 - row_i) * vox_size
         z1 = z0 + vox_size
-        row_fins = fins if "L" in row_str else _trunk_fins
+        is_trunk_row = "L" not in row_str
+
+        # Trunk rows already handled by the single octagon brush above.
+        if is_trunk_row and trunk_solid:
+            continue
+
+        # Ring-slice mode: render crown rows as horizontal circular discs.
+        if not is_trunk_row and ring_segs > 0:
+            solid_cols = [i for i, ch in enumerate(row_str) if ch == "L"]
+            if solid_cols:
+                outer_r = 0
+                for c in solid_cols:
+                    outer_r = max(
+                        outer_r,
+                        abs(c - half_cols) * vox_size,
+                        abs(c - half_cols + 1) * vox_size,
+                    )
+                for seg_i in range(ring_segs):
+                    a1 = 360.0 * seg_i / ring_segs
+                    a2 = 360.0 * (seg_i + 1) / ring_segs
+                    brushes.append(
+                        curb_seg(cx, cy, z0, z1, 0, outer_r, a1, a2, Textures.GROUND)
+                    )
+            continue
+
+        row_fins = fins if not is_trunk_row else _trunk_fins
 
         for k in range(row_fins):
-            angle = math.pi * k / row_fins
+            base_angle = math.pi * k / row_fins
+            jitter = (math.pi / row_fins) * fin_jitter * (_rng.random() * 2 - 1)
+            angle = base_angle + jitter
             cos_a = math.cos(angle)
             sin_a = math.sin(angle)
-            axis_aligned = abs(sin_a) < 1e-9 or abs(cos_a) < 1e-9
+            # Only use the fast merged path for exactly axis-aligned (no jitter).
+            axis_aligned = fin_jitter == 0.0 and (
+                abs(sin_a) < 1e-9 or abs(cos_a) < 1e-9
+            )
 
             if axis_aligned:
                 run_start = None
