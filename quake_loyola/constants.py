@@ -785,55 +785,55 @@ TREE_PROFILES: dict[str, list[str]] = {
         "   TTT   ",
         "   TTT   ",
     ],
-    # Large detailed broad-crown tree — fine voxels (vox_size=8), 20 cols × 45 rows.
-    # At vox_size=8: 160 units wide, 360 units tall (tops the bridge deck at 240).
-    # Designed for a single featured tree; profile is hand-crafted for natural shape.
+    # Large detailed broad-crown tree — fine voxels (vox_size=8), 26 cols × 45 rows.
+    # At vox_size=8: 208 units wide crown, 360 units tall (tops bridge deck at 240).
+    # All rows are 26 characters wide; trunk centred at cols 11-14.
     "large": [
-        "         LL         ",  # row  0 — sparse crown tip
-        "        LLLL        ",  # row  1
-        "       LLLLLL       ",  # row  2
-        "      LLLLLLLL      ",  # row  3
-        "    LLLLLLLLLLLL    ",  # row  4
-        "   LLLLLLLLLLLLLL   ",  # row  5
-        "  LLLLLLLLLLLLLLL   ",  # row  6 — slight asymmetry
-        "  LLLLLLLLLLLLLLLL  ",  # row  7
-        " LLLLLLLLLLLLLLLLLL ",  # row  8
-        "LLLLLLLLLLLLLLLLLLLL",  # row  9 — widest point
-        "LLLLLLLLLLLLLLLLLLLL",  # row 10
-        " LLLLLLLLLLLLLLLLLL ",  # row 11
-        "  LLLLLLLLLLLLLLLL  ",  # row 12
-        "   LLLLLLLLLLLLLL   ",  # row 13
-        "  LLLLLLLLLLLLLLLL  ",  # row 14 — second swell
-        " LLLLLLLLLLLLLLLLLL ",  # row 15
-        "LLLLLLLLLLLLLLLLLLLL",  # row 16
-        " LLLLLLLLLLLLLLLLL  ",  # row 17 — asymmetric droop
-        "  LLLLLLLLLLLLLLLL  ",  # row 18
-        "   LLLLLLLLLLLLL    ",  # row 19
-        "    LLLLLLLLLLLL    ",  # row 20
-        "   LLLLLLLLLLLLL    ",  # row 21 — natural bulge
-        "    LLLLLLLLLLLL    ",  # row 22
-        "     LLLLLLLLLL     ",  # row 23
-        "      LLLLLLLL      ",  # row 24
-        "       LLLLLL       ",  # row 25 — lower crown
-        "      BBBBBBBB      ",  # row 26 — branch zone
-        "       BBBBBB       ",  # row 27
-        "        BBBB        ",  # row 28
-        "        BBBB        ",  # row 29
-        "        TTTT        ",  # row 30 — trunk begins
-        "        TTTT        ",  # row 31
-        "        TTTT        ",  # row 32
-        "        TTTT        ",  # row 33
-        "        TTTT        ",  # row 34
-        "        TTTT        ",  # row 35
-        "        TTTT        ",  # row 36
-        "        TTTT        ",  # row 37
-        "        TTTT        ",  # row 38
-        "        TTTT        ",  # row 39
-        "        TTTT        ",  # row 40
-        "        TTTT        ",  # row 41
-        "        TTTT        ",  # row 42
-        "        TTTT        ",  # row 43
-        "        TTTT        ",  # row 44 — base
+        "            LL            ",  # row  0 — sparse crown tip
+        "          LLLLLL          ",  # row  1
+        "        LLLLLLLLLL        ",  # row  2
+        "      LLLLLLLLLLLLLL      ",  # row  3
+        "    LLLLLLLLLLLLLLLLLL    ",  # row  4
+        "   LLLLLLLLLLLLLLLLLLLL   ",  # row  5
+        "  LLLLLLLLLLLLLLLLLLLLLL  ",  # row  6
+        " LLLLLLLLLLLLLLLLLLLLLLLL ",  # row  7
+        "LLLLLLLLLLLLLLLLLLLLLLLLL ",  # row  8 — slight asymmetry
+        "LLLLLLLLLLLLLLLLLLLLLLLLLL",  # row  9 — widest
+        "LLLLLLLLLLLLLLLLLLLLLLLLLL",  # row 10
+        " LLLLLLLLLLLLLLLLLLLLLLLL ",  # row 11
+        "  LLLLLLLLLLLLLLLLLLLLLL  ",  # row 12
+        "   LLLLLLLLLLLLLLLLLLLL   ",  # row 13
+        "  LLLLLLLLLLLLLLLLLLLLLL  ",  # row 14 — second swell
+        " LLLLLLLLLLLLLLLLLLLLLLLL ",  # row 15
+        "LLLLLLLLLLLLLLLLLLLLLLLLLL",  # row 16
+        " LLLLLLLLLLLLLLLLLLLLLLL  ",  # row 17 — asymmetric droop
+        "  LLLLLLLLLLLLLLLLLLLLLL  ",  # row 18
+        "   LLLLLLLLLLLLLLLLLLLL   ",  # row 19
+        "    LLLLLLLLLLLLLLLLLL    ",  # row 20
+        "   LLLLLLLLLLLLLLLLLLLL   ",  # row 21 — natural bulge
+        "    LLLLLLLLLLLLLLLLLL    ",  # row 22
+        "      LLLLLLLLLLLLLL      ",  # row 23
+        "       LLLLLLLLLLLL       ",  # row 24
+        "        LLLLLLLLL         ",  # row 25 — lower crown
+        "      BBBBBBBBBBBBBB      ",  # row 26 — branch zone
+        "       BBBBBBBBBBBB       ",  # row 27
+        "         BBBBBBBB         ",  # row 28
+        "          BBBBBB          ",  # row 29
+        "           TTTT           ",  # row 30 — trunk begins
+        "           TTTT           ",  # row 31
+        "           TTTT           ",  # row 32
+        "           TTTT           ",  # row 33
+        "           TTTT           ",  # row 34
+        "           TTTT           ",  # row 35
+        "           TTTT           ",  # row 36
+        "           TTTT           ",  # row 37
+        "           TTTT           ",  # row 38
+        "           TTTT           ",  # row 39
+        "           TTTT           ",  # row 40
+        "           TTTT           ",  # row 41
+        "           TTTT           ",  # row 42
+        "           TTTT           ",  # row 43
+        "           TTTT           ",  # row 44 — base
     ],
 }
 
