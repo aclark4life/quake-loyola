@@ -1128,16 +1128,12 @@ def build():
                         )
                     )
 
-    # ── Pixel-art trees along Ennis Parallel (campus side) ───────────────────
-    # Three street-style voxel trees west of Charles Street, near the Ennis wall.
-    tree_positions = [
-        (ROAD_X1 - 200, ENNIS_WALL_NY - 100),
-        (ROAD_X1 - 400, ENNIS_WALL_NY - 80),
-        (ROAD_X1 - 600, ENNIS_WALL_NY - 120),
-    ]
-    all_tree_brushes = []
-    for tree_x, tree_y in tree_positions:
-        all_tree_brushes += make_pixel_tree(tree_x, tree_y, FLOOR_Z2, profile="street")
+    # ── Featured pixel-art tree — NW side of Charles Street, in front of dorms ──
+    # Single large voxel tree; 20-col × 45-row "large" profile at vox_size=8 gives
+    # 160 units wide × 360 units tall (tops the bridge deck at 240).
+    all_tree_brushes = make_pixel_tree(
+        ROAD_X1 - 400, ENNIS_WALL_NY - 80, FLOOR_Z2, profile="large", vox_size=8
+    )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
