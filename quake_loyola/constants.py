@@ -785,6 +785,56 @@ TREE_PROFILES: dict[str, list[str]] = {
         "   TTT   ",
         "   TTT   ",
     ],
+    # Large detailed broad-crown tree — fine voxels (vox_size=8), 20 cols × 45 rows.
+    # At vox_size=8: 160 units wide, 360 units tall (tops the bridge deck at 240).
+    # Designed for a single featured tree; profile is hand-crafted for natural shape.
+    "large": [
+        "         LL         ",  # row  0 — sparse crown tip
+        "        LLLL        ",  # row  1
+        "       LLLLLL       ",  # row  2
+        "      LLLLLLLL      ",  # row  3
+        "    LLLLLLLLLLLL    ",  # row  4
+        "   LLLLLLLLLLLLLL   ",  # row  5
+        "  LLLLLLLLLLLLLLL   ",  # row  6 — slight asymmetry
+        "  LLLLLLLLLLLLLLLL  ",  # row  7
+        " LLLLLLLLLLLLLLLLLL ",  # row  8
+        "LLLLLLLLLLLLLLLLLLLL",  # row  9 — widest point
+        "LLLLLLLLLLLLLLLLLLLL",  # row 10
+        " LLLLLLLLLLLLLLLLLL ",  # row 11
+        "  LLLLLLLLLLLLLLLL  ",  # row 12
+        "   LLLLLLLLLLLLLL   ",  # row 13
+        "  LLLLLLLLLLLLLLLL  ",  # row 14 — second swell
+        " LLLLLLLLLLLLLLLLLL ",  # row 15
+        "LLLLLLLLLLLLLLLLLLLL",  # row 16
+        " LLLLLLLLLLLLLLLLL  ",  # row 17 — asymmetric droop
+        "  LLLLLLLLLLLLLLLL  ",  # row 18
+        "   LLLLLLLLLLLLL    ",  # row 19
+        "    LLLLLLLLLLLL    ",  # row 20
+        "   LLLLLLLLLLLLL    ",  # row 21 — natural bulge
+        "    LLLLLLLLLLLL    ",  # row 22
+        "     LLLLLLLLLL     ",  # row 23
+        "      LLLLLLLL      ",  # row 24
+        "       LLLLLL       ",  # row 25 — lower crown
+        "      BBBBBBBB      ",  # row 26 — branch zone
+        "       BBBBBB       ",  # row 27
+        "        BBBB        ",  # row 28
+        "        BBBB        ",  # row 29
+        "        TTTT        ",  # row 30 — trunk begins
+        "        TTTT        ",  # row 31
+        "        TTTT        ",  # row 32
+        "        TTTT        ",  # row 33
+        "        TTTT        ",  # row 34
+        "        TTTT        ",  # row 35
+        "        TTTT        ",  # row 36
+        "        TTTT        ",  # row 37
+        "        TTTT        ",  # row 38
+        "        TTTT        ",  # row 39
+        "        TTTT        ",  # row 40
+        "        TTTT        ",  # row 41
+        "        TTTT        ",  # row 42
+        "        TTTT        ",  # row 43
+        "        TTTT        ",  # row 44 — base
+    ],
 }
 
 
