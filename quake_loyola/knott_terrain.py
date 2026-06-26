@@ -573,7 +573,7 @@ def build():
                 tt=Textures.FLOOR,
             )
         )
-        # North section (Y=328..504): sloped terrain continues
+        # North section (Y=328..504): sloped mulch terrain
         BRUSHES.append(
             ramp_slab_y(
                 knott_entry_x2,
@@ -584,7 +584,7 @@ def build():
                 FLOOR_Z1,
                 terrain_z_at(east_walk_ext_y2_val),
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # NE indent ground — south of ramp (Y=-160..264): full ground, no cement needed
@@ -599,7 +599,7 @@ def build():
                 Textures.GROUND,
             )
         )
-        # North of E-W extension (restore ground fully)
+        # North of E-W extension (Y=328..504): flat mulch pad matching the slope above
         BRUSHES.append(
             box(
                 east_ramp_x2,
@@ -608,7 +608,7 @@ def build():
                 KNOTT_DRIVEWAY_CORRIDOR_X1,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # Seg3 (east of back-road corridor to east world wall) — beyond Pier 5; sealing ground
