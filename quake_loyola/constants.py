@@ -405,6 +405,7 @@ class Textures:
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
+    MULCH = "grave13c"
     LAVA = "*lava1"
     PILLAR = "city2_7"
     RAIL = "metal5_4"
