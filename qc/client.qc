@@ -482,7 +482,6 @@ void() PutClientInServer =
 	local 	string	s;
 
 	self.classname = "player";
-	self.health = 100;
 	self.takedamage = DAMAGE_AIM;
 	self.solid = SOLID_SLIDEBOX;
 	self.movetype = MOVETYPE_WALK;
