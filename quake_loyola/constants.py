@@ -785,9 +785,9 @@ TREE_PROFILES: dict[str, list[str]] = {
         "   TTT   ",
         "   TTT   ",
     ],
-    # Large detailed broad-crown tree — fine voxels (vox_size=8), 26 cols × 45 rows.
-    # At vox_size=8: 208 units wide crown, 360 units tall (tops bridge deck at 240).
-    # All rows are 26 characters wide; trunk centred at cols 11-14.
+    # Large detailed broad-crown tree — fine voxels (vox_size=8), 26 cols × 41 rows.
+    # At vox_size=8: 208 units wide crown, 328 units tall.
+    # Crown (rows 0-25) drops straight to trunk (rows 26-40), no branch zone.
     "large": [
         "            LL            ",  # row  0 — sparse crown tip
         "          LLLLLL          ",  # row  1
@@ -815,11 +815,11 @@ TREE_PROFILES: dict[str, list[str]] = {
         "      LLLLLLLLLLLLLL      ",  # row 23
         "       LLLLLLLLLLLL       ",  # row 24
         "        LLLLLLLLL         ",  # row 25 — lower crown
-        "      BBBBBBBBBBBBBB      ",  # row 26 — branch zone
-        "       BBBBBBBBBBBB       ",  # row 27
-        "         BBBBBBBB         ",  # row 28
-        "          BBBBBB          ",  # row 29
-        "           TTTT           ",  # row 30 — trunk begins
+        "           TTTT           ",  # row 26 — trunk begins (no branch zone)
+        "           TTTT           ",  # row 27
+        "           TTTT           ",  # row 28
+        "           TTTT           ",  # row 29
+        "           TTTT           ",  # row 30
         "           TTTT           ",  # row 31
         "           TTTT           ",  # row 32
         "           TTTT           ",  # row 33
@@ -829,11 +829,7 @@ TREE_PROFILES: dict[str, list[str]] = {
         "           TTTT           ",  # row 37
         "           TTTT           ",  # row 38
         "           TTTT           ",  # row 39
-        "           TTTT           ",  # row 40
-        "           TTTT           ",  # row 41
-        "           TTTT           ",  # row 42
-        "           TTTT           ",  # row 43
-        "           TTTT           ",  # row 44 — base
+        "           TTTT           ",  # row 40 — base
     ],
 }
 
