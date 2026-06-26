@@ -672,28 +672,31 @@ def make_bush(cx, cy, base_z, size=24):
     return brushes
 
 
-def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24):
-    """Voxel tree rendered as two perpendicular crossed fins (XZ and YZ planes).
+def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24, fins=2):
+    """Voxel tree rendered as evenly-spaced billboard fins around a vertical axis.
 
     The tree profile is a list of strings from top to bottom (index 0 = crown
     tip).  Each character specifies the voxel material:
-      'L' = leaf  (GROUND texture)
+      'L' = leaf   (GROUND texture)
       'B' = branch (MULCH texture)
       'T' = trunk  (MULCH texture)
       ' ' = empty
 
-    Two fins are generated:
-      XZ fin — profile spread along X, extruded one voxel thick in ±Y
-      YZ fin — same profile spread along Y, extruded one voxel thick in ±X
+    fins: number of fins spread evenly from 0° to 180° (default 2 = cross).
+      fins=2 — two perpendicular fins (XZ and YZ) — classic cross shape
+      fins=4 — adds 45° and 135° diagonals, filling the cross gaps
+      fins=6 — 30° spacing, nearly solid appearance
 
-    Consecutive same-texture voxels within a row are merged into one box to
-    minimise T-junctions (same optimisation as render_text_flat).
+    Axis-aligned fins (0° / 90°) use row-merging to minimise brush count and
+    T-junctions.  Diagonal fins place one box per voxel (merged diagonal runs
+    would create oversized rectangular blobs instead of thin strips).
 
     Args:
         cx, cy   : tree centre in the XY plane
         base_z   : bottom Z of the lowest voxel row
         profile  : key into TREE_PROFILES dict, or a list of strings directly
         vox_size : Quake units per voxel (default 24 ≈ 2 ft)
+        fins     : number of fins (default 2)
     """
     _TEX = {
         "L": Textures.GROUND,
@@ -709,47 +712,67 @@ def make_pixel_tree(cx, cy, base_z, profile="street", vox_size=24):
 
     brushes = []
 
-    for fin_axis in ("x", "y"):
+    for k in range(fins):
+        angle = math.pi * k / fins
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        axis_aligned = abs(sin_a) < 1e-9 or abs(cos_a) < 1e-9
+
         for row_i, row_str in enumerate(prof):
             z0 = base_z + (rows - 1 - row_i) * vox_size
             z1 = z0 + vox_size
-            run_start = None
-            run_tex = None
-            for col_i in range(cols + 1):  # +1 to flush the final run
-                ch = row_str[col_i] if col_i < len(row_str) else " "
-                tex = _TEX.get(ch)
-                if tex is not None and tex == run_tex:
-                    pass  # extend current run
-                else:
-                    if run_start is not None:
-                        d0 = (run_start - half_cols) * vox_size
-                        d1 = (col_i - half_cols) * vox_size
-                        if fin_axis == "x":
-                            brushes.append(
-                                box(
-                                    cx + d0,
-                                    cy - half,
-                                    z0,
-                                    cx + d1,
-                                    cy + half,
-                                    z1,
-                                    run_tex,
+
+            if axis_aligned:
+                # Axis-aligned fin: merge same-texture runs to minimise brushes.
+                run_start = None
+                run_tex = None
+                for col_i in range(cols + 1):  # +1 to flush the final run
+                    ch = row_str[col_i] if col_i < len(row_str) else " "
+                    tex = _TEX.get(ch)
+                    if tex is not None and tex == run_tex:
+                        pass  # extend run
+                    else:
+                        if run_start is not None:
+                            d0 = (run_start - half_cols) * vox_size
+                            d1 = (col_i - half_cols) * vox_size
+                            if abs(sin_a) < 1e-9:  # 0° — spread along X
+                                brushes.append(
+                                    box(
+                                        cx + d0,
+                                        cy - half,
+                                        z0,
+                                        cx + d1,
+                                        cy + half,
+                                        z1,
+                                        run_tex,
+                                    )
                                 )
-                            )
-                        else:
-                            brushes.append(
-                                box(
-                                    cx - half,
-                                    cy + d0,
-                                    z0,
-                                    cx + half,
-                                    cy + d1,
-                                    z1,
-                                    run_tex,
+                            else:  # 90° — spread along Y
+                                brushes.append(
+                                    box(
+                                        cx - half,
+                                        cy + d0,
+                                        z0,
+                                        cx + half,
+                                        cy + d1,
+                                        z1,
+                                        run_tex,
+                                    )
                                 )
-                            )
-                    run_start = col_i if tex is not None else None
-                    run_tex = tex
+                        run_start = col_i if tex is not None else None
+                        run_tex = tex
+            else:
+                # Diagonal fin: one box per voxel placed along the rotated axis.
+                # Each box is vox_size × vox_size in XY, centred on the diagonal.
+                for col_i, ch in enumerate(row_str):
+                    tex = _TEX.get(ch)
+                    if tex:
+                        d = (col_i - half_cols) * vox_size
+                        fx = int(cx + d * cos_a)
+                        fy = int(cy + d * sin_a)
+                        brushes.append(
+                            box(fx - half, fy - half, z0, fx + half, fy + half, z1, tex)
+                        )
 
     return brushes
 
