@@ -116,7 +116,9 @@ def build():
             KNOTT.y1 + KNOTT.wall_t,
             KNOTT_Z2,
             s_wall_openings,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
@@ -137,7 +139,9 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -148,7 +152,9 @@ def build():
             KNOTT.x1 + INDENT,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
@@ -169,7 +175,9 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -180,7 +188,9 @@ def build():
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
+            te=Textures.BRICK_KH,
         )
     )
     # South mullions — protrude outward (south, -Y)
@@ -269,7 +279,9 @@ def build():
             KNOTT.y2,
             KNOTT_Z2,
             door_ground + door_upper + win_n,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
+            tn=Textures.BRICK_KH,
         )
     )
 
@@ -298,7 +310,9 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -309,7 +323,9 @@ def build():
             KNOTT.x1 + 2 * INDENT,
             KNOTT.y2,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
 
@@ -331,7 +347,9 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -342,7 +360,9 @@ def build():
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y2,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
+            te=Textures.BRICK_KH,
         )
     )
 
@@ -465,7 +485,9 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
+            te=Textures.BRICK_KH,
         )
     )
     # Vertical mullions — protrude 12 units east of wall face
@@ -549,7 +571,9 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.WALL,
+            Textures.BRICK_KH,
+            tw=Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     # Vertical mullions — protrude 12 units west of wall face
@@ -905,7 +929,7 @@ def build():
             KNOTT_SHAFT_X2,
             KNOTT_SHAFT_Y2 + shaft_wall,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # Shaft South wall (internal, solid)
@@ -917,7 +941,7 @@ def build():
             KNOTT_SHAFT_X2,
             KNOTT_SHAFT_Y1,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # Shaft West wall (internal, openings for each floor's door — flush with hallway east wall and shaft interior)
@@ -930,7 +954,7 @@ def build():
             KNOTT_SHAFT_X1,
             KNOTT_Z2,
             shaft_door_openings,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # Shaft East wall (internal)
@@ -942,7 +966,7 @@ def build():
             KNOTT_SHAFT_X2 + shaft_wall,
             KNOTT_SHAFT_Y2,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
 
@@ -967,7 +991,7 @@ def build():
             KNOTT_STAIRS_X2,
             KNOTT_STAIRS_Y2 + shaft_wall,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # West stairwell South wall (internal, solid)
@@ -979,7 +1003,7 @@ def build():
             KNOTT_STAIRS_X2,
             KNOTT_STAIRS_Y1,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # West stairwell East wall (internal, openings for each floor's door — flush both sides)
@@ -992,7 +1016,7 @@ def build():
             KNOTT_ENT_X1,
             KNOTT_Z2,
             west_shaft_door_openings,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # West stairwell West wall (internal, solid)
@@ -1004,7 +1028,7 @@ def build():
             KNOTT_STAIRS_X1,
             KNOTT_STAIRS_Y2,
             KNOTT_Z2,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
 
@@ -1071,7 +1095,7 @@ def build():
                     step_x_east,
                     KNOTT_STAIRS_Y2,
                     step_z1 + KNOTT_STAIRS_STEP_R,
-                    Textures.WALL,
+                    Textures.FLOOR_KH,
                     tt=Textures.FLOOR_KH,
                 )
             )
@@ -1102,7 +1126,7 @@ def build():
                     step_x_east,
                     KNOTT_STAIRS_MID_Y,
                     step_z1 + KNOTT_STAIRS_STEP_R,
-                    Textures.WALL,
+                    Textures.FLOOR_KH,
                     tt=Textures.FLOOR_KH,
                 )
             )
@@ -1233,7 +1257,7 @@ def build():
             KNOTT_ENT_X1,
             KNOTT_Z2,
             w_hall_openings,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
     # East hallway wall with room door openings + shaft opening
@@ -1246,7 +1270,7 @@ def build():
             KNOTT_ENT_X2 + KNOTT.wall_t,
             KNOTT_Z2,
             e_hall_openings,
-            Textures.WALL,
+            Textures.FLOOR_KH,
         )
     )
 
@@ -1265,7 +1289,7 @@ def build():
                 sp_y2,
                 fz2,
                 [(KNOTT_WEST_ROOM_CX - 32, fz_surf, KNOTT_WEST_ROOM_CX + 32, pdz2)],
-                Textures.WALL,
+                Textures.FLOOR_KH,
             )
         )
         # East side partition wall with connecting door
@@ -1278,7 +1302,7 @@ def build():
                 sp_y2,
                 fz2,
                 [(KNOTT_EAST_ROOM_CX - 32, fz_surf, KNOTT_EAST_ROOM_CX + 32, pdz2)],
-                Textures.WALL,
+                Textures.FLOOR_KH,
             )
         )
 
