@@ -762,12 +762,6 @@ def build():
     ENTITIES.append(
         ent("weapon_lightning", origin=f"200 0 {BRIDGE_DECK_Z}")
     )  # bridge centre
-    ENTITIES.append(
-        ent(
-            "weapon_lightning",
-            origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
-        )
-    )  # north dorm roof
     if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
