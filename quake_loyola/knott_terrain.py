@@ -334,7 +334,7 @@ def build():
     _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
     _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
     _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-    # GROUND fill — pie slices from centre to INNER radius only
+    # MULCH fill — pie slices from centre to INNER radius only
     for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
         a0 = corner_index * _seg_deg
         a1 = (corner_index + 1) * _seg_deg
