@@ -697,7 +697,6 @@ def build():
     for rl_origin in [
         f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
         f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
-        f"{int(ENNIS_GATE_X1 + (ENNIS_GATE_X2 - ENNIS_GATE_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis fence midpoint
         f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
         f"{(BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
@@ -1459,12 +1458,6 @@ def build():
         ),
         # Back road going south (midpoint)
         (CHARLES_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
-        # Ennis return (midpoint) — north verge
-        (
-            (CHARLES_PLT_X_RET + CHARLES_PLT_BR_X) // 2,
-            ENNIS_Y + ENNIS_HW + 40,
-            FLOOR_Z2 + 2 + rocket_hover_height,
-        ),
         # Charles return (south third, north third) — west sidewalk
         (
             ROAD_X1 - 40,
