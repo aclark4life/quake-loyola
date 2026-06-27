@@ -108,25 +108,32 @@ Where it was left
 Resuming this work
 ------------------
 
-**The right starting point is the NQ QC source, not the QW source.**
+**Finding a clean NQ QC base**
 
-The ``qc/`` directory is based on the QuakeWorld (QW) QC source from
-``id-Software/Quake``.  NQ and QW divide engine/QC responsibilities
-differently in several places:
+Two candidate sources were tried and rejected:
 
-* **Jump velocity** — NQ QC applies ``self.velocity_z + 270`` directly in
-  ``PlayerJump()``.  QW relies on the engine.  The QW source is missing this
-  line so jumping is broken.
-* **button2 clearing** — QW clears ``self.button2`` in ``PlayerJump()``
-  before the engine reads it; NQ doesn't.
-* There are likely other similar divergences in weapons, water, and movement.
+* **id-Software/quake-rerelease-qc** — This is the official rerelease (2021)
+  NQ source, but it targets the enhanced rerelease engine and uses many
+  extensions that gmqcc rejects: ``#0:ex_bprint`` style builtins,
+  ``switch/case``, bot/debug-draw builtins, ``finaleFinished``, etc.
 
-The NQ QC source can be obtained from the id Software GPL release or from
-projects like ``nQuake`` / ``Quakespasm`` source trees.  Replacing ``qc/``
-with the NQ base (then re-applying the CRC fixes from the *defs.qc* section
-above) is the recommended approach before attempting any further QC work.
+* **lavenderdotpet/LibreQuake** — A clean-room reimplementation that is
+  structurally sound but also uses ``__NULL__``, ``#ifdef``/``#ifndef``,
+  ``deathmatch_supermode()``, ``LOC_*`` string constants, and LQ-specific
+  cutscene code — all incompatible with gmqcc in ``-std=fteqcc`` mode.
 
-To pick this up again:
+The id Software GPL release (``id-Software/Quake``) contains only the QW
+and WinQuake C source; there is **no original id1 QC source** in that repo.
+The original ``id1/`` QC was never published as a standalone GPL release —
+it was distributed only inside the game's ``PAK0.PAK``.
+
+**Practical conclusion:** The QW QC source (``id-Software/Quake qw-qc/``)
+with targeted NQ compatibility fixes is the most viable base for gmqcc.
+It compiles cleanly at CRC=5927 after the fixes documented above.
+The missing pieces (``PlayerJump`` velocity, ``button2`` handling) were
+simple one-line additions; no structural rewrite was needed.
+
+**Resuming this work**
 
 1. Investigate why ``train_rotate_riders()`` does not rotate the player view.
    Likely candidates:
