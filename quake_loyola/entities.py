@@ -693,13 +693,6 @@ def build():
                 origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40}",
             )
         )
-    # Rocket launcher — west arch, north side
-    ENTITIES.append(
-        ent(
-            "weapon_rocketlauncher",
-            origin=f"{BRIDGE_ARCH_X[1]} {BRIDGE.y1 - 48} {BRIDGE_DECK_Z}",
-        )
-    )
     # Remaining rocket launchers
     for rl_origin in [
         f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
@@ -708,7 +701,6 @@ def build():
         f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span
         f"{(BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
-        f"{(BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2} {BRIDGE.y2 - 24} {BRIDGE_DECK_Z}",  # span 2 south edge
         f"{(BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2} 0 {BRIDGE_DECK_Z}",  # span 4
         f"{(BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2} 0 {BRIDGE_DECK_Z}",  # span 5 (east angled)
     ]:
