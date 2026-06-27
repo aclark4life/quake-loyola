@@ -398,7 +398,7 @@ FOG_DENSITY: float | None = None  # use preset fog density
 
 class Textures:
     BRICK = "bricka2_1"
-    BRICK_KH = "city2_3s"
+    BRICK_KH = "city6_8"
     BUILDING = "city2_1"
     CEMENT = "sfloor3_2"
     EXIT = "z_exit"
