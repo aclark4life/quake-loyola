@@ -590,6 +590,7 @@ float   AS_MISSILE              = 4;
 //
 .float          cnt;                    // misc flag
 .float          train_yaw;             // heading (yaw) toward next path_corner waypoint
+.float          train_yaw_prev;        // heading before last waypoint (for delta rotation)
 .void()         think1;
 .vector         finaldest, finalangle;
 

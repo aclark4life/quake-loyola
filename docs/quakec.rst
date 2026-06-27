@@ -108,6 +108,24 @@ Where it was left
 Resuming this work
 ------------------
 
+**The right starting point is the NQ QC source, not the QW source.**
+
+The ``qc/`` directory is based on the QuakeWorld (QW) QC source from
+``id-Software/Quake``.  NQ and QW divide engine/QC responsibilities
+differently in several places:
+
+* **Jump velocity** — NQ QC applies ``self.velocity_z + 270`` directly in
+  ``PlayerJump()``.  QW relies on the engine.  The QW source is missing this
+  line so jumping is broken.
+* **button2 clearing** — QW clears ``self.button2`` in ``PlayerJump()``
+  before the engine reads it; NQ doesn't.
+* There are likely other similar divergences in weapons, water, and movement.
+
+The NQ QC source can be obtained from the id Software GPL release or from
+projects like ``nQuake`` / ``Quakespasm`` source trees.  Replacing ``qc/``
+with the NQ base (then re-applying the CRC fixes from the *defs.qc* section
+above) is the recommended approach before attempting any further QC work.
+
 To pick this up again:
 
 1. Investigate why ``train_rotate_riders()`` does not rotate the player view.

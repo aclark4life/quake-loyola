@@ -266,14 +266,29 @@ void() train_use =
 void() train_rotate_riders =
 {
 	local entity	rider;
+	local float		delta_yaw;
 
-	// Debug: rotate every player unconditionally so we can verify fixangle works.
+	delta_yaw = self.train_yaw - self.train_yaw_prev;
+	// Normalise to -180..+180 so we always take the short way round.
+	while (delta_yaw >  180) delta_yaw = delta_yaw - 360;
+	while (delta_yaw < -180) delta_yaw = delta_yaw + 360;
+
+	if (!delta_yaw)
+		return;
+
 	rider = find (world, classname, "player");
 	while (rider)
 	{
-		rider.angles_y  = self.train_yaw;
-		rider.v_angle_y = self.train_yaw;
-		rider.fixangle  = TRUE;
+		if (rider.groundentity == self)
+		{
+			// Rotate only yaw by the delta; preserve pitch so the view
+			// doesn't tilt.  fixangle sends self.angles to the client.
+			rider.angles_x  = 0;
+			rider.angles_y  = rider.v_angle_y + delta_yaw;
+			rider.angles_z  = 0;
+			rider.v_angle_y = rider.v_angle_y + delta_yaw;
+			rider.fixangle  = TRUE;
+		}
 		rider = find (rider, classname, "player");
 	}
 };
@@ -308,6 +323,7 @@ void() train_next =
 		self.wait = 0;
 
 	// Store heading toward this waypoint for train_rotate_riders.
+	self.train_yaw_prev = self.train_yaw;
 	delta = (targ.origin - self.mins) - self.origin;
 	if (delta_x || delta_y)
 		self.train_yaw = vectoyaw (delta);

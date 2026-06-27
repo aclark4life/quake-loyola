@@ -782,8 +782,9 @@ void() PlayerJump =
 	if ( !(self.flags & FL_JUMPRELEASED) )
 		return;         // don't pogo stick
 
-	self.flags = self.flags - (self.flags & FL_JUMPRELEASED);       
-	self.button2 = 0;
+	self.flags = self.flags - (self.flags & FL_JUMPRELEASED);
+
+	self.velocity_z = self.velocity_z + 270;
 
 // player jumping sound
 	sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
