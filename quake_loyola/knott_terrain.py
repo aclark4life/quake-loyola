@@ -67,7 +67,15 @@ from .constants import (
     WORLD_Y1,
     Textures,
 )
-from .geometry import box, brush_ent, curb_seg, ramp_slab, ramp_slab_y, tri_prism
+from .geometry import (
+    box,
+    brush_ent,
+    curb_seg,
+    make_tree,
+    ramp_slab,
+    ramp_slab_y,
+    tri_prism,
+)
 
 
 def build():
@@ -341,7 +349,7 @@ def build():
                 KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
     # CEMENT curb ring — inner to outer radius, wedge segments with tangent-plane faces
@@ -409,6 +417,22 @@ def build():
                 Textures.CEMENT,
             )
         )
+
+    # ── Island trees — one on each planted corner ─────────────────────────────
+    # Trees centred on the island quarter-circle pivot points, offset slightly
+    # into the mulch area so they clear the curb ring.
+    _island_tree_offset = _r_inner // 2
+    for tree_cx, tree_cy in [
+        (
+            KNOTT_DRIVEWAY_JCX_W + _island_tree_offset,
+            KNOTT_DRIVEWAY_EXT_Y2 + _island_tree_offset,
+        ),
+        (
+            KNOTT_DRIVEWAY_JCX_E - _island_tree_offset,
+            KNOTT_DRIVEWAY_EXT_Y2 + _island_tree_offset,
+        ),
+    ]:
+        DETAIL_BRUSHES.extend(make_tree(tree_cx, tree_cy, FLOOR_Z2 + CHARLES_WALK_H))
 
     # ── Hill terrain under Knott Hall ─────────────────────────────────────────────
     # Bridge deck is raised; building sits on a hill so its 2nd floor meets the walkway.
