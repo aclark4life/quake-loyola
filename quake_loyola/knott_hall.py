@@ -116,7 +116,7 @@ def build():
             KNOTT.y1 + KNOTT.wall_t,
             KNOTT_Z2,
             s_wall_openings,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
@@ -137,7 +137,7 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     BRUSHES.append(
@@ -148,7 +148,7 @@ def build():
             KNOTT.x1 + INDENT,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
@@ -169,7 +169,7 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     BRUSHES.append(
@@ -180,7 +180,7 @@ def build():
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     # South mullions — protrude outward (south, -Y)
@@ -269,7 +269,7 @@ def build():
             KNOTT.y2,
             KNOTT_Z2,
             door_ground + door_upper + win_n,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
 
@@ -298,7 +298,7 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     BRUSHES.append(
@@ -309,7 +309,7 @@ def build():
             KNOTT.x1 + 2 * INDENT,
             KNOTT.y2,
             KNOTT_Z2,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
 
@@ -331,7 +331,7 @@ def build():
                     KNOTT_Z2,
                 )
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     BRUSHES.append(
@@ -342,7 +342,7 @@ def build():
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y2,
             KNOTT_Z2,
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
 
@@ -465,7 +465,7 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     # Vertical mullions — protrude 12 units east of wall face
@@ -549,7 +549,7 @@ def build():
                     KNOTT_Z2,
                 ),
             ],
-            Textures.BRICK,
+            Textures.BRICK_KH,
         )
     )
     # Vertical mullions — protrude 12 units west of wall face
