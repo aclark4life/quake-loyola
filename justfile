@@ -96,9 +96,10 @@ update-golden: venv
 
 # Compile QuakeC source in qc/ into progs.dat using gmqcc
 compile-qc:
-    cd qc && {{gmqcc_bin}} -std=fteqcc -o ../progs.dat \
+    cd qc && {{gmqcc_bin}} -std=fteqcc -Wall -o ../progs.dat \
         defs.qc subs.qc combat.qc items.qc weapons.qc world.qc \
-        client.qc player.qc doors.qc buttons.qc triggers.qc plats.qc misc.qc server.qc
+        client.qc player.qc doors.qc buttons.qc triggers.qc plats.qc misc.qc \
+        server.qc
 
 # Deploy progs.dat to the Quake id1 directory (overrides stock game logic)
 deploy-qc:
