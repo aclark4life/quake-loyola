@@ -1210,9 +1210,10 @@ def brush_ent(cls, brushes, **kw):
     return Entity(cls, dict(kw), list(brushes))
 
 
-def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
+def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None):
     """Wall slab (thin in Y) with rectangular cutouts.
     openings: list of (ox1, oz1, ox2, oz2) — regions to omit in the x,z plane.
+    ts: override texture for the south (-Y) face; tn: north (+Y) face.
     """
     xs = sorted({x1, x2} | {o[0] for o in openings} | {o[2] for o in openings})
     zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
@@ -1226,15 +1227,19 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex):
                 for o in openings
             )
             if not covered:
-                brushes.append(box(cx1, y1, cz1, cx2, y2, cz2, tex))
+                brushes.append(box(cx1, y1, cz1, cx2, y2, cz2, tex, ts=ts, tn=tn))
     return brushes
 
 
-def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex):
+def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex, tw=None, te=None):
     """Wall slab (thin in X) with rectangular cutouts.
     openings: list of (oy1, oz1, oy2, oz2) — regions to omit in the y,z plane.
+    tw: override texture for the west (-X) face; te: east (+X) face.
     Derived from layered_wall via XY swap."""
-    return [swap_xy(b) for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex)]
+    return [
+        swap_xy(b)
+        for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex, ts=tw, tn=te)
+    ]
 
 
 def render_text_flat_x(text, y0, x_face, z_base, px_w, px_h, depth, tex, mirror=False):

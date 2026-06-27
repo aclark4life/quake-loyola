@@ -7,7 +7,7 @@ import generate_map
 # deliberately (and review the .map diff) whenever the geometry changes.
 EXPECTED_BRUSHES = 852
 EXPECTED_ENTITIES = 538
-EXPECTED_MD5 = "9fa4ee553ae8e6f5c17129b00a0824e9"
+EXPECTED_MD5 = "bd01fd451b8157ec8ed0832d55fcd0d6"
 
 
 class MapRegressionTests(unittest.TestCase):
