@@ -588,7 +588,7 @@ def build():
                 FLOOR_Z1,
                 KNOTT_GROUND_Z,
                 terrain_z_at(east_walk_ext_y1_val),
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # Accessible entrance ramp — rises gently from sidewalk level (Z=8) on the west
@@ -642,7 +642,7 @@ def build():
                 Textures.MULCH,
             )
         )
-        # NE indent ground — south of ramp (Y=-160..264): full ground, no cement needed
+        # NE indent ground — south of ramp (Y=-160..264): mulch
         BRUSHES.append(
             box(
                 east_ramp_x2,
@@ -651,7 +651,7 @@ def build():
                 KNOTT_DRIVEWAY_CORRIDOR_X1,
                 east_walk_ext_y1_val,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # North of E-W extension (Y=328..504): flat mulch pad matching the slope above
