@@ -227,7 +227,7 @@ def build():
             Textures.CEMENT,
         )
     )
-    # West sidewalk — ground from E/W Ennis approach sidewalk to NW junction corner
+    # West sidewalk — mulch from E/W Ennis approach sidewalk to NW junction corner
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
@@ -236,7 +236,7 @@ def build():
             KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
             KNOTT_DRIVEWAY_EXT_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
+            Textures.MULCH,
         )
     )
     # Cement curb strip along road edge of the ground section
