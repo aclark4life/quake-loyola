@@ -1002,12 +1002,26 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def square_wall(
-    x1, x2, y1, y2, floor_z, ceil_z, open_hw, tex, overhang=0, base_h=0, yc=0.0
+    x1,
+    x2,
+    y1,
+    y2,
+    floor_z,
+    ceil_z,
+    open_hw,
+    tex,
+    overhang=0,
+    base_h=0,
+    yc=0.0,
+    base_cap_h=0,
+    base_cap_tex=None,
+    base_cap_ovh=0,
 ):
     """Stone wall with a rectangular (square-topped) opening centred at Y=yc (default 0).
     open_hw: half-width of the opening in Y.
     overhang: extra Y extent on pillar portions beyond open_hw.
     base_h: solid plinth height at ground level.
+    base_cap_h/base_cap_tex/base_cap_ovh: optional cement cap slab on top of plinth.
     """
     brushes = []
     ext = open_hw + overhang
@@ -1028,6 +1042,21 @@ def square_wall(
         brushes.append(
             box(x1, yc - open_hw, floor_z, x2, yc + open_hw, floor_z + base_h, tex)
         )
+        if base_cap_h > 0:
+            cap_tex = base_cap_tex or tex
+            cx1, cx2 = x1 - base_cap_ovh, x2 + base_cap_ovh
+            crin = open_hw + base_cap_ovh
+            brushes.append(
+                box(
+                    cx1,
+                    yc - crin,
+                    floor_z + base_h,
+                    cx2,
+                    yc + crin,
+                    floor_z + base_h + base_cap_h,
+                    cap_tex,
+                )
+            )
     return brushes
 
 

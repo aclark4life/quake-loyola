@@ -701,6 +701,9 @@ def build():
                         Textures.PILLAR,
                         overhang=sq_overhang,
                         base_h=BRIDGE_PILLAR_BASE_H,
+                        base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
+                        base_cap_tex=Textures.CEMENT,
+                        base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                     )
                 )
             else:
@@ -948,6 +951,22 @@ def build():
                     Textures.PILLAR,
                 )
             )  # base
+            # Cement cap slab on top of base plinth (matches arch-pier base caps)
+            if BRIDGE_PILLAR_BASE_CAP_H > 0:
+                cap_crin = a_rin + BRIDGE_PILLAR_BASE_CAP_OVH
+                BRUSHES.append(
+                    shear_box_y(
+                        px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_BASE_CAP_OVH,
+                        yc - cap_crin,
+                        FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
+                        px + BRIDGE_PILLAR_HW + BRIDGE_PILLAR_BASE_CAP_OVH,
+                        yc + cap_crin,
+                        FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + BRIDGE_PILLAR_BASE_CAP_H,
+                        s1r,
+                        s2r,
+                        Textures.CEMENT,
+                    )
+                )  # base cap
         if by1 < yc - ext:
             BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:
