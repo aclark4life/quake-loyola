@@ -1253,7 +1253,9 @@ def build():
     et_x1 = (
         WORLD_X2 + WALL_T + east_side_foliage_hw + 20
     )  # foliage clears the world wall / teleport
-    et_x2 = _world_x2_ext - WALL_T - 80
+    et_x2 = (
+        _world_x2_ext - WALL_T - east_side_foliage_hw
+    )  # keep foliage clear of east wall
     et_y1 = WORLD_Y1 + WALL_T + 120
     et_y2 = _ennis_sw_edge - east_side_foliage_hw  # keep foliage clear of the sidewalk
     et_min_dist = 280  # minimum centre-to-centre spacing

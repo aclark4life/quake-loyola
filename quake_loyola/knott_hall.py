@@ -644,16 +644,20 @@ def build():
             )
         )
     # Floor-level mullions — win_n
+    # At floor 2 (top of 2nd-floor entrance) extend east/west to be flush with
+    # the vertical pillars on each side of the window.
     for floor_index, _, fz, _, _ in floor_levels():
         if floor_index < 1:
             continue
         if fz <= KNOTT_Z2:
+            hx1 = win_n_x1 - (KNOTT_MULLION_W if floor_index == 1 else 0)
+            hx2 = win_n_x2 + (KNOTT_MULLION_W if floor_index == 1 else 0)
             DETAIL_BRUSHES.append(
                 box(
-                    win_n_x1,
+                    hx1,
                     KNOTT.y2 - KNOTT.wall_t,
                     fz - 4,
-                    win_n_x2,
+                    hx2,
                     KNOTT.y2 + KNOTT_MULLION_PRO,
                     fz,
                     Textures.RAIL,
