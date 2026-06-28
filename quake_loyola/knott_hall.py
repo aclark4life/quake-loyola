@@ -107,6 +107,19 @@ def build():
         )
         for fl in range(KNOTT.floors)
     ]
+    BRUSHES.append(
+        box(
+            KNOTT.x1 + INDENT,
+            KNOTT.y1,
+            FLOOR_Z1,
+            KNOTT.x2 - INDENT,
+            KNOTT.y1 + KNOTT.wall_t,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall(
             KNOTT.x1 + INDENT,
@@ -124,11 +137,23 @@ def build():
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
     sw_win_cx = KNOTT.x1 + INDENT // 2
+    # Stone base strip (FLOOR_Z1 → KNOTT_GROUND_Z) before the brick zone begins
+    BRUSHES.append(
+        box(
+            KNOTT.x1,
+            KNOTT.y1 + INDENT - KNOTT.wall_t,
+            FLOOR_Z1,
+            KNOTT.x1 + INDENT,
+            KNOTT.y1 + INDENT,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall(
             KNOTT.x1,
             KNOTT.y1 + INDENT - KNOTT.wall_t,
-            FLOOR_Z1,
+            KNOTT_GROUND_Z,
             KNOTT.x1 + INDENT,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
@@ -152,19 +177,41 @@ def build():
             FLOOR_Z1,
             KNOTT.x1 + INDENT,
             KNOTT.y1 + INDENT,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT.x1 + INDENT - KNOTT.wall_t,
+            KNOTT.y1,
+            KNOTT_GROUND_Z,
+            KNOTT.x1 + INDENT,
+            KNOTT.y1 + INDENT,
             KNOTT_Z2,
             Textures.BRICK_KH,
             tw=Textures.BRICK_KH,
-            te=Textures.FLOOR_KH,
+            te=Textures.BRICK_KH,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
     se_win_cx = KNOTT.x2 - INDENT // 2
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - INDENT,
+            KNOTT.y1 + INDENT - KNOTT.wall_t,
+            FLOOR_Z1,
+            KNOTT.x2,
+            KNOTT.y1 + INDENT,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall(
             KNOTT.x2 - INDENT,
             KNOTT.y1 + INDENT - KNOTT.wall_t,
-            FLOOR_Z1,
+            KNOTT_GROUND_Z,
             KNOTT.x2,
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
@@ -188,9 +235,20 @@ def build():
             FLOOR_Z1,
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y1 + INDENT,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - INDENT,
+            KNOTT.y1,
+            KNOTT_GROUND_Z,
+            KNOTT.x2 - INDENT + KNOTT.wall_t,
+            KNOTT.y1 + INDENT,
             KNOTT_Z2,
             Textures.BRICK_KH,
-            tw=Textures.FLOOR_KH,
+            tw=Textures.BRICK_KH,
             te=Textures.BRICK_KH,
         )
     )
@@ -271,6 +329,19 @@ def build():
             KNOTT_Z2,
         ),
     ]  # two window slots centered over entrance doorway, split by center mullion
+    BRUSHES.append(
+        box(
+            KNOTT.x1 + 2 * INDENT,
+            KNOTT.y2 - KNOTT.wall_t,
+            FLOOR_Z1,
+            KNOTT.x2 - INDENT,
+            KNOTT.y2,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
+            tn=Textures.BRICK_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall(
             KNOTT.x1 + 2 * INDENT,
@@ -290,11 +361,37 @@ def build():
     # NW Indentation — 2×INDENT wide (extends west to KNOTT.x1), two windows side by side
     nw_win_cx1 = KNOTT.x1 + INDENT // 2  # west window = 1246 (pier-aligned)
     nw_win_cx2 = KNOTT.x1 + INDENT + INDENT // 2  # east window = 1326
+    BRUSHES.append(
+        box(
+            KNOTT.x1,
+            KNOTT.y2 - INDENT,
+            FLOOR_Z1,
+            KNOTT.x1 + 2 * INDENT,
+            KNOTT.y2 - INDENT + KNOTT.wall_t,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    # First floor: solid, inward face = stone
+    BRUSHES.append(
+        box(
+            KNOTT.x1,
+            KNOTT.y2 - INDENT,
+            KNOTT_GROUND_Z,
+            KNOTT.x1 + 2 * INDENT,
+            KNOTT.y2 - INDENT + KNOTT.wall_t,
+            KNOTT_GROUND_Z + KNOTT.floor_h,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.BRICK_KH,
+        )
+    )
+    # Upper floors: windowed, inward face = sfloor3_2
     BRUSHES.extend(
         layered_wall(
             KNOTT.x1,
             KNOTT.y2 - INDENT,
-            FLOOR_Z1,
+            KNOTT_GROUND_Z + KNOTT.floor_h,
             KNOTT.x1 + 2 * INDENT,
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_Z2,
@@ -324,20 +421,57 @@ def build():
             FLOOR_Z1,
             KNOTT.x1 + 2 * INDENT,
             KNOTT.y2,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT.x1 + 2 * INDENT - KNOTT.wall_t,
+            KNOTT.y2 - INDENT,
+            KNOTT_GROUND_Z,
+            KNOTT.x1 + 2 * INDENT,
+            KNOTT.y2,
             KNOTT_Z2,
             Textures.BRICK_KH,
             tw=Textures.BRICK_KH,
-            te=Textures.FLOOR_KH,
+            te=Textures.BRICK_KH,
         )
     )
 
     # NE Indentation inner walls (mirror of NW) — recessed back wall has a centered 48-unit window
     ne_win_cx = KNOTT.x2 - INDENT // 2
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - INDENT,
+            KNOTT.y2 - INDENT,
+            FLOOR_Z1,
+            KNOTT.x2,
+            KNOTT.y2 - INDENT + KNOTT.wall_t,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    # First floor: solid, inward face = stone
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - INDENT,
+            KNOTT.y2 - INDENT,
+            KNOTT_GROUND_Z,
+            KNOTT.x2,
+            KNOTT.y2 - INDENT + KNOTT.wall_t,
+            KNOTT_GROUND_Z + KNOTT.floor_h,
+            Textures.BRICK_KH,
+            ts=Textures.BRICK_KH,
+            tn=Textures.BRICK_KH,
+        )
+    )
+    # Upper floors: windowed, inward face = sfloor3_2
     BRUSHES.extend(
         layered_wall(
             KNOTT.x2 - INDENT,
             KNOTT.y2 - INDENT,
-            FLOOR_Z1,
+            KNOTT_GROUND_Z + KNOTT.floor_h,
             KNOTT.x2,
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_Z2,
@@ -361,9 +495,20 @@ def build():
             FLOOR_Z1,
             KNOTT.x2 - INDENT + KNOTT.wall_t,
             KNOTT.y2,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - INDENT,
+            KNOTT.y2 - INDENT,
+            KNOTT_GROUND_Z,
+            KNOTT.x2 - INDENT + KNOTT.wall_t,
+            KNOTT.y2,
             KNOTT_Z2,
             Textures.BRICK_KH,
-            tw=Textures.FLOOR_KH,
+            tw=Textures.BRICK_KH,
             te=Textures.BRICK_KH,
         )
     )
@@ -459,6 +604,17 @@ def build():
     ww_c3 = ww_wall_y1 + 3 * ww_quarter
     ww_div_w = KNOTT_SIDE_WINDOW_DIV_W
     ww_protrude = KNOTT_SIDE_WINDOW_PROTRUSION
+    BRUSHES.append(
+        box(
+            KNOTT.x2 - KNOTT.wall_t,
+            ww_wall_y1,
+            FLOOR_Z1,
+            KNOTT.x2,
+            ww_wall_y2,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall_y(
             ww_wall_y1,
@@ -545,6 +701,17 @@ def build():
             )
 
     # West wall — three 120-unit wide floor-to-ceiling windows, evenly spread
+    BRUSHES.append(
+        box(
+            KNOTT.x1,
+            ww_wall_y1,
+            FLOOR_Z1,
+            KNOTT.x1 + KNOTT.wall_t,
+            ww_wall_y2,
+            KNOTT_GROUND_Z,
+            Textures.BRICK_KH,
+        )
+    )
     BRUSHES.extend(
         layered_wall_y(
             ww_wall_y1,

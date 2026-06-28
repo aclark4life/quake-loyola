@@ -440,7 +440,7 @@ def build():
                     fill_x2,
                     fill_y2,
                     KNOTT_GROUND_Z,
-                    Textures.WALL,
+                    Textures.BRICK_KH,
                 )
             )
         # NW indent floor — flush with exterior ground
