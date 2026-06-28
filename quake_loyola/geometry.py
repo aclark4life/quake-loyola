@@ -1210,10 +1210,11 @@ def brush_ent(cls, brushes, **kw):
     return Entity(cls, dict(kw), list(brushes))
 
 
-def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None):
+def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=None):
     """Wall slab (thin in Y) with rectangular cutouts.
     openings: list of (ox1, oz1, ox2, oz2) — regions to omit in the x,z plane.
     ts: override texture for the south (-Y) face; tn: north (+Y) face.
+    tf: texture for the reveal faces (jambs/lintels) exposed by openings.
     """
     xs = sorted({x1, x2} | {o[0] for o in openings} | {o[2] for o in openings})
     zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
@@ -1227,7 +1228,23 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None):
                 for o in openings
             )
             if not covered:
-                brushes.append(box(cx1, y1, cz1, cx2, y2, cz2, tex, ts=ts, tn=tn))
+                kw = {}
+                if tf:
+                    # Apply tf to faces that are exposed by an adjacent opening.
+                    for o in openings:
+                        # Left jamb: this piece's east face borders the opening on the left
+                        if cx2 == o[0] and cz1 < o[3] and cz2 > o[1]:
+                            kw["te"] = tf
+                        # Right jamb: this piece's west face borders the opening on the right
+                        if cx1 == o[2] and cz1 < o[3] and cz2 > o[1]:
+                            kw["tw"] = tf
+                        # Lintel soffit: this piece's bottom face is above the opening
+                        if cz1 == o[3] and cx1 < o[2] and cx2 > o[0]:
+                            kw["tb"] = tf
+                        # Sill top: this piece's top face is below the opening
+                        if cz2 == o[1] and cx1 < o[2] and cx2 > o[0]:
+                            kw["tt"] = tf
+                brushes.append(box(cx1, y1, cz1, cx2, y2, cz2, tex, ts=ts, tn=tn, **kw))
     return brushes
 
 

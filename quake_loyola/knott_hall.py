@@ -119,6 +119,7 @@ def build():
             Textures.BRICK_KH,
             ts=Textures.BRICK_KH,
             tn=Textures.FLOOR_KH,
+            tf=Textures.CEMENT,
         )
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
@@ -282,6 +283,7 @@ def build():
             Textures.BRICK_KH,
             ts=Textures.FLOOR_KH,
             tn=Textures.BRICK_KH,
+            tf=Textures.CEMENT,
         )
     )
 
