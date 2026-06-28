@@ -504,7 +504,7 @@ def build():
                 west_ramp_x2,
                 KNOTT.y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # South terrain fill — flat ground at building level behind south wall to east world edge
@@ -542,7 +542,7 @@ def build():
                 segment1_split_x,
                 ENNIS_SW_EDGE,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # East section of seg1 (NW indent → entrance) — slopes from KNOTT_GROUND_Z at KH face to
@@ -557,7 +557,7 @@ def build():
                 FLOOR_Z1,
                 KNOTT_GROUND_Z,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
+                Textures.MULCH,
             )
         )
         # Seg2 (east of entrance to NE indent)
