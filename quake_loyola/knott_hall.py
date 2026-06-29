@@ -137,7 +137,6 @@ def build():
     )
     # SW Indentation inner walls — recessed back wall with centered 48-unit window
     sw_win_cx = KNOTT.x1 + INDENT // 2
-    # Stone base strip (FLOOR_Z1 → KNOTT_GROUND_Z) before the brick zone begins
     BRUSHES.append(
         box(
             KNOTT.x1,
@@ -147,6 +146,7 @@ def build():
             KNOTT.y1 + INDENT,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.extend(
@@ -179,6 +179,7 @@ def build():
             KNOTT.y1 + INDENT,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -205,6 +206,7 @@ def build():
             KNOTT.y1 + INDENT,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            tn=Textures.FLOOR_KH,
         )
     )
     BRUSHES.extend(
@@ -237,6 +239,7 @@ def build():
             KNOTT.y1 + INDENT,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -370,9 +373,9 @@ def build():
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
         )
     )
-    # First floor: solid, interior face = sfloor3_2
     BRUSHES.append(
         box(
             KNOTT.x1,
@@ -423,6 +426,7 @@ def build():
             KNOTT.y2,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -450,6 +454,7 @@ def build():
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
         )
     )
     # First floor: solid, interior face = sfloor3_2
@@ -497,6 +502,7 @@ def build():
             KNOTT.y2,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
         )
     )
     BRUSHES.append(
@@ -613,6 +619,7 @@ def build():
             ww_wall_y2,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
         )
     )
     BRUSHES.extend(
@@ -710,6 +717,7 @@ def build():
             ww_wall_y2,
             KNOTT_GROUND_Z,
             Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     BRUSHES.extend(
