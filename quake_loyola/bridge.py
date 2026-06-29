@@ -346,6 +346,35 @@ def build():
         y_shift_fn=None,
     ):
         """Add evenly-spaced cement blocks atop N and S parapets in a bridge span."""
+
+        def _block(cx, sy, y1_val, y2_val):
+            """Tilted block following the arch — ramp_slab when sloped, box when flat."""
+            zb1 = round(deck_top_z(cx - BRIDGE_BLK_HW) + BRIDGE.parapet_h)
+            zb2 = round(deck_top_z(cx + BRIDGE_BLK_HW) + BRIDGE.parapet_h)
+            y1v = y1_val + sy
+            y2v = y2_val + sy
+            if zb1 == zb2:
+                return box(
+                    cx - BRIDGE_BLK_HW,
+                    y1v,
+                    zb1,
+                    cx + BRIDGE_BLK_HW,
+                    y2v,
+                    zb1 + BRIDGE_BLK_H,
+                    Textures.CEMENT,
+                )
+            return ramp_slab(
+                cx - BRIDGE_BLK_HW,
+                cx + BRIDGE_BLK_HW,
+                y1v,
+                y2v,
+                zb1,
+                zb2,
+                zb1 + BRIDGE_BLK_H,
+                zb2 + BRIDGE_BLK_H,
+                Textures.CEMENT,
+            )
+
         add_repeated_parapet_decorations(
             x_start,
             x_end,
@@ -359,23 +388,11 @@ def build():
                 )
                 + BRIDGE.parapet_h
             ),
-            north_brush=lambda cx, sy, bz: box(
-                cx - BRIDGE_BLK_HW,
-                BRIDGE.y2 - BRIDGE_PAR_W + sy,
-                bz,
-                cx + BRIDGE_BLK_HW,
-                BRIDGE.y2 + BRIDGE_BLK_OVH + sy,
-                bz + BRIDGE_BLK_H,
-                Textures.CEMENT,
+            north_brush=lambda cx, sy, bz: _block(
+                cx, sy, BRIDGE.y2 - BRIDGE_PAR_W, BRIDGE.y2 + BRIDGE_BLK_OVH
             ),
-            south_brush=lambda cx, sy, bz: box(
-                cx - BRIDGE_BLK_HW,
-                BRIDGE.y1 - BRIDGE_BLK_OVH + sy,
-                bz,
-                cx + BRIDGE_BLK_HW,
-                BRIDGE.y1 + BRIDGE_PAR_W + sy,
-                bz + BRIDGE_BLK_H,
-                Textures.CEMENT,
+            south_brush=lambda cx, sy, bz: _block(
+                cx, sy, BRIDGE.y1 - BRIDGE_BLK_OVH, BRIDGE.y1 + BRIDGE_PAR_W
             ),
             west_margin=west_margin,
             east_margin=east_margin,
