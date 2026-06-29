@@ -191,7 +191,7 @@ def build():
             KNOTT_Z2,
             Textures.BRICK_KH,
             tw=Textures.BRICK_KH,
-            te=Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
     # SE Indentation inner walls — recessed back wall with centered 48-unit window
@@ -248,7 +248,7 @@ def build():
             KNOTT.y1 + INDENT,
             KNOTT_Z2,
             Textures.BRICK_KH,
-            tw=Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
             te=Textures.BRICK_KH,
         )
     )
@@ -372,7 +372,7 @@ def build():
             Textures.BRICK_KH,
         )
     )
-    # First floor: solid, inward face = stone
+    # First floor: solid, interior face = sfloor3_2
     BRUSHES.append(
         box(
             KNOTT.x1,
@@ -382,11 +382,11 @@ def build():
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_GROUND_Z + KNOTT.floor_h,
             Textures.BRICK_KH,
-            ts=Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
             tn=Textures.BRICK_KH,
         )
     )
-    # Upper floors: windowed, inward face = sfloor3_2
+    # Upper floors: windowed, interior face = sfloor3_2
     BRUSHES.extend(
         layered_wall(
             KNOTT.x1,
@@ -410,7 +410,7 @@ def build():
                 ),
             ],
             Textures.BRICK_KH,
-            ts=Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
             tn=Textures.FLOOR_KH,
         )
     )
@@ -435,7 +435,7 @@ def build():
             KNOTT_Z2,
             Textures.BRICK_KH,
             tw=Textures.BRICK_KH,
-            te=Textures.BRICK_KH,
+            te=Textures.FLOOR_KH,
         )
     )
 
@@ -452,7 +452,7 @@ def build():
             Textures.BRICK_KH,
         )
     )
-    # First floor: solid, inward face = stone
+    # First floor: solid, interior face = sfloor3_2
     BRUSHES.append(
         box(
             KNOTT.x2 - INDENT,
@@ -462,11 +462,11 @@ def build():
             KNOTT.y2 - INDENT + KNOTT.wall_t,
             KNOTT_GROUND_Z + KNOTT.floor_h,
             Textures.BRICK_KH,
-            ts=Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
             tn=Textures.BRICK_KH,
         )
     )
-    # Upper floors: windowed, inward face = sfloor3_2
+    # Upper floors: windowed, interior face = sfloor3_2
     BRUSHES.extend(
         layered_wall(
             KNOTT.x2 - INDENT,
@@ -484,7 +484,7 @@ def build():
                 )
             ],
             Textures.BRICK_KH,
-            ts=Textures.BRICK_KH,
+            ts=Textures.FLOOR_KH,
             tn=Textures.FLOOR_KH,
         )
     )
@@ -508,7 +508,7 @@ def build():
             KNOTT.y2,
             KNOTT_Z2,
             Textures.BRICK_KH,
-            tw=Textures.BRICK_KH,
+            tw=Textures.FLOOR_KH,
             te=Textures.BRICK_KH,
         )
     )
