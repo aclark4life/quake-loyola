@@ -45,6 +45,7 @@ from .constants import (
     ENNIS_WALL_T,
     ENNIS_Y,
     FLOOR_Z2,
+    INDENT,
     KNOTT,
     KNOTT_BIY1,
     KNOTT_BIY2,
@@ -256,6 +257,47 @@ def build():
                 light="220",
             )
         )
+
+    # ── Corner cutout pocket lights — one per pocket per floor ──────────────
+    nw_cut_cx = KNOTT.x1 + INDENT  # x centre of NW pocket
+    nw_cut_cy = (KNOTT.y2 - INDENT + KNOTT.y2) // 2  # y centre of NW/NE pockets
+    ne_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
+    sw_cut_cx = (KNOTT.x1 + KNOTT.x1 + INDENT) // 2  # x centre of SW pocket
+    sw_cut_cy = (KNOTT.y1 + KNOTT.y1 + INDENT) // 2  # y centre of SW/SE pockets
+    se_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
+    for floor_index in range(KNOTT.floors):
+        cut_z = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
+        for cx, cy in [
+            (nw_cut_cx, nw_cut_cy),
+            (ne_cut_cx, nw_cut_cy),
+            (sw_cut_cx, sw_cut_cy),
+            (se_cut_cx, sw_cut_cy),
+        ]:
+            ENTITIES.append(ent("light", origin=f"{cx} {cy} {cut_z}", light="200"))
+
+    # ── East room fill — true centre of east-of-shaft space ──────────────────
+    east_fill_x = (KNOTT_SHAFT_X2 + KNOTT.x2 - KNOTT.wall_t) // 2  # ≈ 2130
+    for floor_index in range(KNOTT.floors):
+        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
+        east_fill_z = fz1 + KNOTT.floor_h - 24
+        split = KNOTT_ROOM_SPLITS[floor_index]
+        for ryc in [
+            (KNOTT_BIY1 + split) // 2,
+            (split + KNOTT.wall_t + KNOTT_BIY2) // 2,
+        ]:
+            ENTITIES.append(
+                ent("light", origin=f"{east_fill_x} {ryc} {east_fill_z}", light="200")
+            )
+
+    # ── South building-end fill — brightens the far south strip ──────────────
+    south_fill_y = KNOTT_BIY1 + 64  # just inside south interior wall
+    for floor_index in range(KNOTT.floors):
+        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
+        south_fill_z = fz1 + KNOTT.floor_h - 24
+        for xc in [KNOTT_WEST_ROOM_CX, hall_center_x, KNOTT_EAST_ROOM_CX]:
+            ENTITIES.append(
+                ent("light", origin=f"{xc} {south_fill_y} {south_fill_z}", light="180")
+            )
 
     # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
     KNOTT_SHELF_H = 64  # height of shelf stack
