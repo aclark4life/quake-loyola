@@ -911,13 +911,16 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # East slope: top at ridge, slopes down to eave at DORM.x2
+    # East slope: top at ridge, slopes down to eave at DORM.x2.
+    # Extend to DORM_NORTH_Y2 (not DORM_NB_SY2) so the east cap covers the full
+    # gable depth — gable slats bevel inward above eave_z, leaving a gap at
+    # x=DORM.x2 in the 6-unit recess; the extended slab closes that gap.
     north_bldg_detail.append(
         ramp_slab(
             DORM_CX,
             DORM.x2,
             DORM_NB_SY1,
-            DORM_NB_SY2,
+            DORM_NORTH_Y2,
             DORM_EAVE_Z,
             DORM_EAVE_Z,
             DORM_RIDGE_Z,
