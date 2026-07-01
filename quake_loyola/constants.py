@@ -227,7 +227,11 @@ FLOOR_Z1, FLOOR_Z2 = -16, 0
 INDENT = 80
 
 KNOTT_DRIVEWAY_HW = 128
-KNOTT_ENABLED = True
+KNOTT_EXTERIOR_ENABLED = True  # KH exterior (walls, windows, roof, sign)
+KNOTT_INTERIOR_ENABLED = False  # temporarily disabled — KH interior (floor slabs, stairs, hallway walls, partitions)
+KNOTT_MONSTERS_ENABLED = (
+    False  # temporarily disabled — KH monsters (ogres + knights inside/on KH)
+)
 KNOTT_FLOORS = 5
 KNOTT_FLOOR_H = 160
 KNOTT_MULLION_PRO = 12

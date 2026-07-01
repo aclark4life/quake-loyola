@@ -49,6 +49,7 @@ from .constants import (
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENT_X1,
     KNOTT_ENT_X2,
+    KNOTT_EXTERIOR_ENABLED,
     KNOTT_GROUND_Z,
     KNOTT_ORIG_CX,
     KNOTT_RAIL_H,
@@ -443,6 +444,24 @@ def build():
                     Textures.BRICK_KH,
                 )
             )
+        # When KH exterior is removed, its south wall no longer seals the two indented
+        # SW and SE corner pockets — fill them so there are no holes in the ground.
+        if not KNOTT_EXTERIOR_ENABLED:
+            for corner_x1, corner_x2 in [
+                (KNOTT.x1, KNOTT.x1 + INDENT),  # SW corner
+                (KNOTT.x2 - INDENT, KNOTT.x2),  # SE corner
+            ]:
+                BRUSHES.append(
+                    box(
+                        corner_x1,
+                        KNOTT.y1,
+                        FLOOR_Z2,
+                        corner_x2,
+                        KNOTT.y1 + INDENT,
+                        KNOTT_GROUND_Z,
+                        Textures.BRICK_KH,
+                    )
+                )
         # NW indent floor — flush with exterior ground
         BRUSHES.append(
             box(
