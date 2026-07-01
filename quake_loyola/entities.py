@@ -1495,17 +1495,6 @@ def build():
             CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) * 2 // 6,
             ROAD_Z + rocket_hover_height,
         ),
-        # Ennis outbound (quarter, three-quarter) — south verge
-        (
-            (CHARLES_PLT_X_OUT + CHARLES_PLT_BR_X) // 3,
-            ENNIS_Y - ENNIS_HW - 40,
-            FLOOR_Z2 + 2 + rocket_hover_height,
-        ),
-        (
-            (CHARLES_PLT_X_OUT + CHARLES_PLT_BR_X) * 2 // 3,
-            ENNIS_Y - ENNIS_HW - 40,
-            FLOOR_Z2 + 2 + rocket_hover_height,
-        ),
         # Back road going south (midpoint)
         (CHARLES_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
         # Charles return (south third, north third) — west sidewalk
