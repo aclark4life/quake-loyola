@@ -9,6 +9,7 @@ from .constants import (
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
+    BRIDGE_PIER_BASE_LIGHTS_ENABLED,
     BRIDGE_PILLAR_BASE_H,
     BRIDGE_PILLAR_BASE_RAMP_H,
     BRIDGE_PILLAR_CAP_H,
@@ -1038,23 +1039,28 @@ def build():
         )
 
     # Pier base lights — illuminate plinths and arch openings from just inside each pier
-    for pier_x in BRIDGE_ARCH_X:
-        # West abutment pier is embedded in solid building geometry — skip buried lights
-        if pier_x == BRIDGE_ARCH_X[0]:
-            continue
-        pier_light_z = (
-            FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H + 60
-        )  # just above the plinth top, low in the arch
-        ENTITIES.append(
-            ent(
-                "light", origin=f"{pier_x} {BRIDGE.y2 // 2} {pier_light_z}", light="250"
+    if BRIDGE_PIER_BASE_LIGHTS_ENABLED:
+        for pier_x in BRIDGE_ARCH_X:
+            # West abutment pier is embedded in solid building geometry — skip buried lights
+            if pier_x == BRIDGE_ARCH_X[0]:
+                continue
+            pier_light_z = (
+                FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H + 60
+            )  # just above the plinth top, low in the arch
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=f"{pier_x} {BRIDGE.y2 // 2} {pier_light_z}",
+                    light="250",
+                )
             )
-        )
-        ENTITIES.append(
-            ent(
-                "light", origin=f"{pier_x} {BRIDGE.y1 // 2} {pier_light_z}", light="250"
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=f"{pier_x} {BRIDGE.y1 // 2} {pier_light_z}",
+                    light="250",
+                )
             )
-        )
 
     # Cement arch on east face of abutment pier (-1246) — three lights for good coverage
     abutment_pier_x = min(BRIDGE_ARCH_X)  # = -1246
