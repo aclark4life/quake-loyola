@@ -1430,7 +1430,7 @@ def build():
         ]
 
     # West hallway wall with room door openings
-    BRUSHES.extend(
+    DETAIL_BRUSHES.extend(
         layered_wall_y(
             KNOTT_BIY1,
             KNOTT_ENT_X1 - KNOTT.wall_t,
@@ -1443,7 +1443,7 @@ def build():
         )
     )
     # East hallway wall with room door openings + shaft opening
-    BRUSHES.extend(
+    DETAIL_BRUSHES.extend(
         layered_wall_y(
             KNOTT_BIY1,
             KNOTT_ENT_X2,
@@ -1462,7 +1462,7 @@ def build():
         sp_y2 = split + KNOTT.wall_t
         pdz2 = fz_surf + 96
         # West side partition wall with connecting door
-        BRUSHES.extend(
+        DETAIL_BRUSHES.extend(
             layered_wall(
                 wx1,
                 split,
@@ -1475,7 +1475,7 @@ def build():
             )
         )
         # East side partition wall with connecting door
-        BRUSHES.extend(
+        DETAIL_BRUSHES.extend(
             layered_wall(
                 ex1,
                 split,
