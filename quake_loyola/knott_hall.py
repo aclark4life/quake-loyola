@@ -17,11 +17,12 @@ from .constants import (
     FLOOR_Z1,
     INDENT,
     KNOTT,
-    KNOTT_ENABLED,
     KNOTT_ENT_HALF_W,
+    KNOTT_EXTERIOR_ENABLED,
     KNOTT_FRONT_WINDOW_HALF_W,
     KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
     KNOTT_GROUND_Z,
+    KNOTT_INTERIOR_ENABLED,
     KNOTT_MULLION_PRO,
     KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
@@ -74,7 +75,7 @@ def build():
     DETAIL_BRUSHES = []
     knott_brush_start = len(
         BRUSHES
-    )  # checkpoint — trimmed below if KNOTT_ENABLED is False
+    )  # checkpoint — trimmed below if KNOTT_EXTERIOR_ENABLED is False
 
     def floor_levels():
         for floor_index in range(KNOTT.floors):
@@ -1487,24 +1488,28 @@ def build():
             )
         )
 
-    if not KNOTT_ENABLED:
+    if not KNOTT_EXTERIOR_ENABLED:
         del BRUSHES[knott_brush_start:]
+
+    if not KNOTT_INTERIOR_ENABLED:
+        DETAIL_BRUSHES.clear()
 
     # Raised pixel-font letters on the Knott Hall sign plaque
     # Text reversed + mirrored so it reads correctly when viewed from north (facing south)
-    BRUSHES.extend(
-        render_text_flat(
-            KNOTT_SIGN_TEXT[::-1],
-            x0=knott_sign_cx - knott_sign_total_w // 2,
-            y_face=KNOTT.y2 + 6,
-            z_base=knott_sign_z1 + 14,  # centered: (48-20)//2 = 14
-            px_w=KNOTT_SIGN_PX_W,
-            px_h=KNOTT_SIGN_PX_H,
-            depth=2,
-            tex=Textures.RAIL,
-            mirror=True,
+    if KNOTT_EXTERIOR_ENABLED:
+        BRUSHES.extend(
+            render_text_flat(
+                KNOTT_SIGN_TEXT[::-1],
+                x0=knott_sign_cx - knott_sign_total_w // 2,
+                y_face=KNOTT.y2 + 6,
+                z_base=knott_sign_z1 + 14,  # centered: (48-20)//2 = 14
+                px_w=KNOTT_SIGN_PX_W,
+                px_h=KNOTT_SIGN_PX_H,
+                depth=2,
+                tex=Textures.RAIL,
+                mirror=True,
+            )
         )
-    )
 
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
