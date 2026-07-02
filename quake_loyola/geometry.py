@@ -78,6 +78,64 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
     )
 
 
+def rotated_box(cx, cy, lx1, lx2, ly1, ly2, z1, z2, angle_deg, tex, tt=None, tb=None):
+    """Rectangular brush rotated about Z by ``angle_deg`` around pivot (cx, cy).
+
+    ``lx1``/``lx2`` and ``ly1``/``ly2`` are extents in the *local*, unrotated frame
+    (local +X is the rotated "along-deck" axis, local +Y is perpendicular),
+    relative to the pivot. Z is unaffected by rotation. Use this (instead of
+    ``shear_box_y``) for discrete objects — like a pier — whose faces must stay
+    perpendicular/parallel to an angled deck direction, rather than merely sheared.
+    """
+    tt = tt or tex
+    tb = tb or tex
+    a = math.radians(angle_deg)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def p(lx, ly):
+        return (cx + lx * ca - ly * sa, cy + lx * sa + ly * ca)
+
+    p11 = p(lx1, ly1)
+    p12 = p(lx1, ly2)
+    p21 = p(lx2, ly1)
+    p22 = p(lx2, ly2)
+    return Brush(
+        [
+            Face((p11[0], p11[1], z1), (p12[0], p12[1], z1), (p11[0], p11[1], z2), tex),
+            Face((p21[0], p21[1], z1), (p21[0], p21[1], z2), (p22[0], p22[1], z1), tex),
+            Face((p11[0], p11[1], z1), (p11[0], p11[1], z2), (p21[0], p21[1], z1), tex),
+            Face((p12[0], p12[1], z1), (p22[0], p22[1], z1), (p12[0], p12[1], z2), tex),
+            Face((p11[0], p11[1], z1), (p21[0], p21[1], z1), (p12[0], p12[1], z1), tb),
+            Face((p11[0], p11[1], z2), (p12[0], p12[1], z2), (p21[0], p21[1], z2), tt),
+        ]
+    )
+
+
+def rotated_pyramid(cx, cy, lx1, lx2, ly1, ly2, z1, z2, angle_deg, tex):
+    """Square pyramid (see ``pyramid``) with its base rotated about Z by
+    ``angle_deg`` around pivot (cx, cy); local extents as in ``rotated_box``."""
+    a = math.radians(angle_deg)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def p(lx, ly):
+        return (cx + lx * ca - ly * sa, cy + lx * sa + ly * ca)
+
+    p11 = p(lx1, ly1)
+    p12 = p(lx1, ly2)
+    p21 = p(lx2, ly1)
+    p22 = p(lx2, ly2)
+    apex = (cx, cy, z2)
+    return Brush(
+        [
+            Face((p11[0], p11[1], z1), (p21[0], p21[1], z1), (p12[0], p12[1], z1), tex),
+            Face((p21[0], p21[1], z1), (p11[0], p11[1], z1), apex, tex),  # south
+            Face((p12[0], p12[1], z1), (p22[0], p22[1], z1), apex, tex),  # north
+            Face((p11[0], p11[1], z1), (p12[0], p12[1], z1), apex, tex),  # west
+            Face((p22[0], p22[1], z1), (p21[0], p21[1], z1), apex, tex),  # east
+        ]
+    )
+
+
 def pyramid(x1, y1, z1, x2, y2, z2, tex):
     """Square pyramid: base x1..x2, y1..y2 at z=z1; apex at centre at z=z2."""
     cx = (x1 + x2) / 2.0
