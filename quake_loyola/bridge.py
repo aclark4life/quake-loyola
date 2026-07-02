@@ -54,7 +54,6 @@ from .constants import (
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_PILLAR_PYR_H,
     BRIDGE_PILLAR_PYR_W,
-    BRIDGE_SEG_SPAN_W,
     BRIDGE_SEG_W,
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
@@ -172,9 +171,17 @@ def build():
         )
 
     def iter_bridge_span_segments():
-        for i in range(BRIDGE_SEG_SPAN_W):
-            sx1 = BRIDGE.x1 + i * BRIDGE_SEG_W
-            sx2 = sx1 + BRIDGE_SEG_W
+        # Only the curved centre span (PIER2..PIER3) is faceted; the flat west
+        # approach and the two straight approach spans are emitted as single
+        # segments so their collinear boundaries don't spawn redundant coplanar
+        # portals (qbsp WARNING 12 — see the east-section note below).
+        p1, p2, p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+        n_center = max(1, round((p3 - p2) / BRIDGE_SEG_W))
+        step = (p3 - p2) / n_center
+        boundaries = [BRIDGE.x1, p1, p2]
+        boundaries += [p2 + i * step for i in range(1, n_center)]
+        boundaries += [p3, BRIDGE.x2]
+        for sx1, sx2 in zip(boundaries, boundaries[1:]):
             db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
             pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
             pt1, pt2 = pb1 + BRIDGE.parapet_h, pb2 + BRIDGE.parapet_h

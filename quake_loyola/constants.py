@@ -50,6 +50,9 @@ ARCH_STILT_H = 96
 A_SEGS = 16
 
 BRIDGE_ARCH_RISE = 100
+BRIDGE_ARCH_PIER_RISE = 82  # deck rise at the centre-span piers (PIER2/PIER3, ±525):
+# the centre span arches from here up to BRIDGE_ARCH_RISE over Charles St (X=0); the
+# two approach spans descend straight from here to 0 at the outer piers (ref/bridge08)
 BRIDGE_ACCESS_WALK_CENTER_X = 2120
 BRIDGE_ACCESS_WALK_HALF_W = 32
 BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
@@ -634,13 +637,25 @@ BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]
 # ── Function-Derived Constants ────────────────────────────────────────────────
 # Helper functions below; the constants computed from them follow at the end.
 def arch_z_at(x):
-    """Z offset above flat datum for parabolic arch at x.
+    """Z offset above flat datum for the deck profile at x.
 
-    Symmetric parabola centred at X=0 (Charles Street). Both sides degrade
-    at the same rate, reaching zero at ±BRIDGE_X2 (1246 units). West of -1246
-    the value clamps to zero (flat approach to world wall).
+    Piecewise, matching the real Loyola bridge (ref/bridge08): the centre span
+    over Charles Street (|x| <= half the centre pier span, ±525) is a shallow
+    parabolic arch cresting at BRIDGE_ARCH_RISE over X=0; the two approach spans
+    (525 <= |x| <= 1246) descend as straight rakes from BRIDGE_ARCH_PIER_RISE at
+    the centre piers down to 0 at the outer piers. Beyond ±BRIDGE_X2 the deck is
+    flat (approach to world wall / KH walkway).
     """
-    return BRIDGE_ARCH_RISE * max(0.0, 1.0 - (x / float(BRIDGE_X2)) ** 2)
+    ax = abs(x)
+    if ax >= BRIDGE_X2:
+        return 0.0
+    center_half = BRIDGE_CENTER_PIER_SPAN / 2.0  # ±525, PIER2/PIER3
+    if ax <= center_half:
+        return (
+            BRIDGE_ARCH_RISE
+            - (BRIDGE_ARCH_RISE - BRIDGE_ARCH_PIER_RISE) * (ax / center_half) ** 2
+        )
+    return BRIDGE_ARCH_PIER_RISE * (BRIDGE_X2 - ax) / float(BRIDGE_X2 - center_half)
 
 
 def deck_bot_z(x):
