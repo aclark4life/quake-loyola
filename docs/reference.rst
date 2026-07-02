@@ -92,8 +92,10 @@ Bridge structure
    * - Term
      - Description
    * - **Arch span**
-     - The curved deck section, X ∈ [−1246, +1246] (``BRIDGE_ARCH_X[0]`` …
-       ``BRIDGE_ARCH_X[3]``), following a parabola that rises to the crown at X=0.
+     - The curved centre deck section over Charles Street, X ∈ [−525, +525]
+       (``BRIDGE_ARCH_X[1]`` … ``BRIDGE_ARCH_X[2]``), a shallow parabola cresting
+       at X=0. The two approach spans (±525 … ±1246) descend as straight rakes to
+       the outer piers (ref/bridge08).
    * - **Flat approach**
      - Straight deck west of −1246, extending to the world wall at constant Z.
    * - **Deck**
@@ -101,7 +103,8 @@ Bridge structure
        bottom face Z; slab thickness ``BRIDGE_DZ2 − BRIDGE_DZ1`` = 16 units.
    * - **Arch rise**
      - Height the deck crown is raised above the flat datum
-       (``BRIDGE_ARCH_RISE = 144`` units).
+       (``BRIDGE_ARCH_RISE = 100`` units at X=0, ``BRIDGE_ARCH_PIER_RISE = 82``
+       at the centre piers).
    * - **Parapet**
      - Low stone wall along the deck's north/south edges,
        ``BRIDGE_PAR_H = 40`` units tall. Players can jump onto it.
