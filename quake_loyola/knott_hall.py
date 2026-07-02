@@ -580,11 +580,11 @@ def build():
         knott_sign_total_w // 2 + KNOTT_SIGN_PADDING
     )  # padding each side = 222
     knott_sign_cx = (
-        KNOTT.x2 - INDENT - knott_sign_half_w
-    )  # east edge flush with wall end
+        KNOTT_ORIG_CX + ne_win_cx
+    ) // 2  # centered on brick between center window and NE corner window
     knott_sign_z1 = (
         KNOTT_GROUND_Z + KNOTT.floor_h * 2 + KNOTT_SIGN_Z_OFFSET
-    )  # just above 2nd floor line
+    )  # 3rd-floor band
     knott_sign_z2 = knott_sign_z1 + KNOTT_SIGN_H
     BRUSHES.append(
         box(
@@ -1502,7 +1502,9 @@ def build():
                 KNOTT_SIGN_TEXT[::-1],
                 x0=knott_sign_cx - knott_sign_total_w // 2,
                 y_face=KNOTT.y2 + 6,
-                z_base=knott_sign_z1 + 14,  # centered: (48-20)//2 = 14
+                z_base=knott_sign_z1
+                + (KNOTT_SIGN_H - 6 * KNOTT_SIGN_PX_H)
+                // 2,  # vertically centered on plaque
                 px_w=KNOTT_SIGN_PX_W,
                 px_h=KNOTT_SIGN_PX_H,
                 depth=2,
