@@ -35,7 +35,6 @@ from .constants import (
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_EAST_SHIFT_START,
-    BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
@@ -111,8 +110,6 @@ from .geometry import (
     pyramid,
     ramp_slab,
     ramp_slab_y,
-    rotated_box,
-    rotated_pyramid,
     shear_box_y,
     square_wall,
 )
@@ -927,9 +924,7 @@ def build():
 
     # ── Pier 6 — explicit duplicate of Pier 5 (KNOTT_NE_PIER_X) ─────────────────
     # Pier 5 uses square_wall + OUTER_R. Pier 6 is identical but sits in the angled
-    # east span, so the whole assembly is rotated (not merely sheared) about its
-    # centre (px, yc) by the deck's angle, so its faces stay perpendicular/parallel
-    # to the actual direction of travel instead of remaining axis-aligned.
+    # east span, so all Y coords are shifted south by east_y_shift(PIER6_X).
     if SHOW_SUPPORTS:
         px = PIER6_X
         pdeck = deck_top_z(px)
@@ -945,32 +940,36 @@ def build():
         pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
         a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
         sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
-        pier_angle = -BRIDGE_EAST_SPAN_ANGLE  # matches slope of east_y_shift(x)
+        # Relative shear at x1/x2 so the pier faces align with the angled deck direction.
+        s1r = east_y_shift(x1) - py_shift
+        s2r = east_y_shift(x2) - py_shift
+
+        def sb(ya, yb, za, zb, tex):
+            return shear_box_y(x1, ya, za, x2, yb, zb, s1r, s2r, tex)
 
         yc = py_shift
         ext = a_rin + sq_overhang
-        hw = BRIDGE_PILLAR_HW  # local along-deck half-width (was x1/x2 - px)
-
-        def rb(lya, lyb, za, zb, tex):
-            return rotated_box(px, yc, -hw, hw, lya, lyb, za, zb, pier_angle, tex)
-
-        # Main pier body (square opening, rotated to follow deck angle) — local Y
-        # offsets below are relative to the pier centre (yc), same as the old
-        # sheared version's absolute Y values minus yc.
+        # Main pier body (square opening, rotated to follow deck angle)
         BRUSHES.append(
-            rb(-ext, -a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
+            sb(yc - ext, yc - a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
         )  # south pillar
         BRUSHES.append(
-            rb(a_rin, ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
+            sb(yc + a_rin, yc + ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
         )  # north pillar
         BRUSHES.append(
-            rb(-a_rin, a_rin, pier_ceiling_z - 16, pier_ceiling_z, Textures.PILLAR)
+            sb(
+                yc - a_rin,
+                yc + a_rin,
+                pier_ceiling_z - 16,
+                pier_ceiling_z,
+                Textures.PILLAR,
+            )
         )  # lintel
         if BRIDGE_PILLAR_BASE_H > 0:
             BRUSHES.append(
-                rb(
-                    -a_rin,
-                    a_rin,
+                sb(
+                    yc - a_rin,
+                    yc + a_rin,
                     FLOOR_Z2,
                     FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
                     Textures.PILLAR,
@@ -980,32 +979,29 @@ def build():
             if BRIDGE_PILLAR_BASE_CAP_H > 0:
                 cap_crin = a_rin + BRIDGE_PILLAR_BASE_CAP_OVH
                 BRUSHES.append(
-                    rotated_box(
-                        px,
-                        yc,
-                        -hw - BRIDGE_PILLAR_BASE_CAP_OVH,
-                        hw + BRIDGE_PILLAR_BASE_CAP_OVH,
-                        -cap_crin,
-                        cap_crin,
+                    shear_box_y(
+                        px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_BASE_CAP_OVH,
+                        yc - cap_crin,
                         FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
+                        px + BRIDGE_PILLAR_HW + BRIDGE_PILLAR_BASE_CAP_OVH,
+                        yc + cap_crin,
                         FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + BRIDGE_PILLAR_BASE_CAP_H,
-                        pier_angle,
+                        s1r,
+                        s2r,
                         Textures.CEMENT,
                     )
                 )  # base cap
         if by1 < yc - ext:
-            BRUSHES.append(
-                rb(by1 - yc, -ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
-            )
+            BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:
-            BRUSHES.append(rb(ext, by2 - yc, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
+            BRUSHES.append(sb(yc + ext, by2, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
         pier_top_z = int(pdeck) - 16
         # North pillar top (above deck)
         BRUSHES.append(
-            rb(
-                by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG - yc,
-                pier_outer_y - yc,
+            sb(
+                by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
+                pier_outer_y,
                 pdeck,
                 ppil,
                 Textures.PILLAR,
@@ -1013,29 +1009,21 @@ def build():
         )
         # South pillar top (above deck)
         BRUSHES.append(
-            rb(
-                by1 - BRIDGE_PILLAR_OVERHANG - yc,
-                by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG - yc,
+            sb(
+                by1 - BRIDGE_PILLAR_OVERHANG,
+                by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
                 pdeck,
                 ppil,
                 Textures.PILLAR,
             )
         )
         # Fill gap between pier top and deck in the overhang zone
+        BRUSHES.append(sb(by2, pier_outer_y, pier_top_z, pdeck, Textures.PILLAR))
         BRUSHES.append(
-            rb(by2 - yc, pier_outer_y - yc, pier_top_z, pdeck, Textures.PILLAR)
-        )
-        BRUSHES.append(
-            rb(
-                by1 - BRIDGE_PILLAR_OVERHANG - yc,
-                by1 - yc,
-                pier_top_z,
-                pdeck,
-                Textures.PILLAR,
-            )
+            sb(by1 - BRIDGE_PILLAR_OVERHANG, by1, pier_top_z, pdeck, Textures.PILLAR)
         )
         # Cement cap slabs
-        cap_hw = BRIDGE_PILLAR_PYR_W
+        cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
         north_cap_y1 = (
             by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG - BRIDGE_PILLAR_CAP_IN_OVH
         )
@@ -1044,92 +1032,79 @@ def build():
         south_cap_y2 = (
             by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG + BRIDGE_PILLAR_CAP_IN_OVH
         )
+        sc1r = east_y_shift(cap_x1) - py_shift
+        sc2r = east_y_shift(cap_x2) - py_shift
         BRUSHES.append(
-            rotated_box(
-                px,
-                yc,
-                -cap_hw,
-                cap_hw,
-                north_cap_y1 - yc,
-                north_cap_y2 - yc,
+            shear_box_y(
+                cap_x1,
+                north_cap_y1,
                 ppil,
+                cap_x2,
+                north_cap_y2,
                 pcap,
-                pier_angle,
+                sc1r,
+                sc2r,
                 Textures.CEMENT,
             )
         )
         BRUSHES.append(
-            rotated_box(
-                px,
-                yc,
-                -cap_hw,
-                cap_hw,
-                south_cap_y1 - yc,
-                south_cap_y2 - yc,
+            shear_box_y(
+                cap_x1,
+                south_cap_y1,
                 ppil,
+                cap_x2,
+                south_cap_y2,
                 pcap,
-                pier_angle,
+                sc1r,
+                sc2r,
                 Textures.CEMENT,
             )
         )
-        # Pyramids (rotated with the cap slabs they sit on)
+        # Pyramids (small — keep axis-aligned, centre them on shifted cap centre)
         BRUSHES.append(
-            rotated_pyramid(
-                px,
-                yc,
-                -cap_hw,
-                cap_hw,
-                north_cap_y1 - yc,
-                north_cap_y2 - yc,
+            pyramid(
+                cap_x1,
+                north_cap_y1,
                 pcap,
+                cap_x2,
+                north_cap_y2,
                 pcap + BRIDGE_PILLAR_PYR_H,
-                pier_angle,
                 Textures.CEMENT,
             )
         )
         BRUSHES.append(
-            rotated_pyramid(
-                px,
-                yc,
-                -cap_hw,
-                cap_hw,
-                south_cap_y1 - yc,
-                south_cap_y2 - yc,
+            pyramid(
+                cap_x1,
+                south_cap_y1,
                 pcap,
+                cap_x2,
+                south_cap_y2,
                 pcap + BRIDGE_PILLAR_PYR_H,
-                pier_angle,
                 Textures.CEMENT,
             )
         )
-        # Torch bases (centred on shifted cap centres, rotated with the pier)
+        # Torch bases (centred on shifted cap centres)
         pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
         for torch_center_y in [cy_n, cy_s]:
-            tly = torch_center_y - yc
             BRUSHES.append(
-                rotated_box(
-                    px,
-                    yc,
-                    -BRIDGE_TORCH_POST_HW,
-                    BRIDGE_TORCH_POST_HW,
-                    tly - BRIDGE_TORCH_POST_HW,
-                    tly + BRIDGE_TORCH_POST_HW,
+                box(
+                    px - BRIDGE_TORCH_POST_HW,
+                    torch_center_y - BRIDGE_TORCH_POST_HW,
                     pyramid_apex_z,
+                    px + BRIDGE_TORCH_POST_HW,
+                    torch_center_y + BRIDGE_TORCH_POST_HW,
                     pyramid_apex_z + BRIDGE_TORCH_POST_H,
-                    pier_angle,
                     Textures.CEMENT,
                 )
             )
             BRUSHES.append(
-                rotated_box(
-                    px,
-                    yc,
-                    -BRIDGE_TORCH_CUP_HW,
-                    BRIDGE_TORCH_CUP_HW,
-                    tly - BRIDGE_TORCH_CUP_HW,
-                    tly + BRIDGE_TORCH_CUP_HW,
+                box(
+                    px - BRIDGE_TORCH_CUP_HW,
+                    torch_center_y - BRIDGE_TORCH_CUP_HW,
                     pyramid_apex_z + BRIDGE_TORCH_POST_H,
+                    px + BRIDGE_TORCH_CUP_HW,
+                    torch_center_y + BRIDGE_TORCH_CUP_HW,
                     pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H,
-                    pier_angle,
                     Textures.BRICK,
                 )
             )
