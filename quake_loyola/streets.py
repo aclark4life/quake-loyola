@@ -6,6 +6,9 @@ from .constants import (
     BRIDGE_DZ2,
     CHARLES_CRN_R,
     CHARLES_CRN_SEGS,
+    CHARLES_LAMP_POST_H,
+    CHARLES_LAMP_POST_XS,
+    CHARLES_LAMP_POST_YS,
     CHARLES_RAMP_W,
     CHARLES_SWALK_START,
     CHARLES_WALK_H,
@@ -955,13 +958,9 @@ def build():
     )
 
     # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-    CHARLES_LAMP_POST_H = BRIDGE_DZ2 - 32  # pole height (~12 ft)
-    # Single lamp post — east sidewalk, at the SE corner of the Ennis Road intersection
-    CHARLES_LAMP_POST_XS = [
-        2158,
-        1246,
-    ]  # east sidewalk near Ennis (= NE pier − 48), and next pier west
-    CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - 160]
+    # X/Y/H imported from constants.py — must match entities.py's flame placement
+    # (previously duplicated here with stale hardcoded X values that had drifted
+    # out of sync with the flame positions, leaving flames floating with no pole).
     for lamp_x in CHARLES_LAMP_POST_XS:
         for lamp_y in CHARLES_LAMP_POST_YS:
             pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
