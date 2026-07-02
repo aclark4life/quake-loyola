@@ -63,9 +63,11 @@ BRIDGE_BLK_OVH = 0
 BRIDGE_BLK_PIER_CLEARANCE = 4
 BRIDGE_DECK_EAST_RECESS = 1
 BRIDGE_DZ1, BRIDGE_DZ2 = (
-    224,
-    240,
-)
+    256,
+    272,
+)  # raised 32 units (was 224/240) so the flat deck at KNOTT_ORIG_CX (WALK_ZT1) is
+# level with the KH 2nd-floor walkway landing (WALK_ZT2); see KNOTT_GROUND_Z below,
+# now a fixed hill-height anchor independent of this deck elevation.
 BRIDGE_EAST_SHIFT_START = 0.0
 BRIDGE_EAST_SPAN_ANGLE = 12.0
 BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = 4, 4
@@ -283,7 +285,11 @@ KNOTT_WALKWAY_ENABLED = True
 KNOTT_WALL = 16
 KNOTT_FRONT_WINDOW_HALF_W = 48
 KNOTT_FRONT_WINDOW_MULLION_HALF_GAP = 6
-KNOTT_Y1, KNOTT_Y2 = -1888, -256
+KNOTT_Y1, KNOTT_Y2 = -1888, -233  # KNOTT_Y2 shifts KH 23 units closer to the bridge,
+# undoing the incidental walkway-span stretch introduced when BRIDGE_Y1 narrowed the
+# deck (-136 -> -113, see commit 87a86f6); restores the walkway gap
+# (KNOTT_Y2 - BRIDGE_Y1) to ~120 units, matching the near-flush bridge/KH landing
+# seen in ref/gmaps-kh-streetview-east.png.
 
 PLAT_H = 8
 
@@ -532,7 +538,9 @@ BRIDGE_ARCH_X = [
     PIER3_X,  # Pier 3 (anchors Ennis Drive entrance pillars)
     KNOTT_PIER_X,  # Pier 4 — west KH pier (arch span terminus)
     KNOTT_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
-    2800,  # Pier 6 — mid-span pier in extended east section
+    3150,  # Pier 6 — mid-span pier in extended east section (moved east, clear of
+    # KH driveway roadway [2566-2822]/sidewalks [2486-2902]; sits in Ennis Rd
+    # pavement between the driveway and the Ennis-east teleport arch [3440-3472])
 ]
 CHARLES_LAMP_POST_XS = [
     KNOTT_NE_PIER_X - CHARLES_LAMP_POST_EAST_SETBACK,
@@ -542,8 +550,15 @@ ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + 80
 ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW
 ENNIS_PILLAR_X2 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW
 CHARLES_LAMP_POST_H = BRIDGE_DZ2 - BRIDGE_LAMP_POST_CLEARANCE
-_KNOTT_GROUND_FLOOR_H = KNOTT_FLOOR_H  # kept equal to KNOTT_FLOOR_H so the 2nd-floor walkway stays flush with the bridge deck
-KNOTT_GROUND_Z = max(FLOOR_Z2, BRIDGE_DZ2 - _KNOTT_GROUND_FLOOR_H - KNOTT_WALL)
+_KNOTT_GROUND_FLOOR_H = (
+    160  # nominal floor height used to anchor building to bridge/hill;
+)
+# independent of KNOTT_FLOOR_H (192) so scaling floor height doesn't flatten the hill.
+KNOTT_GROUND_Z = 64  # fixed hill-height anchor, independent of BRIDGE_DZ2: the bridge
+# deck (not the hill) was raised 32 units to make the KH walkway level (WALK_ZT1 ==
+# WALK_ZT2) without re-flattening the hill. Was previously derived as
+# max(FLOOR_Z2, BRIDGE_DZ2 - _KNOTT_GROUND_FLOOR_H - KNOTT_WALL) == 64 at the old
+# BRIDGE_DZ2 (240); frozen here so it no longer moves when the deck height changes.
 KNOTT_DRIVEWAY_ZT_S = KNOTT_GROUND_Z
 KNOTT_Z2 = KNOTT_GROUND_Z + KNOTT_FLOORS * KNOTT_FLOOR_H
 BRIDGE_X2 = KNOTT_PIER_X
