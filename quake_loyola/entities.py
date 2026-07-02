@@ -1195,8 +1195,8 @@ def build():
 
     # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
     # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
-    # Tree height matches Knott Hall (KNOTT_Z2).
-    charles_tree_height = KNOTT_Z2
+    # Canopy kept below KH's roof so its top floors crest the treeline (~0.65*KNOTT_Z2).
+    charles_tree_height = int(KNOTT_Z2 * 0.65)
     knott_tree_span = KNOTT.y2 - KNOTT.y1
     charles_tree_row_near_x = ROAD_X2 + CHARLES_WALK_W + 300  # closer to Charles St
     charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560  # closer to KH
@@ -1226,7 +1226,7 @@ def build():
     kh_tree_rng.seed(7)  # fixed seed for reproducible jittered layout
     kh_drive_tree_x = KNOTT_DRIVEWAY_ES_X2 + 80  # centre clear of east sidewalk
     kh_drive_tree_spacing = 300
-    kh_drive_tree_height = KNOTT_Z2 + 40  # a touch taller than Knott Hall
+    kh_drive_tree_height = int(KNOTT_Z2 * 0.65)  # below KH roof (see charles canopy)
     kh_drive_tree_brushes = []
     kh_grid_y = BRIDGE.y1 - kh_drive_tree_spacing
     while kh_grid_y >= KNOTT_DRIVEWAY_Y1:
@@ -1263,7 +1263,7 @@ def build():
     # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
     # Scattered grid: base spacing ~350 units with per-tree random jitter up to
     # ±120 units in X and Y so the forest looks natural, not uniform.
-    east_ground_tree_height = KNOTT_Z2
+    east_ground_tree_height = int(KNOTT_Z2 * 0.65)
     east_ground_spacing = 350
     east_ground_jitter = 120
     east_ground_buffer = 120  # clearance buffer from world edges / wall
@@ -1298,7 +1298,7 @@ def build():
     # Randomly scattered across the full extended-east strip (WORLD_X2 → WORLD_X2_EXT),
     # south of Ennis drive down to the south world wall.
     # Rejection sampling enforces a minimum separation so trees don't overlap.
-    east_side_tree_height = KNOTT_Z2
+    east_side_tree_height = int(KNOTT_Z2 * 0.65)
     east_side_foliage_hw = 160  # widest foliage half-width (make_giant_tree)
     _world_x2_ext = WORLD_X2 + 512  # WORLD_X2_EXT
     _ennis_south = ENNIS_Y - ENNIS_HW  # Ennis road south edge

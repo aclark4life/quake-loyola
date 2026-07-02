@@ -633,7 +633,7 @@ def build():
 
     # ── Pillar posts (stone piers with arches) ───────────────────────────────────
     # Each pillar position now features a narrow arched pier supporting the deck.
-    # Arch openings span most of the bridge N-S width (BRIDGE.y2=136, bridge=272 units)
+    # Arch openings span most of the bridge N-S width (BRIDGE.y2=113, bridge=226 units)
     # rin = half-width of clear opening; rout = outer radius of arch ring
     if SHOW_SUPPORTS:
         for px in BRIDGE_ARCH_X:
@@ -1201,12 +1201,28 @@ def build():
     # extending this hint beyond the pivot would place it inside the sheared parapet brush,
     # causing qbsp to cull the parapet's outer face (see-through wall bug).
     BRUSHES.append(
-        box(WORLD_X1, -140, FLOOR_Z1, BRIDGE_EAST_PIVOT_X, -136, WORLD_Z2, "hint")
+        box(
+            WORLD_X1,
+            BRIDGE.y1 - 4,
+            FLOOR_Z1,
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE.y1,
+            WORLD_Z2,
+            "hint",
+        )
     )
     # South edge hint: same constraint — the south parapet shears with east_y_shift, so
     # the hint must not extend into the angled section beyond BRIDGE_EAST_PIVOT_X.
     BRUSHES.append(
-        box(WORLD_X1, 136, FLOOR_Z1, BRIDGE_EAST_PIVOT_X, 140, WORLD_Z2, "hint")
+        box(
+            WORLD_X1,
+            BRIDGE.y2,
+            FLOOR_Z1,
+            BRIDGE_EAST_PIVOT_X,
+            BRIDGE.y2 + 4,
+            WORLD_Z2,
+            "hint",
+        )
     )
 
     # ════════════════════════════════════════════════════════════════════════════════

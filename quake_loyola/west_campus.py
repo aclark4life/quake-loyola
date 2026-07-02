@@ -402,7 +402,9 @@ def build_ennis_entrance_features():
             ]
         )
         conn_y2_p = panel_center_y + panel_spacing - ENNIS_PANEL_OUTER_W // 2
-        if panels_drawn + 1 < panel_count:
+        # Skip the connector bar when panels abut (panel_spacing <= OUTER_W): a
+        # zero/negative-length box would otherwise produce a degenerate brush.
+        if panels_drawn + 1 < panel_count and conn_y2_p > y2_o:
             brushes.append(
                 box(
                     panel_x1,

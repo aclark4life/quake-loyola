@@ -102,7 +102,7 @@ BRIDGE_TUBE_GAP = 12
 BRIDGE_TUBE_HW = 2
 BRIDGE_TUBE_RISE = 10
 BRIDGE_WALK_WALL = 32
-BRIDGE_Y1, BRIDGE_Y2 = -136, 136
+BRIDGE_Y1, BRIDGE_Y2 = -113, 113  # ~15 ft deck (half-width = ft_to_units(7,6))
 
 CHARLES_ARCH_RIN = 256
 CHARLES_ARCH_RIN_PRE = 256
@@ -239,7 +239,11 @@ KNOTT_MULLION_PRO = 12
 KNOTT_MULLION_W = 12
 KNOTT_BUILDING_W = 1280
 KNOTT_OFFSET = 90
-KNOTT_WEST_TO_ORIG_CX = 624
+KNOTT_WEST_TO_ORIG_CX = (
+    (KNOTT_BUILDING_W + INDENT) // 2 + 64
+)  # entrance + center window + bridge landing anchored on the true facade center;
+# +64 shifts them east to match the curtain-wall position in the reference photos (ref/bridge01);
+# capped so the accessible-entrance ramp still meets the fixed accessible path pad (X=2152)
 KNOTT_WEST_TO_PIER_X = 40
 KNOTT_RAIL_H = 72
 KNOTT_RAIL_TEX = "metal4_4"
@@ -247,9 +251,9 @@ KNOTT_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]
 KNOTT_SHELF_D = 16
 KNOTT_SHELF_H = 64
 KNOTT_SHELF_W = 64
-KNOTT_SIGN_PX_W, KNOTT_SIGN_PX_H = 2, 4
+KNOTT_SIGN_PX_W, KNOTT_SIGN_PX_H = 3, 6
 KNOTT_SIGN_TEXT = "MARION BURK KNOTT HALL"
-KNOTT_SIGN_H = 48
+KNOTT_SIGN_H = 72
 KNOTT_SIGN_PADDING = 4
 KNOTT_SIGN_Z_OFFSET = 20
 KNOTT_SIDE_WINDOW_DIV_W = 12
