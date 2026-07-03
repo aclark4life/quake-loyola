@@ -111,6 +111,7 @@ from .geometry import (
     ramp_slab,
     ramp_slab_y,
     shear_box_y,
+    shear_pyramid_y,
     square_wall,
 )
 
@@ -1060,26 +1061,31 @@ def build():
                 Textures.CEMENT,
             )
         )
-        # Pyramids (small — keep axis-aligned, centre them on shifted cap centre)
+        # Pyramids — sheared the same as the cap slab beneath (was axis-aligned,
+        # so the diamond base didn't line up with the slab's parallelogram top).
         BRUSHES.append(
-            pyramid(
+            shear_pyramid_y(
                 cap_x1,
                 north_cap_y1,
-                pcap,
                 cap_x2,
                 north_cap_y2,
+                pcap,
                 pcap + BRIDGE_PILLAR_PYR_H,
+                sc1r,
+                sc2r,
                 Textures.CEMENT,
             )
         )
         BRUSHES.append(
-            pyramid(
+            shear_pyramid_y(
                 cap_x1,
                 south_cap_y1,
-                pcap,
                 cap_x2,
                 south_cap_y2,
+                pcap,
                 pcap + BRIDGE_PILLAR_PYR_H,
+                sc1r,
+                sc2r,
                 Textures.CEMENT,
             )
         )

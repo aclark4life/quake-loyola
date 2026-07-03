@@ -78,6 +78,28 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
     )
 
 
+def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
+    """Square pyramid whose base has the same Y-shear as ``shear_box_y`` (base
+    corners at x=x1 shifted by s1, at x=x2 shifted by s2), apex centred over the
+    shifted base at z2. Use this instead of ``pyramid`` when the cap slab the
+    pyramid sits on is itself sheared, so the diamond base lines up with the
+    slab's parallelogram footprint instead of staying axis-aligned."""
+    y1a, y2a = y1 + s1, y2 + s1
+    y1b, y2b = y1 + s2, y2 + s2
+    cx = (x1 + x2) / 2.0
+    cy = (y1a + y2a + y1b + y2b) / 4.0
+    apex = (cx, cy, z2)
+    return Brush(
+        [
+            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tex),  # bottom
+            Face((x2, y1b, z1), (x1, y1a, z1), apex, tex),  # south
+            Face((x1, y2a, z1), (x2, y2b, z1), apex, tex),  # north
+            Face((x1, y1a, z1), (x1, y2a, z1), apex, tex),  # west
+            Face((x2, y2b, z1), (x2, y1b, z1), apex, tex),  # east
+        ]
+    )
+
+
 def pyramid(x1, y1, z1, x2, y2, z2, tex):
     """Square pyramid: base x1..x2, y1..y2 at z=z1; apex at centre at z=z2."""
     cx = (x1 + x2) / 2.0
