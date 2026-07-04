@@ -93,6 +93,7 @@ from .constants import (
     SDORM_STAIR_X2,
     SDORM_STAIR_Y1,
     SDORM_STAIR_Y2,
+    WEST_CAMPUS_ENABLED,
     Textures,
 )
 from .geometry import (
@@ -607,6 +608,8 @@ def build_ennis_entrance_features():
 
 
 def build():
+    if not WEST_CAMPUS_ENABLED:
+        return [], []
     BRUSHES = []
     ENTITIES = []
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
