@@ -50,6 +50,46 @@ terrain) is temporarily disabled via the master switches in ``constants.py``
 while each area's own dimensions are re-derived against this new world size
 from the ``ref/`` top-down views.
 
+**Fixed anchors vs. the world rectangle.** Several modules' constants used to
+be defined *relative to* ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/``WORLD_Y2``
+(e.g. ``BRIDGE_X1 = WORLD_X1 + WALL_T``, ``CHARLES_Y1 = WORLD_Y1 + WALL_T``).
+When the world rectangle was enlarged to match the real-world footprint above,
+that coupling would have silently stretched the bridge span, Charles Street,
+and the Ennis Drive/east-campus features by the same ~2.4–2.6× factor as the
+world — even though those spans were already reasonable real-world estimates
+from the original (smaller) map and hadn't been re-measured. To avoid
+introducing unreviewed distortion, these constants were repointed at their
+own **fixed anchors** (plain numeric values equal to their pre-resize
+computed value), decoupling them from ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
+``WORLD_Y2``:
+
+- ``BRIDGE_X1 = -1967`` (was ``WORLD_X1 + WALL_T``)
+- ``CHARLES_Y1 = -2768``, ``CHARLES_Y2 = 1696``, ``DORM_NORTH_Y2 = 1546``
+  (were ``WORLD_Y1 + WALL_T`` / ``WORLD_Y2 - WALL_T`` / ``WORLD_Y2 - WALL_T - 150``)
+- ``_EAST_FEATURES_X2 = 2976`` (a new fixed anchor; was ``WORLD_X2``) — used
+  for Ennis Drive/east-campus feature placement (teleport arch, gate, cement
+  plaza) instead of the live, now much larger, ``WORLD_X2``
+
+The **world-shell rectangle itself** (``streets.py``'s floor/walls/sky) still
+spans the full ``WORLD_X1..WORLD_X2_EXT`` / ``WORLD_Y1..WORLD_Y2`` real-world
+footprint — two additional plain sealing wall panels were added (north and
+south walls, from ``WORLD_X1`` to ``BRIDGE.x1``) to seal the new gap between
+the enlarged world boundary and the fixed-anchor bridge/tunnel geometry. The
+space between the world boundary and these fixed anchors represents
+unmodeled real estate (e.g. further west campus, further east of Ennis
+Parallel) pending future re-derivation — it is not yet filled with terrain
+or buildings.
+
+.. note::
+   ``bridge.py``, ``entities.py``, and ``knott_terrain.py`` still reference
+   the live ``WORLD_X2_EXT`` internally for some of the same
+   Ennis/east-campus features that ``_EAST_FEATURES_X2``/``_EAST_FEATURES_X2_EXT``
+   now anchor in ``constants.py``. These modules are currently disabled via
+   their master switches; when they're re-enabled, they should be repointed
+   at the new fixed anchors so behavior matches the disabled-state geometry
+   exactly, or explicitly re-derived if the intent is for them to reach the
+   new world boundary.
+
 Terminology
 -----------
 

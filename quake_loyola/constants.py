@@ -614,27 +614,42 @@ WIN_HALF = 24
 WORLD_X1 = (
     -5135
 )  # re-derived from real-world measurement, see docs/reference.rst § World scale
-BRIDGE_X1 = WORLD_X1 + WALL_T
+BRIDGE_X1 = (
+    -1967
+)  # fixed anchor, independent of WORLD_X1 — preserves the bridge/west-campus span
+# (~213 ft, already a reasonable real-world estimate) after the world rectangle was
+# enlarged to the full real-world footprint; see docs/reference.rst § World scale.
+# The gap between WORLD_X1 and BRIDGE_X1 is unmodeled real estate pending further
+# re-derivation (west campus terrain/dorms further out).
 BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W
 WORLD_X2 = (
     7708  # re-derived from real-world measurement, see docs/reference.rst § World scale
 )
 WORLD_X2_EXT = (
     WORLD_X2 + WORLD_EAST_BUFFER
-)  # extended east boundary (world shell + Ennis only)
+)  # extended east boundary — actual world-shell east wall (streets.py); NOT used
+# for Ennis/east-campus feature placement below, see _EAST_FEATURES_X2_EXT.
+_EAST_FEATURES_X2 = 2976  # fixed anchor, independent of WORLD_X2 — pre-resize
+# WORLD_X2. Ennis Drive/east-campus features (teleport arch, gate, cement plaza)
+# stay pinned here rather than stretching out to the new, much larger WORLD_X2,
+# which now represents unmodeled real estate further east; see docs/reference.rst
+# § World scale. NOTE: bridge.py/entities.py/knott_terrain.py still reference the
+# live WORLD_X2_EXT internally for these same features — to be repointed at this
+# fixed anchor when those modules are re-enabled/re-derived.
+_EAST_FEATURES_X2_EXT = _EAST_FEATURES_X2 + WORLD_EAST_BUFFER
 ENNIS_CEMENT_X2 = (
-    WORLD_X2 - WALL_T - ARCH_SLAB_W // 2
+    _EAST_FEATURES_X2 - WALL_T - ARCH_SLAB_W // 2
 )  # aligned with east teleport centre
-ENNIS_GATE_X2 = (ENNIS_GATE_X1 + WORLD_X2_EXT - WALL_T) // 2
+ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
 ENNIS_CEMENT_LAMP_POSTS = [
     (ENNIS_CEMENT_X1, ENNIS_WALL_NY + ENNIS_WALL_T // 2, FLOOR_Z2 + 234),
     (ENNIS_CEMENT_X2, ENNIS_WALL_NY + ENNIS_WALL_T // 2, FLOOR_Z2 + 234),
 ]
-ENNIS_X2 = WORLD_X2_EXT - WALL_T
-BRIDGE_EAST_SHIFT_END = -((WORLD_X2_EXT - WALL_T) - BRIDGE_ARCH_X[4]) * math.tan(
-    math.radians(BRIDGE_EAST_SPAN_ANGLE)
-)
+ENNIS_X2 = _EAST_FEATURES_X2_EXT - WALL_T
+BRIDGE_EAST_SHIFT_END = -(
+    (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[4]
+) * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
 BRIDGE_SPAN_CENTRES = [
     (BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2,
     (BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2,
@@ -642,17 +657,23 @@ BRIDGE_SPAN_CENTRES = [
     (BRIDGE_ARCH_X[2] + BRIDGE_X2) // 2,
     (BRIDGE_X2 + BRIDGE_ARCH_X[4]) // 2,
     (BRIDGE_ARCH_X[4] + BRIDGE_ARCH_X[5]) // 2,
-    (BRIDGE_ARCH_X[5] + WORLD_X2_EXT - WALL_T) // 2,
+    (BRIDGE_ARCH_X[5] + _EAST_FEATURES_X2_EXT - WALL_T) // 2,
 ]
 BRIDGE_PEND_XS = BRIDGE_SPAN_CENTRES
 WORLD_Y1, WORLD_Y2 = (
     -6642,  # re-derived from real-world measurement, see docs/reference.rst § World scale
     4085,
 )
-CHARLES_Y1 = WORLD_Y1 + WALL_T
+CHARLES_Y1 = (
+    -2768
+)  # fixed anchor, independent of WORLD_Y1 — preserves the modeled Charles St/bridge
+# span after the world rectangle was enlarged to the full real-world footprint
+# (previously WORLD_Y1 + WALL_T); see docs/reference.rst § World scale. The gap
+# between WORLD_Y1 and CHARLES_Y1 is unmodeled real estate pending further
+# re-derivation.
 CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
-CHARLES_Y2 = WORLD_Y2 - WALL_T
-DORM_NORTH_Y2 = WORLD_Y2 - WALL_T - 150
+CHARLES_Y2 = 1696  # fixed anchor, independent of WORLD_Y2 — see CHARLES_Y1 above.
+DORM_NORTH_Y2 = 1546  # fixed anchor, independent of WORLD_Y2 — see CHARLES_Y1 above.
 DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH
 DORM_SOUTH1_Y1 = (
     -1968
