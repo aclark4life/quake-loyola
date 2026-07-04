@@ -623,7 +623,7 @@ def build():
     # SE corner (east of back road) uses gravel3c (mulch bed)
     for vx1, vx2, vtex in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, Textures.GROUND),
-        (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2, "grave13c"),
+        (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2, Textures.MULCH),
     ]:
         BRUSHES.append(
             box(

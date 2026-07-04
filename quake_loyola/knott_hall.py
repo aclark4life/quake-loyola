@@ -1319,7 +1319,7 @@ def build():
     # they never land on a tread.  Cross rail spans the full stair band between them.
     for _, _, _, floor_z0, _ in floor_levels():
         half_flight_z = floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
-        top_flight_z = half_flight_z + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
+        top_flight_z = floor_z0 + KNOTT.floor_h  # next floor surface Z (= exit level)
 
         # ── North lane — south face (KNOTT_STAIRS_MID_Y) ────────────────────────────────
         # Lower post: east of stair band, in the entrance area
