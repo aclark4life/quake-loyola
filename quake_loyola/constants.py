@@ -611,10 +611,14 @@ WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
 WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL
 WALL_T = 16
 WIN_HALF = 24
-WORLD_X1 = -1983
+WORLD_X1 = (
+    -5135
+)  # re-derived from real-world measurement, see docs/reference.rst § World scale
 BRIDGE_X1 = WORLD_X1 + WALL_T
 BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W
-WORLD_X2 = 2976
+WORLD_X2 = (
+    7708  # re-derived from real-world measurement, see docs/reference.rst § World scale
+)
 WORLD_X2_EXT = (
     WORLD_X2 + WORLD_EAST_BUFFER
 )  # extended east boundary (world shell + Ennis only)
@@ -642,8 +646,8 @@ BRIDGE_SPAN_CENTRES = [
 ]
 BRIDGE_PEND_XS = BRIDGE_SPAN_CENTRES
 WORLD_Y1, WORLD_Y2 = (
-    -2784,  # extended 800 units south of original -1984
-    1712,
+    -6642,  # re-derived from real-world measurement, see docs/reference.rst § World scale
+    4085,
 )
 CHARLES_Y1 = WORLD_Y1 + WALL_T
 CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48

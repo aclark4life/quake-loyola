@@ -20,6 +20,36 @@ University Maryland's Evergreen campus in northern Baltimore
 - The campus was founded in 1852 and moved to its current "Evergreen" location
   in 1922. Notable alumni include Tom Clancy and Mark Bowden.
 
+World scale
+-----------
+
+Quake units are converted to real-world feet via ``constants.SCALE = 15.108``
+units per foot (``constants.ft_to_units(feet, inches)``). That works out to
+**1 unit ≈ 0.79 inch** — close to, but not exactly, the "1 unit ≈ 1 inch"
+rule of thumb used elsewhere in this project's documentation.
+
+The world-shell rectangle (``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/``WORLD_Y2``
+in ``constants.py``) was re-derived from pixel measurements against the
+scale bars baked into the Google Maps screenshots in ``ref/`` (e.g.
+``ref/gmaps-kh-satellite.png``'s 50 ft bar, ``ref/gmaps-campus-satellite-wide.png``'s
+100 ft bar). Measuring from the west dorms' facade to Knott Hall's east
+face/Ennis Parallel bend, and from Hopkins Court to E Cold Spring Ln, gives
+an estimated real-world target footprint of:
+
+- **~850 ft** east–west (X axis — dorms to Knott Hall/Ennis Parallel)
+- **~710 ft** north–south (Y axis — Hopkins Court to E Cold Spring Ln)
+
+These are rough estimates (±10–15%) from manual pixel-to-scale-bar
+measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
+``WORLD_Y2`` were scaled from their previous values to match this target
+(X: -5135..7708 = 850 ft; Y: -6642..4085 = 710 ft), keeping Charles Street's
+centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
+terrain) is temporarily disabled via the master switches in ``constants.py``
+(``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``, ``KNOTT_TERRAIN_ENABLED``,
+``KNOTT_HALL_ENABLED``, ``STREETS_DETAILS_ENABLED``, ``ENTITIES_ENABLED``)
+while each area's own dimensions are re-derived against this new world size
+from the ``ref/`` top-down views.
+
 Terminology
 -----------
 
