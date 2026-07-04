@@ -34,7 +34,6 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
-    BRIDGE_EAST_SHIFT_START,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
@@ -787,7 +786,7 @@ def build():
             )
 
             # Fill gap between pier top and deck surface in the overhang zone
-            pier_top_z = int(pdeck) - 16
+            pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
             BRUSHES.append(
                 box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
             )  # north
@@ -997,7 +996,7 @@ def build():
         if by2 > yc + ext:
             BRUSHES.append(sb(yc + ext, by2, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
-        pier_top_z = int(pdeck) - 16
+        pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
         # North pillar top (above deck)
         BRUSHES.append(
             sb(
@@ -1184,7 +1183,7 @@ def build():
             STREET_SURFACE_T,
             WORLD_Y2,
             WORLD_Z2,
-            "hint",
+            Textures.HINT,
         )
     )
     BRUSHES.append(
@@ -1195,7 +1194,7 @@ def build():
             BRIDGE_ARCH_X[1] + STREET_SURFACE_T,
             WORLD_Y2,
             WORLD_Z2,
-            "hint",
+            Textures.HINT,
         )
     )
     BRUSHES.append(
@@ -1206,7 +1205,7 @@ def build():
             BRIDGE_ARCH_X[2] + STREET_SURFACE_T,
             WORLD_Y2,
             WORLD_Z2,
-            "hint",
+            Textures.HINT,
         )
     )
     # North edge hint: limited to the straight section only (x≤BRIDGE_EAST_PIVOT_X).
@@ -1221,7 +1220,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE.y1,
             WORLD_Z2,
-            "hint",
+            Textures.HINT,
         )
     )
     # South edge hint: same constraint — the south parapet shears with east_y_shift, so
@@ -1234,7 +1233,7 @@ def build():
             BRIDGE_EAST_PIVOT_X,
             BRIDGE.y2 + 4,
             WORLD_Z2,
-            "hint",
+            Textures.HINT,
         )
     )
 

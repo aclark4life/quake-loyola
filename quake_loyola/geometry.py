@@ -200,6 +200,10 @@ def gable_slats(
     min_w near the apex are skipped."""
     y0, y1 = sorted((yface, yface + depth))
     denom = ridge_z - (eave_z + slab_t)
+    if denom == 0:
+        raise ValueError(
+            f"gable_slats: ridge_z ({ridge_z}) must differ from eave_z + slab_t ({eave_z + slab_t})"
+        )
 
     def edge_x(z):
         t = z - (eave_z + slab_t)
@@ -981,6 +985,8 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     Used for trigger_teleport and func_illusionary brush entities."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
+    if segs <= 0:
+        raise ValueError(f"segs must be > 0 (got {segs})")
     seg = 180.0 / segs
     brushes = []
     brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, sprz, tex))
@@ -1126,6 +1132,8 @@ def arch_wall(
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
+    if segs <= 0:
+        raise ValueError(f"segs must be > 0 (got {segs})")
     seg = 180.0 / segs
     brushes = []
     pillar_top = sprz if freestanding else ceil_z
@@ -1228,6 +1236,8 @@ def arch_wall_y(
     xc: centre X of the arch opening (default 0)."""
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h
+    if segs <= 0:
+        raise ValueError(f"segs must be > 0 (got {segs})")
     seg = 180.0 / segs
     brushes = []
     brushes.append(box(xc - rout, y1, floor_z, xc - rin, y2, sprz, tex))

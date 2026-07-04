@@ -66,6 +66,8 @@ def iron_fence(
 
     Returns a flat list of brushes; the caller groups them into a func_detail.
     """
+    if spacing <= 0:
+        raise ValueError(f"iron_fence: spacing must be > 0 (got {spacing})")
     # Imported here to avoid a circular import: geometry.py imports swap_xy
     # from this module at load time.
     from .geometry import arch_seg, box

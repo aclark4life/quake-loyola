@@ -1129,8 +1129,8 @@ def build():
     # Roof — same gable profile as building 1
     NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t
     NB2_RIDGE_Z = NB2_EAVE_Z + DORM_ROOF_H
-    NB2_SLAB_T = 16
-    NB2_GABLE_DEPTH = 6
+    NB2_SLAB_T = DORM_SLAB_T
+    NB2_GABLE_DEPTH = DORM_GABLE_DEPTH
     NB2_SY1 = DORM_NORTH2_Y1 + NB2_GABLE_DEPTH
     NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
     north2_bldg_detail.append(

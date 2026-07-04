@@ -18,7 +18,7 @@ Axis & position suffixes
     - ``ZB``/``ZT`` — Z bottom / Z top of a feature.
     - ``CX``/``CY`` — centre X / centre Y of a feature.
     - ``XS``/``YS`` — a *list* (plural) of X or Y positions.
-    - ``N``/``S``/``E`` — compass direction (Quake: −Y = north, +Y = south,
+    - ``N``/``S``/``E`` — compass direction (Quake: +Y = north, −Y = south,
       +X = east); combined forms like ``NY`` mean "north-edge Y".
 
 Dimension suffixes
@@ -424,6 +424,7 @@ class Textures:
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
+    HINT = "hint"
     MULCH = "grave13c"
     LAVA = "*lava1"
     PILLAR = "city6_8"
@@ -431,6 +432,7 @@ class Textures:
     ROAD = "azfloor1_1"
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"
+    SHELF = "shelf_1"
     SKY = "sky1"
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"

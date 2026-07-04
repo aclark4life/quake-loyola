@@ -17,6 +17,10 @@ import math
 
 from .constants import (
     BRIDGE,
+    BRIDGE_ACCESS_WALK_CENTER_X,
+    BRIDGE_ACCESS_WALK_HALF_W,
+    BRIDGE_ACCESS_WALK_NORTH_OFFSET,
+    BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_PILLAR_OVERHANG,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -557,16 +561,23 @@ def build():
         )
         # Seg2 (east of entrance to NE indent)
         # east_walk_ext_y1_val / east_walk_ext_y2_val bracket the E-W ramp (Y=264..328)
-        east_walk_ext_y1_val = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + 96 + 80 - 64  # 264
-        east_walk_ext_y2_val = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + 96 + 80  # 328
+        east_walk_ext_y2_val = (
+            BRIDGE.y2
+            + BRIDGE_PILLAR_OVERHANG
+            + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
+            + BRIDGE_ACCESS_WALK_NORTH_OFFSET
+        )  # 328
+        east_walk_ext_y1_val = east_walk_ext_y2_val - (
+            BRIDGE_ACCESS_WALK_HALF_W * 2
+        )  # 264
 
         # Terrain Z at the ramp Y-midpoint — this is the west-end height of the ramp
         def terrain_z_at(y):
             return int(
                 KNOTT_GROUND_Z
                 + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-                * (y - (KNOTT.y2 + 96))
-                / (ENNIS_SW_EDGE - (KNOTT.y2 + 96))
+                * (y - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+                / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
             )
 
         extension_terrain_z_west = (
@@ -609,7 +620,7 @@ def build():
         # spanning from the ramp's east end to the east ramp's high/west end (X=2152) so the
         # pad meets the east ramp flush without overshooting.
         east_walk_x2 = (
-            2120 + 32
+            BRIDGE_ACCESS_WALK_CENTER_X + BRIDGE_ACCESS_WALK_HALF_W
         )  # west edge of E-W back-road ramp (KNOTT_WALKWAY block)
         BRUSHES.append(
             box(

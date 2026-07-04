@@ -1,3 +1,5 @@
+import random
+
 from .constants import (
     A_SEGS,
     ARCH_RIN,
@@ -71,6 +73,9 @@ from .constants import (
     KNOTT_SHAFT_X2,
     KNOTT_SHAFT_Y1,
     KNOTT_SHAFT_Y2,
+    KNOTT_SHELF_D,
+    KNOTT_SHELF_H,
+    KNOTT_SHELF_W,
     KNOTT_STAIRS_MID_Y,
     KNOTT_STAIRS_X1,
     KNOTT_STAIRS_X2,
@@ -302,10 +307,6 @@ def build():
             )
 
     # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
-    KNOTT_SHELF_H = 64  # height of shelf stack
-    KNOTT_SHELF_D = 16  # depth (one wall-thickness)
-    KNOTT_SHELF_W = 64  # width
-
     shelf_offsets = [0, 0, 0, 0, 0]
 
     for floor_index in range(KNOTT.floors):
@@ -328,7 +329,7 @@ def build():
                             shelf_x + KNOTT_SHELF_W // 2,
                             KNOTT_BIY1 + KNOTT_SHELF_D,
                             fz_surf + KNOTT_SHELF_H,
-                            "shelf_1",
+                            Textures.SHELF,
                         )
                     ],
                 )
@@ -1221,9 +1222,7 @@ def build():
     # south of the bridge so its canopy clears the bridge deck.  Per-tree jitter in
     # X/Y/height (fixed seed) keeps the row natural rather than perfectly regular.
     # Z tracks the road slope in the KH section; flat at FLOOR_Z2 north of KH.
-    import random as kh_tree_rng
-
-    kh_tree_rng.seed(7)  # fixed seed for reproducible jittered layout
+    kh_tree_rng = random.Random(7)  # fixed seed for reproducible jittered layout
     kh_drive_tree_x = KNOTT_DRIVEWAY_ES_X2 + 80  # centre clear of east sidewalk
     kh_drive_tree_spacing = 300
     kh_drive_tree_height = int(KNOTT_Z2 * 0.65)  # below KH roof (see charles canopy)
@@ -1274,9 +1273,7 @@ def build():
     )  # centered in north space (fence=1148, world=1696, mid≈1422)
     east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 
-    import random as tree_rng
-
-    tree_rng.seed(42)  # fixed seed for reproducible layout
+    tree_rng = random.Random(42)  # fixed seed for reproducible layout
 
     east_ground_giant_brushes = []
     grid_x = east_ground_x1
