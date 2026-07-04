@@ -128,6 +128,29 @@ def build():
             Textures.SKY,
         )
     )  # E wall
+    BRUSHES.append(
+        box(
+            WORLD_X1,
+            WORLD_Y2 - WALL_T,
+            FLOOR_Z1,
+            BRIDGE.x1,
+            WORLD_Y2,
+            WORLD_Z2,
+            Textures.SKY,
+        )
+    )  # N wall west of BRIDGE.x1 — plain seal over unmodeled real estate now that
+    # BRIDGE.x1 no longer sits at the world wall (see constants.py § BRIDGE_X1).
+    BRUSHES.append(
+        box(
+            WORLD_X1,
+            WORLD_Y1,
+            FLOOR_Z1,
+            BRIDGE.x1,
+            WORLD_Y1 + WALL_T,
+            WORLD_Z2,
+            Textures.SKY,
+        )
+    )  # S wall west of BRIDGE.x1 — plain seal, see N-wall comment above.
     # N wall — split at DORM.x1 (tunnel east boundary).  The inner (south) face is
     # split ALONG the tunnel ceiling-underside line, which slopes from
     # BRIDGE_DZ2-WALL_T at the world wall down to SDORM_LIFT at DORM.x1: ground on
