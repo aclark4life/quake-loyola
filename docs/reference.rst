@@ -90,6 +90,49 @@ or buildings.
    exactly, or explicitly re-derived if the intent is for them to reach the
    new world boundary.
 
+World size validation
+~~~~~~~~~~~~~~~~~~~~~~
+
+To sanity-check the resized world rectangle and fixed anchors above, the
+current ``constants.py`` values were converted back to pixel coordinates
+(using the same ``SCALE``/pixel-per-foot conversion) and overlaid on
+``ref/gmaps-kh-satellite.png``, anchored at the intersection of Charles
+Street's centerline (``X=0``) and the bridge deck's centerline (``Y=0``):
+
+.. image:: _static/world_validation_overlay.jpg
+   :alt: World rectangle, bridge deck, Charles St span, and Knott Hall
+         footprint overlaid on the satellite reference image
+   :width: 100%
+
+- **Magenta** — the world rectangle (``WORLD_X1..WORLD_X2``/``WORLD_Y1..WORLD_Y2``,
+  850 × 710 ft). Comfortably spans from the Integrity Suite dorm (west) across
+  Charles St to Ennis Parallel/Maryland Hall (east), and from just north of
+  Hopkins Court south to E Cold Spring Ln.
+- **Cyan** — the bridge deck (fixed ``BRIDGE_X1``/``BRIDGE_X2``). Lines up
+  almost exactly with the real pedestrian bridge crossing.
+- **Orange** — the Knott Hall footprint (``KNOTT_X1``/``KNOTT_X2``/``KNOTT_Y1``/``KNOTT_Y2``).
+  Sits on the Parkhurst Dining/PNC ATM building at the bridge's east landing,
+  covering roughly its northern half — the building continues south beyond
+  this anchor (unmodeled, pending further re-derivation).
+- **Yellow** — the modeled Charles St span (``CHARLES_Y1``/``CHARLES_Y2``),
+  from Hopkins Court to Eugenia A. Lombardi RN.
+- **Green** — the ``_EAST_FEATURES_X2`` anchor (Ennis Drive/east-campus
+  feature placement), landing near the east edge of Ennis Parallel.
+
+A closer crop of the bridge crossing confirms the alignment:
+
+.. image:: _static/world_validation_overlay_bridge_closeup.jpg
+   :alt: Close-up of the bridge deck overlay against the real pedestrian
+         bridge crossing Charles St
+   :width: 100%
+
+**Conclusion:** the current world size and fixed bridge/Charles St anchors
+are a good match for the target area — several dorms (Hopkins Court,
+Residence Life, Integrity Suite, Eugenia Lombardi, Seton Court), the bridge,
+and Knott Hall's north half all fall within the world rectangle, with room
+to spare toward Ennis Parallel and E Cold Spring Ln. No resize was needed as
+a result of this check.
+
 Terminology
 -----------
 
