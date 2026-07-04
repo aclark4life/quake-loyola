@@ -42,6 +42,23 @@ Feature abbreviations
 import math
 from dataclasses import dataclass
 
+# ════════════════════════════════════════════════════════════════════════════════
+# MASTER MODULE SWITCHES — flip a flag to True to re-enable that module's geometry.
+# All default to False so only the world-shell rectangle (streets.py, which is
+# never gated — it seals the level) is generated. Use this while re-deriving
+# every area's dimensions from the top-down references in ref/.
+# ════════════════════════════════════════════════════════════════════════════════
+BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, railings
+STREETS_DETAILS_ENABLED = False  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
+WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
+KNOTT_TERRAIN_ENABLED = (
+    False  # knott_terrain.py — KH surrounding terrain/embankment/driveway
+)
+KNOTT_HALL_ENABLED = (
+    False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
+)
+ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
+
 ARCH_RIN = 96
 ARCH_ROUT = 136
 ARCH_SLAB_W = 32

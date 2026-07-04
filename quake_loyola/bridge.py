@@ -34,6 +34,7 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
+    BRIDGE_ENABLED,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
@@ -116,6 +117,8 @@ from .geometry import (
 
 
 def build():
+    if not BRIDGE_ENABLED:
+        return [], []
     BRUSHES = []
     ENTITIES = []
     # Bridge superstructure (parapets, railings, arch voussoirs, teleport arches) is

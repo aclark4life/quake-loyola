@@ -66,6 +66,7 @@ from .constants import (
     KNOTT_STAIR_RAIL_POST_W,
     KNOTT_STEP_DEPTH,
     KNOTT_STEP_N,
+    KNOTT_TERRAIN_ENABLED,
     ROAD_X2,
     WALL_T,
     WORLD_X2_EXT,
@@ -76,6 +77,8 @@ from .geometry import box, brush_ent, curb_seg, ramp_slab, ramp_slab_y, tri_pris
 
 
 def build():
+    if not KNOTT_TERRAIN_ENABLED:
+        return [], []
     BRUSHES = []
     ENTITIES = []
     DETAIL_BRUSHES = []

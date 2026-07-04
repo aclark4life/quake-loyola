@@ -22,6 +22,7 @@ from .constants import (
     KNOTT_FRONT_WINDOW_HALF_W,
     KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
     KNOTT_GROUND_Z,
+    KNOTT_HALL_ENABLED,
     KNOTT_INTERIOR_ENABLED,
     KNOTT_MULLION_PRO,
     KNOTT_MULLION_W,
@@ -70,6 +71,8 @@ from .geometry import (
 
 
 def build():
+    if not KNOTT_HALL_ENABLED:
+        return [], []
     BRUSHES = []
     ENTITIES = []
     DETAIL_BRUSHES = []

@@ -50,6 +50,7 @@ from .constants import (
     STREET_DIV_HW,
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
+    STREETS_DETAILS_ENABLED,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
@@ -77,6 +78,10 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
     # ════════════════════════════════════════════════════════════════════════════════
+    # Tunnel-portal wall faces (below) show ground only when the bridge/tunnel
+    # geometry that they're shaped around is actually present; with everything
+    # disabled for dimension re-derivation, those inner faces should read as sky.
+    _tunnel_wall_tex = Textures.GROUND if STREETS_DETAILS_ENABLED else Textures.SKY
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -98,7 +103,7 @@ def build():
             WORLD_Y2,
             BRIDGE_DZ2,
             Textures.SKY,
-            te=Textures.GROUND,  # inner east face at tunnel height → ground
+            te=_tunnel_wall_tex,  # inner east face at tunnel height → ground
         )
     )  # W wall lower (tunnel height)
     BRUSHES.append(
@@ -142,9 +147,9 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=Textures.GROUND,  # sloped top visible at tunnel exit → ground
-            te=Textures.GROUND,  # east end-cap at tunnel opening → ground
-            ts=Textures.GROUND,  # inner south face = tunnel end-wall → ground
+            tt=_tunnel_wall_tex,  # sloped top visible at tunnel exit → ground
+            te=_tunnel_wall_tex,  # east end-cap at tunnel opening → ground
+            ts=_tunnel_wall_tex,  # inner south face = tunnel end-wall → ground
         )
     )  # N wall tunnel portal (ground up to the ceiling-underside line)
     BRUSHES.append(
@@ -158,7 +163,7 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
+            tb=_tunnel_wall_tex,  # sloped bottom face visible from tunnel → ground
         )
     )  # N wall above the tunnel end-wall
     BRUSHES.append(
@@ -190,8 +195,8 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=Textures.GROUND,  # sloped top face — hillside slope visible at tunnel mouth
-            ts=Textures.GROUND,  # ±Y gable ends — tunnel end-wall ground texture
+            tt=_tunnel_wall_tex,  # sloped top face — hillside slope visible at tunnel mouth
+            ts=_tunnel_wall_tex,  # ±Y gable ends — tunnel end-wall ground texture
         )
     )  # S wall tunnel portal lower (sloped ground up to hillside underside)
     BRUSHES.append(
@@ -205,7 +210,7 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=Textures.GROUND,  # sloped bottom face visible from tunnel → ground
+            tb=_tunnel_wall_tex,  # sloped bottom face visible from tunnel → ground
         )
     )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
     BRUSHES.append(
@@ -230,6 +235,8 @@ def build():
             Textures.SKY,
         )
     )  # sky
+    if not STREETS_DETAILS_ENABLED:
+        return BRUSHES, ENTITIES
     # ── Non-sealing street furniture, markings, and decorative ground geometry ──
     # These are moved to DETAIL_BRUSHES to speed up vis and reduce portal fragmentation.
     _world_brushes = BRUSHES
