@@ -925,6 +925,10 @@ def build():
     # ── Pier 6 — explicit duplicate of Pier 5 (KNOTT_NE_PIER_X) ─────────────────
     # Pier 5 uses square_wall + OUTER_R. Pier 6 is identical but sits in the angled
     # east span, so all Y coords are shifted south by east_y_shift(PIER6_X).
+    # Like the angled parapet walls above, this pier's brushes go to worldspawn
+    # (not func_detail): qbsp fails to generate draw surfaces for some outer
+    # (Y-facing) faces of sheared func_detail brushes here, producing a
+    # see-through/transparent wall on the north parapet between Piers 5 and 6.
     if SHOW_SUPPORTS:
         px = PIER6_X
         pdeck = deck_top_z(px)
@@ -950,13 +954,13 @@ def build():
         yc = py_shift
         ext = a_rin + sq_overhang
         # Main pier body (square opening, rotated to follow deck angle)
-        BRUSHES.append(
+        _ws.append(
             sb(yc - ext, yc - a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
         )  # south pillar
-        BRUSHES.append(
+        _ws.append(
             sb(yc + a_rin, yc + ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
         )  # north pillar
-        BRUSHES.append(
+        _ws.append(
             sb(
                 yc - a_rin,
                 yc + a_rin,
@@ -966,7 +970,7 @@ def build():
             )
         )  # lintel
         if BRIDGE_PILLAR_BASE_H > 0:
-            BRUSHES.append(
+            _ws.append(
                 sb(
                     yc - a_rin,
                     yc + a_rin,
@@ -978,7 +982,7 @@ def build():
             # Cement cap slab on top of base plinth (matches arch-pier base caps)
             if BRIDGE_PILLAR_BASE_CAP_H > 0:
                 cap_crin = a_rin + BRIDGE_PILLAR_BASE_CAP_OVH
-                BRUSHES.append(
+                _ws.append(
                     shear_box_y(
                         px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_BASE_CAP_OVH,
                         yc - cap_crin,
@@ -992,13 +996,13 @@ def build():
                     )
                 )  # base cap
         if by1 < yc - ext:
-            BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
+            _ws.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:
-            BRUSHES.append(sb(yc + ext, by2, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
+            _ws.append(sb(yc + ext, by2, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
         pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
         # North pillar top (above deck)
-        BRUSHES.append(
+        _ws.append(
             sb(
                 by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
                 pier_outer_y,
@@ -1008,7 +1012,7 @@ def build():
             )
         )
         # South pillar top (above deck)
-        BRUSHES.append(
+        _ws.append(
             sb(
                 by1 - BRIDGE_PILLAR_OVERHANG,
                 by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
@@ -1018,8 +1022,8 @@ def build():
             )
         )
         # Fill gap between pier top and deck in the overhang zone
-        BRUSHES.append(sb(by2, pier_outer_y, pier_top_z, pdeck, Textures.PILLAR))
-        BRUSHES.append(
+        _ws.append(sb(by2, pier_outer_y, pier_top_z, pdeck, Textures.PILLAR))
+        _ws.append(
             sb(by1 - BRIDGE_PILLAR_OVERHANG, by1, pier_top_z, pdeck, Textures.PILLAR)
         )
         # Cement cap slabs
@@ -1034,7 +1038,7 @@ def build():
         )
         sc1r = east_y_shift(cap_x1) - py_shift
         sc2r = east_y_shift(cap_x2) - py_shift
-        BRUSHES.append(
+        _ws.append(
             shear_box_y(
                 cap_x1,
                 north_cap_y1,
@@ -1047,7 +1051,7 @@ def build():
                 Textures.CEMENT,
             )
         )
-        BRUSHES.append(
+        _ws.append(
             shear_box_y(
                 cap_x1,
                 south_cap_y1,
@@ -1062,7 +1066,7 @@ def build():
         )
         # Pyramids — sheared the same as the cap slab beneath (was axis-aligned,
         # so the diamond base didn't line up with the slab's parallelogram top).
-        BRUSHES.append(
+        _ws.append(
             shear_pyramid_y(
                 cap_x1,
                 north_cap_y1,
@@ -1075,7 +1079,7 @@ def build():
                 Textures.CEMENT,
             )
         )
-        BRUSHES.append(
+        _ws.append(
             shear_pyramid_y(
                 cap_x1,
                 south_cap_y1,
@@ -1091,7 +1095,7 @@ def build():
         # Torch bases (centred on shifted cap centres)
         pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
         for torch_center_y in [cy_n, cy_s]:
-            BRUSHES.append(
+            _ws.append(
                 box(
                     px - BRIDGE_TORCH_POST_HW,
                     torch_center_y - BRIDGE_TORCH_POST_HW,
@@ -1102,7 +1106,7 @@ def build():
                     Textures.CEMENT,
                 )
             )
-            BRUSHES.append(
+            _ws.append(
                 box(
                     px - BRIDGE_TORCH_CUP_HW,
                     torch_center_y - BRIDGE_TORCH_CUP_HW,
