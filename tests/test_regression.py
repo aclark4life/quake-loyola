@@ -18,7 +18,7 @@ class MapRegressionTests(unittest.TestCase):
 
     def test_map_text_matches_golden_hash(self):
         text = generate_map.build_map_text()
-        digest = hashlib.md5(text.encode()).hexdigest()
+        digest = hashlib.md5(text.encode(), usedforsecurity=False).hexdigest()
         self.assertEqual(digest, EXPECTED_MD5)
 
     def test_build_is_deterministic(self):

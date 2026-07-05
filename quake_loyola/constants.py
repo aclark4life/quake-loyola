@@ -128,6 +128,7 @@ BRIDGE_Y1, BRIDGE_Y2 = -113, 113  # ~15 ft deck (half-width = ft_to_units(7,6))
 
 CHARLES_ARCH_RIN = 256
 CHARLES_ARCH_RIN_PRE = 256
+CHARLES_ARCH_ROUT = 312
 CHARLES_ARCH_ROUT_PRE = 312
 CHARLES_ARCH_STILT = 96
 CHARLES_ARCH_STILT_PRE = 96
@@ -193,7 +194,6 @@ ENNIS_GATE_FENCE_TOP_RAIL_T = 2
 ENNIS_GATE_PANEL_COUNT = 12  # dozen decorative rectangular iron panels on the brick
 ENNIS_GATE_PILLAR_LEG_T = 4  # leg thickness of the inverted-U (∩) separator pillars
 ENNIS_GATE_PILLAR_OPENING_W = 12  # gap between the two legs of each ∩ pillar
-ENNIS_GATE_PILLAR_W = ENNIS_GATE_PILLAR_OPENING_W + 2 * ENNIS_GATE_PILLAR_LEG_T
 ENNIS_GATE_PILLAR_GAP = 8  # clearance either side of a pillar, between it and a panel
 ENNIS_GATE_PILLAR_EXTRA_H = 12  # how much taller the pillar is than a panel
 ENNIS_GATE_PILLAR_CROSS_T = 2  # thickness of the decorative X cross-brace bars
@@ -248,7 +248,9 @@ FASCIA_FONT = {
     "V": [0b1001, 0b1001, 0b1001, 0b0110, 0b0110, 0b0000],
     "W": [0b1001, 0b1001, 0b1111, 0b1111, 0b1001, 0b0000],
     "X": [0b1001, 0b0110, 0b0110, 0b0110, 0b1001, 0b0000],
+    "Q": [0b0110, 0b1001, 0b1001, 0b1011, 0b0111, 0b0000],
     "Y": [0b1001, 0b0110, 0b0100, 0b0100, 0b0100, 0b0000],
+    "Z": [0b1111, 0b0001, 0b0110, 0b1000, 0b1111, 0b0000],
     " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
 }
 
@@ -559,13 +561,16 @@ KNOTT_DRIVEWAY_Y2 = KNOTT_Y2
 KNOTT_DRIVEWAY_EXT_Y1 = KNOTT_DRIVEWAY_Y2
 KNOTT_STAIRS_Y1 = KNOTT_BIY2 - 256
 # West bridge piers step back from the Knott pier using the two reference span widths.
-PIER3_X = KNOTT_PIER_X - BRIDGE_OUTER_PIER_SPAN
-PIER2_X = PIER3_X - BRIDGE_CENTER_PIER_SPAN
-PIER1_X = PIER2_X - BRIDGE_OUTER_PIER_SPAN
+# Piers 1-3 are derived; Pier 4 = KNOTT_PIER_X; Pier 5 = KNOTT_NE_PIER_X.
+# Individual names are unpacked immediately after.
 BRIDGE_ARCH_X = [
-    PIER1_X,  # Pier 1 — west abutment pier (top of embankment hill)
-    PIER2_X,  # Pier 2
-    PIER3_X,  # Pier 3 (anchors Ennis Drive entrance pillars)
+    KNOTT_PIER_X
+    - BRIDGE_OUTER_PIER_SPAN
+    - BRIDGE_CENTER_PIER_SPAN
+    - BRIDGE_OUTER_PIER_SPAN,  # Pier 1 — west abutment pier
+    KNOTT_PIER_X - BRIDGE_OUTER_PIER_SPAN - BRIDGE_CENTER_PIER_SPAN,  # Pier 2
+    KNOTT_PIER_X
+    - BRIDGE_OUTER_PIER_SPAN,  # Pier 3 (anchors Ennis Drive entrance pillars)
     KNOTT_PIER_X,  # Pier 4 — west KH pier (arch span terminus)
     KNOTT_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
     3150,  # Pier 6 — mid-span pier in extended east section (moved east, clear of
@@ -603,7 +608,7 @@ KNOTT_DRIVEWAY_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
 KNOTT_DRIVEWAY_JCY = ENNIS_Y - ENNIS_HW
 PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X, PIER6_X = BRIDGE_ARCH_X
 DORM_FLOOR_H = (
-    128  # dorm-specific floor height (shorter than Knott's KNOTT_FLOOR_H=160)
+    128  # dorm-specific floor height (shorter than Knott's KNOTT_FLOOR_H=192)
 )
 DORM_ROOF_H = 192  # roof ridge rise above eave (independent of floor height)
 DORM_H = DORM_FLOORS * DORM_FLOOR_H
@@ -753,6 +758,10 @@ FENCE_X1 = DORM_X2 + DORM_FENCE_OFFSET
 FENCE_X2 = FENCE_X1 + 2
 DORM_X1 = DORM_X2 - 576
 DORM_CX = (DORM_X1 + DORM_X2) // 2
+ENNIS_GATE_PILLAR_W = ENNIS_GATE_PILLAR_OPENING_W + 2 * ENNIS_GATE_PILLAR_LEG_T
+
+# Fixed spawn / destination coordinates used by multiple teleport destinations.
+KH_ROOFTOP_ORIGIN = "2149 -264 904"  # top of Knott Hall rooftop, facing-west landing
 
 KNOTT = KnottSpec(
     floors=KNOTT_FLOORS,

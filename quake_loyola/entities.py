@@ -18,10 +18,16 @@ from .constants import (
     BRIDGE_PILLAR_EXTRA,
     BRIDGE_PILLAR_HW,
     BRIDGE_PILLAR_PYR_H,
+    CHARLES_ARCH_RIN,
+    CHARLES_ARCH_ROUT,
+    CHARLES_ARCH_STILT,
+    CHARLES_ARCH_W,
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM,
+    DORM_CX,
+    DORM_NORTH_CY,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
     DORM_RIDGE_Z,
@@ -40,6 +46,7 @@ from .constants import (
     ENTITIES_ENABLED,
     FLOOR_Z2,
     INDENT,
+    KH_ROOFTOP_ORIGIN,
     KNOTT,
     KNOTT_BIY1,
     KNOTT_BIY2,
@@ -352,7 +359,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_west",
-            origin="2149 -264 904",
+            origin=KH_ROOFTOP_ORIGIN,
             angle="180",  # facing west, on KH rooftop
         )
     )
@@ -422,10 +429,6 @@ def build():
 
     # ── North & South Charles Street arch teleports ────────────────────────────────
     # South arch → south dorm rooftop; North arch → north dorm rooftop
-    CHARLES_ARCH_RIN = 256  # inner radius = road half-width
-    CHARLES_ARCH_STILT = 96  # straight post height before arch springs
-    CHARLES_ARCH_W = 48  # arch thickness in Y (thicker = more stone-like)
-
     ENTITIES.append(
         ent(
             "info_teleport_destination",
@@ -493,7 +496,6 @@ def build():
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
 
     # Stone arch surrounds for north & south Charles Street arches
-    CHARLES_ARCH_ROUT = 312  # outer radius
     CHARLES_ARCH_SEGS = 24  # smoother than the global A_SEGS = 16
     charles_arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
     for arch_y1, arch_y2 in [
@@ -532,7 +534,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_ennis_east",
-            origin="2149 -264 904",
+            origin=KH_ROOFTOP_ORIGIN,
             angle="180",  # facing west
         )
     )
@@ -540,7 +542,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
-            origin="2149 -264 904",
+            origin=KH_ROOFTOP_ORIGIN,
             angle="180",  # facing west
         )
     )
@@ -651,8 +653,6 @@ def build():
     )
 
     knott_cy = (KNOTT.y1 + KNOTT.y2) // 2  # Knott Hall center Y = -528
-    DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2  # north building center Y
-    DORM_CX = (DORM.x1 + DORM.x2) // 2  # west buildings center X
     DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2  # south building 1 center Y
     DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2  # south building 2 center Y
 
@@ -1252,6 +1252,7 @@ def build():
     _ennis_south = ENNIS_Y - ENNIS_HW  # Ennis road south edge
     _ennis_sw_edge = _ennis_south - 3 * CHARLES_WALK_W - 32  # Ennis south sidewalk edge
     east_tele_brushes = []
+    et_rng = random.Random(43)  # independent seed — decoupled from east_ground layout
     et_x1 = (
         WORLD_X2 + WALL_T + east_side_foliage_hw + 20
     )  # foliage clears the world wall / teleport
@@ -1263,8 +1264,8 @@ def build():
     et_min_dist = 280  # minimum centre-to-centre spacing
     et_placed = []
     for _ in range(300):  # attempt budget — stops when area is full
-        cx = tree_rng.randint(et_x1, et_x2)
-        cy = tree_rng.randint(et_y1, et_y2)
+        cx = et_rng.randint(et_x1, et_x2)
+        cy = et_rng.randint(et_y1, et_y2)
         if all(
             (cx - px) ** 2 + (cy - py) ** 2 >= et_min_dist**2 for px, py in et_placed
         ):

@@ -8,6 +8,7 @@ from quake_loyola.geometry import (
     corner_ramp,
     ent,
     gable_slats,
+    iron_fence,
     layered_wall,
     make_tree,
     ramp_slab_y,
@@ -15,7 +16,6 @@ from quake_loyola.geometry import (
     tri_prism,
 )
 from quake_loyola.mapdata import Brush, Entity
-from quake_loyola.utils import iron_fence
 
 
 class BoxTests(unittest.TestCase):
