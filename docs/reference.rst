@@ -166,6 +166,17 @@ change was needed. ``STREETS_DETAILS_ENABLED`` was re-enabled as the first
 re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
 entrance features); compiles with no leaks at the new world size.
 
+**Lane-marking re-check** — a closer crop of the same satellite image showed
+more painted lines than the map originally modeled (a single dashed
+centerline). The extra lines are not additional travel lanes: N Charles St
+here is 1 travel lane each direction (solid double-yellow, no-passing
+centerline) plus a dashed stripe delineating a curbside parking lane on each
+side — 2 travel lanes + 2 parking lanes, matching the already-validated
+curb-to-curb width. The road surface is now split into 4 slabs
+(``CHARLES_PARKING_LANE_W`` = 96 units from each curb) with a solid centre
+stripe and two dashed parking-lane stripes (``STREET_DIV_LINE_HW``),
+instead of a single dashed centerline.
+
 Topology check
 ~~~~~~~~~~~~~~
 
