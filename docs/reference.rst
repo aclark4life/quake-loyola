@@ -180,6 +180,19 @@ instead of a single dashed centerline.
 Topology check
 ~~~~~~~~~~~~~~
 
+.. note::
+   Superseded 2026-07-05 by a reproducible script,
+   ``scripts/sample_elevation.py``, whose cached output lives in
+   ``docs/elevation_samples.csv``. The original figures below (from a one-off
+   manual USGS lookup with no committed sample points or precise anchor
+   tie-in) are kept for history but should no longer be treated as
+   authoritative — re-run the script to regenerate current numbers. The
+   script's own anchor/bearing assumptions are also approximate (see its
+   module docstring); at 1 m DEM resolution, results are sensitive to exactly
+   where each sample point lands relative to buildings/retaining walls, so
+   don't over-index on any single figure without cross-checking a few nearby
+   points.
+
 Real-world elevation was sampled from the USGS 3DEP Elevation Point Query
 Service (~1 m resolution) at pixel positions converted to lat/lon via the
 established ft/px scale and Charles St's measured compass bearing
@@ -206,17 +219,41 @@ climbs **~40 ft over ~580 ft** (~6.7% grade) from the north end to the
 south end of the modeled corridor. ``ROAD_Z`` is currently a flat constant
 (``FLOOR_Z2 + 8``) and does not model this slope at all.
 
+**Current script-based re-measurement** (``docs/elevation_samples.csv``;
+baseline is each run's own ``bridge_crossing_road`` sample, not a fixed
+296 ft, so figures stay internally consistent even as the anchor/bearing
+approximation is refined):
+
+- **West dorms hilltop**: +7.2 ft above baseline — close to the old
+  +6.6 ft figure and to ``SDORM_LIFT`` (8.47 ft); no change recommended.
+- **Knott Hall west edge, at Ennis Y** (``knott_climb_0``): **+14.6 ft**
+  (221 units) above baseline — well above the old +7.2 ft estimate.
+- **Knott Hall east edge -> Ennis Parallel** (``knott_climb_2`` ..
+  ``knott_climb_4``): climbs from **+17.3 ft to +19.3 ft** (262 -> 291
+  units) over ~250 ft — a gentler, shorter climb than the old +7.2 ft ->
+  +21.7 ft over 360 ft estimate, but same direction (steady eastward rise).
+- **Charles St north-south grade**: only ~10 ft of drop north-to-south
+  across the corridor in this re-measurement, well under the old ~40 ft
+  figure — re-run the script with denser sample points along the centerline
+  before committing to a grade model; the current 6 points are a coarse
+  first pass.
+
 **Action items for future terrain/building re-derivation** (not yet
 implemented — ``WEST_CAMPUS_ENABLED``, ``KNOTT_TERRAIN_ENABLED``,
 ``KNOTT_HALL_ENABLED`` remain disabled):
 
-- Increase ``KNOTT_GROUND_Z`` to better match the measured ~+7 ft rise at
-  Knott Hall's west edge.
-- Consider modeling a continued eastward elevation gain toward Ennis
-  Parallel, rather than a single flat plateau.
+- Raise ``KNOTT_GROUND_Z`` from 64 to **221 units** (``ft_to_units(14.6)``)
+  to match the re-measured rise at Knott Hall's west edge.
+- Model the continued eastward climb toward Ennis Parallel — from the
+  re-measured data, roughly a further **+70 units** (262 -> ~291) over the
+  Knott Hall east edge -> Ennis Parallel span — rather than a single flat
+  plateau.
 - Consider giving Charles St (and the bridge/floor it connects to) an
   overall north-south grade rather than a flat ``ROAD_Z``, if map fidelity
   warrants it — a substantial change affecting many downstream Z constants.
+  Re-sample with more points along the centerline first; the current
+  re-measurement doesn't yet support picking a specific grade value with
+  confidence.
 
 Terminology
 -----------
