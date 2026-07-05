@@ -1210,7 +1210,6 @@ def build():
     )
 
     # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
-    TEX_DIVIDER = Textures.DIVIDER
     dash_brushes = []
     # Charles Street centre line — solid double-yellow (two stripes with a gap),
     # not dashed: real N Charles St has a no-passing double-yellow stripe here
@@ -1278,27 +1277,43 @@ def build():
             )
             divider_y = next_divider_y
             dash_on = not dash_on
-    # Ennis Road — dashed E-W from Charles St east to world wall
-    divider_x = ROAD_X2
-    dash_on = True
-    while divider_x < ENNIS_X2:
-        next_divider_x = min(
-            divider_x + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), ENNIS_X2
+    # Ennis Road — solid single yellow centerline (replaces the old dashed
+    # divider strip; carved slot width is unchanged, only a thin line is
+    # painted in the middle with Textures.ROAD filling the rest).
+    _ennis_line_hw = STREET_DIV_LINE_HW
+    dash_brushes.append(
+        box(
+            ROAD_X2,
+            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            FLOOR_Z2,
+            ENNIS_X2,
+            ENNIS_Y - _ennis_line_hw,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
         )
-        divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
-        dash_brushes.append(
-            box(
-                divider_x,
-                ENNIS_Y - STREET_ENNIS_DIV_HW,
-                FLOOR_Z2,
-                next_divider_x,
-                ENNIS_Y + STREET_ENNIS_DIV_HW,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                divider_tex,
-            )
+    )
+    dash_brushes.append(
+        box(
+            ROAD_X2,
+            ENNIS_Y - _ennis_line_hw,
+            FLOOR_Z2,
+            ENNIS_X2,
+            ENNIS_Y + _ennis_line_hw,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.CENTERLINE,
         )
-        divider_x = next_divider_x
-        dash_on = not dash_on
+    )
+    dash_brushes.append(
+        box(
+            ROAD_X2,
+            ENNIS_Y + _ennis_line_hw,
+            FLOOR_Z2,
+            ENNIS_X2,
+            ENNIS_Y + STREET_ENNIS_DIV_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
+        )
+    )
     if dash_brushes:
         ENTITIES.append(brush_ent("func_detail", dash_brushes))
 
