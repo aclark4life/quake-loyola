@@ -1212,21 +1212,41 @@ def build():
     # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
     TEX_DIVIDER = Textures.DIVIDER
     dash_brushes = []
-    # Charles Street centre line — solid (continuous), not dashed: real N Charles
-    # St has a double-yellow no-passing stripe here (see docs/reference.rst
-    # "Charles St width validation"). The bridge deck overhead is an overpass
-    # with piers landing well outside the road (nearest piers at X=-1246/525,
-    # road is only X=-256..256), so nothing in the road is ever obstructed —
-    # stripe the whole length regardless of BRIDGE_ENABLED.
+    # Charles Street centre line — solid double-yellow (two stripes with a gap),
+    # not dashed: real N Charles St has a no-passing double-yellow stripe here
+    # (see docs/reference.rst "Charles St width validation"). Texture is still
+    # the generic divider texture (TEX_DIVIDER) until a yellow-specific texture
+    # is sourced. The bridge deck overhead is an overpass with piers landing
+    # well outside the road (nearest piers at X=-1246/525, road is only
+    # X=-256..256), so nothing in the road is ever obstructed — stripe the
+    # whole length regardless of BRIDGE_ENABLED.
+    _centerline_gap_hw = (
+        STREET_DIV_HW // 2
+    )  # half-width of the gap between the two lines
+    for line_x1, line_x2 in (
+        (-STREET_DIV_HW, -_centerline_gap_hw),
+        (_centerline_gap_hw, STREET_DIV_HW),
+    ):
+        dash_brushes.append(
+            box(
+                line_x1,
+                CHARLES_Y1,
+                FLOOR_Z2,
+                line_x2,
+                CHARLES_Y2,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                TEX_DIVIDER,
+            )
+        )
     dash_brushes.append(
         box(
-            -STREET_DIV_HW,
+            -_centerline_gap_hw,
             CHARLES_Y1,
             FLOOR_Z2,
-            STREET_DIV_HW,
+            _centerline_gap_hw,
             CHARLES_Y2,
             FLOOR_Z2 + STREET_SURFACE_T,
-            TEX_DIVIDER,
+            Textures.ROAD,
         )
     )
     # Charles Street parking-lane stripes — dashed, delineating the travel lane
