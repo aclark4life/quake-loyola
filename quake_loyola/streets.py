@@ -1256,7 +1256,7 @@ def build():
             next_divider_y = min(
                 divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
             )
-            divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
+            divider_tex = Textures.PARKING_STRIPE if dash_on else Textures.ROAD
             dash_brushes.append(
                 box(
                     parking_x - STREET_DIV_LINE_HW,

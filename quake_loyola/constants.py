@@ -461,6 +461,9 @@ class Textures:
     CENTERLINE = (
         "win_fbylw_01"  # fullbright yellow, stand-in for a yellow line marking texture
     )
+    PARKING_STRIPE = (
+        "win_fbblu_01"  # stand-in for the white parking-lane stripe texture
+    )
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
