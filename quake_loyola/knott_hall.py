@@ -75,7 +75,13 @@ def build():
         return [], []
     BRUSHES = []
     ENTITIES = []
+    # Genuinely interior-only content (floor slabs, elevator shaft, stairwell,
+    # partition/hallway walls) — cleared entirely when KNOTT_INTERIOR_ENABLED is False.
     DETAIL_BRUSHES = []
+    # Non-structural exterior decoration (window mullions/dividers) — kept as
+    # func_detail purely for BSP/vis performance, so it must survive independently
+    # of the interior toggle and only be trimmed by KNOTT_EXTERIOR_ENABLED.
+    EXTERIOR_DETAIL_BRUSHES = []
     knott_brush_start = len(
         BRUSHES
     )  # checkpoint — trimmed below if KNOTT_EXTERIOR_ENABLED is False
@@ -261,7 +267,7 @@ def build():
     )
     # South mullions — protrude outward (south, -Y)
     for mx in [sw_win_cx - WIN_HALF - KNOTT_MULLION_W, sw_win_cx + WIN_HALF]:
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT.y1 + INDENT - KNOTT.wall_t,
@@ -273,7 +279,7 @@ def build():
             )
         )
     for mx in [se_win_cx - WIN_HALF - KNOTT_MULLION_W, se_win_cx + WIN_HALF]:
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT.y1 + INDENT - KNOTT.wall_t,
@@ -289,7 +295,7 @@ def build():
         for floor_index, _, _, _, mz in floor_levels():
             if floor_index == 0:
                 continue
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
                     KNOTT.y1 + INDENT - KNOTT.wall_t,
@@ -303,7 +309,7 @@ def build():
     # Floor-level mullions — SW and SE south-face windows
     for wx in [sw_win_cx, se_win_cx]:
         for _, _, fz, _, _ in floor_levels():
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     wx - WIN_HALF,
                     KNOTT.y1 + INDENT - KNOTT.wall_t,
@@ -532,7 +538,7 @@ def build():
         nw_win_cx2 - WIN_HALF - KNOTT_MULLION_W,
         nw_win_cx2 + WIN_HALF,
     ]:
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
@@ -545,7 +551,7 @@ def build():
         )
     # NE recessed window: mullions just outside the opening so player can fit through
     for mx in [ne_win_cx - WIN_HALF - KNOTT_MULLION_W, ne_win_cx + WIN_HALF]:
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
@@ -563,7 +569,7 @@ def build():
     )
     win_n_mid = KNOTT_ORIG_CX - KNOTT_FRONT_WINDOW_MULLION_HALF_GAP
     for mx in [win_n_x1 - KNOTT_MULLION_W, win_n_mid, win_n_x2]:
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
                 KNOTT.y2 - KNOTT.wall_t,
@@ -667,7 +673,7 @@ def build():
             window_center_y + KNOTT_SIDE_WINDOW_INNER_RIGHT,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x2 - KNOTT.wall_t,
                     mullion_y,
@@ -685,7 +691,7 @@ def build():
         for floor_index, _, _, _, mz in floor_levels():
             if floor_index == 0:
                 continue
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x2 - KNOTT.wall_t,
                     window_center_y - ww_half,
@@ -699,7 +705,7 @@ def build():
     # Floor-level mullions — sill at base of each floor (floors 1+), lintel at top of each floor
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for _, _, fz, _, _ in floor_levels():
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x2 - KNOTT.wall_t,
                     window_center_y - ww_half,
@@ -766,7 +772,7 @@ def build():
             window_center_y + KNOTT_SIDE_WINDOW_INNER_RIGHT,  # interior right
             window_center_y + ww_half - ww_div_w,  # right edge
         ]:
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x1 - ww_protrude,
                     mullion_y,
@@ -783,7 +789,7 @@ def build():
         for floor_index, _, _, _, mz in floor_levels():
             if floor_index == 0:
                 continue
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x1 - ww_protrude,
                     window_center_y - ww_half,
@@ -797,7 +803,7 @@ def build():
     # Floor-level mullions — west wall
     for window_center_y in [ww_c1, ww_c2, ww_c3]:
         for _, _, fz, _, _ in floor_levels():
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     KNOTT.x1 - ww_protrude,
                     window_center_y - ww_half,
@@ -813,7 +819,7 @@ def build():
     for floor_index, _, _, _, mz in floor_levels():
         if floor_index < 2:
             continue
-        DETAIL_BRUSHES.append(
+        EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 win_n_x1,
                 KNOTT.y2 - KNOTT.wall_t,
@@ -833,7 +839,7 @@ def build():
         if fz <= KNOTT_Z2:
             hx1 = win_n_x1 - (KNOTT_MULLION_W if floor_index == 1 else 0)
             hx2 = win_n_x2 + (KNOTT_MULLION_W if floor_index == 1 else 0)
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     hx1,
                     KNOTT.y2 - KNOTT.wall_t,
@@ -852,7 +858,7 @@ def build():
         for floor_index, _, _, _, mz in floor_levels():
             if floor_index == 0:
                 continue
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
                     KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
@@ -870,7 +876,7 @@ def build():
         (ne_win_cx, WIN_HALF),
     ]:
         for _, _, fz, _, _ in floor_levels():
-            DETAIL_BRUSHES.append(
+            EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
                     KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
@@ -1493,9 +1499,12 @@ def build():
 
     if not KNOTT_EXTERIOR_ENABLED:
         del BRUSHES[knott_brush_start:]
+        EXTERIOR_DETAIL_BRUSHES.clear()
 
     if not KNOTT_INTERIOR_ENABLED:
         DETAIL_BRUSHES.clear()
+
+    DETAIL_BRUSHES.extend(EXTERIOR_DETAIL_BRUSHES)
 
     # Raised pixel-font letters on the Knott Hall sign plaque
     # Text reversed + mirrored so it reads correctly when viewed from north (facing south)

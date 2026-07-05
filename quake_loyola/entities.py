@@ -441,7 +441,9 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_dorm_roof",
-            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            # Offset from dest_east's ridge-centre landing spot so the two
+            # destinations (west-arch vs. north-street-arch) don't coincide.
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + 40)}",
             angle="270",  # facing south, at top of A-frame ridge
         )
     )
@@ -704,8 +706,9 @@ def build():
         # North building interior
         ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
         ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
-        # North building roof ridge
-        ((DORM_CX, DORM_NORTH_CY, int(DORM_RIDGE_Z + 40)), 90),
+        # North building roof ridge — offset from the ridge-centre teleport
+        # destination / mega-armor pickup to avoid spawn telefrags.
+        ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
         # South buildings interiors
         ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
         ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
@@ -1136,8 +1139,8 @@ def build():
 
     # Three lights to illuminate the pixel tree: one uplight at the base,
     # two at mid-crown on opposite sides for even coverage.
-    # Two lights at mid-crown on opposite sides for even illumination coverage.
     for _lx, _ly, _lz, _intensity in [
+        (_tree_cx, _tree_cy, FLOOR_Z2 + 24, 150),  # base uplight
         (_tree_cx - 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown west
         (_tree_cx + 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown east
     ]:

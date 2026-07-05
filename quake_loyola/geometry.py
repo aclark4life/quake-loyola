@@ -1439,8 +1439,10 @@ def iron_fence(
         )
         picket_y = fy1
         picket_index = 0
-        while picket_y + 2 <= fy2:
+        while True:
             picket_w = 8 if picket_index % 10 == 0 else 2
+            if picket_y + picket_w > fy2:
+                break
             brushes.append(
                 box(x1, picket_y, z_base, x2, picket_y + picket_w, z_base + height, tex)
             )

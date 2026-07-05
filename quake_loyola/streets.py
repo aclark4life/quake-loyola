@@ -1134,7 +1134,7 @@ def build():
     BRUSHES.append(
         box(
             ENNIS_X1,
-            ENNIS_Y,
+            ENNIS_Y + STREET_ENNIS_DIV_HW,
             FLOOR_Z2,
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW,
@@ -1221,7 +1221,7 @@ def build():
                 ENNIS_Y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2,
                 next_divider_x,
-                ENNIS_Y,
+                ENNIS_Y + STREET_ENNIS_DIV_HW,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 divider_tex,
             )
