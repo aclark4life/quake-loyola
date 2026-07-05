@@ -1120,6 +1120,10 @@ def build():
 
     # ── Ennis Road brushes ──
     # Road surface — split around centre divider slot and south curb strip (Y=776–784)
+    # Ennis runs E-W (perpendicular to Charles), so its road texture is
+    # rotated 90° from Charles St's orientation to keep the tech-panel grain
+    # running the right way.
+    ENNIS_ROAD_TT_PARAMS = "0 0 90 1 1"
     # West section (near Charles St, no curb strip here)
     BRUSHES.append(
         box(
@@ -1130,6 +1134,7 @@ def build():
             ENNIS_Y - STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     # Main east sections — full south extent to road edge
@@ -1146,6 +1151,7 @@ def build():
                 ENNIS_Y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
     # Corridor gap section (back road entrance, no curb strip)
@@ -1158,6 +1164,7 @@ def build():
             ENNIS_Y - STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     BRUSHES.append(
@@ -1169,6 +1176,7 @@ def build():
             ENNIS_Y + ENNIS_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     # North curb — offset east by CHARLES_WALK_W to cut corner square
@@ -1293,6 +1301,7 @@ def build():
             ENNIS_Y + STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     dash_brushes.append(
@@ -1304,6 +1313,7 @@ def build():
             ENNIS_Y - _ennis_line_hw,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     dash_brushes.append(
@@ -1326,6 +1336,7 @@ def build():
             ENNIS_Y + STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     if dash_brushes:
