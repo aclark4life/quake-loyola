@@ -328,7 +328,9 @@ BRIDGE_OUTER_PIER_SPAN = 721
 ROAD_DASH_LEN = 64
 ROAD_GAP_LEN = 64
 STREET_CHARLES_CURB_W = 8
-STREET_DIV_HW = 4
+STREET_DIV_HW = (
+    6  # carved centerline slot half-width (doubled stripe thickness; see streets.py)
+)
 STREET_ENNIS_DIV_HW = 16
 STREET_SURFACE_T = 2
 ROAD_X1, ROAD_X2 = -256, 256
@@ -456,6 +458,7 @@ class Textures:
     CEMENT = "sfloor3_2"
     EXIT = "z_exit"
     DIVIDER = "sfloor3_2"
+    CENTERLINE = "roof_red1_1"  # placeholder stand-in for a yellow line marking texture
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"

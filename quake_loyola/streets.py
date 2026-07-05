@@ -1214,15 +1214,13 @@ def build():
     dash_brushes = []
     # Charles Street centre line — solid double-yellow (two stripes with a gap),
     # not dashed: real N Charles St has a no-passing double-yellow stripe here
-    # (see docs/reference.rst "Charles St width validation"). Texture is still
-    # the generic divider texture (TEX_DIVIDER) until a yellow-specific texture
-    # is sourced. The bridge deck overhead is an overpass with piers landing
-    # well outside the road (nearest piers at X=-1246/525, road is only
-    # X=-256..256), so nothing in the road is ever obstructed — stripe the
-    # whole length regardless of BRIDGE_ENABLED.
-    _centerline_gap_hw = (
-        STREET_DIV_HW // 2
-    )  # half-width of the gap between the two lines
+    # (see docs/reference.rst "Charles St width validation"). Textures.CENTERLINE
+    # is a placeholder stand-in until a dedicated yellow line texture is sourced.
+    # The bridge deck overhead is an overpass with piers landing well outside
+    # the road (nearest piers at X=-1246/525, road is only X=-256..256), so
+    # nothing in the road is ever obstructed — stripe the whole length
+    # regardless of BRIDGE_ENABLED.
+    _centerline_gap_hw = 2  # half-width of the gap between the two lines
     for line_x1, line_x2 in (
         (-STREET_DIV_HW, -_centerline_gap_hw),
         (_centerline_gap_hw, STREET_DIV_HW),
@@ -1235,7 +1233,7 @@ def build():
                 line_x2,
                 CHARLES_Y2,
                 FLOOR_Z2 + STREET_SURFACE_T,
-                TEX_DIVIDER,
+                Textures.CENTERLINE,
             )
         )
     dash_brushes.append(
