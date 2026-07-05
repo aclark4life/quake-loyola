@@ -8,6 +8,7 @@ from .constants import (
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
     CHARLES_LAMP_POST_YS,
+    CHARLES_PARKING_LANE_W,
     CHARLES_RAMP_W,
     CHARLES_SWALK_START,
     CHARLES_WALK_H,
@@ -74,6 +75,7 @@ from .constants import (
     SDORM_LIFT,
     STREET_CHARLES_CURB_W,
     STREET_DIV_HW,
+    STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
     STREETS_DETAILS_ENABLED,
@@ -1006,10 +1008,26 @@ def build():
     ENNIS_X2 = WORLD_X2_EXT - WALL_T  # dead-end at east world wall
     # Back road corridor X extents — defined here for road/curb brush splits below
 
-    # Road surface — split either side of centre divider slot (div_hw wide)
+    # Charles St curb-to-curb models 1 travel lane + 1 parking lane each side
+    # (see docs/reference.rst "Charles St width validation"). Parking lane sits
+    # nearest each curb; travel lane sits between it and the centre divider.
+    # Road surface split into 4 slabs, leaving narrow slots for the centre
+    # double-yellow divider and the two parking-lane stripes.
+    CHARLES_PARKING_LINE_X = ROAD_X2 - CHARLES_PARKING_LANE_W  # = 160
     BRUSHES.append(
         box(
             ROAD_X1,
+            CHARLES_Y1,
+            FLOOR_Z2,
+            -CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW,
+            CHARLES_Y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
+        )
+    )  # west parking lane
+    BRUSHES.append(
+        box(
+            -CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW,
             CHARLES_Y1,
             FLOOR_Z2,
             -STREET_DIV_HW,
@@ -1017,10 +1035,21 @@ def build():
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
-    )
+    )  # west travel lane
     BRUSHES.append(
         box(
             STREET_DIV_HW,
+            CHARLES_Y1,
+            FLOOR_Z2,
+            CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW,
+            CHARLES_Y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
+        )
+    )  # east travel lane
+    BRUSHES.append(
+        box(
+            CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X2,
@@ -1028,7 +1057,7 @@ def build():
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
         )
-    )
+    )  # east parking lane
     # West sidewalk — north of bridge
     BRUSHES.append(
         box(
@@ -1180,33 +1209,49 @@ def build():
         )
     )
 
-    # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
+    # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
     TEX_DIVIDER = Textures.DIVIDER
     dash_brushes = []
-    # Charles Street — dashed N-S, full length. The bridge deck overhead is an
-    # overpass with piers landing well outside the road (nearest piers at
-    # X=-1246/525, road is only X=-256..256), so nothing in the road is ever
-    # obstructed — dash the whole length regardless of BRIDGE_ENABLED.
-    divider_y = CHARLES_Y1
-    dash_on = True
-    while divider_y < CHARLES_Y2:
-        next_divider_y = min(
-            divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
+    # Charles Street centre line — solid (continuous), not dashed: real N Charles
+    # St has a double-yellow no-passing stripe here (see docs/reference.rst
+    # "Charles St width validation"). The bridge deck overhead is an overpass
+    # with piers landing well outside the road (nearest piers at X=-1246/525,
+    # road is only X=-256..256), so nothing in the road is ever obstructed —
+    # stripe the whole length regardless of BRIDGE_ENABLED.
+    dash_brushes.append(
+        box(
+            -STREET_DIV_HW,
+            CHARLES_Y1,
+            FLOOR_Z2,
+            STREET_DIV_HW,
+            CHARLES_Y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            TEX_DIVIDER,
         )
-        divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
-        dash_brushes.append(
-            box(
-                -STREET_DIV_HW,
-                divider_y,
-                FLOOR_Z2,
-                STREET_DIV_HW,
-                next_divider_y,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                divider_tex,
+    )
+    # Charles Street parking-lane stripes — dashed, delineating the travel lane
+    # from the curbside parking lane on each side.
+    for parking_x in (-CHARLES_PARKING_LINE_X, CHARLES_PARKING_LINE_X):
+        divider_y = CHARLES_Y1
+        dash_on = True
+        while divider_y < CHARLES_Y2:
+            next_divider_y = min(
+                divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
             )
-        )
-        divider_y = next_divider_y
-        dash_on = not dash_on
+            divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
+            dash_brushes.append(
+                box(
+                    parking_x - STREET_DIV_LINE_HW,
+                    divider_y,
+                    FLOOR_Z2,
+                    parking_x + STREET_DIV_LINE_HW,
+                    next_divider_y,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    divider_tex,
+                )
+            )
+            divider_y = next_divider_y
+            dash_on = not dash_on
     # Ennis Road — dashed E-W from Charles St east to world wall
     divider_x = ROAD_X2
     dash_on = True

@@ -332,6 +332,11 @@ STREET_DIV_HW = 4
 STREET_ENNIS_DIV_HW = 16
 STREET_SURFACE_T = 2
 ROAD_X1, ROAD_X2 = -256, 256
+# Charles St curb-to-curb width models 1 travel lane + 1 parking lane each side
+# (see docs/reference.rst "Charles St width validation" + satellite re-check):
+# parking lane nearest each curb, travel lane between it and the centerline.
+CHARLES_PARKING_LANE_W = 96
+STREET_DIV_LINE_HW = 2  # half-width of each parking-lane stripe (dashed, white)
 
 SCALE = 15.108
 
