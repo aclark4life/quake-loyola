@@ -1067,7 +1067,7 @@ def build():
             ROAD_X1,
             CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
         )
     )
     # West curb — south section up to sidewalk start
@@ -1079,7 +1079,7 @@ def build():
             ROAD_X1,
             CHARLES_SWALK_START,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
         )
     )
     # Raised ground west of curb — rock/ground texture, flush with sidewalk
@@ -1103,7 +1103,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
         )
     )
     BRUSHES.append(
@@ -1114,7 +1114,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
         )
     )
 
@@ -1188,7 +1188,8 @@ def build():
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     # South curb — split into two segments with a gap for the back road entrance
@@ -1201,7 +1202,8 @@ def build():
             KNOTT.x2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
     # East segment: back road east sidewalk east to world wall
@@ -1213,7 +1215,8 @@ def build():
             ENNIS_X2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
 
@@ -1381,7 +1384,7 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
+                Textures.SIDEWALK,
             )
         )
 
@@ -1421,69 +1424,59 @@ def build():
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
+                Textures.SIDEWALK,
             )
         )
 
-    # ── Sidewalk ramps — smooth ground-to-sidewalk transitions ───────────────────
-    # West ramp — slopes from ground up to west sidewalk edge (full N-S extent)
+    # ── Sidewalk verges — flat ground raised flush with sidewalk height ─────────
+    # (previously sloped ramps down to ground level; now a flat raised strip,
+    # same footprint as before, just without the slope)
+    # West verge — full N-S extent along west sidewalk edge
     BRUSHES.append(
-        ramp_slab(
+        box(
             ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W,
+            CHARLES_Y1,
+            FLOOR_Z2,
             ROAD_X1 - CHARLES_WALK_W,
-            CHARLES_Y1,
             CHARLES_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
-            tt=Textures.GROUND,
         )
     )
-    # East ramp — south of Ennis Road
+    # East verge — south of Ennis Road
     BRUSHES.append(
-        ramp_slab(
+        box(
             ROAD_X2 + CHARLES_WALK_W,
-            ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W,
             CHARLES_Y1,
+            FLOOR_Z2,
+            ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W,
             ENNIS_SW_EDGE,
-            FLOOR_Z1,
-            FLOOR_Z1,
             FLOOR_Z2 + CHARLES_WALK_H,
-            FLOOR_Z2,
             Textures.GROUND,
-            tt=Textures.GROUND,
         )
     )
-    # East ramp — north of Ennis Road
+    # East verge — north of Ennis Road
     BRUSHES.append(
-        ramp_slab(
+        box(
             ROAD_X2 + CHARLES_WALK_W,
+            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+            FLOOR_Z2,
             ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
             CHARLES_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
             FLOOR_Z2 + CHARLES_WALK_H,
-            FLOOR_Z2,
             Textures.GROUND,
-            tt=Textures.GROUND,
         )
     )
-    # Ennis north ramp — slopes from north curb edge down going north
+    # Ennis north verge — flat ground north of the north curb/sidewalk
     BRUSHES.append(
-        ramp_slab_y(
+        box(
             ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_X2,
             ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W + CHARLES_RAMP_W,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            FLOOR_Z2 + CHARLES_WALK_H,
             FLOOR_Z2,
+            ENNIS_X2,
+            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W + CHARLES_RAMP_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
-            tt=Textures.GROUND,
         )
     )
     # (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)

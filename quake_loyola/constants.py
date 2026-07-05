@@ -477,6 +477,7 @@ class Textures:
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"
     SHELF = "shelf_1"
+    SIDEWALK = "sfloor3_2"
     SKY = "sky1"
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
