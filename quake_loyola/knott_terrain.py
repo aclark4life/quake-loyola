@@ -264,9 +264,11 @@ def build():
             Textures.CEMENT,
         )
     )
-    # Terrain east of east sidewalk — sealing ground recessed to floor level so the
-    # decorative detail surfaces (cement walk / mulch / Ennis verge) laid on top at
-    # sidewalk height (FLOOR_Z2 + CHARLES_WALK_H) are the visible surface, not this ground.
+    # Terrain east of east sidewalk — raised flush with sidewalk height so the
+    # decorative detail surfaces (cement walk / mulch / Ennis verge) laid on top
+    # sit level with this ground instead of dropping CHARLES_WALK_H below it
+    # (the Ennis verge decorative strip only extends to ENNIS_X2, leaving the
+    # remainder of this ground exposed at sidewalk edge — it must match).
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X2,
@@ -274,7 +276,7 @@ def build():
             FLOOR_Z1,
             WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )

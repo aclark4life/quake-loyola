@@ -8,7 +8,7 @@ from quake_loyola import entities
 # deliberately (and review the .map diff) whenever the geometry changes.
 EXPECTED_BRUSHES = 13
 EXPECTED_ENTITIES = 16
-EXPECTED_MD5 = "57ca0f94427a9995eb4060bd6de00ce7"
+EXPECTED_MD5 = "12de2c7c8ce1b4ea319cbb2003f3ede6"
 
 
 class MapRegressionTests(unittest.TestCase):
