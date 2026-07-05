@@ -1,4 +1,5 @@
 import math
+import random
 
 from .constants import (
     BRIDGE_ARCH_X,
@@ -32,12 +33,18 @@ def box(
     ``tex`` sets all six faces. Per-face overrides: ``tt`` top, ``tb`` bottom,
     ``tw`` −X (west), ``te`` +X (east), ``ts`` −Y (south), ``tn`` +Y (north).
     """
-    tt = tt or tex
-    tb = tb or tex
-    tw = tw or tex
-    te = te or tex
-    ts = ts or tex
-    tn = tn or tex
+    if tt is None:
+        tt = tex
+    if tb is None:
+        tb = tex
+    if tw is None:
+        tw = tex
+    if te is None:
+        te = tex
+    if ts is None:
+        ts = tex
+    if tn is None:
+        tn = tex
     return Brush(
         [
             Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw),  # -X west
@@ -785,7 +792,7 @@ def make_pixel_tree(
         fin_jitter   : random angular jitter fraction (default 0.0 = even spacing)
         fin_seed     : RNG seed for reproducible jitter (default 0)
     """
-    import random as _rng
+    _rng = random
 
     _TEX = {
         "L": Textures.GROUND,
@@ -1208,7 +1215,7 @@ def arch_wall(
     # Fill corner gaps where the arch ring (radius rout) doesn't reach the
     # rectangular junction of the pillars (at |y|=rin) and cap (at z=sprz+rin).
     # Omitted in freestanding mode — no cap means no corner to fill.
-    if not freestanding and rout < rin * 1.41421356:
+    if not freestanding and rout < rin * math.sqrt(2):
         h_side = math.sqrt(max(0, rout**2 - rin**2))
         # South-top corner
         brushes.append(
@@ -1396,4 +1403,67 @@ def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=Fa
                         box(px1, y_face, z, px2, y_face + depth, z + px_h, tex)
                     )
                     run_start = None
+    return brushes
+
+
+def iron_fence(
+    segments,
+    x1,
+    x2,
+    tex,
+    z_base,
+    height=80,
+    spacing=16,
+    circle_rin=5,
+    circle_rout=8,
+):
+    """Build an iron fence for each (y1, y2) span in segments.
+
+    Each span gets a top rail, a second crossbeam a few inches below it,
+    vertical pickets (every spacing units; every 10th is a wider post), and a
+    small decorative circle (8-segment octagon ring) in the gap between every
+    pair of pickets, sitting in the Z gap between the two top rails.
+
+    Returns a flat list of brushes; the caller groups them into a func_detail.
+    """
+    if spacing <= 0:
+        raise ValueError(f"iron_fence: spacing must be > 0 (got {spacing})")
+    brushes = []
+    circle_cz = z_base + height - 8  # midpoint of the gap between the two beams
+    for fy1, fy2 in segments:
+        # Top rail
+        brushes.append(box(x1, fy1, z_base + height - 2, x2, fy2, z_base + height, tex))
+        # Second crossbeam — a few inches below the top rail
+        brushes.append(
+            box(x1, fy1, z_base + height - 16, x2, fy2, z_base + height - 14, tex)
+        )
+        picket_y = fy1
+        picket_index = 0
+        while picket_y + 2 <= fy2:
+            picket_w = 8 if picket_index % 10 == 0 else 2
+            brushes.append(
+                box(x1, picket_y, z_base, x2, picket_y + picket_w, z_base + height, tex)
+            )
+            picket_y += spacing
+            picket_index += 1
+        # Proper iron circle (8-segment octagon ring) in every gap between
+        # adjacent pickets, sitting in the Z gap between the two top rails
+        circle_cy = fy1 + spacing // 2
+        while circle_cy + circle_rout <= fy2:
+            # 8 arch_seg calls × 45° = full 360° circle ring in the Y-Z plane
+            for seg_i in range(8):
+                brushes.append(
+                    arch_seg(
+                        x1,
+                        x2,
+                        circle_cy,
+                        float(circle_cz),
+                        circle_rin,
+                        circle_rout,
+                        seg_i * 45,
+                        (seg_i + 1) * 45,
+                        tex,
+                    )
+                )
+            circle_cy += spacing
     return brushes

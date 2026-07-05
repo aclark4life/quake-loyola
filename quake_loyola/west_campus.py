@@ -64,6 +64,7 @@ from .geometry import (
     ent,
     entrance_arch_ywall,
     gable_slats,
+    iron_fence,
     layered_wall,
     layered_wall_y,
     ramp_slab,
@@ -71,7 +72,6 @@ from .geometry import (
     win_frame_xwall,
     win_frame_ywall,
 )
-from .utils import iron_fence
 
 
 def build():
