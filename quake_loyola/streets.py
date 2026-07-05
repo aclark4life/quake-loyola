@@ -1250,6 +1250,13 @@ def build():
     # Charles Street parking-lane stripes — dashed, delineating the travel lane
     # from the curbside parking lane on each side.
     for parking_x in (-CHARLES_PARKING_LINE_X, CHARLES_PARKING_LINE_X):
+        # Quake tiles top-face textures by absolute world X (u = X + offset_x).
+        # The east stripe sits at +CHARLES_PARKING_LINE_X vs the west stripe's
+        # -CHARLES_PARKING_LINE_X, so without a compensating offset it samples
+        # a different part of the texture. Shift east's offset by the mirror
+        # distance so both stripes read the same texture region.
+        tex_offset_x = -(parking_x + CHARLES_PARKING_LINE_X)
+        divider_tt_params = f"{tex_offset_x} 0 0 1 1"
         divider_y = CHARLES_Y1
         dash_on = True
         while divider_y < CHARLES_Y2:
@@ -1266,6 +1273,7 @@ def build():
                     next_divider_y,
                     FLOOR_Z2 + STREET_SURFACE_T,
                     divider_tex,
+                    tt_params=divider_tt_params,
                 )
             )
             divider_y = next_divider_y
