@@ -8,7 +8,7 @@ from .constants import (
     Textures,
 )
 from .mapdata import Brush, Entity, Face
-from .utils import swap_xy
+from .utils import swap_xy, swap_xz
 
 
 def box(
@@ -76,6 +76,14 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
             Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),  # top
         ]
     )
+
+
+def shear_box_z(x1, y1, z1, x2, y2, z2, s1, s2, tex):
+    """Thin bar extruded uniformly along X (x1..x2) whose Y-range is sheared
+    as a function of Z: at z=z1 the Y-range is [y1+s1, y2+s1], at z=z2 it is
+    [y1+s2, y2+s2]. Derived from ``shear_box_y`` via an X/Z axis swap. Used
+    for diagonal cross-brace bars (e.g. a decorative iron "X")."""
+    return swap_xz(shear_box_y(z1, y1, x1, z2, y2, x2, s1, s2, tex))
 
 
 def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):

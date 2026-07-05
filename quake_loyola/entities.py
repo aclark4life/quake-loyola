@@ -18,9 +18,6 @@ from .constants import (
     BRIDGE_PILLAR_EXTRA,
     BRIDGE_PILLAR_HW,
     BRIDGE_PILLAR_PYR_H,
-    CHARLES_LAMP_POST_H,
-    CHARLES_LAMP_POST_XS,
-    CHARLES_LAMP_POST_YS,
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
@@ -32,18 +29,11 @@ from .constants import (
     DORM_SOUTH1_Y2,
     DORM_SOUTH2_Y1,
     DORM_SOUTH2_Y2,
-    ENNIS_CEMENT_LAMP_POSTS,
     ENNIS_CEMENT_X1,
     ENNIS_CEMENT_X2,
     ENNIS_GATE_X1,
     ENNIS_GATE_X2,
     ENNIS_HW,
-    ENNIS_PILLAR_BELL2_H,
-    ENNIS_PILLAR_CAP_H,
-    ENNIS_PILLAR_HW,
-    ENNIS_PILLAR_POST_H,
-    ENNIS_PILLAR_X1,
-    ENNIS_PILLAR_ZB,
     ENNIS_WALL_NY,
     ENNIS_WALL_T,
     ENNIS_Y,
@@ -983,54 +973,11 @@ def build():
                     ent("light", origin=f"{px} {underbridge_light_y} 16", light="200")
                 )
 
-    # Campus lamp post lights — flame above brick cup, matching bridge pillar torches
-    for lamp_x in CHARLES_LAMP_POST_XS:
-        for lamp_y in CHARLES_LAMP_POST_YS:
-            pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
-            flame_z = pole_top_z + 20
-            ENTITIES.append(
-                ent("light", origin=f"{lamp_x} {lamp_y} {flame_z}", light="300")
-            )
-            ENTITIES.append(
-                ent(
-                    "light_flame_large_yellow",
-                    origin=f"{lamp_x} {lamp_y} {flame_z + 4}",
-                )
-            )
-
-    # Ennis cement wall lamppost lights
-    for lamp_x, lamp_y, lamp_z in ENNIS_CEMENT_LAMP_POSTS:
-        ENTITIES.append(ent("light", origin=f"{lamp_x} {lamp_y} {lamp_z}", light="300"))
-        ENTITIES.append(
-            ent("light_flame_large_yellow", origin=f"{lamp_x} {lamp_y} {lamp_z + 4}")
-        )
-
-    # Ennis entrance pillar torches — flame above brick cup on each stone pillar
-    ennis_pil_flame_z = (
-        ENNIS_PILLAR_ZB
-        + ENNIS_PILLAR_POST_H
-        + ENNIS_PILLAR_CAP_H
-        + ENNIS_PILLAR_BELL2_H
-        + 20
-    )
-    ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
-    for pillar_y in (
-        ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
-        ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW,
-    ):
-        ENTITIES.append(
-            ent(
-                "light",
-                origin=f"{ennis_pil_cx} {pillar_y} {ennis_pil_flame_z}",
-                light="300",
-            )
-        )
-        ENTITIES.append(
-            ent(
-                "light_flame_large_yellow",
-                origin=f"{ennis_pil_cx} {pillar_y} {ennis_pil_flame_z + 4}",
-            )
-        )
+    # Campus lamp post lights, Ennis cement wall lamppost lights, and Ennis
+    # entrance pillar torches are now all built alongside their pole/pillar
+    # geometry (in streets.py's build_ennis_entrance_features, unconditional
+    # on STREETS_DETAILS_ENABLED) so they can't drift out of sync or double
+    # up when ENTITIES_ENABLED is turned back on.
 
     # Under-bridge amber pendant lights — flicker style, hang below deck
     for pier_x in BRIDGE_PEND_XS:

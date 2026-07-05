@@ -1,5 +1,4 @@
 import math
-import random
 
 from .constants import (
     BRIDGE,
@@ -14,19 +13,54 @@ from .constants import (
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     DORM,
-    DORM_EMB_X2,
-    DORM_FRONT_WALKWAY_SPUR_X1,
-    DORM_FRONT_WALKWAY_SPUR_Y2,
-    DORM_FRONT_WALKWAY_X1,
-    DORM_FRONT_WALKWAY_X2,
-    DORM_NORTH_Y1,
-    DORM_NORTH_Y2,
-    DORM_SOUTH1_Y1,
-    DORM_SOUTH2_Y2,
+    ENNIS_CEMENT_WALL_CAP_H,
+    ENNIS_CEMENT_WALL_CAP_OVH,
+    ENNIS_CEMENT_WALL_H,
+    ENNIS_CEMENT_WALL_LAMP_POST_H,
+    ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+    ENNIS_CEMENT_WALL_PILLAR_HW,
+    ENNIS_CEMENT_X1,
+    ENNIS_CEMENT_X2,
     ENNIS_CURB_W,
+    ENNIS_GATE_FENCE_BAR_T,
+    ENNIS_GATE_FENCE_HEIGHT,
+    ENNIS_GATE_FENCE_POST_W,
+    ENNIS_GATE_FENCE_SPACING,
+    ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+    ENNIS_GATE_FENCE_TOP_RAIL_T,
+    ENNIS_GATE_PANEL_COUNT,
+    ENNIS_GATE_PILLAR_CROSS_T,
+    ENNIS_GATE_PILLAR_EXTRA_H,
+    ENNIS_GATE_PILLAR_GAP,
+    ENNIS_GATE_PILLAR_LEG_T,
+    ENNIS_GATE_PILLAR_OPENING_W,
+    ENNIS_GATE_PILLAR_W,
+    ENNIS_GATE_X1,
+    ENNIS_GATE_X2,
     ENNIS_HW,
+    ENNIS_PANEL_GAP,
+    ENNIS_PANEL_INNER_H,
+    ENNIS_PANEL_INNER_W,
+    ENNIS_PANEL_MOUNT_FOOT_DROP,
+    ENNIS_PANEL_MOUNT_FOOT_INSET,
+    ENNIS_PANEL_OUTER_H,
+    ENNIS_PANEL_OUTER_W,
+    ENNIS_PILLAR_BELL2_H,
+    ENNIS_PILLAR_BELL2_HW,
+    ENNIS_PILLAR_CAP_H,
+    ENNIS_PILLAR_CAP_OVH,
+    ENNIS_PILLAR_HW,
+    ENNIS_PILLAR_POST_H,
+    ENNIS_PILLAR_X1,
     ENNIS_SW_EDGE,
+    ENNIS_WALL_H,
+    ENNIS_WALL_NY,
+    ENNIS_WALL_PILLAR_H,
+    ENNIS_WALL_PILLAR_HW,
+    ENNIS_WALL_T,
+    ENNIS_WALL_X_OFFSET,
     ENNIS_Y,
+    FENCE_TEX,
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
@@ -38,14 +72,6 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
-    SDORM_SLOPE_Y_N,
-    SDORM_SLOPE_Y_S,
-    SDORM_STAIR_X2,
-    SDORM_STAIR_Y1,
-    SDORM_STAIR_Y2,
-    SDORM_TERRACE_X2,
-    SDORM_TOE_X,
-    SDORM_WALL_X,
     STREET_CHARLES_CURB_W,
     STREET_DIV_HW,
     STREET_ENNIS_DIV_HW,
@@ -61,15 +87,714 @@ from .constants import (
     Textures,
 )
 from .geometry import (
+    arch_seg,
     box,
     brush_ent,
-    corner_ramp,
-    make_tree,
+    ent,
+    pyramid,
     ramp_slab,
     ramp_slab_y,
+    shear_box_z,
     tri_prism,
 )
-from .west_campus import build_ennis_entrance_features
+
+
+def build_ennis_entrance_features():
+    """Return the Ennis entrance/wall details that belong with west-campus geometry."""
+    brushes = []
+    entities = []
+
+    for pillar_y in (
+        ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
+        ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW,
+    ):
+        ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
+        cap_half_width = ENNIS_PILLAR_HW + ENNIS_PILLAR_CAP_OVH
+        base_height = ENNIS_PILLAR_POST_H // 3
+        brushes.append(
+            box(
+                ennis_pil_cx - cap_half_width,
+                pillar_y - cap_half_width,
+                FLOOR_Z2,
+                ennis_pil_cx + cap_half_width,
+                pillar_y + cap_half_width,
+                FLOOR_Z2 + base_height,
+                Textures.WHITE_STONE,
+            )
+        )
+        brushes.append(
+            box(
+                ENNIS_PILLAR_X1,
+                pillar_y - ENNIS_PILLAR_HW,
+                FLOOR_Z2 + base_height,
+                ENNIS_PILLAR_X1 + 2 * ENNIS_PILLAR_HW,
+                pillar_y + ENNIS_PILLAR_HW,
+                FLOOR_Z2 + ENNIS_PILLAR_POST_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        cap_z = FLOOR_Z2 + ENNIS_PILLAR_POST_H
+        brushes.append(
+            box(
+                ennis_pil_cx - cap_half_width,
+                pillar_y - cap_half_width,
+                cap_z,
+                ennis_pil_cx + cap_half_width,
+                pillar_y + cap_half_width,
+                cap_z + ENNIS_PILLAR_CAP_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        bell2_z = cap_z + ENNIS_PILLAR_CAP_H
+        brushes.append(
+            box(
+                ennis_pil_cx - ENNIS_PILLAR_BELL2_HW,
+                pillar_y - ENNIS_PILLAR_BELL2_HW,
+                bell2_z,
+                ennis_pil_cx + ENNIS_PILLAR_BELL2_HW,
+                pillar_y + ENNIS_PILLAR_BELL2_HW,
+                bell2_z + ENNIS_PILLAR_BELL2_H,
+                Textures.WHITE_STONE,
+            )
+        )
+        pillar_apex_z = bell2_z + ENNIS_PILLAR_BELL2_H
+        brushes.append(
+            box(
+                ennis_pil_cx - 3,
+                pillar_y - 3,
+                pillar_apex_z,
+                ennis_pil_cx + 3,
+                pillar_y + 3,
+                pillar_apex_z + 16,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                ennis_pil_cx - 5,
+                pillar_y - 5,
+                pillar_apex_z + 16,
+                ennis_pil_cx + 5,
+                pillar_y + 5,
+                pillar_apex_z + 20,
+                Textures.BRICK,
+            )
+        )
+        # Flame + light above the brick cup, matching the Charles St lamp posts
+        pillar_flame_z = pillar_apex_z + 20
+        entities.append(
+            ent(
+                "light",
+                origin=f"{ennis_pil_cx} {pillar_y} {pillar_flame_z}",
+                light="300",
+            )
+        )
+        entities.append(
+            ent(
+                "light_flame_large_yellow",
+                origin=f"{ennis_pil_cx} {pillar_y} {pillar_flame_z + 4}",
+            )
+        )
+
+    ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
+    bwex2 = ENNIS_GATE_X1
+    brushes.append(
+        box(
+            ennis_wall_x1,
+            ENNIS_WALL_NY,
+            FLOOR_Z2,
+            bwex2,
+            ENNIS_WALL_NY + ENNIS_WALL_T,
+            FLOOR_Z2 + ENNIS_WALL_H,
+            Textures.BUILDING,
+        )
+    )
+    # Fixed dozen-panel decorative iron gate: 12 rectangular panels grouped
+    # into 6 pairs. A U-shaped iron pillar bookends the run (one at the very
+    # south start, one at the very north end) and separates every pair in
+    # between. The run starts clear of the existing brick/cement corner cap
+    # pillar at the Ennis Rd corner (bw_cx/bw_cy below) so the two don't
+    # overlap. The brick wall's north end (bw_mid_y) is sized to exactly fit
+    # this run, after which the plain picket fence continues to the world edge.
+    gate_run_start_y = (
+        ENNIS_WALL_NY + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
+    )
+    _pair_w = 2 * ENNIS_PANEL_OUTER_W + ENNIS_PANEL_GAP
+    _pillar_unit_lead = ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
+    _pillar_unit_trail = 2 * ENNIS_GATE_PILLAR_GAP + ENNIS_GATE_PILLAR_W
+    _pair_count = ENNIS_GATE_PANEL_COUNT // 2
+    total_gate_w = _pillar_unit_lead + _pair_count * (_pair_w + _pillar_unit_trail)
+    bw_mid_y = gate_run_start_y + total_gate_w
+    brushes.append(
+        box(
+            ennis_wall_x1,
+            ENNIS_WALL_NY,
+            FLOOR_Z2,
+            ennis_wall_x1 + ENNIS_WALL_T,
+            bw_mid_y,
+            FLOOR_Z2 + ENNIS_WALL_H,
+            Textures.BUILDING,
+        )
+    )
+
+    gate_fence_x1 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1
+    gate_fence_x2 = gate_fence_x1 + ENNIS_GATE_FENCE_BAR_T
+    gate_fence_tex = FENCE_TEX
+    # Iron gate fence — extended to the true north world edge (WORLD_Y2, re-derived
+    # from real-world measurement) rather than stopping at the old CHARLES_Y2
+    # anchor, so Charles St stays fenced all the way to the world boundary.
+    fence_end_y = WORLD_Y2 - WALL_T
+    brushes.append(
+        box(
+            gate_fence_x1,
+            bw_mid_y,
+            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+            gate_fence_x2,
+            fence_end_y,
+            FLOOR_Z2
+            + ENNIS_GATE_FENCE_HEIGHT
+            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+            + ENNIS_GATE_FENCE_TOP_RAIL_T,
+            gate_fence_tex,
+        )
+    )
+    gate_picket_y = bw_mid_y
+    gate_picket_index = 0
+    while gate_picket_y + 2 <= fence_end_y:
+        gate_picket_width = (
+            ENNIS_GATE_FENCE_POST_W
+            if gate_picket_index % 10 == 0
+            else ENNIS_GATE_FENCE_BAR_T
+        )
+        brushes.append(
+            box(
+                gate_fence_x1,
+                gate_picket_y,
+                FLOOR_Z2,
+                gate_fence_x2,
+                gate_picket_y + gate_picket_width,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                gate_fence_tex,
+            )
+        )
+        gate_picket_y += ENNIS_GATE_FENCE_SPACING
+        gate_picket_index += 1
+
+    panel_x1 = ennis_wall_x1 - ENNIS_GATE_FENCE_BAR_T
+    panel_x2 = ennis_wall_x1
+    brick_top_z = FLOOR_Z2 + ENNIS_WALL_H
+    # Panels sit a little proud of the brick top, connected down to it by the
+    # mounting feet (see add_panel), matching how a real iron fence is
+    # bracketed onto a wall rather than sitting flush with it.
+    panel_z1 = brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
+    panel_z_center = panel_z1 + ENNIS_PANEL_OUTER_H // 2
+    panel_z2_o = panel_z_center + ENNIS_PANEL_OUTER_H // 2
+
+    def add_panel(center_y):
+        y1_o = center_y - ENNIS_PANEL_OUTER_W // 2
+        y2_o = center_y + ENNIS_PANEL_OUTER_W // 2
+        z1_o = panel_z_center - ENNIS_PANEL_OUTER_H // 2
+        z2_o = panel_z_center + ENNIS_PANEL_OUTER_H // 2
+        y1_i = center_y - ENNIS_PANEL_INNER_W // 2
+        y2_i = center_y + ENNIS_PANEL_INNER_W // 2
+        z1_i = panel_z_center - ENNIS_PANEL_INNER_H // 2
+        z2_i = panel_z_center + ENNIS_PANEL_INNER_H // 2
+        brushes.extend(
+            [
+                box(
+                    panel_x1,
+                    y1_o,
+                    z1_o,
+                    panel_x2,
+                    y2_o,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_o,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    panel_x2,
+                    y2_o,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_o,
+                    z1_o,
+                    panel_x2,
+                    y1_o + ENNIS_GATE_FENCE_BAR_T,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z1_o,
+                    panel_x2,
+                    y2_o,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z1_i,
+                    panel_x2,
+                    y2_i,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    panel_x2,
+                    y2_i,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1_i,
+                    z1_i,
+                    panel_x2,
+                    y1_i + ENNIS_GATE_FENCE_BAR_T,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z1_i,
+                    panel_x2,
+                    y2_i,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y1_o,
+                    y1_i,
+                    z1_o,
+                    z1_i,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y2_i,
+                    y2_o,
+                    z1_i,
+                    z1_o,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y1_o,
+                    y1_i,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z2_o,
+                    z2_i,
+                    gate_fence_tex,
+                ),
+                ramp_slab_y(
+                    panel_x1,
+                    panel_x2,
+                    y2_i,
+                    y2_o,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z2_i,
+                    z2_o,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+        # Mounting feet — small iron brackets at each bottom corner, dropping
+        # from the bottom rail down onto/into the brick top so the panel
+        # reads as mounted on the wall rather than floating flush with it.
+        # Same thin bar thickness as the connector ties for a consistent look.
+        # Inset in from the corners a little so they sit under the rail
+        # rather than right at the outer edge.
+        foot_hw = ENNIS_GATE_FENCE_BAR_T // 2
+        foot_y1 = y1_o + ENNIS_PANEL_MOUNT_FOOT_INSET
+        foot_y2 = y2_o - ENNIS_PANEL_MOUNT_FOOT_INSET
+        brushes.extend(
+            [
+                box(
+                    panel_x1,
+                    foot_y1 - foot_hw,
+                    z1_o - ENNIS_PANEL_MOUNT_FOOT_DROP,
+                    panel_x2,
+                    foot_y1 + foot_hw,
+                    z1_o,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    foot_y2 - foot_hw,
+                    z1_o - ENNIS_PANEL_MOUNT_FOOT_DROP,
+                    panel_x2,
+                    foot_y2 + foot_hw,
+                    z1_o,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+
+    def add_pillar(center_y):
+        # Arched iron pillar: two vertical legs topped with a rounded arch
+        # (rin/rout ring), slightly taller overall than the panels it
+        # separates, in place of a flat crossbar.
+        leg_t = ENNIS_GATE_PILLAR_LEG_T
+        arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
+        arch_rout = arch_rin + leg_t
+        pillar_top_z = panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
+        legs_top_z = pillar_top_z - arch_rout
+        leg_y1 = center_y - arch_rout
+        leg_y2 = center_y + arch_rout
+        brushes.extend(
+            [
+                box(
+                    panel_x1,
+                    leg_y1,
+                    brick_top_z,
+                    panel_x2,
+                    leg_y1 + leg_t,
+                    legs_top_z,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    leg_y2 - leg_t,
+                    brick_top_z,
+                    panel_x2,
+                    leg_y2,
+                    legs_top_z,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+        arch_segs = 8
+        arch_step = 180.0 / arch_segs
+        for seg_i in range(arch_segs):
+            brushes.append(
+                arch_seg(
+                    panel_x1,
+                    panel_x2,
+                    center_y,
+                    legs_top_z,
+                    arch_rin,
+                    arch_rout,
+                    seg_i * arch_step,
+                    (seg_i + 1) * arch_step,
+                    gate_fence_tex,
+                )
+            )
+        # Decorative X cross-brace filling the opening between the legs,
+        # below the arch spring line.
+        cross_hw = ENNIS_GATE_PILLAR_CROSS_T // 2
+        opening_y1 = center_y - arch_rin
+        opening_y2 = center_y + arch_rin
+        brushes.extend(
+            [
+                shear_box_z(
+                    panel_x1,
+                    -cross_hw,
+                    brick_top_z,
+                    panel_x2,
+                    cross_hw,
+                    legs_top_z,
+                    opening_y1,
+                    opening_y2,
+                    gate_fence_tex,
+                ),
+                shear_box_z(
+                    panel_x1,
+                    -cross_hw,
+                    brick_top_z,
+                    panel_x2,
+                    cross_hw,
+                    legs_top_z,
+                    opening_y2,
+                    opening_y1,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+
+    def add_connector(y1, y2):
+        # Two small decorative horizontal iron bars bridging the narrow gap
+        # between adjacent panels/pillars, matching the real fence's look.
+        if y2 <= y1:
+            return
+        bar_t = ENNIS_GATE_FENCE_BAR_T
+        quarter_h = ENNIS_PANEL_OUTER_H // 4
+        upper_z1 = panel_z_center + quarter_h - bar_t // 2
+        lower_z1 = panel_z_center - quarter_h - bar_t // 2
+        brushes.extend(
+            [
+                box(
+                    panel_x1,
+                    y1,
+                    upper_z1,
+                    panel_x2,
+                    y2,
+                    upper_z1 + bar_t,
+                    gate_fence_tex,
+                ),
+                box(
+                    panel_x1,
+                    y1,
+                    lower_z1,
+                    panel_x2,
+                    y2,
+                    lower_z1 + bar_t,
+                    gate_fence_tex,
+                ),
+            ]
+        )
+
+    cursor_y = gate_run_start_y
+    # Leading bookend pillar, then a gap into the first panel.
+    add_pillar(cursor_y + ENNIS_GATE_PILLAR_W // 2)
+    cursor_y += ENNIS_GATE_PILLAR_W
+    gap_y1 = cursor_y
+    cursor_y += ENNIS_GATE_PILLAR_GAP
+    add_connector(gap_y1, cursor_y)
+    for pair_i in range(_pair_count):
+        add_panel(cursor_y + ENNIS_PANEL_OUTER_W // 2)
+        cursor_y += ENNIS_PANEL_OUTER_W
+        gap_y1 = cursor_y
+        cursor_y += ENNIS_PANEL_GAP
+        add_connector(gap_y1, cursor_y)
+        add_panel(cursor_y + ENNIS_PANEL_OUTER_W // 2)
+        cursor_y += ENNIS_PANEL_OUTER_W
+        # A pillar follows every pair — the interior separators, and (on the
+        # last pair) the trailing bookend pillar that closes out the run.
+        gap_y1 = cursor_y
+        cursor_y += ENNIS_GATE_PILLAR_GAP
+        add_connector(gap_y1, cursor_y)
+        add_pillar(cursor_y + ENNIS_GATE_PILLAR_W // 2)
+        cursor_y += ENNIS_GATE_PILLAR_W
+        gap_y1 = cursor_y
+        cursor_y += ENNIS_GATE_PILLAR_GAP
+        # Skip the connector tie after the trailing (north) bookend pillar —
+        # it would otherwise reach toward the plain picket fence, which
+        # doesn't share the same decorative style.
+        if pair_i < _pair_count - 1:
+            add_connector(gap_y1, cursor_y)
+    assert cursor_y == bw_mid_y, (cursor_y, bw_mid_y)
+
+    bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
+    bw_cy = ENNIS_WALL_NY + ENNIS_WALL_T // 2
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PILLAR_HW,
+            bw_cy - ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2,
+            bw_cx + ENNIS_WALL_PILLAR_HW,
+            bw_cy + ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H,
+            Textures.BUILDING,
+        )
+    )
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PILLAR_HW,
+            bw_cy - ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H,
+            bw_cx + ENNIS_WALL_PILLAR_HW,
+            bw_cy + ENNIS_WALL_PILLAR_HW,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 6,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        box(
+            bw_cx - ENNIS_WALL_PILLAR_HW - 1,
+            bw_cy - ENNIS_WALL_PILLAR_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 6,
+            bw_cx + ENNIS_WALL_PILLAR_HW + 1,
+            bw_cy + ENNIS_WALL_PILLAR_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 10,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        pyramid(
+            bw_cx - ENNIS_WALL_PILLAR_HW - 1,
+            bw_cy - ENNIS_WALL_PILLAR_HW - 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 10,
+            bw_cx + ENNIS_WALL_PILLAR_HW + 1,
+            bw_cy + ENNIS_WALL_PILLAR_HW + 1,
+            FLOOR_Z2 + ENNIS_WALL_PILLAR_H + 16,
+            Textures.CEMENT,
+        )
+    )
+
+    east_gate_y1 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1
+    east_gate_y2 = east_gate_y1 + 2
+    east_gate_brushes = [
+        box(
+            ENNIS_GATE_X1,
+            east_gate_y1,
+            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+            ENNIS_GATE_X2,
+            east_gate_y2,
+            FLOOR_Z2
+            + ENNIS_GATE_FENCE_HEIGHT
+            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+            + ENNIS_GATE_FENCE_TOP_RAIL_T,
+            gate_fence_tex,
+        )
+    ]
+    east_gate_picket_x = ENNIS_GATE_X1
+    east_gate_picket_index = 0
+    while east_gate_picket_x + 2 <= ENNIS_GATE_X2:
+        east_gate_picket_width = (
+            ENNIS_GATE_FENCE_POST_W
+            if east_gate_picket_index % 10 == 0
+            else ENNIS_GATE_FENCE_BAR_T
+        )
+        east_gate_brushes.append(
+            box(
+                east_gate_picket_x,
+                east_gate_y1,
+                FLOOR_Z2,
+                east_gate_picket_x + east_gate_picket_width,
+                east_gate_y2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                gate_fence_tex,
+            )
+        )
+        east_gate_picket_x += ENNIS_GATE_FENCE_SPACING
+        east_gate_picket_index += 1
+
+    cement_wall_y1 = ENNIS_WALL_NY
+    cement_wall_y2 = ENNIS_WALL_NY + ENNIS_WALL_T
+    cement_wall_height = ENNIS_CEMENT_WALL_H
+    cement_wall_pillar_half_width = ENNIS_CEMENT_WALL_PILLAR_HW
+    cement_wall_pillar_height = cement_wall_height + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
+    brushes.append(
+        box(
+            ENNIS_CEMENT_X1,
+            cement_wall_y1,
+            FLOOR_Z2,
+            ENNIS_CEMENT_X2,
+            cement_wall_y2,
+            FLOOR_Z2 + cement_wall_height,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        box(
+            ENNIS_CEMENT_X1,
+            cement_wall_y1 - ENNIS_CEMENT_WALL_CAP_OVH,
+            FLOOR_Z2 + cement_wall_height,
+            ENNIS_CEMENT_X2,
+            cement_wall_y2 + ENNIS_CEMENT_WALL_CAP_OVH,
+            FLOOR_Z2 + cement_wall_height + ENNIS_CEMENT_WALL_CAP_H,
+            Textures.CEMENT,
+        )
+    )
+    for pillar_x in (ENNIS_CEMENT_X1, ENNIS_CEMENT_X2):
+        pillar_center_y = (cement_wall_y1 + cement_wall_y2) // 2
+        brushes.append(
+            box(
+                pillar_x - cement_wall_pillar_half_width,
+                pillar_center_y - cement_wall_pillar_half_width,
+                FLOOR_Z2,
+                pillar_x + cement_wall_pillar_half_width,
+                pillar_center_y + cement_wall_pillar_half_width,
+                FLOOR_Z2 + cement_wall_pillar_height,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - cement_wall_pillar_half_width - ENNIS_CEMENT_WALL_CAP_OVH,
+                pillar_center_y
+                - cement_wall_pillar_half_width
+                - ENNIS_CEMENT_WALL_CAP_OVH,
+                FLOOR_Z2 + cement_wall_pillar_height,
+                pillar_x + cement_wall_pillar_half_width + ENNIS_CEMENT_WALL_CAP_OVH,
+                pillar_center_y
+                + cement_wall_pillar_half_width
+                + ENNIS_CEMENT_WALL_CAP_OVH,
+                FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H,
+                Textures.CEMENT,
+            )
+        )
+        lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H
+        brushes.append(
+            box(
+                pillar_x - 3,
+                pillar_center_y - 3,
+                lamppost_base_z,
+                pillar_x + 3,
+                pillar_center_y + 3,
+                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
+                Textures.PILLAR,
+            )
+        )
+        # Flame + light above the lamp post, matching the Charles St lamp posts
+        cement_wall_flame_z = lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H + 20
+        entities.append(
+            ent(
+                "light",
+                origin=f"{pillar_x} {pillar_center_y} {cement_wall_flame_z}",
+                light="300",
+            )
+        )
+        entities.append(
+            ent(
+                "light_flame_large_yellow",
+                origin=f"{pillar_x} {pillar_center_y} {cement_wall_flame_z + 4}",
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - 4,
+                pillar_center_y - 4,
+                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
+                pillar_x + 4,
+                pillar_center_y + 4,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                pillar_x - 7,
+                pillar_center_y - 7,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+                pillar_x + 7,
+                pillar_center_y + 7,
+                lamppost_base_z
+                + ENNIS_CEMENT_WALL_LAMP_POST_H
+                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
+                + ENNIS_GATE_FENCE_TOP_RAIL_T * 2,
+                Textures.CEMENT,
+            )
+        )
+
+    if east_gate_brushes:
+        entities.append(brush_ent("func_detail", east_gate_brushes))
+    return brushes, entities
 
 
 def build():
@@ -458,28 +1183,30 @@ def build():
     # ── Lane dividers — dashed sfloor3_2 flush inserts in carved road slots ───────
     TEX_DIVIDER = Textures.DIVIDER
     dash_brushes = []
-    # Charles Street — dashed N-S, two sections either side of bridge
-    for section_y1, section_y2 in [(CHARLES_Y1, BRIDGE.y1), (BRIDGE.y2, CHARLES_Y2)]:
-        divider_y = section_y1
-        dash_on = True
-        while divider_y < section_y2:
-            next_divider_y = min(
-                divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), section_y2
+    # Charles Street — dashed N-S, full length. The bridge deck overhead is an
+    # overpass with piers landing well outside the road (nearest piers at
+    # X=-1246/525, road is only X=-256..256), so nothing in the road is ever
+    # obstructed — dash the whole length regardless of BRIDGE_ENABLED.
+    divider_y = CHARLES_Y1
+    dash_on = True
+    while divider_y < CHARLES_Y2:
+        next_divider_y = min(
+            divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
+        )
+        divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
+        dash_brushes.append(
+            box(
+                -STREET_DIV_HW,
+                divider_y,
+                FLOOR_Z2,
+                STREET_DIV_HW,
+                next_divider_y,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                divider_tex,
             )
-            divider_tex = TEX_DIVIDER if dash_on else Textures.ROAD
-            dash_brushes.append(
-                box(
-                    -STREET_DIV_HW,
-                    divider_y,
-                    FLOOR_Z2,
-                    STREET_DIV_HW,
-                    next_divider_y,
-                    FLOOR_Z2 + STREET_SURFACE_T,
-                    divider_tex,
-                )
-            )
-            divider_y = next_divider_y
-            dash_on = not dash_on
+        )
+        divider_y = next_divider_y
+        dash_on = not dash_on
     # Ennis Road — dashed E-W from Charles St east to world wall
     divider_x = ROAD_X2
     dash_on = True
@@ -669,28 +1396,6 @@ def build():
             )
         )
 
-    # 3 trees randomly scattered across east mulch verge, min 200 units apart
-    _rng = random.Random(42)
-    _margin = 40
-    _min_dist = 200
-    _ev_positions = []
-    _attempts = 0
-    while len(_ev_positions) < 3 and _attempts < 1000:
-        _attempts += 1
-        _tx = _rng.randint(KNOTT_DRIVEWAY_CORRIDOR_X2 + _margin, ENNIS_X2 - _margin)
-        _ty = _rng.randint(
-            ENNIS_SW_EDGE + CHARLES_WALK_W + _margin,
-            ENNIS_Y - ENNIS_HW - ENNIS_CURB_W - _margin,
-        )
-        if all(
-            (_tx - _px) ** 2 + (_ty - _py) ** 2 >= _min_dist**2
-            for _px, _py in _ev_positions
-        ):
-            _ev_positions.append((_tx, _ty))
-    for _tx, _ty in _ev_positions:
-        for _b in make_tree(_tx, _ty, FLOOR_Z2 + CHARLES_WALK_H):
-            BRUSHES.append(_b)
-
     # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
     for vx1, vx2 in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
@@ -712,282 +1417,17 @@ def build():
     BRUSHES.extend(ennis_brushes)
     ENTITIES.extend(ennis_entities)
 
-    # ── Embankment — hill under Dorm buildings ───────────────────────────────────
-    # Large terrain feature that blocks visibility — restore worldspawn routing.
+    # ── West-side hill/terrace terrain — REMOVED, pending re-derivation ─────────
+    # Previously built a sloped embankment under the (currently disabled) dorm
+    # buildings plus a raised south-dorm terrace/frontage hill down to Charles St.
+    # Both were flat-plateau/simple-ramp models not yet validated against the
+    # real-world topology check (docs/reference.rst, "Topology check" section).
+    # The base world floor (built above, unconditionally) is already flat at
+    # FLOOR_Z2, so removing this section leaves flat ground here with no leak.
+    #
+    # TODO: rebuild this terrain in real-world-derived sections/quadrants rather
+    # than one continuous hill model, once the new elevation data is ready.
     BRUSHES = _world_brushes
-    # Interpolate ramp top-Z at the building's west face so the slope is continuous
-    emb_zt_at_ab_x1 = int(
-        BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM.x1 - BRIDGE.x1) / (DORM_EMB_X2 - BRIDGE.x1)
-    )
-    # Same hill-slope interpolation at the building's east face — used where the
-    # ramp must skip the (now hollow) building interior and only fill the narrow
-    # east toe strip between the east wall and the embankment edge.
-    emb_zt_at_dorm_x2 = int(
-        BRIDGE_DZ2
-        + (FLOOR_Z2 - BRIDGE_DZ2) * (DORM.x2 - BRIDGE.x1) / (DORM_EMB_X2 - BRIDGE.x1)
-    )
-    # Gap segment — east of the tunnel channel only (DORM.x1 to DORM_EMB_X2).
-    # The entire strip west of DORM.x1 aligned with the dorm buildings is now open
-    # tunnel volume that extends all the way to the world west wall; geometry for
-    # that hollow is handled entirely in west_campus.py.
-    DORM_NORTH2_Y1 = DORM_NORTH_Y1 - DORM.depth  # south face of north building 2
-    BRUSHES.append(
-        ramp_slab(
-            DORM.x1,
-            DORM_EMB_X2,
-            DORM_SOUTH2_Y2,
-            DORM_NORTH2_Y1,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            emb_zt_at_ab_x1,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-            ts=Textures.GROUND,  # gable ends at tunnel N/S boundaries
-        )
-    )
-    # North building cluster — east toe strip only (DORM.x2 to DORM_EMB_X2).
-    # The building interior (DORM.x1 to DORM.x2) is left hollow (carved out of the
-    # hill) so the north dorms are open rooms with a flat floor at tunnel level;
-    # only the narrow strip east of the building wall is backfilled to grade.
-    BRUSHES.append(
-        ramp_slab(
-            DORM.x2,
-            DORM_EMB_X2,
-            DORM_NORTH2_Y1,
-            DORM_NORTH_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            emb_zt_at_dorm_x2,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # North of north building — east strip only (DORM.x1 to DORM_EMB_X2).
-    # The west strip (BRIDGE.x1..DORM.x1) is now the tunnel north extension,
-    # owned by west_campus.py, so this ramp starts at DORM.x1.
-    # ts=SKY: south gable end at DORM_NORTH_Y2 is partially exposed in the
-    # carved-out north dorm interior (north cluster ramp starts at DORM.x2).
-    BRUSHES.append(
-        ramp_slab(
-            DORM.x1,
-            DORM_EMB_X2,
-            DORM_NORTH_Y2,
-            CHARLES_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            emb_zt_at_ab_x1,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-            ts=Textures.GROUND,  # gable end at tunnel north boundary
-        )
-    )
-
-    # ── South-dorm terrace + gentler frontage hill out to Charles Street ──────────
-    # South of the bridge (Y up to BRIDGE.y1) raise a flat terrace under the south
-    # dorms + brick-wall gate, then slope gently down to grade near the road. This
-    # lifts the ground at the brick wall (decreasing its visible height while its
-    # top stays at the bridge deck) and gives the dorms a level pad.
-    terr_top = FLOOR_Z2 + SDORM_LIFT
-    terr_y1 = DORM_SOUTH1_Y1  # dorm terrace south edge stays at dorm position
-    # Flat terrace pad — west of the brick wall (under the south dorms): level
-    # crest south of the wall's south pillar, then declining north (below) so the
-    # ground west of the wall drops to the bridge symmetrically with the east side.
-    # The pad is split into a frame around the south-dorm-1 stairwell void (carved
-    # full-height z=FLOOR_Z2..terr_top so the steps can descend to the tunnel).
-    BRUSHES.extend(
-        [
-            box(
-                DORM.x1,
-                terr_y1,
-                FLOOR_Z2,
-                SDORM_WALL_X,
-                SDORM_STAIR_Y1,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            box(
-                DORM.x1,
-                SDORM_STAIR_Y2,
-                FLOOR_Z2,
-                SDORM_WALL_X,
-                SDORM_SLOPE_Y_S,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            box(
-                SDORM_STAIR_X2,
-                SDORM_STAIR_Y1,
-                FLOOR_Z2,
-                SDORM_WALL_X,
-                SDORM_STAIR_Y2,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-        ]
-    )
-    # N-S decline west of the wall: crest at the south pillar down to grade at the
-    # north side of the bridge, matching the wall→fence strip on the east side.
-    BRUSHES.append(
-        ramp_slab_y(
-            DORM.x1,
-            SDORM_WALL_X,
-            SDORM_SLOPE_Y_S,
-            SDORM_SLOPE_Y_N,
-            FLOOR_Z2,
-            FLOOR_Z2,
-            terr_top,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # Strip between the brick wall and the front fence: flat crest south of the
-    # wall's south pillar, then declining north (below) so this strip drops to
-    # grade toward the bridge along with the fence instead of ending in a cliff.
-    # The L-shaped front-walkway footprint (frontage + spur to the brick-wall
-    # door) is carved out of this crest so the flush stone path (west_campus.py)
-    # can fill it level with the surrounding ground; these four pieces frame it.
-    BRUSHES.extend(
-        [
-            # West of the frontage (dorm-face gap)
-            box(
-                SDORM_WALL_X,
-                terr_y1,
-                FLOOR_Z2,
-                DORM_FRONT_WALKWAY_X1,
-                DORM_SOUTH2_Y2,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            # West of the spur (between brick wall and spur)
-            box(
-                SDORM_WALL_X,
-                DORM_SOUTH2_Y2,
-                FLOOR_Z2,
-                DORM_FRONT_WALKWAY_SPUR_X1,
-                DORM_FRONT_WALKWAY_SPUR_Y2,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            # East of the path (strip toward the fence), full footprint depth
-            box(
-                DORM_FRONT_WALKWAY_X2,
-                terr_y1,
-                FLOOR_Z2,
-                SDORM_TERRACE_X2,
-                DORM_FRONT_WALKWAY_SPUR_Y2,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            # North of the path (between the spur's north jamb and the slope)
-            box(
-                SDORM_WALL_X,
-                DORM_FRONT_WALKWAY_SPUR_Y2,
-                FLOOR_Z2,
-                SDORM_TERRACE_X2,
-                SDORM_SLOPE_Y_S,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-        ]
-    )
-    # N-S decline of the wall→fence strip: crest (terr_top) at the south pillar
-    # down to grade at the north side of the bridge, flat across the strip width.
-    BRUSHES.append(
-        ramp_slab_y(
-            SDORM_WALL_X,
-            SDORM_TERRACE_X2,
-            SDORM_SLOPE_Y_S,
-            SDORM_SLOPE_Y_N,
-            FLOOR_Z2,
-            FLOOR_Z2,
-            terr_top,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # Gentle frontage ramp east of the pad (Charles-St hill), south of the brick
-    # wall's south pillar. North of the pillar the frontage instead declines to the
-    # north (corner wedge below), so the fence stays connected down to the bridge.
-    BRUSHES.append(
-        ramp_slab(
-            SDORM_TERRACE_X2,
-            SDORM_TOE_X,
-            terr_y1,
-            SDORM_SLOPE_Y_S,
-            FLOOR_Z2,
-            FLOOR_Z2,
-            terr_top,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # Corner wedge: at/east of the front fence, decline from the terrace crest at
-    # the south pillar down to grade at the north side of the bridge. High at the
-    # (fence, south-pillar) corner; falls to grade along both the north edge and
-    # the road edge. Its south edge (crest→road, E-W) matches the frontage ramp
-    # above, so the two meet seamlessly.
-    BRUSHES.append(
-        corner_ramp(
-            SDORM_TERRACE_X2,
-            SDORM_TOE_X,
-            SDORM_SLOPE_Y_S,
-            SDORM_SLOPE_Y_N,
-            FLOOR_Z2,
-            terr_top,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
-    # ── South extension of the terrace + frontage hill ───────────────────────────
-    # Continue the SAME cross-section southward from the terrace south edge
-    # (y=terr_y1) to the new south world boundary (CHARLES_Y1): a flat pad at
-    # terr_top from the dorm face out to the fence line, then the frontage hill
-    # ramping down (in X) to grade at the road. This keeps the slope going at its
-    # existing gradient — like Charles Street simply continuing south — instead of
-    # descending gently to grade in the Y direction.
-    BRUSHES.extend(
-        [
-            # Flat terrace pad — dorm face to fence line
-            box(
-                DORM.x1,
-                CHARLES_Y1,
-                FLOOR_Z2,
-                SDORM_TERRACE_X2,
-                terr_y1,
-                terr_top,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-            # Frontage hill — fence line down (in X) to grade at the road,
-            # mirroring the section north of terr_y1 so the two meet seamlessly.
-            ramp_slab(
-                SDORM_TERRACE_X2,
-                SDORM_TOE_X,
-                CHARLES_Y1,
-                terr_y1,
-                FLOOR_Z2,
-                FLOOR_Z2,
-                terr_top,
-                FLOOR_Z2,
-                Textures.GROUND,
-                tt=Textures.GROUND,
-            ),
-        ]
-    )
 
     # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
     # X/Y/H imported from constants.py — must match entities.py's flame placement
@@ -1029,6 +1469,17 @@ def build():
                     lamp_y + 5,
                     pole_top_z + 20,
                     Textures.BRICK,
+                )
+            )
+            # Flame + light above the brick cup, matching bridge pillar torches
+            flame_z = pole_top_z + 20
+            ENTITIES.append(
+                ent("light", origin=f"{lamp_x} {lamp_y} {flame_z}", light="300")
+            )
+            ENTITIES.append(
+                ent(
+                    "light_flame_large_yellow",
+                    origin=f"{lamp_x} {lamp_y} {flame_z + 4}",
                 )
             )
 

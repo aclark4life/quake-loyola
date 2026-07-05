@@ -46,6 +46,32 @@ def swap_xy(src):
     )
 
 
+def swap_xz(src):
+    """Return a new Brush with X and Z coordinates swapped on every face.
+
+    Same reflection-parity fix as ``swap_xy``, but swapping X and Z instead of
+    X and Y (leaving Y unchanged).
+    """
+    from .mapdata import Brush, Face
+
+    def swap(p):
+        """Swap the X and Z components of a point, leaving Y unchanged."""
+        return (p[2], p[1], p[0])
+
+    return Brush(
+        [
+            Face(
+                swap(face.p1),
+                swap(face.p3),
+                swap(face.p2),
+                face.tex,
+                face.params,
+            )
+            for face in src.faces
+        ]
+    )
+
+
 def iron_fence(
     segments,
     x1,
