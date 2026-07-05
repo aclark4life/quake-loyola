@@ -473,7 +473,7 @@ class Textures:
     LAVA = "*lava1"
     PILLAR = "city6_8"
     RAIL = "metal5_4"
-    ROAD = "azfloor1_1"
+    ROAD = "roof_grey_1"
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"
     SHELF = "shelf_1"
