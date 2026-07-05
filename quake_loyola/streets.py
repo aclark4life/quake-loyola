@@ -1278,12 +1278,26 @@ def build():
             divider_y = next_divider_y
             dash_on = not dash_on
     # Ennis Road — solid single yellow centerline (replaces the old dashed
-    # divider strip; carved slot width is unchanged, only a thin line is
-    # painted in the middle with Textures.ROAD filling the rest).
+    # divider strip). The line starts at the Ennis entrance pillars (it
+    # previously ran all the way to Charles St, which put it too far out
+    # into the intersection); west of the pillars the carved slot is filled
+    # with plain Textures.ROAD instead.
     _ennis_line_hw = STREET_DIV_LINE_HW
+    _ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW  # pillar centerline
     dash_brushes.append(
         box(
             ROAD_X2,
+            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            FLOOR_Z2,
+            _ennis_line_x1,
+            ENNIS_Y + STREET_ENNIS_DIV_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
+        )
+    )
+    dash_brushes.append(
+        box(
+            _ennis_line_x1,
             ENNIS_Y - STREET_ENNIS_DIV_HW,
             FLOOR_Z2,
             ENNIS_X2,
@@ -1294,7 +1308,7 @@ def build():
     )
     dash_brushes.append(
         box(
-            ROAD_X2,
+            _ennis_line_x1,
             ENNIS_Y - _ennis_line_hw,
             FLOOR_Z2,
             ENNIS_X2,
@@ -1305,7 +1319,7 @@ def build():
     )
     dash_brushes.append(
         box(
-            ROAD_X2,
+            _ennis_line_x1,
             ENNIS_Y + _ennis_line_hw,
             FLOOR_Z2,
             ENNIS_X2,
