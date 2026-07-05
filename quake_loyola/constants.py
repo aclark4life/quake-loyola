@@ -219,7 +219,7 @@ ENNIS_WALL_PILLAR_H = (
 )
 ENNIS_WALL_PILLAR_HW = 14
 ENNIS_WALL_T = 8
-ENNIS_WALL_X_OFFSET = 48
+ENNIS_WALL_X_OFFSET = 96
 
 # Pixel-font bitmaps for fascia lettering. Each entry is a list of rows (top→bottom),
 # where each row is a 4-bit Python integer: 1 = draw a block, 0 = empty space.
