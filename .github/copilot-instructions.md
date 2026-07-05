@@ -70,7 +70,7 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 
 ## Key conventions
 
-- **Coordinate system** — Quake standard: X = east, Y = south, Z = up. All constants use Quake units (1 unit ≈ 1 inch).
+- **Coordinate system** — X = east, Y = north, Z = up (per the module docstring of `quake_loyola/constants.py`; +Y is north, −Y is south). Quake +Y (north) is aligned with real-world true north to within ~5.5° (Charles St's actual compass bearing is ~354.5°, but the model treats it as running exactly along the Y-axis) — an accepted simplification. All constants use Quake units (1 unit ≈ 0.79 inch, see `docs/reference.rst` § World scale).
 - **Naming conventions** — constant names are `AREA_FEATURE_SUFFIX`. Common suffixes: `X1/X2 Y1/Y2 Z1/Z2` = box min/max on an axis (1 = lower); `DZ1/DZ2` = deck Z bottom/top; `ZB/ZT` = z bottom/top; `CX/CY` = centre; `XS/YS` = list of positions; `N/S/E`/`NY` = compass direction; `H/HH` = height/half-height; `W/HW` = width/half-width; `T` thickness, `R` radius, `D` depth; `OVH` overhang, `PROUD` protrusion. Feature abbrevs: `PILLAR BLK SQ PYR ENT WIN DIV PLT BR`, `DRIVEWAY_WS/RD/ES` (west→east), `BIY` (Knott inner wall face), `ORIG` (pre-extension), `KH` (Knott Hall). Full legend: module docstring of `quake_loyola/constants.py` and `docs/reference.rst`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `generate_map.py` calls every module's `build()` and merges results.
 - **Texture names** — defined in `quake_loyola/constants.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
