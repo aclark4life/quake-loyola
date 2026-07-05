@@ -52,6 +52,7 @@ from .constants import (
     STREET_SURFACE_T,
     STREETS_DETAILS_ENABLED,
     WALL_T,
+    WEST_CAMPUS_ENABLED,
     WORLD_X1,
     WORLD_X2_EXT,
     WORLD_Y1,
@@ -78,10 +79,11 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
     # ════════════════════════════════════════════════════════════════════════════════
-    # Tunnel-portal wall faces (below) show ground only when the bridge/tunnel
-    # geometry that they're shaped around is actually present; with everything
-    # disabled for dimension re-derivation, those inner faces should read as sky.
-    _tunnel_wall_tex = Textures.GROUND if STREETS_DETAILS_ENABLED else Textures.SKY
+    # Tunnel-portal wall faces (below) show ground only when the west-campus
+    # hillside/embankment geometry that they're shaped around is actually
+    # present (built by west_campus.py); with WEST_CAMPUS_ENABLED off, those
+    # inner faces should read as sky, regardless of STREETS_DETAILS_ENABLED.
+    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED else Textures.SKY
     BRUSHES.append(
         box(
             WORLD_X1,
