@@ -153,6 +153,19 @@ and Knott Hall's north half all fall within the world rectangle, with room
 to spare toward Ennis Parallel and E Cold Spring Ln. No resize was needed as
 a result of this check.
 
+Charles St width validation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Curb-to-curb width of N Charles St was measured at three rows in
+``ref/gmaps-kh-satellite.png`` (chosen away from the bridge crossing and
+parked cars), using RGB pixel sampling to find the road-surface/verge
+boundary: 48px, 44px, and 52px, averaging **~35.8 ft** (35.8, 32.8, 38.8 ft
+respectively; 0.7463 ft/px). This matches the existing ``ROAD_X1``/``ROAD_X2``
+constant (``-256``/``256`` = 33.9 ft) well within measurement noise — no
+change was needed. ``STREETS_DETAILS_ENABLED`` was re-enabled as the first
+re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
+entrance features); compiles with no leaks at the new world size.
+
 Terminology
 -----------
 
