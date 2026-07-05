@@ -166,6 +166,47 @@ change was needed. ``STREETS_DETAILS_ENABLED`` was re-enabled as the first
 re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
 entrance features); compiles with no leaks at the new world size.
 
+Topology check
+~~~~~~~~~~~~~~
+
+Real-world elevation was sampled from the USGS 3DEP Elevation Point Query
+Service (~1 m resolution) at pixel positions converted to lat/lon via the
+established ft/px scale and Charles St's measured compass bearing
+(~354.5°, see § Orientation), anchored at the Charles St & Cold Spring Ln
+bus stop (39.3455°N, 76.6221°W).
+
+**East–west cross-section at the bridge crossing** (baseline = the road
+cut, the section's lowest point, ~296 ft):
+
+- **West dorms** — a local hilltop peak ~120–150 ft from the west edge,
+  **~+6.6 ft** above the road. Close to the existing ``SDORM_LIFT``
+  (128 units = 8.47 ft) — a reasonable match.
+- **Road / bridge crossing** — the lowest point of the section, as
+  expected for a road running through a cut.
+- **East side (Knott Hall → Ennis Parallel)** — starts **~+7.2 ft** right
+  at Knott Hall's west edge, then climbs steadily to **~+21.7 ft** by
+  Ennis Parallel, ~360 ft further east. The existing ``KNOTT_GROUND_Z``
+  (64 units = 4.24 ft) **underestimates** this initial rise, and no
+  constant currently models the continued eastward climb toward Ennis
+  Parallel (that area is flat at ``FLOOR_Z2`` today).
+
+**North–south grade along Charles St itself** — a bigger finding: the road
+climbs **~40 ft over ~580 ft** (~6.7% grade) from the north end to the
+south end of the modeled corridor. ``ROAD_Z`` is currently a flat constant
+(``FLOOR_Z2 + 8``) and does not model this slope at all.
+
+**Action items for future terrain/building re-derivation** (not yet
+implemented — ``WEST_CAMPUS_ENABLED``, ``KNOTT_TERRAIN_ENABLED``,
+``KNOTT_HALL_ENABLED`` remain disabled):
+
+- Increase ``KNOTT_GROUND_Z`` to better match the measured ~+7 ft rise at
+  Knott Hall's west edge.
+- Consider modeling a continued eastward elevation gain toward Ennis
+  Parallel, rather than a single flat plateau.
+- Consider giving Charles St (and the bridge/floor it connects to) an
+  overall north-south grade rather than a flat ``ROAD_Z``, if map fidelity
+  warrants it — a substantial change affecting many downstream Z constants.
+
 Terminology
 -----------
 
