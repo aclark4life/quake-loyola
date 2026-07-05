@@ -20,6 +20,26 @@ University Maryland's Evergreen campus in northern Baltimore
 - The campus was founded in 1852 and moved to its current "Evergreen" location
   in 1922. Notable alumni include Tom Clancy and Mark Bowden.
 
+Orientation
+-----------
+
+Quake's coordinate system is used as: **+X = east, +Y = north, +Z = up**
+(confirmed against the module docstring of ``quake_loyola/constants.py``;
+this corrects an earlier, incorrect "Y = south" statement in this project's
+agent instructions).
+
+Real-world N Charles St's actual compass bearing was measured by geocoding
+two points ~4 km apart along the street (Cold Spring Ln and Bellona Ave via
+OpenStreetMap/Nominatim) and computing the great-circle bearing between
+them: **~354.5°** — i.e. Charles St runs almost due north, tilted only
+~5.5° west of true north as it heads north. The map models Charles St as
+running exactly along the Y-axis (0° tilt, ``ROAD_X1``/``ROAD_X2`` constant
+across all Y). This ~5.5° discrepancy is an accepted simplification — close
+enough not to warrant rotating the model, but noted here for future
+reference. Google Maps satellite screenshots in ``ref/`` are standard
+north-up captures (no in-app rotation), so image "up" corresponds to quake
++Y (north) throughout the pixel-measurement methodology below.
+
 World scale
 -----------
 
