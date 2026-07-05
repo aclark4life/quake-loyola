@@ -49,7 +49,7 @@ from dataclasses import dataclass
 # every area's dimensions from the top-down references in ref/.
 # ════════════════════════════════════════════════════════════════════════════════
 BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, railings
-STREETS_DETAILS_ENABLED = False  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
+STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
 KNOTT_TERRAIN_ENABLED = (
     False  # knott_terrain.py — KH surrounding terrain/embankment/driveway

@@ -5,9 +5,9 @@ import generate_map
 
 # Golden values captured from the known-good map output. Update these
 # deliberately (and review the .map diff) whenever the geometry changes.
-EXPECTED_BRUSHES = 13
-EXPECTED_ENTITIES = 1
-EXPECTED_MD5 = "29fabcc4f8ddefcb5a8ef7caa761b5a0"
+EXPECTED_BRUSHES = 29
+EXPECTED_ENTITIES = 4
+EXPECTED_MD5 = "8b48b53b66252df35066992e3d8ce207"
 
 
 class MapRegressionTests(unittest.TestCase):
