@@ -178,28 +178,46 @@ def ramp_slab_y(
     )
 
 
-def corner_ramp(x_hi, x_lo, y_hi, y_lo, z_base, z_hi, tex, tt=None):
+def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
     """Tetrahedral corner ramp: a single tilted top plane that is high at the
-    (x_hi, y_hi) corner (z_hi) and falls to z_base along BOTH far edges — the
-    x_lo edge and the y_lo edge. The descending diagonal runs from (x_hi, y_lo)
-    to (x_lo, y_hi); the (x_lo, y_lo) corner is left at grade (not covered).
+    (x_apex, y_apex) corner (z_hi) and falls to z_base along BOTH far edges —
+    the x_far edge and the y_far edge. The descending diagonal runs from
+    (x_apex, y_far) to (x_far, y_apex); the (x_far, y_far) corner is left at
+    grade (not covered).
 
     Used to blend a raised terrace corner down to grade in two directions at
-    once. Requires x_hi < x_lo, y_hi < y_lo, z_base < z_hi (matches the winding
-    derived below)."""
+    once — e.g. a hill plateau corner ramping down to street grade on its
+    west edge and to a lower road grade on its north edge simultaneously.
+    Works for the apex at any of the four corners (x_apex/x_far and
+    y_apex/y_far may be given in either order); winding is corrected
+    automatically based on which quadrant the apex sits in. Requires
+    z_base < z_hi."""
     tt = tt or tex
-    a = (x_hi, y_hi, z_hi)  # raised apex
-    b = (x_hi, y_hi, z_base)
-    c = (x_hi, y_lo, z_base)
-    d = (x_lo, y_hi, z_base)
-    return Brush(
-        [
+    a = (x_apex, y_apex, z_hi)  # raised apex
+    b = (x_apex, y_apex, z_base)
+    c = (x_apex, y_far, z_base)
+    d = (x_far, y_apex, z_base)
+    # Face winding must give plane normals pointing INTO the brush (Quake's
+    # face-plane convention — see box() for a worked example). Whether the
+    # "canonical" ordering below or its reverse is correct depends on the
+    # sign of (x_far - x_apex) * (y_far - y_apex): a single flipped axis
+    # (product < 0) mirrors the brush and reverses every face's winding.
+    flipped = (x_far - x_apex) * (y_far - y_apex) < 0
+    if flipped:
+        faces = [
+            Face(b, c, d, tex),  # bottom (−Z)
+            Face(a, c, b, tex),  # x_apex face
+            Face(a, b, d, tex),  # y_apex face
+            Face(a, d, c, tt),  # slanted top
+        ]
+    else:
+        faces = [
             Face(b, d, c, tex),  # bottom (−Z)
-            Face(a, b, c, tex),  # x_hi face (−X)
-            Face(a, d, b, tex),  # y_hi face (−Y)
+            Face(a, b, c, tex),  # x_apex face
+            Face(a, d, b, tex),  # y_apex face
             Face(a, c, d, tt),  # slanted top
         ]
-    )
+    return Brush(faces)
 
 
 def gable_slats(

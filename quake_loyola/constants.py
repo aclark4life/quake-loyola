@@ -52,7 +52,7 @@ BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, raili
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
 KNOTT_TERRAIN_ENABLED = (
-    False  # knott_terrain.py — KH surrounding terrain/embankment/driveway
+    True  # knott_terrain.py — KH surrounding terrain/embankment/driveway
 )
 KNOTT_HALL_ENABLED = (
     False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
@@ -604,11 +604,15 @@ _KNOTT_GROUND_FLOOR_H = (
     160  # nominal floor height used to anchor building to bridge/hill;
 )
 # independent of KNOTT_FLOOR_H (192) so scaling floor height doesn't flatten the hill.
-KNOTT_GROUND_Z = 64  # fixed hill-height anchor, independent of BRIDGE_DZ2: the bridge
-# deck (not the hill) was raised 32 units to make the KH walkway level (WALK_ZT1 ==
-# WALK_ZT2) without re-flattening the hill. Was previously derived as
-# max(FLOOR_Z2, BRIDGE_DZ2 - _KNOTT_GROUND_FLOOR_H - KNOTT_WALL) == 64 at the old
-# BRIDGE_DZ2 (240); frozen here so it no longer moves when the deck height changes.
+KNOTT_GROUND_Z = 221  # hill-height anchor, re-derived from real-world elevation data.
+# Was 64 (4.24 ft), based on an old, unscripted "~+7.2 ft at Knott Hall's west edge"
+# estimate. Re-measured via scripts/sample_elevation.py (see docs/elevation_samples.csv,
+# label "knott_climb_0": Knott Hall west edge at Ennis Y, +14.6 ft above the bridge-
+# crossing baseline) -> round(14.6 * SCALE) == 221. See docs/reference.rst
+# "Topology check" for the full re-measurement and its caveats (1 m DEM resolution,
+# approximate anchor/bearing). Independent of BRIDGE_DZ2: the bridge deck (not the
+# hill) was raised 32 units to make the KH walkway level (WALK_ZT1 == WALK_ZT2)
+# without re-flattening the hill.
 KNOTT_DRIVEWAY_ZT_S = KNOTT_GROUND_Z
 KNOTT_Z2 = KNOTT_GROUND_Z + KNOTT_FLOORS * KNOTT_FLOOR_H
 BRIDGE_X2 = KNOTT_PIER_X

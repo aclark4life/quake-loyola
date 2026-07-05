@@ -18,11 +18,13 @@ a single clear responsibility.
 import math
 
 from .constants import (
+    CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_CURB_W,
     ENNIS_HW,
     ENNIS_SW_EDGE,
+    ENNIS_X2,
     ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
@@ -44,13 +46,23 @@ from .constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_GROUND_Z,
     KNOTT_TERRAIN_ENABLED,
+    ROAD_X2,
     WALL_T,
     WORLD_X2_EXT,
     WORLD_Y1,
     Textures,
 )
-from .geometry import box, brush_ent, curb_seg, ramp_slab_y, tri_prism
+from .geometry import (
+    box,
+    brush_ent,
+    corner_ramp,
+    curb_seg,
+    ramp_slab,
+    ramp_slab_y,
+    tri_prism,
+)
 
 
 def build():
@@ -179,6 +191,69 @@ def build():
         )
     )
 
+    # ── West ramp — blend the hill terrain back down to Charles St grade ───────
+    # KNOTT_GROUND_Z (re-derived from real elevation data) sits well above the
+    # Charles St sidewalk verge (streets.py, flush at FLOOR_Z2+CHARLES_WALK_H),
+    # and nothing currently fills the gap between the verge's east edge and
+    # KNOTT.x1 — without this, that gap is a sheer, unwalkable cliff.
+    #
+    # Two pieces close it:
+    #  1. A flat-cross-section ramp for the south extension's Y range (where the
+    #     hill sits at a constant KNOTT_GROUND_Z), sloping X from the verge edge
+    #     up to KNOTT.x1.
+    #  2. A tetrahedral corner ramp for the back-road's Y range, where the hill
+    #     height itself already tapers from KNOTT_GROUND_Z (south) down to
+    #     FLOOR_Z2 (north, at Ennis) — the wedge's apex sits at the hill's tall
+    #     south corner and falls to grade on both the west (Charles) and north
+    #     (Ennis) edges simultaneously, matching that taper instead of leaving a
+    #     second cliff where a flat ramp would meet the sloped driveway.
+    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
+    BRUSHES.append(
+        ramp_slab(
+            _charles_verge_x2,
+            KNOTT.x1,
+            WORLD_Y1 + WALL_T,
+            KNOTT_DRIVEWAY_Y1,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            FLOOR_Z2,
+            KNOTT_GROUND_Z,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+    BRUSHES.append(
+        corner_ramp(
+            KNOTT.x1,
+            KNOTT_DRIVEWAY_Y1,
+            _charles_verge_x2,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z2,
+            KNOTT_GROUND_Z,
+            Textures.GROUND,
+        )
+    )
+
+    # ── Terrain west of west sidewalk — mirrors "Terrain east of east sidewalk" ──
+    # Fills the building-footprint strip between Knott Hall's west edge and the
+    # driveway's west sidewalk (previously empty/flat at world-floor grade,
+    # leaving a cliff right where the west corner ramp above tops out). Slopes
+    # with the sidewalk, same as the east-side main section.
+    BRUSHES.append(
+        ramp_slab_y(
+            KNOTT.x1,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
+
     # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
     # Flat road surface
     BRUSHES.append(
@@ -264,19 +339,36 @@ def build():
             Textures.CEMENT,
         )
     )
-    # Terrain east of east sidewalk — raised flush with sidewalk height so the
-    # decorative detail surfaces (cement walk / mulch / Ennis verge) laid on top
-    # sit level with this ground instead of dropping CHARLES_WALK_H below it
-    # (the Ennis verge decorative strip only extends to ENNIS_X2, leaving the
-    # remainder of this ground exposed at sidewalk edge — it must match).
+    # Terrain east of east sidewalk — climbs from sidewalk-flush height toward
+    # Ennis Parallel, matching the re-measured eastward rise (scripts/
+    # sample_elevation.py, docs/elevation_samples.csv "knott_climb_2".."_4":
+    # +17.3 ft -> +19.3 ft, a ~29-unit rise) instead of a single flat plateau.
+    # Past ENNIS_X2 (Ennis Parallel) is unmodeled real estate pending further
+    # re-derivation (docs/reference.rst "Topology check"), so it stays flat at
+    # the top of the ramp rather than extrapolating the slope further east.
+    _EAST_TERRAIN_RISE = 29  # units; ft_to_units(19.25 - 17.32)
+    BRUSHES.append(
+        ramp_slab(
+            KNOTT_DRIVEWAY_ES_X2,
+            ENNIS_X2,
+            KNOTT_DRIVEWAY_EXT_Y1,
+            KNOTT_DRIVEWAY_EXT_Y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H + _EAST_TERRAIN_RISE,
+            Textures.GROUND,
+            tt=Textures.GROUND,
+        )
+    )
     BRUSHES.append(
         box(
-            KNOTT_DRIVEWAY_ES_X2,
+            ENNIS_X2,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H + _EAST_TERRAIN_RISE,
             Textures.GROUND,
         )
     )

@@ -1,0 +1,16 @@
+label,x,y,lat,lon,elevation_ft,ft_above_baseline,z_units_above_baseline,note
+bridge_crossing_road,0,0,39.346000,-76.622162,302.08,0.00,0,"road cut / bridge crossing, section baseline"
+west_dorms_hilltop,-1400,0,39.345976,-76.622489,309.31,7.23,109,west dorms local hilltop
+knott_west_edge,1206,0,39.346021,-76.621881,322.71,20.63,312,Knott Hall west edge
+ennis_parallel,2986,913,39.346217,-76.621485,321.33,19.25,291,"Ennis Parallel, east of Knott Hall"
+knott_climb_0,1206,913,39.346186,-76.621901,316.70,14.62,221,"Knott Hall west edge, at Ennis Y"
+knott_climb_1,1296,913,39.346187,-76.621880,316.76,14.68,222,~90 ft east of Knott Hall west edge
+knott_climb_2,2486,913,39.346208,-76.621602,319.40,17.32,262,Knott Hall east edge
+knott_climb_3,2736,913,39.346212,-76.621544,319.71,17.63,266,midway to Ennis Parallel
+knott_climb_4,2986,913,39.346217,-76.621485,321.33,19.25,291,Ennis Parallel
+charles_south,0,-2768,39.345500,-76.622100,308.49,6.41,97,"Charles St south end (Cold Spring Ln, anchor)"
+charles_s1,0,-1868,39.345663,-76.622120,306.37,4.29,65,"Charles St, 1/5 north"
+charles_s2,0,-968,39.345825,-76.622140,304.38,2.30,35,"Charles St, 2/5 north"
+charles_mid,0,-536,39.345903,-76.622150,303.29,1.21,18,Charles St midpoint
+charles_s4,0,900,39.346162,-76.622182,300.11,-1.97,-30,"Charles St, 4/5 north"
+charles_north,0,1696,39.346306,-76.622200,298.51,-3.57,-54,Charles St north end (CHARLES_Y2)
