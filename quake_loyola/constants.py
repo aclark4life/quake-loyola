@@ -458,7 +458,9 @@ class Textures:
     CEMENT = "sfloor3_2"
     EXIT = "z_exit"
     DIVIDER = "sfloor3_2"
-    CENTERLINE = "roof_red1_1"  # placeholder stand-in for a yellow line marking texture
+    CENTERLINE = (
+        "win_fbylw_01"  # fullbright yellow, stand-in for a yellow line marking texture
+    )
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
