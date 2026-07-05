@@ -68,6 +68,7 @@ from .constants import (
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
     KNOTT_DRIVEWAY_ES_X2,
+    KNOTT_TERRAIN_ENABLED,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
     ROAD_X1,
@@ -1429,12 +1430,33 @@ def build():
         )
 
     # ── Sidewalk verges — flat ground raised flush with sidewalk height ─────────
-    # (previously sloped ramps down to ground level; now a flat raised strip,
-    # same footprint as before, just without the slope)
+    # (previously sloped ramps down to ground level, then a flat raised strip only
+    # CHARLES_RAMP_W wide; with west campus/knott terrain still disabled, that
+    # left a hard 8-unit cliff a short distance beyond the sidewalk where the
+    # base world floor (FLOOR_Z2) took over.)
+    #
+    # The verge is a *placeholder* fill: it only needs to reach all the way out
+    # to the world walls while the module that owns the real terrain on that
+    # side is disabled. Once that module is re-enabled it will build its own
+    # ground flush with the sidewalk, so the verge here should shrink back to
+    # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
+    # overlapping brushes.
+    #   west side  -> owned by west_campus.py (WEST_CAMPUS_ENABLED)
+    #   east side  -> owned by knott_terrain.py (KNOTT_TERRAIN_ENABLED)
+    _west_verge_x1 = (
+        ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
+        if WEST_CAMPUS_ENABLED
+        else WORLD_X1 + WALL_T
+    )
+    _east_verge_x2 = (
+        ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
+        if KNOTT_TERRAIN_ENABLED
+        else WORLD_X2_EXT - WALL_T
+    )
     # West verge — full N-S extent along west sidewalk edge
     BRUSHES.append(
         box(
-            ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W,
+            _west_verge_x1,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X1 - CHARLES_WALK_W,
@@ -1449,7 +1471,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             CHARLES_Y1,
             FLOOR_Z2,
-            ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W,
+            _east_verge_x2,
             ENNIS_SW_EDGE,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
@@ -1461,7 +1483,7 @@ def build():
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
             FLOOR_Z2,
-            ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W,
+            _east_verge_x2,
             CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
