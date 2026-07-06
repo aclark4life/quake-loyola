@@ -67,7 +67,18 @@ from .constants import (
     KNOTT,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
+    KNOTT_DRIVEWAY_CURB_CRN_R,
+    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
+    KNOTT_DRIVEWAY_ES_X1,
     KNOTT_DRIVEWAY_ES_X2,
+    KNOTT_DRIVEWAY_EXT_Y2,
+    KNOTT_DRIVEWAY_JCX_E,
+    KNOTT_DRIVEWAY_JCX_W,
+    KNOTT_DRIVEWAY_JCY,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
+    KNOTT_DRIVEWAY_WS_X1,
+    KNOTT_DRIVEWAY_WS_X2,
     KNOTT_TERRAIN_ENABLED,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
@@ -93,6 +104,7 @@ from .geometry import (
     arch_seg,
     box,
     brush_ent,
+    curb_seg,
     ent,
     pyramid,
     ramp_slab,
@@ -1530,6 +1542,212 @@ def build():
                 Textures.CEMENT,
             )
         )
+
+    # Ennis driveway head — with KH terrain disabled, knott_terrain.py's
+    # driveway-mouth geometry occupying the corridor gap
+    # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2) doesn't exist, so the verge/curb strip
+    # built above stops short on both sides of the gap. This is a direct port
+    # of knott_terrain.py's own driveway-head sections (west/east sidewalks,
+    # road patch, and rounded junction corners) — the same geometry that
+    # appears there when KH terrain is enabled — restricted to the Y range
+    # north of the curb line (KNOTT_DRIVEWAY_EXT_Y2) so it doesn't overlap the
+    # verge/ground fills above, which already cover everything south of it.
+    if not KNOTT_TERRAIN_ENABLED:
+        # Sidewalk-band gap — the unconditional Ennis south-curb SIDEWALK strip
+        # above (built regardless of KNOTT_TERRAIN_ENABLED) leaves a corridor
+        # gap between KNOTT.x2 and KNOTT_DRIVEWAY_ES_X2 for knott_terrain.py to
+        # fill; with it disabled, that band (Y: ENNIS_SW_EDGE to
+        # ENNIS_SW_EDGE+CHARLES_WALK_W) was left empty. Fill it the same way
+        # knott_terrain.py does: CEMENT sidewalk on each side, ROAD lane down
+        # the middle.
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_WS_X2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_RD_X1,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        # West sidewalk — ground from the curb line up to the NW junction corner
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+        # Cement curb strip along the road edge of the ground section
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_WS_X2,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        # East sidewalk — mulch from the curb line up to the south junction corner
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X2,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.MULCH,
+            )
+        )
+        # Cement curb strip on the road-facing (west) edge of the mulch section
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        # Road patch filling the driveway lane from the sidewalks' start (curb
+        # line at Ennis's south sidewalk) up to Ennis road — flush with the
+        # road (not raised). Previously only covered the curb-line-to-road
+        # segment (KNOTT_DRIVEWAY_EXT_Y2 north), leaving the lane unpaved
+        # between the two sidewalks for the stretch south of that.
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_RD_X1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X2,
+                ENNIS_Y - ENNIS_HW,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        # ── Rounded corners where the driveway meets Ennis south (inside the
+        # junction) — centers at the back-road-facing (south) corners so the
+        # curved face points toward the driveway, matching the Charles/Ennis
+        # corner style.
+        # West junction corner: arc sweeps 0°→90°
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X1,
+                KNOTT_DRIVEWAY_JCY,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
+        _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
+        _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
+        for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+            a0 = corner_index * _seg_deg
+            a1 = (corner_index + 1) * _seg_deg
+            t0, t1 = math.radians(a0), math.radians(a1)
+            BRUSHES.append(
+                tri_prism(
+                    KNOTT_DRIVEWAY_JCX_W,
+                    KNOTT_DRIVEWAY_EXT_Y2,
+                    KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t0),
+                    KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t0),
+                    KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t1),
+                    KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                curb_seg(
+                    KNOTT_DRIVEWAY_JCX_W,
+                    KNOTT_DRIVEWAY_EXT_Y2,
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    _r_inner,
+                    _r_outer,
+                    a0,
+                    a1,
+                    Textures.CEMENT,
+                )
+            )
+        # East junction corner: arc sweeps 90°→180°
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X2,
+                KNOTT_DRIVEWAY_JCY,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+            ea0 = 90 + corner_index * _seg_deg
+            ea1 = 90 + (corner_index + 1) * _seg_deg
+            t0, t1 = math.radians(ea0), math.radians(ea1)
+            BRUSHES.append(
+                tri_prism(
+                    KNOTT_DRIVEWAY_JCX_E,
+                    KNOTT_DRIVEWAY_EXT_Y2,
+                    KNOTT_DRIVEWAY_JCX_E + _r_inner * math.cos(t0),
+                    KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t0),
+                    KNOTT_DRIVEWAY_JCX_E + _r_inner * math.cos(t1),
+                    KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.MULCH,
+                )
+            )
+            BRUSHES.append(
+                curb_seg(
+                    KNOTT_DRIVEWAY_JCX_E,
+                    KNOTT_DRIVEWAY_EXT_Y2,
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    _r_inner,
+                    _r_outer,
+                    ea0,
+                    ea1,
+                    Textures.CEMENT,
+                )
+            )
 
     ennis_brushes, ennis_entities = build_ennis_entrance_features()
     BRUSHES.extend(ennis_brushes)
