@@ -24,7 +24,6 @@ from .constants import (
     ENNIS_CURB_W,
     ENNIS_HW,
     ENNIS_SW_EDGE,
-    ENNIS_X2,
     ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
@@ -364,36 +363,18 @@ def build():
             Textures.CEMENT,
         )
     )
-    # Terrain east of east sidewalk — climbs from sidewalk-flush height toward
-    # Ennis Parallel, matching the re-measured eastward rise (scripts/
-    # sample_elevation.py, docs/elevation_samples.csv "knott_climb_2".."_4":
-    # +17.3 ft -> +19.3 ft, a ~29-unit rise) instead of a single flat plateau.
-    # Past ENNIS_X2 (Ennis Parallel) is unmodeled real estate pending further
-    # re-derivation (docs/reference.rst "Topology check"), so it stays flat at
-    # the top of the ramp rather than extrapolating the slope further east.
-    _EAST_TERRAIN_RISE = 29  # units; ft_to_units(19.25 - 17.32)
-    BRUSHES.append(
-        ramp_slab(
-            KNOTT_DRIVEWAY_ES_X2,
-            ENNIS_X2,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            FLOOR_Z2 + CHARLES_WALK_H + _EAST_TERRAIN_RISE,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
+    # Terrain east of east sidewalk — flat, level with the adjacent sidewalk
+    # (FLOOR_Z2 + CHARLES_WALK_H) rather than climbing toward Ennis Parallel.
+    # The previous version rose ~29 units toward the NE corner, leaving a step
+    # where it met the flat mulch/cement sidewalk directly to its west.
     BRUSHES.append(
         box(
-            ENNIS_X2,
+            KNOTT_DRIVEWAY_ES_X2,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H + _EAST_TERRAIN_RISE,
+            FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )
