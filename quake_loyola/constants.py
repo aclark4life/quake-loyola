@@ -675,9 +675,11 @@ _EAST_FEATURES_X2 = 2976  # fixed anchor, independent of WORLD_X2 — pre-resize
 # live WORLD_X2_EXT internally for these same features — to be repointed at this
 # fixed anchor when those modules are re-enabled/re-derived.
 _EAST_FEATURES_X2_EXT = _EAST_FEATURES_X2 + WORLD_EAST_BUFFER
+ENNIS_CEMENT_EAST_SHIFT = 160  # nudges the east cement-wall pillar/lamp post
+# further east (and extends the wall to meet it); see streets.py cement wall build.
 ENNIS_CEMENT_X2 = (
-    _EAST_FEATURES_X2 - WALL_T - ARCH_SLAB_W // 2
-)  # aligned with east teleport centre
+    _EAST_FEATURES_X2 - WALL_T - ARCH_SLAB_W // 2 + ENNIS_CEMENT_EAST_SHIFT
+)  # aligned with east teleport centre, plus ENNIS_CEMENT_EAST_SHIFT
 ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
 ENNIS_CEMENT_LAMP_POSTS = [
