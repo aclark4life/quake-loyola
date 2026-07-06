@@ -58,6 +58,7 @@ KNOTT_HALL_ENABLED = (
     False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
 )
 ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
+MARYLAND_HALL_ENABLED = False  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
 
 ARCH_RIN = 96
 ARCH_ROUT = 136
@@ -658,7 +659,9 @@ BRIDGE_X1 = (
 # re-derivation (west campus terrain/dorms further out).
 BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W
 WORLD_X2 = (
-    7708  # re-derived from real-world measurement, see docs/reference.rst § World scale
+    9100  # re-derived from real-world measurement, see docs/reference.rst § World scale;
+    # bumped from 7708 to make room for Maryland Hall (MARYLAND_X2 ~8979, see below),
+    # leaving a ~121-unit (~8ft) clearance margin before the sealing wall.
 )
 WORLD_X2_EXT = (
     WORLD_X2 + WORLD_EAST_BUFFER
@@ -809,6 +812,28 @@ DORM = DormSpec(
     x1=DORM_X1,
     x2=DORM_X2,
 )
+
+# ── Maryland Hall — PROVISIONAL placeholder anchor, pending re-derivation ──────
+# Real building (OSM way 1019882993, operator "Loyola University Maryland"),
+# east of Ennis Parallel near the Sellinger School of Business. Derived from
+# OSM footprint GPS coordinates (not a pixel/satellite-screenshot measurement
+# like other anchors in this file), converted via the same real-world-ft ->
+# Quake-unit transform anchored at KNOTT_X1/KNOTT_Y2 (SCALE = 15.108
+# units/ft) — validated to ~4% against the real Knott Hall footprint width,
+# but the Y-axis correspondence is NOT independently cross-checked (ENNIS_Y
+# could not be used: per the World scale re-derivation, Ennis/east-campus
+# constants were deliberately left at an older, ~2.4-2.6x more compressed
+# scale than the rest of the map). Treat these values the way KNOTT_GROUND_Z
+# used to be treated before its own re-derivation: a reasonable placeholder,
+# not a verified measurement — re-derive against ref/ imagery before doing
+# detailed facade work.
+MARYLAND_X1 = 6385
+MARYLAND_X2 = 8979
+MARYLAND_Y1 = 412
+MARYLAND_Y2 = 1622
+MARYLAND_FLOORS = 3  # real Maryland Hall is a 3-story academic building
+MARYLAND_FLOOR_H = 128  # matches DORM_FLOOR_H; no facade detail derived yet
+MARYLAND_H = MARYLAND_FLOORS * MARYLAND_FLOOR_H
 
 
 # South-dorm raised terrace + gentler frontage hill out to Charles Street.

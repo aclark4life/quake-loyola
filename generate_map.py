@@ -4,13 +4,22 @@ from quake_loyola import (
     entities,
     knott_hall,
     knott_terrain,
+    maryland_hall,
     streets,
     west_campus,
 )
 from quake_loyola.constants import WORLDSPAWN_FIELDS
 from quake_loyola.mapdata import MapBuilder
 
-MODULES = [streets, west_campus, bridge, knott_terrain, knott_hall, entities]
+MODULES = [
+    streets,
+    west_campus,
+    bridge,
+    knott_terrain,
+    knott_hall,
+    maryland_hall,
+    entities,
+]
 
 
 def build_map():
