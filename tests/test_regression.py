@@ -2,13 +2,13 @@ import hashlib
 import unittest
 
 import generate_map
-from quake_loyola import entities
+from quake_loyola import entities, knott_terrain, streets
 
 # Golden values captured from the known-good map output. Update these
 # deliberately (and review the .map diff) whenever the geometry changes.
-EXPECTED_BRUSHES = 89
+EXPECTED_BRUSHES = 13
 EXPECTED_ENTITIES = 16
-EXPECTED_MD5 = "be19dcab59a3da03d5fa30cafb080f6f"
+EXPECTED_MD5 = "7e7e705b7f5ae25b36fbc0ace6246db5"
 
 
 class MapRegressionTests(unittest.TestCase):
@@ -90,6 +90,56 @@ class EntitiesBuildTests(unittest.TestCase):
         self.assertFalse(
             colliding,
             f"spawn point(s) coincide with a teleport destination: {colliding}",
+        )
+
+
+class KnottTerrainToggleTests(unittest.TestCase):
+    """KNOTT_TERRAIN_ENABLED must be safely toggleable in either direction:
+    streets.py falls back to flat, flush-with-sidewalk ground on the east
+    side of Charles St when the flag is off (see the verge-fill comments in
+    streets.py), so disabling KH terrain should never leave a gap, leak, or
+    otherwise break map generation — it should just remove the hill/driveway
+    detail and hand that area back to the plain verge fill.
+    """
+
+    def setUp(self):
+        self._saved = {
+            (
+                knott_terrain,
+                "KNOTT_TERRAIN_ENABLED",
+            ): knott_terrain.KNOTT_TERRAIN_ENABLED,
+            (streets, "KNOTT_TERRAIN_ENABLED"): streets.KNOTT_TERRAIN_ENABLED,
+        }
+
+    def tearDown(self):
+        for (module, name), value in self._saved.items():
+            setattr(module, name, value)
+
+    def _build_with_flag(self, enabled):
+        knott_terrain.KNOTT_TERRAIN_ENABLED = enabled
+        streets.KNOTT_TERRAIN_ENABLED = enabled
+        return generate_map.build_map()
+
+    def test_enabled_and_disabled_both_build_cleanly(self):
+        for enabled in (True, False):
+            with self.subTest(enabled=enabled):
+                mb = self._build_with_flag(enabled)
+                self.assertTrue(mb.brushes, "expected at least one brush")
+
+    def test_disabling_removes_knott_terrain_brushes_only(self):
+        enabled_count = len(self._build_with_flag(True).brushes)
+        disabled_count = len(self._build_with_flag(False).brushes)
+        self.assertLess(
+            disabled_count,
+            enabled_count,
+            "disabling KH terrain should reduce brush count (hill/driveway "
+            "detail removed), not leave stray geometry behind",
+        )
+        self.assertGreater(
+            disabled_count,
+            0,
+            "disabling KH terrain should still leave the street/world-shell "
+            "geometry intact",
         )
 
 

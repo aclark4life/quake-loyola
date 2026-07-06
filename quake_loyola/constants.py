@@ -52,7 +52,7 @@ BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, raili
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
 KNOTT_TERRAIN_ENABLED = (
-    True  # knott_terrain.py — KH surrounding terrain/embankment/driveway
+    False  # knott_terrain.py — KH surrounding terrain/embankment/driveway
 )
 KNOTT_HALL_ENABLED = (
     False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
