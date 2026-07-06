@@ -1477,26 +1477,18 @@ def build():
             Textures.GROUND,
         )
     )
-    # East verge — north of Ennis Road
-    BRUSHES.append(
-        box(
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-            FLOOR_Z2,
-            _east_verge_x2,
-            CHARLES_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-    # Ennis north verge — flat ground north of the north curb/sidewalk
+    # NE quadrant verge — flat ground filling the whole area north of Ennis and
+    # east of Charles St, flush with the sidewalk. Previously only two narrow
+    # strips were filled (along Charles St and along Ennis's north sidewalk),
+    # leaving the bulk of this quadrant at world-floor level, well below the
+    # sidewalk/verge height.
     BRUSHES.append(
         box(
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
             FLOOR_Z2,
             ENNIS_X2,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W + CHARLES_RAMP_W,
+            CHARLES_Y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
