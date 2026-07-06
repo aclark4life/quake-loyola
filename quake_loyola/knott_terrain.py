@@ -167,13 +167,38 @@ def build():
         )
     )
 
-    # ── South extension — road + east sidewalk behind Knott Hall to world edge ──
+    # ── South extension — ground behind Knott Hall, driveway + sidewalks continue south ──
+    # The top of the hill south of the building is ground, not roadway; only the
+    # actual driveway lane (RD_X1-RD_X2) and its flanking sidewalks (WS, ES)
+    # extend back to the south world edge.
     BRUSHES.append(
         box(
             KNOTT.x1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            Textures.GROUND,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_WS_X1,
+            WORLD_Y1 + WALL_T,
+            FLOOR_Z1,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_RD_X1,
+            WORLD_Y1 + WALL_T,
+            FLOOR_Z1,
+            KNOTT_DRIVEWAY_RD_X2,
             KNOTT_DRIVEWAY_Y1,
             KNOTT_DRIVEWAY_ZT_S + 2,
             Textures.ROAD,
