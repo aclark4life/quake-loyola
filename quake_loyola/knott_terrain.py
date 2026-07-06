@@ -55,7 +55,6 @@ from .constants import (
 )
 from .geometry import (
     box,
-    brush_ent,
     corner_ramp,
     curb_seg,
     ramp_slab,
@@ -69,7 +68,6 @@ def build():
         return [], []
     BRUSHES = []
     ENTITIES = []
-    DETAIL_BRUSHES = []
 
     def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
         # Thin surface overlay riding on top of the GROUND fill: its bottom sits
@@ -150,7 +148,7 @@ def build():
             Textures.GROUND,
         )
     )
-    # Main back road section: slopes with the sidewalk (88 at south → 8 at north)
+    # Main back road section: slopes with the sidewalk (229 at south → 8 at north)
     BRUSHES.append(
         ramp_slab_y(
             KNOTT_DRIVEWAY_ES_X2,
@@ -305,13 +303,20 @@ def build():
     # sidewalk, north of Knott Hall's footprint up to Ennis's south sidewalk —
     # previously unfilled and sitting at world-floor level, well below the
     # flush-with-sidewalk grade everywhere else in this area.
+    #
+    # Stops at ENNIS_SW_EDGE (the sidewalk's own south edge), not
+    # ENNIS_SW_EDGE + CHARLES_WALK_W (its north edge) — the unconditional
+    # Ennis south sidewalk strip built in streets.py already occupies that
+    # CHARLES_WALK_W-wide band; overshooting into it buried the sidewalk
+    # under this GROUND fill. streets.py's own verge fill picks up again
+    # north of the sidewalk, so no gap is left.
     BRUSHES.append(
         box(
             _charles_verge_x2,
             KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             KNOTT_DRIVEWAY_WS_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            ENNIS_SW_EDGE,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
@@ -546,6 +551,4 @@ def build():
     # staircase/platform using real elevation-derived Z values instead of a
     # single flat KNOTT_GROUND_Z constant.
 
-    if DETAIL_BRUSHES:
-        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     return BRUSHES, ENTITIES
