@@ -231,6 +231,11 @@ def build():
     #     south corner and falls to grade on both the west (Charles) and north
     #     (Ennis) edges simultaneously, matching that taper instead of leaving a
     #     second cliff where a flat ramp would meet the sloped driveway.
+    #
+    # Both ends must be raised by CHARLES_WALK_H to be flush with the actual
+    # verge/hilltop surfaces (which both ride CHARLES_WALK_H above their base
+    # Z), not the bare FLOOR_Z2/KNOTT_GROUND_Z anchors — otherwise this ramp
+    # sits a full curb-height below the ground it's supposed to connect.
     _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
     BRUSHES.append(
         ramp_slab(
@@ -240,8 +245,8 @@ def build():
             KNOTT_DRIVEWAY_Y1,
             FLOOR_Z1,
             FLOOR_Z1,
-            FLOOR_Z2,
-            KNOTT_GROUND_Z,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            KNOTT_GROUND_Z + CHARLES_WALK_H,
             Textures.GROUND,
             tt=Textures.GROUND,
         )
@@ -252,8 +257,25 @@ def build():
             KNOTT_DRIVEWAY_Y1,
             _charles_verge_x2,
             KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z2,
-            KNOTT_GROUND_Z,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            KNOTT_GROUND_Z + CHARLES_WALK_H,
+            Textures.GROUND,
+        )
+    )
+    # corner_ramp() intentionally leaves the (x_far, y_far) corner — here the
+    # SW corner of the back-road's Y range, just south of Ennis and east of
+    # Charles — uncovered ("left at grade, not covered"). Close that
+    # triangular gap with a flat fill at the same grade the ramp descends to.
+    BRUSHES.append(
+        tri_prism(
+            _charles_verge_x2,
+            KNOTT_DRIVEWAY_Y2,
+            _charles_verge_x2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT.x1,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )
@@ -275,6 +297,23 @@ def build():
             KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.GROUND,
             tt=Textures.GROUND,
+        )
+    )
+
+    # ── Terrain south of Ennis, east of Charles verge, west of the driveway ──
+    # Fills the gap between the Charles St verge and the driveway's west
+    # sidewalk, north of Knott Hall's footprint up to Ennis's south sidewalk —
+    # previously unfilled and sitting at world-floor level, well below the
+    # flush-with-sidewalk grade everywhere else in this area.
+    BRUSHES.append(
+        box(
+            _charles_verge_x2,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            KNOTT_DRIVEWAY_WS_X1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.GROUND,
         )
     )
 
