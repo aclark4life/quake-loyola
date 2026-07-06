@@ -21,7 +21,7 @@ area module has a single clear responsibility.
 """
 
 from .constants import (
-    FLOOR_Z2,
+    MARYLAND_GROUND_Z,
     MARYLAND_H,
     MARYLAND_HALL_ENABLED,
     MARYLAND_X1,
@@ -39,16 +39,17 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    # Rough massing block only — footprint flush with world floor (FLOOR_Z2),
-    # flat roof at MARYLAND_H. No walls/windows/roof detail yet.
+    # Rough massing block only — footprint flush with the eastward hill climb
+    # (MARYLAND_GROUND_Z), flat roof at MARYLAND_H above that. No walls/
+    # windows/roof detail yet.
     BRUSHES.append(
         box(
             MARYLAND_X1,
             MARYLAND_Y1,
-            FLOOR_Z2,
+            MARYLAND_GROUND_Z,
             MARYLAND_X2,
             MARYLAND_Y2,
-            FLOOR_Z2 + MARYLAND_H,
+            MARYLAND_GROUND_Z + MARYLAND_H,
             Textures.BUILDING,
             tt=Textures.ROOF,
         )
