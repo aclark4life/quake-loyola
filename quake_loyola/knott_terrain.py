@@ -28,6 +28,9 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_DRIVEWAY_CURB_BULGE_D,
+    KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W,
+    KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W,
     KNOTT_DRIVEWAY_CURB_CRN_R,
     KNOTT_DRIVEWAY_CURB_CRN_SEGS,
     KNOTT_DRIVEWAY_ES_X1,
@@ -347,26 +350,32 @@ def build():
             Textures.CEMENT,
         )
     )
-    # West sidewalk — ground from E/W Ennis approach sidewalk to NW junction corner
+    # West sidewalk — ground from E/W Ennis approach sidewalk to NW junction
+    # corner. The corner (and this sidewalk/curb pair) are pushed north by
+    # KNOTT_DRIVEWAY_CURB_BULGE_D here — extending the curb north rather than
+    # bulging its road-facing edge east — so the ground/curb both run up to
+    # _west_ext_y2 instead of the unmodified KNOTT_DRIVEWAY_EXT_Y2.
+    _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _west_ext_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
     )
-    # Cement curb strip along road edge of the ground section
+    # Cement curb strip along road edge of the ground section — thin (width
+    # unchanged at ENNIS_CURB_W), just extended north alongside the ground.
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _west_ext_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -441,17 +450,24 @@ def build():
     # Centers at the back-road-facing (south) corners so the curved face points toward
     # the back road — matching the Charles/Ennis corner style.
     # West junction corner: center at SW corner (1906, 328), arc sweeps 0°→90°
+    # — background pushed north (and its far edge extended) to match the
+    # corner's new center at _west_ext_y2.
+    _west_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _west_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _west_ext_y2,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_JCY,
+            _west_jc_y2,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
     )
+    # Radii unchanged from the base corner size — only the center (Y anchor)
+    # moves north, so the curve itself doesn't bulge east; the arc's own
+    # curvature (X shrinks back toward JCX_W as angle sweeps to 90°) is what
+    # "slopes back to the curb" heading west.
     _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
     _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
     _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
@@ -463,11 +479,11 @@ def build():
         BRUSHES.append(
             tri_prism(
                 KNOTT_DRIVEWAY_JCX_W,
-                KNOTT_DRIVEWAY_EXT_Y2,
+                _west_ext_y2,
                 KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t0),
-                KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t0),
+                _west_ext_y2 + _r_inner * math.sin(t0),
                 KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t1),
-                KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
+                _west_ext_y2 + _r_inner * math.sin(t1),
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
@@ -480,7 +496,7 @@ def build():
         BRUSHES.append(
             curb_seg(
                 KNOTT_DRIVEWAY_JCX_W,
-                KNOTT_DRIVEWAY_EXT_Y2,
+                _west_ext_y2,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 _r_inner,
@@ -490,6 +506,84 @@ def build():
                 Textures.CEMENT,
             )
         )
+
+    # Flat continuation west from the top of the curve, before sloping back
+    # down — matches curve-top height for KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W.
+    _peak_out_x, _peak_out_y = KNOTT_DRIVEWAY_JCX_W, _west_ext_y2 + _r_outer
+    _peak_in_x, _peak_in_y = KNOTT_DRIVEWAY_JCX_W, _west_ext_y2 + _r_inner
+    _base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_outer
+    _base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_inner
+    _flat_x1 = KNOTT_DRIVEWAY_JCX_W - KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+    BRUSHES.append(
+        box(
+            _flat_x1,
+            _peak_in_y,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_JCX_W,
+            _peak_out_y,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    BRUSHES.append(
+        box(
+            _flat_x1,
+            _base_in_y,
+            FLOOR_Z2,
+            KNOTT_DRIVEWAY_JCX_W,
+            _peak_in_y,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.GROUND,
+        )
+    )
+    # Straight closing curb — slopes back down to the pre-bulge corner-top
+    # position (JCX_W - FLAT_W - KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W offset,
+    # EXT_Y2 + CRN_R) over a longer run than the bulge depth itself, for a
+    # more subtle (gentler) slope. That landing point lines up flush with
+    # the existing Charles/Ennis verge fill's north edge (streets.py), so
+    # the GROUND wedge filled in behind the curb closes seamlessly with no
+    # gap or overlap.
+    _taper_x0 = _flat_x1 - KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+    BRUSHES.append(
+        tri_prism(
+            _flat_x1,
+            _peak_out_y,
+            _taper_x0,
+            _base_out_y,
+            _taper_x0,
+            _base_in_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    BRUSHES.append(
+        tri_prism(
+            _flat_x1,
+            _peak_out_y,
+            _taper_x0,
+            _base_in_y,
+            _flat_x1,
+            _peak_in_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    # GROUND fill behind (south of) the closing curb
+    BRUSHES.append(
+        tri_prism(
+            _flat_x1,
+            _peak_in_y,
+            _taper_x0,
+            _base_in_y,
+            _flat_x1,
+            _base_in_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.GROUND,
+        )
+    )
 
     # East junction corner: center at SE corner of east sidewalk, arc sweeps 90°→180°
     BRUSHES.append(
