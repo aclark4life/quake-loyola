@@ -694,7 +694,11 @@ def build():
             if a_rout > max_outer_radius:
                 a_rout = max_outer_radius
                 a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
-            arch_overhang = 0  # rout already reaches exactly the desired extent
+            # Extend the straight rectangular sides (not the round arch ring) out to
+            # max_outer_radius when rout falls short of it, so the below-deck pier
+            # wall is flush with the pillar tops above deck instead of being
+            # recessed behind them.
+            arch_overhang = max(0, max_outer_radius - a_rout)
 
             # Ramped plinth: outer piers ramp up on their outward face so players
             # can run up from outside. East piers: high east side; west piers: high west side.
