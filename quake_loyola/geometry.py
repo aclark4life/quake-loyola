@@ -620,6 +620,33 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
     )
 
 
+def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
+    """Triangular prism with an independently-tilted top plane: each corner
+    gets its own top height (za/zb/zc for the A/B/C corners respectively),
+    instead of tri_prism's single shared top Z. Bottom is flat at zbot.
+
+    Each side wall's 4 corners (two at zbot, two at that corner's own top Z)
+    are still coplanar — the wall is the vertical plane containing that XY
+    edge, and Z doesn't affect which vertical plane a point lies in — so this
+    is a valid convex 5-face brush for any za/zb/zc combination, exactly like
+    tri_prism. Used to build continuous (seam-matching) triangulated terrain
+    patches: adjacent triangles sharing an edge and its two corner heights
+    connect with no step, unlike stacking flat-topped tiers.
+
+    Triangle (ax,ay)→(bx,by)→(cx,cy) must be CCW from above, matching
+    tri_prism's convention."""
+    tt = tt or tex
+    return Brush(
+        [
+            Face((ax, ay, za), (bx, by, zb), (ax, ay, zbot), tex),  # side AB
+            Face((bx, by, zb), (cx, cy, zc), (bx, by, zbot), tex),  # side BC
+            Face((cx, cy, zc), (ax, ay, za), (cx, cy, zbot), tex),  # side CA
+            Face((ax, ay, zbot), (bx, by, zbot), (cx, cy, zbot), tex),  # bottom (+Z)
+            Face((ax, ay, za), (cx, cy, zc), (bx, by, zb), tt),  # top (-Z)
+        ]
+    )
+
+
 def make_tree(cx, cy, base_z):
     """Cartoon tree: brown trunk + three stacked ground-texture pyramids."""
     TEX_TRUNK = Textures.BRICK
