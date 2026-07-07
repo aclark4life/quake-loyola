@@ -58,11 +58,11 @@ from .constants import (
 )
 from .geometry import (
     box,
-    corner_ramp,
     curb_seg,
     ramp_slab,
     ramp_slab_y,
     tri_prism,
+    tri_ramp_prism,
 )
 
 
@@ -138,29 +138,197 @@ def build():
         Textures.CEMENT,
     )
 
+    # ── Real-elevation south-edge interpolation (KNOTT.x1 → east driveway) ──
+    # Only two real USGS samples exist along KNOTT_DRIVEWAY_Y1 east of Knott
+    # Hall's west wall: KNOTT.x1 itself (267 z-units above flat grade) and one
+    # further east near the driveway's far side (368, at x≈2700). Linear
+    # interpolation between them replaces the old flat KNOTT_DRIVEWAY_ZT_S tie
+    # everywhere it's used along this Y line (south corner grid, west-sidewalk
+    # strip, south extension ground fill below).
+    _sgrid_z = FLOOR_Z2 + CHARLES_WALK_H
+    _south_edge_x0, _south_edge_z0 = KNOTT.x1, 267
+    _south_edge_x1, _south_edge_z1 = 2700, 368
+
+    def _south_edge_real(x):
+        t = (x - _south_edge_x0) / (_south_edge_x1 - _south_edge_x0)
+        return _sgrid_z + _south_edge_z0 + t * (_south_edge_z1 - _south_edge_z0)
+
+    # Real USGS samples also show the driveway's flanking ground keeps
+    # changing well past KNOTT_DRIVEWAY_Y1, all the way to the world's south
+    # edge — a shallow dip, not the flat KNOTT_DRIVEWAY_ZT_S plateau the old
+    # code assumed. These Y-profiles (west column near KNOTT.x1, east column
+    # near the driveway's east side) drive the re-derived south extension
+    # ground fills further below; the paved driveway lane and its sidewalks
+    # (RD, WS, ES) are left flat — engineered/graded, no contrary evidence.
+    _far_south_y = [KNOTT_DRIVEWAY_Y1, -3000, -4500, WORLD_Y1 + WALL_T]
+    _far_south_z_west = [267, 176, 185, 125]  # real samples at x≈KNOTT.x1
+    _far_south_z_east = [368, 229, 240, 143]  # real samples at x≈2700 (east of ES)
+
+    # South corner grid (real-elevation, X=verge..KNOTT.x1 at Y1/Y2) and its
+    # X-interpolation helper — moved up here (ahead of where its brushes are
+    # actually emitted, further below) because the south extension and west-
+    # sidewalk pieces above also need to read real Y2-edge heights from it.
+    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
+    _sgrid = [
+        # (x, z_at_y1, z_at_y2)
+        (_charles_verge_x2, _sgrid_z, _sgrid_z),  # verge — tied flat both ends
+        (700, _sgrid_z + 217, _sgrid_z + 275),  # 217 real (y=-1888); 275 interpolated
+        (900, _sgrid_z + 237, _sgrid_z + 352),  # 237 interpolated; 352 real (y=-233)
+        (
+            KNOTT.x1,
+            _sgrid_z + 267,
+            _sgrid_z + 370,
+        ),  # 267 real (y=-1888); 370 real (y=-233)
+    ]
+
+    def _south_edge_z(x):
+        """Real-elevation Y2 (KNOTT_DRIVEWAY_Y2) boundary height at X, from
+        the south-corner grid (_sgrid) — NOT flat. USGS samples there (e.g.
+        +352 z-units at X=900) show the ground keeps climbing toward the
+        driveway rather than tapering to grade, so this strip's south edge
+        must match that instead of assuming flat_z."""
+        for (gx1, _, gz1b), (gx2, _, gz2b) in zip(_sgrid, _sgrid[1:]):
+            if gx1 <= x <= gx2:
+                t = (x - gx1) / (gx2 - gx1) if gx2 != gx1 else 0.0
+                return gz1b + t * (gz2b - gz1b)
+        if x <= KNOTT.x1:
+            return _sgrid[-1][2]
+        # Beyond KNOTT.x1: taper linearly from the real value there down to
+        # flat sidewalk grade by KNOTT_DRIVEWAY_WS_X1 — matching the "west of
+        # west sidewalk" strip's own Y2 edge (built below), which tapers the
+        # same way across this same X range.
+        t = (x - KNOTT.x1) / (KNOTT_DRIVEWAY_WS_X1 - KNOTT.x1)
+        t = min(max(t, 0.0), 1.0)
+        return _sgrid[-1][2] + t * (_sgrid_z - _sgrid[-1][2])
+
+    # Real elevation on both flanks of the driveway stays well above the
+    # flat, engineered sidewalks/road (e.g. +353 z-units at KNOTT_DRIVEWAY_WS_X1,
+    # Y1) — holding real elevation all the way to the sidewalk edge left an
+    # unclimbable ~120-350 unit wall. A buffer zone tapers real elevation
+    # back down to the sidewalk/road's own flat or sloped height instead,
+    # turning that wall into a steep bank. Used by the south extension ground
+    # fills (below) and the west/east-of-sidewalk strips (further below).
+    _WS_TAPER_W = 200
+    _ws_taper_x = KNOTT_DRIVEWAY_WS_X1 - _WS_TAPER_W
+    _ES_TAPER_W = 200
+    _es_taper_x = KNOTT_DRIVEWAY_ES_X2 + _ES_TAPER_W
+
+    def _sidewalk_h(y):
+        """Height of the WS/ES driveway sidewalks at Y (Y1..Y2 sloped range)."""
+        t = (y - KNOTT_DRIVEWAY_Y1) / (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
+        zs = KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H
+        zn = KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H
+        return zs + t * (zn - zs)
+
     # Terrain east of east sidewalk — south flat + sloped main section matching sidewalk
-    # South extension: flat at hill level
+    # South extension: re-derived from real elevation (was flat at hill level).
+    # As with the west side, a taper buffer (_es_taper_x) eases the ground back
+    # down to the sidewalk's flat height near ES_X2 instead of a sheer wall.
+    # Unlike the west side, the real sample here was only taken at one X
+    # (≈2700, just west of ES_X2) so it's treated as X-uniform beyond the
+    # taper zone; the taper itself uses tri_ramp_prism (two triangles) so the
+    # transition from flat to real is a gradual slope, not an abrupt step.
+    _eg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1, same as ES sidewalk
+    for (y1, z1), (y2, z2) in zip(
+        zip(_far_south_y, _far_south_z_east),
+        zip(_far_south_y[1:], _far_south_z_east[1:]),
+    ):
+        ra1 = _sgrid_z + z1
+        ra2 = _sgrid_z + z2
+        BRUSHES.append(
+            tri_ramp_prism(
+                KNOTT_DRIVEWAY_ES_X2,
+                y1,
+                _es_taper_x,
+                y1,
+                _es_taper_x,
+                y2,
+                FLOOR_Z1,
+                _eg_flat,
+                ra1,
+                ra2,
+                Textures.GROUND,
+            )
+        )
+        BRUSHES.append(
+            tri_ramp_prism(
+                KNOTT_DRIVEWAY_ES_X2,
+                y1,
+                _es_taper_x,
+                y2,
+                KNOTT_DRIVEWAY_ES_X2,
+                y2,
+                FLOOR_Z1,
+                _eg_flat,
+                ra2,
+                _eg_flat,
+                Textures.GROUND,
+            )
+        )
+        BRUSHES.append(
+            ramp_slab_y(
+                _es_taper_x,
+                WORLD_X2_EXT - WALL_T,
+                y1,
+                y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                ra1,
+                ra2,
+                Textures.GROUND,
+                tt=Textures.GROUND,
+            )
+        )
+    # Main back road section: slopes with the sidewalk. Y1 (south) edge now
+    # ties to the real-elevation value used by the south extension fill below
+    # (368 real, at x≈2700) instead of the old flat KNOTT_DRIVEWAY_ZT_S
+    # assumption — avoids reintroducing a cliff at their shared Y1 seam. Also
+    # tapered near ES_X2 (_es_taper_x) for the same reason as the south
+    # extension fill above, using tri_ramp_prism so the flat-sidewalk-to-real
+    # transition is gradual (not a step).
+    _mr_z1s = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
+    _mr_z2s = _sidewalk_h(KNOTT_DRIVEWAY_Y2)
+    _mr_z1r = _sgrid_z + _far_south_z_east[0]
+    _mr_z2r = KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H
     BRUSHES.append(
-        box(
+        tri_ramp_prism(
             KNOTT_DRIVEWAY_ES_X2,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            _es_taper_x,
+            KNOTT_DRIVEWAY_Y1,
+            _es_taper_x,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            _mr_z1s,
+            _mr_z1r,
+            _mr_z2r,
             Textures.GROUND,
         )
     )
-    # Main back road section: slopes with the sidewalk (229 at south → 8 at north)
+    BRUSHES.append(
+        tri_ramp_prism(
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y1,
+            _es_taper_x,
+            KNOTT_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            _mr_z1s,
+            _mr_z2r,
+            _mr_z2s,
+            Textures.GROUND,
+        )
+    )
     BRUSHES.append(
         ramp_slab_y(
-            KNOTT_DRIVEWAY_ES_X2,
+            _es_taper_x,
             WORLD_X2_EXT - WALL_T,
             KNOTT_DRIVEWAY_Y1,
             KNOTT_DRIVEWAY_Y2,
             FLOOR_Z1,
             FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            _sgrid_z + _far_south_z_east[0],
             KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
             Textures.GROUND,
             tt=Textures.GROUND,
@@ -170,18 +338,62 @@ def build():
     # ── South extension — ground behind Knott Hall, driveway + sidewalks continue south ──
     # The top of the hill south of the building is ground, not roadway; only the
     # actual driveway lane (RD_X1-RD_X2) and its flanking sidewalks (WS, ES)
-    # extend back to the south world edge.
-    BRUSHES.append(
-        box(
-            KNOTT.x1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
+    # extend back to the south world edge. The west ground fill is re-derived
+    # from real elevation (was flat at hill level) using the same Y-profile
+    # shape as the east fill above, offset to this column's own real Y1 value
+    # (interpolated) since no separate south-column samples exist here.
+    #
+    # As with the west-of-west-sidewalk strip further below, real elevation
+    # stays well above the flat WS sidewalk right up to its edge — a taper
+    # buffer (_ws_taper_x, _WS_TAPER_W) is used here too so the ground eases
+    # down to the sidewalk's flat height instead of forming a sheer wall.
+    _wg_west_off = (
+        _south_edge_real(KNOTT_DRIVEWAY_WS_X1) - _sgrid_z - _far_south_z_west[0]
     )
+    _wg_taper_f = (_ws_taper_x - KNOTT.x1) / (KNOTT_DRIVEWAY_WS_X1 - KNOTT.x1)
+    _wg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1
+    for (y1, z1), (y2, z2) in zip(
+        zip(_far_south_y, _far_south_z_west),
+        zip(_far_south_y[1:], _far_south_z_west[1:]),
+    ):
+        za1 = _sgrid_z + z1
+        za2 = _sgrid_z + z2
+        zb1 = _sgrid_z + z1 + _wg_west_off * _wg_taper_f  # real height at taper X, y1
+        zb2 = _sgrid_z + z2 + _wg_west_off * _wg_taper_f  # real height at taper X, y2
+        for gx1, gx2, gz1a, gz1b, gz2a, gz2b in (
+            (KNOTT.x1, _ws_taper_x, za1, za2, zb1, zb2),
+            (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1, zb1, zb2, _wg_flat, _wg_flat),
+        ):
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx1,
+                    y1,
+                    gx2,
+                    y1,
+                    gx2,
+                    y2,
+                    FLOOR_Z1,
+                    gz1a,
+                    gz2a,
+                    gz2b,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx1,
+                    y1,
+                    gx2,
+                    y2,
+                    gx1,
+                    y2,
+                    FLOOR_Z1,
+                    gz1a,
+                    gz2b,
+                    gz1b,
+                    Textures.GROUND,
+                )
+            )
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
@@ -237,75 +449,197 @@ def build():
     # verge/hilltop surfaces (which both ride CHARLES_WALK_H above their base
     # Z), not the bare FLOOR_Z2/KNOTT_GROUND_Z anchors — otherwise this ramp
     # sits a full curb-height below the ground it's supposed to connect.
-    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
-    BRUSHES.append(
-        ramp_slab(
-            _charles_verge_x2,
-            KNOTT.x1,
-            WORLD_Y1 + WALL_T,
-            KNOTT_DRIVEWAY_Y1,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            KNOTT_GROUND_Z + CHARLES_WALK_H,
-            Textures.GROUND,
-            tt=Textures.GROUND,
+    #
+    # This piece's Y range (WORLD_Y1+WALL_T to KNOTT_DRIVEWAY_Y1) is re-derived
+    # from real elevation samples at X=700 rather than held flat at
+    # KNOTT_GROUND_Z: real data shows this strip also declines toward the
+    # world's south edge (217 → 149 → 158 → 125, in the same z-unit scale used
+    # throughout), not a constant plateau. The west (verge) edge stays tied to
+    # flat grade — same simplification used elsewhere. A full X-grid (verge,
+    # 700, 900, KNOTT.x1 — the same X breakpoints as _sgrid above) is used
+    # instead of a simple 2-column interpolation: a straight verge→KNOTT.x1
+    # line undershoots the real X=700/900 samples by ~100+ units (they sit on
+    # a locally steeper rise, same shape as _sgrid immediately north of this
+    # piece), which left a cliff right at the KNOTT_DRIVEWAY_Y1 seam between
+    # this piece and _sgrid. The X=900 column has no south-side survey data,
+    # so it's linearly interpolated between the real 700/1206 columns —
+    # matching how _sgrid's own X=900 point was derived.
+    _wg_t900 = (900 - 700) / (KNOTT.x1 - 700)
+    _wgrid_z900 = [
+        z700 + _wg_t900 * (z1206 - z700)
+        for z700, z1206 in zip([217, 149, 158, 125], _far_south_z_west)
+    ]
+    _wgrid_x = [_charles_verge_x2, 700, 900, KNOTT.x1]
+    _wgrid_cols = [
+        [0, 0, 0, 0],
+        [217, 149, 158, 125],
+        _wgrid_z900,
+        _far_south_z_west,
+    ]
+    for (wx1, wcol1), (wx2, wcol2) in zip(
+        zip(_wgrid_x, _wgrid_cols), zip(_wgrid_x[1:], _wgrid_cols[1:])
+    ):
+        for i in range(len(_far_south_y) - 1):
+            y1, y2 = _far_south_y[i], _far_south_y[i + 1]
+            z1a, z1b = wcol1[i], wcol1[i + 1]
+            z2a, z2b = wcol2[i], wcol2[i + 1]
+            BRUSHES.append(
+                tri_ramp_prism(
+                    wx1,
+                    y1,
+                    wx2,
+                    y1,
+                    wx2,
+                    y2,
+                    FLOOR_Z1,
+                    _sgrid_z + z1a,
+                    _sgrid_z + z2a,
+                    _sgrid_z + z2b,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    wx1,
+                    y1,
+                    wx2,
+                    y2,
+                    wx1,
+                    y2,
+                    FLOOR_Z1,
+                    _sgrid_z + z1a,
+                    _sgrid_z + z2b,
+                    _sgrid_z + z1b,
+                    Textures.GROUND,
+                )
+            )
+    # ── South corner fill — real-elevation grid, replacing the old single-
+    # apex corner_ramp ──
+    # USGS EPQS samples across this footprint (docs/elevation_samples.csv)
+    # show the real hillside does NOT taper down to grade approaching the
+    # back-road/Ennis corridor (Y2) — if anything it climbs further, cresting
+    # somewhere around Y=-1060 — so a single tetrahedral ramp falling to grade
+    # on both far edges (the old corner_ramp call) was actively wrong here,
+    # not just an approximation. This replaces it with a small triangulated
+    # grid tied to real samples at (700/900/1206, -1888/-233), using a
+    # flat-grade tie at the verge (X=400) to match the unconditional flat
+    # Charles St sidewalk immediately west of it (same simplification used
+    # for the north hill fill above — real data shows the verge itself isn't
+    # flat either, but changing streets.py's sidewalk grade is out of scope
+    # here). The Y1 edge (KNOTT_DRIVEWAY_Y1) now uses the real sample there
+    # (267) rather than the old flat KNOTT_GROUND_Z tie-in, since the deep-
+    # south ground fill below has also been re-derived from real data and
+    # ties to this same value — no more seam to avoid. (_sgrid itself is
+    # defined near the top of this function — needed earlier by the south
+    # extension and west-sidewalk pieces above.)
+    for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(_sgrid, _sgrid[1:]):
+        BRUSHES.append(
+            tri_ramp_prism(
+                gx1,
+                KNOTT_DRIVEWAY_Y1,
+                gx2,
+                KNOTT_DRIVEWAY_Y1,
+                gx2,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                gz1a,
+                gz2a,
+                gz2b,
+                Textures.GROUND,
+            )
         )
-    )
-    BRUSHES.append(
-        corner_ramp(
-            KNOTT.x1,
-            KNOTT_DRIVEWAY_Y1,
-            _charles_verge_x2,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            KNOTT_GROUND_Z + CHARLES_WALK_H,
-            Textures.GROUND,
+        BRUSHES.append(
+            tri_ramp_prism(
+                gx1,
+                KNOTT_DRIVEWAY_Y1,
+                gx2,
+                KNOTT_DRIVEWAY_Y2,
+                gx1,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                gz1a,
+                gz2b,
+                gz1b,
+                Textures.GROUND,
+            )
         )
-    )
-    # corner_ramp() intentionally leaves the (x_far, y_far) corner — here the
-    # SW corner of the back-road's Y range, just south of Ennis and east of
-    # Charles — uncovered ("left at grade, not covered"). Close that
-    # triangular gap with a flat fill at the same grade the ramp descends to.
-    BRUSHES.append(
-        tri_prism(
-            _charles_verge_x2,
-            KNOTT_DRIVEWAY_Y2,
-            _charles_verge_x2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT.x1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
 
     # ── Terrain west of west sidewalk — mirrors "Terrain east of east sidewalk" ──
     # Fills the building-footprint strip between Knott Hall's west edge and the
-    # driveway's west sidewalk (previously empty/flat at world-floor grade,
-    # leaving a cliff right where the west corner ramp above tops out). Slopes
-    # with the sidewalk, same as the east-side main section.
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT.x1,
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-            Textures.GROUND,
-            tt=Textures.GROUND,
+    # driveway's west sidewalk. Its west edge (KNOTT.x1) must match the new
+    # real-elevation south-corner grid built above — that grid now reaches a
+    # real +370 z-units at (KNOTT.x1, KNOTT_DRIVEWAY_Y2), not the old flat
+    # KNOTT_DRIVEWAY_ZT_N assumption, so keeping this strip's own old
+    # X-uniform ramp_slab_y (same height across its whole width, regardless
+    # of X) left a steep cliff right at KNOTT.x1 where the two met. The Y1
+    # edge now also uses real-elevation values (_south_edge_real, defined
+    # near the top of this function) instead of the old flat
+    # KNOTT_DRIVEWAY_ZT_S assumption, matching the re-derived south corner
+    # grid and south extension ground fill.
+    #
+    # Real elevation stays well above the flat, engineered driveway sidewalk
+    # right up to its edge (e.g. +353 at KNOTT_DRIVEWAY_WS_X1, Y1) — holding
+    # that all the way to X=WS_X1 left an unclimbable ~120-350 unit wall
+    # against the sidewalk. A buffer zone (_WS_TAPER_W wide, defined near the
+    # top of this function) tapers the real elevation back down to the
+    # sidewalk's own sloped height (matching road_section's ZT_S→ZT_N slope
+    # exactly) instead, turning that wall into a steep bank.
+    for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
+        real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1
+        z1a = _south_edge_real(wx1) if wx1 != KNOTT.x1 else _south_edge_real(KNOTT.x1)
+        z1b = _sidewalk_h(KNOTT_DRIVEWAY_Y1) if real_edge else _south_edge_real(wx2)
+        z2a = _sgrid[-1][2] if wx1 == KNOTT.x1 else _south_edge_z(wx1)
+        z2b = _sidewalk_h(KNOTT_DRIVEWAY_Y2) if real_edge else _south_edge_z(wx2)
+        BRUSHES.append(
+            tri_ramp_prism(
+                wx1,
+                KNOTT_DRIVEWAY_Y1,
+                wx2,
+                KNOTT_DRIVEWAY_Y1,
+                wx2,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                z1a,
+                z1b,
+                z2b,
+                Textures.GROUND,
+            )
         )
-    )
+        BRUSHES.append(
+            tri_ramp_prism(
+                wx1,
+                KNOTT_DRIVEWAY_Y1,
+                wx2,
+                KNOTT_DRIVEWAY_Y2,
+                wx1,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                z1a,
+                z2b,
+                z2a,
+                Textures.GROUND,
+            )
+        )
 
     # ── Terrain south of Ennis, east of Charles verge, west of the driveway ──
     # Fills the gap between the Charles St verge and the driveway's west
-    # sidewalk, north of Knott Hall's footprint up to Ennis's south sidewalk —
-    # previously unfilled and sitting at world-floor level, well below the
-    # flush-with-sidewalk grade everywhere else in this area.
+    # sidewalk, north of Knott Hall's footprint up to Ennis's south sidewalk.
+    #
+    # This strip's X range (verge..KNOTT_DRIVEWAY_WS_X1) spans directly under
+    # the bridge's centre-span/east-approach corridor, and real elevation data
+    # (docs/elevation_samples.csv "pier2_center_span_w".."knott_west_edge",
+    # sampled along Y=0) shows the ground climbing ~20 ft from the Charles St
+    # verge to Knott Hall's west edge, cresting and levelling off around
+    # X=900 — not the flat plateau this used to be modelled as. Because all
+    # of that survey data was taken along a single Y=0 line, the same X
+    # profile is held for the whole Y range north of Y=0
+    # (0..ENNIS_SW_EDGE) as a flat-in-Y plateau, and blended down to grade
+    # south of Y=0 via a continuously *triangulated* ramp (below) rather than
+    # stacked flat-topped tiers — a tiered design leaves a visible cliff at
+    # every tier seam (a flat top can only step, never taper, in Y), whereas
+    # triangulating each X-segment's south-to-north strip into two planar
+    # wedges gives an exact, seamless slope: adjacent wedges share an edge
+    # and that edge's corner heights outright, so there's no join to crack.
     #
     # Stops at ENNIS_SW_EDGE (the sidewalk's own south edge), not
     # ENNIS_SW_EDGE + CHARLES_WALK_W (its north edge) — the unconditional
@@ -313,17 +647,127 @@ def build():
     # CHARLES_WALK_W-wide band; overshooting into it buried the sidewalk
     # under this GROUND fill. streets.py's own verge fill picks up again
     # north of the sidewalk, so no gap is left.
-    BRUSHES.append(
-        box(
-            _charles_verge_x2,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_WS_X1,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
+    _flat_z = (
+        FLOOR_Z2 + CHARLES_WALK_H
+    )  # grade this strip tapers from at its south edge
+    # (X, real Z units above the bridge-crossing baseline) — from
+    # docs/elevation_samples.csv, Y=0 samples "pier2_center_span_w" (X=-525,
+    # here re-anchored at the verge) through "knott_west_edge" (X=1206); held
+    # flat from there to KNOTT_DRIVEWAY_WS_X1 (no Y=0 survey data past 1206,
+    # and the 900-1206 ft samples already show the climb levelling off).
+    #
+    # The box's own west edge sits at _charles_verge_x2 — the hard boundary
+    # with the (flat, road-grade) Charles St verge fill to its west. The real
+    # X=400 sample is already +7.96 ft up, so anchoring the profile's very
+    # first point there would butt a ~120-unit vertical wall straight against
+    # flat sidewalk grade. Tying the profile to grade right at the edge and
+    # reaching the real X=400 sample by a short interior offset (480) instead
+    # keeps the same real data but turns that wall into a steep-but-sloped toe.
+    _hill_profile = [
+        (_charles_verge_x2, 0),  # tie to grade at the verge — no cliff at the box edge
+        (_charles_verge_x2 + 80, 120),  # real X=400 sample, offset in to slope the toe
+        (525, 171),  # Pier 3 (bridge centre-span east pier)
+        (700, 268),
+        (900, 313),  # crest — real elevation levels off from here on
+        (KNOTT.x1, 312),  # X=1206, Knott Hall west edge
+        # Taper down to flat sidewalk grade by KNOTT_DRIVEWAY_WS_X1 instead
+        # of holding flat — the WS/RD/ES driveway junction north of Y2 (see
+        # "West sidewalk — cement..." etc. below) is a paved, flat corridor
+        # that runs the length of this hill's whole Y range (Y2 to Ennis),
+        # and holding this profile flat all the way to the sidewalk left a
+        # ~300-unit unclimbable cliff at its west edge for that entire
+        # stretch. No real Y=0 survey data exists past X=1206 anyway.
+        (KNOTT_DRIVEWAY_WS_X1, 0),
+    ]
+
+    def _hill_z(x):
+        """Absolute model Z of the real-world hill profile at X (grade +
+        piecewise-linear rise above it)."""
+        for (px1, pz1), (px2, pz2) in zip(_hill_profile, _hill_profile[1:]):
+            if px1 <= x <= px2:
+                t = (x - px1) / (px2 - px1) if px2 != px1 else 0.0
+                return _flat_z + pz1 + t * (pz2 - pz1)
+        return _flat_z + _hill_profile[-1][1]
+
+    # South of Y=0: continuous triangulated ramp from flat grade (matching
+
+    # South of Y=0: continuous triangulated ramp from the south-corner grid's
+    # real (non-flat) Y2 height up to the full X-profile by Y=0 — well south
+    # of the bridge deck's own Y=-148..148 span, so the whole bridge sits on
+    # fully-risen hill. Each X-segment's strip splits into two CCW triangles
+    # sharing the diagonal from (px1, KNOTT_DRIVEWAY_Y2) to (px2, 0); their
+    # outer edges match the south grid and the X-profile exactly, so
+    # neighbouring segments and the Y=0 plateau join with no step.
+    for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:]):
+        z1, z2 = _hill_z(px1), _hill_z(px2)
+        zs1, zs2 = _south_edge_z(px1), _south_edge_z(px2)
+        BRUSHES.append(
+            tri_ramp_prism(
+                px1,
+                KNOTT_DRIVEWAY_Y2,
+                px2,
+                KNOTT_DRIVEWAY_Y2,
+                px2,
+                0,
+                FLOOR_Z1,
+                zs1,
+                zs2,
+                z2,
+                Textures.GROUND,
+            )
         )
-    )
+        BRUSHES.append(
+            tri_ramp_prism(
+                px1,
+                KNOTT_DRIVEWAY_Y2,
+                px2,
+                0,
+                px1,
+                0,
+                FLOOR_Z1,
+                zs1,
+                z2,
+                z1,
+                Textures.GROUND,
+            )
+        )
+        # North of Y=0: mirror the south transition, tapering back down to
+        # grade by ENNIS_SW_EDGE — the Ennis south sidewalk (streets.py)
+        # sits flat there, so holding this strip at full height all the way
+        # out to that line (as a flat plateau) left a cliff at the seam.
+        # Real Y=0 samples don't cover this stretch, but campus quads
+        # typically crest near the middle and slope down on both sides, so
+        # mirroring the south ramp's shape is the best available approximation.
+        BRUSHES.append(
+            tri_ramp_prism(
+                px1,
+                0,
+                px2,
+                0,
+                px2,
+                ENNIS_SW_EDGE,
+                FLOOR_Z1,
+                z1,
+                z2,
+                _flat_z,
+                Textures.GROUND,
+            )
+        )
+        BRUSHES.append(
+            tri_ramp_prism(
+                px1,
+                0,
+                px2,
+                ENNIS_SW_EDGE,
+                px1,
+                ENNIS_SW_EDGE,
+                FLOOR_Z1,
+                z1,
+                _flat_z,
+                _flat_z,
+                Textures.GROUND,
+            )
+        )
 
     # ── Flat extension north from Knott Hall to Ennis south sidewalk ──────────────
     # Flat road surface

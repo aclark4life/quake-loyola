@@ -113,6 +113,9 @@ SAMPLE_POINTS = [
     # East-west cross-section at the bridge crossing (baseline)
     ("bridge_crossing_road", 0, 0, "road cut / bridge crossing, section baseline"),
     ("west_dorms_hilltop", -1400, 0, "west dorms local hilltop"),
+    ("pier1_west_abutment", -1246, 0, "Pier 1 — bridge west abutment"),
+    ("pier2_center_span_w", -525, 0, "Pier 2 — west end of curved centre span"),
+    ("pier3_center_span_e", 525, 0, "Pier 3 — east end of curved centre span"),
     ("knott_west_edge", KNOTT.x1, 0, "Knott Hall west edge"),
     ("ennis_parallel", KNOTT.x2 + 500, ENNIS_Y, "Ennis Parallel, east of Knott Hall"),
     # Knott Hall west-edge -> Ennis Parallel eastward climb (Phase 3 survey)

@@ -9,7 +9,7 @@ from quake_loyola import (
     streets,
     west_campus,
 )
-from quake_loyola.constants import WORLDSPAWN_FIELDS
+from quake_loyola.constants import LIGHTS_ENABLED, WORLDSPAWN_FIELDS
 from quake_loyola.mapdata import MapBuilder
 
 MODULES = [
@@ -29,6 +29,11 @@ def build_map():
     mb = MapBuilder()
     for mod in MODULES:
         brushes, ents = mod.build()
+        if not LIGHTS_ENABLED:
+            # Master switch: drop every "light"-classname entity (light,
+            # light_fluoro, light_torch_small, etc.) regardless of which
+            # module created it, without touching each module's build().
+            ents = [e for e in ents if not e.classname.startswith("light")]
         mb.add_brushes(brushes)
         mb.add_entities(ents)
     return mb

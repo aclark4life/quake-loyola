@@ -48,8 +48,18 @@ from dataclasses import dataclass
 # never gated — it seals the level) is generated. Use this while re-deriving
 # every area's dimensions from the top-down references in ref/.
 # ════════════════════════════════════════════════════════════════════════════════
-BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, railings
-BRIDGE_CENTER_SPAN_ONLY = False  # debug: when True (with BRIDGE_ENABLED), bridge.py emits only the curved centre span (BRIDGE_ARCH_X[1]..[2], Pier 2..Pier 3) for isolated review
+BRIDGE_ENABLED = False  # convenience master: if True, forces every BRIDGE_ENABLED_<section> flag below on, overriding their individual settings. Leave False and flip the per-section flags to review one span at a time.
+BRIDGE_ENABLED_WEST_APPROACH = False  # bridge.py span: Pier 1 (west abutment) .. Pier 2
+BRIDGE_ENABLED_CENTER_SPAN = (
+    False  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
+)
+BRIDGE_ENABLED_EAST_APPROACH = False  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
+BRIDGE_ENABLED_KH_SPAN = (
+    False  # bridge.py span: Pier 4 .. Pier 5 (east KH pier / NE pier)
+)
+BRIDGE_ENABLED_EAST_EXT = (
+    False  # bridge.py span: Pier 5 .. Pier 6 (extended east section to Ennis Rd)
+)
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
 KNOTT_TERRAIN_ENABLED = (
@@ -59,6 +69,7 @@ KNOTT_HALL_ENABLED = (
     False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
 )
 ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
+LIGHTS_ENABLED = False  # master switch for every "light"-classname entity across all modules (streets, entities, west_campus, bridge, etc.); see generate_map.py filter
 MARYLAND_HALL_ENABLED = False  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
 MARYLAND_TERRAIN_ENABLED = (
     False  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
