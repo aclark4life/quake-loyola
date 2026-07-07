@@ -29,6 +29,7 @@ from .constants import (
     BRIDGE_BLK_HW,
     BRIDGE_BLK_OVH,
     BRIDGE_BLK_PIER_CLEARANCE,
+    BRIDGE_CENTER_SPAN_ONLY,
     BRIDGE_DECK_EAST_RECESS,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
@@ -1532,4 +1533,50 @@ def build():
 
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
+
+    if BRIDGE_CENTER_SPAN_ONLY:
+        # Debug filter: keep only geometry overlapping the curved centre span
+        # (Pier 2..Pier 3), plus a small margin to include the bounding piers.
+        # Applied last so it catches brushes already wrapped in func_detail
+        # entities (the bridge superstructure) as well as worldspawn brushes
+        # (e.g. hint brushes, which are dropped entirely — they're only
+        # useful when the rest of the bridge/world exists).
+        span_x1 = BRIDGE_ARCH_X[1] - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_OVERHANG
+        span_x2 = BRIDGE_ARCH_X[2] + BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+
+        def _in_span(b):
+            xs = [p[0] for f in b.faces for p in (f.p1, f.p2, f.p3)]
+            # Full containment (not just partial overlap) — otherwise long
+            # adjacent-span deck/parapet segments that merely touch the pier
+            # boundary (e.g. x=[-1246,-525]) would incorrectly pass.
+            return min(xs) >= span_x1 and max(xs) <= span_x2
+
+        def _is_hint(b):
+            return all(f.tex == Textures.HINT for f in b.faces)
+
+        BRUSHES = [b for b in BRUSHES if _in_span(b) and not _is_hint(b)]
+        new_entities = []
+        for entdict in ENTITIES:
+            if entdict.brushes:
+                # Brush entity (func_detail, trigger_teleport, func_illusionary,
+                # etc.) — keep only brushes overlapping the span; drop the whole
+                # entity if nothing survives (e.g. the west-abutment teleport
+                # arch's trigger/illusionary brushes, which sit at x≈-1265..-1281,
+                # well outside Pier2..Pier3).
+                filtered = [b for b in entdict.brushes if _in_span(b)]
+                if filtered:
+                    new_entities.append(
+                        brush_ent(entdict.classname, filtered, **entdict.fields)
+                    )
+            else:
+                # Point entity — keep only if its origin falls within the span
+                # (e.g. drop info_teleport_destination at the west abutment).
+                origin = entdict.fields.get("origin")
+                if origin is not None:
+                    ox = float(origin.split()[0])
+                    if not (span_x1 < ox < span_x2):
+                        continue
+                new_entities.append(entdict)
+        ENTITIES = new_entities
+
     return BRUSHES, ENTITIES
