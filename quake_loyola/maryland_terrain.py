@@ -15,6 +15,12 @@ Kept separate from knott_terrain.py so each hill/mound (Knott Hall's vs.
 Maryland Hall's) can be enabled/disabled independently — both are
 provisional models pending re-derivation, and neither should force the
 other on or off.
+
+When MARYLAND_TERRAIN_ENABLED is False, this module still emits a ring of
+HINT brushes around the footprint instead of nothing at all — see the
+comment in build() for why that's required for a clean compile. HINT
+brushes are non-solid/invisible (same technique bridge.py uses to force
+vis splits), so this leaves the ground perfectly flush and flat.
 """
 
 from .constants import (
@@ -28,6 +34,7 @@ from .constants import (
     MARYLAND_X2,
     MARYLAND_Y1,
     MARYLAND_Y2,
+    WORLD_Z2,
     Textures,
 )
 from .geometry import box, corner_ramp, ramp_slab, ramp_slab_y
@@ -35,7 +42,66 @@ from .geometry import box, corner_ramp, ramp_slab, ramp_slab_y
 
 def build():
     if not MARYLAND_TERRAIN_ENABLED:
-        return [], []
+        # Hall + mound both disabled for now. Leaving *nothing* here would let
+        # the unconditional world floor (streets.py) expose one continuous,
+        # unbroken top face across this whole footprint plus everything
+        # around it — merged (by qbsp's face-merge pass) into a single face
+        # with more T-junction fixups than the compiler's fixed 512-edge
+        # limit allows, which fails the build.
+        #
+        # Fix: a ring of thin HINT brushes around the footprint, full height
+        # (FLOOR_Z1..WORLD_Z2), forces a BSP/portal split there — the same
+        # technique bridge.py uses to control vis splits. HINT brushes are
+        # non-solid and invisible in-game, so the ground stays perfectly
+        # flush/flat with no visible seam, step, or texture change.
+        pad_x1 = MARYLAND_X1
+        pad_x2 = MARYLAND_X2 + MARYLAND_TERRAIN_MARGIN
+        pad_y1 = MARYLAND_Y1 - MARYLAND_TERRAIN_MARGIN
+        pad_y2 = MARYLAND_Y2
+        hint_t = 4
+        return (
+            [
+                # West/east hint walls
+                box(
+                    pad_x1 - hint_t,
+                    pad_y1,
+                    FLOOR_Z1,
+                    pad_x1,
+                    pad_y2,
+                    WORLD_Z2,
+                    Textures.HINT,
+                ),
+                box(
+                    pad_x2,
+                    pad_y1,
+                    FLOOR_Z1,
+                    pad_x2 + hint_t,
+                    pad_y2,
+                    WORLD_Z2,
+                    Textures.HINT,
+                ),
+                # South/north hint walls
+                box(
+                    pad_x1,
+                    pad_y1 - hint_t,
+                    FLOOR_Z1,
+                    pad_x2,
+                    pad_y1,
+                    WORLD_Z2,
+                    Textures.HINT,
+                ),
+                box(
+                    pad_x1,
+                    pad_y2,
+                    FLOOR_Z1,
+                    pad_x2,
+                    pad_y2 + hint_t,
+                    WORLD_Z2,
+                    Textures.HINT,
+                ),
+            ],
+            [],
+        )
     BRUSHES = []
     ENTITIES = []
 
