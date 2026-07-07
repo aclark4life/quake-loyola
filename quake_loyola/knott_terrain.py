@@ -442,9 +442,24 @@ def build():
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             _e_bulge_x2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            ENNIS_SW_EDGE,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
+        )
+    )
+    # Sidewalk headed east from the NE corner, at (2973, 528) — continues the
+    # E/W Ennis approach sidewalk band (ENNIS_SW_EDGE to +CHARLES_WALK_W),
+    # already CEMENT west of the driveway, out to the mulch bed's edge
+    # (_e_bulge_x2) instead of leaving this stretch as bare GROUND.
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_JCX_E,
+            ENNIS_SW_EDGE,
+            FLOOR_Z2,
+            _e_bulge_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
         )
     )
     BRUSHES.append(
