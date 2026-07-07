@@ -545,6 +545,18 @@ ENNIS_PILLAR_ZB = FLOOR_Z2
 KNOTT_DRIVEWAY_CURB_CRN_R = CHARLES_WALK_W
 KNOTT_DRIVEWAY_CURB_CRN_SEGS = CHARLES_CRN_SEGS
 KNOTT_DRIVEWAY_CURB_WALK_W = CHARLES_WALK_W
+# North curb/sidewalk extension (bulge) on the Ennis-driveway west ground
+# section — the ground, its curb, and the NW junction corner all shift
+# KNOTT_DRIVEWAY_CURB_BULGE_D further north (not east/into the road). The
+# corner's curvature (unchanged radius) then eases the curb back to its
+# base line on its own as it sweeps west toward angle 90. From there, a
+# flat curb continues west for KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W before a
+# straight closing curb slopes back down to the pre-bulge corner position
+# over KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W (kept long/gradual for a subtle
+# slope), with ground filling the wedge behind it.
+KNOTT_DRIVEWAY_CURB_BULGE_D = 64
+KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W = 64
+KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W = 320
 KNOTT_DRIVEWAY_ZT_N = FLOOR_Z2
 # Treat the Knott west face as the root X anchor; nearby anchors derive from it.
 KNOTT_X1 = 1206
