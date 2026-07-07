@@ -392,14 +392,18 @@ def build():
             Textures.CEMENT,
         )
     )
-    # East sidewalk — mulch from E/W sidewalk to south junction corner
+    # East sidewalk — mulch from E/W sidewalk to NE junction corner. Mirrors
+    # the NW corner's push-north-by-KNOTT_DRIVEWAY_CURB_BULGE_D treatment, so
+    # the mulch/curb both run up to _east_ext_y2 instead of the unmodified
+    # KNOTT_DRIVEWAY_EXT_Y2.
+    _east_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _east_ext_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.MULCH,
         )
@@ -411,7 +415,7 @@ def build():
             ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _east_ext_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
@@ -420,9 +424,32 @@ def build():
     # (FLOOR_Z2 + CHARLES_WALK_H) rather than climbing toward Ennis Parallel.
     # The previous version rose ~29 units toward the NE corner, leaving a step
     # where it met the flat mulch/cement sidewalk directly to its west.
+    #
+    # Split at the NE bulge's east edge (_e_taper_x1, defined further down)
+    # so the strip directly behind the bulge (KNOTT_DRIVEWAY_ES_X2 to
+    # _e_taper_x1) stops at the sidewalk's own south edge (ENNIS_SW_EDGE +
+    # CHARLES_WALK_W) instead of KNOTT_DRIVEWAY_EXT_Y2 — leaving room for the
+    # widened mulch fill (below) to reach all the way south, flush with the
+    # NE corner sidewalk section, without overlapping this GROUND terrain.
+    _e_bulge_x2 = (
+        KNOTT_DRIVEWAY_JCX_E
+        + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+        + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+    )
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_EXT_Y1,
+            FLOOR_Z1,
+            _e_bulge_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.GROUND,
+        )
+    )
+    BRUSHES.append(
+        box(
+            _e_bulge_x2,
             KNOTT_DRIVEWAY_EXT_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT - WALL_T,
@@ -585,11 +612,13 @@ def build():
         )
     )
 
-    # East junction corner: center at SE corner of east sidewalk, arc sweeps 90°→180°
+    # East junction corner: center at NE corner of east sidewalk (pushed north
+    # to _east_ext_y2, mirroring the NW corner's bulge treatment), arc sweeps
+    # 90°→180°.
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
+            _east_ext_y2,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X2,
             KNOTT_DRIVEWAY_JCY,
@@ -608,11 +637,11 @@ def build():
         BRUSHES.append(
             tri_prism(
                 KNOTT_DRIVEWAY_JCX_E,
-                KNOTT_DRIVEWAY_EXT_Y2,
+                _east_ext_y2,
                 KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t0),
-                KNOTT_DRIVEWAY_EXT_Y2 + _er_inner * math.sin(t0),
+                _east_ext_y2 + _er_inner * math.sin(t0),
                 KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t1),
-                KNOTT_DRIVEWAY_EXT_Y2 + _er_inner * math.sin(t1),
+                _east_ext_y2 + _er_inner * math.sin(t1),
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.MULCH,
@@ -622,7 +651,7 @@ def build():
         BRUSHES.append(
             curb_seg(
                 KNOTT_DRIVEWAY_JCX_E,
-                KNOTT_DRIVEWAY_EXT_Y2,
+                _east_ext_y2,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 _er_inner,
@@ -632,6 +661,100 @@ def build():
                 Textures.CEMENT,
             )
         )
+
+    # Flat continuation east from the top of the curve — mirrors the NW
+    # corner's bulge (KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W / _TAPER_W), but using
+    # MULCH instead of GROUND for the fill sections, matching the east side's
+    # existing mulch convention. Triangle vertex order is reversed relative to
+    # the NW version since mirroring across X flips winding from CCW to CW —
+    # reversing restores CCW (required by tri_prism).
+    _e_peak_out_y = _east_ext_y2 + _er_outer
+    _e_peak_in_y = _east_ext_y2 + _er_inner
+    _e_base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_outer
+    _e_base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_inner
+    _e_flat_x2 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_JCX_E,
+            _e_peak_in_y,
+            FLOOR_Z2,
+            _e_flat_x2,
+            _e_peak_out_y,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_JCX_E,
+            _e_base_in_y,
+            FLOOR_Z2,
+            _e_flat_x2,
+            _e_peak_in_y,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.MULCH,
+        )
+    )
+    # Straight closing curb — slopes back down to the pre-bulge corner-top
+    # position, mirroring the NW taper.
+    _e_taper_x1 = _e_flat_x2 + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+    BRUSHES.append(
+        tri_prism(
+            _e_taper_x1,
+            _e_base_in_y,
+            _e_taper_x1,
+            _e_base_out_y,
+            _e_flat_x2,
+            _e_peak_out_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    BRUSHES.append(
+        tri_prism(
+            _e_flat_x2,
+            _e_peak_in_y,
+            _e_taper_x1,
+            _e_base_in_y,
+            _e_flat_x2,
+            _e_peak_out_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+    )
+    # MULCH fill behind (south of) the closing curb
+    BRUSHES.append(
+        tri_prism(
+            _e_flat_x2,
+            _e_base_in_y,
+            _e_taper_x1,
+            _e_base_in_y,
+            _e_flat_x2,
+            _e_peak_in_y,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.MULCH,
+        )
+    )
+    # Widen the mulch further south so it reaches ENNIS_SW_EDGE +
+    # CHARLES_WALK_W — the same south edge the NE corner sidewalk section
+    # (east sidewalk mulch strip) stops at — instead of leaving a shorter
+    # patch at KNOTT_DRIVEWAY_EXT_Y2 that doesn't line up with it. The
+    # "Terrain east of east sidewalk" GROUND block (above) is split/trimmed
+    # to this same edge under the bulge's footprint so there's no overlap.
+    BRUSHES.append(
+        box(
+            KNOTT_DRIVEWAY_JCX_E,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            _e_taper_x1,
+            _e_base_in_y,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.MULCH,
+        )
+    )
 
     # ── Hill terrain under Knott Hall — REMOVED, pending re-derivation ──────────
     # The previous hill-fill/ramp/entrance-staircase model assumed a single flat
