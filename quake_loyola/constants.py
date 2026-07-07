@@ -49,6 +49,7 @@ from dataclasses import dataclass
 # every area's dimensions from the top-down references in ref/.
 # ════════════════════════════════════════════════════════════════════════════════
 BRIDGE_ENABLED = False  # bridge.py — deck, arch spans, piers, parapets, railings
+BRIDGE_CENTER_SPAN_ONLY = False  # debug: when True (with BRIDGE_ENABLED), bridge.py emits only the curved centre span (BRIDGE_ARCH_X[1]..[2], Pier 2..Pier 3) for isolated review
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
 KNOTT_TERRAIN_ENABLED = (
@@ -130,7 +131,8 @@ BRIDGE_TUBE_GAP = 12
 BRIDGE_TUBE_HW = 2
 BRIDGE_TUBE_RISE = 10
 BRIDGE_WALK_WALL = 32
-BRIDGE_Y1, BRIDGE_Y2 = -113, 113  # ~15 ft deck (half-width = ft_to_units(7,6))
+BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-unit
+# parapets, interior walking width = 220 units = ft_to_units(14,6) ≈ 14.5 ft
 
 CHARLES_ARCH_RIN = 256
 CHARLES_ARCH_RIN_PRE = 256
