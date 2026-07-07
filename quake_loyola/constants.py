@@ -58,9 +58,9 @@ KNOTT_HALL_ENABLED = (
     False  # knott_hall.py — KH building shell (walls, windows, roof, sign)
 )
 ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
-MARYLAND_HALL_ENABLED = True  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
+MARYLAND_HALL_ENABLED = False  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
 MARYLAND_TERRAIN_ENABLED = (
-    True  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
+    False  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
 )
 # Kept independent of KNOTT_TERRAIN_ENABLED so each hill/mound can be flipped
 # on and off separately while both are still placeholder/provisional models.
