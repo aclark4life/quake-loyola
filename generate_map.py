@@ -8,6 +8,7 @@ from quake_loyola import (
     maryland_terrain,
     streets,
     west_campus,
+    west_campus_terrain,
 )
 from quake_loyola.constants import LIGHTS_ENABLED, WORLDSPAWN_FIELDS
 from quake_loyola.mapdata import MapBuilder
@@ -15,6 +16,7 @@ from quake_loyola.mapdata import MapBuilder
 MODULES = [
     streets,
     west_campus,
+    west_campus_terrain,
     bridge,
     knott_terrain,
     knott_hall,
