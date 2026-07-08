@@ -1331,6 +1331,24 @@ def brush_ent(cls, brushes, **kw):
     return Entity(cls, dict(kw), list(brushes))
 
 
+def torch_flame(x, y, z, light="300", flame_dz=4, flame_cls="light_flame_large_yellow"):
+    """Return [light entity, flame entity] for a torch fixture, both tagged
+    with the "torch" light group (see generate_map.py's LIGHT_GROUP_FLAGS) so
+    they can be re-enabled together independent of other "light"-classname
+    entities. The flame sits flame_dz above the light's own origin."""
+    return [
+        ent("light", origin=f"{x} {y} {z}", light=light, _light_group="torch"),
+        ent(flame_cls, origin=f"{x} {y} {z + flame_dz}", _light_group="torch"),
+    ]
+
+
+def torch_flame_only(x, y, z, flame_cls="light_flame_large_yellow"):
+    """Return a single flame entity (no separate light source — used where
+    the flame model's own built-in light is enough), tagged with the "torch"
+    light group like torch_flame()."""
+    return ent(flame_cls, origin=f"{x} {y} {z}", _light_group="torch")
+
+
 def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=None):
     """Wall slab (thin in Y) with rectangular cutouts.
     openings: list of (ox1, oz1, ox2, oz2) — regions to omit in the x,z plane.

@@ -10,7 +10,11 @@ from quake_loyola import (
     west_campus,
     west_campus_terrain,
 )
-from quake_loyola.constants import LIGHTS_ENABLED, WORLDSPAWN_FIELDS
+from quake_loyola.constants import (
+    LIGHTS_ENABLED,
+    TORCH_LIGHTS_ENABLED,
+    WORLDSPAWN_FIELDS,
+)
 from quake_loyola.mapdata import MapBuilder
 
 MODULES = [
@@ -25,19 +29,32 @@ MODULES = [
     entities,
 ]
 
+# Per-group overrides, keyed by the "_light_group" field torch_flame()/light
+# calls tag themselves with (see geometry.py). LIGHTS_ENABLED=True is a
+# convenience master that forces every group on, same pattern as
+# BRIDGE_ENABLED vs its per-section flags — see constants.py.
+LIGHT_GROUP_FLAGS = {
+    "torch": TORCH_LIGHTS_ENABLED,
+}
+
 
 def build_map():
     """Build the full map by collecting every module's geometry into a MapBuilder."""
     mb = MapBuilder()
     for mod in MODULES:
         brushes, ents = mod.build()
-        if not LIGHTS_ENABLED:
-            # Master switch: drop every "light"-classname entity (light,
-            # light_fluoro, light_torch_small, etc.) regardless of which
-            # module created it, without touching each module's build().
-            ents = [e for e in ents if not e.classname.startswith("light")]
+        kept = []
+        for e in ents:
+            group = e.fields.pop("_light_group", None)
+            if not e.classname.startswith("light"):
+                kept.append(e)
+            elif LIGHTS_ENABLED or LIGHT_GROUP_FLAGS.get(group):
+                # Master on, or this entity's group has its own flag on —
+                # keep it (ungrouped "light" entities have no flag yet, so
+                # they only pass through when the master itself is on).
+                kept.append(e)
         mb.add_brushes(brushes)
-        mb.add_entities(ents)
+        mb.add_entities(kept)
     return mb
 
 
