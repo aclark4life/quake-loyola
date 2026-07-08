@@ -80,6 +80,7 @@ from .constants import (
     KNOTT_DRIVEWAY_WS_X1,
     KNOTT_DRIVEWAY_WS_X2,
     KNOTT_TERRAIN_ENABLED,
+    NE_TERRAIN_ENABLED,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
     ROAD_X1,
@@ -93,6 +94,7 @@ from .constants import (
     STREETS_DETAILS_ENABLED,
     WALL_T,
     WEST_CAMPUS_ENABLED,
+    WEST_CAMPUS_TERRAIN_ENABLED,
     WORLD_X1,
     WORLD_X2_EXT,
     WORLD_Y1,
@@ -1429,11 +1431,11 @@ def build():
     # ground flush with the sidewalk, so the verge here should shrink back to
     # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
     # overlapping brushes.
-    #   west side  -> owned by west_campus.py (WEST_CAMPUS_ENABLED)
+    #   west side  -> owned by west_campus_terrain.py (WEST_CAMPUS_TERRAIN_ENABLED)
     #   east side  -> owned by knott_terrain.py (KNOTT_TERRAIN_ENABLED)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
-        if WEST_CAMPUS_ENABLED
+        if WEST_CAMPUS_TERRAIN_ENABLED
         else WORLD_X1 + WALL_T
     )
     _east_verge_x2 = (
@@ -1465,22 +1467,24 @@ def build():
             Textures.GROUND,
         )
     )
-    # NE quadrant verge — flat ground filling the whole area north of Ennis and
-    # east of Charles St, flush with the sidewalk. Previously only two narrow
-    # strips were filled (along Charles St and along Ennis's north sidewalk),
-    # leaving the bulk of this quadrant at world-floor level, well below the
-    # sidewalk/verge height.
-    BRUSHES.append(
-        box(
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-            FLOOR_Z2,
-            ENNIS_X2,
-            CHARLES_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
+    # NE quadrant verge — placeholder flat ground filling the whole area
+    # north of Ennis and east of Charles St, flush with the sidewalk, for
+    # while ne_terrain.py's real-elevation fill is disabled. Once
+    # NE_TERRAIN_ENABLED, ne_terrain.py builds its own ground there instead
+    # — skip this box entirely to avoid overlapping brushes (same
+    # placeholder-shrinks-to-nothing pattern as the west/east verges above).
+    if not NE_TERRAIN_ENABLED:
+        BRUSHES.append(
+            box(
+                ROAD_X2 + CHARLES_WALK_W,
+                ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+                FLOOR_Z2,
+                ENNIS_X2,
+                CHARLES_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
         )
-    )
     # (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)
 
     # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
