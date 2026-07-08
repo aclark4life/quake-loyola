@@ -105,11 +105,11 @@ from .geometry import (
     box,
     brush_ent,
     curb_seg,
-    ent,
     pyramid,
     ramp_slab,
     ramp_slab_y,
     shear_box_z,
+    torch_flame,
     tri_prism,
 )
 
@@ -197,19 +197,7 @@ def build_ennis_entrance_features():
         )
         # Flame + light above the brick cup, matching the Charles St lamp posts
         pillar_flame_z = pillar_apex_z + 20
-        entities.append(
-            ent(
-                "light",
-                origin=f"{ennis_pil_cx} {pillar_y} {pillar_flame_z}",
-                light="300",
-            )
-        )
-        entities.append(
-            ent(
-                "light_flame_large_yellow",
-                origin=f"{ennis_pil_cx} {pillar_y} {pillar_flame_z + 4}",
-            )
-        )
+        entities.extend(torch_flame(ennis_pil_cx, pillar_y, pillar_flame_z))
 
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bwex2 = ENNIS_GATE_X1
@@ -764,19 +752,7 @@ def build_ennis_entrance_features():
         )
         # Flame + light above the lamp post, matching the Charles St lamp posts
         cement_wall_flame_z = lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H + 20
-        entities.append(
-            ent(
-                "light",
-                origin=f"{pillar_x} {pillar_center_y} {cement_wall_flame_z}",
-                light="300",
-            )
-        )
-        entities.append(
-            ent(
-                "light_flame_large_yellow",
-                origin=f"{pillar_x} {pillar_center_y} {cement_wall_flame_z + 4}",
-            )
-        )
+        entities.extend(torch_flame(pillar_x, pillar_center_y, cement_wall_flame_z))
         brushes.append(
             box(
                 pillar_x - 4,
@@ -1809,15 +1785,7 @@ def build():
             )
             # Flame + light above the brick cup, matching bridge pillar torches
             flame_z = pole_top_z + 20
-            ENTITIES.append(
-                ent("light", origin=f"{lamp_x} {lamp_y} {flame_z}", light="300")
-            )
-            ENTITIES.append(
-                ent(
-                    "light_flame_large_yellow",
-                    origin=f"{lamp_x} {lamp_y} {flame_z + 4}",
-                )
-            )
+            ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))

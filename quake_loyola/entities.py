@@ -114,6 +114,7 @@ from .geometry import (
     make_tree,
     render_text_flat,
     render_text_flat_x,
+    torch_flame_only,
 )
 
 
@@ -937,12 +938,8 @@ def build():
                 BRIDGE.y1 + py_shift + BRIDGE_PAR_W // 2
             )  # centred on south pillar cap
             # Flames on pillar tops — raised above pyramid apex so they visually sit on top
-            ENTITIES.append(
-                ent("light_flame_large_yellow", origin=f"{px} {cy_n} {int(pcap + 24)}")
-            )
-            ENTITIES.append(
-                ent("light_flame_large_yellow", origin=f"{px} {cy_s} {int(pcap + 24)}")
-            )
+            ENTITIES.append(torch_flame_only(px, cy_n, int(pcap + 24)))
+            ENTITIES.append(torch_flame_only(px, cy_s, int(pcap + 24)))
             # Damaging trigger at each flame — hurts players who walk into the fire
             for cy in [cy_n, cy_s]:
                 fhb = box(

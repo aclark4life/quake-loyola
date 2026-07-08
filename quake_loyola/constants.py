@@ -75,6 +75,16 @@ KNOTT_HALL_ENABLED = (
 )
 ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
 LIGHTS_ENABLED = False  # master switch for every "light"-classname entity across all modules (streets, entities, west_campus, bridge, etc.); see generate_map.py filter
+TORCH_LIGHTS_ENABLED = True  # light "group" flag: torch/flame fixtures only
+# (bridge pillar tops, Ennis entrance pillars, Ennis cement-wall lamppost,
+# campus lamp posts) — same convenience-master pattern as BRIDGE_ENABLED:
+# LIGHTS_ENABLED=True forces every light group on (including this one),
+# overriding the individual setting; leave LIGHTS_ENABLED False and flip
+# this (or future per-group flags) to review one light group at a time.
+# See generate_map.py filter — torch entities carry an internal
+# "_light_group" field so they can be told apart from other "light"-
+# classname entities (pendant lights, pillar uplights, etc.) that aren't
+# part of any group yet and stay off until LIGHTS_ENABLED is True.
 MARYLAND_HALL_ENABLED = False  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
 MARYLAND_TERRAIN_ENABLED = (
     False  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
