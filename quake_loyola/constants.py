@@ -62,6 +62,11 @@ BRIDGE_ENABLED_EAST_EXT = (
 )
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
+WEST_CAMPUS_TERRAIN_ENABLED = True  # west_campus_terrain.py — real-elevation
+# ground fill under/around the dorm buildings + bridge west approach. Kept
+# independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_TERRAIN_ENABLED
+# vs KNOTT_HALL_ENABLED) so the terrain can be reviewed on its own even while
+# the buildings themselves stay off.
 KNOTT_TERRAIN_ENABLED = (
     True  # knott_terrain.py — KH surrounding terrain/embankment/driveway
 )

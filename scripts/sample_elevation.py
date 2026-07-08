@@ -38,13 +38,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from quake_loyola.constants import (  # noqa: E402
+    BRIDGE_X1,
     CHARLES_Y1,
+    CHARLES_Y2,
+    DORM_CX,
+    DORM_NORTH_Y1,
+    DORM_NORTH_Y2,
+    DORM_SOUTH1_Y1,
+    DORM_SOUTH2_Y2,
+    DORM_X1,
+    DORM_X2,
     ENNIS_Y,
+    FENCE_X1,
     KNOTT,
     KNOTT_DRIVEWAY_ES_X2,
     KNOTT_DRIVEWAY_Y1,
     SCALE,
     WALL_T,
+    WORLD_X1,
     WORLD_Y1,
 )
 
@@ -171,6 +182,81 @@ for _sy in _SOUTH_AUDIT_Y:
     for _sx in _SOUTH_AUDIT_X:
         SAMPLE_POINTS.append(
             (f"south_audit_x{_sx}_y{_sy}", _sx, _sy, "south terrain audit grid")
+        )
+
+# West-campus audit grid (dorm buildings north/south1/south2 + bridge west
+# approach, west_campus.py) — no terrain-fill module exists for this area
+# yet (WEST_CAMPUS_ENABLED is currently False); these samples are gathered
+# up front so a future west_campus_terrain.py can be built from real
+# elevation data from the start, the way knott_terrain.py's south extension
+# was re-derived this session, instead of guessing a slope and re-deriving
+# later.
+_WCAMPUS_AUDIT_X = [BRIDGE_X1, DORM_X1, DORM_CX, DORM_X2, FENCE_X1]
+_WCAMPUS_AUDIT_Y = [
+    CHARLES_Y2,
+    DORM_NORTH_Y2,
+    DORM_NORTH_Y1,
+    500,
+    0,
+    DORM_SOUTH2_Y2,
+    DORM_SOUTH1_Y1,
+    CHARLES_Y1,
+]
+for _wy in _WCAMPUS_AUDIT_Y:
+    for _wx in _WCAMPUS_AUDIT_X:
+        SAMPLE_POINTS.append(
+            (f"wcampus_audit_x{_wx}_y{_wy}", _wx, _wy, "west campus audit grid")
+        )
+
+# West-campus EXTENSION grids — the initial west_campus_terrain.py grid only
+# spanned BRIDGE_X1..FENCE_X1, leaving flat FLOOR_Z2 (the unconditional
+# streets.py world floor) on both sides — real elevation doesn't drop to 0
+# right at either edge, so that produced two new cliffs. These extend the
+# survey in both directions using the same _WCAMPUS_AUDIT_Y rows:
+#   - East: FENCE_X1 -> Charles St (X=0), where the ground actually reaches
+#     the flat plaza/road grade.
+#   - West: BRIDGE_X1 -> the world's west wall (WORLD_X1+WALL_T).
+_WCAMPUS_EAST_X = [-700, -400, -100, 0]
+_WCAMPUS_WEST_X = [-2500, -3500, -4500, WORLD_X1 + WALL_T]
+for _wy in _WCAMPUS_AUDIT_Y:
+    for _wx in _WCAMPUS_EAST_X + _WCAMPUS_WEST_X:
+        SAMPLE_POINTS.append(
+            (f"wcampus_ext_x{_wx}_y{_wy}", _wx, _wy, "west campus extension grid")
+        )
+
+# West-campus SOUTH/NORTH extension — the modeled "CHARLES_Y1/CHARLES_Y2"
+# corridor anchors (imported above) mark the *documented survey* corridor
+# ends, but streets.py's actual Charles St sidewalk/curb geometry runs the
+# full world Y range (WORLD_Y1+WALL_T .. WORLD_Y2-WALL_T) — much further
+# both south and north. west_campus_terrain.py's grid stopping at
+# CHARLES_Y1/Y2 left real cliffs at both seams. These rows extend the
+# survey out to the true world edges, reusing the same X columns as the
+# main audit/extension grids (ROAD_X1 itself is skipped — the terrain now
+# ties flush to the existing curb/sidewalk height there instead of real
+# data, so no ROAD_X1 sample is needed).
+_WCAMPUS_FARY = [4069, 2800, -3800, -5200, -6626]
+_WCAMPUS_FARX = [
+    WORLD_X1 + WALL_T,
+    -4500,
+    -3500,
+    -2500,
+    BRIDGE_X1,
+    DORM_X1,
+    DORM_CX,
+    DORM_X2,
+    FENCE_X1,
+    -700,
+    -400,
+]
+for _wy in _WCAMPUS_FARY:
+    for _wx in _WCAMPUS_FARX:
+        SAMPLE_POINTS.append(
+            (
+                f"wcampus_far_x{_wx}_y{_wy}",
+                _wx,
+                _wy,
+                "west campus north/south extension",
+            )
         )
 
 
