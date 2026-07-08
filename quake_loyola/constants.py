@@ -51,7 +51,7 @@ from dataclasses import dataclass
 BRIDGE_ENABLED = False  # convenience master: if True, forces every BRIDGE_ENABLED_<section> flag below on, overriding their individual settings. Leave False and flip the per-section flags to review one span at a time.
 BRIDGE_ENABLED_WEST_APPROACH = False  # bridge.py span: Pier 1 (west abutment) .. Pier 2
 BRIDGE_ENABLED_CENTER_SPAN = (
-    False  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
+    True  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
 )
 BRIDGE_ENABLED_EAST_APPROACH = False  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
 BRIDGE_ENABLED_KH_SPAN = (
@@ -676,6 +676,24 @@ ENNIS_WALL_NY = ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW * 2
 KNOTT_DRIVEWAY_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
 KNOTT_DRIVEWAY_JCY = ENNIS_Y - ENNIS_HW
 PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X, PIER6_X = BRIDGE_ARCH_X
+# Center-span piers (2 and 3) cross a real hillside rather than flat grade —
+# west_campus_terrain.py / knott_terrain.py's real-elevation data already
+# rises well above FLOOR_Z2 at these two piers' footprints (verified via
+# point-in-triangle sampling of each module's terrain grid at (X, Y=0)).
+# Rather than carving a notch into that hill to meet a fixed FLOOR_Z2 base
+# (which fights the real data and re-flattens a hillside that's supposed to
+# be there), each pier's own base sits at the hill's real height instead —
+# i.e. the pier stands ON TOP of the existing terrain rather than being
+# embedded in it. Pier 3 (Knott side) reuses knott_terrain.py's own
+# "Pier 3" hill-profile anchor (525, 171) + its flat-grade baseline (8),
+# confirming this was the original terrain author's intent all along
+# ("...so the whole bridge sits on fully-risen hill"). Pier 2 (west side)
+# is interpolated from west_campus_terrain.py's real grid columns at
+# X=-700/-400, Y=0. Piers without an entry here keep the default FLOOR_Z2.
+BRIDGE_PIER_GROUND_Z = {
+    PIER2_X: 31,  # west_campus_terrain.py real elevation at (-525, 0)
+    PIER3_X: 179,  # knott_terrain.py hill profile at (525, 0): flat_z(8) + 171
+}
 DORM_FLOOR_H = (
     128  # dorm-specific floor height (shorter than Knott's KNOTT_FLOOR_H=192)
 )

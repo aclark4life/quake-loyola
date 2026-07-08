@@ -45,6 +45,7 @@ from .constants import (
     BRIDGE_FASCIA_TEXT,
     BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
+    BRIDGE_PIER_GROUND_Z,
     BRIDGE_PILLAR_BASE_CAP_H,
     BRIDGE_PILLAR_BASE_CAP_OVH,
     BRIDGE_PILLAR_BASE_H,
@@ -687,6 +688,13 @@ def build():
             # is flush with the bridge underside across the full pier X extent.
             pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
 
+            # Ground level this specific pier's base sits on. Center-span piers
+            # (2 and 3) cross a real hillside — see BRIDGE_PIER_GROUND_Z's
+            # docstring in constants.py — so their base plinth is raised to sit
+            # ON TOP of the existing (unmodified) real-elevation terrain there
+            # instead of at the flat FLOOR_Z2 baseline used by every other pier.
+            pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
+
             # Arch opening varies by pillar type. The westernmost abutment, Pier 5
             # (KNOTT_NE_PIER_X), and the new Pier 6 use the wider outer radii;
             # interior piers use the inner radii.
@@ -694,11 +702,11 @@ def build():
                 a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
             else:
                 a_rout, a_rin = BRIDGE_PILLAR_INNER_R
-            a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
+            a_stilt = pier_ceiling_z - a_rout - pier_floor_z
             if a_stilt < 0:
                 # Arch would overshoot the bridge bottom; cap rout so the crown
                 # lands exactly at ceil_z (bridge deck underside).
-                a_rout = pier_ceiling_z - FLOOR_Z2
+                a_rout = pier_ceiling_z - pier_floor_z
                 a_stilt = 0
 
             # Pin outer pier wall to exactly match the pillar tops above deck.
@@ -707,7 +715,7 @@ def build():
             max_outer_radius = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
             if a_rout > max_outer_radius:
                 a_rout = max_outer_radius
-                a_stilt = pier_ceiling_z - a_rout - FLOOR_Z2
+                a_stilt = pier_ceiling_z - a_rout - pier_floor_z
             # Extend the straight rectangular sides (not the round arch ring) out to
             # max_outer_radius when rout falls short of it, so the below-deck pier
             # wall is flush with the pillar tops above deck instead of being
@@ -720,14 +728,14 @@ def build():
             if px > 0:
                 # East of road — ramp slopes up toward east (low at x1, high at x2)
                 base_ramp = (
-                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
-                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H,
+                    pier_floor_z + BRIDGE_PILLAR_BASE_H,
+                    pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
                 )
             else:
                 # West of road — ramp slopes up toward west (high at x1, low at x2)
                 base_ramp = (
-                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H,
-                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
+                    pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
+                    pier_floor_z + BRIDGE_PILLAR_BASE_H,
                 )
 
             # Add pier structure — BRIDGE_ARCH_X[4] (KNOTT_NE_PIER_X) and the new
@@ -741,7 +749,7 @@ def build():
                         x2,
                         by1,
                         by2,
-                        FLOOR_Z2,
+                        pier_floor_z,
                         pier_ceiling_z,
                         a_rin,
                         Textures.PILLAR,
@@ -759,7 +767,7 @@ def build():
                         x2,
                         by1,
                         by2,
-                        FLOOR_Z2,
+                        pier_floor_z,
                         pier_ceiling_z,
                         a_rin,
                         a_rout,
