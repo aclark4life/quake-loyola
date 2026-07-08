@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from quake_loyola.constants import (  # noqa: E402
     BRIDGE_X1,
+    CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM_CX,
@@ -48,15 +49,21 @@ from quake_loyola.constants import (  # noqa: E402
     DORM_SOUTH2_Y2,
     DORM_X1,
     DORM_X2,
+    ENNIS_HW,
     ENNIS_Y,
     FENCE_X1,
     KNOTT,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
     KNOTT_DRIVEWAY_ES_X2,
     KNOTT_DRIVEWAY_Y1,
+    ROAD_X2,
     SCALE,
     WALL_T,
     WORLD_X1,
+    WORLD_X2_EXT,
     WORLD_Y1,
+    WORLD_Y2,
 )
 
 # ── Real-world anchor ────────────────────────────────────────────────────────
@@ -258,6 +265,39 @@ for _wy in _WCAMPUS_FARY:
                 "west campus north/south extension",
             )
         )
+
+# NE quadrant grid (north of Ennis Road, east of Charles St) — the last
+# unmodeled area. streets.py currently fills this whole rectangle with one
+# flat placeholder box (flush with the Charles St sidewalk height), the
+# same "placeholder until the real terrain module exists" pattern the west
+# campus verge used before west_campus_terrain.py replaced it. Bounds match
+# that placeholder box exactly: X from the east sidewalk/curb edge out to
+# the true east world wall, Y from Ennis Road's north curb out to the true
+# north world wall (see streets.py's locally-shadowed ENNIS_X2/CHARLES_Y2 —
+# the true world edges, not the constants.py survey-corridor anchors).
+_NE_X = [
+    ROAD_X2 + CHARLES_WALK_W,
+    900,
+    1700,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
+    3472,  # _EAST_FEATURES_X2_EXT - WALL_T (old ENNIS_X2 anchor / gate-arch area)
+    5000,
+    7300,
+    WORLD_X2_EXT - WALL_T,
+]
+_NE_Y = [
+    ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+    1546,
+    CHARLES_Y2,
+    2200,
+    2800,
+    3450,
+    WORLD_Y2 - WALL_T,
+]
+for _ny in _NE_Y:
+    for _nx in _NE_X:
+        SAMPLE_POINTS.append((f"ne_quad_x{_nx}_y{_ny}", _nx, _ny, "NE quadrant grid"))
 
 
 def main():

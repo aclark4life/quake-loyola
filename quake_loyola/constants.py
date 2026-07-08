@@ -67,6 +67,11 @@ WEST_CAMPUS_TERRAIN_ENABLED = True  # west_campus_terrain.py — real-elevation
 # independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_TERRAIN_ENABLED
 # vs KNOTT_HALL_ENABLED) so the terrain can be reviewed on its own even while
 # the buildings themselves stay off.
+NE_TERRAIN_ENABLED = True  # ne_terrain.py — real-elevation ground fill for the
+# NE quadrant (north of Ennis Road, east of Charles St), replacing the flat
+# placeholder box streets.py used to build there. See ne_terrain.py's module
+# docstring for the real-elevation-derived design and the two flush ties
+# (Charles St east sidewalk to the west, Ennis Road north curb to the south).
 KNOTT_TERRAIN_ENABLED = (
     True  # knott_terrain.py — KH surrounding terrain/embankment/driveway
 )
