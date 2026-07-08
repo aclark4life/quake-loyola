@@ -5,15 +5,78 @@ pier1_west_abutment,-1246,0,39.345978,-76.622453,309.11,7.03,106,Pier 1 — brid
 pier2_center_span_w,-525,0,39.345991,-76.622285,302.20,0.12,2,Pier 2 — west end of curved centre span
 pier3_center_span_e,525,0,39.346009,-76.622040,313.39,11.31,171,Pier 3 — east end of curved centre span
 knott_west_edge,1206,0,39.346021,-76.621881,322.71,20.63,312,Knott Hall west edge
-ennis_parallel,2986,948,39.346223,-76.621486,321.33,19.25,291,"Ennis Parallel, east of Knott Hall"
-knott_climb_0,1206,948,39.346192,-76.621902,316.70,14.62,221,"Knott Hall west edge, at Ennis Y"
-knott_climb_1,1296,948,39.346194,-76.621881,316.76,14.68,222,~90 ft east of Knott Hall west edge
-knott_climb_2,2486,948,39.346214,-76.621603,319.40,17.32,262,Knott Hall east edge
+ennis_parallel,2986,948,39.346223,-76.621486,320.15,18.07,273,"Ennis Parallel, east of Knott Hall"
+knott_climb_0,1206,948,39.346192,-76.621902,316.17,14.10,213,"Knott Hall west edge, at Ennis Y"
+knott_climb_1,1296,948,39.346194,-76.621881,316.24,14.16,214,~90 ft east of Knott Hall west edge
+knott_climb_2,2486,948,39.346214,-76.621603,319.07,16.99,257,Knott Hall east edge
 knott_climb_3,2736,948,39.346219,-76.621545,319.71,17.63,266,midway to Ennis Parallel
-knott_climb_4,2986,948,39.346223,-76.621486,321.33,19.25,291,Ennis Parallel
+knott_climb_4,2986,948,39.346223,-76.621486,320.15,18.07,273,Ennis Parallel
 charles_south,0,-2768,39.345500,-76.622100,308.49,6.41,97,"Charles St south end (Cold Spring Ln, anchor)"
 charles_s1,0,-1868,39.345663,-76.622120,306.37,4.29,65,"Charles St, 1/5 north"
 charles_s2,0,-968,39.345825,-76.622140,304.38,2.30,35,"Charles St, 2/5 north"
 charles_mid,0,-536,39.345903,-76.622150,303.29,1.21,18,Charles St midpoint
 charles_s4,0,900,39.346162,-76.622182,300.11,-1.97,-30,"Charles St, 4/5 north"
 charles_north,0,1696,39.346306,-76.622200,298.51,-3.57,-54,Charles St north end (CHARLES_Y2)
+south_audit_x400_y-6626,400,-6626,39.344810,-76.621920,309.32,7.24,109,south terrain audit grid
+south_audit_x700_y-6626,700,-6626,39.344815,-76.621850,309.97,7.89,119,south terrain audit grid
+south_audit_x900_y-6626,900,-6626,39.344819,-76.621803,310.17,8.09,122,south terrain audit grid
+south_audit_x1206_y-6626,1206,-6626,39.344824,-76.621732,310.38,8.30,125,south terrain audit grid
+south_audit_x1650_y-6626,1650,-6626,39.344832,-76.621628,310.66,8.58,130,south terrain audit grid
+south_audit_x2100_y-6626,2100,-6626,39.344840,-76.621523,310.68,8.60,130,south terrain audit grid
+south_audit_x2486_y-6626,2486,-6626,39.344846,-76.621433,311.68,9.60,145,south terrain audit grid
+south_audit_x2700_y-6626,2700,-6626,39.344850,-76.621383,311.49,9.41,142,south terrain audit grid
+south_audit_x2902_y-6626,2902,-6626,39.344854,-76.621336,311.16,9.08,137,south terrain audit grid
+south_audit_x400_y-5500,400,-5500,39.345014,-76.621945,310.04,7.97,120,south terrain audit grid
+south_audit_x700_y-5500,700,-5500,39.345019,-76.621875,311.39,9.31,141,south terrain audit grid
+south_audit_x900_y-5500,900,-5500,39.345022,-76.621828,311.74,9.66,146,south terrain audit grid
+south_audit_x1206_y-5500,1206,-5500,39.345028,-76.621757,312.13,10.05,152,south terrain audit grid
+south_audit_x1650_y-5500,1650,-5500,39.345035,-76.621653,312.13,10.05,152,south terrain audit grid
+south_audit_x2100_y-5500,2100,-5500,39.345043,-76.621548,311.99,9.91,150,south terrain audit grid
+south_audit_x2486_y-5500,2486,-5500,39.345050,-76.621458,314.72,12.64,191,south terrain audit grid
+south_audit_x2700_y-5500,2700,-5500,39.345054,-76.621408,314.52,12.44,188,south terrain audit grid
+south_audit_x2902_y-5500,2902,-5500,39.345057,-76.621361,314.97,12.89,195,south terrain audit grid
+south_audit_x400_y-4500,400,-4500,39.345194,-76.621968,310.82,8.74,132,south terrain audit grid
+south_audit_x700_y-4500,700,-4500,39.345199,-76.621898,312.55,10.47,158,south terrain audit grid
+south_audit_x900_y-4500,900,-4500,39.345203,-76.621851,313.29,11.21,169,south terrain audit grid
+south_audit_x1206_y-4500,1206,-4500,39.345208,-76.621779,314.33,12.26,185,south terrain audit grid
+south_audit_x1650_y-4500,1650,-4500,39.345216,-76.621676,315.15,13.07,197,south terrain audit grid
+south_audit_x2100_y-4500,2100,-4500,39.345224,-76.621571,315.19,13.11,198,south terrain audit grid
+south_audit_x2486_y-4500,2486,-4500,39.345230,-76.621480,316.80,14.72,222,south terrain audit grid
+south_audit_x2700_y-4500,2700,-4500,39.345234,-76.621431,317.98,15.91,240,south terrain audit grid
+south_audit_x2902_y-4500,2902,-4500,39.345238,-76.621383,317.86,15.78,238,south terrain audit grid
+south_audit_x400_y-3500,400,-3500,39.345375,-76.621990,310.45,8.37,126,south terrain audit grid
+south_audit_x700_y-3500,700,-3500,39.345380,-76.621920,310.84,8.76,132,south terrain audit grid
+south_audit_x900_y-3500,900,-3500,39.345383,-76.621873,311.63,9.55,144,south terrain audit grid
+south_audit_x1206_y-3500,1206,-3500,39.345389,-76.621802,312.54,10.46,158,south terrain audit grid
+south_audit_x1650_y-3500,1650,-3500,39.345396,-76.621698,313.99,11.91,180,south terrain audit grid
+south_audit_x2100_y-3500,2100,-3500,39.345404,-76.621593,315.28,13.20,199,south terrain audit grid
+south_audit_x2486_y-3500,2486,-3500,39.345411,-76.621503,316.29,14.21,215,south terrain audit grid
+south_audit_x2700_y-3500,2700,-3500,39.345415,-76.621453,316.91,14.83,224,south terrain audit grid
+south_audit_x2902_y-3500,2902,-3500,39.345418,-76.621406,317.37,15.29,231,south terrain audit grid
+south_audit_x400_y-3000,400,-3000,39.345465,-76.622001,310.58,8.50,128,south terrain audit grid
+south_audit_x700_y-3000,700,-3000,39.345470,-76.621931,311.94,9.86,149,south terrain audit grid
+south_audit_x900_y-3000,900,-3000,39.345474,-76.621885,312.59,10.52,159,south terrain audit grid
+south_audit_x1206_y-3000,1206,-3000,39.345479,-76.621813,313.74,11.66,176,south terrain audit grid
+south_audit_x1650_y-3000,1650,-3000,39.345487,-76.621709,314.87,12.79,193,south terrain audit grid
+south_audit_x2100_y-3000,2100,-3000,39.345495,-76.621604,315.55,13.47,204,south terrain audit grid
+south_audit_x2486_y-3000,2486,-3000,39.345501,-76.621514,316.82,14.74,223,south terrain audit grid
+south_audit_x2700_y-3000,2700,-3000,39.345505,-76.621464,317.25,15.17,229,south terrain audit grid
+south_audit_x2902_y-3000,2902,-3000,39.345509,-76.621417,317.65,15.57,235,south terrain audit grid
+south_audit_x400_y-2400,400,-2400,39.345573,-76.622015,309.42,7.34,111,south terrain audit grid
+south_audit_x700_y-2400,700,-2400,39.345579,-76.621945,311.90,9.82,148,south terrain audit grid
+south_audit_x900_y-2400,900,-2400,39.345582,-76.621898,313.34,11.26,170,south terrain audit grid
+south_audit_x1206_y-2400,1206,-2400,39.345587,-76.621827,317.33,15.25,230,south terrain audit grid
+south_audit_x1650_y-2400,1650,-2400,39.345595,-76.621723,318.52,16.44,248,south terrain audit grid
+south_audit_x2100_y-2400,2100,-2400,39.345603,-76.621618,319.90,17.82,269,south terrain audit grid
+south_audit_x2486_y-2400,2486,-2400,39.345610,-76.621528,323.58,21.50,325,south terrain audit grid
+south_audit_x2700_y-2400,2700,-2400,39.345613,-76.621478,324.84,22.76,344,south terrain audit grid
+south_audit_x2902_y-2400,2902,-2400,39.345617,-76.621431,325.63,23.55,356,south terrain audit grid
+south_audit_x400_y-1888,400,-1888,39.345666,-76.622026,310.10,8.02,121,south terrain audit grid
+south_audit_x700_y-1888,700,-1888,39.345671,-76.621956,316.42,14.34,217,south terrain audit grid
+south_audit_x900_y-1888,900,-1888,39.345675,-76.621910,319.11,17.03,257,south terrain audit grid
+south_audit_x1206_y-1888,1206,-1888,39.345680,-76.621838,319.78,17.71,267,south terrain audit grid
+south_audit_x1650_y-1888,1650,-1888,39.345688,-76.621734,318.27,16.19,245,south terrain audit grid
+south_audit_x2100_y-1888,2100,-1888,39.345695,-76.621629,322.51,20.44,309,south terrain audit grid
+south_audit_x2486_y-1888,2486,-1888,39.345702,-76.621539,325.61,23.54,356,south terrain audit grid
+south_audit_x2700_y-1888,2700,-1888,39.345706,-76.621489,326.45,24.37,368,south terrain audit grid
+south_audit_x2902_y-1888,2902,-1888,39.345709,-76.621442,327.24,25.16,380,south terrain audit grid

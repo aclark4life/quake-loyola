@@ -37,7 +37,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from quake_loyola.constants import CHARLES_Y1, ENNIS_Y, KNOTT, SCALE  # noqa: E402
+from quake_loyola.constants import (  # noqa: E402
+    CHARLES_Y1,
+    ENNIS_Y,
+    KNOTT,
+    KNOTT_DRIVEWAY_ES_X2,
+    KNOTT_DRIVEWAY_Y1,
+    SCALE,
+    WALL_T,
+    WORLD_Y1,
+)
 
 # ── Real-world anchor ────────────────────────────────────────────────────────
 ANCHOR_LAT = 39.3455
@@ -132,6 +141,37 @@ SAMPLE_POINTS = [
     ("charles_s4", 0, 900, "Charles St, 4/5 north"),
     ("charles_north", 0, 1696, "Charles St north end (CHARLES_Y2)"),
 ]
+
+# South-terrain audit grid (Charles verge -> east driveway sidewalk edge,
+# KH driveway Y1 -> world south edge) — added to spot-check the re-derived
+# south extension / west ramp / south corner fill fills against real USGS
+# elevation, independent of the hand-picked _far_south_z_west/_east sample
+# columns already baked into knott_terrain.py.
+_SOUTH_AUDIT_X = [
+    400,
+    700,
+    900,
+    KNOTT.x1,
+    1650,
+    2100,
+    KNOTT.x2,
+    2700,
+    KNOTT_DRIVEWAY_ES_X2,
+]
+_SOUTH_AUDIT_Y = [
+    WORLD_Y1 + WALL_T,
+    -5500,
+    -4500,
+    -3500,
+    -3000,
+    -2400,
+    KNOTT_DRIVEWAY_Y1,
+]
+for _sy in _SOUTH_AUDIT_Y:
+    for _sx in _SOUTH_AUDIT_X:
+        SAMPLE_POINTS.append(
+            (f"south_audit_x{_sx}_y{_sy}", _sx, _sy, "south terrain audit grid")
+        )
 
 
 def main():
