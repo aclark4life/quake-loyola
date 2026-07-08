@@ -366,41 +366,42 @@ def build():
     # The top of the hill south of the building is ground, not roadway; only the
     # actual driveway lane (RD_X1-RD_X2) and its flanking sidewalks (WS, ES)
     # extend back to the south world edge. The west ground fill is re-derived
-    # from real elevation (was flat at hill level) using the same Y-profile
-    # shape as the east fill above, offset to this column's own real Y1 value
-    # (interpolated) since no separate south-column samples exist here.
-    #
-    # As with the west-of-west-sidewalk strip further below, real elevation
-    # stays well above the flat WS sidewalk right up to its edge — a taper
-    # buffer (_ws_taper_x, _WS_TAPER_W) is used here too so the ground eases
-    # down to the sidewalk's flat height instead of forming a sheer wall.
-    _wg_west_off = (
-        _south_edge_real(KNOTT_DRIVEWAY_WS_X1) - _sgrid_z - _far_south_z_west[0]
-    )
-    _wg_taper_f = (_ws_taper_x - KNOTT.x1) / (KNOTT_DRIVEWAY_WS_X1 - KNOTT.x1)
+    # from real elevation using a 4-column X grid (KNOTT.x1, 1650, 2100,
+    # KNOTT_DRIVEWAY_WS_X1) — USGS EPQS samples at all 4 columns (see the
+    # south_audit_* rows in docs/elevation_samples.csv) show real elevation
+    # doesn't taper linearly from a single KNOTT.x1 sample the way the
+    # original single-column-plus-taper version assumed; that undersampling
+    # overshot real ground by 25-75 z-units in the middle of this strip. The
+    # last column (KNOTT_DRIVEWAY_WS_X1) is held flat at the WS sidewalk's own
+    # grade — no contrary evidence for the paved sidewalk itself — so real
+    # elevation still eases down to it over the final ~400 units, same idea
+    # as the taper used elsewhere, just backed by real samples the rest of
+    # the way instead of a single extrapolated slope.
     _wg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1
-    for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
-        zip(
-            zip(_far_south_y, _far_south_z_west),
-            zip(_far_south_y[1:], _far_south_z_west[1:]),
-        )
+    _wg2_x = [KNOTT.x1, 1650, 2100, KNOTT_DRIVEWAY_WS_X1]
+    _wg2_cols = [
+        _far_south_z_west,
+        [245, 193, 197, 130],  # real samples at x=1650
+        [309, 204, 198, 130],  # real samples at x=2100
+        [_wg_flat - _sgrid_z] * 4,  # flat WS sidewalk grade, all Y
+    ]
+    for (gx1, gcol1), (gx2, gcol2) in zip(
+        zip(_wg2_x, _wg2_cols), zip(_wg2_x[1:], _wg2_cols[1:])
     ):
-        za1 = _sgrid_z + z1
-        za2 = _sgrid_z + z2
-        zb1 = _sgrid_z + z1 + _wg_west_off * _wg_taper_f  # real height at taper X, y1
-        zb2 = _sgrid_z + z2 + _wg_west_off * _wg_taper_f  # real height at taper X, y2
-        # See _WRAMP_OVR note near the top of build() — overlap non-final
-        # segments to avoid the qbsp coincident-boundary leak.
-        if _seg_i < len(_far_south_y) - 2:
-            y2_ext = y2 - _WRAMP_OVR
-            t_ext = (y2_ext - y1) / (y2 - y1)
-            za2 = za1 + (za2 - za1) * t_ext
-            zb2 = zb1 + (zb2 - zb1) * t_ext
-            y2 = y2_ext
-        for gx1, gx2, gz1a, gz1b, gz2a, gz2b in (
-            (KNOTT.x1, _ws_taper_x, za1, za2, zb1, zb2),
-            (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1, zb1, zb2, _wg_flat, _wg_flat),
-        ):
+        for _seg_i in range(len(_far_south_y) - 1):
+            y1, y2 = _far_south_y[_seg_i], _far_south_y[_seg_i + 1]
+            gz1a = _sgrid_z + gcol1[_seg_i]
+            gz1b = _sgrid_z + gcol1[_seg_i + 1]
+            gz2a = _sgrid_z + gcol2[_seg_i]
+            gz2b = _sgrid_z + gcol2[_seg_i + 1]
+            # See _WRAMP_OVR note near the top of build() — overlap non-final
+            # segments to avoid the qbsp coincident-boundary leak.
+            if _seg_i < len(_far_south_y) - 2:
+                y2_ext = y2 - _WRAMP_OVR
+                t_ext = (y2_ext - y1) / (y2 - y1)
+                gz1b = gz1a + (gz1b - gz1a) * t_ext
+                gz2b = gz2a + (gz2b - gz2a) * t_ext
+                y2 = y2_ext
             # Note: y2 < y1 here (_far_south_y decreases going south) — the
             # opposite direction from the driveway-zone grids elsewhere in
             # this file, so B/C (and their z values) are swapped relative to
