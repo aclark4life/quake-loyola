@@ -105,14 +105,14 @@ def build():
         # Sidewalk-tie column: flat at the curb/sidewalk height streets.py
         # already builds along this whole edge, for every Y row.
         [CHARLES_WALK_H] * len(_ne_y),
-        [CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
-        [CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
-        [CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
-        [CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
-        [CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
-        [CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
-        [CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
-        [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
+        [CHARLES_WALK_H] + _clamp0([61, 54, 27, -8, -40, -45]),
+        [CHARLES_WALK_H] + _clamp0([86, 74, 52, 18, -10, -25]),
+        [CHARLES_WALK_H] + _clamp0([105, 88, 63, 23, -4, -28]),
+        [CHARLES_WALK_H] + _clamp0([104, 100, 59, 18, -7, -26]),
+        [CHARLES_WALK_H] + _clamp0([100, 99, 94, 37, -4, -16]),
+        [CHARLES_WALK_H] + _clamp0([184, 109, 96, 74, 9, -8]),
+        [CHARLES_WALK_H] + _clamp0([155, 143, 116, 100, 71, 19]),
+        [CHARLES_WALK_H] + _clamp0([185, 178, 155, 110, 99, 55]),
     ]
 
     # A chain of 3+ Y-segments sharing an exact coincident boundary plane
