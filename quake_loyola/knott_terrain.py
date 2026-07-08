@@ -146,8 +146,8 @@ def build():
     # everywhere it's used along this Y line (south corner grid, west-sidewalk
     # strip, south extension ground fill below).
     _sgrid_z = FLOOR_Z2 + CHARLES_WALK_H
-    _south_edge_x0, _south_edge_z0 = KNOTT.x1, 267
-    _south_edge_x1, _south_edge_z1 = 2700, 368
+    _south_edge_x0, _south_edge_z0 = KNOTT.x1, 133
+    _south_edge_x1, _south_edge_z1 = 2700, 184
 
     def _south_edge_real(x):
         t = (x - _south_edge_x0) / (_south_edge_x1 - _south_edge_x0)
@@ -161,8 +161,8 @@ def build():
     # ground fills further below; the paved driveway lane and its sidewalks
     # (RD, WS, ES) are left flat — engineered/graded, no contrary evidence.
     _far_south_y = [KNOTT_DRIVEWAY_Y1, -3000, -4500, WORLD_Y1 + WALL_T]
-    _far_south_z_west = [267, 176, 185, 125]  # real samples at x≈KNOTT.x1
-    _far_south_z_east = [368, 229, 240, 143]  # real samples at x≈2700 (east of ES)
+    _far_south_z_west = [133, 88, 92, 62]  # real samples at x≈KNOTT.x1
+    _far_south_z_east = [184, 114, 120, 71]  # real samples at x≈2700 (east of ES)
     # A chain of 3+ Y-segments sharing exact coincident boundary edges (each
     # segment's south edge = the next segment's north edge, bit-for-bit
     # identical XYZ) trips a qbsp portal-building edge case that produces a
@@ -184,12 +184,12 @@ def build():
     _sgrid = [
         # (x, z_at_y1, z_at_y2)
         (_charles_verge_x2, _sgrid_z, _sgrid_z),  # verge — tied flat both ends
-        (700, _sgrid_z + 217, _sgrid_z + 275),  # 217 real (y=-1888); 275 interpolated
-        (900, _sgrid_z + 237, _sgrid_z + 352),  # 237 interpolated; 352 real (y=-233)
+        (700, _sgrid_z + 108, _sgrid_z + 137),  # 217 real (y=-1888); 275 interpolated
+        (900, _sgrid_z + 118, _sgrid_z + 176),  # 237 interpolated; 352 real (y=-233)
         (
             KNOTT.x1,
-            _sgrid_z + 267,
-            _sgrid_z + 370,
+            _sgrid_z + 133,
+            _sgrid_z + 185,
         ),  # 267 real (y=-1888); 370 real (y=-233)
     ]
 
@@ -381,8 +381,8 @@ def build():
     _wg2_x = [KNOTT.x1, 1650, 2100, KNOTT_DRIVEWAY_WS_X1]
     _wg2_cols = [
         _far_south_z_west,
-        [245, 193, 197, 130],  # real samples at x=1650
-        [309, 204, 198, 130],  # real samples at x=2100
+        [122, 96, 98, 65],  # real samples at x=1650
+        [154, 102, 99, 65],  # real samples at x=2100
         [_wg_flat - _sgrid_z] * 4,  # flat WS sidewalk grade, all Y
     ]
     for (gx1, gcol1), (gx2, gcol2) in zip(
@@ -510,12 +510,12 @@ def build():
     _wg_t900 = (900 - 700) / (KNOTT.x1 - 700)
     _wgrid_z900 = [
         z700 + _wg_t900 * (z1206 - z700)
-        for z700, z1206 in zip([217, 149, 158, 125], _far_south_z_west)
+        for z700, z1206 in zip([108, 74, 79, 62], _far_south_z_west)
     ]
     _wgrid_x = [_charles_verge_x2, 700, 900, KNOTT.x1]
     _wgrid_cols = [
         [0, 0, 0, 0],
-        [217, 149, 158, 125],
+        [108, 74, 79, 62],
         _wgrid_z900,
         _far_south_z_west,
     ]
@@ -727,11 +727,11 @@ def build():
     # keeps the same real data but turns that wall into a steep-but-sloped toe.
     _hill_profile = [
         (_charles_verge_x2, 0),  # tie to grade at the verge — no cliff at the box edge
-        (_charles_verge_x2 + 80, 120),  # real X=400 sample, offset in to slope the toe
-        (525, 171),  # Pier 3 (bridge centre-span east pier)
-        (700, 268),
-        (900, 313),  # crest — real elevation levels off from here on
-        (KNOTT.x1, 312),  # X=1206, Knott Hall west edge
+        (_charles_verge_x2 + 80, 60),  # real X=400 sample, offset in to slope the toe
+        (525, 85),  # Pier 3 (bridge centre-span east pier)
+        (700, 134),
+        (900, 156),  # crest — real elevation levels off from here on
+        (KNOTT.x1, 156),  # X=1206, Knott Hall west edge
         # Taper down to flat sidewalk grade by KNOTT_DRIVEWAY_WS_X1 instead
         # of holding flat — the WS/RD/ES driveway junction north of Y2 (see
         # "West sidewalk — cement..." etc. below) is a paved, flat corridor

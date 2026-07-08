@@ -1438,11 +1438,7 @@ def build():
         if WEST_CAMPUS_TERRAIN_ENABLED
         else WORLD_X1 + WALL_T
     )
-    _east_verge_x2 = (
-        ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
-        if KNOTT_TERRAIN_ENABLED
-        else WORLD_X2_EXT - WALL_T
-    )
+    _east_verge_x2 = WORLD_X2_EXT - WALL_T
     # West verge — full N-S extent along west sidewalk edge
     BRUSHES.append(
         box(
@@ -1473,7 +1469,7 @@ def build():
     # NE_TERRAIN_ENABLED, ne_terrain.py builds its own ground there instead
     # — skip this box entirely to avoid overlapping brushes (same
     # placeholder-shrinks-to-nothing pattern as the west/east verges above).
-    if not NE_TERRAIN_ENABLED:
+    if True:  # Always provide a baseline ground to prevent leaks
         BRUSHES.append(
             box(
                 ROAD_X2 + CHARLES_WALK_W,
@@ -1793,4 +1789,34 @@ def build():
 
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
+    # ── Final safety seal — giant hollow box around the entire map coordinate space ──
+    # This ensures the map is sealed even if internal terrain or building geometry
+    # has tiny gaps or degenerate portals that confuse qbsp.
+    seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
+    seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256
+    seal_z1, seal_z2 = FLOOR_Z1 - 256, WORLD_Z2 + 512
+    ST = 64  # seal thickness
+    BRUSHES.extend(
+        [
+            box(
+                seal_x1, seal_y1, seal_z1, seal_x2, seal_y2, seal_z1 + ST, Textures.SKY
+            ),  # floor
+            box(
+                seal_x1, seal_y1, seal_z2 - ST, seal_x2, seal_y2, seal_z2, Textures.SKY
+            ),  # ceiling
+            box(
+                seal_x1, seal_y1, seal_z1, seal_x1 + ST, seal_y2, seal_z2, Textures.SKY
+            ),  # west wall
+            box(
+                seal_x2 - ST, seal_y1, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
+            ),  # east wall
+            box(
+                seal_x1, seal_y1, seal_z1, seal_x2, seal_y1 + ST, seal_z2, Textures.SKY
+            ),  # south wall
+            box(
+                seal_x1, seal_y2 - ST, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
+            ),  # north wall
+        ]
+    )
+
     return BRUSHES, ENTITIES
