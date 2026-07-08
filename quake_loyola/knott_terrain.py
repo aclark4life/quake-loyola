@@ -163,6 +163,18 @@ def build():
     _far_south_y = [KNOTT_DRIVEWAY_Y1, -3000, -4500, WORLD_Y1 + WALL_T]
     _far_south_z_west = [267, 176, 185, 125]  # real samples at x≈KNOTT.x1
     _far_south_z_east = [368, 229, 240, 143]  # real samples at x≈2700 (east of ES)
+    # A chain of 3+ Y-segments sharing exact coincident boundary edges (each
+    # segment's south edge = the next segment's north edge, bit-for-bit
+    # identical XYZ) trips a qbsp portal-building edge case that produces a
+    # real leak — confirmed by bisection: removing any single segment from an
+    # otherwise-complete 3-segment column makes the leak vanish, but any
+    # combination that leaves all 3 stacked and exactly coincident leaks
+    # again. Every loop below that walks _far_south_y in 3+ segments extends
+    # each non-final segment's south edge by _WRAMP_OVR units past its
+    # "official" boundary (linearly extrapolating its own ramp slope for the
+    # extra sliver), so consecutive segments overlap by a hair instead of
+    # meeting on an exact shared plane.
+    _WRAMP_OVR = 4
 
     # South corner grid (real-elevation, X=verge..KNOTT.x1 at Y1/Y2) and its
     # X-interpolation helper — moved up here (ahead of where its brushes are
@@ -229,24 +241,39 @@ def build():
     # taper zone; the taper itself uses tri_ramp_prism (two triangles) so the
     # transition from flat to real is a gradual slope, not an abrupt step.
     _eg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1, same as ES sidewalk
-    for (y1, z1), (y2, z2) in zip(
-        zip(_far_south_y, _far_south_z_east),
-        zip(_far_south_y[1:], _far_south_z_east[1:]),
+    for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
+        zip(
+            zip(_far_south_y, _far_south_z_east),
+            zip(_far_south_y[1:], _far_south_z_east[1:]),
+        )
     ):
         ra1 = _sgrid_z + z1
         ra2 = _sgrid_z + z2
+        # See _WRAMP_OVR note near the top of build() — overlap non-final
+        # segments to avoid the qbsp coincident-boundary leak.
+        if _seg_i < len(_far_south_y) - 2:
+            y2_ext = y2 - _WRAMP_OVR
+            ra2 = ra1 + (ra2 - ra1) * (y2_ext - y1) / (y2 - y1)
+            y2 = y2_ext
+        # Note: y2 < y1 here (_far_south_y decreases going south), the
+        # opposite direction from the driveway-zone grids (Y1->Y2
+        # increasing) elsewhere in this file — tri_ramp_prism requires its
+        # (A,B,C) triangle to be CCW from above, so B/C (and their z values)
+        # are swapped relative to those north-going grids to keep the
+        # winding correct. Getting this backwards produces a brush qbsp
+        # silently drops ("Couldn't create brush faces"), leaving a hole.
         BRUSHES.append(
             tri_ramp_prism(
                 KNOTT_DRIVEWAY_ES_X2,
                 y1,
                 _es_taper_x,
-                y1,
-                _es_taper_x,
                 y2,
+                _es_taper_x,
+                y1,
                 FLOOR_Z1,
                 _eg_flat,
-                ra1,
                 ra2,
+                ra1,
                 Textures.GROUND,
             )
         )
@@ -254,14 +281,14 @@ def build():
             tri_ramp_prism(
                 KNOTT_DRIVEWAY_ES_X2,
                 y1,
-                _es_taper_x,
-                y2,
                 KNOTT_DRIVEWAY_ES_X2,
+                y2,
+                _es_taper_x,
                 y2,
                 FLOOR_Z1,
                 _eg_flat,
-                ra2,
                 _eg_flat,
+                ra2,
                 Textures.GROUND,
             )
         )
@@ -352,30 +379,45 @@ def build():
     )
     _wg_taper_f = (_ws_taper_x - KNOTT.x1) / (KNOTT_DRIVEWAY_WS_X1 - KNOTT.x1)
     _wg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1
-    for (y1, z1), (y2, z2) in zip(
-        zip(_far_south_y, _far_south_z_west),
-        zip(_far_south_y[1:], _far_south_z_west[1:]),
+    for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
+        zip(
+            zip(_far_south_y, _far_south_z_west),
+            zip(_far_south_y[1:], _far_south_z_west[1:]),
+        )
     ):
         za1 = _sgrid_z + z1
         za2 = _sgrid_z + z2
         zb1 = _sgrid_z + z1 + _wg_west_off * _wg_taper_f  # real height at taper X, y1
         zb2 = _sgrid_z + z2 + _wg_west_off * _wg_taper_f  # real height at taper X, y2
+        # See _WRAMP_OVR note near the top of build() — overlap non-final
+        # segments to avoid the qbsp coincident-boundary leak.
+        if _seg_i < len(_far_south_y) - 2:
+            y2_ext = y2 - _WRAMP_OVR
+            t_ext = (y2_ext - y1) / (y2 - y1)
+            za2 = za1 + (za2 - za1) * t_ext
+            zb2 = zb1 + (zb2 - zb1) * t_ext
+            y2 = y2_ext
         for gx1, gx2, gz1a, gz1b, gz2a, gz2b in (
             (KNOTT.x1, _ws_taper_x, za1, za2, zb1, zb2),
             (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1, zb1, zb2, _wg_flat, _wg_flat),
         ):
+            # Note: y2 < y1 here (_far_south_y decreases going south) — the
+            # opposite direction from the driveway-zone grids elsewhere in
+            # this file, so B/C (and their z values) are swapped relative to
+            # those north-going grids to keep the CCW winding tri_ramp_prism
+            # requires. See the matching note in the east-side loop above.
             BRUSHES.append(
                 tri_ramp_prism(
                     gx1,
                     y1,
                     gx2,
-                    y1,
-                    gx2,
                     y2,
+                    gx2,
+                    y1,
                     FLOOR_Z1,
                     gz1a,
-                    gz2a,
                     gz2b,
+                    gz2a,
                     Textures.GROUND,
                 )
             )
@@ -383,14 +425,14 @@ def build():
                 tri_ramp_prism(
                     gx1,
                     y1,
-                    gx2,
-                    y2,
                     gx1,
+                    y2,
+                    gx2,
                     y2,
                     FLOOR_Z1,
                     gz1a,
-                    gz2b,
                     gz1b,
+                    gz2b,
                     Textures.GROUND,
                 )
             )
@@ -476,6 +518,16 @@ def build():
         _wgrid_z900,
         _far_south_z_west,
     ]
+    # A chain of 3+ Y-segments sharing exact coincident boundary edges (each
+    # segment's south edge = the next segment's north edge, bit-for-bit
+    # identical XYZ) trips a qbsp portal-building edge case that produces a
+    # real leak — confirmed by bisection: removing any single segment from an
+    # otherwise-complete 3-segment column makes the leak vanish, but any
+    # combination that leaves all 3 stacked and exactly coincident leaks
+    # again. Nudging just the shared Y value didn't help either (the
+    # coincidence is inherent to stacking flush segments, not tied to one
+    # specific Y). See _WRAMP_OVR note near the top of build() — overlap
+    # non-final segments to avoid the leak.
     for (wx1, wcol1), (wx2, wcol2) in zip(
         zip(_wgrid_x, _wgrid_cols), zip(_wgrid_x[1:], _wgrid_cols[1:])
     ):
@@ -483,18 +535,27 @@ def build():
             y1, y2 = _far_south_y[i], _far_south_y[i + 1]
             z1a, z1b = wcol1[i], wcol1[i + 1]
             z2a, z2b = wcol2[i], wcol2[i + 1]
+            if i < len(_far_south_y) - 2:
+                y2_ext = y2 - _WRAMP_OVR
+                z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)
+                z2b = z2a + (z2b - z2a) * (y2_ext - y1) / (y2 - y1)
+                y2 = y2_ext
+            # Note: y2 < y1 here (_far_south_y decreases going south) —
+            # B/C (and their z values) are swapped relative to north-going
+            # grids to keep the CCW winding tri_ramp_prism requires. See the
+            # matching note in the south-extension loops above.
             BRUSHES.append(
                 tri_ramp_prism(
                     wx1,
                     y1,
                     wx2,
-                    y1,
-                    wx2,
                     y2,
+                    wx2,
+                    y1,
                     FLOOR_Z1,
                     _sgrid_z + z1a,
-                    _sgrid_z + z2a,
                     _sgrid_z + z2b,
+                    _sgrid_z + z2a,
                     Textures.GROUND,
                 )
             )
@@ -502,14 +563,14 @@ def build():
                 tri_ramp_prism(
                     wx1,
                     y1,
-                    wx2,
-                    y2,
                     wx1,
+                    y2,
+                    wx2,
                     y2,
                     FLOOR_Z1,
                     _sgrid_z + z1a,
-                    _sgrid_z + z2b,
                     _sgrid_z + z1b,
+                    _sgrid_z + z2b,
                     Textures.GROUND,
                 )
             )
