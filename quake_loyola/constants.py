@@ -147,7 +147,9 @@ BRIDGE_PILLAR_OVERHANG = 16
 # pillar wall for a panelled look.
 BRIDGE_PIER_PLATE_SIZE = 34
 BRIDGE_PIER_PLATE_GAP = 3
-BRIDGE_PIER_PLATE_D = 4  # plate protrusion depth from the pillar wall
+BRIDGE_PIER_PLATE_D = (
+    1  # plate protrusion depth from the pillar wall (slight, flush-ish)
+)
 BRIDGE_PILLAR_PYR_H = 20
 BRIDGE_SEG_SPAN_W = 32
 BRIDGE_SQ_D = 1
