@@ -110,7 +110,7 @@ from .constants import (
 from .geometry import (
     arch_seg,
     box,
-    box_with_hole,
+    box_with_round_hole,
     brush_ent,
     curb_seg,
     pyramid,
@@ -864,17 +864,16 @@ def build():
     # inner faces should read as sky, regardless of STREETS_DETAILS_ENABLED.
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED else Textures.SKY
     BRUSHES.extend(
-        box_with_hole(
+        box_with_round_hole(
             WORLD_X1,
             WORLD_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z2,
-            MANHOLE_X - MANHOLE_R,
-            MANHOLE_Y - MANHOLE_R,
-            MANHOLE_X + MANHOLE_R,
-            MANHOLE_Y + MANHOLE_R,
+            MANHOLE_X,
+            MANHOLE_Y,
+            MANHOLE_R,
             Textures.GROUND,
         )
     )  # floor — punched through with the sewer manhole shaft (see sewer.py);
@@ -1109,17 +1108,16 @@ def build():
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
             BRUSHES.extend(
-                box_with_hole(
+                box_with_round_hole(
                     lane_x1,
                     lane_y1,
                     FLOOR_Z2,
                     lane_x2,
                     lane_y2,
                     FLOOR_Z2 + STREET_SURFACE_T,
-                    MANHOLE_X - MANHOLE_R,
-                    MANHOLE_Y - MANHOLE_R,
-                    MANHOLE_X + MANHOLE_R,
-                    MANHOLE_Y + MANHOLE_R,
+                    MANHOLE_X,
+                    MANHOLE_Y,
+                    MANHOLE_R,
                     Textures.ROAD,
                 )
             )
