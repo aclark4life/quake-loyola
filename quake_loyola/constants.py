@@ -229,6 +229,9 @@ ENNIS_GATE_FENCE_POST_W = 8
 ENNIS_GATE_FENCE_SPACING = 16
 ENNIS_GATE_FENCE_TOP_RAIL_DROP = 28
 ENNIS_GATE_FENCE_TOP_RAIL_T = 2
+ENNIS_GATE_FENCE_WEST_SHIFT = 24  # plain picket run sits this far west of the brick
+# wall it used to butt against, so a short connector (post + cross rail) is needed
+# to rejoin them at the south end of the picket run.
 ENNIS_GATE_PANEL_COUNT = 12  # dozen decorative rectangular iron panels on the brick
 ENNIS_GATE_PILLAR_LEG_T = 4  # leg thickness of the inverted-U (∩) separator pillars
 ENNIS_GATE_PILLAR_OPENING_W = 12  # gap between the two legs of each ∩ pillar
