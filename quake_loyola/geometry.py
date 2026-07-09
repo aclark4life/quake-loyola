@@ -1543,15 +1543,24 @@ def arch_wall(
     for seg_index in range(segs):
         a1, a2 = seg_index * seg, (seg_index + 1) * seg
         if has_recess:
-            brushes.append(arch_seg(x1, rx1, yc, float(sprz), rin, rout, a1, a2, tex))
-            brushes.append(arch_seg(rx2, x2, yc, float(sprz), rin, rout, a1, a2, tex))
+            # These segments form the exposed interior throat surface inside
+            # the tunnel span — use the exact-chord wedge builder so
+            # neighbouring segments share identical edge vertices (no
+            # tangent-approximation sliver gap), same reasoning as the
+            # decorative plate rings.
             brushes.append(
-                arch_seg(
+                arch_seg_chord(x1, rx1, yc, float(sprz), rin, rout, a1, a2, tex)
+            )
+            brushes.append(
+                arch_seg_chord(rx2, x2, yc, float(sprz), rin, rout, a1, a2, tex)
+            )
+            brushes.append(
+                arch_seg_chord(
                     rx1, rx2, yc, float(sprz), rin + recess_depth, rout, a1, a2, tex
                 )
             )
             brushes.append(
-                arch_seg(
+                arch_seg_chord(
                     rx1,
                     rx2,
                     yc,
