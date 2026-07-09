@@ -1117,8 +1117,8 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 def tile_grid_origins(width, height, tile=34, gap=3):
     """Centred grid of (x_offset, z_offset) origins for square tiles filling a
-    width x height rectangle (both relative to 0,0). Shared by tile_wall_plates
-    and any custom (e.g. sheared) plate placement."""
+    width x height rectangle (both relative to 0,0). Shared by the plate
+    helpers below and any custom (e.g. sheared) plate placement."""
     pitch = tile + gap
     nx = max(1, int((width + gap) // pitch))
     nz = max(1, int((height + gap) // pitch))
@@ -1129,22 +1129,60 @@ def tile_grid_origins(width, height, tile=34, gap=3):
     return [(ox + i * pitch, oz + k * pitch) for i in range(nx) for k in range(nz)]
 
 
-def tile_wall_plates(x1, x2, y_face, thickness, z1, z2, tex, tile=34, gap=3):
-    """Decorative grid of square plate brushes applied to a vertical Y-facing wall.
+def tile_face_plates(x_face, thickness, y1, y2, z1, z2, tex, tile=34, gap=3):
+    """Decorative grid of square plate brushes applied to a flat X-facing wall
+    (e.g. the east/west end-face of a bridge pier).
 
-    Fills the x1..x2 / z1..z2 rectangle with a centred grid of square tiles
-    (pitch = tile + gap), each protruding from the flat wall at ``y_face`` by
+    Fills the y1..y2 / z1..z2 rectangle with a centred grid of square tiles
+    (pitch = tile + gap), each protruding from the flat face at ``x_face`` by
     ``thickness`` (sign gives the protrusion direction: positive grows toward
-    +Y, negative toward -Y). Used for cement plates on pier walls.
+    +X, negative toward -X).
     """
-    y1, y2 = (
-        (y_face, y_face + thickness) if thickness >= 0 else (y_face + thickness, y_face)
+    x1v, x2v = (
+        (x_face, x_face + thickness) if thickness >= 0 else (x_face + thickness, x_face)
     )
     brushes = []
-    for dx, dz in tile_grid_origins(x2 - x1, z2 - z1, tile=tile, gap=gap):
-        tx1 = x1 + dx
+    for dy, dz in tile_grid_origins(y2 - y1, z2 - z1, tile=tile, gap=gap):
+        ty1 = y1 + dy
         tz1 = z1 + dz
-        brushes.append(box(tx1, y1, tz1, tx1 + tile, y2, tz1 + tile, tex))
+        brushes.append(box(x1v, ty1, tz1, x2v, ty1 + tile, tz1 + tile, tex))
+    return brushes
+
+
+def arch_plate_ring(x_face, thickness, yc, zc, radius, tex, tile=34, gap=3):
+    """Curved ring of small square decorative plates traced along a semicircular
+    arc (centred at Y=yc, Z=zc, given ``radius``), applied to a flat X-facing
+    wall (e.g. the east/west end-face of a bridge pier arch). Spans angle
+    0..180deg, where 0deg = +Y spring point and 180deg = -Y spring point,
+    mirroring arch_seg's convention — i.e. a voussoir-style ring tracing the
+    arch curve above the opening.
+
+    ``thickness``: protrusion from the flat face at ``x_face`` (sign gives
+    the direction: positive toward +X, negative toward -X), same convention
+    as tile_face_plates.
+    """
+    x1v, x2v = (
+        (x_face, x_face + thickness) if thickness >= 0 else (x_face + thickness, x_face)
+    )
+    pitch = tile + gap
+    segs = max(1, int((math.pi * radius) // pitch))
+    step = 180.0 / segs
+    brushes = []
+    for seg_index in range(segs):
+        angle = math.radians((seg_index + 0.5) * step)
+        cy = yc + radius * math.cos(angle)
+        cz = zc + radius * math.sin(angle)
+        brushes.append(
+            box(
+                x1v,
+                cy - tile / 2,
+                cz - tile / 2,
+                x2v,
+                cy + tile / 2,
+                cz + tile / 2,
+                tex,
+            )
+        )
     return brushes
 
 
