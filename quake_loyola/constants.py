@@ -141,12 +141,13 @@ BRIDGE_PIER_FILL_OFFSET = 16
 BRIDGE_PILLAR_INNER_R = (160, 84)
 BRIDGE_PILLAR_OUTER_R = (140, 72)
 BRIDGE_PILLAR_OVERHANG = 16
-# Decorative square cement tiles on the flat ceiling patch at the crown of each
-# interior arch opening (piers using BRIDGE_PILLAR_INNER_R). See bridge.py
-# "Pillar posts" — tiles hang down slightly from the crown cap for a coffered look.
-BRIDGE_ARCH_TILE_SIZE = 34
-BRIDGE_ARCH_TILE_GAP = 3
-BRIDGE_ARCH_TILE_D = 4  # tile protrusion depth below the crown ceiling
+# Decorative square cement plates on the interior (facing the opposite pillar
+# across the opening) and exterior (facing outward) walls of each arch/square
+# pier. See bridge.py "Pillar posts" — plates protrude slightly from the flat
+# pillar wall for a panelled look.
+BRIDGE_PIER_PLATE_SIZE = 34
+BRIDGE_PIER_PLATE_GAP = 3
+BRIDGE_PIER_PLATE_D = 4  # plate protrusion depth from the pillar wall
 BRIDGE_PILLAR_PYR_H = 20
 BRIDGE_SEG_SPAN_W = 32
 BRIDGE_SQ_D = 1
