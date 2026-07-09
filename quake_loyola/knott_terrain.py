@@ -73,42 +73,34 @@ def build():
     ENTITIES = []
 
     def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
-        # Thin surface overlay riding on top of the GROUND fill: its bottom sits
-        # at the fill top (KNOTT_DRIVEWAY_ZT_*) so the visible sloped sides show
-        # GROUND below and the surface texture only on the thin top layer.
+        # Single full-depth sloped slab: GROUND on every face except the top,
+        # which carries the surface texture. Previously this was a thin surface
+        # overlay riding on a separate GROUND fill, but the overlay's bottom
+        # plane was exactly coplanar with the fill's top plane along the whole
+        # slope — qbsp dropped the 2-unit-thin overlay's top face in favour of
+        # the coincident GROUND face, so the road/sidewalk rendered as dirt.
+        # One brush textured top=surface, sides/bottom=GROUND keeps the same
+        # look (GROUND on the visible sloped sides, surface only on top) with
+        # no coplanar seam to trip.
         brushes.append(
             ramp_slab_y(
                 x1,
                 x2,
                 KNOTT_DRIVEWAY_Y1,
                 KNOTT_DRIVEWAY_Y2,
-                KNOTT_DRIVEWAY_ZT_S,
-                KNOTT_DRIVEWAY_ZT_N,
+                FLOOR_Z1,
+                FLOOR_Z1,
                 top_z_s,
                 top_z_n,
-                surface_tex,
-                tt=surface_tex,
-            )
-        )
-        brushes.append(
-            ramp_slab_y(
-                x1,
-                x2,
-                KNOTT_DRIVEWAY_Y1,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                KNOTT_DRIVEWAY_ZT_S,
-                KNOTT_DRIVEWAY_ZT_N,
                 Textures.GROUND,
-                tt=Textures.GROUND,
+                tt=surface_tex,
             )
         )
 
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
     # Sidewalks with rounded north entrance corners (like Ennis Drive)
-    # Road surface — 2-unit textured overlay riding on sloped fill
+    # Road surface — full-depth GROUND slab textured ROAD on top (see road_section)
     road_section(
         BRUSHES,
         KNOTT_DRIVEWAY_RD_X1,
