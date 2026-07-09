@@ -80,6 +80,35 @@ def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
     return out
 
 
+def _octagon_corner_fills(cx, cy, r, z1, z2, tex):
+    """4 triangular-prism corner fills that round a square hole of half-width
+    ``r`` (centred at cx,cy) into a regular octagon, by re-solidifying each
+    corner's chamfer triangle. Used together with ``box_with_hole`` (cut with
+    a square hole of the same half-width) to approximate a round hole."""
+    c = r * 2 / (2 + math.sqrt(2))  # chamfer leg length for a regular octagon
+    tris = []
+    for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        corner = (cx + sx * r, cy + sy * r)
+        p_edge_x = (cx + sx * (r - c), cy + sy * r)  # point along the x-edge
+        p_edge_y = (cx + sx * r, cy + sy * (r - c))  # point along the y-edge
+        a, b = (p_edge_x, p_edge_y) if sx * sy > 0 else (p_edge_y, p_edge_x)
+        tris.append(
+            tri_prism(corner[0], corner[1], a[0], a[1], b[0], b[1], z1, z2, tex)
+        )
+    return tris
+
+
+def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, **kw):
+    """Like ``box_with_hole``, but the hole is a regular octagon (approximating
+    a round manhole shaft) inscribed in a square of half-width ``r`` centred
+    at (cx, cy), instead of a plain square hole."""
+    pieces = box_with_hole(
+        x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
+    )
+    pieces += _octagon_corner_fills(cx, cy, r, z1, z2, tex)
+    return pieces
+
+
 def east_y_shift(x):
     """Southward Y shift (negative = south) for a given X east of the easternmost pier.
     Pivots at BRIDGE_ARCH_X[4] (= 2206); zero for x <= that pier."""

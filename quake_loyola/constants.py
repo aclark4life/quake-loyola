@@ -1139,10 +1139,9 @@ WORLDSPAWN_FIELDS = {
 
 # ── Sewer tunnel under Charles Street ───────────────────────────────────────
 # A giant cylindrical storm-sewer running the full length of Charles St,
-# buried well below the road slab (FLOOR_Z1) so it never intersects any
-# street/building foundation above. Access is via a manhole cover at street
-# level (a trigger_teleport, matching the bridge abutment's teleport-arch
-# idiom) rather than a physically carved shaft through the road slab.
+# buried well below the road slab (FLOOR_Z1), living inside its own sealed
+# chamber. Access is via a real physical round manhole shaft (see below),
+# not a teleport.
 SEWER_ENABLED = True
 SEWER_WALL_T = 16  # tube wall thickness
 SEWER_RIN = 224  # inner (passable) radius — 448-unit diameter, slightly under
@@ -1166,18 +1165,17 @@ SEWER_LIGHT_SPACING = 768  # distance between interior point lights
 SEWER_ROOM_HW = SEWER_ROUT + 64  # half-width — clearance beyond the tube
 SEWER_ROOM_X1, SEWER_ROOM_X2 = -SEWER_ROOM_HW, SEWER_ROOM_HW
 SEWER_ROOM_WALL_T = 16
-SEWER_ROOM_ZT = FLOOR_Z1  # ceiling top — flush against the world floor's
-# underside, so the manhole shaft has no unsealed gap between the two
 SEWER_ROOM_CEIL_T = 16
+SEWER_ROOM_ZT = (
+    FLOOR_Z1 - SEWER_ROOM_CEIL_T
+)  # interior top / ceiling underside — the ceiling slab itself occupies
+# SEWER_ROOM_ZT..FLOOR_Z1, sitting strictly *below* (not overlapping) the
+# world floor slab, which itself already occupies FLOOR_Z1..FLOOR_Z2.
 SEWER_ROOM_ZB = SEWER_ZC - SEWER_ROUT - 96  # chamber floor, clear below tube
 SEWER_ROOM_FLOOR_T = 16
 
 MANHOLE_X, MANHOLE_Y = 185, 946  # user-specified surface location
-MANHOLE_R = 48  # shaft half-width (square shaft, not round)
+MANHOLE_R = 48  # shaft half-width (square bounding box; corners are chamfered
+# into an octagon by box_with_round_hole() for a round manhole opening)
 MANHOLE_COLLAR_MARGIN = 8  # decorative rim extends this far beyond the hole
 MANHOLE_COLLAR_H = 6  # decorative rim height above the street surface
-# Angular opening cut into the top of the tube ring (angle 90° = straight up,
-# per arch_seg_y's convention) so the manhole shaft drops straight into the
-# tube's hollow interior instead of just the surrounding chamber air.
-MANHOLE_TUBE_OPEN_ANGLE1 = 67.5
-MANHOLE_TUBE_OPEN_ANGLE2 = 112.5
