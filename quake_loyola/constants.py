@@ -691,8 +691,13 @@ PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X, PIER6_X = BRIDGE_ARCH_X
 # is interpolated from west_campus_terrain.py's real grid columns at
 # X=-700/-400, Y=0. Piers without an entry here keep the default FLOOR_Z2.
 BRIDGE_PIER_GROUND_Z = {
-    PIER2_X: 31,  # west_campus_terrain.py real elevation at (-525, 0)
-    PIER3_X: 179,  # knott_terrain.py hill profile at (525, 0): flat_z(8) + 171
+    # Base Z for each center-span pier. Must be at or below the lowest terrain
+    # point under the full bridge Y span (Y1=-148..Y2=148) so the pier doesn't
+    # float above the hillside at the south face.
+    # PIER2 (-525): west terrain ~31 at Y=0, ~15 at Y=-148 — use FLOOR_Z2 (0).
+    # PIER3 (+525): KH hill ~93 at Y=0, ~57 at Y=-148 — use 48 (below min).
+    PIER2_X: 0,  # west campus terrain min under bridge span ≈15; use 0 (FLOOR_Z2)
+    PIER3_X: 48,  # KH hill min under bridge span ≈57; use 48 to close the gap
 }
 DORM_FLOOR_H = (
     128  # dorm-specific floor height (shorter than Knott's KNOTT_FLOOR_H=192)
