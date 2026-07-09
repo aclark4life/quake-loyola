@@ -7,6 +7,7 @@ from quake_loyola import (
     maryland_hall,
     maryland_terrain,
     ne_terrain,
+    sewer,
     streets,
     west_campus,
     west_campus_terrain,
@@ -28,6 +29,7 @@ MODULES = [
     maryland_terrain,
     maryland_hall,
     ne_terrain,
+    sewer,
     entities,
 ]
 

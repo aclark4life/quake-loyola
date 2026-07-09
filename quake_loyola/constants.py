@@ -1136,3 +1136,31 @@ WORLDSPAWN_FIELDS = {
     "dmflags": "128",
     **{**LIGHTING.to_worldspawn(), "_fog": _fog},
 }
+
+# ── Sewer tunnel under Charles Street ───────────────────────────────────────
+# A giant cylindrical storm-sewer running the full length of Charles St,
+# buried well below the road slab (FLOOR_Z1) so it never intersects any
+# street/building foundation above. Access is via a manhole cover at street
+# level (a trigger_teleport, matching the bridge abutment's teleport-arch
+# idiom) rather than a physically carved shaft through the road slab.
+SEWER_ENABLED = True
+SEWER_WALL_T = 16  # tube wall thickness
+SEWER_RIN = 224  # inner (passable) radius — 448-unit diameter, slightly under
+# the 512-unit Charles St curb-to-curb width (ROAD_X2 - ROAD_X1) above
+SEWER_ROUT = SEWER_RIN + SEWER_WALL_T
+SEWER_SEGS = 16  # wedge segments around the full 360° circle
+SEWER_ZC = -320  # tube centre depth — top of the outer wall sits at -80,
+# comfortably below FLOOR_Z1 (-16), the bottom of every street/building slab
+SEWER_Y1, SEWER_Y2 = CHARLES_Y1, CHARLES_Y2  # spans the full modeled street
+SEWER_CAP_T = 32  # end-cap thickness sealing off both ends of the tube
+SEWER_TEX = Textures.GROUND  # aged concrete/stone stand-in
+SEWER_LIGHT_SPACING = 768  # distance between interior point lights
+
+MANHOLE_X, MANHOLE_Y = 185, 946  # user-specified surface location
+MANHOLE_R = 48  # cover radius
+MANHOLE_COVER_T = 4  # visual cover thickness
+MANHOLE_DEST_Z = SEWER_ZC  # teleport destination inside the tube's hollow
+# (falls a short, safe distance onto the curved floor below)
+MANHOLE_RETURN_Y_OFFSET = 96  # the "climb out" pad sits this far north of the
+# landing spot, so arriving players don't immediately re-trigger the return
+# teleport underfoot
