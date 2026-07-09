@@ -112,7 +112,6 @@ from .constants import (
 )
 from .geometry import (
     arch_fill,
-    arch_opening_lining,
     arch_plate_ring,
     arch_seg,
     arch_wall,
@@ -125,8 +124,6 @@ from .geometry import (
     ramp_slab_y,
     shear_box_y,
     shear_pyramid_y,
-    square_opening_lining,
-    square_opening_lining_sheared,
     square_wall,
     tile_face_plates,
     torch_flame_only,
@@ -751,6 +748,17 @@ def build():
 
             # Add pier structure — BRIDGE_ARCH_X[4] (KNOTT_NE_PIER_X) and the new
             # mid-span pier get square openings; all other piers get rounded arches.
+            # The west abutment (min(BRIDGE_ARCH_X)) has a solid cement fill
+            # instead of an open archway, so it gets no cement opening lining.
+            pier_recess = (
+                None
+                if px == min(BRIDGE_ARCH_X)
+                else (
+                    BRIDGE_PIER_LINING_MARGIN,
+                    BRIDGE_PIER_LINING_THICK,
+                    Textures.CEMENT,
+                )
+            )
             if px in (BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
                 # Overhang must reach by2+BRIDGE_PILLAR_OVERHANG to match pillar tops above deck
                 sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
@@ -769,6 +777,7 @@ def build():
                         base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
+                        recess=pier_recess,
                     )
                 )
             else:
@@ -793,6 +802,7 @@ def build():
                         else BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
+                        recess=pier_recess,
                     )
                 )
 
@@ -838,40 +848,6 @@ def build():
                                 gap=BRIDGE_PIER_PLATE_GAP,
                             )
                         )
-
-                # Cement lining on the inside surfaces of the opening (side
-                # walls + curved intrados or lintel underside), leaving a
-                # stone border at each opening end. The bottom of the
-                # opening already has a cement cap from base_cap_h above.
-                if is_square_pier:
-                    BRUSHES.extend(
-                        square_opening_lining(
-                            x1,
-                            x2,
-                            0.0,
-                            pier_floor_z,
-                            pier_ceiling_z - 16,
-                            a_rin,
-                            BRIDGE_PIER_LINING_THICK,
-                            Textures.CEMENT,
-                            margin=BRIDGE_PIER_LINING_MARGIN,
-                        )
-                    )
-                else:
-                    BRUSHES.extend(
-                        arch_opening_lining(
-                            x1,
-                            x2,
-                            0.0,
-                            pier_floor_z,
-                            pier_floor_z + a_stilt,
-                            a_rin,
-                            BRIDGE_PIER_LINING_THICK,
-                            A_SEGS,
-                            Textures.CEMENT,
-                            margin=BRIDGE_PIER_LINING_MARGIN,
-                        )
-                    )
 
             # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
@@ -1086,22 +1062,195 @@ def build():
 
         yc = py_shift
         ext = a_rin + sq_overhang
+        # Recessed opening lining setup: carve the stone side walls and
+        # lintel underside back by BRIDGE_PIER_LINING_THICK across the X
+        # band [rx1, rx2] (inset from the pier faces by the margin), and
+        # fill the freed gap with cement — leaving the bore radius/width
+        # unchanged (no narrowing) with a stone border at each open end.
+        rx1 = x1 + BRIDGE_PIER_LINING_MARGIN
+        rx2 = x2 - BRIDGE_PIER_LINING_MARGIN
+        lining_depth = BRIDGE_PIER_LINING_THICK
+        has_lining = rx2 > rx1
+
+        def shear_at(x):
+            return s1r + (x - x1) * (s2r - s1r) / (x2 - x1)
+
+        rs1, rs2 = (shear_at(rx1), shear_at(rx2)) if has_lining else (s1r, s2r)
+
         # Main pier body (square opening, rotated to follow deck angle)
-        BRUSHES.append(
-            sb(yc - ext, yc - a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
-        )  # south pillar
-        BRUSHES.append(
-            sb(yc + a_rin, yc + ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
-        )  # north pillar
-        BRUSHES.append(
-            sb(
-                yc - a_rin,
-                yc + a_rin,
-                pier_ceiling_z - 16,
-                pier_ceiling_z,
-                Textures.PILLAR,
+        if has_lining:
+            BRUSHES.append(
+                shear_box_y(
+                    x1,
+                    yc - ext,
+                    FLOOR_Z2,
+                    rx1,
+                    yc - a_rin,
+                    pier_ceiling_z,
+                    s1r,
+                    rs1,
+                    Textures.PILLAR,
+                )
             )
-        )  # lintel
+            BRUSHES.append(
+                shear_box_y(
+                    rx2,
+                    yc - ext,
+                    FLOOR_Z2,
+                    x2,
+                    yc - a_rin,
+                    pier_ceiling_z,
+                    rs2,
+                    s2r,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc - ext,
+                    FLOOR_Z2,
+                    rx2,
+                    yc - a_rin - lining_depth,
+                    pier_ceiling_z,
+                    rs1,
+                    rs2,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc - a_rin - lining_depth,
+                    FLOOR_Z2,
+                    rx2,
+                    yc - a_rin,
+                    pier_ceiling_z,
+                    rs1,
+                    rs2,
+                    Textures.CEMENT,
+                )
+            )  # south pillar
+            BRUSHES.append(
+                shear_box_y(
+                    x1,
+                    yc + a_rin,
+                    FLOOR_Z2,
+                    rx1,
+                    yc + ext,
+                    pier_ceiling_z,
+                    s1r,
+                    rs1,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx2,
+                    yc + a_rin,
+                    FLOOR_Z2,
+                    x2,
+                    yc + ext,
+                    pier_ceiling_z,
+                    rs2,
+                    s2r,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc + a_rin + lining_depth,
+                    FLOOR_Z2,
+                    rx2,
+                    yc + ext,
+                    pier_ceiling_z,
+                    rs1,
+                    rs2,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc + a_rin,
+                    FLOOR_Z2,
+                    rx2,
+                    yc + a_rin + lining_depth,
+                    pier_ceiling_z,
+                    rs1,
+                    rs2,
+                    Textures.CEMENT,
+                )
+            )  # north pillar
+            BRUSHES.append(
+                shear_box_y(
+                    x1,
+                    yc - a_rin,
+                    pier_ceiling_z - 16,
+                    rx1,
+                    yc + a_rin,
+                    pier_ceiling_z,
+                    s1r,
+                    rs1,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx2,
+                    yc - a_rin,
+                    pier_ceiling_z - 16,
+                    x2,
+                    yc + a_rin,
+                    pier_ceiling_z,
+                    rs2,
+                    s2r,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc - a_rin,
+                    pier_ceiling_z - 16,
+                    rx2,
+                    yc + a_rin,
+                    pier_ceiling_z - lining_depth,
+                    rs1,
+                    rs2,
+                    Textures.PILLAR,
+                )
+            )
+            BRUSHES.append(
+                shear_box_y(
+                    rx1,
+                    yc - a_rin,
+                    pier_ceiling_z - lining_depth,
+                    rx2,
+                    yc + a_rin,
+                    pier_ceiling_z,
+                    rs1,
+                    rs2,
+                    Textures.CEMENT,
+                )
+            )  # lintel
+        else:
+            BRUSHES.append(
+                sb(yc - ext, yc - a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
+            )  # south pillar
+            BRUSHES.append(
+                sb(yc + a_rin, yc + ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
+            )  # north pillar
+            BRUSHES.append(
+                sb(
+                    yc - a_rin,
+                    yc + a_rin,
+                    pier_ceiling_z - 16,
+                    pier_ceiling_z,
+                    Textures.PILLAR,
+                )
+            )  # lintel
         if BRIDGE_PILLAR_BASE_H > 0:
             BRUSHES.append(
                 sb(
@@ -1151,23 +1300,8 @@ def build():
                     gap=BRIDGE_PIER_PLATE_GAP,
                 )
             )
-        # Cement lining on the inside surfaces of the opening (sheared to
-        # follow the angled deck), leaving a stone border at each opening
-        # end. The bottom already has a cement cap from the base cap above.
-        BRUSHES.extend(
-            square_opening_lining_sheared(
-                x1,
-                x2,
-                east_y_shift(x1),
-                east_y_shift(x2),
-                FLOOR_Z2,
-                pier_ceiling_z - 16,
-                a_rin,
-                BRIDGE_PIER_LINING_THICK,
-                Textures.CEMENT,
-                margin=BRIDGE_PIER_LINING_MARGIN,
-            )
-        )
+        # Cement lining already carved into the pier body above (see
+        # has_lining block) — leaves a stone border at each opening end.
         if by1 < yc - ext:
             BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:

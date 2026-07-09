@@ -1187,83 +1187,6 @@ def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
     return brushes
 
 
-def arch_opening_lining(x1, x2, yc, floor_z, sprz, rin, thickness, segs, tex, margin=0):
-    """Thin cement-style lining covering the inside surfaces of a round arch
-    opening — the two straight stilt side walls and the curved intrados —
-    protruding ``thickness`` inward from the ``rin`` boundary. Inset from the
-    pier's end faces (x1/x2) by ``margin`` on each side, leaving a stone
-    border visible at each opening end before the lining begins."""
-    lx1, lx2 = x1 + margin, x2 - margin
-    if lx2 <= lx1:
-        return []
-    brushes = [
-        box(lx1, yc - rin, floor_z, lx2, yc - rin + thickness, sprz, tex),
-        box(lx1, yc + rin - thickness, floor_z, lx2, yc + rin, sprz, tex),
-    ]
-    step = 180.0 / segs
-    for seg_index in range(segs):
-        brushes.append(
-            arch_seg(
-                lx1,
-                lx2,
-                yc,
-                float(sprz),
-                rin,
-                rin + thickness,
-                seg_index * step,
-                (seg_index + 1) * step,
-                tex,
-            )
-        )
-    return brushes
-
-
-def square_opening_lining(
-    x1, x2, yc, floor_z, ceil_z, open_hw, thickness, tex, margin=0
-):
-    """Thin cement-style lining covering the inside surfaces of a square
-    opening — the two straight side walls and the lintel underside —
-    protruding ``thickness`` inward. Inset from the pier's end faces (x1/x2)
-    by ``margin`` on each side, leaving a stone border visible at each
-    opening end before the lining begins."""
-    lx1, lx2 = x1 + margin, x2 - margin
-    if lx2 <= lx1:
-        return []
-    return [
-        box(lx1, yc - open_hw, floor_z, lx2, yc - open_hw + thickness, ceil_z, tex),
-        box(lx1, yc + open_hw - thickness, floor_z, lx2, yc + open_hw, ceil_z, tex),
-        box(lx1, yc - open_hw, ceil_z - thickness, lx2, yc + open_hw, ceil_z, tex),
-    ]
-
-
-def square_opening_lining_sheared(
-    x1, x2, s1, s2, floor_z, ceil_z, open_hw, thickness, tex, margin=0
-):
-    """Like ``square_opening_lining``, but for a pier whose opening is Y-sheared
-    across X (following an angled deck, see ``shear_box_y``). ``s1``/``s2`` are
-    the Y-shear at x1/x2; the shear at the margin-inset endpoints is linearly
-    interpolated."""
-    lx1, lx2 = x1 + margin, x2 - margin
-    if lx2 <= lx1:
-        return []
-
-    def shear_at(x):
-        return s1 + (x - x1) * (s2 - s1) / (x2 - x1)
-
-    ls1, ls2 = shear_at(lx1), shear_at(lx2)
-    return [
-        shear_box_y(
-            lx1, -open_hw, floor_z, lx2, -open_hw + thickness, ceil_z, ls1, ls2, tex
-        ),
-        shear_box_y(
-            lx1, open_hw - thickness, floor_z, lx2, open_hw, ceil_z, ls1, ls2, tex
-        ),
-        shear_box_y(
-            lx1, -open_hw, ceil_z - thickness, lx2, open_hw, ceil_z, ls1, ls2, tex
-        ),
-    ]
-
-
 def square_wall(
     x1,
     x2,
@@ -1279,12 +1202,20 @@ def square_wall(
     base_cap_h=0,
     base_cap_tex=None,
     base_cap_ovh=0,
+    recess=None,
 ):
     """Stone wall with a rectangular (square-topped) opening centred at Y=yc (default 0).
     open_hw: half-width of the opening in Y.
     overhang: extra Y extent on pillar portions beyond open_hw.
     base_h: solid plinth height at ground level.
     base_cap_h/base_cap_tex/base_cap_ovh: optional cement cap slab on top of plinth.
+
+    ``recess``: optional ``(margin, depth, tex)`` tuple. Carves a step back
+    into the throat surface (side walls and lintel underside) across the X
+    range ``[x1+margin, x2-margin]`` — the true opening half-width there
+    becomes ``open_hw+depth`` (stone), and the freed gap is filled with
+    ``tex`` (e.g. a cement liner), flush with the unmodified stone border
+    left at each end (within ``margin`` of x1/x2). Genuine carve, no overlap.
     """
     brushes = []
     ext = open_hw + overhang
@@ -1292,15 +1223,86 @@ def square_wall(
         brushes.append(box(x1, y1, floor_z, x2, yc - ext, ceil_z, tex))
     if y2 > yc + ext:
         brushes.append(box(x1, yc + ext, floor_z, x2, y2, ceil_z, tex))
-    brushes.append(
-        box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex)
-    )  # south pillar
-    brushes.append(
-        box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex)
-    )  # north pillar
-    brushes.append(
-        box(x1, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
-    )  # lintel
+
+    recess_margin, recess_depth, recess_tex = recess if recess else (0, 0, None)
+    rx1, rx2 = x1 + recess_margin, x2 - recess_margin
+    has_recess = recess is not None and recess_depth > 0 and rx2 > rx1
+
+    if has_recess:
+        # South pillar (y from -ext to -open_hw)
+        brushes.append(box(x1, yc - ext, floor_z, rx1, yc - open_hw, ceil_z, tex))
+        brushes.append(box(rx2, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex))
+        brushes.append(
+            box(rx1, yc - ext, floor_z, rx2, yc - open_hw - recess_depth, ceil_z, tex)
+        )
+        brushes.append(
+            box(
+                rx1,
+                yc - open_hw - recess_depth,
+                floor_z,
+                rx2,
+                yc - open_hw,
+                ceil_z,
+                recess_tex,
+            )
+        )
+        # North pillar (y from +open_hw to +ext)
+        brushes.append(box(x1, yc + open_hw, floor_z, rx1, yc + ext, ceil_z, tex))
+        brushes.append(box(rx2, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex))
+        brushes.append(
+            box(rx1, yc + open_hw + recess_depth, floor_z, rx2, yc + ext, ceil_z, tex)
+        )
+        brushes.append(
+            box(
+                rx1,
+                yc + open_hw,
+                floor_z,
+                rx2,
+                yc + open_hw + recess_depth,
+                ceil_z,
+                recess_tex,
+            )
+        )
+        # Lintel underside (border keeps the standard 16-thick slab; middle
+        # is carved back by recess_depth, freed gap filled with recess_tex)
+        brushes.append(
+            box(x1, yc - open_hw, ceil_z - 16, rx1, yc + open_hw, ceil_z, tex)
+        )
+        brushes.append(
+            box(rx2, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
+        )
+        brushes.append(
+            box(
+                rx1,
+                yc - open_hw,
+                ceil_z - 16,
+                rx2,
+                yc + open_hw,
+                ceil_z - recess_depth,
+                tex,
+            )
+        )
+        brushes.append(
+            box(
+                rx1,
+                yc - open_hw,
+                ceil_z - recess_depth,
+                rx2,
+                yc + open_hw,
+                ceil_z,
+                recess_tex,
+            )
+        )
+    else:
+        brushes.append(
+            box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex)
+        )  # south pillar
+        brushes.append(
+            box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex)
+        )  # north pillar
+        brushes.append(
+            box(x1, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
+        )  # lintel
     if base_h > 0:
         brushes.append(
             box(x1, yc - open_hw, floor_z, x2, yc + open_hw, floor_z + base_h, tex)
@@ -1343,6 +1345,7 @@ def arch_wall(
     base_cap_ovh=0,
     yc=0.0,
     freestanding=False,
+    recess=None,
 ):
     """Stone wall with arched opening centred at Y=yc (default 0).
 
@@ -1364,6 +1367,15 @@ def arch_wall(
     ``base_cap_tex``: texture for the cap slab (defaults to tex).
 
     ``base_cap_ovh``: how far the cap extends beyond the plinth in X and Y (cornice effect).
+
+    ``recess``: optional ``(margin, depth, tex)`` tuple. Carves a step back
+    into the throat surface (the stilt side walls and the curved intrados)
+    across the X range ``[x1+margin, x2-margin]`` — the true opening
+    radius there becomes ``rin+depth`` (stone), and the freed gap between
+    ``rin`` and ``rin+depth`` is filled with ``tex`` (e.g. a cement liner),
+    flush with the unmodified ``rin`` border left at each end (within
+    ``margin`` of x1/x2). No overlap with the surrounding stone — this is a
+    genuine carve, not an additive layer.
     """
     stilt_h = rin if stilt_h is None else stilt_h
     sprz = floor_z + stilt_h  # Z where arch springs
@@ -1382,12 +1394,63 @@ def arch_wall(
             brushes.append(
                 box(x1, yc + (rout + overhang), floor_z, x2, y2, ceil_z, tex)
             )
-    brushes.append(
-        box(x1, yc - (rout + overhang), floor_z, x2, yc - rin, pillar_top, tex)
-    )  # south pillar
-    brushes.append(
-        box(x1, yc + rin, floor_z, x2, yc + (rout + overhang), pillar_top, tex)
-    )  # north pillar
+
+    recess_margin, recess_depth, recess_tex = recess if recess else (0, 0, None)
+    rx1, rx2 = x1 + recess_margin, x2 - recess_margin
+    has_recess = recess is not None and recess_depth > 0 and rx2 > rx1
+
+    if has_recess:
+        # Straight stilt sides: border segments (x1..rx1, rx2..x2) keep the
+        # full-height pillar box at radius rin unmodified. The middle
+        # segment (rx1..rx2) is carved back to rin+depth below the spring
+        # line (sprz) and the freed radial gap is filled with recess_tex —
+        # so the passable bore radius stays exactly rin everywhere; only
+        # the wall material changes in the lined band.
+        # South pillar (y from -(rout+overhang) to -rin)
+        south_ya, south_yb = yc - (rout + overhang), yc - rin
+        brushes.append(box(x1, south_ya, floor_z, rx1, south_yb, pillar_top, tex))
+        brushes.append(box(rx2, south_ya, floor_z, x2, south_yb, pillar_top, tex))
+        brushes.append(box(rx1, south_ya, sprz, rx2, south_yb, pillar_top, tex))
+        brushes.append(
+            box(rx1, south_ya, floor_z, rx2, south_yb - recess_depth, sprz, tex)
+        )
+        brushes.append(
+            box(
+                rx1,
+                south_yb - recess_depth,
+                floor_z,
+                rx2,
+                south_yb,
+                sprz,
+                recess_tex,
+            )
+        )
+        # North pillar (y from +rin to +(rout+overhang))
+        north_ya, north_yb = yc + rin, yc + (rout + overhang)
+        brushes.append(box(x1, north_ya, floor_z, rx1, north_yb, pillar_top, tex))
+        brushes.append(box(rx2, north_ya, floor_z, x2, north_yb, pillar_top, tex))
+        brushes.append(box(rx1, north_ya, sprz, rx2, north_yb, pillar_top, tex))
+        brushes.append(
+            box(rx1, north_ya + recess_depth, floor_z, rx2, north_yb, sprz, tex)
+        )
+        brushes.append(
+            box(
+                rx1,
+                north_ya,
+                floor_z,
+                rx2,
+                north_ya + recess_depth,
+                sprz,
+                recess_tex,
+            )
+        )
+    else:
+        brushes.append(
+            box(x1, yc - (rout + overhang), floor_z, x2, yc - rin, pillar_top, tex)
+        )  # south pillar
+        brushes.append(
+            box(x1, yc + rin, floor_z, x2, yc + (rout + overhang), pillar_top, tex)
+        )  # north pillar
     # Cap above arch crown (omitted when freestanding)
     if not freestanding:
         brushes.append(box(x1, yc - rin, sprz + rin, x2, yc + rin, ceil_z, tex))
@@ -1447,19 +1510,30 @@ def arch_wall(
         )
 
     for seg_index in range(segs):
-        brushes.append(
-            arch_seg(
-                x1,
-                x2,
-                yc,
-                float(sprz),
-                rin,
-                rout,
-                seg_index * seg,
-                (seg_index + 1) * seg,
-                tex,
+        a1, a2 = seg_index * seg, (seg_index + 1) * seg
+        if has_recess:
+            brushes.append(arch_seg(x1, rx1, yc, float(sprz), rin, rout, a1, a2, tex))
+            brushes.append(arch_seg(rx2, x2, yc, float(sprz), rin, rout, a1, a2, tex))
+            brushes.append(
+                arch_seg(
+                    rx1, rx2, yc, float(sprz), rin + recess_depth, rout, a1, a2, tex
+                )
             )
-        )
+            brushes.append(
+                arch_seg(
+                    rx1,
+                    rx2,
+                    yc,
+                    float(sprz),
+                    rin,
+                    rin + recess_depth,
+                    a1,
+                    a2,
+                    recess_tex,
+                )
+            )
+        else:
+            brushes.append(arch_seg(x1, x2, yc, float(sprz), rin, rout, a1, a2, tex))
     return brushes
 
 
