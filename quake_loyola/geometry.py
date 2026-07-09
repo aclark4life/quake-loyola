@@ -1149,57 +1149,19 @@ def tile_face_plates(x_face, thickness, y1, y2, z1, z2, tex, tile=34, gap=3):
     return brushes
 
 
-def oriented_plate_x(x1, x2, cy, cz, half_tan, half_rad, angle_deg, tex):
-    """Square (or rectangular) plate brush extruded along X, whose Y-Z
-    cross-section is rotated by ``angle_deg`` around (cy, cz) instead of
-    staying axis-aligned. ``half_tan``/``half_rad`` are half-extents along the
-    rotated cross-section's own axes: the "tangential" axis (at angle_deg=0,
-    this is +Z) and the "radial" axis (at angle_deg=0, this is +Y) — matching
-    a point at (cy + radius, cz) on a circle, where the tangent direction is
-    +Z and the radial direction is +Y. Used to build voussoir-style plates
-    that rotate to follow an arch curve (see arch_plate_ring)."""
-    a = math.radians(angle_deg)
-    ca, sa = math.cos(a), math.sin(a)
+def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
+    """Curved ring of wedge-shaped (voussoir-style) decorative plates traced
+    along a semicircular arc (centred at Y=yc, Z=zc), applied to a flat
+    X-facing wall (e.g. the east/west end-face of a bridge pier arch). Spans
+    angle 0..180deg, where 0deg = +Y spring point and 180deg = -Y spring
+    point, mirroring arch_seg's convention.
 
-    def corner(s_tan, s_rad):
-        return (
-            cy + s_rad * half_rad * ca - s_tan * half_tan * sa,
-            cz + s_rad * half_rad * sa + s_tan * half_tan * ca,
-        )
-
-    # box()'s face winding assumes going A->B varies only the "Y-like" axis
-    # (s_rad here) and A->C varies only the "Z-like" axis (s_tan here) — so
-    # c10/c01 below are intentionally not a plain (su,sv) grid; they're
-    # chosen to keep that same correspondence after rotation.
-    c00 = corner(-1, -1)
-    c10 = corner(-1, 1)
-    c01 = corner(1, -1)
-    c11 = corner(1, 1)
-
-    def p(x, c):
-        return (x, c[0], c[1])
-
-    return Brush(
-        [
-            Face(p(x1, c00), p(x1, c10), p(x1, c01), tex),
-            Face(p(x2, c00), p(x2, c01), p(x2, c10), tex),
-            Face(p(x1, c00), p(x1, c01), p(x2, c00), tex),
-            Face(p(x1, c10), p(x2, c10), p(x1, c11), tex),
-            Face(p(x1, c00), p(x2, c00), p(x1, c10), tex),
-            Face(p(x1, c01), p(x1, c11), p(x2, c01), tex),
-        ]
-    )
-
-
-def arch_plate_ring(x_face, thickness, yc, zc, radius, tex, tile=34, gap=3):
-    """Curved ring of small square decorative plates traced along a semicircular
-    arc (centred at Y=yc, Z=zc, given ``radius``), applied to a flat X-facing
-    wall (e.g. the east/west end-face of a bridge pier arch). Spans angle
-    0..180deg, where 0deg = +Y spring point and 180deg = -Y spring point,
-    mirroring arch_seg's convention — i.e. a voussoir-style ring tracing the
-    arch curve above the opening. Each plate is rotated to match its own
-    position angle (like a real voussoir stone, oriented radially) instead of
-    staying axis-aligned.
+    Each plate is a true wedge (radial-sided, built with arch_seg) rather
+    than a rotated square, so adjacent plates share flush radial edges and
+    tile along the curve without leaving triangular gaps. The wedges sit in
+    a thin radial band starting just outside the arch opening border
+    (``rin``) and extending outward by ``tile``; ``gap`` trims a small
+    angular sliver (grout line) between neighbouring wedges.
 
     ``thickness``: protrusion from the flat face at ``x_face`` (sign gives
     the direction: positive toward +X, negative toward -X), same convention
@@ -1208,18 +1170,20 @@ def arch_plate_ring(x_face, thickness, yc, zc, radius, tex, tile=34, gap=3):
     x1v, x2v = (
         (x_face, x_face + thickness) if thickness >= 0 else (x_face + thickness, x_face)
     )
+    r1 = rin
+    r2 = rin + tile
+    r_avg = (r1 + r2) / 2.0
     pitch = tile + gap
-    segs = max(1, int((math.pi * radius) // pitch))
+    segs = max(1, int((math.pi * r_avg) // pitch))
     step = 180.0 / segs
+    gap_deg = math.degrees(gap / r_avg) if r_avg > 0 else 0.0
     brushes = []
     for seg_index in range(segs):
-        angle_deg = (seg_index + 0.5) * step
-        angle = math.radians(angle_deg)
-        cy = yc + radius * math.cos(angle)
-        cz = zc + radius * math.sin(angle)
-        brushes.append(
-            oriented_plate_x(x1v, x2v, cy, cz, tile / 2, tile / 2, angle_deg, tex)
-        )
+        a1 = seg_index * step + gap_deg / 2.0
+        a2 = (seg_index + 1) * step - gap_deg / 2.0
+        if a2 <= a1:
+            a1, a2 = seg_index * step, (seg_index + 1) * step
+        brushes.append(arch_seg(x1v, x2v, yc, zc, r1, r2, a1, a2, tex))
     return brushes
 
 

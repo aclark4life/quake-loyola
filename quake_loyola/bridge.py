@@ -827,7 +827,7 @@ def build():
                                 protrude,
                                 0.0,
                                 pier_floor_z + a_stilt,
-                                a_rin + BRIDGE_PIER_PLATE_SIZE / 2.0 + 2,
+                                a_rin + 2,
                                 Textures.CEMENT,
                                 tile=BRIDGE_PIER_PLATE_SIZE,
                                 gap=BRIDGE_PIER_PLATE_GAP,
