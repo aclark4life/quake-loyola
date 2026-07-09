@@ -822,6 +822,25 @@ DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2
 DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH
 DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 WORLD_Z2 = max(640, KNOTT_Z2 + 512)
+
+# ── Sub-basement level (basement.py) ────────────────────────────────────────
+# Doubles total world height by extending a walled void below the existing
+# ground-floor slab (FLOOR_Z1..FLOOR_Z2). BASEMENT_Z1 is the negative mirror
+# of WORLD_Z2, so the full vertical span runs BASEMENT_Z1..WORLD_Z2 and the
+# ground plane (Z=0) sits exactly halfway between the new basement floor and
+# the existing ceiling. Access is a pair of trigger_teleport pads (ground ↔
+# basement) rather than a shaft cut through any existing floor slab, so no
+# other module needs to change.
+BASEMENT_ENABLED = True
+BASEMENT_SLAB_T = 16  # basement floor slab thickness, matches FLOOR_Z1..FLOOR_Z2
+BASEMENT_Z1 = -WORLD_Z2  # basement floor top (walkable surface)
+BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom
+# Teleport pad footprint, in the open, unmodeled SW corner of the world-shell
+# footprint (X in [WORLD_X1, BRIDGE.x1], Y in [WORLD_Y1, CHARLES_Y1] — see
+# CHARLES_Y1 comment above) so it doesn't collide with any modeled geometry.
+BASEMENT_TELEPORT_CX = -3500
+BASEMENT_TELEPORT_CY = -4700
+BASEMENT_TELEPORT_HW = 32  # teleport pad half-width
 KNOTT_SHAFT_X1 = KNOTT_ENT_X2 + KNOTT_SHAFT_X_OFFSET
 KNOTT_SHAFT_X2 = KNOTT_SHAFT_X1 + KNOTT_SHAFT_W
 KNOTT_SHAFT_Y1, KNOTT_SHAFT_Y2 = KNOTT_BIY2 - KNOTT_SHAFT_Y_OFFSET, KNOTT_BIY2

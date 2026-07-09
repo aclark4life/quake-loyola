@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from quake_loyola import (
+    basement,
     bridge,
     entities,
     knott_hall,
@@ -28,6 +29,7 @@ MODULES = [
     maryland_terrain,
     maryland_hall,
     ne_terrain,
+    basement,
     entities,
 ]
 
