@@ -61,7 +61,6 @@ from .constants import (
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_Y,
-    FENCE_TEX,
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
@@ -244,7 +243,7 @@ def build_ennis_entrance_features():
 
     gate_fence_x1 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1
     gate_fence_x2 = gate_fence_x1 + ENNIS_GATE_FENCE_BAR_T
-    gate_fence_tex = FENCE_TEX
+    gate_fence_tex = Textures.FENCE
     # Iron gate fence — extended to the true north world edge (WORLD_Y2, re-derived
     # from real-world measurement) rather than stopping at the old CHARLES_Y2
     # anchor, so Charles St stays fenced all the way to the world boundary.
