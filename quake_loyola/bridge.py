@@ -46,6 +46,8 @@ from .constants import (
     BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIER_GROUND_Z,
+    BRIDGE_PIER_LINING_MARGIN,
+    BRIDGE_PIER_LINING_THICK,
     BRIDGE_PIER_PLATE_D,
     BRIDGE_PIER_PLATE_GAP,
     BRIDGE_PIER_PLATE_SIZE,
@@ -110,6 +112,7 @@ from .constants import (
 )
 from .geometry import (
     arch_fill,
+    arch_opening_lining,
     arch_plate_ring,
     arch_seg,
     arch_wall,
@@ -122,6 +125,8 @@ from .geometry import (
     ramp_slab_y,
     shear_box_y,
     shear_pyramid_y,
+    square_opening_lining,
+    square_opening_lining_sheared,
     square_wall,
     tile_face_plates,
     torch_flame_only,
@@ -834,6 +839,40 @@ def build():
                             )
                         )
 
+                # Cement lining on the inside surfaces of the opening (side
+                # walls + curved intrados or lintel underside), leaving a
+                # stone border at each opening end. The bottom of the
+                # opening already has a cement cap from base_cap_h above.
+                if is_square_pier:
+                    BRUSHES.extend(
+                        square_opening_lining(
+                            x1,
+                            x2,
+                            0.0,
+                            pier_floor_z,
+                            pier_ceiling_z - 16,
+                            a_rin,
+                            BRIDGE_PIER_LINING_THICK,
+                            Textures.CEMENT,
+                            margin=BRIDGE_PIER_LINING_MARGIN,
+                        )
+                    )
+                else:
+                    BRUSHES.extend(
+                        arch_opening_lining(
+                            x1,
+                            x2,
+                            0.0,
+                            pier_floor_z,
+                            pier_floor_z + a_stilt,
+                            a_rin,
+                            BRIDGE_PIER_LINING_THICK,
+                            A_SEGS,
+                            Textures.CEMENT,
+                            margin=BRIDGE_PIER_LINING_MARGIN,
+                        )
+                    )
+
             # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
                 by2 + BRIDGE_PILLAR_OVERHANG
@@ -1112,6 +1151,23 @@ def build():
                     gap=BRIDGE_PIER_PLATE_GAP,
                 )
             )
+        # Cement lining on the inside surfaces of the opening (sheared to
+        # follow the angled deck), leaving a stone border at each opening
+        # end. The bottom already has a cement cap from the base cap above.
+        BRUSHES.extend(
+            square_opening_lining_sheared(
+                x1,
+                x2,
+                east_y_shift(x1),
+                east_y_shift(x2),
+                FLOOR_Z2,
+                pier_ceiling_z - 16,
+                a_rin,
+                BRIDGE_PIER_LINING_THICK,
+                Textures.CEMENT,
+                margin=BRIDGE_PIER_LINING_MARGIN,
+            )
+        )
         if by1 < yc - ext:
             BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:
