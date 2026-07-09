@@ -802,8 +802,8 @@ def build():
             if px != min(BRIDGE_ARCH_X):
                 is_square_pier = px in (BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X))
                 for face_x, protrude in (
-                    (x1, -BRIDGE_PIER_PLATE_D),  # west face
-                    (x2, BRIDGE_PIER_PLATE_D),  # east face
+                    (x1, BRIDGE_PIER_PLATE_D),  # west face
+                    (x2, -BRIDGE_PIER_PLATE_D),  # east face
                 ):
                     if is_square_pier:
                         BRUSHES.extend(
@@ -1096,8 +1096,8 @@ def build():
         # fixed X (the face itself), just offset in Y by that face's own
         # local shear (s1r for the west face at x1, s2r for the east face at x2).
         for face_x, y_shift, protrude in (
-            (x1, s1r, -BRIDGE_PIER_PLATE_D),  # west face
-            (x2, s2r, BRIDGE_PIER_PLATE_D),  # east face
+            (x1, s1r, BRIDGE_PIER_PLATE_D),  # west face
+            (x2, s2r, -BRIDGE_PIER_PLATE_D),  # east face
         ):
             BRUSHES.extend(
                 tile_face_plates(
