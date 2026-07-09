@@ -10,7 +10,6 @@ from .constants import (
     CHARLES_LAMP_POST_YS,
     CHARLES_PARKING_LANE_W,
     CHARLES_RAMP_W,
-    CHARLES_SWALK_START,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     CROSSWALK_GAP_W,
@@ -1066,6 +1065,9 @@ def build():
     # road, matching the centerline/parking-lane stripes.
     CHARLES_CROSSING_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
     CHARLES_CROSSING_Y1 = CHARLES_CROSSING_Y2 - CROSSWALK_LEN
+    # Midpoint of the crossing — the west sidewalk north of the bridge gives
+    # way to curb-and-ground up to this point (see "West sidewalk" below).
+    CHARLES_CROSSING_MID = (CHARLES_CROSSING_Y1 + CHARLES_CROSSING_Y2) / 2
 
     # ── Ennis Road (E-W, parallel to bridge, north side) ──
     # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
@@ -1131,37 +1133,42 @@ def build():
             brushes.append(box(x, y1, z_base, sx2, y2, z_top, tex, tt_params=tt_params))
             x += step
 
-    # West sidewalk — north of bridge
+    # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
+    # takes over from the bridge's north side up to that point, below)
     sw_slabs_y(
         BRUSHES,
         ROAD_X1 - CHARLES_WALK_W,
         ROAD_X1,
-        CHARLES_SWALK_START,
+        CHARLES_CROSSING_MID,
         CHARLES_Y2,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
     )
-    # West curb — south section up to sidewalk start
+    # West curb — from Charles St south edge up to the crossing midpoint
+    # (covers the south section below the bridge and, per the same
+    # curb-and-ground treatment, the stretch from the bridge's north side
+    # up to the middle of the pedestrian crossing)
     BRUSHES.append(
         box(
             ROAD_X1 - STREET_CHARLES_CURB_W,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X1,
-            CHARLES_SWALK_START,
+            CHARLES_CROSSING_MID,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
         )
     )
-    # Raised ground west of curb — rock/ground texture, flush with sidewalk
+    # Raised ground west of curb — rock/ground texture, flush with sidewalk,
+    # same south-edge-to-crossing-midpoint extent as the curb above
     BRUSHES.append(
         box(
             ROAD_X1 - CHARLES_WALK_W,
             CHARLES_Y1,
             FLOOR_Z2,
             ROAD_X1 - STREET_CHARLES_CURB_W,
-            CHARLES_SWALK_START,
+            CHARLES_CROSSING_MID,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.GROUND,
         )
