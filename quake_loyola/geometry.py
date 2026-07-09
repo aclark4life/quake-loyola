@@ -1167,9 +1167,13 @@ def oriented_plate_x(x1, x2, cy, cz, half_tan, half_rad, angle_deg, tex):
             cz + s_rad * half_rad * sa + s_tan * half_tan * ca,
         )
 
+    # box()'s face winding assumes going A->B varies only the "Y-like" axis
+    # (s_rad here) and A->C varies only the "Z-like" axis (s_tan here) — so
+    # c10/c01 below are intentionally not a plain (su,sv) grid; they're
+    # chosen to keep that same correspondence after rotation.
     c00 = corner(-1, -1)
-    c10 = corner(1, -1)
-    c01 = corner(-1, 1)
+    c10 = corner(-1, 1)
+    c01 = corner(1, -1)
     c11 = corner(1, 1)
 
     def p(x, c):
