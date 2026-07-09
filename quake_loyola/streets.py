@@ -1104,17 +1104,40 @@ def build():
             Textures.ROAD,
         )
     )  # east parking lane
+
+    # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
+    # expansion-joint gaps (same technique as knott_terrain.py's sloped slabs).
+    _SW_SLAB_LEN = 128  # ~8.5 ft per panel
+    _SW_GAP = 2  # expansion-joint width
+
+    def sw_slabs_y(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
+        """Tile a flat N-S sidewalk strip (y1..y2) as individual panels."""
+        step = _SW_SLAB_LEN + _SW_GAP
+        y = y1
+        while y < y2:
+            sy2 = min(y + _SW_SLAB_LEN, y2)
+            brushes.append(box(x1, y, z_base, x2, sy2, z_top, tex, tt_params=tt_params))
+            y += step
+
+    def sw_slabs_x(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
+        """Tile a flat E-W sidewalk strip (x1..x2) as individual panels."""
+        step = _SW_SLAB_LEN + _SW_GAP
+        x = x1
+        while x < x2:
+            sx2 = min(x + _SW_SLAB_LEN, x2)
+            brushes.append(box(x, y1, z_base, sx2, y2, z_top, tex, tt_params=tt_params))
+            x += step
+
     # West sidewalk — north of bridge
-    BRUSHES.append(
-        box(
-            ROAD_X1 - CHARLES_WALK_W,
-            CHARLES_SWALK_START,
-            FLOOR_Z2,
-            ROAD_X1,
-            CHARLES_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-        )
+    sw_slabs_y(
+        BRUSHES,
+        ROAD_X1 - CHARLES_WALK_W,
+        ROAD_X1,
+        CHARLES_SWALK_START,
+        CHARLES_Y2,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
     )
     # West curb — south section up to sidewalk start
     BRUSHES.append(
@@ -1141,27 +1164,25 @@ def build():
         )
     )
     # East sidewalk — split into two segments, trimmed CHARLES_WALK_W short of each corner
-    BRUSHES.append(
-        box(
-            ROAD_X2,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-        )
+    sw_slabs_y(
+        BRUSHES,
+        ROAD_X2,
+        ROAD_X2 + CHARLES_WALK_W,
+        CHARLES_Y1,
+        ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
     )
-    BRUSHES.append(
-        box(
-            ROAD_X2,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-            FLOOR_Z2,
-            ROAD_X2 + CHARLES_WALK_W,
-            CHARLES_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-        )
+    sw_slabs_y(
+        BRUSHES,
+        ROAD_X2,
+        ROAD_X2 + CHARLES_WALK_W,
+        ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+        CHARLES_Y2,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
     )
 
     # ── Ennis Road brushes ──
@@ -1226,44 +1247,41 @@ def build():
         )
     )
     # North curb — offset east by CHARLES_WALK_W to cut corner square
-    BRUSHES.append(
-        box(
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW,
-            FLOOR_Z2,
-            ENNIS_X2,
-            ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
-        )
+    sw_slabs_x(
+        BRUSHES,
+        ROAD_X2 + CHARLES_WALK_W,
+        ENNIS_X2,
+        ENNIS_Y + ENNIS_HW,
+        ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
+        tt_params=ENNIS_ROAD_TT_PARAMS,
     )
     # South curb — split into two segments with a gap for the back road entrance
     # West segment: Charles St east sidewalk to back road west sidewalk
-    BRUSHES.append(
-        box(
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            KNOTT.x2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
-        )
+    sw_slabs_x(
+        BRUSHES,
+        ROAD_X2 + CHARLES_WALK_W,
+        KNOTT.x2,
+        ENNIS_SW_EDGE,
+        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
+        tt_params=ENNIS_ROAD_TT_PARAMS,
     )
     # East segment: back road east sidewalk east to world wall
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            ENNIS_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
-        )
+    sw_slabs_x(
+        BRUSHES,
+        KNOTT_DRIVEWAY_ES_X2,
+        ENNIS_X2,
+        ENNIS_SW_EDGE,
+        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
+        tt_params=ENNIS_ROAD_TT_PARAMS,
     )
 
     # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
