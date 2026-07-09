@@ -24,9 +24,6 @@ from .constants import (
     BRIDGE_ACCESS_WALK_HALF_W,
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
     BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
-    BRIDGE_ARCH_TILE_D,
-    BRIDGE_ARCH_TILE_GAP,
-    BRIDGE_ARCH_TILE_SIZE,
     BRIDGE_ARCH_X,
     BRIDGE_BLK_H,
     BRIDGE_BLK_HW,
@@ -49,6 +46,9 @@ from .constants import (
     BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIER_GROUND_Z,
+    BRIDGE_PIER_PLATE_D,
+    BRIDGE_PIER_PLATE_GAP,
+    BRIDGE_PIER_PLATE_SIZE,
     BRIDGE_PILLAR_BASE_CAP_H,
     BRIDGE_PILLAR_BASE_CAP_OVH,
     BRIDGE_PILLAR_BASE_H,
@@ -122,7 +122,8 @@ from .geometry import (
     shear_box_y,
     shear_pyramid_y,
     square_wall,
-    tile_squares,
+    tile_grid_origins,
+    tile_wall_plates,
     torch_flame_only,
 )
 
@@ -789,25 +790,48 @@ def build():
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                     )
                 )
-                # Decorative square cement tiles at the flat crown ceiling of
-                # interior arch openings (piers using BRIDGE_PILLAR_INNER_R —
-                # the abutment pier, which uses the wider OUTER_R, is excluded).
-                # Tiles hang a few units down from the crown cap for a coffered look.
-                if px != min(BRIDGE_ARCH_X):
-                    crown_z = pier_floor_z + a_stilt + a_rin
-                    BRUSHES.extend(
-                        tile_squares(
-                            x1,
-                            x2,
-                            -a_rin,
-                            a_rin,
-                            crown_z - BRIDGE_ARCH_TILE_D,
-                            crown_z,
-                            Textures.CEMENT,
-                            tile=BRIDGE_ARCH_TILE_SIZE,
-                            gap=BRIDGE_ARCH_TILE_GAP,
+
+            # ── Decorative square cement plates on the pier walls ──
+            # Applied to both the interior faces (facing the opposite pillar
+            # across the opening) and exterior faces (facing outward) of
+            # every pier except the west abutment (min(BRIDGE_ARCH_X)), which
+            # has a solid cement fill and teleport arch instead of an open
+            # pillar wall. Interior plates protrude a few units into the
+            # opening; exterior plates protrude the same amount outward.
+            # Interior plates on rounded-arch piers are capped at the arch
+            # spring height (sprz) since above that the wall curves away
+            # following the arch ring instead of staying flat.
+            if px != min(BRIDGE_ARCH_X):
+                is_square_pier = px in (BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X))
+                plate_ext = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
+                plate_z1 = pier_floor_z + BRIDGE_PILLAR_BASE_H
+                interior_z2 = (
+                    pier_ceiling_z if is_square_pier else pier_floor_z + a_stilt
+                )
+                for y_face, protrude, plate_z2 in (
+                    (-a_rin, BRIDGE_PIER_PLATE_D, interior_z2),  # south interior
+                    (a_rin, -BRIDGE_PIER_PLATE_D, interior_z2),  # north interior
+                    (
+                        -plate_ext,
+                        -BRIDGE_PIER_PLATE_D,
+                        pier_ceiling_z,
+                    ),  # south exterior
+                    (plate_ext, BRIDGE_PIER_PLATE_D, pier_ceiling_z),  # north exterior
+                ):
+                    if plate_z1 < plate_z2:
+                        BRUSHES.extend(
+                            tile_wall_plates(
+                                x1,
+                                x2,
+                                y_face,
+                                protrude,
+                                plate_z1,
+                                plate_z2,
+                                Textures.CEMENT,
+                                tile=BRIDGE_PIER_PLATE_SIZE,
+                                gap=BRIDGE_PIER_PLATE_GAP,
+                            )
                         )
-                    )
 
             # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
@@ -1064,6 +1088,49 @@ def build():
                         Textures.CEMENT,
                     )
                 )  # base cap
+        # Decorative square cement plates on the interior/exterior pillar walls
+        # (see main pier loop above for the non-sheared version). Each tile
+        # column uses a linearly-interpolated local shear (matching sb()'s
+        # own linear assumption across x1..x2) so plates follow this pier's
+        # angled deck-following faces.
+        plate_z1 = FLOOR_Z2 + BRIDGE_PILLAR_BASE_H
+        if plate_z1 < pier_ceiling_z:
+
+            def local_shear(tx):
+                return s1r + (s2r - s1r) * (tx - x1) / (x2 - x1)
+
+            for y_face, protrude in (
+                (-a_rin, BRIDGE_PIER_PLATE_D),  # south interior
+                (a_rin, -BRIDGE_PIER_PLATE_D),  # north interior
+                (-ext, -BRIDGE_PIER_PLATE_D),  # south exterior
+                (ext, BRIDGE_PIER_PLATE_D),  # north exterior
+            ):
+                pf1, pf2 = (
+                    (y_face, y_face + protrude)
+                    if protrude >= 0
+                    else (y_face + protrude, y_face)
+                )
+                for dx, dz in tile_grid_origins(
+                    x2 - x1,
+                    pier_ceiling_z - plate_z1,
+                    tile=BRIDGE_PIER_PLATE_SIZE,
+                    gap=BRIDGE_PIER_PLATE_GAP,
+                ):
+                    tx1, tx2 = x1 + dx, x1 + dx + BRIDGE_PIER_PLATE_SIZE
+                    tz1, tz2 = plate_z1 + dz, plate_z1 + dz + BRIDGE_PIER_PLATE_SIZE
+                    BRUSHES.append(
+                        shear_box_y(
+                            tx1,
+                            yc + pf1,
+                            tz1,
+                            tx2,
+                            yc + pf2,
+                            tz2,
+                            local_shear(tx1),
+                            local_shear(tx2),
+                            Textures.CEMENT,
+                        )
+                    )
         if by1 < yc - ext:
             BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
         if by2 > yc + ext:

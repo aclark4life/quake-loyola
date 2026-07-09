@@ -1115,27 +1115,36 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     ]
 
 
-def tile_squares(x1, x2, y1, y2, z1, z2, tex, tile=34, gap=3):
-    """Decorative grid of square tile brushes filling a rectangular footprint.
-
-    Fits as many ``tile``-sized squares (with ``gap`` spacing) as possible
-    along each axis and centres the resulting grid within x1..x2 / y1..y2,
-    leaving any leftover margin split evenly on both sides. Each tile spans
-    z1..z2. Used e.g. for a coffered/tiled look on a flat ceiling patch.
-    """
+def tile_grid_origins(width, height, tile=34, gap=3):
+    """Centred grid of (x_offset, z_offset) origins for square tiles filling a
+    width x height rectangle (both relative to 0,0). Shared by tile_wall_plates
+    and any custom (e.g. sheared) plate placement."""
     pitch = tile + gap
-    nx = max(1, int((x2 - x1 + gap) // pitch))
-    ny = max(1, int((y2 - y1 + gap) // pitch))
+    nx = max(1, int((width + gap) // pitch))
+    nz = max(1, int((height + gap) // pitch))
     total_x = nx * tile + (nx - 1) * gap
-    total_y = ny * tile + (ny - 1) * gap
-    ox = x1 + (x2 - x1 - total_x) / 2.0
-    oy = y1 + (y2 - y1 - total_y) / 2.0
+    total_z = nz * tile + (nz - 1) * gap
+    ox = (width - total_x) / 2.0
+    oz = (height - total_z) / 2.0
+    return [(ox + i * pitch, oz + k * pitch) for i in range(nx) for k in range(nz)]
+
+
+def tile_wall_plates(x1, x2, y_face, thickness, z1, z2, tex, tile=34, gap=3):
+    """Decorative grid of square plate brushes applied to a vertical Y-facing wall.
+
+    Fills the x1..x2 / z1..z2 rectangle with a centred grid of square tiles
+    (pitch = tile + gap), each protruding from the flat wall at ``y_face`` by
+    ``thickness`` (sign gives the protrusion direction: positive grows toward
+    +Y, negative toward -Y). Used for cement plates on pier walls.
+    """
+    y1, y2 = (
+        (y_face, y_face + thickness) if thickness >= 0 else (y_face + thickness, y_face)
+    )
     brushes = []
-    for i in range(nx):
-        tx1 = ox + i * pitch
-        for j in range(ny):
-            ty1 = oy + j * pitch
-            brushes.append(box(tx1, ty1, z1, tx1 + tile, ty1 + tile, z2, tex))
+    for dx, dz in tile_grid_origins(x2 - x1, z2 - z1, tile=tile, gap=gap):
+        tx1 = x1 + dx
+        tz1 = z1 + dz
+        brushes.append(box(tx1, y1, tz1, tx1 + tile, y2, tz1 + tile, tex))
     return brushes
 
 
