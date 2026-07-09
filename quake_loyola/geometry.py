@@ -1115,6 +1115,30 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
     ]
 
 
+def tile_squares(x1, x2, y1, y2, z1, z2, tex, tile=34, gap=3):
+    """Decorative grid of square tile brushes filling a rectangular footprint.
+
+    Fits as many ``tile``-sized squares (with ``gap`` spacing) as possible
+    along each axis and centres the resulting grid within x1..x2 / y1..y2,
+    leaving any leftover margin split evenly on both sides. Each tile spans
+    z1..z2. Used e.g. for a coffered/tiled look on a flat ceiling patch.
+    """
+    pitch = tile + gap
+    nx = max(1, int((x2 - x1 + gap) // pitch))
+    ny = max(1, int((y2 - y1 + gap) // pitch))
+    total_x = nx * tile + (nx - 1) * gap
+    total_y = ny * tile + (ny - 1) * gap
+    ox = x1 + (x2 - x1 - total_x) / 2.0
+    oy = y1 + (y2 - y1 - total_y) / 2.0
+    brushes = []
+    for i in range(nx):
+        tx1 = ox + i * pitch
+        for j in range(ny):
+            ty1 = oy + j * pitch
+            brushes.append(box(tx1, ty1, z1, tx1 + tile, ty1 + tile, z2, tex))
+    return brushes
+
+
 def square_wall(
     x1,
     x2,

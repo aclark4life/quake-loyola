@@ -24,6 +24,9 @@ from .constants import (
     BRIDGE_ACCESS_WALK_HALF_W,
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
     BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
+    BRIDGE_ARCH_TILE_D,
+    BRIDGE_ARCH_TILE_GAP,
+    BRIDGE_ARCH_TILE_SIZE,
     BRIDGE_ARCH_X,
     BRIDGE_BLK_H,
     BRIDGE_BLK_HW,
@@ -119,6 +122,7 @@ from .geometry import (
     shear_box_y,
     shear_pyramid_y,
     square_wall,
+    tile_squares,
     torch_flame_only,
 )
 
@@ -785,6 +789,25 @@ def build():
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                     )
                 )
+                # Decorative square cement tiles at the flat crown ceiling of
+                # interior arch openings (piers using BRIDGE_PILLAR_INNER_R —
+                # the abutment pier, which uses the wider OUTER_R, is excluded).
+                # Tiles hang a few units down from the crown cap for a coffered look.
+                if px != min(BRIDGE_ARCH_X):
+                    crown_z = pier_floor_z + a_stilt + a_rin
+                    BRUSHES.extend(
+                        tile_squares(
+                            x1,
+                            x2,
+                            -a_rin,
+                            a_rin,
+                            crown_z - BRIDGE_ARCH_TILE_D,
+                            crown_z,
+                            Textures.CEMENT,
+                            tile=BRIDGE_ARCH_TILE_SIZE,
+                            gap=BRIDGE_ARCH_TILE_GAP,
+                        )
+                    )
 
             # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
