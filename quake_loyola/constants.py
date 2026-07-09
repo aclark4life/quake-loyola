@@ -146,7 +146,7 @@ BRIDGE_PILLAR_OVERHANG = 16
 # pier. See bridge.py "Pillar posts" — plates protrude slightly from the flat
 # pillar wall for a panelled look.
 BRIDGE_PIER_PLATE_SIZE = 34
-BRIDGE_PIER_PLATE_GAP = 3
+BRIDGE_PIER_PLATE_GAP = 0
 BRIDGE_PIER_PLATE_D = (
     1  # plate protrusion depth from the pillar wall (slight, flush-ish)
 )
