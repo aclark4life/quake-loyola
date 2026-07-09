@@ -1506,18 +1506,30 @@ def build():
             Textures.GROUND,
         )
     )
-    # East verge — south of Ennis Road
-    BRUSHES.append(
-        box(
-            ROAD_X2 + CHARLES_WALK_W,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            _east_verge_x2,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
+    # East verge — south of Ennis Road.
+    # When KH terrain is enabled, knott_terrain.py owns the driveway corridor
+    # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2); split the verge around it so it doesn't
+    # bury the road/sidewalk brushes built there.
+    _east_verge_segs = (
+        [
+            (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
+            (KNOTT_DRIVEWAY_CORRIDOR_X2, _east_verge_x2),
+        ]
+        if KNOTT_TERRAIN_ENABLED
+        else [(ROAD_X2 + CHARLES_WALK_W, _east_verge_x2)]
     )
+    for _evx1, _evx2 in _east_verge_segs:
+        BRUSHES.append(
+            box(
+                _evx1,
+                CHARLES_Y1,
+                FLOOR_Z2,
+                _evx2,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
     # NE quadrant verge — placeholder flat ground filling the whole area
     # north of Ennis and east of Charles St, flush with the sidewalk, for
     # while ne_terrain.py's real-elevation fill is disabled. Once
