@@ -13,6 +13,9 @@ from .constants import (
     CHARLES_SWALK_START,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
+    CROSSWALK_GAP_W,
+    CROSSWALK_LEN,
+    CROSSWALK_STRIPE_W,
     DORM,
     ENNIS_CEMENT_WALL_CAP_H,
     ENNIS_CEMENT_WALL_CAP_OVH,
@@ -1047,6 +1050,23 @@ def build():
     CHARLES_Y1 = WORLD_Y1 + WALL_T
     CHARLES_Y2 = WORLD_Y2 - WALL_T
 
+    def ranges_excluding(v1, v2, ex1, ex2):
+        """Split [v1, v2) into the pieces remaining after excluding [ex1, ex2)."""
+        ranges = []
+        if ex1 > v1:
+            ranges.append((v1, min(ex1, v2)))
+        if ex2 < v2:
+            ranges.append((max(ex2, v1), v2))
+        return ranges
+
+    # ── Charles St pedestrian crossing band — on the SE corner of the
+    # Charles/Ennis intersection, the corner closest to the pedestrian bridge.
+    # Carved out of the road surface and lane-marking brushes below (see
+    # ranges_excluding() calls) so the crosswalk stripes sit flush with the
+    # road, matching the centerline/parking-lane stripes.
+    CHARLES_CROSSING_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
+    CHARLES_CROSSING_Y1 = CHARLES_CROSSING_Y2 - CROSSWALK_LEN
+
     # ── Ennis Road (E-W, parallel to bridge, north side) ──
     # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
     # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
@@ -1054,56 +1074,39 @@ def build():
     ENNIS_X2 = WORLD_X2_EXT - WALL_T  # dead-end at east world wall
     # Back road corridor X extents — defined here for road/curb brush splits below
 
+    # ── Ennis Road pedestrian crossing band — at the entrance from the
+    # Charles St east sidewalk, lined up with the sidewalk's own width
+    # (ROAD_X2..ROAD_X2+CHARLES_WALK_W). Carved out of the road/curb/centerline
+    # brushes below so the crosswalk stripes sit flush with the road.
+    ENNIS_CROSSING_X1 = ROAD_X2
+    ENNIS_CROSSING_X2 = ROAD_X2 + CHARLES_WALK_W
+
     # Charles St curb-to-curb models 1 travel lane + 1 parking lane each side
     # (see docs/reference.rst "Charles St width validation"). Parking lane sits
     # nearest each curb; travel lane sits between it and the centre divider.
     # Road surface split into 4 slabs, leaving narrow slots for the centre
     # double-yellow divider and the two parking-lane stripes.
     CHARLES_PARKING_LINE_X = ROAD_X2 - CHARLES_PARKING_LANE_W  # = 160
-    BRUSHES.append(
-        box(
-            ROAD_X1,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            -CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW,
-            CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-        )
-    )  # west parking lane
-    BRUSHES.append(
-        box(
-            -CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            -STREET_DIV_HW,
-            CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-        )
-    )  # west travel lane
-    BRUSHES.append(
-        box(
-            STREET_DIV_HW,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW,
-            CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-        )
-    )  # east travel lane
-    BRUSHES.append(
-        box(
-            CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            ROAD_X2,
-            CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-        )
-    )  # east parking lane
+    for lane_x1, lane_x2 in (
+        (ROAD_X1, -CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW),  # west parking lane
+        (-CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW, -STREET_DIV_HW),  # west travel
+        (STREET_DIV_HW, CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW),  # east travel
+        (CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW, ROAD_X2),  # east parking lane
+    ):
+        for lane_y1, lane_y2 in ranges_excluding(
+            CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
+        ):
+            BRUSHES.append(
+                box(
+                    lane_x1,
+                    lane_y1,
+                    FLOOR_Z2,
+                    lane_x2,
+                    lane_y2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    Textures.ROAD,
+                )
+            )
 
     # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
     # expansion-joint gaps (same technique as knott_terrain.py's sloped slabs).
@@ -1192,18 +1195,21 @@ def build():
     # running the right way.
     ENNIS_ROAD_TT_PARAMS = "0 0 90 1 1"
     # West section (near Charles St, no curb strip here)
-    BRUSHES.append(
-        box(
-            ENNIS_X1,
-            ENNIS_Y - ENNIS_HW,
-            FLOOR_Z2,
-            ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y - STREET_ENNIS_DIV_HW,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
+    for wx1, wx2 in ranges_excluding(
+        ENNIS_X1, ROAD_X2 + CHARLES_WALK_W, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
+    ):
+        BRUSHES.append(
+            box(
+                wx1,
+                ENNIS_Y - ENNIS_HW,
+                FLOOR_Z2,
+                wx2,
+                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.ROAD,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
+            )
         )
-    )
     # Main east sections — full south extent to road edge
     for road_x1, road_x2 in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
@@ -1234,18 +1240,21 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    BRUSHES.append(
-        box(
-            ENNIS_X1,
-            ENNIS_Y + STREET_ENNIS_DIV_HW,
-            FLOOR_Z2,
-            ENNIS_X2,
-            ENNIS_Y + ENNIS_HW,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
+    for nx1, nx2 in ranges_excluding(
+        ENNIS_X1, ENNIS_X2, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
+    ):
+        BRUSHES.append(
+            box(
+                nx1,
+                ENNIS_Y + STREET_ENNIS_DIV_HW,
+                FLOOR_Z2,
+                nx2,
+                ENNIS_Y + ENNIS_HW,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.ROAD,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
+            )
         )
-    )
     # North curb — offset east by CHARLES_WALK_W to cut corner square
     sw_slabs_x(
         BRUSHES,
@@ -1299,28 +1308,34 @@ def build():
         (-STREET_DIV_HW, -_centerline_gap_hw),
         (_centerline_gap_hw, STREET_DIV_HW),
     ):
+        for line_y1, line_y2 in ranges_excluding(
+            CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
+        ):
+            dash_brushes.append(
+                box(
+                    line_x1,
+                    line_y1,
+                    FLOOR_Z2,
+                    line_x2,
+                    line_y2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    Textures.CENTERLINE,
+                )
+            )
+    for gap_y1, gap_y2 in ranges_excluding(
+        CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
+    ):
         dash_brushes.append(
             box(
-                line_x1,
-                CHARLES_Y1,
+                -_centerline_gap_hw,
+                gap_y1,
                 FLOOR_Z2,
-                line_x2,
-                CHARLES_Y2,
+                _centerline_gap_hw,
+                gap_y2,
                 FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.CENTERLINE,
+                Textures.ROAD,
             )
         )
-    dash_brushes.append(
-        box(
-            -_centerline_gap_hw,
-            CHARLES_Y1,
-            FLOOR_Z2,
-            _centerline_gap_hw,
-            CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-        )
-    )
     # Charles Street parking-lane stripes — dashed, delineating the travel lane
     # from the curbside parking lane on each side.
     for parking_x in (-CHARLES_PARKING_LINE_X, CHARLES_PARKING_LINE_X):
@@ -1338,20 +1353,49 @@ def build():
                 divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
             )
             divider_tex = Textures.PARKING_STRIPE if dash_on else Textures.ROAD
-            dash_brushes.append(
-                box(
-                    parking_x - STREET_DIV_LINE_HW,
-                    divider_y,
-                    FLOOR_Z2,
-                    parking_x + STREET_DIV_LINE_HW,
-                    next_divider_y,
-                    FLOOR_Z2 + STREET_SURFACE_T,
-                    divider_tex,
-                    tt_params=divider_tt_params,
+            # Skip/clip the portion (if any) inside the Charles St crossing
+            # band — the crosswalk stripes below take over that stretch.
+            for seg_y1, seg_y2 in ranges_excluding(
+                divider_y, next_divider_y, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
+            ):
+                dash_brushes.append(
+                    box(
+                        parking_x - STREET_DIV_LINE_HW,
+                        seg_y1,
+                        FLOOR_Z2,
+                        parking_x + STREET_DIV_LINE_HW,
+                        seg_y2,
+                        FLOOR_Z2 + STREET_SURFACE_T,
+                        divider_tex,
+                        tt_params=divider_tt_params,
+                    )
                 )
-            )
             divider_y = next_divider_y
             dash_on = not dash_on
+    # Charles St pedestrian crossing — thick white zebra stripes filling the
+    # CHARLES_CROSSING_Y1..Y2 band carved out of the road/lane markings above;
+    # gaps between stripes are filled with plain road so no void is left.
+    # On the SE corner of the Charles/Ennis intersection, adjacent to (nearest)
+    # the pedestrian bridge.
+    _cx = ROAD_X1
+    _stripe_on = True
+    while _cx < ROAD_X2:
+        next_cx = min(
+            _cx + (CROSSWALK_STRIPE_W if _stripe_on else CROSSWALK_GAP_W), ROAD_X2
+        )
+        dash_brushes.append(
+            box(
+                _cx,
+                CHARLES_CROSSING_Y1,
+                FLOOR_Z2,
+                next_cx,
+                CHARLES_CROSSING_Y2,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.PARKING_STRIPE if _stripe_on else Textures.ROAD,
+            )
+        )
+        _cx = next_cx
+        _stripe_on = not _stripe_on
     # Ennis Road — solid single yellow centerline (replaces the old dashed
     # divider strip). The line starts at the Ennis entrance pillars (it
     # previously ran all the way to Charles St, which put it too far out
@@ -1359,18 +1403,21 @@ def build():
     # with plain Textures.ROAD instead.
     _ennis_line_hw = STREET_DIV_LINE_HW
     _ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW  # pillar centerline
-    dash_brushes.append(
-        box(
-            ROAD_X2,
-            ENNIS_Y - STREET_ENNIS_DIV_HW,
-            FLOOR_Z2,
-            _ennis_line_x1,
-            ENNIS_Y + STREET_ENNIS_DIV_HW,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.ROAD,
-            tt_params=ENNIS_ROAD_TT_PARAMS,
+    for gx1, gx2 in ranges_excluding(
+        ROAD_X2, _ennis_line_x1, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
+    ):
+        dash_brushes.append(
+            box(
+                gx1,
+                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                FLOOR_Z2,
+                gx2,
+                ENNIS_Y + STREET_ENNIS_DIV_HW,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.ROAD,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
+            )
         )
-    )
     dash_brushes.append(
         box(
             _ennis_line_x1,
@@ -1406,6 +1453,33 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
+    # Ennis Road pedestrian crossing — thick white zebra stripes filling the
+    # ENNIS_CROSSING_X1..X2 band carved out of the road/curb/centerline
+    # brushes above; gaps between stripes are filled with plain road (rotated
+    # to match Ennis's grain) so no void is left. At the Ennis entrance,
+    # lined up with the Charles St east sidewalk.
+    _ey = ENNIS_Y - ENNIS_HW
+    _ennis_crossing_y2 = ENNIS_Y + ENNIS_HW
+    _stripe_on = True
+    while _ey < _ennis_crossing_y2:
+        next_ey = min(
+            _ey + (CROSSWALK_STRIPE_W if _stripe_on else CROSSWALK_GAP_W),
+            _ennis_crossing_y2,
+        )
+        dash_brushes.append(
+            box(
+                ENNIS_CROSSING_X1,
+                _ey,
+                FLOOR_Z2,
+                ENNIS_CROSSING_X2,
+                next_ey,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.PARKING_STRIPE if _stripe_on else Textures.ROAD,
+                tt_params=ENNIS_ROAD_TT_PARAMS if not _stripe_on else "0 0 0 1 1",
+            )
+        )
+        _ey = next_ey
+        _stripe_on = not _stripe_on
     if dash_brushes:
         ENTITIES.append(brush_ent("func_detail", dash_brushes))
 
