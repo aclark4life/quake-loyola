@@ -119,6 +119,7 @@ from .geometry import (
     shear_box_y,
     shear_pyramid_y,
     square_wall,
+    torch_flame_only,
 )
 
 
@@ -919,6 +920,25 @@ def build():
                         Textures.BRICK,
                     )
                 )
+                # Flame decal + damaging trigger — built here (unconditional on
+                # BRIDGE_ENABLED/SHOW_SUPPORTS, not entities.py's ENTITIES_ENABLED
+                # master) so pier torches always render, matching streets.py's
+                # own lamp-post/entrance-torch pattern of keeping decorative
+                # lights alongside the geometry they sit on.
+                flame_z = int(
+                    pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4
+                )
+                ENTITIES.append(torch_flame_only(px, torch_center_y, flame_z))
+                fhb = box(
+                    px - 16,
+                    torch_center_y - 16,
+                    flame_z,
+                    px + 16,
+                    torch_center_y + 16,
+                    flame_z + 40,
+                    Textures.SKY,
+                )
+                ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
             # Abutment pier (westernmost): solid cement fill + arch teleport on west face
             if px == min(BRIDGE_ARCH_X):
@@ -1143,6 +1163,20 @@ def build():
                     Textures.BRICK,
                 )
             )
+            # Flame decal + damaging trigger — see matching comment in the main
+            # pier loop above for why this lives here instead of entities.py.
+            flame_z = int(pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4)
+            ENTITIES.append(torch_flame_only(px, torch_center_y, flame_z))
+            fhb = box(
+                px - 16,
+                torch_center_y - 16,
+                flame_z,
+                px + 16,
+                torch_center_y + 16,
+                flame_z + 40,
+                Textures.SKY,
+            )
+            ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
     # ── Teleport Arches at both ends of bridge ───────────────────────────────────
     for arch_x_start, arch_center_y in [

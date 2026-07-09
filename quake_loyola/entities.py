@@ -114,7 +114,6 @@ from .geometry import (
     make_tree,
     render_text_flat,
     render_text_flat_x,
-    torch_flame_only,
 )
 
 
@@ -917,41 +916,11 @@ def build():
         )
     )  # mega armor on roof ridge (teleport reward)
 
-    # Torch lights on pillar caps
-    if SHOW_SUPPORTS:
-        for px in BRIDGE_ARCH_X:
-            if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
-                continue
-            pbase = deck_top_z(px)
-            pcap = (
-                pbase
-                + BRIDGE.parapet_h
-                + BRIDGE_PILLAR_EXTRA
-                + BRIDGE_PILLAR_CAP_H
-                + BRIDGE_PILLAR_PYR_H
-            )  # top of pyramid
-            py_shift = east_y_shift(px)
-            cy_n = (
-                BRIDGE.y2 + py_shift - BRIDGE_PAR_W // 2
-            )  # centred on north pillar cap
-            cy_s = (
-                BRIDGE.y1 + py_shift + BRIDGE_PAR_W // 2
-            )  # centred on south pillar cap
-            # Flames on pillar tops — raised above pyramid apex so they visually sit on top
-            ENTITIES.append(torch_flame_only(px, cy_n, int(pcap + 24)))
-            ENTITIES.append(torch_flame_only(px, cy_s, int(pcap + 24)))
-            # Damaging trigger at each flame — hurts players who walk into the fire
-            for cy in [cy_n, cy_s]:
-                fhb = box(
-                    px - 16,
-                    cy - 16,
-                    int(pcap + 24),
-                    px + 16,
-                    cy + 16,
-                    int(pcap) + 64,
-                    Textures.SKY,
-                )
-                ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
+    # Torch lights on pillar caps are now built alongside the pier geometry in
+    # bridge.py's own SHOW_SUPPORTS loops (unconditional on ENTITIES_ENABLED),
+    # matching streets.py's lamp-post/entrance-torch pattern — see the comment
+    # there for why. Kept out of this ENTITIES_ENABLED-gated module so pier
+    # torches always render regardless of that master switch.
 
     # Pillar base uplights — ground-level spots wash light up the pier faces
     if SHOW_SUPPORTS:
