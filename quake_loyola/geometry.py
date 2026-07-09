@@ -997,22 +997,28 @@ def make_pixel_tree(
 
 def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
-    Angles angle_start_deg..angle_end_deg in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
+    Angles angle_start_deg..angle_end_deg in degrees; centre at (yc, zc); inner/outer radii rin/rout.
+
+    The inner/outer curved faces are built as exact chords between the two
+    angular endpoints (rather than a tangent plane at the segment's
+    midpoint), so adjacent segments sharing an angle boundary also share
+    identical edge vertices there — no approximation-induced sliver gap or
+    overlap between neighbouring wedges."""
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
-    tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
-    cm, sm = math.cos(tm), math.sin(tm)
-    yi, zi = yc + rin * cm, zc + rin * sm
-    yo, zo = yc + rout * cm, zc + rout * sm
+    yi1, zi1 = yc + rin * c1, zc + rin * s1
+    yi2, zi2 = yc + rin * c2, zc + rin * s2
+    yo1, zo1 = yc + rout * c1, zc + rout * s1
+    yo2, zo2 = yc + rout * c2, zc + rout * s2
     return Brush(
         [
             Face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
             Face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
             Face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
             Face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
-            Face((xf, yi, zi), (xb, yi, zi), (xf, yi - sm, zi + cm), tex),
-            Face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
+            Face((xf, yi1, zi1), (xb, yi1, zi1), (xf, yi2, zi2), tex),
+            Face((xf, yo1, zo1), (xf, yo2, zo2), (xb, yo1, zo1), tex),
         ]
     )
 
