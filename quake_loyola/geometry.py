@@ -997,13 +997,35 @@ def make_pixel_tree(
 
 def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     """One wedge-shaped brush segment of a semicircular arch ring (X-aligned span).
-    Angles angle_start_deg..angle_end_deg in degrees; centre at (yc, zc); inner/outer radii rin/rout.
+    Angles angle_start_deg..angle_end_deg in degrees; centre at (yc, zc); inner/outer radii rin/rout."""
+    t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
+    tm = (t1 + t2) / 2.0
+    c1, s1 = math.cos(t1), math.sin(t1)
+    c2, s2 = math.cos(t2), math.sin(t2)
+    cm, sm = math.cos(tm), math.sin(tm)
+    yi, zi = yc + rin * cm, zc + rin * sm
+    yo, zo = yc + rout * cm, zc + rout * sm
+    return Brush(
+        [
+            Face((xf, yc, zc), (xf, yc, zc + 1), (xf, yc + 1, zc), tex),
+            Face((xb, yc, zc), (xb, yc + 1, zc), (xb, yc, zc + 1), tex),
+            Face((xf, yc, zc), (xf, yc + c1, zc + s1), (xb, yc, zc), tex),
+            Face((xf, yc, zc), (xb, yc, zc), (xf, yc + c2, zc + s2), tex),
+            Face((xf, yi, zi), (xb, yi, zi), (xf, yi - sm, zi + cm), tex),
+            Face((xf, yo, zo), (xf, yo - sm, zo + cm), (xb, yo, zo), tex),
+        ]
+    )
 
-    The inner/outer curved faces are built as exact chords between the two
-    angular endpoints (rather than a tangent plane at the segment's
-    midpoint), so adjacent segments sharing an angle boundary also share
-    identical edge vertices there — no approximation-induced sliver gap or
-    overlap between neighbouring wedges."""
+
+def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Like ``arch_seg``, but the inner/outer curved faces are built as exact
+    chords between the two angular endpoints (rather than a tangent plane at
+    the segment's midpoint). Adjacent segments sharing an angle boundary
+    then also share identical edge vertices there — no approximation-induced
+    sliver gap or overlap between neighbouring wedges. Used for decorative
+    plate rings, where the seam between wedges is exposed and any gap is
+    directly visible (unlike the main arch stone ring, where ``arch_seg``'s
+    tangent approximation is imperceptible since it's buried in solid rock)."""
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
@@ -1162,12 +1184,15 @@ def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
     angle 0..180deg, where 0deg = +Y spring point and 180deg = -Y spring
     point, mirroring arch_seg's convention.
 
-    Each plate is a true wedge (radial-sided, built with arch_seg) rather
-    than a rotated square, so adjacent plates share flush radial edges and
-    tile along the curve without leaving triangular gaps. The wedges sit in
-    a thin radial band starting just outside the arch opening border
-    (``rin``) and extending outward by ``tile``; ``gap`` trims a small
-    angular sliver (grout line) between neighbouring wedges.
+    Each plate is a true wedge (radial-sided, built with arch_seg_chord)
+    rather than a rotated square, so adjacent plates share flush radial
+    edges and tile along the curve without leaving triangular gaps. Uses
+    the exact-chord wedge builder (rather than plain arch_seg) since these
+    plates are exposed, thin, decorative pieces — any sliver gap from
+    arch_seg's tangent-plane approximation would be directly visible here.
+    The wedges sit in a thin radial band starting just outside the arch
+    opening border (``rin``) and extending outward by ``tile``; ``gap``
+    trims a small angular sliver (grout line) between neighbouring wedges.
 
     ``thickness``: protrusion from the flat face at ``x_face`` (sign gives
     the direction: positive toward +X, negative toward -X), same convention
@@ -1189,7 +1214,7 @@ def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
         a2 = (seg_index + 1) * step - gap_deg / 2.0
         if a2 <= a1:
             a1, a2 = seg_index * step, (seg_index + 1) * step
-        brushes.append(arch_seg(x1v, x2v, yc, zc, r1, r2, a1, a2, tex))
+        brushes.append(arch_seg_chord(x1v, x2v, yc, zc, r1, r2, a1, a2, tex))
     return brushes
 
 
