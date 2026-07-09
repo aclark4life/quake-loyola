@@ -72,6 +72,10 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
+    # Sidewalk slab parameters: slab length and expansion-joint gap in Y.
+    _SW_SLAB_LEN = 128  # ~8.5 ft per slab
+    _SW_GAP = 2  # expansion joint width
+
     def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
         # Single full-depth sloped slab: GROUND on every face except the top,
         # which carries the surface texture. Previously this was a thin surface
@@ -97,6 +101,48 @@ def build():
             )
         )
 
+    def sidewalk_slabs_sloped(brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex):
+        """Tile a sloped sidewalk (y1..y2) as individual slab brushes with small
+        expansion-joint gaps, giving the look of real concrete sidewalk panels.
+        Each slab is _SW_SLAB_LEN long; joints are _SW_GAP wide. The top Z is
+        linearly interpolated across the full y1..y2 span per slab edge."""
+        total = y2 - y1
+        step = _SW_SLAB_LEN + _SW_GAP
+        y = y1
+        while y < y2:
+            sy1 = y
+            sy2 = min(y + _SW_SLAB_LEN, y2)
+            t1 = (sy1 - y1) / total
+            t2 = (sy2 - y1) / total
+            tz1 = top_z_s + t1 * (top_z_n - top_z_s)
+            tz2 = top_z_s + t2 * (top_z_n - top_z_s)
+            brushes.append(
+                ramp_slab_y(
+                    x1,
+                    x2,
+                    sy1,
+                    sy2,
+                    FLOOR_Z1,
+                    FLOOR_Z1,
+                    tz1,
+                    tz2,
+                    Textures.GROUND,
+                    tt=surface_tex,
+                )
+            )
+            y += step
+
+    def sidewalk_slabs_flat(brushes, x1, x2, y1, y2, z_base, z_top, surface_tex):
+        """Tile a flat sidewalk (y1..y2) as individual slab brushes with small
+        expansion-joint gaps."""
+        step = _SW_SLAB_LEN + _SW_GAP
+        y = y1
+        while y < y2:
+            sy1 = y
+            sy2 = min(y + _SW_SLAB_LEN, y2)
+            brushes.append(box(x1, sy1, z_base, x2, sy2, z_top, surface_tex))
+            y += step
+
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
     # Sidewalks with rounded north entrance corners (like Ennis Drive)
@@ -111,20 +157,26 @@ def build():
     )
 
     # West sidewalk (strip between building east wall and road) — slopes with road
-    road_section(
+    # Cut into individual slab panels with expansion joints for a real sidewalk look.
+    sidewalk_slabs_sloped(
         BRUSHES,
         KNOTT_DRIVEWAY_WS_X1,
         KNOTT_DRIVEWAY_WS_X2,
+        KNOTT_DRIVEWAY_Y1,
+        KNOTT_DRIVEWAY_Y2,
         KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
         KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
         Textures.CEMENT,
     )
 
     # East sidewalk — slopes with road
-    road_section(
+    # Cut into individual slab panels with expansion joints.
+    sidewalk_slabs_sloped(
         BRUSHES,
         KNOTT_DRIVEWAY_ES_X1,
         KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_Y1,
+        KNOTT_DRIVEWAY_Y2,
         KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
         KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
         Textures.CEMENT,
@@ -837,16 +889,16 @@ def build():
         )
     )
     # West sidewalk — cement from back road up to the E/W Ennis approach sidewalk
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
+    # Cut into slab panels with expansion joints for a real sidewalk look.
+    sidewalk_slabs_flat(
+        BRUSHES,
+        KNOTT_DRIVEWAY_WS_X1,
+        KNOTT_DRIVEWAY_WS_X2,
+        KNOTT_DRIVEWAY_EXT_Y1,
+        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.CEMENT,
     )
     # West sidewalk — ground from E/W Ennis approach sidewalk to NW junction
     # corner. The corner (and this sidewalk/curb pair) are pushed north by
@@ -879,16 +931,16 @@ def build():
         )
     )
     # East sidewalk — cement from back road down to E/W Ennis approach sidewalk
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
+    # Cut into slab panels with expansion joints.
+    sidewalk_slabs_flat(
+        BRUSHES,
+        KNOTT_DRIVEWAY_ES_X1,
+        KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_EXT_Y1,
+        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.CEMENT,
     )
     # East sidewalk — mulch from E/W sidewalk to NE junction corner. Mirrors
     # the NW corner's push-north-by-KNOTT_DRIVEWAY_CURB_BULGE_D treatment, so

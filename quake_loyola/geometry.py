@@ -178,6 +178,32 @@ def ramp_slab_y(
     )
 
 
+def slab_chamfered_y(x1, x2, y1, y2, zb, zt1, zt2, tex, tt=None, chamfer=4.0):
+    """Y-aligned slab (flat bottom at ``zb``, top sloping from ``zt1`` at y=y1 to
+    ``zt2`` at y=y2) with its top edge chamfered at BOTH the -Y and +Y ends.
+
+    Built as the base ``ramp_slab_y`` prism plus two extra 45° cutting planes —
+    one at each Y end — that shave the top corner into a bevel of height/width
+    ``chamfer``. Used for sidewalk panels so the expansion-joint ends read as
+    beveled rather than sharp square cuts. ``y1`` and ``y2`` may be given in
+    either order."""
+    if y1 > y2:
+        y1, y2 = y2, y1
+        zt1, zt2 = zt2, zt1
+    brush = ramp_slab_y(x1, x2, y1, y2, zb, zb, zt1, zt2, tex, tt=tt)
+    c = chamfer
+    tt = tt or tex
+    # -Y (south) end: plane through (y1, zt1-c) → (y1+c, zt1), normal +Y/+Z.
+    brush.faces.append(
+        Face((x1, y1, zt1 - c), (x1, y1 + c, zt1), (x2, y1, zt1 - c), tt)
+    )
+    # +Y (north) end: plane through (y2, zt2-c) → (y2-c, zt2), normal -Y/+Z.
+    brush.faces.append(
+        Face((x1, y2, zt2 - c), (x2, y2, zt2 - c), (x1, y2 - c, zt2), tt)
+    )
+    return brush
+
+
 def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
     """Tetrahedral corner ramp: a single tilted top plane that is high at the
     (x_apex, y_apex) corner (z_hi) and falls to z_base along BOTH far edges —
