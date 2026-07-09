@@ -80,11 +80,18 @@ def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
     return out
 
 
-def _octagon_corner_fills(cx, cy, r, z1, z2, tex):
+def octagon_corner_fills(cx, cy, r, z1, z2, tex):
     """4 triangular-prism corner fills that round a square hole of half-width
     ``r`` (centred at cx,cy) into a regular octagon, by re-solidifying each
     corner's chamfer triangle. Used together with ``box_with_hole`` (cut with
-    a square hole of the same half-width) to approximate a round hole."""
+    a square hole of the same half-width) to approximate a round hole.
+
+    Call this exactly *once* per hole per Z-layer — if the hole's square
+    footprint spans multiple separately-cut boxes (e.g. several adjacent
+    road-lane slabs, each cut individually via ``box_with_hole``), add the
+    corner fills a single time afterwards, not once per box; otherwise the
+    fills end up duplicated/overlapping (each call is unconditional and
+    doesn't know whether another box already contributed the same corner)."""
     c = r * 2 / (2 + math.sqrt(2))  # chamfer leg length for a regular octagon
     tris = []
     for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
@@ -101,11 +108,20 @@ def _octagon_corner_fills(cx, cy, r, z1, z2, tex):
 def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, **kw):
     """Like ``box_with_hole``, but the hole is a regular octagon (approximating
     a round manhole shaft) inscribed in a square of half-width ``r`` centred
-    at (cx, cy), instead of a plain square hole."""
+    at (cx, cy), instead of a plain square hole.
+
+    Intended for the single-box case (one call cuts the whole hole out of one
+    slab). If a hole must be cut across *several* adjacent boxes (e.g. a row
+    of lane slabs), don't call this per box — use ``box_with_hole`` for each
+    box instead, then call ``octagon_corner_fills`` once, separately, to
+    round the combined hole (see its docstring)."""
+    hx1, hx2 = max(cx - r, x1), min(cx + r, x2)
+    hy1, hy2 = max(cy - r, y1), min(cy + r, y2)
     pieces = box_with_hole(
         x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
     )
-    pieces += _octagon_corner_fills(cx, cy, r, z1, z2, tex)
+    if hx1 < hx2 and hy1 < hy2:
+        pieces += octagon_corner_fills(cx, cy, r, z1, z2, tex)
     return pieces
 
 

@@ -110,9 +110,11 @@ from .constants import (
 from .geometry import (
     arch_seg,
     box,
+    box_with_hole,
     box_with_round_hole,
     brush_ent,
     curb_seg,
+    octagon_corner_fills,
     pyramid,
     ramp_slab,
     ramp_slab_y,
@@ -1107,20 +1109,39 @@ def build():
         for lane_y1, lane_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
+            # The manhole hole is wider than a single lane, so it can span
+            # several of these lane slabs at once. Cut each slab with a plain
+            # square hole here (box_with_hole is safe to call repeatedly —
+            # it clips to each box's own footprint and no-ops if there's no
+            # overlap); the octagon corner fills that round the combined
+            # hole off are added exactly *once*, below, after every lane slab
+            # has been cut — adding them per-lane would duplicate/overlap
+            # them wherever the hole crosses a lane boundary.
             BRUSHES.extend(
-                box_with_round_hole(
+                box_with_hole(
                     lane_x1,
                     lane_y1,
                     FLOOR_Z2,
                     lane_x2,
                     lane_y2,
                     FLOOR_Z2 + STREET_SURFACE_T,
-                    MANHOLE_X,
-                    MANHOLE_Y,
-                    MANHOLE_R,
+                    MANHOLE_X - MANHOLE_R,
+                    MANHOLE_Y - MANHOLE_R,
+                    MANHOLE_X + MANHOLE_R,
+                    MANHOLE_Y + MANHOLE_R,
                     Textures.ROAD,
                 )
             )
+    BRUSHES.extend(
+        octagon_corner_fills(
+            MANHOLE_X,
+            MANHOLE_Y,
+            MANHOLE_R,
+            FLOOR_Z2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.ROAD,
+        )
+    )  # round the manhole hole cut above, added once (not per-lane)
 
     # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
     # expansion-joint gaps (same technique as knott_terrain.py's sloped slabs).
