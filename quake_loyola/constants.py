@@ -294,7 +294,6 @@ FASCIA_FONT = {
 
 FENCE_H = 96
 FENCE_SPACING = 16
-FENCE_TEX = "metal4_4"
 
 FLOOR_Z1, FLOOR_Z2 = -16, 0
 
@@ -319,7 +318,6 @@ KNOTT_WEST_TO_ORIG_CX = (
 # capped so the accessible-entrance ramp still meets the fixed accessible path pad (X=2152)
 KNOTT_WEST_TO_PIER_X = 40
 KNOTT_RAIL_H = 72
-KNOTT_RAIL_TEX = "metal4_4"
 KNOTT_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]
 KNOTT_SHELF_D = 16
 KNOTT_SHELF_H = 64
@@ -496,6 +494,7 @@ class Textures:
     CEMENT = "sfloor3_2"
     EXIT = "z_exit"
     DIVIDER = "sfloor3_2"
+    FENCE = "metal4_4"
     CENTERLINE = (
         "win_fbylw_01"  # fullbright yellow, stand-in for a yellow line marking texture
     )

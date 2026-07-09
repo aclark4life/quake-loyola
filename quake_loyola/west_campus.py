@@ -40,7 +40,6 @@ from .constants import (
     DORM_WIN_MARGIN,
     FENCE_H,
     FENCE_SPACING,
-    FENCE_TEX,
     FENCE_X1,
     FENCE_X2,
     FLOOR_Z1,
@@ -1511,7 +1510,7 @@ def build():
     for ry1, ry2 in [(CHARLES_Y1, SDORM_SLOPE_Y_S), (SDORM_SLOPE_Y_N, CHARLES_Y2)]:
         b = fence_base_at((ry1 + ry2) // 2)
         fence_brushes.append(
-            box(FENCE_X1, ry1, b + rail_lo, FENCE_X2, ry2, b + rail_hi, FENCE_TEX)
+            box(FENCE_X1, ry1, b + rail_lo, FENCE_X2, ry2, b + rail_hi, Textures.FENCE)
         )
     bs, bn = fence_base_at(SDORM_SLOPE_Y_S), fence_base_at(SDORM_SLOPE_Y_N)
     fence_brushes.append(
@@ -1524,7 +1523,7 @@ def build():
             bn + rail_lo,
             bs + rail_hi,
             bn + rail_hi,
-            FENCE_TEX,
+            Textures.FENCE,
         )
     )
     # Pickets — thin (2 wide) with thick posts (8 wide) every 10th; base follows
@@ -1542,7 +1541,7 @@ def build():
                 FENCE_X2,
                 picket_y + picket_width,
                 fence_base + FENCE_H,
-                FENCE_TEX,
+                Textures.FENCE,
             )
         )
         picket_y += FENCE_SPACING
@@ -1648,7 +1647,7 @@ def build():
             ],
             DORM_PIER_X - 1,
             DORM_PIER_X + 1,
-            FENCE_TEX,
+            Textures.FENCE,
             BRIDGE_DZ2,
         )
     )
