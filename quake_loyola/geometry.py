@@ -57,6 +57,29 @@ def box(
     )
 
 
+def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
+    """Like ``box``, but with a rectangular vertical hole (hx1..hx2, hy1..hy2)
+    punched all the way through in Z — used to carve a manhole shaft opening
+    through an otherwise-solid slab. Returns a list of 1-4 brushes forming a
+    "picture frame" around the hole (west/east full-depth strips, plus
+    north/south strips spanning only the hole's X range). If the hole doesn't
+    overlap the box's X-Y footprint, returns the box unchanged as a 1-item list."""
+    hx1, hx2 = max(hx1, x1), min(hx2, x2)
+    hy1, hy2 = max(hy1, y1), min(hy2, y2)
+    if hx1 >= hx2 or hy1 >= hy2:
+        return [box(x1, y1, z1, x2, y2, z2, tex, **kw)]
+    out = []
+    if x1 < hx1:
+        out.append(box(x1, y1, z1, hx1, y2, z2, tex, **kw))
+    if hx2 < x2:
+        out.append(box(hx2, y1, z1, x2, y2, z2, tex, **kw))
+    if y1 < hy1:
+        out.append(box(hx1, y1, z1, hx2, hy1, z2, tex, **kw))
+    if hy2 < y2:
+        out.append(box(hx1, hy2, z1, hx2, y2, z2, tex, **kw))
+    return out
+
+
 def east_y_shift(x):
     """Southward Y shift (negative = south) for a given X east of the easternmost pier.
     Pivots at BRIDGE_ARCH_X[4] (= 2206); zero for x <= that pier."""

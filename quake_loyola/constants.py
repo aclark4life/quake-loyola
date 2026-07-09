@@ -1156,11 +1156,28 @@ SEWER_CAP_T = 32  # end-cap thickness sealing off both ends of the tube
 SEWER_TEX = Textures.GROUND  # aged concrete/stone stand-in
 SEWER_LIGHT_SPACING = 768  # distance between interior point lights
 
+# ── Sewer chamber — a wholly separate sealed "basement" room extended below
+# the existing world floor slab, spanning the full length of Charles St. The
+# tube above floats inside this room with clearance on all sides; the room
+# is its own sealed box (own floor/walls/ceiling), entirely independent of
+# the map's normal ground/street geometry above, except for the single
+# vertical manhole shaft hole punched through both the room's ceiling and
+# the world floor slab directly above it.
+SEWER_ROOM_HW = SEWER_ROUT + 64  # half-width — clearance beyond the tube
+SEWER_ROOM_X1, SEWER_ROOM_X2 = -SEWER_ROOM_HW, SEWER_ROOM_HW
+SEWER_ROOM_WALL_T = 16
+SEWER_ROOM_ZT = FLOOR_Z1  # ceiling top — flush against the world floor's
+# underside, so the manhole shaft has no unsealed gap between the two
+SEWER_ROOM_CEIL_T = 16
+SEWER_ROOM_ZB = SEWER_ZC - SEWER_ROUT - 96  # chamber floor, clear below tube
+SEWER_ROOM_FLOOR_T = 16
+
 MANHOLE_X, MANHOLE_Y = 185, 946  # user-specified surface location
-MANHOLE_R = 48  # cover radius
-MANHOLE_COVER_T = 4  # visual cover thickness
-MANHOLE_DEST_Z = SEWER_ZC  # teleport destination inside the tube's hollow
-# (falls a short, safe distance onto the curved floor below)
-MANHOLE_RETURN_Y_OFFSET = 96  # the "climb out" pad sits this far north of the
-# landing spot, so arriving players don't immediately re-trigger the return
-# teleport underfoot
+MANHOLE_R = 48  # shaft half-width (square shaft, not round)
+MANHOLE_COLLAR_MARGIN = 8  # decorative rim extends this far beyond the hole
+MANHOLE_COLLAR_H = 6  # decorative rim height above the street surface
+# Angular opening cut into the top of the tube ring (angle 90° = straight up,
+# per arch_seg_y's convention) so the manhole shaft drops straight into the
+# tube's hollow interior instead of just the surrounding chamber air.
+MANHOLE_TUBE_OPEN_ANGLE1 = 67.5
+MANHOLE_TUBE_OPEN_ANGLE2 = 112.5
