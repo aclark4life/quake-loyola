@@ -153,7 +153,7 @@ BRIDGE_PIER_PLATE_D = (
 # Cement lining covering the inside surfaces (stilt/side walls + curved
 # intrados or lintel underside) of each pier's arch/square opening — leaves
 # a stone border at each opening end (margin) before the lining begins.
-BRIDGE_PIER_LINING_MARGIN = 12
+BRIDGE_PIER_LINING_MARGIN = 6
 BRIDGE_PIER_LINING_THICK = 3
 BRIDGE_PILLAR_PYR_H = 20
 BRIDGE_SEG_SPAN_W = 32
