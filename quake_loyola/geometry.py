@@ -1187,6 +1187,83 @@ def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
     return brushes
 
 
+def arch_opening_lining(x1, x2, yc, floor_z, sprz, rin, thickness, segs, tex, margin=0):
+    """Thin cement-style lining covering the inside surfaces of a round arch
+    opening — the two straight stilt side walls and the curved intrados —
+    protruding ``thickness`` inward from the ``rin`` boundary. Inset from the
+    pier's end faces (x1/x2) by ``margin`` on each side, leaving a stone
+    border visible at each opening end before the lining begins."""
+    lx1, lx2 = x1 + margin, x2 - margin
+    if lx2 <= lx1:
+        return []
+    brushes = [
+        box(lx1, yc - rin, floor_z, lx2, yc - rin + thickness, sprz, tex),
+        box(lx1, yc + rin - thickness, floor_z, lx2, yc + rin, sprz, tex),
+    ]
+    step = 180.0 / segs
+    for seg_index in range(segs):
+        brushes.append(
+            arch_seg(
+                lx1,
+                lx2,
+                yc,
+                float(sprz),
+                rin,
+                rin + thickness,
+                seg_index * step,
+                (seg_index + 1) * step,
+                tex,
+            )
+        )
+    return brushes
+
+
+def square_opening_lining(
+    x1, x2, yc, floor_z, ceil_z, open_hw, thickness, tex, margin=0
+):
+    """Thin cement-style lining covering the inside surfaces of a square
+    opening — the two straight side walls and the lintel underside —
+    protruding ``thickness`` inward. Inset from the pier's end faces (x1/x2)
+    by ``margin`` on each side, leaving a stone border visible at each
+    opening end before the lining begins."""
+    lx1, lx2 = x1 + margin, x2 - margin
+    if lx2 <= lx1:
+        return []
+    return [
+        box(lx1, yc - open_hw, floor_z, lx2, yc - open_hw + thickness, ceil_z, tex),
+        box(lx1, yc + open_hw - thickness, floor_z, lx2, yc + open_hw, ceil_z, tex),
+        box(lx1, yc - open_hw, ceil_z - thickness, lx2, yc + open_hw, ceil_z, tex),
+    ]
+
+
+def square_opening_lining_sheared(
+    x1, x2, s1, s2, floor_z, ceil_z, open_hw, thickness, tex, margin=0
+):
+    """Like ``square_opening_lining``, but for a pier whose opening is Y-sheared
+    across X (following an angled deck, see ``shear_box_y``). ``s1``/``s2`` are
+    the Y-shear at x1/x2; the shear at the margin-inset endpoints is linearly
+    interpolated."""
+    lx1, lx2 = x1 + margin, x2 - margin
+    if lx2 <= lx1:
+        return []
+
+    def shear_at(x):
+        return s1 + (x - x1) * (s2 - s1) / (x2 - x1)
+
+    ls1, ls2 = shear_at(lx1), shear_at(lx2)
+    return [
+        shear_box_y(
+            lx1, -open_hw, floor_z, lx2, -open_hw + thickness, ceil_z, ls1, ls2, tex
+        ),
+        shear_box_y(
+            lx1, open_hw - thickness, floor_z, lx2, open_hw, ceil_z, ls1, ls2, tex
+        ),
+        shear_box_y(
+            lx1, -open_hw, ceil_z - thickness, lx2, open_hw, ceil_z, ls1, ls2, tex
+        ),
+    ]
+
+
 def square_wall(
     x1,
     x2,
