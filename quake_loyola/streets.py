@@ -1201,7 +1201,7 @@ def build():
 
     # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
     # expansion-joint gaps (same technique as knott_terrain.py's sloped slabs).
-    _SW_SLAB_LEN = 128  # ~8.5 ft per panel
+    _SW_SLAB_LEN = 80  # matches CHARLES_WALK_W so panels are square (80×80)
     _SW_GAP = 2  # expansion-joint width
 
     def sw_slabs_y(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
