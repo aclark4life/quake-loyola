@@ -81,6 +81,11 @@ KNOTT_HALL_ENABLED = (
 ENTITIES_ENABLED = False  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
 LIGHTS_ENABLED = False  # master switch for every "light"-classname entity across all modules (streets, entities, west_campus, bridge, etc.); see generate_map.py filter
 TORCH_LIGHTS_ENABLED = True  # light "group" flag: torch/flame fixtures only
+BASEMENT_LIGHTS_ENABLED = True  # light "group" flag: basement.py fixtures only —
+# on by default (unlike TORCH_LIGHTS_ENABLED's pattern above, kept True since
+# the basement is otherwise a fully unlit sky-textured void with no ambient
+# light source, and would render as solid black without at least a few
+# lights placed inside it).
 # (bridge pillar tops, Ennis entrance pillars, Ennis cement-wall lamppost,
 # campus lamp posts) — same convenience-master pattern as BRIDGE_ENABLED:
 # LIGHTS_ENABLED=True forces every light group on (including this one),
@@ -828,19 +833,12 @@ WORLD_Z2 = max(640, KNOTT_Z2 + 512)
 # ground-floor slab (FLOOR_Z1..FLOOR_Z2). BASEMENT_Z1 is the negative mirror
 # of WORLD_Z2, so the full vertical span runs BASEMENT_Z1..WORLD_Z2 and the
 # ground plane (Z=0) sits exactly halfway between the new basement floor and
-# the existing ceiling. Access is a pair of trigger_teleport pads (ground ↔
-# basement) rather than a shaft cut through any existing floor slab, so no
-# other module needs to change.
+# the existing ceiling. No access point (teleporter/hatch) exists yet — this
+# is just the sealed shell, to be connected once the basement has content.
 BASEMENT_ENABLED = True
 BASEMENT_SLAB_T = 16  # basement floor slab thickness, matches FLOOR_Z1..FLOOR_Z2
 BASEMENT_Z1 = -WORLD_Z2  # basement floor top (walkable surface)
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom
-# Teleport pad footprint, in the open, unmodeled SW corner of the world-shell
-# footprint (X in [WORLD_X1, BRIDGE.x1], Y in [WORLD_Y1, CHARLES_Y1] — see
-# CHARLES_Y1 comment above) so it doesn't collide with any modeled geometry.
-BASEMENT_TELEPORT_CX = -3500
-BASEMENT_TELEPORT_CY = -4700
-BASEMENT_TELEPORT_HW = 32  # teleport pad half-width
 KNOTT_SHAFT_X1 = KNOTT_ENT_X2 + KNOTT_SHAFT_X_OFFSET
 KNOTT_SHAFT_X2 = KNOTT_SHAFT_X1 + KNOTT_SHAFT_W
 KNOTT_SHAFT_Y1, KNOTT_SHAFT_Y2 = KNOTT_BIY2 - KNOTT_SHAFT_Y_OFFSET, KNOTT_BIY2
