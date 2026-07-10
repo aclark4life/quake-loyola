@@ -36,6 +36,22 @@ class Face:
 
         return Face(t(self.p1), t(self.p2), t(self.p3), self.tex, self.params)
 
+    def is_inside(self, p: Point, eps: float = 1e-4) -> bool:
+        """Return True if point p is on the solid (positive) side of this face's plane."""
+        v1 = (self.p2[0] - self.p1[0], self.p2[1] - self.p1[1], self.p2[2] - self.p1[2])
+        v2 = (self.p3[0] - self.p1[0], self.p3[1] - self.p1[1], self.p3[2] - self.p1[2])
+        normal = (
+            v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0],
+        )
+        dot = (
+            normal[0] * (p[0] - self.p1[0])
+            + normal[1] * (p[1] - self.p1[1])
+            + normal[2] * (p[2] - self.p1[2])
+        )
+        return dot >= -eps
+
 
 @dataclass
 class Brush:
@@ -45,6 +61,20 @@ class Brush:
 
     def to_map(self) -> str:
         return "{\n" + "\n".join(f.to_map() for f in self.faces) + "\n}"
+
+    def contains(self, p: Point, eps: float = 1e-4) -> bool:
+        """Return True if point p is inside the convex volume defined by all faces."""
+        return all(f.is_inside(p, eps) for f in self.faces)
+
+    def get_bbox(self) -> tuple[Point, Point]:
+        """Return (min_point, max_point) bounding box of this brush."""
+        pts = []
+        for f in self.faces:
+            pts.extend([f.p1, f.p2, f.p3])
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        zs = [p[2] for p in pts]
+        return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
     def __str__(self) -> str:
         return self.to_map()
