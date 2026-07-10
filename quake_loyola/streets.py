@@ -2042,54 +2042,46 @@ def build():
             flame_z = pole_top_z + 20
             ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
-    # ── Charles St pedestrian crossing street lamp — post + arm style ───────────
-    # A ground-level lamp on the west sidewalk at the midpoint of the pedestrian
-    # crossing.  A horizontal arm extends east over the road so the light head
-    # illuminates the crossing from above, like a real cobra-head street lamp.
-    _sl_post_x = ROAD_X1 - 16  # on the west sidewalk, just inside the curb
-    _sl_y = (CHARLES_CROSSING_Y1 + CHARLES_CROSSING_Y2) // 2
-    _sl_post_h = 192  # ground-level street-lamp post height
-    _sl_arm_len = 128  # arm reach eastward over the road
-    _sl_arm_z = FLOOR_Z2 + _sl_post_h
-    _sl_arm_x2 = _sl_post_x + _sl_arm_len
-    # Vertical post
+    # ── NW bridge lamp post — single post at the NW corner of the bridge ────────
+    # Placed on the north side (BRIDGE.y2), set back west of the abutment (BRIDGE.x1)
+    # so it stands just off the west approach on the footpath beside the bridge.
+    _nw_lamp_x = BRIDGE.x1 - 48
+    _nw_lamp_y = BRIDGE.y2 + 48
+    _nw_pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
     DETAIL_BRUSHES.append(
         box(
-            _sl_post_x - 3,
-            _sl_y - 3,
+            _nw_lamp_x - 2,
+            _nw_lamp_y - 2,
             FLOOR_Z2,
-            _sl_post_x + 3,
-            _sl_y + 3,
-            _sl_arm_z,
+            _nw_lamp_x + 2,
+            _nw_lamp_y + 2,
+            _nw_pole_top_z,
             Textures.PILLAR,
         )
     )
-    # Horizontal arm extending east over the road
     DETAIL_BRUSHES.append(
         box(
-            _sl_post_x - 3,
-            _sl_y - 2,
-            _sl_arm_z - 3,
-            _sl_arm_x2,
-            _sl_y + 2,
-            _sl_arm_z + 3,
+            _nw_lamp_x - 3,
+            _nw_lamp_y - 3,
+            _nw_pole_top_z,
+            _nw_lamp_x + 3,
+            _nw_lamp_y + 3,
+            _nw_pole_top_z + 16,
             Textures.CEMENT,
         )
     )
-    # Lamp head at the tip of the arm
     DETAIL_BRUSHES.append(
         box(
-            _sl_arm_x2 - 8,
-            _sl_y - 8,
-            _sl_arm_z - 12,
-            _sl_arm_x2 + 8,
-            _sl_y + 8,
-            _sl_arm_z + 4,
+            _nw_lamp_x - 5,
+            _nw_lamp_y - 5,
+            _nw_pole_top_z + 16,
+            _nw_lamp_x + 5,
+            _nw_lamp_y + 5,
+            _nw_pole_top_z + 20,
             Textures.BRICK,
         )
     )
-    # Light + flame at the lamp head, illuminating the crossing below
-    ENTITIES.extend(torch_flame(_sl_arm_x2, _sl_y, _sl_arm_z - 8))
+    ENTITIES.extend(torch_flame(_nw_lamp_x, _nw_lamp_y, _nw_pole_top_z + 20))
 
     if DETAIL_BRUSHES:
         DETAIL_BRUSHES = _punch_manhole_detail(DETAIL_BRUSHES)
