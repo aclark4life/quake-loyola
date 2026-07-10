@@ -2042,6 +2042,47 @@ def build():
             flame_z = pole_top_z + 20
             ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
+    # ── NW bridge lamp post — single post at the NW corner of the bridge ────────
+    # Placed on the north side (BRIDGE.y2), set back west of the abutment (BRIDGE.x1)
+    # so it stands just off the west approach on the footpath beside the bridge.
+    _nw_lamp_x = BRIDGE.x1 - 48
+    _nw_lamp_y = BRIDGE.y2 + 48
+    _nw_pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
+    DETAIL_BRUSHES.append(
+        box(
+            _nw_lamp_x - 2,
+            _nw_lamp_y - 2,
+            FLOOR_Z2,
+            _nw_lamp_x + 2,
+            _nw_lamp_y + 2,
+            _nw_pole_top_z,
+            Textures.PILLAR,
+        )
+    )
+    DETAIL_BRUSHES.append(
+        box(
+            _nw_lamp_x - 3,
+            _nw_lamp_y - 3,
+            _nw_pole_top_z,
+            _nw_lamp_x + 3,
+            _nw_lamp_y + 3,
+            _nw_pole_top_z + 16,
+            Textures.CEMENT,
+        )
+    )
+    DETAIL_BRUSHES.append(
+        box(
+            _nw_lamp_x - 5,
+            _nw_lamp_y - 5,
+            _nw_pole_top_z + 16,
+            _nw_lamp_x + 5,
+            _nw_lamp_y + 5,
+            _nw_pole_top_z + 20,
+            Textures.BRICK,
+        )
+    )
+    ENTITIES.extend(torch_flame(_nw_lamp_x, _nw_lamp_y, _nw_pole_top_z + 20))
+
     if DETAIL_BRUSHES:
         DETAIL_BRUSHES = _punch_manhole_detail(DETAIL_BRUSHES)
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
