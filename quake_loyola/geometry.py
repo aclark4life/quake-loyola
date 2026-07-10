@@ -57,6 +57,184 @@ def box(
     )
 
 
+def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
+    """Like ``box``, but with a rectangular vertical hole (hx1..hx2, hy1..hy2)
+    punched all the way through in Z — used to carve an opening through an
+    otherwise-solid slab. Returns a list of 1-4 brushes forming a "picture
+    frame" around the hole (west/east full-depth strips, plus north/south
+    strips spanning only the hole's X range). If the hole doesn't overlap
+    the box's X-Y footprint, returns the box unchanged as a 1-item list."""
+    hx1, hx2 = max(hx1, x1), min(hx2, x2)
+    hy1, hy2 = max(hy1, y1), min(hy2, y2)
+    if hx1 >= hx2 or hy1 >= hy2:
+        return [box(x1, y1, z1, x2, y2, z2, tex, **kw)]
+    out = []
+    if x1 < hx1:
+        out.append(box(x1, y1, z1, hx1, y2, z2, tex, **kw))
+    if hx2 < x2:
+        out.append(box(hx2, y1, z1, x2, y2, z2, tex, **kw))
+    if y1 < hy1:
+        out.append(box(hx1, y1, z1, hx2, hy1, z2, tex, **kw))
+    if hy2 < y2:
+        out.append(box(hx1, hy2, z1, hx2, y2, z2, tex, **kw))
+    return out
+
+
+def polygon_prism(pts, z1, z2, tex):
+    """Prism over an arbitrary convex polygon (``pts``, CCW order, list of
+    (x, y) pairs, 3+ points). Same face-winding convention as ``tri_prism``/
+    ``box``: bottom faces +Z (solid above), top faces -Z (solid below)."""
+    n = len(pts)
+    faces = []
+    for i in range(n):
+        ax, ay = pts[i]
+        bx, by = pts[(i + 1) % n]
+        faces.append(Face((ax, ay, z2), (bx, by, z2), (ax, ay, z1), tex))
+    (x0, y0), (x1_, y1_), (x2_, y2_) = pts[0], pts[1], pts[2]
+    faces.append(Face((x0, y0, z1), (x1_, y1_, z1), (x2_, y2_, z1), tex))  # bottom
+    faces.append(Face((x0, y0, z2), (x2_, y2_, z2), (x1_, y1_, z2), tex))  # top
+    return Brush(faces)
+
+
+def _clip_poly_to_rect(poly, x1, y1, x2, y2):
+    """Sutherland-Hodgman clip of a convex polygon ``poly`` (list of (x,y))
+    against an axis-aligned rectangle. Returns the clipped polygon's points
+    (possibly empty if there's no overlap)."""
+
+    def clip_edge(pts, inside, intersect):
+        out = []
+        n = len(pts)
+        for i in range(n):
+            cur, prv = pts[i], pts[i - 1]
+            cur_in, prv_in = inside(cur), inside(prv)
+            if cur_in:
+                if not prv_in:
+                    out.append(intersect(prv, cur))
+                out.append(cur)
+            elif prv_in:
+                out.append(intersect(prv, cur))
+        return out
+
+    def isect_x(p, q, xv):
+        px, py = p
+        qx, qy = q
+        t = (xv - px) / (qx - px)
+        return (xv, py + t * (qy - py))
+
+    def isect_y(p, q, yv):
+        px, py = p
+        qx, qy = q
+        t = (yv - py) / (qy - py)
+        return (px + t * (qx - px), yv)
+
+    pts = list(poly)
+    pts = clip_edge(pts, lambda p: p[0] >= x1, lambda p, q: isect_x(p, q, x1))
+    if not pts:
+        return []
+    pts = clip_edge(pts, lambda p: p[0] <= x2, lambda p, q: isect_x(p, q, x2))
+    if not pts:
+        return []
+    pts = clip_edge(pts, lambda p: p[1] >= y1, lambda p, q: isect_y(p, q, y1))
+    if not pts:
+        return []
+    pts = clip_edge(pts, lambda p: p[1] <= y2, lambda p, q: isect_y(p, q, y2))
+    return pts
+
+
+def _radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
+    """Fills the area between a true circle (radius ``r``, centred at cx,cy)
+    and its enclosing bounding square, restricted to the rectangle
+    (x1,y1,x2,y2), with radial wedge prisms.
+
+    Each wedge is first built against the *full* cx±r bounding square (via a
+    ray-cast from the true centre out to that square's edge — always valid,
+    since the centre is by definition inside its own bounding square), then
+    clipped to the actual (x1,y1,x2,y2) rectangle with Sutherland-Hodgman
+    polygon clipping. Clipping (rather than naively connecting a circle
+    vertex straight to its box-clamped point) is what keeps this correct
+    when (x1,y1,x2,y2) is narrower than the circle's diameter or doesn't
+    contain the centre at all (common at busy intersections, where several
+    independent, differently-bounded slabs/stripes can each overlap the
+    same hole) — the earlier clamping-only approach could connect a vertex
+    far outside the rectangle straight to its clamped point, producing a
+    wedge that massively overshoots the rectangle's real bounds."""
+    sx1, sy1, sx2, sy2 = cx - r, cy - r, cx + r, cy + r
+    verts = []
+    box_pts = []
+    for i in range(n):
+        theta = 2 * math.pi * i / n
+        dx, dy = math.cos(theta), math.sin(theta)
+        vx, vy = cx + r * dx, cy + r * dy
+        verts.append((vx, vy))
+        candidates = []
+        if dx > 0:
+            candidates.append((sx2 - cx) / dx)
+        elif dx < 0:
+            candidates.append((sx1 - cx) / dx)
+        if dy > 0:
+            candidates.append((sy2 - cy) / dy)
+        elif dy < 0:
+            candidates.append((sy1 - cy) / dy)
+        t = min(candidates)
+        box_pts.append((cx + t * dx, cy + t * dy))
+    fills = []
+    for i in range(n):
+        j = (i + 1) % n
+        # Wound CCW (viewed from above), matching polygon_prism's/tri_prism's
+        # convention: [vert_j, vert_i, box_pt_i, box_pt_j] — NOT the more
+        # "natural"-looking [vert_i, vert_j, box_pt_j, box_pt_i], which is
+        # wound CW and produces inside-out (invalid) brushes that qbsp
+        # silently drops, leaving only the plain square cut visible/solid.
+        quad = [verts[j], verts[i], box_pts[i], box_pts[j]]
+        clipped = _clip_poly_to_rect(quad, x1, y1, x2, y2)
+        # Dedupe consecutive (near-)identical points, which Sutherland-
+        # Hodgman clipping can produce at rectangle corners — left as-is,
+        # these create zero-length edges and degenerate brush planes.
+        deduped = []
+        for p in clipped:
+            if (
+                not deduped
+                or math.hypot(p[0] - deduped[-1][0], p[1] - deduped[-1][1]) > 1e-4
+            ):
+                deduped.append(p)
+        if (
+            len(deduped) > 1
+            and math.hypot(
+                deduped[0][0] - deduped[-1][0], deduped[0][1] - deduped[-1][1]
+            )
+            < 1e-4
+        ):
+            deduped.pop()
+        clipped = deduped
+        if len(clipped) < 3:
+            continue
+        # Shoelace area — skip slivers with essentially zero area.
+        area2 = sum(
+            clipped[k][0] * clipped[(k + 1) % len(clipped)][1]
+            - clipped[(k + 1) % len(clipped)][0] * clipped[k][1]
+            for k in range(len(clipped))
+        )
+        if abs(area2) < 1e-6:
+            continue
+        fills.append(polygon_prism(clipped, z1, z2, tex))
+    return fills
+
+
+def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
+    """Like ``box_with_hole``, but the hole is a true circle (radius ``r``,
+    approximated as an ``n``-sided regular polygon) centred at (cx, cy),
+    instead of a plain rectangular hole."""
+    pieces = box_with_hole(
+        x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
+    )
+    # Fan-fill is clipped (internally, via Sutherland-Hodgman) to the actual
+    # box bounds, so it's safe to pass them directly even when the box is
+    # narrower than the circle's diameter or doesn't contain the centre.
+    fx1, fy1, fx2, fy2 = x1, y1, x2, y2
+    pieces += _radial_fan_fills(cx, cy, r, fx1, fy1, fx2, fy2, z1, z2, tex, n)
+    return pieces
+
+
 def east_y_shift(x):
     """Southward Y shift (negative = south) for a given X east of the easternmost pier.
     Pivots at BRIDGE_ARCH_X[4] (= 2206); zero for x <= that pier."""

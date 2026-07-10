@@ -83,6 +83,9 @@ from .constants import (
     KNOTT_DRIVEWAY_WS_X1,
     KNOTT_DRIVEWAY_WS_X2,
     KNOTT_TERRAIN_ENABLED,
+    MANHOLE_R,
+    MANHOLE_X,
+    MANHOLE_Y,
     NE_TERRAIN_ENABLED,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
@@ -108,6 +111,7 @@ from .constants import (
 from .geometry import (
     arch_seg,
     box,
+    box_with_round_hole,
     brush_ent,
     curb_seg,
     pyramid,
@@ -117,6 +121,78 @@ from .geometry import (
     torch_flame,
     tri_prism,
 )
+
+
+def _punch_manhole_detail(brushes):
+    """Punch the manhole opening (MANHOLE_X/Y/R) through any thin surface
+    layer detail brush (road, lane stripes, sidewalk panels, etc.) whose
+    footprint overlaps it. Several independent constructs — Charles St's
+    lane fills, Ennis Road's lanes (which physically overlap Charles St at
+    this intersection), and the dashed parking-lane stripe fills — can each
+    place a separate solid slab over the same spot, so cutting one
+    construct's brush isn't enough; sweeping every DETAIL_BRUSHES entry once
+    here catches all of them without needing a manual edit at each call
+    site. Only plain axis-aligned box slabs sitting in the thin road-surface
+    Z-band are touched; anything taller (curbs, walls, ramps) is left alone.
+
+    Two cases, based on how a brush's footprint relates to the circle:
+      - Entirely inside the circle (all 4 corners within radius) -> drop the
+        brush outright, nothing of it survives the hole.
+      - Any other overlap with the circle's bounding square -> run the
+        square-cut + circular-fan-fill routine (box_with_round_hole). The
+        fan-fill clamps each circle vertex into the brush's own bounds, so
+        it stays well-defined even when the brush is narrower than the
+        circle's diameter (e.g. a ~94-unit road lane against a 128-unit
+        hole) or doesn't fully contain the circle's centre.
+    """
+    out = []
+    for b in brushes:
+        pts = [p for f in b.faces for p in (f.p1, f.p2, f.p3)]
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        zs = [p[2] for p in pts]
+        x1, x2 = min(xs), max(xs)
+        y1, y2 = min(ys), max(ys)
+        z1, z2 = min(zs), max(zs)
+        is_thin_surface_layer = z1 >= FLOOR_Z2 - 1 and z2 <= FLOOR_Z2 + 20
+        if not is_thin_surface_layer:
+            out.append(b)
+            continue
+
+        def _dist(px, py):
+            return math.hypot(px - MANHOLE_X, py - MANHOLE_Y)
+
+        corners = [(x1, y1), (x2, y1), (x1, y2), (x2, y2)]
+        entirely_inside_circle = all(_dist(px, py) <= MANHOLE_R for px, py in corners)
+        overlaps_circle_bbox = (
+            x1 <= MANHOLE_X + MANHOLE_R
+            and x2 >= MANHOLE_X - MANHOLE_R
+            and y1 <= MANHOLE_Y + MANHOLE_R
+            and y2 >= MANHOLE_Y - MANHOLE_R
+        )
+        if entirely_inside_circle:
+            continue
+        elif overlaps_circle_bbox and len(b.faces) == 6:
+            tex = b.faces[0].tex
+            tt_params = b.faces[-1].params
+            out.extend(
+                box_with_round_hole(
+                    x1,
+                    y1,
+                    z1,
+                    x2,
+                    y2,
+                    z2,
+                    MANHOLE_X,
+                    MANHOLE_Y,
+                    MANHOLE_R,
+                    tex,
+                    tt_params=tt_params,
+                )
+            )
+        else:
+            out.append(b)
+    return out
 
 
 def build_ennis_entrance_features():
@@ -860,17 +936,22 @@ def build():
     # present (built by west_campus.py); with WEST_CAMPUS_ENABLED off, those
     # inner faces should read as sky, regardless of STREETS_DETAILS_ENABLED.
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED else Textures.SKY
-    BRUSHES.append(
-        box(
+    BRUSHES.extend(
+        box_with_round_hole(
             WORLD_X1,
             WORLD_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z2,
+            MANHOLE_X,
+            MANHOLE_Y,
+            MANHOLE_R,
             Textures.GROUND,
         )
-    )  # floor
+    )  # floor — punched with the manhole opening down to the basement (see
+    # basement.py, which cuts the matching hole through its own ceiling slab
+    # immediately below)
     # W wall — split by Z so only the tunnel-height portion shows ground on its inner face.
     BRUSHES.append(
         box(
@@ -1099,6 +1180,11 @@ def build():
         for lane_y1, lane_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
+            # The manhole opening (MANHOLE_X/Y/R) falls in the east parking
+            # lane — the hole through this slab (and any other overlapping
+            # decorative layer at this intersection) is punched generically
+            # further down (see _punch_manhole_detail sweep over
+            # DETAIL_BRUSHES), so just build the plain slab here.
             BRUSHES.append(
                 box(
                     lane_x1,
@@ -1489,7 +1575,7 @@ def build():
         _ey = next_ey
         _stripe_on = not _stripe_on
     if dash_brushes:
-        ENTITIES.append(brush_ent("func_detail", dash_brushes))
+        ENTITIES.append(brush_ent("func_detail", _punch_manhole_detail(dash_brushes)))
 
     # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
     # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
@@ -1955,6 +2041,7 @@ def build():
             ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
     if DETAIL_BRUSHES:
+        DETAIL_BRUSHES = _punch_manhole_detail(DETAIL_BRUSHES)
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     # ── Final safety seal — giant hollow box around the entire map coordinate space ──
     # This ensures the map is sealed even if internal terrain or building geometry

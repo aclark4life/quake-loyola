@@ -2,8 +2,12 @@
 
 Adds a walled void below the existing ground-floor slab, symmetric about
 Z=0 (see BASEMENT_Z1 in constants.py). No access point (teleporter/hatch)
-yet — this module only builds the sealed basement shell itself; a way down
-will be added separately once the basement has actual content.
+yet, aside from the manhole opening (MANHOLE_X/Y/R in constants.py) that
+punches straight down through both this module's ceiling slab and
+streets.py's world floor slab — this module only builds the sealed
+basement shell itself; a way to reach the manhole's edges from ground
+level, ladders, etc. will be added separately once the basement has actual
+content.
 """
 
 from .constants import (
@@ -11,6 +15,9 @@ from .constants import (
     BASEMENT_FLOOR_Z1,
     BASEMENT_Z1,
     FLOOR_Z1,
+    MANHOLE_R,
+    MANHOLE_X,
+    MANHOLE_Y,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
@@ -18,7 +25,7 @@ from .constants import (
     WORLD_Y2,
     Textures,
 )
-from .geometry import box, ent
+from .geometry import box, box_with_round_hole, ent
 
 
 def build():
@@ -91,15 +98,20 @@ def build():
 
     # ── Ceiling — thin slab directly under the existing ground-floor slab,
     # textured ground on both faces, so the basement's ceiling reads clearly
-    # as ground when looking up from inside the void.
-    BRUSHES.append(
-        box(
+    # as ground when looking up from inside the void. Punched with the
+    # matching manhole opening so the hole in streets.py's floor slab above
+    # actually connects all the way down into the basement void.
+    BRUSHES.extend(
+        box_with_round_hole(
             WORLD_X1 + WALL_T,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1 - WALL_T,
             WORLD_X2_EXT - WALL_T,
             WORLD_Y2 - WALL_T,
             FLOOR_Z1,
+            MANHOLE_X,
+            MANHOLE_Y,
+            MANHOLE_R,
             Textures.GROUND,
         )
     )

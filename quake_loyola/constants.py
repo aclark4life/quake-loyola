@@ -839,6 +839,15 @@ BASEMENT_ENABLED = True
 BASEMENT_SLAB_T = 16  # basement floor slab thickness, matches FLOOR_Z1..FLOOR_Z2
 BASEMENT_Z1 = -WORLD_Z2  # basement floor top (walkable surface)
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom
+
+# Manhole opening — a true round hole (n-gon approximation of a circle; see
+# box_with_round_hole/_radial_fan_fills in geometry.py) punched straight down
+# through both the world floor slab (FLOOR_Z1..FLOOR_Z2, streets.py) and the
+# basement ceiling slab (FLOOR_Z1-WALL_T..FLOOR_Z1, basement.py) at this X/Y,
+# connecting ground level directly to the basement void below. Just the
+# opening for now — no cover, ladder, or tube.
+MANHOLE_X, MANHOLE_Y = 174, 986
+MANHOLE_R = 64
 KNOTT_SHAFT_X1 = KNOTT_ENT_X2 + KNOTT_SHAFT_X_OFFSET
 KNOTT_SHAFT_X2 = KNOTT_SHAFT_X1 + KNOTT_SHAFT_W
 KNOTT_SHAFT_Y1, KNOTT_SHAFT_Y2 = KNOTT_BIY2 - KNOTT_SHAFT_Y_OFFSET, KNOTT_BIY2
