@@ -159,7 +159,18 @@ def build():
     # (this grid has 12) trips a qbsp portal-building bug that produces a
     # real leak — see the matching _WRAMP_OVR note in knott_terrain.py for
     # the bisection that found this. Overlap each non-final segment's south
-    # edge by a hair, linearly extrapolating that column's own slope.
+    # edge by a hair so segments no longer share an exact coincident plane.
+    #
+    # The south edge's height must stay exactly at the real sampled value
+    # for the nominal boundary (y2), NOT extrapolated further along this
+    # quad's own slope past that boundary — the next segment's north edge
+    # uses that same real sampled value for ITS corners, so extrapolating
+    # here instead made the two segments disagree on the surface height
+    # across the overlap sliver (by several units in places), which is
+    # exactly the kind of seam a player's collision hull can sink/fall
+    # through. Keeping the height flat across the sliver instead means
+    # both segments agree on the boundary height, at the cost of a few
+    # units of slope getting flattened right at the seam (imperceptible).
     _WCT_OVR = 4
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
@@ -170,10 +181,7 @@ def build():
             z_nw, z_sw = wcol1[i], wcol1[i + 1]
             z_ne, z_se = wcol2[i], wcol2[i + 1]
             if i < len(_wct_y) - 2:
-                y2_ext = y2 - _WCT_OVR
-                z_sw = z_nw + (z_sw - z_nw) * (y2_ext - y1) / (y2 - y1)
-                z_se = z_ne + (z_se - z_ne) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
+                y2 = y2 - _WCT_OVR
 
             # A single diagonal split (the old two-triangle approach) can't
             # represent a "saddle" quad — one where opposite corners' Z sum
