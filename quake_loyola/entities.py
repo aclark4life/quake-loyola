@@ -119,8 +119,9 @@ from .geometry import (
 
 def build():
     if not ENTITIES_ENABLED:
-        # Keep the map loadable with a single spawn at the world-shell floor centre.
-        return [], [ent("info_player_start", origin=f"0 0 {FLOOR_Z2 + 24}")]
+        # Keep the map loadable with a single spawn at the world-shell floor
+        # centre, well clear of the floor slab (FLOOR_Z1..FLOOR_Z2) below it.
+        return [], [ent("info_player_start", origin=f"0 0 {FLOOR_Z2 + 32}", angle="0")]
     BRUSHES = []
     ENTITIES = []
     BRIDGE_DECK_Z = deck_top_z(0) + 8  # centre of arch deck + a bit (spawn/item height)

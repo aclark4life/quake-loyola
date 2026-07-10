@@ -1,22 +1,16 @@
 """Sub-basement level — doubles the total world height.
 
 Adds a walled void below the existing ground-floor slab, symmetric about
-Z=0 (see BASEMENT_Z1 in constants.py), plus a pair of trigger_teleport pads
-that let a player travel between ground level and the basement without any
-existing floor slab (streets.py, west_campus_terrain.py, etc.) needing to be
-cut open.
+Z=0 (see BASEMENT_Z1 in constants.py). No access point (teleporter/hatch)
+yet — this module only builds the sealed basement shell itself; a way down
+will be added separately once the basement has actual content.
 """
 
 from .constants import (
     BASEMENT_ENABLED,
     BASEMENT_FLOOR_Z1,
-    BASEMENT_SLAB_T,
-    BASEMENT_TELEPORT_CX,
-    BASEMENT_TELEPORT_CY,
-    BASEMENT_TELEPORT_HW,
     BASEMENT_Z1,
     FLOOR_Z1,
-    FLOOR_Z2,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
@@ -24,7 +18,7 @@ from .constants import (
     WORLD_Y2,
     Textures,
 )
-from .geometry import box, brush_ent, ent
+from .geometry import box, ent
 
 
 def build():
@@ -43,7 +37,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             BASEMENT_Z1,
-            Textures.GROUND,
+            Textures.SKY,
         )
     )
 
@@ -58,7 +52,7 @@ def build():
             WORLD_X1 + WALL_T,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.STONE,
+            Textures.SKY,
         )
     )  # W wall
     BRUSHES.append(
@@ -69,7 +63,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.STONE,
+            Textures.SKY,
         )
     )  # E wall
     BRUSHES.append(
@@ -80,7 +74,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            Textures.STONE,
+            Textures.SKY,
         )
     )  # S wall
     BRUSHES.append(
@@ -91,65 +85,31 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.STONE,
+            Textures.SKY,
         )
     )  # N wall
 
-    # ── Teleport pads — ground level ↔ basement ──────────────────────────────
-    cx, cy = BASEMENT_TELEPORT_CX, BASEMENT_TELEPORT_CY
-    hw = BASEMENT_TELEPORT_HW
-
-    ground_pad_brush = box(
-        cx - hw,
-        cy - hw,
-        FLOOR_Z2,
-        cx + hw,
-        cy + hw,
-        FLOOR_Z2 + 32,
-        Textures.TELEPORT,
-    )
-    ENTITIES.append(
-        brush_ent("trigger_teleport", [ground_pad_brush], target="dest_basement")
-    )
-    ENTITIES.append(brush_ent("func_illusionary", [ground_pad_brush]))
-
-    basement_pad_brush = box(
-        cx - hw,
-        cy - hw,
-        BASEMENT_Z1,
-        cx + hw,
-        cy + hw,
-        BASEMENT_Z1 + 32,
-        Textures.TELEPORT,
-    )
-    ENTITIES.append(
-        brush_ent("trigger_teleport", [basement_pad_brush], target="dest_ground")
-    )
-    ENTITIES.append(brush_ent("func_illusionary", [basement_pad_brush]))
-
-    ENTITIES.append(
-        ent(
-            "info_teleport_destination",
-            targetname="dest_basement",
-            origin=f"{cx} {cy} {BASEMENT_Z1 + 40}",
-            angle="0",
-        )
-    )
-    ENTITIES.append(
-        ent(
-            "info_teleport_destination",
-            targetname="dest_ground",
-            origin=f"{cx} {cy} {FLOOR_Z2 + 40}",
-            angle="0",
-        )
-    )
-
-    ENTITIES.append(
-        ent(
-            "light",
-            origin=f"{cx} {cy} {BASEMENT_Z1 + 128}",
-            light="300",
-        )
-    )
+    # ── Lighting — the basement is otherwise a fully unlit sky-textured void
+    # (no ambient/sunlight reaches this enclosed space), so a grid of lights
+    # is placed at a mid-height plane to make the room actually visible.
+    # Tagged with the "basement" light group (see generate_map.py) so these
+    # stay on regardless of the global LIGHTS_ENABLED master switch.
+    light_z = BASEMENT_Z1 + 300
+    step = 2500
+    margin = 300
+    x = WORLD_X1 + margin
+    while x < WORLD_X2_EXT - margin:
+        y = WORLD_Y1 + margin
+        while y < WORLD_Y2 - margin:
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=f"{x} {y} {light_z}",
+                    light="500",
+                    _light_group="basement",
+                )
+            )
+            y += step
+        x += step
 
     return BRUSHES, ENTITIES
