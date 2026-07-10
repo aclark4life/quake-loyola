@@ -62,6 +62,10 @@ BRIDGE_ENABLED_EAST_EXT = (
 )
 STREETS_DETAILS_ENABLED = True  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = False  # west_campus.py — dorm buildings and grounds
+WEST_CAMPUS_FENCE_ENABLED = True  # west_campus.py — iron fence along the east
+# face of the (currently disabled) west-campus buildings. Kept independent of
+# WEST_CAMPUS_ENABLED so the fence can be shown along Charles St even while
+# the dorm buildings themselves stay off.
 WEST_CAMPUS_TERRAIN_ENABLED = True  # west_campus_terrain.py — real-elevation
 # ground fill under/around the dorm buildings + bridge west approach. Kept
 # independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_TERRAIN_ENABLED
@@ -130,7 +134,13 @@ BRIDGE_DZ1, BRIDGE_DZ2 = (
 # now a fixed hill-height anchor independent of this deck elevation.
 BRIDGE_EAST_SHIFT_START = 0.0
 BRIDGE_EAST_SPAN_ANGLE = 12.0
-BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = 5, 5
+BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = (
+    4,
+    4,
+)  # sized to fit just inside the middle span's two exterior parapet
+# blocks (cx=-276/276, half-width BRIDGE_BLK_HW=24, so inner edges at
+# -252/252 -> 504 units of clearance); at px_w=5 the lettering was
+# 531 units wide, overlapping those blocks — px_w=4 comes to 402 units.
 BRIDGE_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
 BRIDGE_PAR_H = 40
 BRIDGE_PILLAR_BASE_CAP_H = 6
