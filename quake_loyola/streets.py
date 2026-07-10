@@ -9,7 +9,6 @@ from .constants import (
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
     CHARLES_LAMP_POST_YS,
-    CHARLES_PARKING_LANE_W,
     CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -1169,8 +1168,11 @@ def build():
     # (see docs/reference.rst "Charles St width validation"). Parking lane sits
     # nearest each curb; travel lane sits between it and the centre divider.
     # Road surface split into 4 slabs, leaving narrow slots for the centre
-    # double-yellow divider and the two parking-lane stripes.
-    CHARLES_PARKING_LINE_X = ROAD_X2 - CHARLES_PARKING_LANE_W  # = 160
+    # double-yellow divider and the two parking-lane stripes. The parking
+    # line sits at the midpoint of each half-section (from the centre
+    # divider's edge to the curb) so the travel and parking lanes come out
+    # equal width, rather than the parking lane having a fixed width.
+    CHARLES_PARKING_LINE_X = (STREET_DIV_HW + ROAD_X2) / 2
     for lane_x1, lane_x2 in (
         (ROAD_X1, -CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW),  # west parking lane
         (-CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW, -STREET_DIV_HW),  # west travel

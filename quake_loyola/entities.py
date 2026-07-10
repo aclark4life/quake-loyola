@@ -119,9 +119,24 @@ from .geometry import (
 
 def build():
     if not ENTITIES_ENABLED:
-        # Keep the map loadable with a single spawn at the world-shell floor
-        # centre, well clear of the floor slab (FLOOR_Z1..FLOOR_Z2) below it.
-        return [], [ent("info_player_start", origin=f"0 0 {FLOOR_Z2 + 32}", angle="0")]
+        # Keep the map loadable with a single spawn on top of the bridge
+        # deck (centre span), matching the deathmatch spawn height used
+        # below when the full entity set is enabled.
+        # Also expose it as "dest_start" so trigger_teleports elsewhere (e.g.
+        # the basement's teleport back up, basement.py) can target it even
+        # while the full entity set is disabled. Offset slightly from the
+        # spawn origin so the two point entities don't exactly coincide
+        # (see test_no_duplicate_point_entity_origins).
+        start_z = int(deck_top_z(0) + 32)
+        return [], [
+            ent("info_player_start", origin=f"0 0 {start_z}", angle="0"),
+            ent(
+                "info_teleport_destination",
+                targetname="dest_start",
+                origin=f"0 24 {start_z}",
+                angle="0",
+            ),
+        ]
     BRUSHES = []
     ENTITIES = []
     BRIDGE_DECK_Z = deck_top_z(0) + 8  # centre of arch deck + a bit (spawn/item height)
@@ -651,6 +666,18 @@ def build():
         ent(
             "info_player_start",
             origin=f"{KNOTT_CX} {BRIDGE.y1 + BRIDGE_PAR_W + 32} {int(BRIDGE_DZ2 + 24)}",
+            angle="180",
+        )
+    )
+    # Also exposed as "dest_start" so trigger_teleports elsewhere (e.g. the
+    # basement's teleport back up, basement.py) can target the spawn point.
+    # Offset slightly from the spawn origin so the two point entities don't
+    # exactly coincide (see test_no_duplicate_point_entity_origins).
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_start",
+            origin=f"{KNOTT_CX} {BRIDGE.y1 + BRIDGE_PAR_W + 32 + 24} {int(BRIDGE_DZ2 + 24)}",
             angle="180",
         )
     )
