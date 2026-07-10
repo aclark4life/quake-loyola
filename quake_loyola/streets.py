@@ -1223,16 +1223,128 @@ def build():
             x += step
 
     # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
-    # takes over from the bridge's north side up to that point, below)
+    # takes over from the bridge's north side up to that point, below).
+    # The first two panels (a curb-cut) sit flush with the street surface
+    # height instead of the full curb height, so pedestrians stepping off
+    # the crosswalk aren't met with a curb lip. The next panel is a ramp,
+    # sloping the top face from the flush height back up to the full curb
+    # height, so the transition back to the normal sidewalk is gradual
+    # rather than an abrupt step.
+    CHARLES_CURB_CUT_LEN = 2 * (_SW_SLAB_LEN + _SW_GAP)
+    CHARLES_CURB_CUT_Y2 = CHARLES_CROSSING_MID + CHARLES_CURB_CUT_LEN
+    CHARLES_CURB_RAMP_Y2 = CHARLES_CURB_CUT_Y2 + _SW_SLAB_LEN
     sw_slabs_y(
         BRUSHES,
         ROAD_X1 - CHARLES_WALK_W,
         ROAD_X1,
         CHARLES_CROSSING_MID,
+        CHARLES_CURB_CUT_Y2,
+        FLOOR_Z2,
+        FLOOR_Z2 + STREET_SURFACE_T,
+        Textures.SIDEWALK,
+    )
+    BRUSHES.append(
+        ramp_slab_y(
+            ROAD_X1 - CHARLES_WALK_W,
+            ROAD_X1,
+            CHARLES_CURB_CUT_Y2,
+            CHARLES_CURB_RAMP_Y2,
+            FLOOR_Z2,
+            FLOOR_Z2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
+    )
+    # West curb wall (north of the ramp) — like the Ennis Road curbs, this
+    # stretch of sidewalk relies solely on the height difference against the
+    # adjacent road slab, which doesn't reliably render as a visible step.
+    # Add an explicit standing curb wall along the road-facing (east) edge,
+    # separated from the sidewalk squares by a low flush gap so the curb
+    # reads as its own distinct piece rather than the sidewalk's own edge.
+    _CHARLES_CURB_CAP_D = 8
+    _CHARLES_CURB_GAP = 2
+    sw_slabs_y(
+        BRUSHES,
+        ROAD_X1 - CHARLES_WALK_W,
+        ROAD_X1 - _CHARLES_CURB_CAP_D - _CHARLES_CURB_GAP,
+        CHARLES_CURB_RAMP_Y2 + _SW_GAP,
         CHARLES_Y2,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
+    )
+    BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+        box(
+            ROAD_X1 - _CHARLES_CURB_CAP_D - _CHARLES_CURB_GAP,
+            CHARLES_CURB_RAMP_Y2 + _SW_GAP,
+            FLOOR_Z2,
+            ROAD_X1 - _CHARLES_CURB_CAP_D,
+            CHARLES_Y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.SIDEWALK,
+        )
+    )
+    BRUSHES.append(
+        box(
+            ROAD_X1 - _CHARLES_CURB_CAP_D,
+            CHARLES_CURB_RAMP_Y2 + _SW_GAP,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            ROAD_X1,
+            CHARLES_Y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
+    )
+    # South east-west curb cap — the south edge of the curb-cut (where it
+    # meets the full-height curb south of the crossing, at
+    # CHARLES_CROSSING_MID) needs its own explicit wall face. The two
+    # brushes touch there but don't reliably render a step on their own, so
+    # add a dedicated curb slab spanning the full sidewalk width, standing
+    # from the flush height up to the full curb height.
+    BRUSHES.append(
+        box(
+            ROAD_X1 - CHARLES_WALK_W,
+            CHARLES_CROSSING_MID,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            ROAD_X1,
+            CHARLES_CROSSING_MID + 4,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
+    )
+    # West retaining wall — along the outer (west) edge of the curb-cut and
+    # ramp above, since that whole strip dips below the usual curb height.
+    # Without this, the drop-off there would be an open-sided ledge instead
+    # of a proper curb. Constant-height wall alongside the flush curb-cut,
+    # then tapers down (following the ramp's rising top face) to a small
+    # residual reveal by the time the ramp meets full curb height, matching
+    # the sidewalk's own texture/style.
+    _RW_X2 = ROAD_X1 - CHARLES_WALK_W
+    _RW_X1 = _RW_X2 - STREET_CHARLES_CURB_W
+    BRUSHES.append(
+        box(
+            _RW_X1,
+            CHARLES_CROSSING_MID,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            _RW_X2,
+            CHARLES_CURB_CUT_Y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
+    )
+    BRUSHES.append(
+        ramp_slab_y(
+            _RW_X1,
+            _RW_X2,
+            CHARLES_CURB_CUT_Y2,
+            CHARLES_CURB_RAMP_Y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            FLOOR_Z2 + CHARLES_WALK_H - STREET_SURFACE_T,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
     )
     # West curb — from Charles St south edge up to the crossing midpoint
     # (covers the south section below the bridge and, per the same
@@ -1262,27 +1374,46 @@ def build():
             Textures.GROUND,
         )
     )
-    # East sidewalk — split into two segments, trimmed CHARLES_WALK_W short of each corner
-    sw_slabs_y(
-        BRUSHES,
-        ROAD_X2,
-        ROAD_X2 + CHARLES_WALK_W,
-        CHARLES_Y1,
-        ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.SIDEWALK,
-    )
-    sw_slabs_y(
-        BRUSHES,
-        ROAD_X2,
-        ROAD_X2 + CHARLES_WALK_W,
-        ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
-        CHARLES_Y2,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.SIDEWALK,
-    )
+    # East sidewalk — split into two segments, trimmed CHARLES_WALK_W short of each corner.
+    # Curb wall sits along the road-facing (west) edge, separated from the
+    # sidewalk squares by a low flush gap (same treatment as the west
+    # sidewalk and Ennis Road curbs above).
+    for _seg_y1, _seg_y2 in (
+        (CHARLES_Y1, ENNIS_Y - ENNIS_HW - CHARLES_WALK_W),
+        (ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, CHARLES_Y2),
+    ):
+        sw_slabs_y(
+            BRUSHES,
+            ROAD_X2 + _CHARLES_CURB_CAP_D + _CHARLES_CURB_GAP,
+            ROAD_X2 + CHARLES_WALK_W,
+            _seg_y1,
+            _seg_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+        )
+        BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+            box(
+                ROAD_X2 + _CHARLES_CURB_CAP_D,
+                _seg_y1,
+                FLOOR_Z2,
+                ROAD_X2 + _CHARLES_CURB_CAP_D + _CHARLES_CURB_GAP,
+                _seg_y2,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.SIDEWALK,
+            )
+        )
+        BRUSHES.append(
+            box(
+                ROAD_X2,
+                _seg_y1,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                ROAD_X2 + _CHARLES_CURB_CAP_D,
+                _seg_y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.SIDEWALK,
+            )
+        )
 
     # ── Ennis Road brushes ──
     # Road surface — split around centre divider slot and south curb strip (Y=776–784)
@@ -1351,43 +1482,88 @@ def build():
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
-    # North curb — offset east by CHARLES_WALK_W to cut corner square
+    # North curb — offset east by CHARLES_WALK_W to cut corner square.
+    # Curb wall sits along the road-facing (south) edge, separated from the
+    # sidewalk squares by a low flush gap (matches Charles St's treatment).
+    _ENNIS_CURB_CAP_D = 8  # depth of the curb wall itself
+    _ENNIS_CURB_GAP = 2  # width of the flush gap between curb and sidewalk
     sw_slabs_x(
         BRUSHES,
         ROAD_X2 + CHARLES_WALK_W,
         ENNIS_X2,
-        ENNIS_Y + ENNIS_HW,
+        ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
         ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
         tt_params=ENNIS_ROAD_TT_PARAMS,
     )
-    # South curb — split into two segments with a gap for the back road entrance
-    # West segment: Charles St east sidewalk to back road west sidewalk
-    sw_slabs_x(
-        BRUSHES,
-        ROAD_X2 + CHARLES_WALK_W,
-        KNOTT.x2,
-        ENNIS_SW_EDGE,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.SIDEWALK,
-        tt_params=ENNIS_ROAD_TT_PARAMS,
+    BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+        box(
+            ROAD_X2 + CHARLES_WALK_W,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            FLOOR_Z2,
+            ENNIS_X2,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
     )
-    # East segment: back road east sidewalk east to world wall
-    sw_slabs_x(
-        BRUSHES,
-        KNOTT_DRIVEWAY_ES_X2,
-        ENNIS_X2,
-        ENNIS_SW_EDGE,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.SIDEWALK,
-        tt_params=ENNIS_ROAD_TT_PARAMS,
+    BRUSHES.append(  # north curb — sidewalk is north of the road
+        box(
+            ROAD_X2 + CHARLES_WALK_W,
+            ENNIS_Y + ENNIS_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            ENNIS_X2,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
     )
+    # South curb — split into two segments with a gap for the back road entrance.
+    # Curb wall sits along the road-facing (north) edge of each segment,
+    # with the same flush gap treatment as the north curb above.
+    for curb_x1, curb_x2 in (
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2),  # west segment
+        (KNOTT_DRIVEWAY_ES_X2, ENNIS_X2),  # east segment
+    ):
+        sw_slabs_x(
+            BRUSHES,
+            curb_x1,
+            curb_x2,
+            ENNIS_SW_EDGE,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
+        BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+            box(
+                curb_x1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP,
+                FLOOR_Z2,
+                curb_x2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.SIDEWALK,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
+            )
+        )
+        BRUSHES.append(  # sidewalk is south of the road
+            box(
+                curb_x1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                curb_x2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.SIDEWALK,
+                tt_params=ENNIS_ROAD_TT_PARAMS,
+            )
+        )
 
     # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
     dash_brushes = []

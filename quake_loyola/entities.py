@@ -119,15 +119,15 @@ from .geometry import (
 
 def build():
     if not ENTITIES_ENABLED:
-        # Keep the map loadable with a single spawn on top of the bridge
-        # deck (centre span), matching the deathmatch spawn height used
-        # below when the full entity set is enabled.
+        # Keep the map loadable with a single spawn on Charles St at ground
+        # level (centre span, directly under the bridge), rather than on
+        # top of the bridge deck.
         # Also expose it as "dest_start" so trigger_teleports elsewhere (e.g.
         # the basement's teleport back up, basement.py) can target it even
         # while the full entity set is disabled. Offset slightly from the
         # spawn origin so the two point entities don't exactly coincide
         # (see test_no_duplicate_point_entity_origins).
-        start_z = int(deck_top_z(0) + 32)
+        start_z = int(FLOOR_Z2 + 32)
         return [], [
             ent("info_player_start", origin=f"0 0 {start_z}", angle="0"),
             ent(
