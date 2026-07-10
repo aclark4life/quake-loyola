@@ -197,18 +197,43 @@ def build():
             )
         )
 
+    # Span-segment boundaries shared by the wall (iter_bridge_span_segments)
+    # and the parapet decorations below, so decorative blocks always sit
+    # exactly parallel to whichever single wall segment they rest on.
+    _p1, _p2, _p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+    _n_center = max(1, round((_p3 - _p2) / BRIDGE_SEG_W))
+    _step = (_p3 - _p2) / _n_center
+    SPAN_BOUNDARIES = [BRIDGE.x1, _p1, _p2]
+    SPAN_BOUNDARIES += [_p2 + i * _step for i in range(1, _n_center)]
+    SPAN_BOUNDARIES += [_p3, BRIDGE.x2]
+
+    def wall_tilt_z(cx, half_width):
+        """Z at cx-half_width and cx+half_width, extrapolated from the slope
+        of the SINGLE wall segment containing cx (not sampled independently
+        at each edge). Near a segment boundary (e.g. the shallow crest of the
+        centre span), a block wide enough to straddle two segments would
+        otherwise average in the far segment's different slope and end up
+        visibly tilted at an angle that doesn't match the segment it's
+        actually resting on — this keeps the block exactly parallel to that
+        one segment instead."""
+        bs = SPAN_BOUNDARIES
+        cx_clamped = min(max(cx, bs[0]), bs[-1])
+        for sx1, sx2 in zip(bs, bs[1:]):
+            if sx1 <= cx_clamped <= sx2:
+                z1, z2 = deck_top_z(sx1), deck_top_z(sx2)
+                slope = (z2 - z1) / (sx2 - sx1) if sx2 != sx1 else 0.0
+                t = (cx_clamped - sx1) / (sx2 - sx1) if sx2 != sx1 else 0.0
+                zc = z1 + (z2 - z1) * t
+                return zc - slope * half_width, zc + slope * half_width
+        zc = deck_top_z(cx_clamped)  # unreachable fallback
+        return zc, zc
+
     def iter_bridge_span_segments():
         # Only the curved centre span (PIER2..PIER3) is faceted; the flat west
         # approach and the two straight approach spans are emitted as single
         # segments so their collinear boundaries don't spawn redundant coplanar
         # portals (qbsp WARNING 12 — see the east-section note below).
-        p1, p2, p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
-        n_center = max(1, round((p3 - p2) / BRIDGE_SEG_W))
-        step = (p3 - p2) / n_center
-        boundaries = [BRIDGE.x1, p1, p2]
-        boundaries += [p2 + i * step for i in range(1, n_center)]
-        boundaries += [p3, BRIDGE.x2]
-        for sx1, sx2 in zip(boundaries, boundaries[1:]):
+        for sx1, sx2 in zip(SPAN_BOUNDARIES, SPAN_BOUNDARIES[1:]):
             db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
             pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
             pt1, pt2 = pb1 + BRIDGE.parapet_h, pb2 + BRIDGE.parapet_h
@@ -382,9 +407,24 @@ def build():
         """Add evenly-spaced cement blocks atop N and S parapets in a bridge span."""
 
         def _block(cx, sy, y1_val, y2_val):
-            """Tilted block following the arch — ramp_slab when sloped, box when flat."""
-            zb1 = round(deck_top_z(cx - BRIDGE_BLK_HW) + BRIDGE.parapet_h)
-            zb2 = round(deck_top_z(cx + BRIDGE_BLK_HW) + BRIDGE.parapet_h)
+            """Tilted block following the arch — ramp_slab when sloped, box when flat.
+            Uses wall_tilt_z (the containing wall segment's own slope,
+            extrapolated from the block's centre) instead of independently
+            sampling deck_top_z at the block's own edges, so the block is
+            always exactly parallel to the wall segment it rests on.
+            Genuinely near-flat slopes (< 1 unit of total rise across the
+            block) are snapped flat rather than rounded independently at
+            each edge — independently rounding two close-but-different
+            floats can otherwise manufacture a full 1-unit apparent tilt
+            out of a true sub-unit slope (e.g. near the shallow crest of
+            the centre span), which is exactly what reads as the block
+            being tilted at the wrong angle relative to the wall."""
+            zb1_raw, zb2_raw = wall_tilt_z(cx, BRIDGE_BLK_HW)
+            if abs(zb2_raw - zb1_raw) < 1.0:
+                zb1 = zb2 = round((zb1_raw + zb2_raw) / 2 + BRIDGE.parapet_h)
+            else:
+                zb1 = round(zb1_raw + BRIDGE.parapet_h)
+                zb2 = round(zb2_raw + BRIDGE.parapet_h)
             y1v = y1_val + sy
             y2v = y2_val + sy
             if zb1 == zb2:

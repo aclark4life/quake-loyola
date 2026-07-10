@@ -395,7 +395,9 @@ ROAD_X1, ROAD_X2 = -256, 256
 # Charles St curb-to-curb width models 1 travel lane + 1 parking lane each side
 # (see docs/reference.rst "Charles St width validation" + satellite re-check):
 # parking lane nearest each curb, travel lane between it and the centerline.
-CHARLES_PARKING_LANE_W = 96
+# The parking/travel split (CHARLES_PARKING_LINE_X, streets.py) is derived
+# from ROAD_X2/STREET_DIV_HW directly rather than a fixed lane width, so the
+# two lanes come out equal width.
 STREET_DIV_LINE_HW = 2  # half-width of each parking-lane stripe (dashed, white)
 
 # ── Pedestrian crosswalks — thick white zebra stripes, flush with the road
@@ -846,8 +848,12 @@ BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom
 # basement ceiling slab (FLOOR_Z1-WALL_T..FLOOR_Z1, basement.py) at this X/Y,
 # connecting ground level directly to the basement void below. Just the
 # opening for now — no cover, ladder, or tube.
-MANHOLE_X, MANHOLE_Y = 174, 986
-MANHOLE_R = 64
+MANHOLE_X, MANHOLE_Y = 170, 986
+# Player hull is a 32x32 (half-extent 16) axis-aligned box; the tightest a
+# circular hole can be and still pass it every orientation is the box's
+# half-diagonal, 16*sqrt(2) =~ 22.6. 28 gives a small (~5 unit) safety
+# margin above that so the player doesn't snag on the hole's n-gon edges.
+MANHOLE_R = 28
 KNOTT_SHAFT_X1 = KNOTT_ENT_X2 + KNOTT_SHAFT_X_OFFSET
 KNOTT_SHAFT_X2 = KNOTT_SHAFT_X1 + KNOTT_SHAFT_W
 KNOTT_SHAFT_Y1, KNOTT_SHAFT_Y2 = KNOTT_BIY2 - KNOTT_SHAFT_Y_OFFSET, KNOTT_BIY2

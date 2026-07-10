@@ -175,7 +175,10 @@ side — 2 travel lanes + 2 parking lanes, matching the already-validated
 curb-to-curb width. The road surface is now split into 4 slabs
 (``CHARLES_PARKING_LANE_W`` = 96 units from each curb) with a solid centre
 stripe and two dashed parking-lane stripes (``STREET_DIV_LINE_HW``),
-instead of a single dashed centerline.
+instead of a single dashed centerline. (Later revised for gameplay: the
+parking-lane stripe was moved to the midpoint of each half-section instead
+of this fixed 96-unit curb offset, so the travel and parking lanes are
+equal width — see ``CHARLES_PARKING_LINE_X`` in streets.py.)
 
 Topology check
 ~~~~~~~~~~~~~~
