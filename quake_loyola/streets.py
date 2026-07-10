@@ -1,6 +1,7 @@
 import math
 
 from .constants import (
+    BASEMENT_FLOOR_Z1,
     BRIDGE,
     BRIDGE_DZ2,
     CHARLES_CRN_R,
@@ -1958,9 +1959,12 @@ def build():
     # ── Final safety seal — giant hollow box around the entire map coordinate space ──
     # This ensures the map is sealed even if internal terrain or building geometry
     # has tiny gaps or degenerate portals that confuse qbsp.
+    # seal_z1 is pinned below BASEMENT_FLOOR_Z1 (rather than FLOOR_Z1) so this
+    # seal's floor sits below basement.py's sub-basement level instead of
+    # floating as a stray sky slab inside its open void.
     seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
     seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256
-    seal_z1, seal_z2 = FLOOR_Z1 - 256, WORLD_Z2 + 512
+    seal_z1, seal_z2 = BASEMENT_FLOOR_Z1 - 256, WORLD_Z2 + 512
     ST = 64  # seal thickness
     BRUSHES.extend(
         [

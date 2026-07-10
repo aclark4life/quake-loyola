@@ -37,7 +37,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             BASEMENT_Z1,
-            Textures.SKY,
+            Textures.GROUND,
         )
     )
 
@@ -52,7 +52,7 @@ def build():
             WORLD_X1 + WALL_T,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.SKY,
+            Textures.GROUND,
         )
     )  # W wall
     BRUSHES.append(
@@ -63,7 +63,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.SKY,
+            Textures.GROUND,
         )
     )  # E wall
     BRUSHES.append(
@@ -74,7 +74,7 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            Textures.SKY,
+            Textures.GROUND,
         )
     )  # S wall
     BRUSHES.append(
@@ -85,9 +85,24 @@ def build():
             WORLD_X2_EXT,
             WORLD_Y2,
             FLOOR_Z1,
-            Textures.SKY,
+            Textures.GROUND,
         )
     )  # N wall
+
+    # ── Ceiling — thin slab directly under the existing ground-floor slab,
+    # textured ground on both faces, so the basement's ceiling reads clearly
+    # as ground when looking up from inside the void.
+    BRUSHES.append(
+        box(
+            WORLD_X1 + WALL_T,
+            WORLD_Y1 + WALL_T,
+            FLOOR_Z1 - WALL_T,
+            WORLD_X2_EXT - WALL_T,
+            WORLD_Y2 - WALL_T,
+            FLOOR_Z1,
+            Textures.GROUND,
+        )
+    )
 
     # ── Lighting — the basement is otherwise a fully unlit sky-textured void
     # (no ambient/sunlight reaches this enclosed space), so a grid of lights
