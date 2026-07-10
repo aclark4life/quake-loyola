@@ -403,7 +403,7 @@ STREET_DIV_LINE_HW = 2  # half-width of each parking-lane stripe (dashed, white)
 # ── Pedestrian crosswalks — thick white zebra stripes, flush with the road
 # surface (carved out of the road/lane-marking brushes, same technique as the
 # centerline and parking-lane stripes). See streets.py "PEDESTRIAN CROSSWALKS".
-CROSSWALK_LEN = 80  # depth of the crossing along the direction of travel
+CROSSWALK_LEN = 128  # depth of the crossing along the direction of travel
 CROSSWALK_STRIPE_W = 48  # width of each white stripe, across the crossing
 CROSSWALK_GAP_W = 32  # gap between stripes (shows the road texture below)
 
