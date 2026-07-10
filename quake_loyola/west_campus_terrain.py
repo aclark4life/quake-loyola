@@ -71,7 +71,8 @@ _wct_x = [
     -1177,  # DORM_X2
     -961,  # FENCE_X1
     -700,
-    -400,
+    -550,
+    -420,
     _wct_sidewalk_x,
 ]
 # Y grid: full world Y range, north to south. streets.py's Charles St
@@ -114,10 +115,31 @@ _wct_cols = [
     _clamp0([-117, -23, 88, 92, 101, 106, 105, 108, 109, 122, 86, 206, 198]),
     _clamp0([-116, -36, 62, 74, 88, 101, 104, 139, 113, 108, 93, 161, 186]),
     _clamp0([-137, -82, -28, -16, 12, 50, 67, 104, 105, 100, 105, 136, 154]),
-    _clamp0([-131, -89, -52, -48, -33, -13, 5, 38, 68, 90, 115, 114, 114]),
+]
+# The real -700 column rises to ~90-115 near the south end, but the
+# sidewalk-tie column (below) is forced flat at the curb height for the
+# *entire* Y range (streets.py already owns that ground). Blending
+# straight from real -> flat in one 64-unit hop (the old lone "-400"
+# column) created a near-vertical cliff right next to the sidewalk,
+# worst in the south where the real/flat gap is largest — reported as an
+# unnatural steep drop-off close to Charles St. Taper across two more
+# steps (-550, -420) instead, each moving partway from the real -700
+# column toward the flat curb height, so the same total drop is spread
+# over ~364 units rather than 64.
+_wct_real_700 = _wct_cols[-1]
+_wct_flat_walk = [CHARLES_WALK_H] * len(_wct_y)
+
+
+def _wct_taper(frac):
+    return [round(r + (CHARLES_WALK_H - r) * frac) for r in _wct_real_700]
+
+
+_wct_cols += [
+    _wct_taper(0.4),  # -550
+    _wct_taper(0.75),  # -420
     # Sidewalk-tie column: flat at the curb/raised-ground height
     # streets.py already builds along this whole edge, for every Y row.
-    [CHARLES_WALK_H] * len(_wct_y),
+    _wct_flat_walk,
 ]
 
 
@@ -171,7 +193,18 @@ def build():
     # through. Keeping the height flat across the sliver instead means
     # both segments agree on the boundary height, at the cost of a few
     # units of slope getting flattened right at the seam (imperceptible).
-    _WCT_OVR = 4
+    #
+    # 4 units was not always enough: at the row spanning y=-1968..-2768
+    # (steeper real-elevation drop than most rows), qbsp's hull1 (player
+    # clip hull) CSG still silently dropped the whole row's collision
+    # surface even though hull0/visual geometry and the source .map
+    # brushes looked correct — confirmed by a direct BSP clipnode probe at
+    # (-571, -2162): the compiled player hull reported the base floor slab
+    # (z~30) instead of the terrain surface (z~100+), a real fall-through
+    # with no leak or qbsp warning to flag it. Raising the overlap to 20
+    # units resolved it (verified via the same clipnode probe). Keep this
+    # generous rather than re-tuning per row.
+    _WCT_OVR = 20
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
         zip(_wct_x, _wct_cols), zip(_wct_x[1:], _wct_cols[1:])

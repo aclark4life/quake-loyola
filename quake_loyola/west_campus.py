@@ -45,8 +45,6 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     SDORM_LIFT,
-    SDORM_SLOPE_Y_N,
-    SDORM_SLOPE_Y_S,
     SDORM_STAIR_N,
     SDORM_STAIR_RISE,
     SDORM_STAIR_RUN,
@@ -93,54 +91,23 @@ def _build_iron_fence(ENTITIES):
     # Real terrain (west_campus_terrain.py) rises well above the flat
     # FLOOR_Z2 grade this fence used to assume north of the bridge — up to
     # ~100 units near the fence line — which buried the entire fence in the
-    # hillside. Follow the real hillside height at the fence's own X
-    # (FENCE_X1) instead, north of the bridge, and taper the terrace-decline
-    # segment down to that same real height (rather than FLOOR_Z2) so the
-    # fence stays continuous at the SDORM_SLOPE_Y_N seam.
-    _fence_grade_z_n = _wct_terrain_z(FENCE_X1, SDORM_SLOPE_Y_N)
-
+    # hillside. Likewise, south of the bridge the fence used to assume a
+    # flat FLOOR_Z2+SDORM_LIFT terrace (matching the still-disabled south
+    # dorm's floor pad) which diverges from the real hillside by up to ~20
+    # units there too — floating or burying the fence depending on Y. Follow
+    # the real terrain height the entire length of the fence instead.
     def fence_base_at(y):
-        """Iron-fence base Z: on the raised terrace south of the brick wall's
-        south pillar, declining to real grade between the pillar and the north
-        side of the bridge so the fence stays connected, then following the
-        real hillside terrain to the north."""
-        if y <= SDORM_SLOPE_Y_S:
-            return FLOOR_Z2 + SDORM_LIFT
-        if y >= SDORM_SLOPE_Y_N:
-            return _wct_terrain_z(FENCE_X1, y)
-        frac = (SDORM_SLOPE_Y_N - y) / (SDORM_SLOPE_Y_N - SDORM_SLOPE_Y_S)
-        return _fence_grade_z_n + round(
-            (FLOOR_Z2 + SDORM_LIFT - _fence_grade_z_n) * frac
-        )
+        """Iron-fence base Z: follows the real hillside terrain at the
+        fence's own X (FENCE_X1) along its whole length."""
+        return _wct_terrain_z(FENCE_X1, y)
 
-    # Top rail — flat over the south terrace run, sloped through the decline
-    # band, then chained ramps over the north hillside run (real terrain is
-    # not flat there — see fence_base_at) so the rail tracks the picket tops.
+    # Top rail — chained ramps over the terrain's real slope (not flat —
+    # see fence_base_at) so the rail tracks the picket tops the whole way.
     rail_lo, rail_hi = FENCE_H - 28, FENCE_H - 26
-    ry1, ry2 = CHARLES_Y1, SDORM_SLOPE_Y_S
-    b = fence_base_at((ry1 + ry2) // 2)
-    fence_brushes.append(
-        box(FENCE_X1, ry1, b + rail_lo, FENCE_X2, ry2, b + rail_hi, Textures.FENCE)
+    _rail_ys = sorted(
+        {CHARLES_Y1, fence_y2} | {y for y in _wct_y if CHARLES_Y1 < y < fence_y2}
     )
-    bs, bn = fence_base_at(SDORM_SLOPE_Y_S), fence_base_at(SDORM_SLOPE_Y_N)
-    fence_brushes.append(
-        ramp_slab_y(
-            FENCE_X1,
-            FENCE_X2,
-            SDORM_SLOPE_Y_S,
-            SDORM_SLOPE_Y_N,
-            bs + rail_lo,
-            bn + rail_lo,
-            bs + rail_hi,
-            bn + rail_hi,
-            Textures.FENCE,
-        )
-    )
-    _rail_n_ys = sorted(
-        {SDORM_SLOPE_Y_N, fence_y2}
-        | {y for y in _wct_y if SDORM_SLOPE_Y_N < y < fence_y2}
-    )
-    for ny1, ny2 in zip(_rail_n_ys, _rail_n_ys[1:]):
+    for ny1, ny2 in zip(_rail_ys, _rail_ys[1:]):
         b1, b2 = fence_base_at(ny1), fence_base_at(ny2)
         fence_brushes.append(
             ramp_slab_y(
