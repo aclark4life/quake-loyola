@@ -543,8 +543,7 @@ class Textures:
         "win_fbblu_01"  # named "blu" but reads more white than blue in-game, so
         # it works fine as a stand-in for the white parking-lane stripe texture
     )
-    ENNIS_PILLAR = "win_fbblu_01"  # same texture as PARKING_STRIPE, used for the
-    # Ennis entrance pillars
+    ENNIS_PILLAR = "wbrik32a"  # from ikwhite.wad
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
@@ -1174,7 +1173,7 @@ TREE_PROFILES: dict[str, list[str]] = {
 
 
 WORLDSPAWN_FIELDS = {
-    "wad": "quake101.wad;ad.wad;makkon_building.wad",
+    "wad": "quake101.wad;ad.wad;makkon_building.wad;ikwhite.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
     "dmflags": "128",

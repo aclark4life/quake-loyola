@@ -634,7 +634,9 @@ Textures
 
 All textures come from the community WADs. Download ``quake101.wad``,
 ``ad.wad``, and ``makkon_building.wad`` and place them alongside the ``.map``
-file before compiling (``just setup`` downloads the first two automatically).
+file before compiling (``just setup`` downloads the first two automatically);
+``ikwhite.wad`` (IKWhite/Blue texture set from Func_Msgboard Map Jam 2) must
+also be provided manually.
 Names below are the ``Textures.*`` constants in :mod:`quake_loyola.constants`.
 
 .. list-table::
@@ -716,8 +718,8 @@ Manual compilation (without just)
 
 Download **ericw-tools v0.18.1** from
 `github.com/ericwa/ericw-tools/releases <https://github.com/ericwa/ericw-tools/releases>`_
-and place ``quake101.wad``, ``ad.wad``, and ``makkon_building.wad`` alongside
-the ``.map`` file, then:
+and place ``quake101.wad``, ``ad.wad``, ``makkon_building.wad``, and
+``ikwhite.wad`` alongside the ``.map`` file, then:
 
 .. code-block:: bash
 
