@@ -47,6 +47,8 @@ from .constants import (
     FLOOR_Z2,
     INDENT,
     KH_ROOFTOP_ORIGIN,
+    KH_ROOFTOP_ORIGIN_ENNIS_EAST,
+    KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH,
     KNOTT,
     KNOTT_BIY1,
     KNOTT_BIY2,
@@ -324,17 +326,14 @@ def build():
             )
 
     # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
-    shelf_offsets = [0, 0, 0, 0, 0]
-
     for floor_index in range(KNOTT.floors):
         fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
         fz_surf = fz1 + KNOTT.wall_t
         split = KNOTT_ROOM_SPLITS[floor_index]
-        shelf_x_offset = shelf_offsets[floor_index]
 
         for shelf_center_x in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
             # South room: shelf against south wall — front faces south (-Y)
-            shelf_x = shelf_center_x + shelf_x_offset
+            shelf_x = shelf_center_x
             ENTITIES.append(
                 brush_ent(
                     "func_detail",
@@ -547,12 +546,13 @@ def build():
 
     kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
 
-    # Destinations — both land on KH rooftop, facing west
+    # Destinations — both land on KH rooftop, facing west, but spread apart in Y
+    # so simultaneous teleports don't stack on the same exact point.
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_ennis_east",
-            origin=KH_ROOFTOP_ORIGIN,
+            origin=KH_ROOFTOP_ORIGIN_ENNIS_EAST,
             angle="180",  # facing west
         )
     )
@@ -560,7 +560,7 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
-            origin=KH_ROOFTOP_ORIGIN,
+            origin=KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH,
             angle="180",  # facing west
         )
     )
@@ -953,8 +953,6 @@ def build():
     # Pillar base uplights — ground-level spots wash light up the pier faces
     if SHOW_SUPPORTS:
         for px in BRIDGE_ARCH_X:
-            if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
-                continue
             for underbridge_light_y in [BRIDGE.y2 + 30, BRIDGE.y1 - 30]:
                 # Skip abutment-pier positions buried in solid building geometry
                 if px == BRIDGE_ARCH_X[0]:

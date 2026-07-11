@@ -1,5 +1,4 @@
 from .constants import (
-    BRIDGE,
     BRIDGE_DZ2,
     CHARLES_Y1,
     CHARLES_Y2,
@@ -60,7 +59,6 @@ from .constants import (
 from .geometry import (
     box,
     brush_ent,
-    ent,
     entrance_arch_ywall,
     gable_slats,
     iron_fence,
