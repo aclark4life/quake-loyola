@@ -24,9 +24,9 @@ Orientation
 -----------
 
 Quake's coordinate system is used as: **+X = east, +Y = north, +Z = up**
-(confirmed against the module docstring of ``quake_loyola/constants.py``;
-this corrects an earlier, incorrect "Y = south" statement in this project's
-agent instructions).
+(confirmed against the module docstring of
+``quake_loyola/constants/__init__.py``; this corrects an earlier, incorrect
+"Y = south" statement in this project's agent instructions).
 
 Real-world N Charles St's actual compass bearing was measured by geocoding
 two points ~4 km apart along the street (Cold Spring Ln and Bellona Ave via
@@ -49,7 +49,7 @@ units per foot (``constants.ft_to_units(feet, inches)``). That works out to
 rule of thumb used elsewhere in this project's documentation.
 
 The world-shell rectangle (``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/``WORLD_Y2``
-in ``constants.py``) was re-derived from pixel measurements against the
+in ``constants/derived.py``) was re-derived from pixel measurements against the
 scale bars baked into the Google Maps screenshots in ``ref/`` (e.g.
 ``ref/gmaps-kh-satellite.png``'s 50 ft bar, ``ref/gmaps-campus-satellite-wide.png``'s
 100 ft bar). Measuring from the west dorms' facade to Knott Hall's east
@@ -64,9 +64,10 @@ measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 ``WORLD_Y2`` were scaled from their previous values to match this target
 (X: -5135..7708 = 850 ft; Y: -6642..4085 = 710 ft), keeping Charles Street's
 centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
-terrain) is temporarily disabled via the master switches in ``constants.py``
-(``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``, ``KNOTT_TERRAIN_ENABLED``,
-``KNOTT_HALL_ENABLED``, ``STREETS_DETAILS_ENABLED``, ``ENTITIES_ENABLED``)
+terrain) is temporarily disabled via the master switches in
+``constants/flags.py`` (``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``,
+``KNOTT_TERRAIN_ENABLED``, ``KNOTT_HALL_ENABLED``, ``STREETS_DETAILS_ENABLED``,
+``ENTITIES_ENABLED``)
 while each area's own dimensions are re-derived against this new world size
 from the ``ref/`` top-down views.
 
@@ -104,7 +105,7 @@ or buildings.
    ``bridge.py``, ``entities.py``, and ``knott_terrain.py`` still reference
    the live ``WORLD_X2_EXT`` internally for some of the same
    Ennis/east-campus features that ``_EAST_FEATURES_X2``/``_EAST_FEATURES_X2_EXT``
-   now anchor in ``constants.py``. These modules are currently disabled via
+   now anchor in ``constants/derived.py``. These modules are currently disabled via
    their master switches; when they're re-enabled, they should be repointed
    at the new fixed anchors so behavior matches the disabled-state geometry
    exactly, or explicitly re-derived if the intent is for them to reach the
@@ -114,7 +115,7 @@ World size validation
 ~~~~~~~~~~~~~~~~~~~~~~
 
 To sanity-check the resized world rectangle and fixed anchors above, the
-current ``constants.py`` values were converted back to pixel coordinates
+current ``constants`` values were converted back to pixel coordinates
 (using the same ``SCALE``/pixel-per-foot conversion) and overlaid on
 ``ref/gmaps-kh-satellite.png``, anchored at the intersection of Charles
 Street's centerline (``X=0``) and the bridge deck's centerline (``Y=0``):
