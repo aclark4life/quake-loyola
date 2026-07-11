@@ -7,16 +7,16 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | Path | Purpose |
 |---|---|
 | `generate_map.py` | Entry point — assembles all modules into `loyola.map` |
-| `quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
-| `quake_loyola/mapdata.py` | `MapBuilder` — collects brushes/entities and serialises to `.map` |
-| `quake_loyola/geometry.py` | Low-level brush / face construction helpers |
-| `quake_loyola/constants.py` | Shared numeric constants and texture names |
-| `quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
-| `quake_loyola/knott_hall.py` | Knott Hall facade, windows, mullions |
-| `quake_loyola/knott_terrain.py` | Terrain / embankment around Knott Hall |
-| `quake_loyola/streets.py` | Charles Street and surrounding road geometry |
-| `quake_loyola/west_campus.py` | West-campus buildings and terrain |
-| `quake_loyola/entities.py` | Player spawns, items, lights |
+| `src/quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
+| `src/quake_loyola/mapdata.py` | `MapBuilder` — collects brushes/entities and serialises to `.map` |
+| `src/quake_loyola/geometry.py` | Low-level brush / face construction helpers |
+| `src/quake_loyola/constants.py` | Shared numeric constants and texture names |
+| `src/quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
+| `src/quake_loyola/knott_hall.py` | Knott Hall facade, windows, mullions |
+| `src/quake_loyola/knott_terrain.py` | Terrain / embankment around Knott Hall |
+| `src/quake_loyola/streets.py` | Charles Street and surrounding road geometry |
+| `src/quake_loyola/west_campus.py` | West-campus buildings and terrain |
+| `src/quake_loyola/entities.py` | Player spawns, items, lights |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
 
@@ -70,10 +70,10 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 
 ## Key conventions
 
-- **Coordinate system** — X = east, Y = north, Z = up (per the module docstring of `quake_loyola/constants.py`; +Y is north, −Y is south). Quake +Y (north) is aligned with real-world true north to within ~5.5° (Charles St's actual compass bearing is ~354.5°, but the model treats it as running exactly along the Y-axis) — an accepted simplification. All constants use Quake units (1 unit ≈ 0.79 inch, see `docs/reference.rst` § World scale).
-- **Naming conventions** — constant names are `AREA_FEATURE_SUFFIX`. Common suffixes: `X1/X2 Y1/Y2 Z1/Z2` = box min/max on an axis (1 = lower); `DZ1/DZ2` = deck Z bottom/top; `ZB/ZT` = z bottom/top; `CX/CY` = centre; `XS/YS` = list of positions; `N/S/E`/`NY` = compass direction; `H/HH` = height/half-height; `W/HW` = width/half-width; `T` thickness, `R` radius, `D` depth; `OVH` overhang, `PROUD` protrusion. Feature abbrevs: `PILLAR BLK SQ PYR ENT WIN DIV PLT BR`, `DRIVEWAY_WS/RD/ES` (west→east), `BIY` (Knott inner wall face), `ORIG` (pre-extension), `KH` (Knott Hall). Full legend: module docstring of `quake_loyola/constants.py` and `docs/reference.rst`.
+- **Coordinate system** — X = east, Y = north, Z = up (per the module docstring of `src/quake_loyola/constants.py`; +Y is north, −Y is south). Quake +Y (north) is aligned with real-world true north to within ~5.5° (Charles St's actual compass bearing is ~354.5°, but the model treats it as running exactly along the Y-axis) — an accepted simplification. All constants use Quake units (1 unit ≈ 0.79 inch, see `docs/reference.rst` § World scale).
+- **Naming conventions** — constant names are `AREA_FEATURE_SUFFIX`. Common suffixes: `X1/X2 Y1/Y2 Z1/Z2` = box min/max on an axis (1 = lower); `DZ1/DZ2` = deck Z bottom/top; `ZB/ZT` = z bottom/top; `CX/CY` = centre; `XS/YS` = list of positions; `N/S/E`/`NY` = compass direction; `H/HH` = height/half-height; `W/HW` = width/half-width; `T` thickness, `R` radius, `D` depth; `OVH` overhang, `PROUD` protrusion. Feature abbrevs: `PILLAR BLK SQ PYR ENT WIN DIV PLT BR`, `DRIVEWAY_WS/RD/ES` (west→east), `BIY` (Knott inner wall face), `ORIG` (pre-extension), `KH` (Knott Hall). Full legend: module docstring of `src/quake_loyola/constants.py` and `docs/reference.rst`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `generate_map.py` calls every module's `build()` and merges results.
-- **Texture names** — defined in `quake_loyola/constants.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
+- **Texture names** — defined in `src/quake_loyola/constants.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
 - **No side effects in modules** — area modules must not write files or print output; all I/O lives in `generate_map.py`.
 - **WADs** — `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, and `makkon_stone.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
 

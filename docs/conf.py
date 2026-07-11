@@ -3,8 +3,10 @@
 import os
 import sys
 
-# Make the package importable without installing it
+# Make the package (src/quake_loyola) and generate_map.py (repo root) importable
+# without installing them
 sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../src"))
 
 # ---------------------------------------------------------------------------
 # Project metadata

@@ -2,8 +2,10 @@ import sys
 from collections import deque
 from pathlib import Path
 
-# Ensure the project root is on the path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure the project root and src/ are on the path
+_root = Path(__file__).parent.parent
+sys.path.insert(0, str(_root))
+sys.path.insert(0, str(_root / "src"))
 
 from generate_map import build_map
 from quake_loyola.constants import WORLD_X1, WORLD_X2, WORLD_Y1, WORLD_Y2, WORLD_Z2

@@ -64,7 +64,7 @@ just present   # serves http://localhost:8000/presentation/
 | Path | Purpose |
 |---|---|
 | `generate_map.py` | Entry point — assembles all modules into `loyola.map` |
-| `quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
+| `src/quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes |
 | `docs/` | Sphinx documentation |
