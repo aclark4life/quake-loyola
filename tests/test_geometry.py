@@ -1,7 +1,6 @@
 import unittest
 
 from quake_loyola.geometry import (
-    _octagon_column,
     arch_seg,
     box,
     brush_ent,
@@ -11,6 +10,7 @@ from quake_loyola.geometry import (
     iron_fence,
     layered_wall,
     make_tree,
+    octagon_column,
     ramp_slab_y,
     square_wall,
     tri_prism,
@@ -99,7 +99,7 @@ class CompositeShapeTests(unittest.TestCase):
         self.assertEqual(len(b.faces), 6)
 
     def test_octagon_column_returns_ten_faces(self):
-        b = _octagon_column(0, 0, 0, 64, 32, "t")
+        b = octagon_column(0, 0, 0, 64, 32, "t")
         self.assertIsInstance(b, Brush)
         # 8 side faces + top + bottom
         self.assertEqual(len(b.faces), 10)

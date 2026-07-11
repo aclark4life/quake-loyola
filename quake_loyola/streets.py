@@ -127,7 +127,7 @@ from .geometry import (
 from .utils import swap_xy, swap_xz
 
 
-def _punch_manhole_detail(brushes):
+def punch_manhole_detail(brushes):
     """Punch the manhole opening (MANHOLE_X/Y/R) through any thin surface
     layer detail brush (road, lane stripes, sidewalk panels, etc.) whose
     footprint overlaps it. Several independent constructs — Charles St's
@@ -1569,7 +1569,7 @@ def build():
             # The manhole opening (MANHOLE_X/Y/R) falls in the east parking
             # lane — the hole through this slab (and any other overlapping
             # decorative layer at this intersection) is punched generically
-            # further down (see _punch_manhole_detail sweep over
+            # further down (see punch_manhole_detail sweep over
             # DETAIL_BRUSHES), so just build the plain slab here.
             BRUSHES.append(
                 box(
@@ -2137,7 +2137,7 @@ def build():
         _ey = next_ey
         _stripe_on = not _stripe_on
     if dash_brushes:
-        ENTITIES.append(brush_ent("func_detail", _punch_manhole_detail(dash_brushes)))
+        ENTITIES.append(brush_ent("func_detail", punch_manhole_detail(dash_brushes)))
 
     # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
     # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
@@ -2603,7 +2603,7 @@ def build():
             ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
     if DETAIL_BRUSHES:
-        DETAIL_BRUSHES = _punch_manhole_detail(DETAIL_BRUSHES)
+        DETAIL_BRUSHES = punch_manhole_detail(DETAIL_BRUSHES)
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
     # ── Final safety seal — giant hollow box around the entire map coordinate space ──
     # This ensures the map is sealed even if internal terrain or building geometry
