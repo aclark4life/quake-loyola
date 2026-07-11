@@ -688,8 +688,10 @@ CHARLES_LAMP_POST_XS = [
     KNOTT_PIER_X,
 ]
 ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + 80
-ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW
-ENNIS_PILLAR_X2 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW
+ENNIS_PILLAR_EAST_SHIFT = 40  # nudges the Ennis entrance pillars east, staying
+# clear of the gate (80-unit gap to ENNIS_GATE_X1)
+ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
+ENNIS_PILLAR_X2 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
 CHARLES_LAMP_POST_H = BRIDGE_DZ2 - BRIDGE_LAMP_POST_CLEARANCE
 _KNOTT_GROUND_FLOOR_H = (
     160  # nominal floor height used to anchor building to bridge/hill;
@@ -713,6 +715,18 @@ CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + CHARLES_PLATFORM_ROAD_OFFSET
 CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
 ENNIS_SW_EDGE = ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - ROAD_VERGE_BUFFER
 ENNIS_WALL_NY = ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW * 2
+ENNIS_SHORT_WALL_GAP = 8  # gap north of the sidewalk squares
+ENNIS_SHORT_WALL_NY = (
+    ENNIS_Y + ENNIS_HW + CHARLES_WALK_W + ENNIS_SHORT_WALL_GAP
+)  # short brick wall segment near the north pillar, moved north clear of the
+# sidewalk squares (which run up to ENNIS_Y + ENNIS_HW + CHARLES_WALK_W)
+# North sidewalk squares span ENNIS_Y + ENNIS_HW + 10 (curb cap + gap) to
+# ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, per the sw_slabs_x() call in
+# streets.py; the pillar sits at the midpoint of that band.
+ENNIS_PILLAR_NORTH_Y = (
+    ENNIS_Y + ENNIS_HW + 10 + ENNIS_Y + ENNIS_HW + CHARLES_WALK_W
+) // 2
+
 KNOTT_DRIVEWAY_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
 KNOTT_DRIVEWAY_JCY = ENNIS_Y - ENNIS_HW
 PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X, PIER6_X = BRIDGE_ARCH_X

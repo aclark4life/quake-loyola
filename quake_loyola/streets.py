@@ -54,8 +54,10 @@ from .constants import (
     ENNIS_PILLAR_CAP_H,
     ENNIS_PILLAR_CAP_OVH,
     ENNIS_PILLAR_HW,
+    ENNIS_PILLAR_NORTH_Y,
     ENNIS_PILLAR_POST_H,
     ENNIS_PILLAR_X1,
+    ENNIS_SHORT_WALL_NY,
     ENNIS_SW_EDGE,
     ENNIS_WALL_H,
     ENNIS_WALL_NY,
@@ -201,7 +203,7 @@ def build_ennis_entrance_features():
 
     for pillar_y in (
         ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
-        ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW,
+        ENNIS_PILLAR_NORTH_Y,
     ):
         ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
         cap_half_width = ENNIS_PILLAR_HW + ENNIS_PILLAR_CAP_OVH
@@ -281,16 +283,92 @@ def build_ennis_entrance_features():
 
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bwex2 = ENNIS_GATE_X1
+    # Short brick wall moved north, clear of the sidewalk squares it used to
+    # run through.
     brushes.append(
         box(
             ennis_wall_x1,
-            ENNIS_WALL_NY,
+            ENNIS_SHORT_WALL_NY,
             FLOOR_Z2,
             bwex2,
-            ENNIS_WALL_NY + ENNIS_WALL_T,
+            ENNIS_SHORT_WALL_NY + ENNIS_WALL_T,
             FLOOR_Z2 + ENNIS_WALL_H,
             Textures.BUILDING,
         )
+    )
+    # Iron gate top — decorative rail on top of the short brick wall, matching
+    # the iron gate's own top-rail treatment.
+    brushes.append(
+        box(
+            ennis_wall_x1,
+            ENNIS_SHORT_WALL_NY - ENNIS_GATE_FENCE_TOP_RAIL_DROP // 4,
+            FLOOR_Z2 + ENNIS_WALL_H,
+            bwex2,
+            ENNIS_SHORT_WALL_NY + ENNIS_WALL_T + ENNIS_GATE_FENCE_TOP_RAIL_DROP // 4,
+            FLOOR_Z2 + ENNIS_WALL_H + ENNIS_GATE_FENCE_TOP_RAIL_T,
+            Textures.FENCE,
+        )
+    )
+    # Small section of iron fence bridging the short wall's east end down to
+    # the main east iron gate's baseline (east_gate_y1/y2 below), where the
+    # small brick return wall used to be. Same treatment as the connector
+    # that rejoins the shifted picket run to the brick wall further north:
+    # thick end posts at the wall and gate sides, a thin picket post
+    # centered in between, and a top rail spanning the whole gap.
+    fence_bridge_x1 = bwex2 - ENNIS_WALL_T
+    fence_bridge_x2 = bwex2
+    # Matches east_gate_y1/y2's formula below (not yet computed at this point
+    # in the function).
+    fence_bridge_south_y2 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1 + 2
+    fence_bridge_north_y1 = ENNIS_SHORT_WALL_NY
+    fence_bridge_mid_y = (
+        fence_bridge_south_y2
+        + ENNIS_GATE_FENCE_POST_W
+        + fence_bridge_north_y1
+        - ENNIS_GATE_FENCE_POST_W
+    ) // 2
+    brushes.extend(
+        [
+            box(
+                fence_bridge_x1,
+                fence_bridge_south_y2,
+                FLOOR_Z2,
+                fence_bridge_x2,
+                fence_bridge_south_y2 + ENNIS_GATE_FENCE_POST_W,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                Textures.FENCE,
+            ),
+            box(
+                fence_bridge_x1,
+                fence_bridge_north_y1 - ENNIS_GATE_FENCE_POST_W,
+                FLOOR_Z2,
+                fence_bridge_x2,
+                fence_bridge_north_y1,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                Textures.FENCE,
+            ),
+            box(
+                fence_bridge_x1,
+                fence_bridge_mid_y - ENNIS_GATE_FENCE_BAR_T // 2,
+                FLOOR_Z2,
+                fence_bridge_x2,
+                fence_bridge_mid_y + ENNIS_GATE_FENCE_BAR_T // 2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                Textures.FENCE,
+            ),
+            box(
+                fence_bridge_x1,
+                fence_bridge_south_y2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+                fence_bridge_x2,
+                fence_bridge_north_y1,
+                FLOOR_Z2
+                + ENNIS_GATE_FENCE_HEIGHT
+                - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+                + ENNIS_GATE_FENCE_TOP_RAIL_T,
+                Textures.FENCE,
+            ),
+        ]
     )
     # Fixed dozen-panel decorative iron gate: 12 rectangular panels grouped
     # into 6 pairs. A U-shaped iron pillar bookends the run (one at the very
@@ -299,8 +377,13 @@ def build_ennis_entrance_features():
     # pillar at the Ennis Rd corner (bw_cx/bw_cy below) so the two don't
     # overlap. The brick wall's north end (bw_mid_y) is sized to exactly fit
     # this run, after which the plain picket fence continues to the world edge.
+    # The wall/run is anchored to ENNIS_SHORT_WALL_NY (not the older
+    # ENNIS_WALL_NY) so it stays extended north, flush with the corner post.
     gate_run_start_y = (
-        ENNIS_WALL_NY + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
+        ENNIS_SHORT_WALL_NY
+        + ENNIS_WALL_T // 2
+        + ENNIS_WALL_PILLAR_HW
+        + ENNIS_GATE_PILLAR_GAP
     )
     _pair_w = 2 * ENNIS_PANEL_OUTER_W + ENNIS_PANEL_GAP
     _pillar_unit_lead = ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
@@ -311,7 +394,7 @@ def build_ennis_entrance_features():
     brushes.append(
         box(
             ennis_wall_x1,
-            ENNIS_WALL_NY,
+            ENNIS_SHORT_WALL_NY,
             FLOOR_Z2,
             ennis_wall_x1 + ENNIS_WALL_T,
             bw_mid_y,
@@ -366,56 +449,60 @@ def build_ennis_entrance_features():
         gate_picket_y += ENNIS_GATE_FENCE_SPACING
         gate_picket_index += 1
 
-    # Reconnect the shifted picket run to the brick wall at its south end: a
-    # thin freestanding post (matching a regular picket) centered in the gap,
-    # with a cross rail on each side linking it to the fence (west) and the
-    # wall (east) — same Y-span as the run's first post so it reads as a
-    # continuation of the fence.
+    # Reconnect the shifted picket run to the brick wall at its south end:
+    # thick end posts at the fence and wall sides, a thin picket post
+    # centered in between, and a top rail spanning the whole gap — same
+    # treatment as a regular short fence section.
     connector_y1 = bw_mid_y
     connector_y2 = bw_mid_y + ENNIS_GATE_FENCE_POST_W
     connector_wall_x2 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1 + ENNIS_GATE_FENCE_BAR_T
-    connector_post_x1 = gate_fence_x2 + (
-        (connector_wall_x2 - gate_fence_x2 - ENNIS_GATE_FENCE_BAR_T) // 2
-    )
-    connector_post_x2 = connector_post_x1 + ENNIS_GATE_FENCE_BAR_T
-    brushes.append(
-        box(
-            connector_post_x1,
-            connector_y1,
-            FLOOR_Z2,
-            connector_post_x2,
-            connector_y2,
-            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
-            gate_fence_tex,
-        )
-    )
-    brushes.append(
-        box(
-            gate_fence_x2,
-            connector_y1,
-            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
-            connector_post_x1,
-            connector_y2,
-            FLOOR_Z2
-            + ENNIS_GATE_FENCE_HEIGHT
-            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
-            + ENNIS_GATE_FENCE_TOP_RAIL_T,
-            gate_fence_tex,
-        )
-    )
-    brushes.append(
-        box(
-            connector_post_x2,
-            connector_y1,
-            FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
-            connector_wall_x2,
-            connector_y2,
-            FLOOR_Z2
-            + ENNIS_GATE_FENCE_HEIGHT
-            - ENNIS_GATE_FENCE_TOP_RAIL_DROP
-            + ENNIS_GATE_FENCE_TOP_RAIL_T,
-            gate_fence_tex,
-        )
+    connector_x1 = gate_fence_x2
+    connector_x2 = connector_wall_x2
+    connector_mid_x = (
+        connector_x1 + ENNIS_GATE_FENCE_POST_W + connector_x2 - ENNIS_GATE_FENCE_POST_W
+    ) // 2
+    brushes.extend(
+        [
+            box(
+                connector_x1,
+                connector_y1,
+                FLOOR_Z2,
+                connector_x1 + ENNIS_GATE_FENCE_POST_W,
+                connector_y2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                gate_fence_tex,
+            ),
+            box(
+                connector_x2 - ENNIS_GATE_FENCE_POST_W,
+                connector_y1,
+                FLOOR_Z2,
+                connector_x2,
+                connector_y2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                gate_fence_tex,
+            ),
+            box(
+                connector_mid_x - ENNIS_GATE_FENCE_BAR_T // 2,
+                connector_y1,
+                FLOOR_Z2,
+                connector_mid_x + ENNIS_GATE_FENCE_BAR_T // 2,
+                connector_y2,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT,
+                gate_fence_tex,
+            ),
+            box(
+                connector_x1,
+                connector_y1,
+                FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
+                connector_x2,
+                connector_y2,
+                FLOOR_Z2
+                + ENNIS_GATE_FENCE_HEIGHT
+                - ENNIS_GATE_FENCE_TOP_RAIL_DROP
+                + ENNIS_GATE_FENCE_TOP_RAIL_T,
+                gate_fence_tex,
+            ),
+        ]
     )
 
     panel_x1 = ennis_wall_x1 - ENNIS_GATE_FENCE_BAR_T
@@ -734,7 +821,7 @@ def build_ennis_entrance_features():
     assert cursor_y == bw_mid_y, (cursor_y, bw_mid_y)
 
     bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
-    bw_cy = ENNIS_WALL_NY + ENNIS_WALL_T // 2
+    bw_cy = ENNIS_SHORT_WALL_NY + ENNIS_WALL_T // 2
     brushes.append(
         box(
             bw_cx - ENNIS_WALL_PILLAR_HW,
