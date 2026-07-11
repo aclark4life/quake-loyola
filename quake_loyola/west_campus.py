@@ -15,7 +15,6 @@ from .constants import (
     DORM_BRICK_WALL_HALF_W,
     DORM_DOOR_OFF,
     DORM_DOOR_W,
-    DORM_EMB_X2,
     DORM_ENT_HW,
     DORM_FRONT_WALKWAY_SPUR_X1,
     DORM_FRONT_WALKWAY_SPUR_Y2,
@@ -156,16 +155,7 @@ def build():
     if not WEST_CAMPUS_ENABLED:
         return BRUSHES, ENTITIES
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
-    # Underground tunnel — dimensions and embankment interpolation
-    TUNN_T = DORM.wall_t  # wall/ceiling/floor thickness (= 16)
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
-    TUNN_X2 = DORM.x1  # east face of tunnel = west face of buildings
-
-    # Embankment surface Z at the building's west face (east end of the backfill ramp).
-    _emb_denom = DORM_EMB_X2 - BRIDGE.x1
-    emb_zt_tunn_e = int(
-        BRIDGE_DZ2 + (FLOOR_Z2 - BRIDGE_DZ2) * (TUNN_X2 - BRIDGE.x1) / _emb_denom
-    )
 
     DORM_CX = (DORM.x1 + DORM.x2) // 2  # building X center
     DORM_NORTH_CY = (
@@ -1394,178 +1384,6 @@ def build():
                 Textures.GROUND,
                 tt=Textures.ROAD,
             )
-        )
-
-    # ── Underground tunnel — full west strip from world west wall to buildings ──
-    # Extends from BRIDGE.x1 (inner face of the west sky-wall) to DORM.x1 (building
-    # west face) across the full N-S span of both dorm clusters and the gap between
-    # them.  Floor is at FLOOR_Z2, ceiling at SDORM_LIFT / SDORM_LIFT+TUNN_T.
-    # Above the ceiling a sloped backfill slab (at BRIDGE_DZ2 on the west side,
-    # grading down to emb_zt_tunn_e at DORM.x1) fills the hillside; streets.py no
-    # longer places any embankment in the BRIDGE.x1-to-DORM.x1 X-range for these
-    # Y segments since the tunnel now owns the whole strip.
-    DORM_NORTH2_Y1_tunn = DORM_NORTH_Y1 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
-    gap_y1, gap_y2 = DORM_SOUTH2_Y2, DORM_NORTH2_Y1_tunn
-
-    for seg_y1, seg_y2, tunn_brushes in [
-        # South flat section — fully underground under the south dorm pair
-        (
-            DORM_SOUTH1_Y1,
-            DORM_SOUTH2_Y2,
-            [
-                # Floor — extends to world west wall
-                box(
-                    BRIDGE.x1,
-                    DORM_SOUTH1_Y1,
-                    FLOOR_Z1,
-                    TUNN_X2,
-                    DORM_SOUTH2_Y2,
-                    FLOOR_Z2,
-                    Textures.GROUND,
-                ),
-                # Wedge ceiling — underside slopes from BRIDGE_DZ2-TUNN_T (west) to
-                # SDORM_LIFT (east). Top slopes from BRIDGE_DZ2 (west wall) down to
-                # SDORM_LIFT (east), tapering to a knife edge flush with the south
-                # terrace so the hill reads as a clean slope with no wedge poking
-                # above the terrace; the dorm interior/terrace are untouched.
-                ramp_slab(
-                    BRIDGE.x1,
-                    TUNN_X2,
-                    DORM_SOUTH1_Y1,
-                    DORM_SOUTH2_Y2,
-                    BRIDGE_DZ2 - TUNN_T,
-                    SDORM_LIFT,
-                    BRIDGE_DZ2,
-                    SDORM_LIFT,
-                    Textures.GROUND,
-                ),
-            ],
-        ),
-        # North flat section — fully underground under the north dorm pair
-        (
-            DORM_NORTH2_Y1_tunn,
-            DORM_NORTH_Y2,
-            [
-                # Floor — extends to world west wall
-                box(
-                    BRIDGE.x1,
-                    DORM_NORTH2_Y1_tunn,
-                    FLOOR_Z1,
-                    TUNN_X2,
-                    DORM_NORTH_Y2,
-                    FLOOR_Z2,
-                    Textures.GROUND,
-                ),
-                # Wedge ceiling — same profile as the south section.
-                ramp_slab(
-                    BRIDGE.x1,
-                    TUNN_X2,
-                    DORM_NORTH2_Y1_tunn,
-                    DORM_NORTH_Y2,
-                    BRIDGE_DZ2 - TUNN_T,
-                    SDORM_LIFT,
-                    BRIDGE_DZ2,
-                    emb_zt_tunn_e,
-                    Textures.GROUND,
-                ),
-            ],
-        ),
-    ]:
-        BRUSHES.extend(tunn_brushes)
-
-    # Gap section — open tunnel running from world west wall through the gap between clusters
-    BRUSHES.append(
-        box(BRIDGE.x1, gap_y1, FLOOR_Z1, TUNN_X2, gap_y2, FLOOR_Z2, Textures.GROUND)
-    )
-    # Wedge ceiling for the gap section — same profile as south/north.
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE.x1,
-            TUNN_X2,
-            gap_y1,
-            gap_y2,
-            BRIDGE_DZ2 - TUNN_T,
-            SDORM_LIFT,
-            BRIDGE_DZ2,
-            emb_zt_tunn_e,
-            Textures.GROUND,
-            ts=Textures.GROUND,
-        )
-    )
-
-    # North extension — from north building's north face to the world north wall.
-    # Same wedge-ceiling profile as the other sections; no buildings above, just ramp.
-    BRUSHES.append(
-        box(
-            BRIDGE.x1,
-            DORM_NORTH_Y2,
-            FLOOR_Z1,
-            TUNN_X2,
-            CHARLES_Y2,
-            FLOOR_Z2,
-            Textures.GROUND,
-        )
-    )
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE.x1,
-            TUNN_X2,
-            DORM_NORTH_Y2,
-            CHARLES_Y2,
-            BRIDGE_DZ2 - TUNN_T,
-            SDORM_LIFT,
-            BRIDGE_DZ2,
-            emb_zt_tunn_e,
-            Textures.GROUND,
-        )
-    )
-
-    # South extension — from the south building's south face to the world south wall.
-    # Mirrors the north extension so the west-side hillside slope continues all the
-    # way to the new south boundary instead of stopping at the south dorm. Meets the
-    # extended south terrace flush at the east (knife edge at SDORM_LIFT); the south
-    # tunnel mouth is sealed by the S-wall inner cap in streets.py (CHARLES_Y1 +
-    # one wall thickness), so the floor/wedge stop at its north face.
-    BRUSHES.append(
-        box(
-            BRIDGE.x1,
-            CHARLES_Y1,
-            FLOOR_Z1,
-            TUNN_X2,
-            DORM_SOUTH1_Y1,
-            FLOOR_Z2,
-            Textures.GROUND,
-        )
-    )
-    BRUSHES.append(
-        ramp_slab(
-            BRIDGE.x1,
-            TUNN_X2,
-            CHARLES_Y1,
-            DORM_SOUTH1_Y1,
-            BRIDGE_DZ2 - TUNN_T,
-            SDORM_LIFT,
-            BRIDGE_DZ2,
-            SDORM_LIFT,
-            Textures.GROUND,
-            ts=Textures.GROUND,
-        )
-    )
-
-    # ── Lights for the west-side underground tunnel space ────────────────────
-    # Evenly-spaced along the full N-S extent of the tunnel (south world wall to
-    # CHARLES_Y2), centred in the X width of the tunnel, at mid-height.
-    _tunn_light_x = (BRIDGE.x1 + DORM.x1) // 2  # centre of full tunnel width
-    _tunn_light_z = SDORM_LIFT // 2  # mid-height between floor (0) and ceiling (128)
-    _tunn_y_start = CHARLES_Y1 + 200  # 200 units from south end
-    _tunn_y_end = CHARLES_Y2 - 200  # 200 units from north end
-    _tunn_light_count = 9
-    for _i in range(_tunn_light_count):
-        _ly = _tunn_y_start + (_tunn_y_end - _tunn_y_start) * _i // (
-            _tunn_light_count - 1
-        )
-        ENTITIES.append(
-            ent("light", origin=f"{_tunn_light_x} {_ly} {_tunn_light_z}", light="220")
         )
 
     # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
