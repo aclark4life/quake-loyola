@@ -69,11 +69,10 @@ from .geometry import (
     win_frame_xwall,
     win_frame_ywall,
 )
-from .west_campus_terrain import _wct_y
-from .west_campus_terrain import terrain_z as _wct_terrain_z
+from .west_campus_terrain import terrain_z, wct_y
 
 
-def _build_iron_fence(ENTITIES):
+def build_iron_fence(ENTITIES):
     """Iron fence along east face of west buildings — extracted so it can be
     shown along Charles St even when WEST_CAMPUS_ENABLED (dorm buildings) is
     off, gated independently by WEST_CAMPUS_FENCE_ENABLED."""
@@ -81,7 +80,7 @@ def _build_iron_fence(ENTITIES):
 
     # Extend the fence past CHARLES_Y2 (the documented survey corridor's
     # north end) out to the true world north edge — west_campus_terrain.py's
-    # real-elevation grid (_wct_y) already covers this full range, so
+    # real-elevation grid (wct_y) already covers this full range, so
     # fence_base_at's terrain_z() lookup below just keeps working.
     fence_y2 = WORLD_Y2 - WALL_T
 
@@ -96,15 +95,15 @@ def _build_iron_fence(ENTITIES):
     def fence_base_at(y):
         """Iron-fence base Z: follows the real hillside terrain at the
         fence's own X (FENCE_X1) along its whole length."""
-        return _wct_terrain_z(FENCE_X1, y)
+        return terrain_z(FENCE_X1, y)
 
     # Top rail — chained ramps over the terrain's real slope (not flat —
     # see fence_base_at) so the rail tracks the picket tops the whole way.
     rail_lo, rail_hi = FENCE_H - 28, FENCE_H - 26
-    _rail_ys = sorted(
-        {CHARLES_Y1, fence_y2} | {y for y in _wct_y if CHARLES_Y1 < y < fence_y2}
+    rail_ys = sorted(
+        {CHARLES_Y1, fence_y2} | {y for y in wct_y if CHARLES_Y1 < y < fence_y2}
     )
-    for ny1, ny2 in zip(_rail_ys, _rail_ys[1:]):
+    for ny1, ny2 in zip(rail_ys, rail_ys[1:]):
         b1, b2 = fence_base_at(ny1), fence_base_at(ny2)
         fence_brushes.append(
             ramp_slab_y(
@@ -148,7 +147,7 @@ def build():
     ENTITIES = []
 
     if WEST_CAMPUS_FENCE_ENABLED:
-        _build_iron_fence(ENTITIES)
+        build_iron_fence(ENTITIES)
 
     if not WEST_CAMPUS_ENABLED:
         return BRUSHES, ENTITIES
@@ -1386,7 +1385,7 @@ def build():
 
     # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
     # Door is centered 160 units north of dorm 2; pillars and iron fence are detail
-    # (fence itself is built by _build_iron_fence, called at the top of build()).
+    # (fence itself is built by build_iron_fence, called at the top of build()).
     wall_hw = DORM_BRICK_WALL_HALF_W  # half-thickness (thinner than pier)
     wall_start_y = DORM_SOUTH2_Y2  # wall stops at north face of dorm 2
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF

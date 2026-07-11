@@ -868,7 +868,7 @@ BASEMENT_Z1 = -WORLD_Z2  # basement floor top (walkable surface)
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom
 
 # Manhole opening — a true round hole (n-gon approximation of a circle; see
-# box_with_round_hole/_radial_fan_fills in geometry.py) punched straight down
+# box_with_round_hole/radial_fan_fills in geometry.py) punched straight down
 # through both the world floor slab (FLOOR_Z1..FLOOR_Z2, streets.py) and the
 # basement ceiling slab (FLOOR_Z1-WALL_T..FLOOR_Z1, basement.py) at this X/Y,
 # connecting ground level directly to the basement void below. Just the

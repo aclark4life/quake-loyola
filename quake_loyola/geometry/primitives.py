@@ -75,7 +75,7 @@ def polygon_prism(pts, z1, z2, tex):
     return Brush(faces)
 
 
-def _clip_poly_to_rect(poly, x1, y1, x2, y2):
+def clip_poly_to_rect(poly, x1, y1, x2, y2):
     def clip_edge(pts, inside, intersect):
         out = []
         n = len(pts)
@@ -116,7 +116,7 @@ def _clip_poly_to_rect(poly, x1, y1, x2, y2):
     return pts
 
 
-def _radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
+def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
     sx1, sy1, sx2, sy2 = cx - r, cy - r, cx + r, cy + r
     verts = []
     box_pts = []
@@ -140,7 +140,7 @@ def _radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
     for i in range(n):
         j = (i + 1) % n
         quad = [verts[j], verts[i], box_pts[i], box_pts[j]]
-        clipped = _clip_poly_to_rect(quad, x1, y1, x2, y2)
+        clipped = clip_poly_to_rect(quad, x1, y1, x2, y2)
         deduped = []
         for p in clipped:
             if (
@@ -174,7 +174,7 @@ def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
     pieces = box_with_hole(
         x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
     )
-    pieces += _radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n)
+    pieces += radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n)
     return pieces
 
 
@@ -294,21 +294,6 @@ def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
             Face(a, d, b, tex),
             Face(a, c, d, tt),
         ]
-    return Brush(faces)
-
-
-def _octagon_column(cx, cy, z0, z1, radius, tex):
-    faces = []
-    N = 8
-    for i in range(N):
-        theta = math.pi * 2 * i / N
-        cos_t, sin_t = math.cos(theta), math.sin(theta)
-        qx, qy = cx + radius * cos_t, cy + radius * sin_t
-        faces.append(
-            Face((qx, qy, z0), (qx, qy, z0 + 1), (qx - sin_t, qy + cos_t, z0), tex)
-        )
-    faces.append(Face((cx, cy, z1), (cx + 1, cy, z1), (cx, cy - 1, z1), tex))
-    faces.append(Face((cx, cy, z0), (cx + 1, cy, z0), (cx, cy + 1, z0), tex))
     return Brush(faces)
 
 

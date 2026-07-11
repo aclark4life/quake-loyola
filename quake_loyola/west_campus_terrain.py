@@ -4,7 +4,7 @@ buildings (west_campus.py), the bridge's west approach, and the full span
 west of Charles St, from the road's actual west sidewalk/curb out to the
 world's west wall and along Charles St's *full* modeled length (the true
 world Y range, not just the documented "CHARLES_Y1/CHARLES_Y2" survey
-corridor — see the _wct_y note below for why those two differ).
+corridor — see the wct_y note below for why those two differ).
 
 USGS EPQS elevation samples (docs/elevation_samples.csv, the wcampus_audit_*
 / wcampus_ext_* / wcampus_far_* rows) show the ground climbing gently west
@@ -83,7 +83,7 @@ _wct_x = [
 # the modeled road's actual extent. Stopping this grid at those anchors
 # left real cliffs at both seams; these rows extend it to the true
 # world edges.
-_wct_y = [
+wct_y = [
     WORLD_Y2 - WALL_T,
     2800,
     1696,
@@ -101,7 +101,7 @@ _wct_y = [
 # Real USGS z-units-above-baseline samples (docs/elevation_samples.csv,
 # wcampus_audit_x{X}_y{Y} / wcampus_ext_x{X}_y{Y} / wcampus_far_x{X}_y{Y}
 # rows), one column per _wct_x entry (except the last, flat sidewalk-tie
-# column), values in the same order as _wct_y. The baseline (0) already
+# column), values in the same order as wct_y. The baseline (0) already
 # corresponds to FLOOR_Z2 (bridge-crossing grade), so no extra
 # curb-style offset is needed for these, unlike the last column.
 _wct_cols = [
@@ -127,7 +127,7 @@ _wct_cols = [
 # column toward the flat curb height, so the same total drop is spread
 # over ~364 units rather than 64.
 _wct_real_700 = _wct_cols[-1]
-_wct_flat_walk = [CHARLES_WALK_H] * len(_wct_y)
+_wct_flat_walk = [CHARLES_WALK_H] * len(wct_y)
 
 
 def _wct_taper(frac):
@@ -145,22 +145,22 @@ _wct_cols += [
 
 def terrain_z(x, y):
     """Real-elevation ground height (world Z, i.e. FLOOR_Z2 + sample) at an
-    arbitrary (x, y) point, bilinearly interpolated across the _wct_x/_wct_y
+    arbitrary (x, y) point, bilinearly interpolated across the _wct_x/wct_y
     grid this module builds its terrain from. Lets other modules (e.g. the
     west_campus.py iron fence, which used to assume a flat FLOOR_Z2 grade
     north of the bridge) stay flush with the real hillside instead of
     getting buried under it or floating above it. x/y are clamped to the
     grid's own bounds rather than extrapolated."""
     x = min(max(x, _wct_x[0]), _wct_x[-1])
-    y = max(min(y, _wct_y[0]), _wct_y[-1])
+    y = max(min(y, wct_y[0]), wct_y[-1])
     xi = 0
     while xi < len(_wct_x) - 2 and _wct_x[xi + 1] < x:
         xi += 1
     yi = 0
-    while yi < len(_wct_y) - 2 and _wct_y[yi + 1] > y:
+    while yi < len(wct_y) - 2 and wct_y[yi + 1] > y:
         yi += 1
     x1, x2 = _wct_x[xi], _wct_x[xi + 1]
-    y1, y2 = _wct_y[yi], _wct_y[yi + 1]  # y1 >= y2 (north to south)
+    y1, y2 = wct_y[yi], wct_y[yi + 1]  # y1 >= y2 (north to south)
     tx = (x - x1) / (x2 - x1) if x2 != x1 else 0
     ty = (y1 - y) / (y1 - y2) if y1 != y2 else 0
     col1, col2 = _wct_cols[xi], _wct_cols[xi + 1]
@@ -209,11 +209,11 @@ def build():
     for (wx1, wcol1), (wx2, wcol2) in zip(
         zip(_wct_x, _wct_cols), zip(_wct_x[1:], _wct_cols[1:])
     ):
-        for i in range(len(_wct_y) - 1):
-            y1, y2 = _wct_y[i], _wct_y[i + 1]
+        for i in range(len(wct_y) - 1):
+            y1, y2 = wct_y[i], wct_y[i + 1]
             z_nw, z_sw = wcol1[i], wcol1[i + 1]
             z_ne, z_se = wcol2[i], wcol2[i + 1]
-            if i < len(_wct_y) - 2:
+            if i < len(wct_y) - 2:
                 y2 = y2 - _WCT_OVR
 
             # A single diagonal split (the old two-triangle approach) can't

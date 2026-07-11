@@ -77,7 +77,7 @@ def make_bush(cx, cy, base_z, size=24):
     ]
 
 
-def _octagon_column(cx, cy, z0, z1, radius, tex):
+def octagon_column(cx, cy, z0, z1, radius, tex):
     faces, N = [], 8
     for i in range(N):
         theta = math.pi * 2 * i / N
@@ -128,7 +128,7 @@ def make_pixel_tree(
                 if "L" not in r
             ]
             brushes.append(
-                _octagon_column(
+                octagon_column(
                     cx, cy, z0, z1, (max(tw, default=4) // 2) * vox_size, Textures.MULCH
                 )
             )
