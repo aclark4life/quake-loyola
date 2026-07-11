@@ -214,7 +214,7 @@ def build_ennis_entrance_features():
                 ennis_pil_cx + cap_half_width,
                 pillar_y + cap_half_width,
                 FLOOR_Z2 + base_height,
-                Textures.WHITE_STONE,
+                Textures.ENNIS_PILLAR,
             )
         )
         brushes.append(
@@ -225,7 +225,7 @@ def build_ennis_entrance_features():
                 ENNIS_PILLAR_X1 + 2 * ENNIS_PILLAR_HW,
                 pillar_y + ENNIS_PILLAR_HW,
                 FLOOR_Z2 + ENNIS_PILLAR_POST_H,
-                Textures.WHITE_STONE,
+                Textures.ENNIS_PILLAR,
             )
         )
         cap_z = FLOOR_Z2 + ENNIS_PILLAR_POST_H
@@ -237,7 +237,7 @@ def build_ennis_entrance_features():
                 ennis_pil_cx + cap_half_width,
                 pillar_y + cap_half_width,
                 cap_z + ENNIS_PILLAR_CAP_H,
-                Textures.WHITE_STONE,
+                Textures.ENNIS_PILLAR,
             )
         )
         bell2_z = cap_z + ENNIS_PILLAR_CAP_H
@@ -249,7 +249,7 @@ def build_ennis_entrance_features():
                 ennis_pil_cx + ENNIS_PILLAR_BELL2_HW,
                 pillar_y + ENNIS_PILLAR_BELL2_HW,
                 bell2_z + ENNIS_PILLAR_BELL2_H,
-                Textures.WHITE_STONE,
+                Textures.ENNIS_PILLAR,
             )
         )
         pillar_apex_z = bell2_z + ENNIS_PILLAR_BELL2_H
