@@ -945,6 +945,11 @@ ENNIS_GATE_PILLAR_W = ENNIS_GATE_PILLAR_OPENING_W + 2 * ENNIS_GATE_PILLAR_LEG_T
 
 # Fixed spawn / destination coordinates used by multiple teleport destinations.
 KH_ROOFTOP_ORIGIN = "2149 -264 904"  # top of Knott Hall rooftop, facing-west landing
+# Ennis east / KH driveway south teleports both land on the KH rooftop but are
+# spread apart along Y (perpendicular to the shared west-facing direction) so
+# the two destinations don't stack exactly on top of one another.
+KH_ROOFTOP_ORIGIN_ENNIS_EAST = "2149 -216 904"
+KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH = "2149 -312 904"
 
 KNOTT = KnottSpec(
     floors=KNOTT_FLOORS,

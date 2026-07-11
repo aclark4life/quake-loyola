@@ -48,7 +48,6 @@ from .constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
-    KNOTT_GROUND_Z,
     KNOTT_TERRAIN_ENABLED,
     ROAD_X2,
     WALL_T,
@@ -70,7 +69,6 @@ def build():
     if not KNOTT_TERRAIN_ENABLED:
         return [], []
     BRUSHES = []
-    ENTITIES = []
 
     # Sidewalk slab parameters: slab length and expansion-joint gap in Y.
     _SW_SLAB_LEN = 128  # ~8.5 ft per slab
@@ -1333,4 +1331,4 @@ def build():
     # staircase/platform using real elevation-derived Z values instead of a
     # single flat KNOTT_GROUND_Z constant.
 
-    return BRUSHES, ENTITIES
+    return BRUSHES, []
