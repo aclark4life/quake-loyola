@@ -23,8 +23,10 @@ Usage:
 import sys
 from pathlib import Path
 
-# Ensure the project root is on the path when called from any directory.
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure the project root and src/ are on the path when called from any directory.
+_root = Path(__file__).parent.parent
+sys.path.insert(0, str(_root))
+sys.path.insert(0, str(_root / "src"))
 
 from quake_loyola.constants import (
     CHARLES_RAMP_W,
