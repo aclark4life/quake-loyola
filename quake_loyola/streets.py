@@ -111,6 +111,7 @@ from .constants import (
 )
 from .geometry import (
     arch_seg,
+    arch_seg_y,
     box,
     box_with_round_hole,
     brush_ent,
@@ -118,10 +119,12 @@ from .geometry import (
     pyramid,
     ramp_slab,
     ramp_slab_y,
+    shear_box_y,
     shear_box_z,
     torch_flame,
     tri_prism,
 )
+from .utils import swap_xy, swap_xz
 
 
 def _punch_manhole_detail(brushes):
@@ -296,19 +299,313 @@ def build_ennis_entrance_features():
             Textures.BUILDING,
         )
     )
-    # Iron gate top — decorative rail on top of the short brick wall, matching
-    # the iron gate's own top-rail treatment.
-    brushes.append(
-        box(
-            ennis_wall_x1,
-            ENNIS_SHORT_WALL_NY - ENNIS_GATE_FENCE_TOP_RAIL_DROP // 4,
-            FLOOR_Z2 + ENNIS_WALL_H,
-            bwex2,
-            ENNIS_SHORT_WALL_NY + ENNIS_WALL_T + ENNIS_GATE_FENCE_TOP_RAIL_DROP // 4,
-            FLOOR_Z2 + ENNIS_WALL_H + ENNIS_GATE_FENCE_TOP_RAIL_T,
-            Textures.FENCE,
+    # Iron fence on top of the short brick wall — same decorative rectangular
+    # "iron square" panel motif (outer + inner frame, mounting feet dropping
+    # onto the brick top) as the adjacent iron gate run connected at this
+    # wall's east end, just laid out along X instead of Y since this wall
+    # segment runs east/west instead of north/south.
+    sw_tex = Textures.FENCE
+    sw_brick_top_z = FLOOR_Z2 + ENNIS_WALL_H
+    sw_panel_y1 = ENNIS_SHORT_WALL_NY - ENNIS_GATE_FENCE_BAR_T
+    sw_panel_y2 = ENNIS_SHORT_WALL_NY
+    sw_panel_z1 = sw_brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
+    sw_panel_z_center = sw_panel_z1 + ENNIS_PANEL_OUTER_H // 2
+    # This wall segment is shorter than the main gate run, so its panels are
+    # narrower to fit three (instead of the main gate's width) in the
+    # available space, keeping the same frame thickness on each side.
+    _sw_frame_t = (ENNIS_PANEL_OUTER_W - ENNIS_PANEL_INNER_W) // 2
+    sw_panel_outer_w = 41
+    sw_panel_inner_w = sw_panel_outer_w - 2 * _sw_frame_t
+
+    def sw_add_panel(center_x):
+        x1_o = center_x - sw_panel_outer_w // 2
+        x2_o = center_x + sw_panel_outer_w // 2
+        z1_o = sw_panel_z_center - ENNIS_PANEL_OUTER_H // 2
+        z2_o = sw_panel_z_center + ENNIS_PANEL_OUTER_H // 2
+        x1_i = center_x - sw_panel_inner_w // 2
+        x2_i = center_x + sw_panel_inner_w // 2
+        z1_i = sw_panel_z_center - ENNIS_PANEL_INNER_H // 2
+        z2_i = sw_panel_z_center + ENNIS_PANEL_INNER_H // 2
+        brushes.extend(
+            [
+                box(
+                    x1_o,
+                    sw_panel_y1,
+                    z1_o,
+                    x2_o,
+                    sw_panel_y2,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    sw_tex,
+                ),
+                box(
+                    x1_o,
+                    sw_panel_y1,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    x2_o,
+                    sw_panel_y2,
+                    z2_o,
+                    sw_tex,
+                ),
+                box(
+                    x1_o,
+                    sw_panel_y1,
+                    z1_o,
+                    x1_o + ENNIS_GATE_FENCE_BAR_T,
+                    sw_panel_y2,
+                    z2_o,
+                    sw_tex,
+                ),
+                box(
+                    x2_o - ENNIS_GATE_FENCE_BAR_T,
+                    sw_panel_y1,
+                    z1_o,
+                    x2_o,
+                    sw_panel_y2,
+                    z2_o,
+                    sw_tex,
+                ),
+                box(
+                    x1_i,
+                    sw_panel_y1,
+                    z1_i,
+                    x2_i,
+                    sw_panel_y2,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    sw_tex,
+                ),
+                box(
+                    x1_i,
+                    sw_panel_y1,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    x2_i,
+                    sw_panel_y2,
+                    z2_i,
+                    sw_tex,
+                ),
+                box(
+                    x1_i,
+                    sw_panel_y1,
+                    z1_i,
+                    x1_i + ENNIS_GATE_FENCE_BAR_T,
+                    sw_panel_y2,
+                    z2_i,
+                    sw_tex,
+                ),
+                box(
+                    x2_i - ENNIS_GATE_FENCE_BAR_T,
+                    sw_panel_y1,
+                    z1_i,
+                    x2_i,
+                    sw_panel_y2,
+                    z2_i,
+                    sw_tex,
+                ),
+                ramp_slab(
+                    x1_o,
+                    x1_i,
+                    sw_panel_y1,
+                    sw_panel_y2,
+                    z1_o,
+                    z1_i,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    sw_tex,
+                ),
+                ramp_slab(
+                    x2_i,
+                    x2_o,
+                    sw_panel_y1,
+                    sw_panel_y2,
+                    z1_i,
+                    z1_o,
+                    z1_i + ENNIS_GATE_FENCE_BAR_T,
+                    z1_o + ENNIS_GATE_FENCE_BAR_T,
+                    sw_tex,
+                ),
+                ramp_slab(
+                    x1_o,
+                    x1_i,
+                    sw_panel_y1,
+                    sw_panel_y2,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z2_o,
+                    z2_i,
+                    sw_tex,
+                ),
+                ramp_slab(
+                    x2_i,
+                    x2_o,
+                    sw_panel_y1,
+                    sw_panel_y2,
+                    z2_i - ENNIS_GATE_FENCE_BAR_T,
+                    z2_o - ENNIS_GATE_FENCE_BAR_T,
+                    z2_i,
+                    z2_o,
+                    sw_tex,
+                ),
+            ]
         )
+        # Mounting feet dropping onto the brick top, same as the adjacent gate.
+        foot_hw = ENNIS_GATE_FENCE_BAR_T // 2
+        foot_x1 = x1_o + ENNIS_PANEL_MOUNT_FOOT_INSET
+        foot_x2 = x2_o - ENNIS_PANEL_MOUNT_FOOT_INSET
+        brushes.extend(
+            [
+                box(
+                    foot_x1 - foot_hw,
+                    sw_panel_y1,
+                    z1_o - ENNIS_PANEL_MOUNT_FOOT_DROP,
+                    foot_x1 + foot_hw,
+                    sw_panel_y2,
+                    z1_o,
+                    sw_tex,
+                ),
+                box(
+                    foot_x2 - foot_hw,
+                    sw_panel_y1,
+                    z1_o - ENNIS_PANEL_MOUNT_FOOT_DROP,
+                    foot_x2 + foot_hw,
+                    sw_panel_y2,
+                    z1_o,
+                    sw_tex,
+                ),
+            ]
+        )
+
+    def sw_add_connector(x1, x2):
+        # Two small decorative horizontal iron bars bridging the gap between
+        # adjacent panels, matching the adjacent gate's connector treatment.
+        if x2 <= x1:
+            return
+        bar_t = ENNIS_GATE_FENCE_BAR_T
+        quarter_h = ENNIS_PANEL_OUTER_H // 4
+        upper_z1 = sw_panel_z_center + quarter_h - bar_t // 2
+        lower_z1 = sw_panel_z_center - quarter_h - bar_t // 2
+        brushes.extend(
+            [
+                box(
+                    x1, sw_panel_y1, upper_z1, x2, sw_panel_y2, upper_z1 + bar_t, sw_tex
+                ),
+                box(
+                    x1, sw_panel_y1, lower_z1, x2, sw_panel_y2, lower_z1 + bar_t, sw_tex
+                ),
+            ]
+        )
+
+    def sw_shear_x_brace(z1, z2, cross_hw, opening_x1, opening_x2):
+        # Diagonal iron cross-brace bar, sheared along X as a function of Z
+        # (height), flat through the panel's Y depth — same shape as the
+        # adjacent gate's pillar cross-braces, just built along the other axis.
+        b = shear_box_y(
+            z1,
+            -cross_hw,
+            sw_panel_y1,
+            z2,
+            cross_hw,
+            sw_panel_y2,
+            opening_x1,
+            opening_x2,
+            sw_tex,
+        )
+        return swap_xy(swap_xz(b))
+
+    def sw_add_pillar(center_x):
+        # U-shaped arched iron pillar bookending the panel run, matching the
+        # adjacent gate's separator pillars.
+        leg_t = ENNIS_GATE_PILLAR_LEG_T
+        arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
+        arch_rout = arch_rin + leg_t
+        pillar_top_z = sw_panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
+        legs_top_z = pillar_top_z - arch_rout
+        leg_x1 = center_x - arch_rout
+        leg_x2 = center_x + arch_rout
+        brushes.extend(
+            [
+                box(
+                    leg_x1,
+                    sw_panel_y1,
+                    sw_brick_top_z,
+                    leg_x1 + leg_t,
+                    sw_panel_y2,
+                    legs_top_z,
+                    sw_tex,
+                ),
+                box(
+                    leg_x2 - leg_t,
+                    sw_panel_y1,
+                    sw_brick_top_z,
+                    leg_x2,
+                    sw_panel_y2,
+                    legs_top_z,
+                    sw_tex,
+                ),
+            ]
+        )
+        arch_segs = 8
+        arch_step = 180.0 / arch_segs
+        for seg_i in range(arch_segs):
+            brushes.append(
+                arch_seg_y(
+                    sw_panel_y1,
+                    sw_panel_y2,
+                    center_x,
+                    legs_top_z,
+                    arch_rin,
+                    arch_rout,
+                    seg_i * arch_step,
+                    (seg_i + 1) * arch_step,
+                    sw_tex,
+                )
+            )
+        # Decorative X cross-brace filling the opening between the legs,
+        # below the arch spring line.
+        cross_hw = ENNIS_GATE_PILLAR_CROSS_T // 2
+        opening_x1 = center_x - arch_rin
+        opening_x2 = center_x + arch_rin
+        brushes.extend(
+            [
+                sw_shear_x_brace(
+                    sw_brick_top_z, legs_top_z, cross_hw, opening_x1, opening_x2
+                ),
+                sw_shear_x_brace(
+                    sw_brick_top_z, legs_top_z, cross_hw, opening_x2, opening_x1
+                ),
+            ]
+        )
+
+    # Leading arch pillar right next to the wall's own corner cap post
+    # (bw_cx/bw_cy, built further below), same offset the main gate run uses
+    # from its own corner post, then a connector into the first panel.
+    sw_panel_z2_o = sw_panel_z_center + ENNIS_PANEL_OUTER_H // 2
+    sw_pillar_lead_x = (
+        ennis_wall_x1 + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
     )
+    sw_add_pillar(sw_pillar_lead_x + ENNIS_GATE_PILLAR_W // 2)
+    sw_cursor_x = sw_pillar_lead_x + ENNIS_GATE_PILLAR_W
+    sw_gap_x1 = sw_cursor_x
+    sw_cursor_x += ENNIS_GATE_PILLAR_GAP
+    sw_add_connector(sw_gap_x1, sw_cursor_x)
+
+    # Evenly space three narrower panels in the remaining run (east of the
+    # leading pillar) to match the adjacent gate's three-square rhythm, with
+    # equal margins at each end and a connector filling every inter-panel gap.
+    sw_panel_count = 3
+    sw_avail = bwex2 - sw_cursor_x
+    sw_run_w = (
+        sw_panel_count * sw_panel_outer_w + (sw_panel_count - 1) * ENNIS_PANEL_GAP
+    )
+    sw_run_x1 = sw_cursor_x + (sw_avail - sw_run_w) // 2
+    for i in range(sw_panel_count):
+        panel_center_x = (
+            sw_run_x1 + i * (sw_panel_outer_w + ENNIS_PANEL_GAP) + sw_panel_outer_w // 2
+        )
+        sw_add_panel(panel_center_x)
+        if i > 0:
+            sw_add_connector(
+                panel_center_x - sw_panel_outer_w // 2 - ENNIS_PANEL_GAP,
+                panel_center_x - sw_panel_outer_w // 2,
+            )
     # Small section of iron fence bridging the short wall's east end down to
     # the main east iron gate's baseline (east_gate_y1/y2 below), where the
     # small brick return wall used to be. Same treatment as the connector
