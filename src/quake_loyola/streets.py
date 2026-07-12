@@ -1909,15 +1909,20 @@ def build():
     # South curb — split into two segments with a gap for the back road entrance.
     # Curb wall sits along the road-facing (north) edge of each segment,
     # with the same flush gap treatment as the north curb above.
-    for curb_x1, curb_x2 in (
-        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2),  # west segment
-        (KNOTT_DRIVEWAY_ES_X2, ENNIS_X2),  # east segment
+    # West segment's sidewalk depth is doubled (ref/gmaps-charles-ennis-satellite.png
+    # shows a noticeably wider paved apron here, at the SE corner of the
+    # Charles/Ennis intersection nearest the pedestrian bridge/Parkhurst
+    # Dining) — only its south (far-from-road) edge moves; the north edge
+    # stays flush against the existing curb/gap geometry below.
+    for curb_x1, curb_x2, _sw_d in (
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, CHARLES_WALK_W * 2),  # west segment
+        (KNOTT_DRIVEWAY_ES_X2, ENNIS_X2, CHARLES_WALK_W),  # east segment
     ):
         sw_slabs_x(
             BRUSHES,
             curb_x1,
             curb_x2,
-            ENNIS_SW_EDGE,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - _sw_d,
             ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -2258,22 +2263,28 @@ def build():
     # When KH terrain is enabled, knott_terrain.py owns the driveway corridor
     # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2); split the verge around it so it doesn't
     # bury the road/sidewalk brushes built there.
+    # The west segment's north edge is pulled back an extra CHARLES_WALK_W to
+    # match the doubled-depth sidewalk built above it (SE Charles/Ennis corner).
+    _west_verge_y2 = ENNIS_SW_EDGE - CHARLES_WALK_W
     _east_verge_segs = (
         [
-            (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
-            (KNOTT_DRIVEWAY_CORRIDOR_X2, _east_verge_x2),
+            (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, _west_verge_y2),
+            (KNOTT_DRIVEWAY_CORRIDOR_X2, _east_verge_x2, ENNIS_SW_EDGE),
         ]
         if KNOTT_TERRAIN_ENABLED
-        else [(ROAD_X2 + CHARLES_WALK_W, _east_verge_x2)]
+        else [
+            (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, _west_verge_y2),
+            (KNOTT.x2, _east_verge_x2, ENNIS_SW_EDGE),
+        ]
     )
-    for _evx1, _evx2 in _east_verge_segs:
+    for _evx1, _evx2, _evy2 in _east_verge_segs:
         BRUSHES.append(
             box(
                 _evx1,
                 CHARLES_Y1,
                 FLOOR_Z2,
                 _evx2,
-                ENNIS_SW_EDGE,
+                _evy2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
             )

@@ -382,7 +382,7 @@ consistently in the code (``PIER1_X`` … ``PIER5_X``).
        (``BRIDGE_X2 = KNOTT_PIER_X``).
    * - **Pier 5**
      - ``PIER5_X``
-     - 2206
+     - 2454
      - East KH / NE pier — easternmost pier, aligned with the Knott Hall east
        face; the bridge deck angles south from here. The accessible walkway
        runs along its west face.

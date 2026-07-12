@@ -255,8 +255,10 @@ BRIDGE_X1 = (
 BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W
 WORLD_X2 = (
     9100  # re-derived from real-world measurement, see docs/reference.rst § World scale;
-    # bumped from 7708 to make room for Maryland Hall (MARYLAND_X2 ~8979, see below),
-    # leaving a ~121-unit (~8ft) clearance margin before the sealing wall.
+    # bumped from 7708 to make room for Maryland Hall (MARYLAND_X2 = 4315 after
+    # the /2.5 east-campus compression, see constants/maryland.py — NOT the
+    # 8979 pre-compression OSM figure), leaving a ~4785-unit (~317ft)
+    # clearance margin before the sealing wall.
 )
 WORLD_X2_EXT = (
     WORLD_X2 + WORLD_EAST_BUFFER
