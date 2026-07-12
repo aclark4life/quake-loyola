@@ -1916,7 +1916,7 @@ def build():
     # Dining) — only its south (far-from-road) edge moves; the north edge
     # stays flush against the existing curb/gap geometry below.
     for curb_x1, curb_x2, _sw_d in (
-        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, CHARLES_WALK_W * 2),  # west segment
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, CHARLES_WALK_W * 2 + 56),  # west segment
         (KNOTT_DRIVEWAY_ES_X2, ENNIS_X2, CHARLES_WALK_W),  # east segment
     ):
         sw_slabs_x(
