@@ -47,13 +47,13 @@ MARYLAND_FLOOR_H = 128  # matches DORM_FLOOR_H; no facade detail derived yet
 MARYLAND_H = MARYLAND_FLOORS * MARYLAND_FLOOR_H
 # Ground level under the massing block. The hill keeps climbing east of Knott
 # Hall (KNOTT_GROUND_Z=221) toward Ennis Parallel/Maryland Hall — re-measured
-# via scripts/sample_elevation.py at +17.3 to +19.3 ft above the bridge-
-# crossing baseline ("knott_climb_2".."knott_climb_4", 262 -> 291 units; see
-# docs/reference.rst "Topology check"). Without this, the stub sat flush with
-# FLOOR_Z2 (0) and appeared sunk far below the surrounding terrain. 291 is
-# used as the far (Ennis-side) end of that climb, closest to Maryland Hall's
-# real-world location.
-MARYLAND_GROUND_Z = 291
+# via scripts/sample_elevation.py at +17.0 to +18.1 ft above the bridge-
+# crossing baseline ("knott_climb_2".."knott_climb_4", 257 -> 273 units; see
+# docs/elevation_samples.csv, current run). Without this, the stub sat flush
+# with FLOOR_Z2 (0) and appeared sunk far below the surrounding terrain. 273
+# is used as the far (Ennis-side) end of that climb ("ennis_parallel" /
+# "knott_climb_4"), closest to Maryland Hall's real-world location.
+MARYLAND_GROUND_Z = 273
 
 # maryland_terrain.py — flat mound under/around the stub, sloping down to the
 # surrounding FLOOR_Z2 plaza on all four sides so the building doesn't float
