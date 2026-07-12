@@ -56,6 +56,7 @@ from .constants import (
     ENNIS_PILLAR_HW,
     ENNIS_PILLAR_NORTH_Y,
     ENNIS_PILLAR_POST_H,
+    ENNIS_PILLAR_SOUTH_Y,
     ENNIS_PILLAR_X1,
     ENNIS_SHORT_WALL_NY,
     ENNIS_SW_EDGE,
@@ -205,7 +206,7 @@ def build_ennis_entrance_features():
     entities = []
 
     for pillar_y in (
-        ENNIS_Y - ENNIS_HW - ENNIS_PILLAR_HW,
+        ENNIS_PILLAR_SOUTH_Y,
         ENNIS_PILLAR_NORTH_Y,
     ):
         ennis_pil_cx = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW

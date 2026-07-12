@@ -32,6 +32,7 @@ from .dorm import (
     DormSpec,
 )
 from .ennis import (
+    ENNIS_CURB_W,
     ENNIS_GATE_PILLAR_LEG_T,
     ENNIS_GATE_PILLAR_OPENING_W,
     ENNIS_HW,
@@ -72,9 +73,19 @@ KNOTT_SHAFT_Y_OFFSET = 128
 # Bridge north edge → Ennis south curb offset; ENNIS_NORTH_OFFSET then adds half-width.
 ENNIS_BRIDGE_TO_SOUTH_EDGE = 640
 ENNIS_NORTH_OFFSET = ENNIS_BRIDGE_TO_SOUTH_EDGE + ENNIS_HW
-CHARLES_LAMP_POST_SETBACK = 160
+CHARLES_LAMP_POST_SETBACK = 104  # was 160 — the Ennis-area lamp post sits at
+# this offset south of the Ennis curb, which streets.py also uses as the south
+# edge of the grass verge (see ROAD_VERGE_BUFFER below); shrunk in lockstep
+# with the second verge reduction so the lamp still lands right at the
+# verge/sidewalk boundary instead of inside the sidewalk.
 CHARLES_PLATFORM_ROAD_OFFSET = 16
-ROAD_VERGE_BUFFER = 32
+ROAD_VERGE_BUFFER = -56  # extra padding for the Ennis south grass verge
+# (streets.py); was 32, then 0 (first shrink — the widest safe value with a
+# 160-unit CHARLES_LAMP_POST_SETBACK), now negative for a second shrink per
+# feedback that it was still a bit wide. CHARLES_LAMP_POST_SETBACK was moved
+# down to 104 in lockstep so the lamp still sits at the new (narrower) verge's
+# south edge rather than inside the sidewalk (south edge = ENNIS curb −
+# 2*CHARLES_WALK_W − this buffer = ENNIS curb − 96, matching the new setback).
 DORM_PIER_FACE_OFFSET = 32
 BRIDGE_LAMP_POST_CLEARANCE = 32
 
@@ -190,6 +201,12 @@ ENNIS_SHORT_WALL_NY = (
 # streets.py; the pillar sits at the midpoint of that band.
 ENNIS_PILLAR_NORTH_Y = (
     ENNIS_Y + ENNIS_HW + 10 + ENNIS_Y + ENNIS_HW + CHARLES_WALK_W
+) // 2
+# South pillar — centred in the south grass verge (between the Ennis curb and
+# the south sidewalk), rather than flush against the curb, so it reads as a
+# planted gate pillar instead of a curbside post.
+ENNIS_PILLAR_SOUTH_Y = (
+    (ENNIS_Y - ENNIS_HW - ENNIS_CURB_W) + (ENNIS_SW_EDGE + CHARLES_WALK_W)
 ) // 2
 
 KNOTT_DRIVEWAY_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
