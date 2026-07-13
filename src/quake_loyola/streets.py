@@ -1623,13 +1623,34 @@ def build():
             )
             y += step
 
-    def sw_slabs_x(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
-        """Tile a flat E-W sidewalk strip (x1..x2) as individual panels."""
+    def sw_slabs_x(
+        brushes,
+        x1,
+        x2,
+        y1,
+        y2,
+        z_base,
+        z_top,
+        tex,
+        tt_params="0 0 0 1 1",
+        tex_from_x=None,
+    ):
+        """Tile a flat E-W sidewalk strip (x1..x2) as individual panels.
+
+        `tex_from_x`, if given, is an (x_threshold, tex) pair — any panel
+        starting at or east of `x_threshold` uses that texture instead of
+        the default `tex`.
+        """
         step = _SW_SLAB_LEN + _SW_GAP
         x = x1
         while x < x2:
             sx2 = min(x + _SW_SLAB_LEN, x2)
-            brushes.append(box(x, y1, z_base, sx2, y2, z_top, tex, tt_params=tt_params))
+            panel_tex = tex
+            if tex_from_x is not None and x >= tex_from_x[0]:
+                panel_tex = tex_from_x[1]
+            brushes.append(
+                box(x, y1, z_base, sx2, y2, z_top, panel_tex, tt_params=tt_params)
+            )
             x += step
 
     # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
@@ -1979,19 +2000,22 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    for curb_x1, curb_x2, _sw_d, _tile_x1 in (
+    for curb_x1, curb_x2, _sw_d, _tile_x1, _tex_from_x in (
         (
             _west_curb_x1,
             KNOTT.x2,
             CHARLES_WALK_W * 2 + 56,
             _west_curb_x1 + _SW_SLAB_LEN + _SW_GAP,
+            (_west_curb_x1 + _SW_SLAB_LEN + _SW_GAP, Textures.WHITE_STONE),
         ),  # west segment — remaining panels (first panel built above); curb
-        # wall/gap still span the full curb_x1..curb_x2 width
+        # wall/gap still span the full curb_x1..curb_x2 width; panels from
+        # x=418 (the tile containing 470,631) and east are white-stone
         (
             KNOTT_DRIVEWAY_ES_X2,
             ENNIS_X2,
             CHARLES_WALK_W,
             KNOTT_DRIVEWAY_ES_X2,
+            None,
         ),  # east segment
     ):
         sw_slabs_x(
@@ -2004,6 +2028,7 @@ def build():
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
             tt_params=ENNIS_ROAD_TT_PARAMS,
+            tex_from_x=_tex_from_x,
         )
         BRUSHES.append(  # flush gap between the sidewalk squares and the curb
             box(
