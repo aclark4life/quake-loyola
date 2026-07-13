@@ -2461,21 +2461,53 @@ def build():
     # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
     # Split around back road corridor gap (KNOTT_DRIVEWAY_CORRIDOR_X1..KNOTT_DRIVEWAY_CORRIDOR_X2)
     # SE corner (east of back road) uses gravel3c (mulch bed)
+    # A single cement patch is cut into the SW corner of the ground verge
+    # (west segment only), roughly centred on (377, 724) in X and spanning
+    # the full verge depth in Y (no leftover ground sliver to the north),
+    # replacing the ground there.
+    _VERGE_CEMENT_X1 = ROAD_X2 + CHARLES_WALK_W
+    _VERGE_CEMENT_X2 = _VERGE_CEMENT_X1 + _SW_SLAB_LEN
     for vx1, vx2, vtex in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, Textures.GROUND),
         (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2, Textures.MULCH),
     ]:
-        BRUSHES.append(
-            box(
-                vx1,
-                ENNIS_SW_EDGE + CHARLES_WALK_W,
-                FLOOR_Z1,
-                vx2,
-                ENNIS_Y - ENNIS_HW - ENNIS_CURB_W,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                vtex,
+        vy1 = ENNIS_SW_EDGE + CHARLES_WALK_W
+        vy2 = ENNIS_Y - ENNIS_HW - ENNIS_CURB_W
+        if vtex is Textures.GROUND:
+            BRUSHES.append(  # cement patch carved out of the SW corner
+                box(
+                    _VERGE_CEMENT_X1,
+                    vy1,
+                    FLOOR_Z1,
+                    _VERGE_CEMENT_X2,
+                    vy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.CEMENT,
+                )
             )
-        )
+            BRUSHES.append(  # remainder east of the patch, full verge height
+                box(
+                    _VERGE_CEMENT_X2,
+                    vy1,
+                    FLOOR_Z1,
+                    vx2,
+                    vy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    vtex,
+                )
+            )
+        else:
+            BRUSHES.append(
+                box(
+                    vx1,
+                    vy1,
+                    FLOOR_Z1,
+                    vx2,
+                    vy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    vtex,
+                )
+            )
 
     # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
     for vx1, vx2 in [
