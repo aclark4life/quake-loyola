@@ -1607,8 +1607,14 @@ def build():
         panel whose starting Y matches one gets that texture instead of the
         default `tex`, for one-off accent squares without disturbing the
         rest of the strip's tiling.
+
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) panels are merged
+        into a single continuous slab, closing the expansion-joint gaps
+        between them — that stone is meant to read as one seamless piece,
+        unlike the jointed cement squares.
         """
         step = _SW_SLAB_LEN + _SW_GAP
+        segments = []  # [seg_y1, seg_y2, tex] — merged run bounds
         y = y1
         while y < y2:
             sy2 = min(y + _SW_SLAB_LEN, y2)
@@ -1618,10 +1624,28 @@ def build():
                     if abs(oy - y) < 1:
                         panel_tex = otex
                         break
-            brushes.append(
-                box(x1, y, z_base, x2, sy2, z_top, panel_tex, tt_params=tt_params)
-            )
+            if (
+                segments
+                and segments[-1][2] == panel_tex
+                and panel_tex == Textures.WHITE_STONE
+            ):
+                segments[-1][1] = sy2
+            else:
+                segments.append([y, sy2, panel_tex])
             y += step
+        for seg_y1, seg_y2, panel_tex in segments:
+            brushes.append(
+                box(
+                    x1,
+                    seg_y1,
+                    z_base,
+                    x2,
+                    seg_y2,
+                    z_top,
+                    panel_tex,
+                    tt_params=tt_params,
+                )
+            )
 
     def sw_slabs_x(
         brushes,
@@ -1640,18 +1664,42 @@ def build():
         `tex_from_x`, if given, is an (x_threshold, tex) pair — any panel
         starting at or east of `x_threshold` uses that texture instead of
         the default `tex`.
+
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) panels are merged
+        into a single continuous slab, closing the expansion-joint gaps
+        between them — that stone is meant to read as one seamless piece,
+        unlike the jointed cement squares.
         """
         step = _SW_SLAB_LEN + _SW_GAP
+        segments = []  # [seg_x1, seg_x2, tex] — merged run bounds
         x = x1
         while x < x2:
             sx2 = min(x + _SW_SLAB_LEN, x2)
             panel_tex = tex
             if tex_from_x is not None and x >= tex_from_x[0]:
                 panel_tex = tex_from_x[1]
-            brushes.append(
-                box(x, y1, z_base, sx2, y2, z_top, panel_tex, tt_params=tt_params)
-            )
+            if (
+                segments
+                and segments[-1][2] == panel_tex
+                and panel_tex == Textures.WHITE_STONE
+            ):
+                segments[-1][1] = sx2
+            else:
+                segments.append([x, sx2, panel_tex])
             x += step
+        for seg_x1, seg_x2, panel_tex in segments:
+            brushes.append(
+                box(
+                    seg_x1,
+                    y1,
+                    z_base,
+                    seg_x2,
+                    y2,
+                    z_top,
+                    panel_tex,
+                    tt_params=tt_params,
+                )
+            )
 
     # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
     # takes over from the bridge's north side up to that point, below).
