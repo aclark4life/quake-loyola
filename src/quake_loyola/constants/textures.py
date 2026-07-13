@@ -16,7 +16,7 @@ class Textures:
         "win_fbblu_01"  # named "blu" but reads more white than blue in-game, so
         # it works fine as a stand-in for the white parking-lane stripe texture
     )
-    ENNIS_PILLAR = "stn_w11_wht1"  # from makkon_stone.wad
+    ENNIS_PILLAR = "stn_f14_wht1"  # from makkon_stone.wad
     FLOOR = "sfloor3_2"
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
