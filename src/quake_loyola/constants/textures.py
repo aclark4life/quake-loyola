@@ -34,4 +34,4 @@ class Textures:
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WALL = "city2_7"
-    WHITE_STONE = "sfloor3_2"
+    WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad

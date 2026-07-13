@@ -1589,13 +1589,38 @@ def build():
     _SW_SLAB_LEN = 80  # matches CHARLES_WALK_W so panels are square (80×80)
     _SW_GAP = 2  # expansion-joint width
 
-    def sw_slabs_y(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
-        """Tile a flat N-S sidewalk strip (y1..y2) as individual panels."""
+    def sw_slabs_y(
+        brushes,
+        x1,
+        x2,
+        y1,
+        y2,
+        z_base,
+        z_top,
+        tex,
+        tt_params="0 0 0 1 1",
+        tile_overrides=None,
+    ):
+        """Tile a flat N-S sidewalk strip (y1..y2) as individual panels.
+
+        `tile_overrides`, if given, is a list of (y_start, tex) pairs — any
+        panel whose starting Y matches one gets that texture instead of the
+        default `tex`, for one-off accent squares without disturbing the
+        rest of the strip's tiling.
+        """
         step = _SW_SLAB_LEN + _SW_GAP
         y = y1
         while y < y2:
             sy2 = min(y + _SW_SLAB_LEN, y2)
-            brushes.append(box(x1, y, z_base, x2, sy2, z_top, tex, tt_params=tt_params))
+            panel_tex = tex
+            if tile_overrides:
+                for oy, otex in tile_overrides:
+                    if abs(oy - y) < 1:
+                        panel_tex = otex
+                        break
+            brushes.append(
+                box(x1, y, z_base, x2, sy2, z_top, panel_tex, tt_params=tt_params)
+            )
             y += step
 
     def sw_slabs_x(brushes, x1, x2, y1, y2, z_base, z_top, tex, tt_params="0 0 0 1 1"):
@@ -1763,9 +1788,14 @@ def build():
     # Curb wall sits along the road-facing (west) edge, separated from the
     # sidewalk squares by a low flush gap (same treatment as the west
     # sidewalk and Ennis Road curbs above).
-    for _seg_y1, _seg_y2 in (
-        (CHARLES_Y1, ENNIS_Y - ENNIS_HW - CHARLES_WALK_W),
-        (ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, CHARLES_Y2),
+    for _seg_y1, _seg_y2, _seg_overrides in (
+        (
+            CHARLES_Y1,
+            ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
+            [(508, Textures.WHITE_STONE)],  # accent square next to the Ennis
+            # south-curb white-stone/cement pair built above
+        ),
+        (ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, CHARLES_Y2, None),
     ):
         sw_slabs_y(
             BRUSHES,
@@ -1776,6 +1806,7 @@ def build():
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
+            tile_overrides=_seg_overrides,
         )
         BRUSHES.append(  # flush gap between the sidewalk squares and the curb
             box(
@@ -1915,13 +1946,57 @@ def build():
     # Charles/Ennis intersection nearest the pedestrian bridge/Parkhurst
     # Dining) — only its south (far-from-road) edge moves; the north edge
     # stays flush against the existing curb/gap geometry below.
-    for curb_x1, curb_x2, _sw_d in (
-        (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, CHARLES_WALK_W * 2 + 56),  # west segment
-        (KNOTT_DRIVEWAY_ES_X2, ENNIS_X2, CHARLES_WALK_W),  # east segment
+    # West segment's first (westmost) panel is split into two accent pieces
+    # instead of the plain sidewalk tiling below: a white-stone strip on its
+    # south side, and a square cement panel on the north side (flush against
+    # the curb gap).
+    _west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
+    _west_sw_d = CHARLES_WALK_W * 2 + 56
+    _west_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - _west_sw_d
+    _west_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP
+    _west_north_y1 = _west_y2 - _SW_SLAB_LEN
+    BRUSHES.append(  # south piece — white-stone accent slab
+        box(
+            _west_curb_x1,
+            _west_y1,
+            FLOOR_Z2,
+            _west_curb_x1 + _SW_SLAB_LEN,
+            _west_north_y1,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.WHITE_STONE,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
+    )
+    BRUSHES.append(  # north piece — square cement sidewalk panel
+        box(
+            _west_curb_x1,
+            _west_north_y1,
+            FLOOR_Z2,
+            _west_curb_x1 + _SW_SLAB_LEN,
+            _west_y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
+    )
+    for curb_x1, curb_x2, _sw_d, _tile_x1 in (
+        (
+            _west_curb_x1,
+            KNOTT.x2,
+            CHARLES_WALK_W * 2 + 56,
+            _west_curb_x1 + _SW_SLAB_LEN + _SW_GAP,
+        ),  # west segment — remaining panels (first panel built above); curb
+        # wall/gap still span the full curb_x1..curb_x2 width
+        (
+            KNOTT_DRIVEWAY_ES_X2,
+            ENNIS_X2,
+            CHARLES_WALK_W,
+            KNOTT_DRIVEWAY_ES_X2,
+        ),  # east segment
     ):
         sw_slabs_x(
             BRUSHES,
-            curb_x1,
+            _tile_x1,
             curb_x2,
             ENNIS_SW_EDGE + CHARLES_WALK_W - _sw_d,
             ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP,
