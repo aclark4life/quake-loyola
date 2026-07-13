@@ -29,6 +29,8 @@ from .constants import (
     BRIDGE_BLK_HW,
     BRIDGE_BLK_OVH,
     BRIDGE_BLK_PIER_CLEARANCE,
+    BRIDGE_CENTER_SPAN_OFFSET,
+    BRIDGE_CENTER_SPAN_PIER_EMBED,
     BRIDGE_DECK_EAST_RECESS,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
@@ -92,6 +94,8 @@ from .constants import (
     KNOTT,
     KNOTT_GROUND_Z,
     KNOTT_WALKWAY_ENABLED,
+    PIER2_X,
+    PIER3_X,
     PIER6_X,
     SHOW_SUPPORTS,
     STREET_SURFACE_T,
@@ -130,19 +134,75 @@ from .geometry import (
 )
 
 
-def build():
-    # Per-section enable flags — each covers one span between adjacent piers.
-    # BRIDGE_ENABLED is a convenience master: if True, every section is on,
-    # regardless of its individual flag below.
-    sections_enabled = {
-        "west_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_WEST_APPROACH,
-        "center_span": BRIDGE_ENABLED or BRIDGE_ENABLED_CENTER_SPAN,
-        "east_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_APPROACH,
-        "kh_span": BRIDGE_ENABLED or BRIDGE_ENABLED_KH_SPAN,
-        "east_ext": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_EXT,
+def _section_x_ranges():
+    """Return the {section_name: (x1, x2)} pier-to-pier boundaries used to
+    attribute geometry to a bridge section (see _filter_sections)."""
+    return {
+        "west_approach": (BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1]),
+        "center_span": (BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]),
+        "east_approach": (BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3]),
+        "kh_span": (BRIDGE_ARCH_X[3], BRIDGE_ARCH_X[4]),
+        "east_ext": (BRIDGE_ARCH_X[4], BRIDGE_ARCH_X[5]),
     }
-    if not any(sections_enabled.values()):
-        return [], []
+
+
+def _filter_sections(brushes, entities, enabled_names):
+    """Keep only geometry overlapping one of the named sections' pier-to-pier
+    spans (each with a small margin to include the bounding piers). Catches
+    brushes already wrapped in func_detail entities (the bridge
+    superstructure) as well as worldspawn brushes (e.g. hint brushes, which
+    are dropped entirely — they're only useful when the full bridge exists).
+    """
+    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+    section_piers = _section_x_ranges()
+    enabled_spans = [
+        (px1 - margin, px2 + margin)
+        for name, (px1, px2) in section_piers.items()
+        if name in enabled_names
+    ]
+
+    def _in_any_span(b):
+        xs = [p[0] for f in b.faces for p in (f.p1, f.p2, f.p3)]
+        # Full containment (not just partial overlap) — otherwise long
+        # adjacent-span deck/parapet segments that merely touch a pier
+        # boundary (e.g. x=[-1246,-525]) would incorrectly pass.
+        bx1, bx2 = min(xs), max(xs)
+        return any(bx1 >= sx1 and bx2 <= sx2 for sx1, sx2 in enabled_spans)
+
+    def _is_hint(b):
+        return all(f.tex == Textures.HINT for f in b.faces)
+
+    filtered_brushes = [b for b in brushes if _in_any_span(b) and not _is_hint(b)]
+    new_entities = []
+    for entdict in entities:
+        if entdict.brushes:
+            # Brush entity (func_detail, trigger_teleport, func_illusionary,
+            # etc.) — keep only brushes overlapping an enabled span; drop
+            # the whole entity if nothing survives (e.g. the west-abutment
+            # teleport arch's trigger/illusionary brushes, which sit at
+            # x≈-1265..-1281, well outside any enabled span).
+            kept = [b for b in entdict.brushes if _in_any_span(b)]
+            if kept:
+                new_entities.append(
+                    brush_ent(entdict.classname, kept, **entdict.fields)
+                )
+        else:
+            # Point entity — keep only if its origin falls within an
+            # enabled span (e.g. drop info_teleport_destination at the
+            # west abutment when that section isn't enabled).
+            origin = entdict.fields.get("origin")
+            if origin is not None:
+                ox = float(origin.split()[0])
+                if not any(sx1 < ox < sx2 for sx1, sx2 in enabled_spans):
+                    continue
+            new_entities.append(entdict)
+    return filtered_brushes, new_entities
+
+
+def _build_all():
+    """Generate every bridge section's geometry, unfiltered. Callers (build(),
+    build_center_span()) slice this down to whichever section(s) they want via
+    _filter_sections()."""
     BRUSHES = []
     ENTITIES = []
     # Bridge superstructure (parapets, railings, arch voussoirs, teleport arches) is
@@ -843,6 +903,35 @@ def build():
                         base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                         recess=pier_recess,
+                    )
+                )
+
+            if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
+                0.0,
+                0.0,
+                0.0,
+            ):
+                # The centre span has been shifted away from the real-elevation
+                # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
+                # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
+                # itself (which would drag the visible base plinth/cap down
+                # with it), bury a plain footer stub below the existing base
+                # so the visible cap stays exactly where it was and only the
+                # hidden foundation gets deeper. Span the full outer footprint
+                # (±max_outer_radius, which the arch ring/overhang always
+                # reaches — see above — and can exceed by1/by2) so the north
+                # and south flared edges of the base are covered too.
+                footer_y1 = min(by1, -max_outer_radius)
+                footer_y2 = max(by2, max_outer_radius)
+                BRUSHES.append(
+                    box(
+                        x1,
+                        footer_y1,
+                        pier_floor_z - BRIDGE_CENTER_SPAN_PIER_EMBED,
+                        x2,
+                        footer_y2,
+                        pier_floor_z,
+                        Textures.PILLAR,
                     )
                 )
 
@@ -1895,62 +1984,60 @@ def build():
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
 
+    return BRUSHES, ENTITIES
+
+
+def build():
+    # Per-section enable flags — each covers one span between adjacent piers.
+    # BRIDGE_ENABLED is a convenience master: if True, every section is on,
+    # regardless of its individual flag below.
+    sections_enabled = {
+        "west_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_WEST_APPROACH,
+        "center_span": BRIDGE_ENABLED or BRIDGE_ENABLED_CENTER_SPAN,
+        "east_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_APPROACH,
+        "kh_span": BRIDGE_ENABLED or BRIDGE_ENABLED_KH_SPAN,
+        "east_ext": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_EXT,
+    }
+    if not any(sections_enabled.values()):
+        return [], []
+    BRUSHES, ENTITIES = _build_all()
+    enabled_names = [name for name, v in sections_enabled.items() if v]
     if not all(sections_enabled.values()):
-        # Keep only geometry overlapping one of the *enabled* spans (each
-        # Pier[i]..Pier[i+1] range, plus a small margin to include the
-        # bounding piers). Applied last so it catches brushes already
-        # wrapped in func_detail entities (the bridge superstructure) as
-        # well as worldspawn brushes (e.g. hint brushes, which are dropped
-        # entirely — they're only useful when the full bridge exists).
-        margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
-        section_piers = {
-            "west_approach": (BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1]),
-            "center_span": (BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]),
-            "east_approach": (BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3]),
-            "kh_span": (BRIDGE_ARCH_X[3], BRIDGE_ARCH_X[4]),
-            "east_ext": (BRIDGE_ARCH_X[4], BRIDGE_ARCH_X[5]),
-        }
-        enabled_spans = [
-            (px1 - margin, px2 + margin)
-            for name, (px1, px2) in section_piers.items()
-            if sections_enabled[name]
-        ]
+        BRUSHES, ENTITIES = _filter_sections(BRUSHES, ENTITIES, enabled_names)
+    if BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names:
+        BRUSHES, ENTITIES = _shift_center_span(
+            BRUSHES, ENTITIES, enabled_names, BRIDGE_CENTER_SPAN_OFFSET
+        )
+    return BRUSHES, ENTITIES
 
-        def _in_any_span(b):
-            xs = [p[0] for f in b.faces for p in (f.p1, f.p2, f.p3)]
-            # Full containment (not just partial overlap) — otherwise long
-            # adjacent-span deck/parapet segments that merely touch a pier
-            # boundary (e.g. x=[-1246,-525]) would incorrectly pass.
-            bx1, bx2 = min(xs), max(xs)
-            return any(bx1 >= sx1 and bx2 <= sx2 for sx1, sx2 in enabled_spans)
 
-        def _is_hint(b):
-            return all(f.tex == Textures.HINT for f in b.faces)
+def _shift_center_span(brushes, entities, enabled_names, offset):
+    """Translate just the centre-span geometry within a build() result by
+    `offset`, leaving any other enabled sections untouched."""
+    span_b, span_e = _filter_sections(brushes, entities, ["center_span"])
+    other_names = [n for n in enabled_names if n != "center_span"]
+    other_b, other_e = (
+        _filter_sections(brushes, entities, other_names) if other_names else ([], [])
+    )
+    dx, dy, dz = offset
+    span_b = [b.translated(dx, dy, dz) for b in span_b]
+    span_e = [e.translated(dx, dy, dz) for e in span_e]
+    return other_b + span_b, other_e + span_e
 
-        BRUSHES = [b for b in BRUSHES if _in_any_span(b) and not _is_hint(b)]
-        new_entities = []
-        for entdict in ENTITIES:
-            if entdict.brushes:
-                # Brush entity (func_detail, trigger_teleport, func_illusionary,
-                # etc.) — keep only brushes overlapping an enabled span; drop
-                # the whole entity if nothing survives (e.g. the west-abutment
-                # teleport arch's trigger/illusionary brushes, which sit at
-                # x≈-1265..-1281, well outside any enabled span).
-                filtered = [b for b in entdict.brushes if _in_any_span(b)]
-                if filtered:
-                    new_entities.append(
-                        brush_ent(entdict.classname, filtered, **entdict.fields)
-                    )
-            else:
-                # Point entity — keep only if its origin falls within an
-                # enabled span (e.g. drop info_teleport_destination at the
-                # west abutment when that section isn't enabled).
-                origin = entdict.fields.get("origin")
-                if origin is not None:
-                    ox = float(origin.split()[0])
-                    if not any(sx1 < ox < sx2 for sx1, sx2 in enabled_spans):
-                        continue
-                new_entities.append(entdict)
-        ENTITIES = new_entities
 
+def build_center_span(offset=(0.0, 0.0, 0.0)):
+    """Return just the centre span's geometry — the curved arch over Charles
+    St between the PIER2/PIER3 abutments (±525) — independent of the rest of
+    the bridge. Pass an (dx, dy, dz) offset to translate the whole span,
+    useful for experimenting with its position without touching the approach
+    spans, piers, or terrain around it. Not wired into generate_map.py's
+    MODULES list; call directly (e.g. from a script or test) when you want to
+    build/inspect it on its own.
+    """
+    BRUSHES, ENTITIES = _build_all()
+    BRUSHES, ENTITIES = _filter_sections(BRUSHES, ENTITIES, ["center_span"])
+    dx, dy, dz = offset
+    if (dx, dy, dz) != (0.0, 0.0, 0.0):
+        BRUSHES = [b.translated(dx, dy, dz) for b in BRUSHES]
+        ENTITIES = [e.translated(dx, dy, dz) for e in ENTITIES]
     return BRUSHES, ENTITIES

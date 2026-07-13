@@ -84,6 +84,16 @@ BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-u
 
 BRIDGE_CENTER_PIER_SPAN = 1050
 BRIDGE_OUTER_PIER_SPAN = 721
+BRIDGE_CENTER_SPAN_OFFSET = (0.0, 320.0, 0.0)  # (dx, dy, dz) applied to just the
+# centre span (PIER2..PIER3) in bridge.build(), independent of the other
+# sections — for experimenting with its position (e.g. shifting it north/up)
+# without moving the approach spans, piers, or terrain. (0, 0, 0) = no shift.
+# See bridge.build_center_span() to build/inspect the span on its own.
+BRIDGE_CENTER_SPAN_PIER_EMBED = 96  # extra depth subtracted from PIER2/PIER3's
+# base Z when BRIDGE_CENTER_SPAN_OFFSET is non-zero, so the piers' plinths
+# still reach well into the ground after the span is shifted away from the
+# real-elevation terrain their original BRIDGE_PIER_GROUND_Z values were
+# sampled against.
 
 
 @dataclass
