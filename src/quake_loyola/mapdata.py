@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .utils import format_point
+from .utils import format_point, format_value
 
 # A 3-tuple of numeric coordinates (x, y, z).
 Point = tuple[float, float, float]
@@ -103,6 +103,20 @@ class Entity:
             lines.append(b.to_map())
         lines.append("}")
         return "\n".join(lines)
+
+    def translated(self, dx: float, dy: float, dz: float) -> Entity:
+        """Return a copy shifted by (dx, dy, dz) — brushes, and the "origin"
+        field (if present) for point entities such as lights or teleport
+        destinations."""
+        fields = dict(self.fields)
+        origin = fields.get("origin")
+        if origin is not None:
+            ox, oy, oz = (float(v) for v in origin.split())
+            fields["origin"] = (
+                f"{format_value(ox + dx)} {format_value(oy + dy)} {format_value(oz + dz)}"
+            )
+        brushes = [b.translated(dx, dy, dz) for b in self.brushes]
+        return Entity(self.classname, fields, brushes)
 
 
 class MapBuilder:
