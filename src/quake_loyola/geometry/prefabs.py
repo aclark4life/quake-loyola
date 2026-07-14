@@ -105,7 +105,7 @@ def make_pixel_tree(
     ring_segs=0,
 ):
     _rng, _TEX = (
-        random,
+        random.Random(fin_seed),
         {"L": Textures.GROUND, "B": Textures.MULCH, "T": Textures.MULCH},
     )
     prof = TREE_PROFILES[profile] if isinstance(profile, str) else profile
@@ -132,7 +132,6 @@ def make_pixel_tree(
                     cx, cy, z0, z1, (max(tw, default=4) // 2) * vox_size, Textures.MULCH
                 )
             )
-    _rng.seed(fin_seed)
     for row_i, row_str in enumerate(prof):
         z0, z1, is_trunk = (
             base_z + (rows - 1 - row_i) * vox_size,
