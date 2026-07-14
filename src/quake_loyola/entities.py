@@ -90,6 +90,7 @@ from .constants import (
     SDORM_LIFT,
     SHOW_SUPPORTS,
     WALK_X1,
+    WALK_X2,
     WALK_ZT1,
     WALK_ZT2,
     WALL_T,
@@ -695,9 +696,20 @@ def build():
         ((200, 0, int(deck_top_z(200) + 32)), 270),
         ((-400, 0, int(deck_top_z(-400) + 32)), 90),
         ((400, 0, int(deck_top_z(400) + 32)), 270),
-        # Walkway
+        # Walkway — centred over the ramp span (X=WALK_X1..WALK_X2, not
+        # KNOTT_CX which sits ~40 units west of the walkway) with Z
+        # interpolated between the sloped ramp's two end heights.
         *(
-            [((KNOTT_CX, (BRIDGE.y1 + KNOTT.y2) // 2, int(WALK_ZT1 + 32)), 180)]
+            [
+                (
+                    (
+                        (WALK_X1 + WALK_X2) // 2,
+                        (BRIDGE.y1 + KNOTT.y2) // 2,
+                        int((WALK_ZT1 + WALK_ZT2) // 2 + 32),
+                    ),
+                    180,
+                )
+            ]
             if KNOTT_INTERIOR_ENABLED
             else []
         ),
@@ -765,14 +777,20 @@ def build():
             )
         )
     # Remaining rocket launchers
+    span1_x = (BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2
+    span4_x = (BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2
+    span5_x = (BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2
     for rl_origin in [
         f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
         f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
         f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
-        # Bridge deck — one per span
-        f"{(BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2} 0 {BRIDGE_DECK_Z}",  # span 1
-        f"{(BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2} 0 {BRIDGE_DECK_Z}",  # span 4
-        f"{(BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2} 0 {BRIDGE_DECK_Z}",  # span 5 (east angled)
+        # Bridge deck — one per span. Each deck height is sampled at its own
+        # X via deck_top_z(x) rather than reusing the X=0 BRIDGE_DECK_Z
+        # constant, since the arch curve drops the deck by 59-100 units away
+        # from centre (these spans sit well off the arch's peak).
+        f"{span1_x} 0 {int(deck_top_z(span1_x) + 8)}",  # span 1
+        f"{span4_x} 0 {int(deck_top_z(span4_x) + 8)}",  # span 4
+        f"{span5_x} 0 {int(deck_top_z(span5_x) + 8)}",  # span 5 (east angled)
     ]:
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
@@ -1611,12 +1629,17 @@ def build():
             )
         )
 
-    # One on the elevated walkway — guards the bridge → KH 2nd floor approach
-    walkway_mid_x = (BRIDGE.x2 + WALK_X1) // 2  # midpoint of walkway span
+    # One on the elevated walkway — guards the bridge → KH 2nd floor approach.
+    # The walkway itself spans X=WALK_X1..WALK_X2, Y=BRIDGE.y1..KNOTT.y2
+    # (see bridge.py); the previous X/Y here (BRIDGE.x2..WALK_X1 midpoint,
+    # Y=0) placed the monster well before the walkway even starts.
+    walkway_mid_x = (WALK_X1 + WALK_X2) // 2  # midpoint across the ramp
+    walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2  # midpoint along the ramp's slope
+    walkway_mid_z = (WALK_ZT1 + WALK_ZT2) // 2
     ENTITIES.append(
         ent(
             "monster_hell_knight",
-            origin=f"{walkway_mid_x} 0 {WALK_ZT1 + 24}",
+            origin=f"{walkway_mid_x} {walkway_mid_y} {walkway_mid_z + 24}",
             angle="180",
         )
     )
