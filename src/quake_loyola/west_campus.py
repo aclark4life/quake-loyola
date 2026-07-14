@@ -14,6 +14,7 @@ from .constants import (
     DORM_BRICK_WALL_HALF_W,
     DORM_DOOR_OFF,
     DORM_DOOR_W,
+    DORM_ENT_H,
     DORM_ENT_HW,
     DORM_FRONT_WALKWAY_SPUR_X1,
     DORM_FRONT_WALKWAY_SPUR_Y2,
@@ -755,7 +756,7 @@ def build():
         are omitted (used when the embankment in the gap partially buries floor 0)."""
         bx1, bx2 = DORM.x1, DORM.x2
         cx = (bx1 + bx2) // 2
-        ent_hw, ent_h = 48, 120
+        ent_hw, ent_h = 48, DORM_ENT_H
         wx_list = [bx1 + (cx - ent_hw - bx1) * k // 3 for k in [1, 2]] + [
             (cx + ent_hw) + (bx2 - cx - ent_hw) * k // 3 for k in [1, 2]
         ]
