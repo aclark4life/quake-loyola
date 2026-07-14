@@ -64,10 +64,14 @@ class Brush:
 
     def contains(self, p: Point, eps: float = 1e-4) -> bool:
         """Return True if point p is inside the convex volume defined by all faces."""
+        if not self.faces:
+            raise ValueError("Brush.contains() called on a brush with no faces")
         return all(f.is_inside(p, eps) for f in self.faces)
 
     def get_bbox(self) -> tuple[Point, Point]:
         """Return (min_point, max_point) bounding box of this brush."""
+        if not self.faces:
+            raise ValueError("Brush.get_bbox() called on a brush with no faces")
         pts = []
         for f in self.faces:
             pts.extend([f.p1, f.p2, f.p3])
@@ -111,7 +115,17 @@ class Entity:
         fields = dict(self.fields)
         origin = fields.get("origin")
         if origin is not None:
-            ox, oy, oz = (float(v) for v in origin.split())
+            parts = origin.split()
+            if len(parts) != 3:
+                raise ValueError(
+                    f'Entity "origin" field must have exactly 3 components, got {origin!r}'
+                )
+            try:
+                ox, oy, oz = (float(v) for v in parts)
+            except ValueError as exc:
+                raise ValueError(
+                    f'Entity "origin" field must contain numeric values, got {origin!r}'
+                ) from exc
             fields["origin"] = (
                 f"{format_value(ox + dx)} {format_value(oy + dy)} {format_value(oz + dz)}"
             )
