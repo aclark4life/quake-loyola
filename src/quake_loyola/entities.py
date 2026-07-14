@@ -7,6 +7,7 @@ from .constants import (
     ARCH_STILT_H,
     BRIDGE,
     BRIDGE_ARCH_X,
+    BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_PAR_W,
@@ -974,12 +975,35 @@ def build():
     # on STREETS_DETAILS_ENABLED) so they can't drift out of sync or double
     # up when ENTITIES_ENABLED is turned back on.
 
-    # Under-bridge amber pendant lights — flicker style, hang below deck
+    # Under-bridge amber pendant lights — flicker style, hang below deck.
+    # The centre span (Pier2..Pier3) is translated by BRIDGE_CENTER_SPAN_OFFSET
+    # in bridge.py, so its pendant lights must follow the same Y offset or
+    # they end up floating off to the side of the actual (shifted) deck.
+    # It's also the only span currently enabled (see flags.py), so it gets a
+    # few pendants spread along its length rather than just one at centre.
+    _center_span_x1, _center_span_x2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+    _center_span_y = BRIDGE_CENTER_SPAN_OFFSET[1]
     for pier_x in BRIDGE_PEND_XS:
+        if _center_span_x1 <= pier_x <= _center_span_x2:
+            continue  # handled below with extra pendants + the correct Y offset
         ENTITIES.append(
             ent(
                 "light",
                 origin=f"{pier_x} 0 {int(deck_bot_z(pier_x)) - 20}",
+                light="350",
+                style="1",
+            )
+        )
+    for _center_pend_x in (
+        _center_span_x1 + (_center_span_x2 - _center_span_x1) // 4,
+        (_center_span_x1 + _center_span_x2) // 2,
+        _center_span_x2 - (_center_span_x2 - _center_span_x1) // 4,
+    ):
+        ENTITIES.append(
+            ent(
+                "light",
+                origin=f"{_center_pend_x} {_center_span_y} "
+                f"{int(deck_bot_z(_center_pend_x)) - 20}",
                 light="350",
                 style="1",
             )
