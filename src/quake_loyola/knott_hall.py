@@ -1163,11 +1163,25 @@ def build():
 
     # ── West Stairwell Enclosure ──────────────────────────────────────────────────
     # Walls around the west stairwell (KNOTT_STAIRS_X1..KNOTT_STAIRS_X2, KNOTT_STAIRS_Y1..KNOTT_STAIRS_Y2)
+    # Each floor needs TWO door openings in the east wall: one in the north
+    # half (KNOTT_SHAFT_Y1..KNOTT_SHAFT_Y2, == KNOTT_STAIRS_MID_Y..KNOTT_STAIRS_Y2)
+    # where that floor's own entrance landing sits, and one in the south half
+    # (KNOTT_STAIRS_Y1..KNOTT_STAIRS_MID_Y) where the flight arriving from the
+    # floor below terminates (its exit landing). Without the south opening,
+    # climbers arrive at a sealed wall instead of the hallway.
     west_shaft_door_openings = [
         (
             KNOTT_SHAFT_Y1 + 16,  # same Y extents as east shaft doorway
             fz1,
             KNOTT_SHAFT_Y2 - 16,
+            fz1 + shaft_door_h,
+        )
+        for _, fz1, _, _, _ in floor_levels()
+    ] + [
+        (
+            KNOTT_STAIRS_Y1 + 16,  # mirrored on the south (exit-landing) half
+            fz1,
+            KNOTT_STAIRS_MID_Y - 16,
             fz1 + shaft_door_h,
         )
         for _, fz1, _, _, _ in floor_levels()
