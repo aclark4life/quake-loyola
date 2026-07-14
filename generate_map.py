@@ -20,7 +20,6 @@ from quake_loyola import (
 )
 from quake_loyola.constants import (
     BASEMENT_LIGHTS_ENABLED,
-    BRIDGE_PENDANT_LIGHTS_ENABLED,
     LIGHTS_ENABLED,
     TORCH_LIGHTS_ENABLED,
     WORLDSPAWN_FIELDS,
@@ -48,7 +47,6 @@ MODULES = [
 LIGHT_GROUP_FLAGS = {
     "torch": TORCH_LIGHTS_ENABLED,
     "basement": BASEMENT_LIGHTS_ENABLED,
-    "bridge_pendant": BRIDGE_PENDANT_LIGHTS_ENABLED,
 }
 
 

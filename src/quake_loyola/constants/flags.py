@@ -48,9 +48,6 @@ BASEMENT_LIGHTS_ENABLED = True  # light "group" flag: basement.py fixtures only 
 # the basement is otherwise a fully unlit sky-textured void with no ambient
 # light source, and would render as solid black without at least a few
 # lights placed inside it).
-BRIDGE_PENDANT_LIGHTS_ENABLED = True  # light "group" flag: bridge.py under-deck
-# amber pendant lights only (currently just the centre-span/Charles St arch) —
-# on by default so the underside of the bridge isn't pitch black.
 # (bridge pillar tops, Ennis entrance pillars, Ennis cement-wall lamppost,
 # campus lamp posts) — same convenience-master pattern as BRIDGE_ENABLED:
 # LIGHTS_ENABLED=True forces every light group on (including this one),

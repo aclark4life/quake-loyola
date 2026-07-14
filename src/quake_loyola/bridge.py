@@ -2007,30 +2007,6 @@ def _build_all():
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
 
-    # Under-deck amber pendant lights for the centre span (Pier2..Pier3, the
-    # curved arch over Charles St) — built here, unconditional like the pier
-    # torches above, so they always render alongside the geometry regardless
-    # of entities.py's ENTITIES_ENABLED master switch. Placed unshifted (at
-    # the pre-offset Y=0 centreline); build()/_shift_center_span applies
-    # BRIDGE_CENTER_SPAN_OFFSET to these along with the rest of the span's
-    # brushes, so they stay correctly positioned under the deck even when
-    # the span is translated.
-    _center_span_x1, _center_span_x2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
-    for _pend_x in (
-        _center_span_x1 + (_center_span_x2 - _center_span_x1) // 4,
-        (_center_span_x1 + _center_span_x2) // 2,
-        _center_span_x2 - (_center_span_x2 - _center_span_x1) // 4,
-    ):
-        ENTITIES.append(
-            ent(
-                "light",
-                origin=f"{_pend_x} 0 {int(deck_bot_z(_pend_x)) - 20}",
-                light="600",
-                style="1",
-                _light_group="bridge_pendant",
-            )
-        )
-
     return BRUSHES, ENTITIES
 
 
