@@ -27,6 +27,7 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     MARYLAND_GROUND_Z,
+    MARYLAND_HALL_ENABLED,
     MARYLAND_TERRAIN_ENABLED,
     MARYLAND_TERRAIN_MARGIN,
     MARYLAND_TERRAIN_RAMP_W,
@@ -41,7 +42,7 @@ from .geometry import box, corner_ramp, ramp_slab, ramp_slab_y
 
 
 def build():
-    if not MARYLAND_TERRAIN_ENABLED:
+    if not MARYLAND_TERRAIN_ENABLED and not MARYLAND_HALL_ENABLED:
         # Hall + mound both disabled for now. Leaving *nothing* here would let
         # the unconditional world floor (streets.py) expose one continuous,
         # unbroken top face across this whole footprint plus everything
