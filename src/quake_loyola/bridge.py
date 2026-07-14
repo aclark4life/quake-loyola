@@ -2036,12 +2036,40 @@ def build():
 
 def _shift_center_span(brushes, entities, enabled_names, offset):
     """Translate just the centre-span geometry within a build() result by
-    `offset`, leaving any other enabled sections untouched."""
+    `offset`, leaving any other enabled sections untouched.
+
+    Section spans are filtered independently with a margin padding each
+    side to include their bounding piers (see _filter_sections). That means
+    a pier shared between center_span and a neighboring section (e.g. Pier 2
+    between west_approach and center_span) can satisfy both sections'
+    filters. Filtering "center_span" and the neighbor separately therefore
+    picks up that shared brush geometry twice — once shifted (as part of
+    the center span) and once at its original position (as part of the
+    neighbor) — unless explicitly deduped. Dedupe by brush identity here,
+    keeping the shifted (center-span) copy, since the offset is meant to
+    move the whole standalone center span including its own bounding piers.
+    """
     span_b, span_e = _filter_sections(brushes, entities, ["center_span"])
     other_names = [n for n in enabled_names if n != "center_span"]
     other_b, other_e = (
         _filter_sections(brushes, entities, other_names) if other_names else ([], [])
     )
+
+    span_brush_ids = {id(b) for b in span_b}
+    for e in span_e:
+        span_brush_ids.update(id(b) for b in e.brushes)
+
+    other_b = [b for b in other_b if id(b) not in span_brush_ids]
+    deduped_other_e = []
+    for e in other_e:
+        if not e.brushes:
+            deduped_other_e.append(e)
+            continue
+        kept = [b for b in e.brushes if id(b) not in span_brush_ids]
+        if kept:
+            deduped_other_e.append(brush_ent(e.classname, kept, **e.fields))
+    other_e = deduped_other_e
+
     dx, dy, dz = offset
     span_b = [b.translated(dx, dy, dz) for b in span_b]
     span_e = [e.translated(dx, dy, dz) for e in span_e]
