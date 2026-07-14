@@ -58,7 +58,7 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
         ambient="40",
         sunlight="160",
         sunlight_color="255 180 80",  # deep amber
-        sunlight_dir="10 -90",  # low on the western horizon
+        sunlight_dir="10 -120",  # low on the western horizon
         sunlight_penumbra="40",
         fog=make_fog(FogDensity.MED, 0.6, 0.4, 0.3),
     ),
