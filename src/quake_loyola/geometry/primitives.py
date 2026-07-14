@@ -1,6 +1,5 @@
 import math
 
-from ..constants import Textures
 from ..mapdata import Brush, Face
 from ..utils import swap_xy, swap_xz
 
@@ -33,6 +32,14 @@ def box(
         ts = tex
     if tn is None:
         tn = tex
+    # Normalize reversed bounds (x1>x2, y1>y2, z1>z2) so a brush is never
+    # accidentally built inside-out when callers pass swapped min/max.
+    if x1 > x2:
+        x1, x2 = x2, x1
+    if y1 > y2:
+        y1, y2 = y2, y1
+    if z1 > z2:
+        z1, z2 = z2, z1
     return Brush(
         [
             Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw),
@@ -63,6 +70,16 @@ def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
 
 
 def polygon_prism(pts, z1, z2, tex):
+    if len(pts) < 3:
+        raise ValueError(f"polygon_prism() requires at least 3 points, got {len(pts)}")
+    # Normalize to CCW winding (positive signed area) so the resulting
+    # brush is never accidentally built inside-out for clockwise input.
+    signed_area2 = sum(
+        pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
+        for i in range(len(pts))
+    )
+    if signed_area2 < 0:
+        pts = list(reversed(pts))
     n = len(pts)
     faces = []
     for i in range(n):
