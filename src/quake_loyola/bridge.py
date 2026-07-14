@@ -798,10 +798,25 @@ def _build_all():
 
             # Ground level this specific pier's base sits on. Center-span piers
             # (2 and 3) cross a real hillside — see BRIDGE_PIER_GROUND_Z's
-            # docstring in constants.py — so their base plinth is raised to sit
-            # ON TOP of the existing (unmodified) real-elevation terrain there
-            # instead of at the flat FLOOR_Z2 baseline used by every other pier.
-            pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
+            # docstring in constants.py — so their base plinth is normally raised
+            # to sit ON TOP of the existing (unmodified) real-elevation terrain
+            # there instead of at the flat FLOOR_Z2 baseline used by every other
+            # pier. However, once BRIDGE_CENTER_SPAN_OFFSET relocates the whole
+            # center span away from that hillside (making it a standalone
+            # structure, no longer physically resting on the real terrain), the
+            # BRIDGE_PIER_GROUND_Z values are stale for the new location — using
+            # them here left the base plinth/cap sitting below the actual ground
+            # at the new (offset) position, appearing to sink underground on the
+            # west pier. Fall back to the flat FLOOR_Z2 baseline in that case,
+            # same as every non-center-span pier.
+            if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
+                0.0,
+                0.0,
+                0.0,
+            ):
+                pier_floor_z = FLOOR_Z2
+            else:
+                pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
 
             # Arch opening varies by pillar type. The westernmost abutment, Pier 5
             # (KNOTT_NE_PIER_X), and the new Pier 6 use the wider outer radii;
@@ -915,19 +930,27 @@ def _build_all():
                 # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
                 # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
                 # itself (which would drag the visible base plinth/cap down
-                # with it), bury a plain footer stub below the existing base
-                # so the visible cap stays exactly where it was and only the
-                # hidden foundation gets deeper. Span the full outer footprint
+                # with it), extend a solid pillar stem below the existing base
+                # — sized to exactly reach true (unshifted) ground once the
+                # post-build Z shift is applied — so the visible cap/base stays
+                # exactly where it was and the portion below the arch opening
+                # visibly plants the pier on the ground instead of floating.
+                # When the span is only shifted a small amount, fall back to
+                # the minimum buried-embed depth so the stem still reaches
+                # well into the ground. Span the full outer footprint
                 # (±max_outer_radius, which the arch ring/overhang always
                 # reaches — see above — and can exceed by1/by2) so the north
                 # and south flared edges of the base are covered too.
                 footer_y1 = min(by1, -max_outer_radius)
                 footer_y2 = max(by2, max_outer_radius)
+                footer_depth = max(
+                    BRIDGE_CENTER_SPAN_PIER_EMBED, BRIDGE_CENTER_SPAN_OFFSET[2]
+                )
                 BRUSHES.append(
                     box(
                         x1,
                         footer_y1,
-                        pier_floor_z - BRIDGE_CENTER_SPAN_PIER_EMBED,
+                        pier_floor_z - footer_depth,
                         x2,
                         footer_y2,
                         pier_floor_z,
@@ -1983,6 +2006,30 @@ def _build_all():
 
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
+
+    # Under-deck amber pendant lights for the centre span (Pier2..Pier3, the
+    # curved arch over Charles St) — built here, unconditional like the pier
+    # torches above, so they always render alongside the geometry regardless
+    # of entities.py's ENTITIES_ENABLED master switch. Placed unshifted (at
+    # the pre-offset Y=0 centreline); build()/_shift_center_span applies
+    # BRIDGE_CENTER_SPAN_OFFSET to these along with the rest of the span's
+    # brushes, so they stay correctly positioned under the deck even when
+    # the span is translated.
+    _center_span_x1, _center_span_x2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+    for _pend_x in (
+        _center_span_x1 + (_center_span_x2 - _center_span_x1) // 4,
+        (_center_span_x1 + _center_span_x2) // 2,
+        _center_span_x2 - (_center_span_x2 - _center_span_x1) // 4,
+    ):
+        ENTITIES.append(
+            ent(
+                "light",
+                origin=f"{_pend_x} 0 {int(deck_bot_z(_pend_x)) - 20}",
+                light="600",
+                style="1",
+                _light_group="bridge_pendant",
+            )
+        )
 
     return BRUSHES, ENTITIES
 

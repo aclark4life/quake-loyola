@@ -34,8 +34,14 @@ BRIDGE_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
 BRIDGE_PAR_H = 40
 BRIDGE_PILLAR_BASE_CAP_H = 6
 BRIDGE_PILLAR_BASE_CAP_OVH = 5
-BRIDGE_PILLAR_BASE_H = 64  # solid plinth height before the arch opening starts (was 24 originally — raised so more stone shows at the pier base before the archway begins)
-BRIDGE_PILLAR_BASE_RAMP_H = 80  # ramped-side plinth height (was 40 originally — kept the same 16-unit rise over BASE_H)
+BRIDGE_PILLAR_BASE_H = 8  # solid plinth height before the arch opening starts — lowered
+# from 64 (was 24 before that) to open up the arch opening's clear height, matching
+# the tall, slender pointed-arch proportions seen in ref/bridge04.png and
+# ref/bridge08.png. Kept slightly above 0 (rather than fully flush with the ground)
+# since an exact 0 produces a degenerate zero-height ramp edge that crashes qbsp's
+# hull expansion (CheckFace: coordinate out of range).
+BRIDGE_PILLAR_BASE_RAMP_H = 24  # ramped-side plinth height — kept the same 16-unit
+# rise over BASE_H as before, just shifted down along with it.
 BRIDGE_PILLAR_CAP_H = 12
 BRIDGE_PILLAR_CAP_IN_OVH = 4
 BRIDGE_PILLAR_CAP_OUT_OVH = 20
@@ -84,7 +90,7 @@ BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-u
 
 BRIDGE_CENTER_PIER_SPAN = 1050
 BRIDGE_OUTER_PIER_SPAN = 721
-BRIDGE_CENTER_SPAN_OFFSET = (0.0, 320.0, 0.0)  # (dx, dy, dz) applied to just the
+BRIDGE_CENTER_SPAN_OFFSET = (0.0, 320.0, 96.0)  # (dx, dy, dz) applied to just the
 # centre span (PIER2..PIER3) in bridge.build(), independent of the other
 # sections — for experimenting with its position (e.g. shifting it north/up)
 # without moving the approach spans, piers, or terrain. (0, 0, 0) = no shift.
