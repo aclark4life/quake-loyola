@@ -1608,13 +1608,13 @@ def build():
         default `tex`, for one-off accent squares without disturbing the
         rest of the strip's tiling.
 
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) or mulch
-        (Textures.MULCH) panels are merged into a single continuous slab,
-        closing the expansion-joint gaps between them — those materials are
-        meant to read as one seamless surface, unlike the jointed cement
-        squares.
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE), mulch
+        (Textures.MULCH), or ground (Textures.GROUND) panels are merged
+        into a single continuous slab, closing the expansion-joint gaps
+        between them — those materials are meant to read as one seamless
+        surface, unlike the jointed cement squares.
         """
-        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH)
+        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH, Textures.GROUND)
         step = _SW_SLAB_LEN + _SW_GAP
         segments = []  # [seg_y1, seg_y2, tex] — merged run bounds
         y = y1
@@ -1675,13 +1675,13 @@ def build():
         call's default `tex`/`tt_params` instead — useful for pulling a
         patch's north edge back a bit without affecting its x extent.
 
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) or mulch
-        (Textures.MULCH) panels are merged into a single continuous slab,
-        closing the expansion-joint gaps between them — those materials are
-        meant to read as one seamless surface, unlike the jointed cement
-        squares.
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE), mulch
+        (Textures.MULCH), or ground (Textures.GROUND) panels are merged
+        into a single continuous slab, closing the expansion-joint gaps
+        between them — those materials are meant to read as one seamless
+        surface, unlike the jointed cement squares.
         """
-        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH)
+        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH, Textures.GROUND)
         step = _SW_SLAB_LEN + _SW_GAP
         segments = []  # [seg_x1, seg_x2, tex, tt_params, y_north_inset]
         x = x1
@@ -2038,7 +2038,9 @@ def build():
         # stn_f14_wht1 instead of plain sidewalk, matching the white-stone
         # accent squares on the south side of Ennis. Its west edge is
         # pulled in a bit (leaving normal jointed sidewalk to the west)
-        # rather than running the full 1.5-panel width.
+        # rather than running the full 1.5-panel width. East of where the
+        # iron fence ends, the remaining cement sidewalk becomes grass
+        # (Textures.GROUND) the rest of the way to ENNIS_X2.
         tex_ranges=[
             (
                 ENNIS_PILLAR_X1 - 1.5 * _SW_SLAB_LEN + 16,
@@ -2047,11 +2049,30 @@ def build():
                 ENNIS_ROAD_TT_PARAMS,
             ),
             (ENNIS_PILLAR_X1, ENNIS_GATE_X2, Textures.MULCH),
+            (ENNIS_GATE_X2, ENNIS_X2, Textures.GROUND),
         ],
     )
+    # North curb bulge extents (defined here so the flush-gap strip below
+    # can be skipped across the bulge — its cement wouldn't make sense
+    # cutting across the grass island).
+    _CURB_BULGE_X1 = ENNIS_CEMENT_X2
+    _CURB_BULGE_LEN = 400  # ~ two car lengths
+    _CURB_BULGE_X2 = _CURB_BULGE_X1 + _CURB_BULGE_LEN
     BRUSHES.append(  # flush gap between the sidewalk squares and the curb
         box(
             ROAD_X2 + CHARLES_WALK_W,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            FLOOR_Z2,
+            _CURB_BULGE_X1,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
+    )
+    BRUSHES.append(  # flush gap resumes east of the bulge
+        box(
+            _CURB_BULGE_X2,
             ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
             FLOOR_Z2,
             ENNIS_X2,
@@ -2061,9 +2082,115 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    BRUSHES.append(  # north curb — sidewalk is north of the road
+    # North curb bulge — a rounded bump-out starting at the east-most
+    # cement-wall lamp post (ENNIS_CEMENT_X2) and running east about two
+    # car-lengths, then tapering back to the regular straight curb. Built
+    # like the Charles/Ennis driveway-corner curb (curb_seg/tri_prism): a
+    # chord-based polygon approximation, where each segment's boundary
+    # points sit exactly on the true elliptical curve (half as deep into
+    # the road as it is long) and connect directly to their neighbours —
+    # not axis-aligned stepped boxes, which look chunky/stair-stepped by
+    # comparison. The curb itself stays a constant _ENNIS_CURB_CAP_D thick
+    # (like the rest of the curb) rather than becoming a solid mass — the
+    # island enclosed by the curve, north of the curb wall (including the
+    # flush-gap strip, since that's grass too here, not sidewalk) is filled
+    # with ground/grass instead of cement.
+    _CURB_BULGE_HALF_LEN = _CURB_BULGE_LEN / 2
+    _CURB_BULGE_DEPTH = _CURB_BULGE_HALF_LEN / 2  # half as deep as it is long
+    _CURB_BULGE_CX = (_CURB_BULGE_X1 + _CURB_BULGE_X2) / 2
+    _CURB_BULGE_SEGMENTS = 24
+    _CURB_BULGE_FAR_Y = ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP
+    BRUSHES.append(  # north curb — straight run west of the bulge
         box(
             ROAD_X2 + CHARLES_WALK_W,
+            ENNIS_Y + ENNIS_HW,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            _CURB_BULGE_X1,
+            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+            tt_params=ENNIS_ROAD_TT_PARAMS,
+        )
+    )
+    _bulge_step = _CURB_BULGE_LEN / _CURB_BULGE_SEGMENTS
+
+    def _bulge_depth_at(bx):
+        bdx = bx - _CURB_BULGE_CX
+        _t = max(1 - (bdx / _CURB_BULGE_HALF_LEN) ** 2, 0)
+        return _CURB_BULGE_DEPTH * math.sqrt(_t)
+
+    for _bi in range(_CURB_BULGE_SEGMENTS):
+        _bx1 = _CURB_BULGE_X1 + _bi * _bulge_step
+        _bx2 = _bx1 + _bulge_step
+        _bd1 = _bulge_depth_at(_bx1)
+        _bd2 = _bulge_depth_at(_bx2)
+        _outer1_y = ENNIS_Y + ENNIS_HW - _bd1
+        _outer2_y = ENNIS_Y + ENNIS_HW - _bd2
+        _inner1_y = _outer1_y + _ENNIS_CURB_CAP_D
+        _inner2_y = _outer2_y + _ENNIS_CURB_CAP_D
+        _z1, _z2 = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
+        # Curb quad (outer1, outer2, inner2, inner1), split into 2 triangles
+        # — chord endpoints sit exactly on the arc, so adjacent segments
+        # connect seamlessly with no stair-step.
+        BRUSHES.append(
+            tri_prism(
+                _bx1,
+                _outer1_y,
+                _bx2,
+                _outer2_y,
+                _bx2,
+                _inner2_y,
+                _z1,
+                _z2,
+                Textures.SIDEWALK,
+            )
+        )
+        BRUSHES.append(
+            tri_prism(
+                _bx1,
+                _outer1_y,
+                _bx2,
+                _inner2_y,
+                _bx1,
+                _inner1_y,
+                _z1,
+                _z2,
+                Textures.SIDEWALK,
+            )
+        )
+        if _bd1 > 0 or _bd2 > 0:
+            # Grass island quad (inner1, inner2, far2, far1), same 2-triangle
+            # split, filling from the curb's inner edge back to the flush
+            # line north of it.
+            BRUSHES.append(
+                tri_prism(
+                    _bx1,
+                    _inner1_y,
+                    _bx2,
+                    _inner2_y,
+                    _bx2,
+                    _CURB_BULGE_FAR_Y,
+                    FLOOR_Z2,
+                    _z2,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_prism(
+                    _bx1,
+                    _inner1_y,
+                    _bx2,
+                    _CURB_BULGE_FAR_Y,
+                    _bx1,
+                    _CURB_BULGE_FAR_Y,
+                    FLOOR_Z2,
+                    _z2,
+                    Textures.GROUND,
+                )
+            )
+    BRUSHES.append(  # north curb — straight run east of the bulge
+        box(
+            _CURB_BULGE_X2,
             ENNIS_Y + ENNIS_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             ENNIS_X2,
