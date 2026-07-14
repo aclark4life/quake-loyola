@@ -146,6 +146,19 @@ def build():
     BRIDGE_DECK_Z = deck_top_z(0) + 8  # centre of arch deck + a bit (spawn/item height)
     ROAD_Z = FLOOR_Z2 + 8
 
+    # The centre span (Pier2..Pier3, i.e. X in [BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]])
+    # is translated by BRIDGE_CENTER_SPAN_OFFSET in bridge.py's
+    # _shift_center_span(). Any entity placed on that span's deck must follow
+    # the same Y/Z shift or it ends up floating beside/below the actual
+    # (shifted) deck. dx is currently 0, so only Y/Z need adjusting.
+    CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+    CS_DY, CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+
+    def _cs_offset(x, y, z):
+        if CS_X1 <= x <= CS_X2:
+            return y + CS_DY, z + CS_DZ
+        return y, z
+
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
     knott_entity_start = len(
         ENTITIES
@@ -690,12 +703,12 @@ def build():
 
     # ── Deathmatch spawns — spread across all areas ──────────────────────────
     for pos, angle in [
-        # Bridge deck
-        ((0, 0, int(deck_top_z(0) + 32)), 180),
-        ((-200, 0, int(deck_top_z(-200) + 32)), 90),
-        ((200, 0, int(deck_top_z(200) + 32)), 270),
-        ((-400, 0, int(deck_top_z(-400) + 32)), 90),
-        ((400, 0, int(deck_top_z(400) + 32)), 270),
+        # Bridge deck (centre span — Y/Z shifted via _cs_offset)
+        ((0, *_cs_offset(0, 0, int(deck_top_z(0) + 32))), 180),
+        ((-200, *_cs_offset(-200, 0, int(deck_top_z(-200) + 32))), 90),
+        ((200, *_cs_offset(200, 0, int(deck_top_z(200) + 32))), 270),
+        ((-400, *_cs_offset(-400, 0, int(deck_top_z(-400) + 32))), 90),
+        ((400, *_cs_offset(400, 0, int(deck_top_z(400) + 32))), 270),
         # Walkway — centred over the ramp span (X=WALK_X1..WALK_X2, not
         # KNOTT_CX which sits ~40 units west of the walkway) with Z
         # interpolated between the sloped ramp's two end heights.
@@ -767,7 +780,8 @@ def build():
 
     # ── Weapons ───────────────────────────────────────────────────────────────
     # Rocket launcher — bridge centre (high value, exposed position)
-    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 0 {BRIDGE_DECK_Z}"))
+    _rl_y, _rl_z = _cs_offset(0, 0, BRIDGE_DECK_Z)
+    ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
     if KNOTT_INTERIOR_ENABLED:
         ENTITIES.append(
@@ -839,8 +853,9 @@ def build():
         )
 
     # Lightning gun — high-value, contested spots
+    _lg_y, _lg_z = _cs_offset(200, 0, BRIDGE_DECK_Z)
     ENTITIES.append(
-        ent("weapon_lightning", origin=f"200 0 {BRIDGE_DECK_Z}")
+        ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}")
     )  # bridge centre
     if KNOTT_INTERIOR_ENABLED:
         ENTITIES.append(
@@ -855,8 +870,10 @@ def build():
 
     # ── Ogres — spread across open areas and upper floors ─────────────────────
     # Bridge deck
-    ENTITIES.append(ent("monster_ogre", origin=f"-300 0 {BRIDGE_DECK_Z}", angle="90"))
-    ENTITIES.append(ent("monster_ogre", origin=f"300 0 {BRIDGE_DECK_Z}", angle="270"))
+    _og1_y, _og1_z = _cs_offset(-300, 0, BRIDGE_DECK_Z)
+    _og2_y, _og2_z = _cs_offset(300, 0, BRIDGE_DECK_Z)
+    ENTITIES.append(ent("monster_ogre", origin=f"-300 {_og1_y} {_og1_z}", angle="90"))
+    ENTITIES.append(ent("monster_ogre", origin=f"300 {_og2_y} {_og2_z}", angle="270"))
     # Charles Street
     ENTITIES.append(ent("monster_ogre", origin=f"0 200 {ROAD_Z + 24}", angle="180"))
     ENTITIES.append(ent("monster_ogre", origin=f"0 -600 {ROAD_Z + 24}", angle="0"))
@@ -921,7 +938,8 @@ def build():
 
     # ── Health & Armor ────────────────────────────────────────────────────────
     # Health — scattered throughout
-    ENTITIES.append(ent("item_health", origin=f"0 0 {BRIDGE_DECK_Z}"))
+    _hp_y, _hp_z = _cs_offset(0, 0, BRIDGE_DECK_Z)
+    ENTITIES.append(ent("item_health", origin=f"0 {_hp_y} {_hp_z}"))
     ENTITIES.append(
         ent(
             "item_health",
@@ -947,8 +965,9 @@ def build():
         )
     )
     # Armor — contested locations
+    _arm_y, _arm_z = _cs_offset(-200, 0, BRIDGE_DECK_Z)
     ENTITIES.append(
-        ent("item_armor1", origin=f"-200 0 {BRIDGE_DECK_Z}")
+        ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}")
     )  # yellow armor on bridge
     ENTITIES.append(
         ent(
@@ -995,15 +1014,14 @@ def build():
 
     # Under-bridge amber pendant lights — flicker style, hang below deck.
     # The centre span (Pier2..Pier3) is translated by BRIDGE_CENTER_SPAN_OFFSET
-    # in bridge.py, so its pendant lights must follow the same Y offset or
-    # they end up floating off to the side of the actual (shifted) deck.
+    # in bridge.py, so its pendant lights must follow the same Y/Z shift or
+    # they end up floating off to the side of / detached from the actual
+    # (shifted) deck's underside.
     # It's also the only span currently enabled (see flags.py), so it gets a
     # few pendants spread along its length rather than just one at centre.
-    _center_span_x1, _center_span_x2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
-    _center_span_y = BRIDGE_CENTER_SPAN_OFFSET[1]
     for pier_x in BRIDGE_PEND_XS:
-        if _center_span_x1 <= pier_x <= _center_span_x2:
-            continue  # handled below with extra pendants + the correct Y offset
+        if CS_X1 <= pier_x <= CS_X2:
+            continue  # handled below with extra pendants + the correct Y/Z offset
         ENTITIES.append(
             ent(
                 "light",
@@ -1013,15 +1031,17 @@ def build():
             )
         )
     for _center_pend_x in (
-        _center_span_x1 + (_center_span_x2 - _center_span_x1) // 4,
-        (_center_span_x1 + _center_span_x2) // 2,
-        _center_span_x2 - (_center_span_x2 - _center_span_x1) // 4,
+        CS_X1 + (CS_X2 - CS_X1) // 4,
+        (CS_X1 + CS_X2) // 2,
+        CS_X2 - (CS_X2 - CS_X1) // 4,
     ):
+        _pend_y, _pend_z = _cs_offset(
+            _center_pend_x, 0, int(deck_bot_z(_center_pend_x)) - 20
+        )
         ENTITIES.append(
             ent(
                 "light",
-                origin=f"{_center_pend_x} {_center_span_y} "
-                f"{int(deck_bot_z(_center_pend_x)) - 20}",
+                origin=f"{_center_pend_x} {_pend_y} {_pend_z}",
                 light="350",
                 style="1",
             )
@@ -1618,8 +1638,8 @@ def build():
     deck_center_z = int(deck_top_z(0)) + 24  # standing height at arch crown
     deck_p3_z = int(deck_top_z(525)) + 24  # standing height near Pier 3
     for monster_x, monster_y, monster_z, monster_angle in [
-        (0, 0, deck_center_z, 180),  # arch crown, facing west
-        (525, 0, deck_p3_z, 0),  # Pier 3 approach, facing east
+        (0, *_cs_offset(0, 0, deck_center_z), 180),  # arch crown, facing west
+        (525, *_cs_offset(525, 0, deck_p3_z), 0),  # Pier 3 approach, facing east
     ]:
         ENTITIES.append(
             ent(
