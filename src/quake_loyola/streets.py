@@ -1608,11 +1608,13 @@ def build():
         default `tex`, for one-off accent squares without disturbing the
         rest of the strip's tiling.
 
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) panels are merged
-        into a single continuous slab, closing the expansion-joint gaps
-        between them — that stone is meant to read as one seamless piece,
-        unlike the jointed cement squares.
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) or mulch
+        (Textures.MULCH) panels are merged into a single continuous slab,
+        closing the expansion-joint gaps between them — those materials are
+        meant to read as one seamless surface, unlike the jointed cement
+        squares.
         """
+        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH)
         step = _SW_SLAB_LEN + _SW_GAP
         segments = []  # [seg_y1, seg_y2, tex] — merged run bounds
         y = y1
@@ -1624,11 +1626,7 @@ def build():
                     if abs(oy - y) < 1:
                         panel_tex = otex
                         break
-            if (
-                segments
-                and segments[-1][2] == panel_tex
-                and panel_tex == Textures.WHITE_STONE
-            ):
+            if segments and segments[-1][2] == panel_tex and panel_tex in _seamless_tex:
                 segments[-1][1] = sy2
             else:
                 segments.append([y, sy2, panel_tex])
@@ -1658,6 +1656,7 @@ def build():
         tex,
         tt_params="0 0 0 1 1",
         tex_from_x=None,
+        tex_ranges=None,
     ):
         """Tile a flat E-W sidewalk strip (x1..x2) as individual panels.
 
@@ -1665,41 +1664,91 @@ def build():
         starting at or east of `x_threshold` uses that texture instead of
         the default `tex`.
 
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) panels are merged
-        into a single continuous slab, closing the expansion-joint gaps
-        between them — that stone is meant to read as one seamless piece,
-        unlike the jointed cement squares.
+        `tex_ranges`, if given, is a list of (range_x1, range_x2, tex) or
+        (range_x1, range_x2, tex, tt_params) entries — any panel overlapping
+        [range_x1, range_x2) uses that texture (and tt_params, if given, in
+        place of the call's default) for the overlapping portion (splitting
+        the panel at the range boundary if it only partially overlaps),
+        instead of the default `tex`/`tt_params`. Takes priority over
+        `tex_from_x`. A 5th element, `y_north_inset`, shaves that many units
+        off the north (y2) edge of the range and fills the sliver with the
+        call's default `tex`/`tt_params` instead — useful for pulling a
+        patch's north edge back a bit without affecting its x extent.
+
+        Consecutive stn_f14_wht1 (Textures.WHITE_STONE) or mulch
+        (Textures.MULCH) panels are merged into a single continuous slab,
+        closing the expansion-joint gaps between them — those materials are
+        meant to read as one seamless surface, unlike the jointed cement
+        squares.
         """
+        _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH)
         step = _SW_SLAB_LEN + _SW_GAP
-        segments = []  # [seg_x1, seg_x2, tex] — merged run bounds
+        segments = []  # [seg_x1, seg_x2, tex, tt_params, y_north_inset]
         x = x1
         while x < x2:
             sx2 = min(x + _SW_SLAB_LEN, x2)
             panel_tex = tex
             if tex_from_x is not None and x >= tex_from_x[0]:
                 panel_tex = tex_from_x[1]
-            if (
-                segments
-                and segments[-1][2] == panel_tex
-                and panel_tex == Textures.WHITE_STONE
-            ):
-                segments[-1][1] = sx2
-            else:
-                segments.append([x, sx2, panel_tex])
+            # Sub-panels for this grid slab, split at any tex_ranges boundary
+            # that falls strictly inside it.
+            pieces = [[x, sx2, panel_tex, tt_params, None]]
+            if tex_ranges:
+                for rspec in tex_ranges:
+                    rx1, rx2, rtex = rspec[0], rspec[1], rspec[2]
+                    rparams = rspec[3] if len(rspec) > 3 else tt_params
+                    r_inset = rspec[4] if len(rspec) > 4 else None
+                    new_pieces = []
+                    for px1, px2, ptex, pparams, pinset in pieces:
+                        ox1, ox2 = max(px1, rx1), min(px2, rx2)
+                        if ox1 >= ox2:
+                            new_pieces.append([px1, px2, ptex, pparams, pinset])
+                            continue
+                        if px1 < ox1:
+                            new_pieces.append([px1, ox1, ptex, pparams, pinset])
+                        new_pieces.append([ox1, ox2, rtex, rparams, r_inset])
+                        if ox2 < px2:
+                            new_pieces.append([ox2, px2, ptex, pparams, pinset])
+                    pieces = new_pieces
+            for px1, px2, ptex, pparams, pinset in pieces:
+                if (
+                    segments
+                    and segments[-1][2] == ptex
+                    and segments[-1][3] == pparams
+                    and segments[-1][4] == pinset
+                    and ptex in _seamless_tex
+                ):
+                    segments[-1][1] = px2
+                else:
+                    segments.append([px1, px2, ptex, pparams, pinset])
             x += step
-        for seg_x1, seg_x2, panel_tex in segments:
+        for seg_x1, seg_x2, panel_tex, panel_params, y_north_inset in segments:
+            seg_y2 = y2 - y_north_inset if y_north_inset else y2
             brushes.append(
                 box(
                     seg_x1,
                     y1,
                     z_base,
                     seg_x2,
-                    y2,
+                    seg_y2,
                     z_top,
                     panel_tex,
-                    tt_params=tt_params,
+                    tt_params=panel_params,
                 )
             )
+            if y_north_inset:
+                brushes.append(  # north filler sliver — default sidewalk
+                    box(
+                        seg_x1,
+                        seg_y2,
+                        z_base,
+                        seg_x2,
+                        y2,
+                        z_top,
+                        tex,
+                        tt_params=tt_params,
+                    )
+                )
 
     # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
     # takes over from the bridge's north side up to that point, below).
@@ -1982,6 +2031,23 @@ def build():
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
         tt_params=ENNIS_ROAD_TT_PARAMS,
+        # Mulch instead of sidewalk from the north Ennis pillar east to
+        # where the main iron gate run ends, fronting the fence/gate. Just
+        # west of the pillar, the last piece-and-a-half of sidewalk (the
+        # full panel plus the partial sliver abutting the pillar) is
+        # stn_f14_wht1 instead of plain sidewalk, matching the white-stone
+        # accent squares on the south side of Ennis. Its west edge is
+        # pulled in a bit (leaving normal jointed sidewalk to the west)
+        # rather than running the full 1.5-panel width.
+        tex_ranges=[
+            (
+                ENNIS_PILLAR_X1 - 1.5 * _SW_SLAB_LEN + 16,
+                ENNIS_PILLAR_X1,
+                Textures.WHITE_STONE,
+                ENNIS_ROAD_TT_PARAMS,
+            ),
+            (ENNIS_PILLAR_X1, ENNIS_GATE_X2, Textures.MULCH),
+        ],
     )
     BRUSHES.append(  # flush gap between the sidewalk squares and the curb
         box(
