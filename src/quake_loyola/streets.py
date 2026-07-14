@@ -2637,7 +2637,7 @@ def build():
     # NE_TERRAIN_ENABLED, ne_terrain.py builds its own ground there instead
     # — skip this box entirely to avoid overlapping brushes (same
     # placeholder-shrinks-to-nothing pattern as the west/east verges above).
-    if True:  # Always provide a baseline ground to prevent leaks
+    if not NE_TERRAIN_ENABLED:  # Always provide a baseline ground to prevent leaks
         BRUSHES.append(
             box(
                 ROAD_X2 + CHARLES_WALK_W,
