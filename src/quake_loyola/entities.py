@@ -881,11 +881,13 @@ def build():
     ENTITIES.append(ent("monster_ogre", origin=f"700 0 {ROAD_Z + 24}", angle="270"))
     # West sidewalk
     ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
-    # Dorm rooftop
+    # Dorm rooftop (actual rooftop height via DORM_RIDGE_Z, offset in Y from
+    # dest_south_dorm_roof's teleport landing spot — this previously reused
+    # the south-dorm-1 *interior* DM spawn's origin by mistake)
     ENTITIES.append(
         ent(
             "monster_ogre",
-            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+            origin=f"{DORM_CX} {DORM_SOUTH1_CY + 150} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
             angle="90",
         )
     )
@@ -938,8 +940,10 @@ def build():
 
     # ── Health & Armor ────────────────────────────────────────────────────────
     # Health — scattered throughout
-    _hp_y, _hp_z = _cs_offset(0, 0, BRIDGE_DECK_Z)
-    ENTITIES.append(ent("item_health", origin=f"0 {_hp_y} {_hp_z}"))
+    # Offset from the bridge-centre rocket launcher (X=0) so the two
+    # pickups don't stack on the exact same origin.
+    _hp_y, _hp_z = _cs_offset(-100, 0, BRIDGE_DECK_Z)
+    ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
     ENTITIES.append(
         ent(
             "item_health",
@@ -949,7 +953,10 @@ def build():
     ENTITIES.append(
         ent(
             "item_health",
-            origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
+            # Offset from the floor-2 grenade launcher (also at KNOTT_CX,
+            # knott_cy) so the two pickups don't stack on the exact same
+            # origin.
+            origin=f"{KNOTT_CX - 100} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
         )
     )
     ENTITIES.append(
