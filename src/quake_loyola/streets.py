@@ -22,8 +22,10 @@ from .constants import (
     ENNIS_CEMENT_WALL_LAMP_POST_H,
     ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
     ENNIS_CEMENT_WALL_PILLAR_HW,
+    ENNIS_CEMENT_WALL_PILLAR_SPACING,
     ENNIS_CEMENT_X1,
     ENNIS_CEMENT_X2,
+    ENNIS_CURB_BULGE_LEN,
     ENNIS_CURB_W,
     ENNIS_GATE_FENCE_BAR_T,
     ENNIS_GATE_FENCE_HEIGHT,
@@ -104,6 +106,7 @@ from .constants import (
     WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_TERRAIN_ENABLED,
     WORLD_X1,
+    WORLD_X2,
     WORLD_X2_EXT,
     WORLD_Y1,
     WORLD_Y2,
@@ -1208,12 +1211,15 @@ def build_ennis_entrance_features():
     cement_wall_height = ENNIS_CEMENT_WALL_H
     cement_wall_pillar_half_width = ENNIS_CEMENT_WALL_PILLAR_HW
     cement_wall_pillar_height = cement_wall_height + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
+    # Straight span connects to the east face of the west pillar and the
+    # west face of the middle pillar, rather than skewering through their
+    # centres.
     brushes.append(
         box(
-            ENNIS_CEMENT_X1,
+            ENNIS_CEMENT_X1 + cement_wall_pillar_half_width,
             cement_wall_y1,
             FLOOR_Z2,
-            ENNIS_CEMENT_X2,
+            ENNIS_CEMENT_X2 - cement_wall_pillar_half_width,
             cement_wall_y2,
             FLOOR_Z2 + cement_wall_height,
             Textures.CEMENT,
@@ -1221,16 +1227,114 @@ def build_ennis_entrance_features():
     )
     brushes.append(
         box(
-            ENNIS_CEMENT_X1,
+            ENNIS_CEMENT_X1 + cement_wall_pillar_half_width,
             cement_wall_y1 - ENNIS_CEMENT_WALL_CAP_OVH,
             FLOOR_Z2 + cement_wall_height,
-            ENNIS_CEMENT_X2,
+            ENNIS_CEMENT_X2 - cement_wall_pillar_half_width,
             cement_wall_y2 + ENNIS_CEMENT_WALL_CAP_OVH,
             FLOOR_Z2 + cement_wall_height + ENNIS_CEMENT_WALL_CAP_H,
             Textures.CEMENT,
         )
     )
-    for pillar_x in (ENNIS_CEMENT_X1, ENNIS_CEMENT_X2):
+    # Wall extension east of the original end pillar, curving in a shallow
+    # semi-circular bulge — echoes the north curb's bump-out below it (same
+    # overall length, and the same depth-to-length ratio: half as deep as
+    # long) so the wall visually rhymes with the curve instead of running
+    # straight past it. Built the same way as the curb bulge: a chord-based
+    # polygon approximation, where each segment's boundary points sit
+    # exactly on the true elliptical curve and connect seamlessly to their
+    # neighbours. Depth is zero exactly at the drawn span's own two ends —
+    # the east face of the middle pillar and the west face of the new end
+    # pillar + cap + lamp post at ENNIS_CEMENT_X2_EXT — so the curve
+    # connects flush to both pillar faces instead of leaving a gap.
+    ENNIS_CEMENT_X2_EXT = ENNIS_CEMENT_X2 + ENNIS_CURB_BULGE_LEN
+    _wall_cap_z1 = FLOOR_Z2 + cement_wall_height
+    _wall_cap_z2 = _wall_cap_z1 + ENNIS_CEMENT_WALL_CAP_H
+    _wall_bulge_draw_x1 = ENNIS_CEMENT_X2 + cement_wall_pillar_half_width
+    _wall_bulge_draw_x2 = ENNIS_CEMENT_X2_EXT - cement_wall_pillar_half_width
+    _wall_bulge_cx = (_wall_bulge_draw_x1 + _wall_bulge_draw_x2) / 2
+    _wall_bulge_half_len = (_wall_bulge_draw_x2 - _wall_bulge_draw_x1) / 2
+    _wall_bulge_depth = _wall_bulge_half_len / 2  # half as deep as long, like the curb
+
+    def _wall_bulge_depth_at(bx):
+        bdx = bx - _wall_bulge_cx
+        _t = max(1 - (bdx / _wall_bulge_half_len) ** 2, 0)
+        return _wall_bulge_depth * math.sqrt(_t)
+
+    _wall_bulge_segments = 24
+    _wall_bulge_step = (
+        _wall_bulge_draw_x2 - _wall_bulge_draw_x1
+    ) / _wall_bulge_segments
+    for _wi in range(_wall_bulge_segments):
+        _wx1 = _wall_bulge_draw_x1 + _wi * _wall_bulge_step
+        _wx2 = _wx1 + _wall_bulge_step
+        _wd1 = _wall_bulge_depth_at(_wx1)
+        _wd2 = _wall_bulge_depth_at(_wx2)
+        _w_south1 = cement_wall_y1 - _wd1
+        _w_south2 = cement_wall_y1 - _wd2
+        _w_north1 = cement_wall_y2 - _wd1
+        _w_north2 = cement_wall_y2 - _wd2
+        # Wall band quad (south1, south2, north2, north1), split into 2
+        # triangles like the curb — no stair-stepping between segments.
+        brushes.append(
+            tri_prism(
+                _wx1,
+                _w_south1,
+                _wx2,
+                _w_south2,
+                _wx2,
+                _w_north2,
+                FLOOR_Z2,
+                FLOOR_Z2 + cement_wall_height,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            tri_prism(
+                _wx1,
+                _w_south1,
+                _wx2,
+                _w_north2,
+                _wx1,
+                _w_north1,
+                FLOOR_Z2,
+                FLOOR_Z2 + cement_wall_height,
+                Textures.CEMENT,
+            )
+        )
+        # Cap quad — same curve, overhanging both edges as usual.
+        _c_south1 = _w_south1 - ENNIS_CEMENT_WALL_CAP_OVH
+        _c_south2 = _w_south2 - ENNIS_CEMENT_WALL_CAP_OVH
+        _c_north1 = _w_north1 + ENNIS_CEMENT_WALL_CAP_OVH
+        _c_north2 = _w_north2 + ENNIS_CEMENT_WALL_CAP_OVH
+        brushes.append(
+            tri_prism(
+                _wx1,
+                _c_south1,
+                _wx2,
+                _c_south2,
+                _wx2,
+                _c_north2,
+                _wall_cap_z1,
+                _wall_cap_z2,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            tri_prism(
+                _wx1,
+                _c_south1,
+                _wx2,
+                _c_north2,
+                _wx1,
+                _c_north1,
+                _wall_cap_z1,
+                _wall_cap_z2,
+                Textures.CEMENT,
+            )
+        )
+
+    def _build_wall_pillar(pillar_x, with_lamp):
         pillar_center_y = (cement_wall_y1 + cement_wall_y2) // 2
         brushes.append(
             box(
@@ -1258,50 +1362,103 @@ def build_ennis_entrance_features():
                 Textures.CEMENT,
             )
         )
-        lamppost_base_z = FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H
-        brushes.append(
-            box(
-                pillar_x - 3,
-                pillar_center_y - 3,
-                lamppost_base_z,
-                pillar_x + 3,
-                pillar_center_y + 3,
-                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
-                Textures.PILLAR,
+        if with_lamp:
+            lamppost_base_z = (
+                FLOOR_Z2 + cement_wall_pillar_height + ENNIS_CEMENT_WALL_CAP_H
             )
-        )
-        # Flame + light above the lamp post, matching the Charles St lamp posts
-        cement_wall_flame_z = lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H + 20
-        entities.extend(torch_flame(pillar_x, pillar_center_y, cement_wall_flame_z))
+            brushes.append(
+                box(
+                    pillar_x - 3,
+                    pillar_center_y - 3,
+                    lamppost_base_z,
+                    pillar_x + 3,
+                    pillar_center_y + 3,
+                    lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
+                    Textures.PILLAR,
+                )
+            )
+            # Flame + light above the lamp post, matching the Charles St lamp posts
+            cement_wall_flame_z = lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H + 20
+            entities.extend(torch_flame(pillar_x, pillar_center_y, cement_wall_flame_z))
+            brushes.append(
+                box(
+                    pillar_x - 4,
+                    pillar_center_y - 4,
+                    lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
+                    pillar_x + 4,
+                    pillar_center_y + 4,
+                    lamppost_base_z
+                    + ENNIS_CEMENT_WALL_LAMP_POST_H
+                    + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+                    Textures.CEMENT,
+                )
+            )
+            brushes.append(
+                box(
+                    pillar_x - 7,
+                    pillar_center_y - 7,
+                    lamppost_base_z
+                    + ENNIS_CEMENT_WALL_LAMP_POST_H
+                    + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+                    pillar_x + 7,
+                    pillar_center_y + 7,
+                    lamppost_base_z
+                    + ENNIS_CEMENT_WALL_LAMP_POST_H
+                    + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
+                    + ENNIS_GATE_FENCE_TOP_RAIL_T * 2,
+                    Textures.CEMENT,
+                )
+            )
+
+    for pillar_x in (ENNIS_CEMENT_X1, ENNIS_CEMENT_X2, ENNIS_CEMENT_X2_EXT):
+        _build_wall_pillar(pillar_x, with_lamp=True)
+
+    # Straight-run extension east of the curved bulge, continuing all the way
+    # to the world's east sealing wall. This corridor (immediately north of
+    # Ennis Road's curb, south of where ne_terrain.py's real elevation data
+    # begins) is deliberately kept flat/flush the whole way — see that
+    # module's docstring: the row bordering the curb is tied to a constant
+    # height, with the rising hill only starting further north — so a flat
+    # wall at cement_wall_height needs no terrain-following logic here.
+    # Pillars repeat at roughly ENNIS_CEMENT_WALL_PILLAR_SPACING, alternating
+    # every other capstone with a lamp post; the pillar at ENNIS_CEMENT_X2_EXT
+    # already has one, so the alternation continues from there (no lamp,
+    # lamp, no lamp, ...).
+    _ext_run_x1 = ENNIS_CEMENT_X2_EXT
+    _ext_run_x2 = WORLD_X2 - WALL_T
+    _ext_run_len = _ext_run_x2 - _ext_run_x1
+    _ext_pillar_count = round(_ext_run_len / ENNIS_CEMENT_WALL_PILLAR_SPACING)
+    _ext_pillar_spacing = _ext_run_len / _ext_pillar_count
+    _ext_pillar_xs = [
+        _ext_run_x1 + round(i * _ext_pillar_spacing)
+        for i in range(1, _ext_pillar_count + 1)
+    ]
+    _prev_pillar_x = _ext_run_x1
+    for _ext_i, _pillar_x in enumerate(_ext_pillar_xs):
         brushes.append(
             box(
-                pillar_x - 4,
-                pillar_center_y - 4,
-                lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H,
-                pillar_x + 4,
-                pillar_center_y + 4,
-                lamppost_base_z
-                + ENNIS_CEMENT_WALL_LAMP_POST_H
-                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
+                _prev_pillar_x + cement_wall_pillar_half_width,
+                cement_wall_y1,
+                FLOOR_Z2,
+                _pillar_x - cement_wall_pillar_half_width,
+                cement_wall_y2,
+                FLOOR_Z2 + cement_wall_height,
                 Textures.CEMENT,
             )
         )
         brushes.append(
             box(
-                pillar_x - 7,
-                pillar_center_y - 7,
-                lamppost_base_z
-                + ENNIS_CEMENT_WALL_LAMP_POST_H
-                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
-                pillar_x + 7,
-                pillar_center_y + 7,
-                lamppost_base_z
-                + ENNIS_CEMENT_WALL_LAMP_POST_H
-                + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
-                + ENNIS_GATE_FENCE_TOP_RAIL_T * 2,
+                _prev_pillar_x + cement_wall_pillar_half_width,
+                cement_wall_y1 - ENNIS_CEMENT_WALL_CAP_OVH,
+                FLOOR_Z2 + cement_wall_height,
+                _pillar_x - cement_wall_pillar_half_width,
+                cement_wall_y2 + ENNIS_CEMENT_WALL_CAP_OVH,
+                FLOOR_Z2 + cement_wall_height + ENNIS_CEMENT_WALL_CAP_H,
                 Textures.CEMENT,
             )
         )
+        _build_wall_pillar(_pillar_x, with_lamp=(_ext_i % 2 == 1))
+        _prev_pillar_x = _pillar_x
 
     if east_gate_brushes:
         entities.append(brush_ent("func_detail", east_gate_brushes))
@@ -2056,7 +2213,7 @@ def build():
     # can be skipped across the bulge — its cement wouldn't make sense
     # cutting across the grass island).
     _CURB_BULGE_X1 = ENNIS_CEMENT_X2
-    _CURB_BULGE_LEN = 400  # ~ two car lengths
+    _CURB_BULGE_LEN = ENNIS_CURB_BULGE_LEN
     _CURB_BULGE_X2 = _CURB_BULGE_X1 + _CURB_BULGE_LEN
     BRUSHES.append(  # flush gap between the sidewalk squares and the curb
         box(

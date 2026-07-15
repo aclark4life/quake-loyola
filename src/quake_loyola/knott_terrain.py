@@ -636,7 +636,21 @@ def build():
     # ties to this same value — no more seam to avoid. (_sgrid itself is
     # defined near the top of this function — needed earlier by the south
     # extension and west-sidewalk pieces above.)
+    # This grid's north edge (KNOTT_DRIVEWAY_Y2) sits exactly on the south
+    # edge of the south-of-Y=0 ramp below, which in turn sits exactly on the
+    # north-of-Y=0 ramp's south edge at Y=0 — a chain of 3 Y-segments
+    # sharing exact coincident boundary planes, the same qbsp
+    # coincident-boundary pathology _WRAMP_OVR guards against elsewhere in
+    # this file (reported as an in-game invisible clipping wall around
+    # X=557, Y=49 rather than a build-time leak). Overlap this non-final
+    # segment's north edge past KNOTT_DRIVEWAY_Y2 by _WRAMP_OVR.
+    _sgrid_y2_ext = KNOTT_DRIVEWAY_Y2 + _WRAMP_OVR
     for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(_sgrid, _sgrid[1:]):
+        _t = (_sgrid_y2_ext - KNOTT_DRIVEWAY_Y1) / (
+            KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
+        )
+        gz1b_ext = gz1a + (gz1b - gz1a) * _t
+        gz2b_ext = gz2a + (gz2b - gz2a) * _t
         BRUSHES.append(
             tri_ramp_prism(
                 gx1,
@@ -644,11 +658,11 @@ def build():
                 gx2,
                 KNOTT_DRIVEWAY_Y1,
                 gx2,
-                KNOTT_DRIVEWAY_Y2,
+                _sgrid_y2_ext,
                 FLOOR_Z1,
                 gz1a,
                 gz2a,
-                gz2b,
+                gz2b_ext,
                 Textures.GROUND,
             )
         )
@@ -657,13 +671,13 @@ def build():
                 gx1,
                 KNOTT_DRIVEWAY_Y1,
                 gx2,
-                KNOTT_DRIVEWAY_Y2,
+                _sgrid_y2_ext,
                 gx1,
-                KNOTT_DRIVEWAY_Y2,
+                _sgrid_y2_ext,
                 FLOOR_Z1,
                 gz1a,
-                gz2b,
-                gz1b,
+                gz2b_ext,
+                gz1b_ext,
                 Textures.GROUND,
             )
         )
@@ -802,9 +816,18 @@ def build():
     # sharing the diagonal from (px1, KNOTT_DRIVEWAY_Y2) to (px2, 0); their
     # outer edges match the south grid and the X-profile exactly, so
     # neighbouring segments and the Y=0 plateau join with no step.
+    # This ramp's own north edge (Y=0) sits exactly on the north-of-Y=0
+    # ramp's south edge below — another link in the same 3-segment
+    # coincident-boundary chain as the south-corner grid above (see the
+    # _WRAMP_OVR note there). Overlap this non-final segment's north edge
+    # past Y=0 by _WRAMP_OVR too.
+    _y0_ext = 0 + _WRAMP_OVR
     for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:]):
         z1, z2 = _hill_z(px1), _hill_z(px2)
         zs1, zs2 = _south_edge_z(px1), _south_edge_z(px2)
+        _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (0 - KNOTT_DRIVEWAY_Y2)
+        z1_ext = zs1 + (z1 - zs1) * _t0
+        z2_ext = zs2 + (z2 - zs2) * _t0
         BRUSHES.append(
             tri_ramp_prism(
                 px1,
@@ -812,11 +835,11 @@ def build():
                 px2,
                 KNOTT_DRIVEWAY_Y2,
                 px2,
-                0,
+                _y0_ext,
                 FLOOR_Z1,
                 zs1,
                 zs2,
-                z2,
+                z2_ext,
                 Textures.GROUND,
             )
         )
@@ -825,13 +848,13 @@ def build():
                 px1,
                 KNOTT_DRIVEWAY_Y2,
                 px2,
-                0,
+                _y0_ext,
                 px1,
-                0,
+                _y0_ext,
                 FLOOR_Z1,
                 zs1,
-                z2,
-                z1,
+                z2_ext,
+                z1_ext,
                 Textures.GROUND,
             )
         )

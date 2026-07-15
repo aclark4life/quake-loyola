@@ -7,6 +7,15 @@ ENNIS_CEMENT_WALL_H = 32
 ENNIS_CEMENT_WALL_LAMP_POST_H = 160
 ENNIS_CEMENT_WALL_PILLAR_EXTRA_H = 16
 ENNIS_CEMENT_WALL_PILLAR_HW = 14
+ENNIS_CURB_BULGE_LEN = 400  # ~ two car lengths; shared by the north curb's
+# semi-circular bump-out (streets.py build()) and the cement wall extension
+# that runs alongside it (streets.py build_ennis_entrance_features()), so the
+# wall's new east end pillar/cap lines up with the far end of the curve.
+ENNIS_CEMENT_WALL_PILLAR_SPACING = 800  # nominal spacing of the repeating
+# straight-run pillars east of the curved bulge — same magnitude as the curb
+# bulge length above, for a consistent rhythm. The final span is stretched
+# slightly (never shortened) so the last pillar always lands exactly on the
+# run's east endpoint rather than leaving an odd short leftover segment.
 ENNIS_GATE_FENCE_BAR_T = 2
 ENNIS_GATE_FENCE_HEIGHT = 96
 ENNIS_GATE_FENCE_POST_W = 8
