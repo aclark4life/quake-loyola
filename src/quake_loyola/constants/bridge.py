@@ -2,10 +2,16 @@
 
 from dataclasses import dataclass
 
-BRIDGE_ARCH_RISE = 100
-BRIDGE_ARCH_PIER_RISE = 82  # deck rise at the centre-span piers (PIER2/PIER3, ±525):
-# the centre span arches from here up to BRIDGE_ARCH_RISE over Charles St (X=0); the
-# two approach spans descend straight from here to 0 at the outer piers (ref/bridge08)
+BRIDGE_ARCH_PIER_RISE = 82  # deck rise at the centre-span piers (PIER2/PIER3):
+# the two approach spans descend straight from here to 0 at the outer piers
+# (ref/bridge08).
+BRIDGE_ARCH_RISE = BRIDGE_ARCH_PIER_RISE  # deck rise over Charles St (X=0). Real
+# street-view photos (ref/bridge01/04/08) show a flat, level deck across the road —
+# no parabolic camber — so this now equals BRIDGE_ARCH_PIER_RISE, making
+# arch_z_at()'s centre-span term a constant (flat) rather than a parabola. Was 100
+# (a visible ~6.6 ft crest at X=0); confirmed via Playwright-captured Google Maps
+# imagery + street-view refs that the real deck has no such rise — only the
+# sub-deck pier openings are pointed/Gothic-arched, not the deck surface itself.
 BRIDGE_ACCESS_WALK_CENTER_X = 2120
 BRIDGE_ACCESS_WALK_HALF_W = 32
 BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
@@ -88,7 +94,18 @@ BRIDGE_WALK_WALL = 32
 BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-unit
 # parapets, interior walking width = 220 units = ft_to_units(14,6) ≈ 14.5 ft
 
-BRIDGE_CENTER_PIER_SPAN = 1050
+BRIDGE_CENTER_PIER_SPAN = 950  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
+# BRIDGE_OUTER_PIER_SPAN and stays put (it anchors the hill profile's real-elevation
+# "Pier 3" sample and the Ennis Drive entrance pillars/gate, so moving it has a much
+# wider blast radius); this span only pulls PIER2 (west side, on flat/low terrain)
+# east, from -525 to -425, tightening its setback from the Charles St curb (ROAD_X2
+# =256) from ~269 to ~169 units. Was 1050, then briefly 850 (too tight/"squished"
+# per playtest feedback — pulled the west pier further back out to 950).
+# Playwright/Google-Maps + ref/bridge08 street-view comparison showed real piers
+# sitting closer to the curb than the original 1050, but 850 overcorrected. Terrain
+# under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-
+# BRIDGE_PILLAR_HW) stays well above the pier's base Z (0), so no floating-pier
+# risk from this move.
 BRIDGE_OUTER_PIER_SPAN = 721
 BRIDGE_CENTER_SPAN_OFFSET = (0.0, 320.0, 96.0)  # (dx, dy, dz) applied to just the
 # centre span (PIER2..PIER3) in bridge.build(), independent of the other

@@ -538,8 +538,11 @@ def _build_all():
     # Western span (BRIDGE.x1 → BRIDGE_ARCH_X[0]): no blocks — open span
     # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks
     add_parapet_blocks(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
-    # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 4 blocks
-    add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+    # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 5 blocks. Was 4 —
+    # ref/bridge08.png's cap spacing (uniform ~340px steps: 560, 900, ~1240,
+    # [hidden behind tree canopy], ~1920) shows a 5th block sits in the
+    # foliage-obscured gap between the two visible ones near mid-span.
+    add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 5)
     # Eastern span 2 (BRIDGE_ARCH_X[2] → BRIDGE_ARCH_X[3]): 3 blocks
     add_parapet_blocks(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
     # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
@@ -607,7 +610,7 @@ def _build_all():
         )
 
     add_parapet_squares(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
-    add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+    add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 5)
     add_parapet_squares(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
     add_parapet_squares(
         BRIDGE.x2,
@@ -1932,7 +1935,12 @@ def _build_all():
         return BRIDGE_FASCIA_PX_W if i in _capital_pos else _small_px
 
     total_w = sum((_cols + 1) * _char_pw(i) for i in range(_n)) - _char_pw(_n - 1)
-    text_x0 = 0 - total_w // 2
+    _fascia_cx = (PIER2_X + PIER3_X) // 2  # centre span midpoint — was hardcoded to 0
+    # (Charles St centreline), which matched when PIER2/PIER3 were symmetric around
+    # X=0. BRIDGE_CENTER_PIER_SPAN tightening only moved PIER2 (west), leaving the
+    # span asymmetric (midpoint now 50, not 0), so the text needs to re-centre on
+    # the actual span rather than the road.
+    text_x0 = _fascia_cx - total_w // 2
 
     # No separate background fascia boxes — parapet wall face is the backdrop
 

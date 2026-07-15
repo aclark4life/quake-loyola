@@ -231,12 +231,15 @@ BRIDGE_PIER_GROUND_Z = {
     # point under the pier's full X (px±BRIDGE_PILLAR_HW) and Y (bridge span,
     # including overhang) footprint so the pier doesn't float above the
     # hillside anywhere along its base.
-    # PIER2 (-525): west terrain min under full footprint ≈15 — use FLOOR_Z2 (0).
+    # PIER2 (now -425, tightened toward the curb from -525 — see
+    # BRIDGE_CENTER_PIER_SPAN): west terrain min under the new footprint ≈17 —
+    # use FLOOR_Z2 (0), still safely below.
     # PIER3 (+525): KH hill profile min under full footprint ≈30 (re-sampled;
     # the old "~57" figure predates later hill-profile edits and left this
     # pier's base — previously 48 — floating above ground near its west/edge
     # corners). Use 20 for a safe margin below the resampled minimum.
-    PIER2_X: 0,  # west campus terrain min under bridge span ≈15; use 0 (FLOOR_Z2)
+    PIER2_X: 0,  # west campus terrain min under bridge span ≈17 (was ≈15 at -525) -
+    # use 0 (FLOOR_Z2)
     PIER3_X: 20,  # KH hill min under full pier footprint ≈30; use 20 to stay buried
 }
 DORM_FLOOR_H = (
