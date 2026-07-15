@@ -15,11 +15,18 @@ class LightingPreset:
     fog: str  # "density r g b"
 
     def to_worldspawn(self) -> dict:
+        # NOTE: ericw-tools' light reads "_minlight" (not "ambient") for the
+        # global fill light, and "_sunlight_mangle" as "yaw pitch roll" (not
+        # "_sunlight_dir" as "pitch yaw") for the sun direction. Both of the old
+        # key names were silently ignored by light, so ambient fill was always 0
+        # and the sun always defaulted to straight down regardless of preset.
+        pitch, yaw = self.sunlight_dir.split()
+        mangle = f"{yaw} {pitch} 0"
         return {
-            "ambient": self.ambient,
+            "_minlight": self.ambient,
             "_sunlight": self.sunlight,
             "_sunlight_color": self.sunlight_color,
-            "_sunlight_dir": self.sunlight_dir,
+            "_sunlight_mangle": mangle,
             "_sunlight_penumbra": self.sunlight_penumbra,
             "_fog": self.fog,
         }
@@ -104,5 +111,5 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
     ),
 }
 
-LIGHTING = LIGHTING_PRESETS["afternoon"]
+LIGHTING = LIGHTING_PRESETS["bright"]
 FOG_DENSITY: float | None = None  # use preset fog density

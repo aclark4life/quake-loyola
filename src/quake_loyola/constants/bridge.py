@@ -5,13 +5,10 @@ from dataclasses import dataclass
 BRIDGE_ARCH_PIER_RISE = 82  # deck rise at the centre-span piers (PIER2/PIER3):
 # the two approach spans descend straight from here to 0 at the outer piers
 # (ref/bridge08).
-BRIDGE_ARCH_RISE = BRIDGE_ARCH_PIER_RISE  # deck rise over Charles St (X=0). Real
-# street-view photos (ref/bridge01/04/08) show a flat, level deck across the road —
-# no parabolic camber — so this now equals BRIDGE_ARCH_PIER_RISE, making
-# arch_z_at()'s centre-span term a constant (flat) rather than a parabola. Was 100
-# (a visible ~6.6 ft crest at X=0); confirmed via Playwright-captured Google Maps
-# imagery + street-view refs that the real deck has no such rise — only the
-# sub-deck pier openings are pointed/Gothic-arched, not the deck surface itself.
+BRIDGE_ARCH_RISE = 100  # deck rise over Charles St (X=0), restored per user
+# request after the flat-deck experiment (BRIDGE_ARCH_RISE == BRIDGE_ARCH_PIER_RISE)
+# removed the visible parabolic curve/crest across the centre span. Back to a
+# ~6.6 ft crest at X=0 above the BRIDGE_ARCH_PIER_RISE=82 level at the piers.
 BRIDGE_ACCESS_WALK_CENTER_X = 2120
 BRIDGE_ACCESS_WALK_HALF_W = 32
 BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
@@ -21,6 +18,10 @@ BRIDGE_BLK_HW = 24
 BRIDGE_BLK_OVH = 0
 BRIDGE_BLK_PIER_CLEARANCE = 4
 BRIDGE_DECK_EAST_RECESS = 1
+BRIDGE_DECK_EDGE_CEMENT_W = 16  # width of the cement margin kept along each side
+# (north/south) of the deck's wood-textured (GABLE) underside — a small strip of
+# the original cement/stone edge beam remains visible on both sides rather than
+# the whole underside being wood.
 BRIDGE_DZ1, BRIDGE_DZ2 = (
     256,
     272,
@@ -38,24 +39,37 @@ BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = (
 # 531 units wide, overlapping those blocks — px_w=4 comes to 402 units.
 BRIDGE_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
 BRIDGE_PAR_H = 40
-BRIDGE_PILLAR_BASE_CAP_H = 6
+BRIDGE_PILLAR_BASE_CAP_H = 5  # doubled from 2.5 for a more substantial cap slab.
 BRIDGE_PILLAR_BASE_CAP_OVH = 5
-BRIDGE_PILLAR_BASE_H = 8  # solid plinth height before the arch opening starts — lowered
-# from 64 (was 24 before that) to open up the arch opening's clear height, matching
-# the tall, slender pointed-arch proportions seen in ref/bridge04.png and
-# ref/bridge08.png. Kept slightly above 0 (rather than fully flush with the ground)
-# since an exact 0 produces a degenerate zero-height ramp edge that crashes qbsp's
-# hull expansion (CheckFace: coordinate out of range).
-BRIDGE_PILLAR_BASE_RAMP_H = 24  # ramped-side plinth height — kept the same 16-unit
-# rise over BASE_H as before, just shifted down along with it.
-BRIDGE_PILLAR_CAP_H = 12
+BRIDGE_PILLAR_BASE_H = 0.5  # solid plinth height before the arch opening starts —
+# trimmed a little further from 1 (was lowered from 2, 4, 8, 24, then 64
+# before that) to bring the stone below the arch opening down about as far as
+# it can go, matching the low, minimal plinth seen in ref/bridge04.png and
+# ref/bridge08.png. Kept slightly above 0 (rather than fully flush with the
+# ground) since an exact 0 produces a degenerate zero-height ramp edge that
+# crashes qbsp's hull expansion (CheckFace: coordinate out of range) — this is
+# about as low as it can go without hitting that crash.
+BRIDGE_PILLAR_BASE_RAMP_H = 25.5  # ramped-side plinth height — rise over BASE_H
+# shrunk further from 37 to 25 units per user request to reduce the stone below
+# the arch opening a little more (was a ~27° slope after the 45°-was-too-steep
+# feedback; keeps a similar but shorter ramp).
+BRIDGE_PILLAR_CAP_H = 12  # restored to the original 12 — the below-deck stone
+# reduction (BASE_H/BASE_RAMP_H/BASE_CAP_H above) stays, but the user asked to
+# undo today's above-deck pillar-post/cap reduction entirely.
 BRIDGE_PILLAR_CAP_IN_OVH = 4
 BRIDGE_PILLAR_CAP_OUT_OVH = 20
-BRIDGE_PILLAR_EXTRA = 64
+BRIDGE_PILLAR_EXTRA = 64  # restored to the original 64 — see BRIDGE_PILLAR_CAP_H
+# note above; the pillar tops read as too short at 26, so the above-deck
+# reduction from today is undone while the below-deck plinth reduction and the
+# arch-opening crown trim (BRIDGE_PILLAR_INNER_R/OUTER_R below) remain.
 BRIDGE_PIER_BASE_LIGHTS_ENABLED = False  # temporarily disabled — pier-base lights (some sit buried in the east-span fill)
 BRIDGE_PIER_FILL_OFFSET = 16
-BRIDGE_PILLAR_INNER_R = (160, 84)
-BRIDGE_PILLAR_OUTER_R = (140, 72)
+BRIDGE_PILLAR_INNER_R = (144, 84)  # rout trimmed from 160 to 144 — a small ~10%
+# reduction in the arch opening's own clear height (crown rises less above the
+# springline), matching the flatter/lower pointed-arch crown in ref/bridge04.png
+# and ref/bridge08.png; rin (opening half-width) unchanged.
+BRIDGE_PILLAR_OUTER_R = (126, 72)  # rout trimmed from 140 to 126, same ~10% cut as
+# BRIDGE_PILLAR_INNER_R above; rin unchanged.
 BRIDGE_PILLAR_OVERHANG = 16
 # Decorative square cement plates on the interior (facing the opposite pillar
 # across the opening) and exterior (facing outward) walls of each arch/square

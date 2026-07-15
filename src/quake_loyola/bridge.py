@@ -32,6 +32,7 @@ from .constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_CENTER_SPAN_PIER_EMBED,
     BRIDGE_DECK_EAST_RECESS,
+    BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
@@ -215,19 +216,35 @@ def _build_all():
     BRUSHES = DETAIL_BRUSHES
     # ── Bridge deck slab — the walkable surface across the whole span ─────────────
     # Straight section: arch terminus → easternmost pier
-    BRUSHES.append(
-        box(
-            BRIDGE.x2,
-            BRIDGE.y1,
-            BRIDGE_DZ1,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y2,
-            BRIDGE_DZ2,
-            Textures.STONE,
-            tt=Textures.FLOOR,
-            tb=Textures.FLOOR,
-        )
+    # Split across Y into cement-margin / wood / cement-margin strips so a
+    # small strip of cement remains visible on each side of the wood-textured
+    # underside instead of the whole underside being wood.
+    _dw_y1a, _dw_y1b = (
+        BRIDGE.y1,
+        BRIDGE.y1 + BRIDGE_DECK_EDGE_CEMENT_W,
     )
+    _dw_y2a, _dw_y2b = (
+        BRIDGE.y2 - BRIDGE_DECK_EDGE_CEMENT_W,
+        BRIDGE.y2,
+    )
+    for _ys1, _ys2, _tb in (
+        (_dw_y1a, _dw_y1b, Textures.CEMENT),
+        (_dw_y1b, _dw_y2a, Textures.GABLE),
+        (_dw_y2a, _dw_y2b, Textures.CEMENT),
+    ):
+        BRUSHES.append(
+            box(
+                BRIDGE.x2,
+                _ys1,
+                BRIDGE_DZ1,
+                BRIDGE_EAST_PIVOT_X,
+                _ys2,
+                BRIDGE_DZ2,
+                Textures.STONE,
+                tt=Textures.FLOOR,
+                tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+            )
+        )
     # Angled section: easternmost pier → 1 unit inside the east arch face.
     # Split at BRIDGE_ARCH_X[5] (new mid-span pier) to keep brush sizes manageable
     # and give qbsp extra BSP splits in the extended east section.
@@ -241,21 +258,26 @@ def _build_all():
         (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
         (MID_PIER_X, DECK_EAST_END_X),
     ]:
-        BRUSHES.append(
-            shear_box_y(
-                seg_x1,
-                BRIDGE.y1,
-                BRIDGE_DZ1,
-                seg_x2,
-                BRIDGE.y2,
-                BRIDGE_DZ2,
-                east_y_shift(seg_x1),
-                east_y_shift(seg_x2),
-                Textures.STONE,
-                tt=Textures.FLOOR,
-                tb=Textures.FLOOR,
+        for _ys1, _ys2, _tb in (
+            (_dw_y1a, _dw_y1b, Textures.CEMENT),
+            (_dw_y1b, _dw_y2a, Textures.GABLE),
+            (_dw_y2a, _dw_y2b, Textures.CEMENT),
+        ):
+            BRUSHES.append(
+                shear_box_y(
+                    seg_x1,
+                    _ys1,
+                    BRIDGE_DZ1,
+                    seg_x2,
+                    _ys2,
+                    BRIDGE_DZ2,
+                    east_y_shift(seg_x1),
+                    east_y_shift(seg_x2),
+                    Textures.STONE,
+                    tt=Textures.FLOOR,
+                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                )
             )
-        )
 
     # Span-segment boundaries shared by the wall (iter_bridge_span_segments)
     # and the parapet decorations below, so decorative blocks always sit
@@ -301,21 +323,26 @@ def _build_all():
 
     # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
     for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
-        BRUSHES.append(
-            ramp_slab(
-                sx1,
-                sx2,
-                BRIDGE.y1,
-                BRIDGE.y2,
-                db1,
-                db2,
-                pb1,
-                pb2,
-                Textures.STONE,
-                tt=Textures.FLOOR,
-                tb=Textures.FLOOR,
+        for _ys1, _ys2, _tb in (
+            (_dw_y1a, _dw_y1b, Textures.CEMENT),
+            (_dw_y1b, _dw_y2a, Textures.GABLE),
+            (_dw_y2a, _dw_y2b, Textures.CEMENT),
+        ):
+            BRUSHES.append(
+                ramp_slab(
+                    sx1,
+                    sx2,
+                    _ys1,
+                    _ys2,
+                    db1,
+                    db2,
+                    pb1,
+                    pb2,
+                    Textures.STONE,
+                    tt=Textures.FLOOR,
+                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                )
             )
-        )
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
     # North east parapet: straight BRIDGE.x2→pier, then angled pier→world wall
     BRUSHES.append(
@@ -538,11 +565,10 @@ def _build_all():
     # Western span (BRIDGE.x1 → BRIDGE_ARCH_X[0]): no blocks — open span
     # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks
     add_parapet_blocks(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
-    # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 5 blocks. Was 4 —
-    # ref/bridge08.png's cap spacing (uniform ~340px steps: 560, 900, ~1240,
-    # [hidden behind tree canopy], ~1920) shows a 5th block sits in the
-    # foliage-obscured gap between the two visible ones near mid-span.
-    add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 5)
+    # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 4 blocks — corrected
+    # after re-checking ref/bridge08.png; the earlier 5th block (assumed to sit
+    # in a foliage-obscured gap) was a miscount.
+    add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
     # Eastern span 2 (BRIDGE_ARCH_X[2] → BRIDGE_ARCH_X[3]): 3 blocks
     add_parapet_blocks(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
     # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
@@ -610,7 +636,7 @@ def _build_all():
         )
 
     add_parapet_squares(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
-    add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 5)
+    add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
     add_parapet_squares(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
     add_parapet_squares(
         BRIDGE.x2,
