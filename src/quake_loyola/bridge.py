@@ -38,11 +38,12 @@ from .constants import (
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_ENABLED,
-    BRIDGE_ENABLED_CENTER_SPAN,
-    BRIDGE_ENABLED_EAST_APPROACH,
-    BRIDGE_ENABLED_EAST_EXT,
-    BRIDGE_ENABLED_KH_SPAN,
-    BRIDGE_ENABLED_WEST_APPROACH,
+    BRIDGE_ENABLED_FASCIA_TEXT,
+    BRIDGE_ENABLED_SPAN_CENTER,
+    BRIDGE_ENABLED_SPAN_EAST_APPROACH,
+    BRIDGE_ENABLED_SPAN_EAST_EXT,
+    BRIDGE_ENABLED_SPAN_KH,
+    BRIDGE_ENABLED_SPAN_WEST_APPROACH,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
@@ -87,7 +88,6 @@ from .constants import (
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
     CHARLES_WALK_H,
-    DRAW_BRIDGE_FASCIA_TEXT,
     ENNIS_SW_EDGE,
     FASCIA_FONT,
     FLOOR_Z1,
@@ -2035,7 +2035,7 @@ def _build_all():
                 cap_pos=_capital_pos_rev,
             )
         )
-        if DRAW_BRIDGE_FASCIA_TEXT
+        if BRIDGE_ENABLED_FASCIA_TEXT
         else []
     )
     if letter_brushes:
@@ -2052,11 +2052,11 @@ def build():
     # BRIDGE_ENABLED is a convenience master: if True, every section is on,
     # regardless of its individual flag below.
     sections_enabled = {
-        "west_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_WEST_APPROACH,
-        "center_span": BRIDGE_ENABLED or BRIDGE_ENABLED_CENTER_SPAN,
-        "east_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_APPROACH,
-        "kh_span": BRIDGE_ENABLED or BRIDGE_ENABLED_KH_SPAN,
-        "east_ext": BRIDGE_ENABLED or BRIDGE_ENABLED_EAST_EXT,
+        "west_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_WEST_APPROACH,
+        "center_span": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_CENTER,
+        "east_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_EAST_APPROACH,
+        "kh_span": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_KH,
+        "east_ext": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_EAST_EXT,
     }
     if not any(sections_enabled.values()):
         return [], []

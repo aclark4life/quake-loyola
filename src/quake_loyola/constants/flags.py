@@ -20,42 +20,45 @@ from ..config import get as _flag
 BRIDGE_ENABLED = _flag(
     "BRIDGE_ENABLED"
 )  # convenience master: if True, forces every BRIDGE_ENABLED_<section> flag below on, overriding their individual settings. Leave False and flip the per-section flags to review one span at a time.
-BRIDGE_ENABLED_WEST_APPROACH = _flag(
-    "BRIDGE_ENABLED_WEST_APPROACH"
+BRIDGE_ENABLED_SPAN_WEST_APPROACH = _flag(
+    "BRIDGE_ENABLED_SPAN_WEST_APPROACH"
 )  # bridge.py span: Pier 1 (west abutment) .. Pier 2
-BRIDGE_ENABLED_CENTER_SPAN = _flag(
-    "BRIDGE_ENABLED_CENTER_SPAN"
+BRIDGE_ENABLED_SPAN_CENTER = _flag(
+    "BRIDGE_ENABLED_SPAN_CENTER"
 )  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
-BRIDGE_ENABLED_EAST_APPROACH = _flag(
-    "BRIDGE_ENABLED_EAST_APPROACH"
+BRIDGE_ENABLED_SPAN_EAST_APPROACH = _flag(
+    "BRIDGE_ENABLED_SPAN_EAST_APPROACH"
 )  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
-BRIDGE_ENABLED_KH_SPAN = _flag(
-    "BRIDGE_ENABLED_KH_SPAN"
+BRIDGE_ENABLED_SPAN_KH = _flag(
+    "BRIDGE_ENABLED_SPAN_KH"
 )  # bridge.py span: Pier 4 .. Pier 5 (east KH pier / NE pier)
-BRIDGE_ENABLED_EAST_EXT = _flag(
-    "BRIDGE_ENABLED_EAST_EXT"
+BRIDGE_ENABLED_SPAN_EAST_EXT = _flag(
+    "BRIDGE_ENABLED_SPAN_EAST_EXT"
 )  # bridge.py span: Pier 5 .. Pier 6 (extended east section to Ennis Rd)
 STREETS_DETAILS_ENABLED = _flag(
     "STREETS_DETAILS_ENABLED"
 )  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = _flag(
     "WEST_CAMPUS_ENABLED"
+)  # convenience master: if True, forces WEST_CAMPUS_ENABLED_DORMS, WEST_CAMPUS_ENABLED_FENCE, and WEST_CAMPUS_ENABLED_TERRAIN all on, overriding their individual settings. Leave False and flip the per-section flags to review one piece at a time (same pattern as BRIDGE_ENABLED).
+WEST_CAMPUS_ENABLED_DORMS = _flag(
+    "WEST_CAMPUS_ENABLED_DORMS"
 )  # west_campus.py — dorm buildings and grounds
-WEST_CAMPUS_FENCE_ENABLED = _flag(
-    "WEST_CAMPUS_FENCE_ENABLED"
+WEST_CAMPUS_ENABLED_FENCE = _flag(
+    "WEST_CAMPUS_ENABLED_FENCE"
 )  # west_campus.py — iron fence along the east
 # face of the (currently disabled) west-campus buildings. Kept independent of
-# WEST_CAMPUS_ENABLED so the fence can be shown along Charles St even while
-# the dorm buildings themselves stay off.
-WEST_CAMPUS_TERRAIN_ENABLED = _flag(
-    "WEST_CAMPUS_TERRAIN_ENABLED"
+# WEST_CAMPUS_ENABLED_DORMS so the fence can be shown along Charles St even
+# while the dorm buildings themselves stay off.
+WEST_CAMPUS_ENABLED_TERRAIN = _flag(
+    "WEST_CAMPUS_ENABLED_TERRAIN"
 )  # west_campus_terrain.py — real-elevation
 # ground fill under/around the dorm buildings + bridge west approach. Kept
-# independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_ENABLED_TERRAIN
-# vs KNOTT_ENABLED) so the terrain can be reviewed on its own even while
-# the buildings themselves stay off.
-NE_TERRAIN_ENABLED = _flag(
-    "NE_TERRAIN_ENABLED"
+# independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
+# KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED) so the terrain can be reviewed on
+# its own even while the buildings themselves stay off.
+NE_ENABLED_TERRAIN = _flag(
+    "NE_ENABLED_TERRAIN"
 )  # ne_terrain.py — real-elevation ground fill for the
 # NE quadrant (north of Ennis Road, east of Charles St), replacing the flat
 # placeholder box streets.py used to build there. See ne_terrain.py's module
@@ -101,6 +104,6 @@ MARYLAND_ENABLED_TERRAIN = _flag(
 # Kept independent of KNOTT_ENABLED_TERRAIN so each hill/mound can be flipped
 # on and off separately while both are still placeholder/provisional models.
 
-DRAW_BRIDGE_FASCIA_TEXT = _flag("DRAW_BRIDGE_FASCIA_TEXT")
+BRIDGE_ENABLED_FASCIA_TEXT = _flag("BRIDGE_ENABLED_FASCIA_TEXT")
 
 SHOW_SUPPORTS = _flag("SHOW_SUPPORTS")

@@ -42,16 +42,17 @@ CONFIG_PATH = Path.cwd() / "ql.toml"
 DEFAULTS: dict[str, bool] = {
     # -- module masters (constants/flags.py) --
     "BRIDGE_ENABLED": False,
-    "BRIDGE_ENABLED_WEST_APPROACH": True,
-    "BRIDGE_ENABLED_CENTER_SPAN": True,
-    "BRIDGE_ENABLED_EAST_APPROACH": True,
-    "BRIDGE_ENABLED_KH_SPAN": False,
-    "BRIDGE_ENABLED_EAST_EXT": False,
+    "BRIDGE_ENABLED_SPAN_WEST_APPROACH": True,
+    "BRIDGE_ENABLED_SPAN_CENTER": True,
+    "BRIDGE_ENABLED_SPAN_EAST_APPROACH": True,
+    "BRIDGE_ENABLED_SPAN_KH": False,
+    "BRIDGE_ENABLED_SPAN_EAST_EXT": False,
     "STREETS_DETAILS_ENABLED": True,
     "WEST_CAMPUS_ENABLED": False,
-    "WEST_CAMPUS_FENCE_ENABLED": True,
-    "WEST_CAMPUS_TERRAIN_ENABLED": True,
-    "NE_TERRAIN_ENABLED": True,
+    "WEST_CAMPUS_ENABLED_DORMS": False,
+    "WEST_CAMPUS_ENABLED_FENCE": True,
+    "WEST_CAMPUS_ENABLED_TERRAIN": True,
+    "NE_ENABLED_TERRAIN": True,
     "KNOTT_ENABLED_TERRAIN": True,
     "KNOTT_ENABLED": False,
     "ENTITIES_ENABLED": False,
@@ -62,7 +63,7 @@ DEFAULTS: dict[str, bool] = {
     "LIGHTS_ENABLED_TORCHES": True,
     "BASEMENT_ENABLED_LIGHTS": True,
     # -- misc display flags (constants/flags.py) --
-    "DRAW_BRIDGE_FASCIA_TEXT": True,
+    "BRIDGE_ENABLED_FASCIA_TEXT": True,
     "SHOW_SUPPORTS": True,
     # -- other module-local flags --
     "BRIDGE_ENABLED_PIER_BASE_LIGHTS": False,  # constants/bridge.py

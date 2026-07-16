@@ -33,8 +33,8 @@ overlap-safe multi-column tri_ramp_prism technique proven in
 knott_terrain.py's south-extension / west-ramp sections and
 west_campus_terrain.py (see _NE_OVR below).
 
-Kept independent as its own NE_TERRAIN_ENABLED flag so this terrain can be
-reviewed/compiled on its own — mirrors WEST_CAMPUS_TERRAIN_ENABLED.
+Kept independent as its own NE_ENABLED_TERRAIN flag so this terrain can be
+reviewed/compiled on its own — mirrors WEST_CAMPUS_ENABLED_TERRAIN.
 """
 
 from .constants import (
@@ -46,7 +46,7 @@ from .constants import (
     FLOOR_Z2,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
-    NE_TERRAIN_ENABLED,
+    NE_ENABLED_TERRAIN,
     ROAD_X2,
     WALL_T,
     WORLD_X2_EXT,
@@ -65,7 +65,7 @@ def _clamp0(zs):
 
 
 def build():
-    if not NE_TERRAIN_ENABLED:
+    if not NE_ENABLED_TERRAIN:
         return [], []
     BRUSHES = []
     ENTITIES = []

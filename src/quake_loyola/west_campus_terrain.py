@@ -19,7 +19,7 @@ overlap-safe multi-column tri_ramp_prism technique proven in
 knott_terrain.py's south-extension / west-ramp sections (see _WCT_OVR
 below).
 
-Kept independent of WEST_CAMPUS_ENABLED (own WEST_CAMPUS_TERRAIN_ENABLED
+Kept independent of WEST_CAMPUS_ENABLED_DORMS (own WEST_CAMPUS_ENABLED_TERRAIN
 flag) so the terrain can be reviewed/compiled on its own even while the
 dorm buildings themselves stay disabled — same reasoning as
 KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED.
@@ -32,7 +32,8 @@ from .constants import (
     FLOOR_Z2,
     ROAD_X1,
     WALL_T,
-    WEST_CAMPUS_TERRAIN_ENABLED,
+    WEST_CAMPUS_ENABLED,
+    WEST_CAMPUS_ENABLED_TERRAIN,
     WORLD_X1,
     WORLD_Y1,
     WORLD_Y2,
@@ -172,7 +173,7 @@ def terrain_z(x, y):
 
 
 def build():
-    if not WEST_CAMPUS_TERRAIN_ENABLED:
+    if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_TERRAIN):
         return [], []
     BRUSHES = []
     ENTITIES = []

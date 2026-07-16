@@ -53,7 +53,8 @@ from .constants import (
     SDORM_STAIR_Y2,
     WALL_T,
     WEST_CAMPUS_ENABLED,
-    WEST_CAMPUS_FENCE_ENABLED,
+    WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_FENCE,
     WORLD_Y2,
     Textures,
 )
@@ -75,8 +76,8 @@ from .west_campus_terrain import terrain_z, wct_y
 
 def build_iron_fence(ENTITIES):
     """Iron fence along east face of west buildings — extracted so it can be
-    shown along Charles St even when WEST_CAMPUS_ENABLED (dorm buildings) is
-    off, gated independently by WEST_CAMPUS_FENCE_ENABLED."""
+    shown along Charles St even when WEST_CAMPUS_ENABLED_DORMS (dorm buildings)
+    is off, gated independently by WEST_CAMPUS_ENABLED_FENCE."""
     fence_brushes = []
 
     # Extend the fence past CHARLES_Y2 (the documented survey corridor's
@@ -181,10 +182,10 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    if WEST_CAMPUS_FENCE_ENABLED:
+    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_FENCE:
         build_iron_fence(ENTITIES)
 
-    if not WEST_CAMPUS_ENABLED:
+    if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS):
         return BRUSHES, ENTITIES
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening

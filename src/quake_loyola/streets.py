@@ -90,7 +90,7 @@ from .constants import (
     MANHOLE_R,
     MANHOLE_X,
     MANHOLE_Y,
-    NE_TERRAIN_ENABLED,
+    NE_ENABLED_TERRAIN,
     ROAD_DASH_LEN,
     ROAD_GAP_LEN,
     ROAD_X1,
@@ -104,7 +104,8 @@ from .constants import (
     STREETS_DETAILS_ENABLED,
     WALL_T,
     WEST_CAMPUS_ENABLED,
-    WEST_CAMPUS_TERRAIN_ENABLED,
+    WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_TERRAIN,
     WORLD_X1,
     WORLD_X2,
     WORLD_X2_EXT,
@@ -1474,9 +1475,14 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # Tunnel-portal wall faces (below) show ground only when the west-campus
     # hillside/embankment geometry that they're shaped around is actually
-    # present (built by west_campus.py); with WEST_CAMPUS_ENABLED off, those
-    # inner faces should read as sky, regardless of STREETS_DETAILS_ENABLED.
-    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED else Textures.SKY
+    # present (built by west_campus.py); with WEST_CAMPUS_ENABLED_DORMS off,
+    # those inner faces should read as sky, regardless of
+    # STREETS_DETAILS_ENABLED.
+    _tunnel_wall_tex = (
+        Textures.GROUND
+        if (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS)
+        else Textures.SKY
+    )
     BRUSHES.extend(
         box_with_round_hole(
             WORLD_X1,
@@ -2743,11 +2749,11 @@ def build():
     # ground flush with the sidewalk, so the verge here should shrink back to
     # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
     # overlapping brushes.
-    #   west side  -> owned by west_campus_terrain.py (WEST_CAMPUS_TERRAIN_ENABLED)
+    #   west side  -> owned by west_campus_terrain.py (WEST_CAMPUS_ENABLED_TERRAIN)
     #   east side  -> owned by knott_terrain.py (KNOTT_ENABLED_TERRAIN)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
-        if WEST_CAMPUS_TERRAIN_ENABLED
+        if (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_TERRAIN)
         else WORLD_X1 + WALL_T
     )
     _east_verge_x2 = WORLD_X2_EXT - WALL_T
@@ -2796,10 +2802,10 @@ def build():
     # NE quadrant verge — placeholder flat ground filling the whole area
     # north of Ennis and east of Charles St, flush with the sidewalk, for
     # while ne_terrain.py's real-elevation fill is disabled. Once
-    # NE_TERRAIN_ENABLED, ne_terrain.py builds its own ground there instead
+    # NE_ENABLED_TERRAIN, ne_terrain.py builds its own ground there instead
     # — skip this box entirely to avoid overlapping brushes (same
     # placeholder-shrinks-to-nothing pattern as the west/east verges above).
-    if not NE_TERRAIN_ENABLED:  # Always provide a baseline ground to prevent leaks
+    if not NE_ENABLED_TERRAIN:  # Always provide a baseline ground to prevent leaks
         BRUSHES.append(
             box(
                 ROAD_X2 + CHARLES_WALK_W,
