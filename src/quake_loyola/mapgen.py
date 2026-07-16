@@ -23,7 +23,7 @@ from . import (
 from .constants import (
     BASEMENT_ENABLED_LIGHTS,
     LIGHTS_ENABLED,
-    TORCH_LIGHTS_ENABLED,
+    LIGHTS_ENABLED_TORCHES,
     WORLDSPAWN_FIELDS,
 )
 from .mapdata import MapBuilder
@@ -47,7 +47,7 @@ MODULES = [
 # convenience master that forces every group on, same pattern as
 # BRIDGE_ENABLED vs its per-section flags — see constants.py.
 LIGHT_GROUP_FLAGS = {
-    "torch": TORCH_LIGHTS_ENABLED,
+    "torch": LIGHTS_ENABLED_TORCHES,
     "basement": BASEMENT_ENABLED_LIGHTS,
 }
 

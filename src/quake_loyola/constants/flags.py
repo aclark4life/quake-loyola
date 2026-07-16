@@ -73,13 +73,13 @@ ENTITIES_ENABLED = _flag(
 LIGHTS_ENABLED = _flag(
     "LIGHTS_ENABLED"
 )  # master switch for every "light"-classname entity across all modules (streets, entities, west_campus, bridge, etc.); see generate_map.py filter
-TORCH_LIGHTS_ENABLED = _flag(
-    "TORCH_LIGHTS_ENABLED"
+LIGHTS_ENABLED_TORCHES = _flag(
+    "LIGHTS_ENABLED_TORCHES"
 )  # light "group" flag: torch/flame fixtures only
 BASEMENT_ENABLED_LIGHTS = _flag(
     "BASEMENT_ENABLED_LIGHTS"
 )  # light "group" flag: basement.py fixtures only —
-# on by default (unlike TORCH_LIGHTS_ENABLED's pattern above, kept True since
+# on by default (unlike LIGHTS_ENABLED_TORCHES's pattern above, kept True since
 # the basement is otherwise a fully unlit sky-textured void with no ambient
 # light source, and would render as solid black without at least a few
 # lights placed inside it).
