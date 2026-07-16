@@ -20,10 +20,16 @@ from . import config
 # via `pip install -e .` or run in-place via `sys.path` insertion.
 REPO_ROOT = Path.cwd()
 
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
 app = typer.Typer(
-    help="quake-loyola build CLI — configure module/light flags and run the build."
+    help="quake-loyola build CLI — configure module/light flags and run the build.",
+    context_settings=CONTEXT_SETTINGS,
 )
-config_app = typer.Typer(help="View or change build-time settings stored in ql.toml.")
+config_app = typer.Typer(
+    help="View or change build-time settings stored in ql.toml.",
+    context_settings=CONTEXT_SETTINGS,
+)
 app.add_typer(config_app, name="config")
 
 
