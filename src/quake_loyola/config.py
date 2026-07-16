@@ -11,12 +11,12 @@ This file has no dependency on the rest of ``quake_loyola`` so it can be
 imported early (from ``constants/flags.py`` etc.) without any risk of a
 circular import.
 
-Edit ``ql.toml`` by hand, or use the ``ql config`` CLI (see ``cli.py``):
+Edit ``ql.toml`` by hand, or use the ``ql conf`` CLI (see ``cli.py``):
 
-    ./ql config show                      # list every flag/setting
-    ./ql config set KNOTT_HALL_ENABLED true
-    ./ql config set vis_mode full
-    ./ql config reset                      # delete ql.toml, back to defaults
+    ./ql conf show                      # list every flag/setting
+    ./ql conf set KNOTT_HALL_ENABLED true
+    ./ql conf set vis_mode full
+    ./ql conf reset                      # delete ql.toml, back to defaults
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ CONFIG_PATH = Path.cwd() / "ql.toml"
 # Flag defaults — one entry per boolean switch, formerly hardcoded in
 # constants/flags.py, constants/bridge.py, constants/knott.py, and
 # constants/derived.py. Keys are the exact constant names used at their call
-# sites so `ql config set <NAME> <value>` maps 1:1 onto the Python constant.
+# sites so `ql conf set <NAME> <value>` maps 1:1 onto the Python constant.
 # ════════════════════════════════════════════════════════════════════════
 DEFAULTS: dict[str, bool] = {
     # -- module masters (constants/flags.py) --

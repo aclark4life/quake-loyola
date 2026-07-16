@@ -2,16 +2,16 @@
 
 Every value below is now sourced from :mod:`quake_loyola.config` (defaults
 hardcoded there, optionally overridden by ``ql.toml`` at the repo root — see
-that module's docstring, or run ``./ql config show``). The comments here
+that module's docstring, or run ``./ql conf show``). The comments here
 describe what each flag does; the *value* itself lives in
 ``config.DEFAULTS`` and is only overridden when the user sets it via
-``ql config set <NAME> <value>``.
+``ql conf set <NAME> <value>``.
 """
 
 from ..config import get as _flag
 
 # ════════════════════════════════════════════════════════════════════════════════
-# MASTER MODULE SWITCHES — flip a flag to True (via `ql config set NAME true`,
+# MASTER MODULE SWITCHES — flip a flag to True (via `ql conf set NAME true`,
 # or by editing ql.toml) to re-enable that module's geometry. All default to
 # False so only the world-shell rectangle (streets.py, which is never gated —
 # it seals the level) is generated. Use this while re-deriving every area's

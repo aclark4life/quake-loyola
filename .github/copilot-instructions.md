@@ -20,7 +20,7 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/entities.py` | Player spawns, items, lights |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
-| `ql` | Typer CLI entry point — `./ql config ...` / `./ql gen` / `./ql build` |
+| `ql` | Typer CLI entry point — `./ql conf ...` / `./ql gen` / `./ql build` |
 | `src/quake_loyola/config.py` | Flag/build-setting defaults + `ql.toml` load/save |
 | `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
 
@@ -76,11 +76,11 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 
 Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and vis/light
 quality settings are controlled via `ql.toml` (repo root, gitignored) and the
-`./ql config` CLI — see the module docstring of `src/quake_loyola/config.py`
+`./ql conf` CLI — see the module docstring of `src/quake_loyola/config.py`
 and the README's "Configuring the build" section. `generate_map.py` picks up
 `ql.toml` automatically through `constants/flags.py` (and a few flags in
 `constants/bridge.py`/`knott.py`/`derived.py`) at import time; no code changes
-needed to flip a module on/off — use `./ql config set <NAME> true|false`.
+needed to flip a module on/off — use `./ql conf set <NAME> true|false`.
 
 ## Key conventions
 

@@ -47,23 +47,23 @@ regular console-script:
 
 ```bash
 pip install -e .       # installs the `ql` command + typer into your environment
-ql config show
+ql conf show
 ```
 
 ```bash
-./ql config show                          # (or `ql ...` if pip-installed)
-./ql config set KNOTT_HALL_ENABLED true   # flip a module/light flag on or off
-./ql config set vis_mode full             # "fast" (default) or "full" vis pass
-./ql config set light_extra true          # light -extra (2x2 supersampling)
-./ql config get KNOTT_HALL_ENABLED
-./ql config reset                         # delete ql.toml, back to defaults
+./ql conf show                          # (or `ql ...` if pip-installed)
+./ql conf set KNOTT_HALL_ENABLED true   # flip a module/light flag on or off
+./ql conf set vis_mode full             # "fast" (default) or "full" vis pass
+./ql conf set light_extra true          # light -extra (2x2 supersampling)
+./ql conf get KNOTT_HALL_ENABLED
+./ql conf reset                         # delete ql.toml, back to defaults
 ./ql gen                                  # same as `just generate`, but config-aware
 ./ql build                                # generate + qbsp + vis + light + deploy,
                                            # using the [build] settings above
 ```
 
 `generate_map.py` (and `just generate`) automatically pick up whatever is in
-`ql.toml` too — `ql config set ...` is just a convenient way to edit it.
+`ql.toml` too — `ql conf set ...` is just a convenient way to edit it.
 `just venv` already runs `pip install -e .` for you, so `.venv/bin/ql` is
 ready to use after `just test`/`just venv`.
 

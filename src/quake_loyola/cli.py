@@ -30,7 +30,7 @@ config_app = typer.Typer(
     help="View or change build-time settings stored in ql.toml.",
     context_settings=CONTEXT_SETTINGS,
 )
-app.add_typer(config_app, name="config")
+app.add_typer(config_app, name="conf")
 
 
 def _parse_bool(value: str) -> bool:
@@ -75,7 +75,7 @@ def config_get(name: str) -> None:
         typer.echo(str(config.get_build(name)))
     else:
         typer.echo(
-            f"Unknown setting {name!r}. Run `ql config show` for the full list.",
+            f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
             err=True,
         )
         raise typer.Exit(code=1)
@@ -86,10 +86,10 @@ def config_set(name: str, value: str) -> None:
     """Set a flag (true/false) or build setting, persisted to ql.toml.
 
     Examples:
-        ql config set KNOTT_HALL_ENABLED true
-        ql config set bridge_enabled true       # names are case-insensitive
-        ql config set vis_mode full
-        ql config set light_extra true
+        ql conf set KNOTT_HALL_ENABLED true
+        ql conf set bridge_enabled true       # names are case-insensitive
+        ql conf set vis_mode full
+        ql conf set light_extra true
     """
     name_u = name.upper()
     if name_u in config.DEFAULTS:
@@ -107,7 +107,7 @@ def config_set(name: str, value: str) -> None:
         typer.echo(f"{name} = {parsed_build}")
     else:
         typer.echo(
-            f"Unknown setting {name!r}. Run `ql config show` for the full list.",
+            f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
             err=True,
         )
         raise typer.Exit(code=1)

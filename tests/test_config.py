@@ -1,5 +1,5 @@
 """Tests for quake_loyola.config — the ql.toml-backed flag/build-setting
-override system used by the `ql config` CLI and read by
+override system used by the `ql conf` CLI and read by
 constants/flags.py (and a few other constants modules) at import time."""
 
 from quake_loyola import config
