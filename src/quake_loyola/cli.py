@@ -137,7 +137,7 @@ def config_path() -> None:
     typer.echo(str(config.CONFIG_PATH))
 
 
-@app.command()
+@app.command("gen")
 def generate() -> None:
     """Write loyola.map from the current config-driven flag settings."""
     from .mapgen import main as _generate_main

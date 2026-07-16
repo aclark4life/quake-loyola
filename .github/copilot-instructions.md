@@ -20,7 +20,7 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/entities.py` | Player spawns, items, lights |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
-| `ql` | Typer CLI entry point — `./ql config ...` / `./ql generate` / `./ql build` |
+| `ql` | Typer CLI entry point — `./ql config ...` / `./ql gen` / `./ql build` |
 | `src/quake_loyola/config.py` | Flag/build-setting defaults + `ql.toml` load/save |
 | `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
 

@@ -57,7 +57,7 @@ ql config show
 ./ql config set light_extra true          # light -extra (2x2 supersampling)
 ./ql config get KNOTT_HALL_ENABLED
 ./ql config reset                         # delete ql.toml, back to defaults
-./ql generate                             # same as `just generate`, but config-aware
+./ql gen                                  # same as `just generate`, but config-aware
 ./ql build                                # generate + qbsp + vis + light + deploy,
                                            # using the [build] settings above
 ```
