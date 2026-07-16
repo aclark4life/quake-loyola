@@ -163,9 +163,10 @@ CHARLES_LAMP_POST_XS = [
     KNOTT_NE_PIER_X - CHARLES_LAMP_POST_EAST_SETBACK,
     KNOTT_PIER_X,
 ]
-ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + 80
-ENNIS_PILLAR_EAST_SHIFT = 40  # nudges the Ennis entrance pillars east, staying
-# clear of the gate (80-unit gap to ENNIS_GATE_X1)
+ENNIS_PILLAR_EAST_SHIFT = 100  # nudges the Ennis entrance pillars (and the gate,
+# which tracks this shift below) east together, preserving the 80-unit gap
+# between the pillar cap and ENNIS_GATE_X1
+ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT + 80
 ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
 ENNIS_PILLAR_X2 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
 CHARLES_LAMP_POST_H = BRIDGE_DZ2 - BRIDGE_LAMP_POST_CLEARANCE

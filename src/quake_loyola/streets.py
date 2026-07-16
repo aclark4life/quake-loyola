@@ -2178,6 +2178,12 @@ def build():
     # sidewalk squares by a low flush gap (matches Charles St's treatment).
     _ENNIS_CURB_CAP_D = 8  # depth of the curb wall itself
     _ENNIS_CURB_GAP = 2  # width of the flush gap between curb and sidewalk
+    # Corner brick/cement wall pillar (bw_cx/bw_cy in build_ennis_entrance_
+    # features()) sits at the west end of this sidewalk run — recompute its
+    # X center here so the white-stone patch below can extend a bit past
+    # its west face, leaving plain cement sidewalk only further west.
+    _ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
+    _bw_cx = _ennis_wall_x1 + ENNIS_WALL_T // 2
     sw_slabs_x(
         BRUSHES,
         ROAD_X2 + CHARLES_WALK_W,
@@ -2188,19 +2194,18 @@ def build():
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
         tt_params=ENNIS_ROAD_TT_PARAMS,
-        # Mulch instead of sidewalk from the north Ennis pillar east to
-        # where the main iron gate run ends, fronting the fence/gate. Just
-        # west of the pillar, the last piece-and-a-half of sidewalk (the
-        # full panel plus the partial sliver abutting the pillar) is
-        # stn_f14_wht1 instead of plain sidewalk, matching the white-stone
-        # accent squares on the south side of Ennis. Its west edge is
-        # pulled in a bit (leaving normal jointed sidewalk to the west)
-        # rather than running the full 1.5-panel width. East of where the
-        # iron fence ends, the remaining cement sidewalk becomes grass
-        # (Textures.GROUND) the rest of the way to ENNIS_X2.
+        # White stone (stn_f14_wht1) from just west of the corner brick/
+        # cement wall pillar's west face (bw_cx, at the NW corner of the
+        # Charles/Ennis intersection) east to the north Ennis entrance
+        # pillar, matching the white-stone accent squares on the south
+        # side of Ennis. West of that, plain cement sidewalk remains. East
+        # of the north pillar, mulch runs to where the main iron gate
+        # ends, fronting the fence/gate; beyond that, the remaining cement
+        # sidewalk becomes grass (Textures.GROUND) the rest of the way to
+        # ENNIS_X2.
         tex_ranges=[
             (
-                ENNIS_PILLAR_X1 - 1.5 * _SW_SLAB_LEN + 16,
+                _bw_cx - ENNIS_WALL_PILLAR_HW + 4,
                 ENNIS_PILLAR_X1,
                 Textures.WHITE_STONE,
                 ENNIS_ROAD_TT_PARAMS,
