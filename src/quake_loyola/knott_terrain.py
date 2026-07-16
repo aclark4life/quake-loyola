@@ -70,10 +70,6 @@ def build():
         return [], []
     BRUSHES = []
 
-    # Sidewalk slab parameters: slab length and expansion-joint gap in Y.
-    _SW_SLAB_LEN = 128  # ~8.5 ft per slab
-    _SW_GAP = 2  # expansion joint width
-
     def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
         # Single full-depth sloped slab: GROUND on every face except the top,
         # which carries the surface texture. Previously this was a thin surface
@@ -100,46 +96,43 @@ def build():
         )
 
     def sidewalk_slabs_sloped(brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex):
-        """Tile a sloped sidewalk (y1..y2) as individual slab brushes with small
-        expansion-joint gaps, giving the look of real concrete sidewalk panels.
-        Each slab is _SW_SLAB_LEN long; joints are _SW_GAP wide. The top Z is
-        linearly interpolated across the full y1..y2 span per slab edge."""
-        total = y2 - y1
-        step = _SW_SLAB_LEN + _SW_GAP
-        y = y1
-        while y < y2:
-            sy1 = y
-            sy2 = min(y + _SW_SLAB_LEN, y2)
-            t1 = (sy1 - y1) / total
-            t2 = (sy2 - y1) / total
-            tz1 = top_z_s + t1 * (top_z_n - top_z_s)
-            tz2 = top_z_s + t2 * (top_z_n - top_z_s)
-            brushes.append(
-                ramp_slab_y(
-                    x1,
-                    x2,
-                    sy1,
-                    sy2,
-                    FLOOR_Z1,
-                    FLOOR_Z1,
-                    tz1,
-                    tz2,
-                    Textures.GROUND,
-                    tt=surface_tex,
-                )
+        """Build a sloped sidewalk (y1..y2) as one continuous full-depth ramp
+        slab — CEMENT on top, GROUND on every other face, same one-brush
+        pattern as road_section (see its docstring: a separate thin overlay
+        riding on a full-depth fill hits a qbsp coplanar-face-drop bug where
+        the overlay's top face gets dropped in favour of the fill's coincident
+        top, rendering as dirt).
+        This used to tile the sidewalk into individual expansion-joint slabs,
+        each its own full-depth box down to FLOOR_Z1 with a small gap between
+        neighbours — from underneath (e.g. after clipping through the ground
+        elsewhere nearby), that reads as a row of separate free-standing
+        pillars with slivers of daylight between them, structurally pointless
+        since nothing is ever meant to be seen down there. One continuous
+        brush removes those slivers/pillars entirely with no visible change
+        from above (the sidewalk's own real-world control joints aren't
+        modelled as physical gaps anyway — the previous tiling was a stylistic
+        approximation, not something players could tell apart from a solid
+        slab in-game)."""
+        brushes.append(
+            ramp_slab_y(
+                x1,
+                x2,
+                y1,
+                y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                top_z_s,
+                top_z_n,
+                Textures.GROUND,
+                tt=surface_tex,
             )
-            y += step
+        )
 
     def sidewalk_slabs_flat(brushes, x1, x2, y1, y2, z_base, z_top, surface_tex):
-        """Tile a flat sidewalk (y1..y2) as individual slab brushes with small
-        expansion-joint gaps."""
-        step = _SW_SLAB_LEN + _SW_GAP
-        y = y1
-        while y < y2:
-            sy1 = y
-            sy2 = min(y + _SW_SLAB_LEN, y2)
-            brushes.append(box(x1, sy1, z_base, x2, sy2, z_top, surface_tex))
-            y += step
+        """Build a flat sidewalk (y1..y2) as one continuous full-depth slab —
+        see sidewalk_slabs_sloped's docstring for why this replaced the old
+        per-slab tiling with expansion-joint gaps."""
+        brushes.append(box(x1, y1, z_base, x2, y2, z_top, surface_tex))
 
     # ══════════════════════════════════════════════════════════════════════════════
     # BACK ROAD — east of Knott Hall, slopes south to meet the back of the building
@@ -688,19 +681,46 @@ def build():
     # top of this function) tapers the real elevation back down to the
     # sidewalk's own sloped height (matching road_section's ZT_S→ZT_N slope
     # exactly) instead, turning that wall into a steep bank.
+    #
+    # This loop's first segment (wx1 == KNOTT.x1) shares its west edge
+    # (KNOTT.x1, Y1) and (KNOTT.x1, Y2) exactly with the south-corner grid's
+    # (_sgrid) own last column and the south-extension fill's (_wg2) first
+    # column — the same 3-way coincident-vertex pattern that caused a real
+    # qbsp hull1 clip-hull degeneracy at the north-of-Y=0 hill ramp (see the
+    # notes there). It produces the same symptom here: a player falls in and
+    # ends up walking around beneath the surface, past a sharp compiled
+    # cliff that doesn't exist in this loop's own smooth single-prism model.
+    # Nudge this segment's west edge past KNOTT.x1 by a small overlap so it
+    # no longer pins the exact same vertex as those other two systems.
+    #
+    # The second segment's east edge (KNOTT_DRIVEWAY_WS_X1) has the same
+    # problem from the other side: it's pinned by this loop AND by every one
+    # of the west sidewalk's individually-tiled slab brushes
+    # (sidewalk_slabs_sloped, built separately with expansion-joint gaps) —
+    # many separate brushes all sharing the same X=WS_X1 edge at different Y
+    # tile boundaries. A player reported the same sink-and-walk symptom near
+    # (2469, -1074, 82), right up against that edge. Nudge this segment's
+    # east edge past WS_X1 too so it doesn't pin the exact same vertices as
+    # those slabs (_sidewalk_h only depends on Y, so the overlap doesn't
+    # need its own re-derived height — it's already consistent past WS_X1).
+    _west_x_ovr = 2
+    _east_x_ovr = 2
     for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
         real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1
-        z1a = _south_edge_real(wx1) if wx1 != KNOTT.x1 else _south_edge_real(KNOTT.x1)
+        _is_first = wx1 == KNOTT.x1
+        wx1n = wx1 - _west_x_ovr if _is_first else wx1
+        wx2n = wx2 + _east_x_ovr if real_edge else wx2
+        z1a = _south_edge_real(wx1n)
         z1b = _sidewalk_h(KNOTT_DRIVEWAY_Y1) if real_edge else _south_edge_real(wx2)
-        z2a = _sgrid[-1][2] if wx1 == KNOTT.x1 else _south_edge_z(wx1)
+        z2a = _sgrid[-1][2] if _is_first else _south_edge_z(wx1)
         z2b = _sidewalk_h(KNOTT_DRIVEWAY_Y2) if real_edge else _south_edge_z(wx2)
         BRUSHES.append(
             tri_ramp_prism(
-                wx1,
+                wx1n,
                 KNOTT_DRIVEWAY_Y1,
-                wx2,
+                wx2n,
                 KNOTT_DRIVEWAY_Y1,
-                wx2,
+                wx2n,
                 KNOTT_DRIVEWAY_Y2,
                 FLOOR_Z1,
                 z1a,
@@ -711,11 +731,11 @@ def build():
         )
         BRUSHES.append(
             tri_ramp_prism(
-                wx1,
+                wx1n,
                 KNOTT_DRIVEWAY_Y1,
-                wx2,
+                wx2n,
                 KNOTT_DRIVEWAY_Y2,
-                wx1,
+                wx1n,
                 KNOTT_DRIVEWAY_Y2,
                 FLOOR_Z1,
                 z1a,
@@ -781,6 +801,26 @@ def build():
         # and holding this profile flat all the way to the sidewalk left a
         # ~300-unit unclimbable cliff at its west edge for that entire
         # stretch. No real Y=0 survey data exists past X=1206 anyway.
+        #
+        # This taper used to be one straight line from (KNOTT.x1, 78) to
+        # (KNOTT_DRIVEWAY_WS_X1, 0) — a dead-flat 0% grade on the west side
+        # meeting a constant ~6% grade dead on, an abrupt kink in the
+        # surface normal right at KNOTT.x1. Every one of the north-of-Y=0
+        # ramp's tri_ramp_prism brushes shares that same kink along the
+        # whole KNOTT.x1 boundary, and a player kept sinking a few units
+        # into the ground and getting stuck/pushed back out right around
+        # there (e.g. (1222, 19, 26), (1222, 55, 26)) — classic engine
+        # slope-correction jitter at a sharp grade change, not a real hole
+        # (repeated overlap/backstop-brush fixes at that spot did nothing,
+        # since there was never a gap to fill). Replacing the single kinked
+        # segment with a smoothstep-sampled S-curve (zero slope at both
+        # ends, matching the flat plateau behind it and the flat sidewalk
+        # ahead of it) spreads the grade change out gradually instead of
+        # concentrating it at one seam.
+        (1206 + 0.2 * 1280, 78 * (1 - (3 * 0.2**2 - 2 * 0.2**3))),
+        (1206 + 0.4 * 1280, 78 * (1 - (3 * 0.4**2 - 2 * 0.4**3))),
+        (1206 + 0.6 * 1280, 78 * (1 - (3 * 0.6**2 - 2 * 0.6**3))),
+        (1206 + 0.8 * 1280, 78 * (1 - (3 * 0.8**2 - 2 * 0.8**3))),
         (KNOTT_DRIVEWAY_WS_X1, 0),
     ]
 
@@ -851,16 +891,53 @@ def build():
         # Real Y=0 samples don't cover this stretch, but campus quads
         # typically crest near the middle and slope down on both sides, so
         # mirroring the south ramp's shape is the best available approximation.
+        #
+        # Triangulated using the (px2,0)-(px1,ENNIS_SW_EDGE) diagonal rather
+        # than (px1,0)-(px2,ENNIS_SW_EDGE): at every interior _hill_profile
+        # breakpoint (e.g. KNOTT.x1), (px1, 0) is also a corner of the
+        # *previous* X-segment's own triangle here and of the south-of-Y=0
+        # ramp above — putting it on THIS segment's diagonal too made it a
+        # 3-way convergence of differently-sloped planes at one vertex,
+        # exactly the kind of acute multi-plane pinch qbsp's clip-hull
+        # generation can crack on (a player kept sinking into the ground
+        # near (1222, y, 26) for several different Y values — always ~16
+        # units east of KNOTT.x1, i.e. right at that vertex, not tied to any
+        # one Y — and widening the Y=0 seam overlap and adding extra
+        # overlapping fallback geometry there didn't help, since the
+        # problem was never the seam's overlap width). Using the opposite
+        # diagonal keeps (px1, 0) a "loose" corner of only one triangle
+        # here, cutting the convergence at that vertex back down to two
+        # planes — a normal edge instead of a pinch point.
+        #
+        # Even after that flip, a player kept sinking a few units into the
+        # ground and getting stuck right around (1222, y, 26) — always ~16
+        # units east of KNOTT.x1. bsputil --check on the compiled BSP found
+        # the real cause: qbsp's hull1 clip-hull generation produces a
+        # genuinely degenerate clipnode ("both children -1") right there —
+        # a plane split whose two sides both resolve to CONTENTS_EMPTY,
+        # created by the exact-coincidence vertex at (px1, 0) still shared
+        # between this segment's own triangle and the *previous* segment's
+        # triangle (and the south-of-Y=0 ramp's matching vertex at the same
+        # X). Nudging this segment's west edge past px1 by a small overlap
+        # (mirroring the _WRAMP_OVR idiom used for the Y=0 seam elsewhere in
+        # this loop, but along X here) breaks that exact coincidence so the
+        # two ramp systems no longer pin the same point, without changing
+        # the walkable surface (the overlap is fully inside the solid
+        # region on both sides). Skip it on the very first segment, which
+        # has no previous segment to collide with.
+        _nx_ovr = 2 if px1 != _hill_profile[0][0] else 0
+        px1n = px1 - _nx_ovr
+        z1n = _hill_z(px1n) if _nx_ovr else z1
         BRUSHES.append(
             tri_ramp_prism(
-                px1,
+                px1n,
                 0,
                 px2,
                 0,
-                px2,
+                px1n,
                 ENNIS_SW_EDGE,
                 FLOOR_Z1,
-                z1,
+                z1n,
                 z2,
                 _flat_z,
                 Textures.GROUND,
@@ -868,14 +945,14 @@ def build():
         )
         BRUSHES.append(
             tri_ramp_prism(
-                px1,
+                px2,
                 0,
                 px2,
                 ENNIS_SW_EDGE,
-                px1,
+                px1n,
                 ENNIS_SW_EDGE,
                 FLOOR_Z1,
-                z1,
+                z2,
                 _flat_z,
                 _flat_z,
                 Textures.GROUND,

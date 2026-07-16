@@ -86,6 +86,34 @@ def build():
         BRUSHES
     )  # checkpoint — trimmed below if KNOTT_EXTERIOR_ENABLED is False
 
+    # ── Sub-ground-floor crawlspace fill ─────────────────────────────────────
+    # The building footprint's perimeter walls run full height (FLOOR_Z1 up to
+    # KNOTT_GROUND_Z) and the ground-floor slab caps them at KNOTT_GROUND_Z,
+    # but nothing ever filled the gap between them and the actual sloped
+    # terrain surface knott_terrain.py builds underneath (which tops out well
+    # below KNOTT_GROUND_Z here) — leaving a hollow, unlit crawlspace with no
+    # purpose, never meant to be seen. It's nominally sealed by the perimeter
+    # walls, but the sloped terrain right at this building's edge is stitched
+    # together from many separate ramp brushes converging on coincident
+    # vertices (see the knott_terrain.py notes on qbsp's hull1 clip-hull
+    # degeneracy around KNOTT.x1) — exactly the kind of geometry that can
+    # produce a stray hull1 crack a player slips through. One solid block
+    # spanning the whole footprint up to the ground floor's underside removes
+    # the crawlspace (and any pillar-like leftover geometry visible from
+    # inside it) entirely, so there's nothing to fall into here regardless of
+    # where a crack might be.
+    BRUSHES.append(
+        box(
+            KNOTT.x1,
+            KNOTT.y1,
+            FLOOR_Z1,
+            KNOTT.x2,
+            KNOTT.y2,
+            KNOTT_GROUND_Z,
+            Textures.GROUND,
+        )
+    )
+
     def floor_levels():
         for floor_index in range(KNOTT.floors):
             fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
