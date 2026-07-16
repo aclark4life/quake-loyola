@@ -55,7 +55,12 @@ def config_show() -> None:
         value = config.get(name)
         default = config.DEFAULTS[name]
         marker = "*" if value != default else " "
-        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
+        note = (
+            "  (master: forces every BRIDGE_ENABLED_<section> flag on)"
+            if name == "BRIDGE_ENABLED"
+            else ""
+        )
+        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default}){note}")
     typer.echo("\n[build]")
     for name in sorted(config.BUILD_DEFAULTS):
         value = config.get_build(name)
@@ -90,6 +95,11 @@ def config_set(name: str, value: str) -> None:
         ql conf set bridge_enabled true       # names are case-insensitive
         ql conf set vis_mode full
         ql conf set light_extra true
+
+    Note: BRIDGE_ENABLED is a convenience master switch — setting it true
+    forces every BRIDGE_ENABLED_<section> flag (west_approach, center_span,
+    east_approach, kh_span, east_ext) on too, overriding their individual
+    settings.
     """
     name_u = name.upper()
     if name_u in config.DEFAULTS:
