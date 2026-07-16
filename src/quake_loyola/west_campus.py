@@ -139,6 +139,40 @@ def build_iron_fence(ENTITIES):
         )
         picket_y += FENCE_SPACING
         picket_index += 1
+
+    # Brick pillar capping the south (CHARLES_Y1) end of the fence — a squared
+    # gatepost-style terminus, taller than the pickets with a projecting cap.
+    pillar_hw = 24
+    pillar_cx = (FENCE_X1 + FENCE_X2) // 2
+    pillar_y1 = CHARLES_Y1 - pillar_hw
+    pillar_y2 = CHARLES_Y1 + pillar_hw
+    pillar_base = fence_base_at(CHARLES_Y1)
+    cap_h = 10
+    cap_ovh = 4
+    pillar_top = pillar_base + FENCE_H + 12
+    fence_brushes.append(
+        box(
+            pillar_cx - pillar_hw,
+            pillar_y1,
+            pillar_base,
+            pillar_cx + pillar_hw,
+            pillar_y2,
+            pillar_top,
+            Textures.BUILDING,
+        )
+    )
+    fence_brushes.append(
+        box(
+            pillar_cx - pillar_hw - cap_ovh,
+            pillar_y1 - cap_ovh,
+            pillar_top,
+            pillar_cx + pillar_hw + cap_ovh,
+            pillar_y2 + cap_ovh,
+            pillar_top + cap_h,
+            Textures.BUILDING,
+        )
+    )
+
     if fence_brushes:
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
