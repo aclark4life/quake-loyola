@@ -66,7 +66,7 @@ measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
 terrain) is temporarily disabled via the master switches in
 ``constants/flags.py`` (``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``,
-``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_DETAILS_ENABLED``,
+``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_ENABLED_DETAILS``,
 ``ENTITIES_ENABLED``)
 while each area's own dimensions are re-derived against this new world size
 from the ``ref/`` top-down views.
@@ -163,7 +163,7 @@ parked cars), using RGB pixel sampling to find the road-surface/verge
 boundary: 48px, 44px, and 52px, averaging **~35.8 ft** (35.8, 32.8, 38.8 ft
 respectively; 0.7463 ft/px). This matches the existing ``ROAD_X1``/``ROAD_X2``
 constant (``-256``/``256`` = 33.9 ft) well within measurement noise — no
-change was needed. ``STREETS_DETAILS_ENABLED`` was re-enabled as the first
+change was needed. ``STREETS_ENABLED_DETAILS`` was re-enabled as the first
 re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
 entrance features); compiles with no leaks at the new world size.
 

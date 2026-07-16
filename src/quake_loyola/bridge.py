@@ -44,6 +44,7 @@ from .constants import (
     BRIDGE_ENABLED_SPAN_EAST_EXT,
     BRIDGE_ENABLED_SPAN_KH,
     BRIDGE_ENABLED_SPAN_WEST_APPROACH,
+    BRIDGE_ENABLED_SUPPORTS,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
@@ -99,7 +100,6 @@ from .constants import (
     PIER3_X,
     PIER4_X,
     PIER6_X,
-    SHOW_SUPPORTS,
     STREET_SURFACE_T,
     WALK_X1,
     WALK_X2,
@@ -799,11 +799,14 @@ def _build_all():
     # Each pillar position now features a narrow arched pier supporting the deck.
     # Arch openings span most of the bridge N-S width (BRIDGE.y2=113, bridge=226 units)
     # rin = half-width of clear opening; rout = outer radius of arch ring
-    if SHOW_SUPPORTS:
+    if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             if px == PIER6_X:
                 continue  # built explicitly below as a duplicate of Pier 5
-            if SHOW_SUPPORTS is not True and px not in SHOW_SUPPORTS:
+            if (
+                BRIDGE_ENABLED_SUPPORTS is not True
+                and px not in BRIDGE_ENABLED_SUPPORTS
+            ):
                 continue
             pdeck = deck_top_z(px)  # deck surface at this X
             ppar = pdeck + BRIDGE.parapet_h  # parapet top
@@ -1168,7 +1171,7 @@ def _build_all():
                     )
                 )
                 # Flame decal + damaging trigger — built here (unconditional on
-                # BRIDGE_ENABLED/SHOW_SUPPORTS, not entities.py's ENTITIES_ENABLED
+                # BRIDGE_ENABLED/BRIDGE_ENABLED_SUPPORTS, not entities.py's ENTITIES_ENABLED
                 # master) so pier torches always render, matching streets.py's
                 # own lamp-post/entrance-torch pattern of keeping decorative
                 # lights alongside the geometry they sit on.
@@ -1222,7 +1225,7 @@ def _build_all():
     # ── Pier 6 — explicit duplicate of Pier 5 (KNOTT_NE_PIER_X) ─────────────────
     # Pier 5 uses square_wall + OUTER_R. Pier 6 is identical but sits in the angled
     # east span, so all Y coords are shifted south by east_y_shift(PIER6_X).
-    if SHOW_SUPPORTS:
+    if BRIDGE_ENABLED_SUPPORTS:
         px = PIER6_X
         pdeck = deck_top_z(px)
         ppar = pdeck + BRIDGE.parapet_h

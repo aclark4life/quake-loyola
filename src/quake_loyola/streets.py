@@ -101,7 +101,7 @@ from .constants import (
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
-    STREETS_DETAILS_ENABLED,
+    STREETS_ENABLED_DETAILS,
     WALL_T,
     WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_ENABLED_DORMS,
@@ -1477,7 +1477,7 @@ def build():
     # hillside/embankment geometry that they're shaped around is actually
     # present (built by west_campus.py); with WEST_CAMPUS_ENABLED_DORMS off,
     # those inner faces should read as sky, regardless of
-    # STREETS_DETAILS_ENABLED.
+    # STREETS_ENABLED_DETAILS.
     _tunnel_wall_tex = (
         Textures.GROUND
         if (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS)
@@ -1664,7 +1664,7 @@ def build():
             Textures.SKY,
         )
     )  # sky
-    if not STREETS_DETAILS_ENABLED:
+    if not STREETS_ENABLED_DETAILS:
         return BRUSHES, ENTITIES
     # ── Non-sealing street furniture, markings, and decorative ground geometry ──
     # These are moved to DETAIL_BRUSHES to speed up vis and reduce portal fragmentation.

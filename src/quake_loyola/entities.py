@@ -11,6 +11,7 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_ENABLED_PIER_BASE_LIGHTS,
+    BRIDGE_ENABLED_SUPPORTS,
     BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
     BRIDGE_PILLAR_BASE_H,
@@ -88,7 +89,6 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
-    SHOW_SUPPORTS,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -990,13 +990,13 @@ def build():
     )  # mega armor on roof ridge (teleport reward)
 
     # Torch lights on pillar caps are now built alongside the pier geometry in
-    # bridge.py's own SHOW_SUPPORTS loops (unconditional on ENTITIES_ENABLED),
+    # bridge.py's own BRIDGE_ENABLED_SUPPORTS loops (unconditional on ENTITIES_ENABLED),
     # matching streets.py's lamp-post/entrance-torch pattern — see the comment
     # there for why. Kept out of this ENTITIES_ENABLED-gated module so pier
     # torches always render regardless of that master switch.
 
     # Pillar base uplights — ground-level spots wash light up the pier faces
-    if SHOW_SUPPORTS:
+    if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             for underbridge_light_y in [BRIDGE.y2 + 30, BRIDGE.y1 - 30]:
                 # Skip abutment-pier positions buried in solid building geometry
@@ -1016,7 +1016,7 @@ def build():
     # Campus lamp post lights, Ennis cement wall lamppost lights, and Ennis
     # entrance pillar torches are now all built alongside their pole/pillar
     # geometry (in streets.py's build_ennis_entrance_features, unconditional
-    # on STREETS_DETAILS_ENABLED) so they can't drift out of sync or double
+    # on STREETS_ENABLED_DETAILS) so they can't drift out of sync or double
     # up when ENTITIES_ENABLED is turned back on.
 
     # Under-bridge amber pendant lights — flicker style, hang below deck.

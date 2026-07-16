@@ -35,8 +35,8 @@ BRIDGE_ENABLED_SPAN_KH = _flag(
 BRIDGE_ENABLED_SPAN_EAST_EXT = _flag(
     "BRIDGE_ENABLED_SPAN_EAST_EXT"
 )  # bridge.py span: Pier 5 .. Pier 6 (extended east section to Ennis Rd)
-STREETS_DETAILS_ENABLED = _flag(
-    "STREETS_DETAILS_ENABLED"
+STREETS_ENABLED_DETAILS = _flag(
+    "STREETS_ENABLED_DETAILS"
 )  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = _flag(
     "WEST_CAMPUS_ENABLED"
@@ -106,4 +106,4 @@ MARYLAND_ENABLED_TERRAIN = _flag(
 
 BRIDGE_ENABLED_FASCIA_TEXT = _flag("BRIDGE_ENABLED_FASCIA_TEXT")
 
-SHOW_SUPPORTS = _flag("SHOW_SUPPORTS")
+BRIDGE_ENABLED_SUPPORTS = _flag("BRIDGE_ENABLED_SUPPORTS")

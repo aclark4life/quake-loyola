@@ -47,7 +47,7 @@ DEFAULTS: dict[str, bool] = {
     "BRIDGE_ENABLED_SPAN_EAST_APPROACH": True,
     "BRIDGE_ENABLED_SPAN_KH": False,
     "BRIDGE_ENABLED_SPAN_EAST_EXT": False,
-    "STREETS_DETAILS_ENABLED": True,
+    "STREETS_ENABLED_DETAILS": True,
     "WEST_CAMPUS_ENABLED": False,
     "WEST_CAMPUS_ENABLED_DORMS": False,
     "WEST_CAMPUS_ENABLED_FENCE": True,
@@ -64,7 +64,7 @@ DEFAULTS: dict[str, bool] = {
     "BASEMENT_ENABLED_LIGHTS": True,
     # -- misc display flags (constants/flags.py) --
     "BRIDGE_ENABLED_FASCIA_TEXT": True,
-    "SHOW_SUPPORTS": True,
+    "BRIDGE_ENABLED_SUPPORTS": True,
     # -- other module-local flags --
     "BRIDGE_ENABLED_PIER_BASE_LIGHTS": False,  # constants/bridge.py
     "KNOTT_ENABLED_EXTERIOR": True,  # constants/knott.py
