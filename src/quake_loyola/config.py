@@ -13,10 +13,12 @@ circular import.
 
 Edit ``ql.toml`` by hand, or use the ``ql conf`` CLI (see ``cli.py``):
 
-    ./ql conf show                      # list every flag/setting
-    ./ql conf set KNOTT_ENABLED true
-    ./ql conf set vis_mode full
-    ./ql conf reset                      # delete ql.toml, back to defaults
+    ql conf show                      # list every flag/setting
+    ql conf set KNOTT_ENABLED true
+    ql conf set vis_mode full
+    ql conf set lighting_preset dusk
+    ql conf set fog_density high
+    ql conf reset                      # delete ql.toml, back to defaults
 """
 
 from __future__ import annotations
@@ -28,9 +30,9 @@ from typing import Any
 
 # Resolved from the current working directory (not the installed package
 # location) so this works whether quake_loyola is imported via `sys.path`
-# insertion from a repo checkout (generate_map.py / ./ql) or pip-installed
-# into site-packages — either way, `ql`/`generate_map.py` are meant to be
-# run from the repo root, same as `just`.
+# insertion from a repo checkout (generate_map.py) or pip-installed into
+# site-packages — either way, `ql`/`generate_map.py` are meant to be run
+# from the repo root, same as `just`.
 CONFIG_PATH = Path.cwd() / "ql.toml"
 
 # ════════════════════════════════════════════════════════════════════════
@@ -81,6 +83,8 @@ DEFAULTS: dict[str, bool] = {
 BUILD_DEFAULTS: dict[str, Any] = {
     "vis_mode": "fast",  # "fast" (vis -fast, quick iteration) or "full" (vis, full PVS)
     "light_extra": False,  # add light's -extra flag (2x2 supersampling, slower/higher quality)
+    "lighting_preset": "bright",  # key into constants/lighting.py's LIGHTING_PRESETS (dawn, midday, golden_hour, dusk, overcast, night, bright, afternoon)
+    "fog_density": "default",  # "default" (use the preset's own density), a named FogDensity level (off, low, med, high), or a custom float
 }
 
 

@@ -41,9 +41,7 @@ Which modules get built (bridge, Knott Hall, terrain, lights, etc.) and a
 couple of compile-time settings (vis/light quality) are controlled by the
 `ql` CLI, backed by a `ql.toml` file at the repo root (gitignored — it's a
 per-user override layer on top of the hardcoded defaults in
-`src/quake_loyola/config.py`). `ql` works two ways — no install required
-(`./ql ...`, same convention as `python generate_map.py`), or installed as a
-regular console-script:
+`src/quake_loyola/config.py`). Install it as a console-script:
 
 ```bash
 pip install -e .       # installs the `ql` command + typer into your environment
@@ -51,14 +49,17 @@ ql conf show
 ```
 
 ```bash
-./ql conf show                          # (or `ql ...` if pip-installed)
-./ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
-./ql conf set vis_mode full             # "fast" (default) or "full" vis pass
-./ql conf set light_extra true          # light -extra (2x2 supersampling)
-./ql conf get KNOTT_ENABLED
-./ql conf reset                         # delete ql.toml, back to defaults
-./ql gen                                  # same as `just generate`, but config-aware
-./ql build                                # generate + qbsp + vis + light + deploy,
+ql conf show
+ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
+ql conf set vis_mode full             # "fast" (default) or "full" vis pass
+ql conf set light_extra true          # light -extra (2x2 supersampling)
+ql conf set lighting_preset dusk      # dawn/midday/golden_hour/dusk/overcast/night/bright/afternoon
+ql conf set fog_density high          # "default" (preset's own), off/low/med/high, or a custom float
+ql conf set vis_mode=full lighting_preset=dusk fog_density=high  # set several at once
+ql conf get KNOTT_ENABLED
+ql conf reset                         # delete ql.toml, back to defaults
+ql gen                                  # same as `just generate`, but config-aware
+ql build                                # generate + qbsp + vis + light + deploy,
                                            # using the [build] settings above
 ```
 

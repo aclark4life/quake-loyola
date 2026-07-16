@@ -446,7 +446,9 @@ from .knott import (
 )
 from .lighting import (
     FOG_DENSITY,
+    FOG_DENSITY_NAMES,
     LIGHTING,
+    LIGHTING_PRESET_NAMES,
     LIGHTING_PRESETS,
     FogDensity,
     LightingPreset,
@@ -776,6 +778,7 @@ __all__ = [
     "FLOOR_Z1",
     "FLOOR_Z2",
     "FOG_DENSITY",
+    "FOG_DENSITY_NAMES",
     "FogDensity",
     "INDENT",
     "KH_ROOFTOP_ORIGIN",
@@ -887,6 +890,7 @@ __all__ = [
     "KNOTT_Z2",
     "KnottSpec",
     "LIGHTING",
+    "LIGHTING_PRESET_NAMES",
     "LIGHTING_PRESETS",
     "LIGHTS_ENABLED",
     "LightingPreset",

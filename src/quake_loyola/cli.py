@@ -1,8 +1,8 @@
 """``ql`` — Typer CLI for configuring and running quake-loyola's build.
 
-Run via the repo-root ``ql`` wrapper script (``./ql ...``), which puts
-``src/`` and the repo root on ``sys.path`` the same way ``generate_map.py``
-does, so no ``pip install`` step is required.
+Installed via ``pip install -e .`` (see the ``[project.scripts]`` entry
+point in ``pyproject.toml``), which puts the ``ql`` command on your PATH.
+Run it from the repo root (same convention as ``just``).
 """
 
 from __future__ import annotations
@@ -16,8 +16,7 @@ import typer
 from . import config
 
 # Resolved from cwd (not the installed package location) — `ql` is meant to
-# be run from the repo root (same convention as `just`), whether installed
-# via `pip install -e .` or run in-place via `sys.path` insertion.
+# be run from the repo root (same convention as `just`).
 REPO_ROOT = Path.cwd()
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
@@ -66,7 +65,22 @@ def config_show() -> None:
         value = config.get_build(name)
         default = config.BUILD_DEFAULTS[name]
         marker = "*" if value != default else " "
-        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
+        options = ""
+        if name == "vis_mode":
+            options = ", options: fast, full"
+        elif name == "lighting_preset":
+            from .constants.lighting import LIGHTING_PRESET_NAMES
+
+            options = f", options: {', '.join(LIGHTING_PRESET_NAMES)}"
+        elif name == "fog_density":
+            from .constants.lighting import FOG_DENSITY_NAMES
+
+            options = (
+                f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
+            )
+        typer.echo(
+            f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
+        )
     typer.echo("\n(* = overridden from its default via ql.toml)")
 
 
@@ -86,41 +100,91 @@ def config_get(name: str) -> None:
         raise typer.Exit(code=1)
 
 
-@config_app.command("set")
-def config_set(name: str, value: str) -> None:
-    """Set a flag (true/false) or build setting, persisted to ql.toml.
-
-    Examples:
-        ql conf set KNOTT_ENABLED true
-        ql conf set bridge_enabled true       # names are case-insensitive
-        ql conf set vis_mode full
-        ql conf set light_extra true
-
-    Note: BRIDGE_ENABLED is a convenience master switch — setting it true
-    forces every BRIDGE_ENABLED_<section> flag (west_approach, center_span,
-    east_approach, kh_span, east_ext) on too, overriding their individual
-    settings.
-    """
+def _set_one(name: str, value: str) -> str:
+    """Validate and persist a single NAME/value pair; returns the echo message."""
     name_u = name.upper()
     if name_u in config.DEFAULTS:
         parsed = _parse_bool(value)
         config.set_flag(name_u, parsed)
-        typer.echo(f"{name_u} = {parsed}")
+        return f"{name_u} = {parsed}"
     elif name in config.BUILD_DEFAULTS:
         if name == "vis_mode":
             if value not in ("fast", "full"):
                 raise typer.BadParameter("vis_mode must be 'fast' or 'full'")
             parsed_build: object = value
+        elif name == "lighting_preset":
+            from .constants.lighting import LIGHTING_PRESET_NAMES
+
+            if value not in LIGHTING_PRESET_NAMES:
+                raise typer.BadParameter(
+                    f"lighting_preset must be one of {LIGHTING_PRESET_NAMES}"
+                )
+            parsed_build = value
+        elif name == "fog_density":
+            from .constants.lighting import FOG_DENSITY_NAMES
+
+            if value != "default" and value not in FOG_DENSITY_NAMES:
+                try:
+                    float(value)
+                except ValueError:
+                    raise typer.BadParameter(
+                        "fog_density must be 'default', one of "
+                        f"{sorted(FOG_DENSITY_NAMES)}, or a numeric string"
+                    ) from None
+            parsed_build = value
         else:
             parsed_build = _parse_bool(value)
         config.set_build(name, parsed_build)
-        typer.echo(f"{name} = {parsed_build}")
+        return f"{name} = {parsed_build}"
     else:
         typer.echo(
             f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
             err=True,
         )
         raise typer.Exit(code=1)
+
+
+@config_app.command(
+    "set", context_settings={**CONTEXT_SETTINGS, "ignore_unknown_options": True}
+)
+def config_set(
+    args: list[str] = typer.Argument(
+        ..., help="Either 'NAME VALUE', or one or more 'NAME=VALUE' pairs."
+    ),
+) -> None:
+    """Set one or more flags/build settings, persisted to ql.toml.
+
+    Examples:
+        ql conf set KNOTT_ENABLED true
+        ql conf set bridge_enabled true       # names are case-insensitive
+        ql conf set vis_mode full
+        ql conf set light_extra true
+        ql conf set lighting_preset dusk
+        ql conf set fog_density high           # or "default"/"off"/"low"/"med"/"high"/a float
+
+    Multiple settings at once (NAME=VALUE form, space-separated):
+        ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
+
+    Note: BRIDGE_ENABLED is a convenience master switch — setting it true
+    forces every BRIDGE_ENABLED_<section> flag (west_approach, center_span,
+    east_approach, kh_span, east_ext) on too, overriding their individual
+    settings.
+    """
+    if len(args) == 2 and "=" not in args[0] and "=" not in args[1]:
+        pairs = [(args[0], args[1])]
+    else:
+        pairs = []
+        for arg in args:
+            if "=" not in arg:
+                raise typer.BadParameter(
+                    f"Expected NAME=VALUE, got {arg!r} "
+                    "(or pass exactly one 'NAME VALUE' pair)"
+                )
+            name, _, value = arg.partition("=")
+            pairs.append((name, value))
+
+    for name, value in pairs:
+        typer.echo(_set_one(name, value))
 
 
 @config_app.command("reset")

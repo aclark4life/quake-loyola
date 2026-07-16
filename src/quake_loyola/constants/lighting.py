@@ -1,6 +1,21 @@
-"""Time-of-day lighting/fog presets for worldspawn (LightingPreset, FogDensity)."""
+"""Time-of-day lighting/fog presets for worldspawn (LightingPreset, FogDensity).
+
+The active preset is chosen via the ``lighting_preset`` build setting (see
+``config.BUILD_DEFAULTS``) — override it with
+``ql conf set lighting_preset <name>`` (one of the keys in
+``LIGHTING_PRESETS``, e.g. ``dawn``, ``midday``, ``golden_hour``, ``dusk``,
+``overcast``, ``night``, ``bright``, ``afternoon``) or by editing ql.toml.
+
+The fog *density* (independent of the preset's fog color) is controlled by
+the ``fog_density`` build setting — ``"default"`` (use the preset's own
+density), one of the named :class:`FogDensity` levels (``off``, ``low``,
+``med``, ``high``), or a numeric string for a custom density. Set via
+``ql conf set fog_density <value>``.
+"""
 
 from dataclasses import dataclass
+
+from ..config import get_build as _get_build
 
 
 @dataclass
@@ -37,6 +52,16 @@ class FogDensity:
     LOW = 0.03
     MED = 0.06
     HIGH = 0.10
+
+
+# Named `fog_density` build-setting values that map to a FogDensity level —
+# used by both the CLI (validation) and the lookup below.
+FOG_DENSITY_NAMES: dict[str, float] = {
+    "off": FogDensity.OFF,
+    "low": FogDensity.LOW,
+    "med": FogDensity.MED,
+    "high": FogDensity.HIGH,
+}
 
 
 def make_fog(density: float, r: float, g: float, b: float) -> str:
@@ -111,5 +136,21 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
     ),
 }
 
-LIGHTING = LIGHTING_PRESETS["bright"]
-FOG_DENSITY: float | None = None  # use preset fog density
+LIGHTING = LIGHTING_PRESETS[_get_build("lighting_preset")]
+
+# "default" -> use the active preset's own fog density; a named level
+# (off/low/med/high) -> that FogDensity constant; anything else -> parsed as
+# a custom float. See config.BUILD_DEFAULTS["fog_density"] / cli.py for the
+# validation that keeps this branch limited to those three shapes.
+_fog_density_setting = _get_build("fog_density")
+if _fog_density_setting == "default":
+    FOG_DENSITY: float | None = None
+elif _fog_density_setting in FOG_DENSITY_NAMES:
+    FOG_DENSITY = FOG_DENSITY_NAMES[_fog_density_setting]
+else:
+    FOG_DENSITY = float(_fog_density_setting)
+
+# Sorted list of valid `lighting_preset` build-setting values — used by the
+# `ql conf set lighting_preset <name>` CLI to validate input and by docs/help
+# text without needing to import the full LIGHTING_PRESETS dict.
+LIGHTING_PRESET_NAMES: list[str] = sorted(LIGHTING_PRESETS)

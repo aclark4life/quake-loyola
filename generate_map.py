@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Thin wrapper kept for backwards compatibility — the real implementation
 now lives in ``quake_loyola.mapgen`` so it's importable once quake-loyola is
-pip-installed (see ``ql generate`` / ``src/quake_loyola/cli.py``).
+pip-installed (see ``ql gen`` / ``src/quake_loyola/cli.py``).
 
-    python generate_map.py    # same as: ./ql generate
+    python generate_map.py    # same as: ql gen
 """
 
 import sys

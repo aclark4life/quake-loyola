@@ -2,7 +2,7 @@
 
 Every value below is now sourced from :mod:`quake_loyola.config` (defaults
 hardcoded there, optionally overridden by ``ql.toml`` at the repo root — see
-that module's docstring, or run ``./ql conf show``). The comments here
+that module's docstring, or run ``ql conf show``). The comments here
 describe what each flag does; the *value* itself lives in
 ``config.DEFAULTS`` and is only overridden when the user sets it via
 ``ql conf set <NAME> <value>``.

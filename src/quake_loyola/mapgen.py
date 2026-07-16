@@ -2,7 +2,7 @@
 
 This is the actual implementation behind the repo-root ``generate_map.py``
 script (kept as a thin wrapper for backwards compatibility with
-``python generate_map.py``) and the ``ql generate`` CLI command. Living
+``python generate_map.py``) and the ``ql gen`` CLI command. Living
 inside the package (rather than only as a root-level script) means it's
 importable once quake-loyola is pip-installed too.
 """
