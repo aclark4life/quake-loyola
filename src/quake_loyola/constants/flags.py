@@ -7,11 +7,11 @@
 # every area's dimensions from the top-down references in ref/.
 # ════════════════════════════════════════════════════════════════════════════════
 BRIDGE_ENABLED = False  # convenience master: if True, forces every BRIDGE_ENABLED_<section> flag below on, overriding their individual settings. Leave False and flip the per-section flags to review one span at a time.
-BRIDGE_ENABLED_WEST_APPROACH = False  # bridge.py span: Pier 1 (west abutment) .. Pier 2
+BRIDGE_ENABLED_WEST_APPROACH = True  # bridge.py span: Pier 1 (west abutment) .. Pier 2
 BRIDGE_ENABLED_CENTER_SPAN = (
     True  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
 )
-BRIDGE_ENABLED_EAST_APPROACH = False  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
+BRIDGE_ENABLED_EAST_APPROACH = True  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
 BRIDGE_ENABLED_KH_SPAN = (
     False  # bridge.py span: Pier 4 .. Pier 5 (east KH pier / NE pier)
 )

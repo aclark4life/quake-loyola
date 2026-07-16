@@ -97,6 +97,7 @@ from .constants import (
     KNOTT_WALKWAY_ENABLED,
     PIER2_X,
     PIER3_X,
+    PIER4_X,
     PIER6_X,
     SHOW_SUPPORTS,
     STREET_SURFACE_T,
@@ -950,12 +951,14 @@ def _build_all():
                     )
                 )
 
-            if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
+            if px in (PIER2_X, PIER3_X, PIER4_X) and BRIDGE_CENTER_SPAN_OFFSET != (
                 0.0,
                 0.0,
                 0.0,
             ):
-                # The centre span has been shifted away from the real-elevation
+                # The centre span (and, since west_approach/east_approach now
+                # ride along with it as one rigid assembly, Pier 4 at its east
+                # end too) has been shifted away from the real-elevation
                 # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
                 # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
                 # itself (which would drag the visible base plinth/cap down
@@ -2069,8 +2072,10 @@ def build():
 
 
 def _shift_center_span(brushes, entities, enabled_names, offset):
-    """Translate just the centre-span geometry within a build() result by
-    `offset`, leaving any other enabled sections untouched.
+    """Translate the centre span plus any enabled approach spans adjacent to
+    it — west_approach and east_approach — within a build() result by
+    `offset`, as one rigid unit (piers included), leaving unrelated sections
+    (kh_span, east_ext) untouched.
 
     Section spans are filtered independently with a margin padding each
     side to include their bounding piers (see _filter_sections). That means
@@ -2081,33 +2086,42 @@ def _shift_center_span(brushes, entities, enabled_names, offset):
     the center span) and once at its original position (as part of the
     neighbor) — unless explicitly deduped. Dedupe by brush identity here,
     keeping the shifted (center-span) copy, since the offset is meant to
-    move the whole standalone center span including its own bounding piers.
+    move the whole assembly, including its own bounding piers.
     """
     span_b, span_e = _filter_sections(brushes, entities, ["center_span"])
-    other_names = [n for n in enabled_names if n != "center_span"]
-    other_b, other_e = (
-        _filter_sections(brushes, entities, other_names) if other_names else ([], [])
-    )
 
     span_brush_ids = {id(b) for b in span_b}
     for e in span_e:
         span_brush_ids.update(id(b) for b in e.brushes)
 
-    other_b = [b for b in other_b if id(b) not in span_brush_ids]
-    deduped_other_e = []
-    for e in other_e:
-        if not e.brushes:
-            deduped_other_e.append(e)
-            continue
-        kept = [b for b in e.brushes if id(b) not in span_brush_ids]
-        if kept:
-            deduped_other_e.append(brush_ent(e.classname, kept, **e.fields))
-    other_e = deduped_other_e
+    def _dedupe(sect_b, sect_e):
+        sect_b = [b for b in sect_b if id(b) not in span_brush_ids]
+        deduped_e = []
+        for e in sect_e:
+            if not e.brushes:
+                deduped_e.append(e)
+                continue
+            kept = [b for b in e.brushes if id(b) not in span_brush_ids]
+            if kept:
+                deduped_e.append(brush_ent(e.classname, kept, **e.fields))
+        return sect_b, deduped_e
 
     dx, dy, dz = offset
+    SHIFT_WITH_CENTER = {"west_approach", "east_approach"}
+    other_names = [n for n in enabled_names if n != "center_span"]
+    result_b, result_e = [], []
+    for name in other_names:
+        sect_b, sect_e = _filter_sections(brushes, entities, [name])
+        sect_b, sect_e = _dedupe(sect_b, sect_e)
+        if name in SHIFT_WITH_CENTER:
+            sect_b = [b.translated(dx, dy, dz) for b in sect_b]
+            sect_e = [e.translated(dx, dy, dz) for e in sect_e]
+        result_b.extend(sect_b)
+        result_e.extend(sect_e)
+
     span_b = [b.translated(dx, dy, dz) for b in span_b]
     span_e = [e.translated(dx, dy, dz) for e in span_e]
-    return other_b + span_b, other_e + span_e
+    return result_b + span_b, result_e + span_e
 
 
 def build_center_span(offset=(0.0, 0.0, 0.0)):
