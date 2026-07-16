@@ -60,12 +60,12 @@ DEFAULTS: dict[str, bool] = {
     # -- light-group masters (constants/flags.py) --
     "LIGHTS_ENABLED": False,
     "TORCH_LIGHTS_ENABLED": True,
-    "BASEMENT_LIGHTS_ENABLED": True,
+    "BASEMENT_ENABLED_LIGHTS": True,
     # -- misc display flags (constants/flags.py) --
     "DRAW_BRIDGE_FASCIA_TEXT": True,
     "SHOW_SUPPORTS": True,
     # -- other module-local flags --
-    "BRIDGE_PIER_BASE_LIGHTS_ENABLED": False,  # constants/bridge.py
+    "BRIDGE_ENABLED_PIER_BASE_LIGHTS": False,  # constants/bridge.py
     "KNOTT_EXTERIOR_ENABLED": True,  # constants/knott.py
     "KNOTT_INTERIOR_ENABLED": False,  # constants/knott.py
     "KNOTT_MONSTERS_ENABLED": False,  # constants/knott.py

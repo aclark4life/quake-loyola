@@ -10,9 +10,9 @@ from .constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     BRIDGE_EAST_SHIFT_END,
+    BRIDGE_ENABLED_PIER_BASE_LIGHTS,
     BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
-    BRIDGE_PIER_BASE_LIGHTS_ENABLED,
     BRIDGE_PILLAR_BASE_H,
     BRIDGE_PILLAR_BASE_RAMP_H,
     BRIDGE_PILLAR_CAP_H,
@@ -1055,7 +1055,7 @@ def build():
         )
 
     # Pier base lights — illuminate plinths and arch openings from just inside each pier
-    if BRIDGE_PIER_BASE_LIGHTS_ENABLED:
+    if BRIDGE_ENABLED_PIER_BASE_LIGHTS:
         for pier_x in BRIDGE_ARCH_X:
             # West abutment pier is embedded in solid building geometry — skip buried lights
             if pier_x == BRIDGE_ARCH_X[0]:

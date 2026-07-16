@@ -21,7 +21,7 @@ from . import (
     west_campus_terrain,
 )
 from .constants import (
-    BASEMENT_LIGHTS_ENABLED,
+    BASEMENT_ENABLED_LIGHTS,
     LIGHTS_ENABLED,
     TORCH_LIGHTS_ENABLED,
     WORLDSPAWN_FIELDS,
@@ -48,7 +48,7 @@ MODULES = [
 # BRIDGE_ENABLED vs its per-section flags — see constants.py.
 LIGHT_GROUP_FLAGS = {
     "torch": TORCH_LIGHTS_ENABLED,
-    "basement": BASEMENT_LIGHTS_ENABLED,
+    "basement": BASEMENT_ENABLED_LIGHTS,
 }
 
 

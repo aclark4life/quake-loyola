@@ -76,8 +76,8 @@ LIGHTS_ENABLED = _flag(
 TORCH_LIGHTS_ENABLED = _flag(
     "TORCH_LIGHTS_ENABLED"
 )  # light "group" flag: torch/flame fixtures only
-BASEMENT_LIGHTS_ENABLED = _flag(
-    "BASEMENT_LIGHTS_ENABLED"
+BASEMENT_ENABLED_LIGHTS = _flag(
+    "BASEMENT_ENABLED_LIGHTS"
 )  # light "group" flag: basement.py fixtures only —
 # on by default (unlike TORCH_LIGHTS_ENABLED's pattern above, kept True since
 # the basement is otherwise a fully unlit sky-textured void with no ambient

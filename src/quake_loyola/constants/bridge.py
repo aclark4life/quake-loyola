@@ -64,8 +64,8 @@ BRIDGE_PILLAR_EXTRA = 64  # restored to the original 64 — see BRIDGE_PILLAR_CA
 # note above; the pillar tops read as too short at 26, so the above-deck
 # reduction from today is undone while the below-deck plinth reduction and the
 # arch-opening crown trim (BRIDGE_PILLAR_INNER_R/OUTER_R below) remain.
-BRIDGE_PIER_BASE_LIGHTS_ENABLED = _flag(
-    "BRIDGE_PIER_BASE_LIGHTS_ENABLED"
+BRIDGE_ENABLED_PIER_BASE_LIGHTS = _flag(
+    "BRIDGE_ENABLED_PIER_BASE_LIGHTS"
 )  # temporarily disabled — pier-base lights (some sit buried in the east-span fill)
 BRIDGE_PIER_FILL_OFFSET = 16
 BRIDGE_PILLAR_INNER_R = (144, 84)  # rout trimmed from 160 to 144 — a small ~10%
