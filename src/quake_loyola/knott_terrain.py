@@ -404,10 +404,12 @@ def build():
         )
     )
 
-    # ── South extension — ground behind Knott Hall, driveway + sidewalks continue south ──
-    # The top of the hill south of the building is ground, not roadway; only the
-    # actual driveway lane (RD_X1-RD_X2) and its flanking sidewalks (WS, ES)
-    # extend back to the south world edge. The west ground fill is re-derived
+    # ── South extension — ground behind Knott Hall, driveway ends at the building ──
+    # The top of the hill south of the building is ground, not roadway — the
+    # driveway loop (RD_X1-RD_X2) and its sidewalks (WS, ES) end at
+    # KNOTT_DRIVEWAY_Y1 (matching the reference satellite/street-view imagery,
+    # which shows no pavement continuing south of the building); everything
+    # from there to the south world edge is ground. The west ground fill is re-derived
     # from real elevation using a 4-column X grid (KNOTT.x1, 1650, 2100,
     # KNOTT_DRIVEWAY_WS_X1) — USGS EPQS samples at all 4 columns (see the
     # south_audit_* rows in docs/elevation_samples.csv) show real elevation
@@ -479,37 +481,21 @@ def build():
                     Textures.GROUND,
                 )
             )
+    # Reference imagery (ref/gmaps-kh-satellite*.png, ref/gmaps-kh-place.png)
+    # shows the real driveway loop ends at the building's south face — no
+    # pavement continues south of it, just hillside/lawn. Ground fills the
+    # former WS/RD/ES pavement footprint here too (instead of paving all the
+    # way to the world edge), flush with the flat sidewalk grade so it ties
+    # cleanly into the re-derived west/east ground fills on either side.
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
-            KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + 2,
-            Textures.ROAD,
-        )
-    )
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
             KNOTT_DRIVEWAY_ES_X2,
             KNOTT_DRIVEWAY_Y1,
             KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.CEMENT,
+            Textures.GROUND,
         )
     )
 
