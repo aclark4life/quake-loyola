@@ -40,7 +40,7 @@ STREETS_ENABLED_DETAILS = _flag(
 )  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = _flag(
     "WEST_CAMPUS_ENABLED"
-)  # convenience master: if True, forces WEST_CAMPUS_ENABLED_DORMS, WEST_CAMPUS_ENABLED_FENCE, and WEST_CAMPUS_ENABLED_TERRAIN all on, overriding their individual settings. Leave False and flip the per-section flags to review one piece at a time (same pattern as BRIDGE_ENABLED).
+)  # convenience master: if True, forces WEST_CAMPUS_ENABLED_DORMS, WEST_CAMPUS_ENABLED_FENCE, WEST_CAMPUS_ENABLED_TERRAIN, and WEST_CAMPUS_ENABLED_WALL all on, overriding their individual settings. Leave False and flip the per-section flags to review one piece at a time (same pattern as BRIDGE_ENABLED).
 WEST_CAMPUS_ENABLED_DORMS = _flag(
     "WEST_CAMPUS_ENABLED_DORMS"
 )  # west_campus.py — dorm buildings and grounds
@@ -57,6 +57,13 @@ WEST_CAMPUS_ENABLED_TERRAIN = _flag(
 # independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
 # KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED) so the terrain can be reviewed on
 # its own even while the buildings themselves stay off.
+WEST_CAMPUS_ENABLED_WALL = _flag(
+    "WEST_CAMPUS_ENABLED_WALL"
+)  # west_campus.py — brick wall with gate, pillars,
+# and iron fence south of bridge Pier 1 (DORM_PIER_X), running from the north
+# face of dorm 2 up to the pier. Kept independent of WEST_CAMPUS_ENABLED_DORMS
+# so the wall reads as a bridge-approach feature even while the dorm
+# buildings themselves stay off.
 NE_ENABLED_TERRAIN = _flag(
     "NE_ENABLED_TERRAIN"
 )  # ne_terrain.py — real-elevation ground fill for the

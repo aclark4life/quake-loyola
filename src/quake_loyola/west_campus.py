@@ -1,4 +1,5 @@
 from .constants import (
+    BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     CHARLES_Y1,
     CHARLES_Y2,
@@ -55,6 +56,7 @@ from .constants import (
     WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_FENCE,
+    WEST_CAMPUS_ENABLED_WALL,
     WORLD_Y2,
     Textures,
 )
@@ -178,12 +180,133 @@ def build_iron_fence(ENTITIES):
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
 
+def build_brick_wall(BRUSHES, ENTITIES):
+    """Brick wall with gate, pillars, and iron fence south of bridge Pier 1
+    (DORM_PIER_X), running from dorm 2's north face up to the pier. Extracted
+    so it can be shown even when WEST_CAMPUS_ENABLED_DORMS (dorm buildings)
+    is off, gated independently by WEST_CAMPUS_ENABLED_WALL."""
+    # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
+    # Door is centered 160 units north of dorm 2; pillars and iron fence are detail
+    # (fence itself is built by build_iron_fence, called at the top of build()).
+    wall_hw = DORM_BRICK_WALL_HALF_W  # half-thickness (thinner than pier)
+    # Pier 1 (west_approach) is rigidly shifted north/up along with the
+    # center span in bridge.py's _shift_center_span() (see
+    # BRIDGE_CENTER_SPAN_OFFSET). The whole wall assembly (door, pillars,
+    # fence) is shifted north by the same amount so it keeps its original
+    # length but still ends right at the pier's true (shifted) location,
+    # rather than stretching a single segment into an overly long run.
+    wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
+    wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y  # no longer at dorm 2's face
+    s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + wall_shift_y
+    wall_end_y = DORM_WALL_S_Y2 + wall_shift_y
+    # Gate opening now sits on the raised terrace (its sill is buried in the pad);
+    # the wall top stays at the bridge deck so the wall just reads as shorter.
+    gate_base = FLOOR_Z2 + SDORM_LIFT
+    gate_top = gate_base + DORM_BRICK_GATE_H
+    # Brick wall body (worldspawn — seals the level)
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            wall_start_y,
+            FLOOR_Z2,
+            DORM_PIER_X + wall_hw,
+            s_door_y - DORM_DOOR_W // 2,
+            BRIDGE_DZ2,
+            Textures.BUILDING,
+        )
+    )
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            s_door_y + DORM_DOOR_W // 2,
+            FLOOR_Z2,
+            DORM_PIER_X + wall_hw,
+            wall_end_y,
+            BRIDGE_DZ2,
+            Textures.BUILDING,
+        )
+    )
+    BRUSHES.append(
+        box(
+            DORM_PIER_X - wall_hw,
+            s_door_y - DORM_DOOR_W // 2,
+            gate_top,
+            DORM_PIER_X + wall_hw,
+            s_door_y + DORM_DOOR_W // 2,
+            BRIDGE_DZ2,
+            Textures.BUILDING,
+        )
+    )
+    # Brick pillars + iron fence — each piece is its own func_detail entity so
+    # it can be selected/repositioned independently in a map editor, rather
+    # than all bundled into one shared entity.
+    pillar_w = DORM_BRICK_PILLAR_W
+    pillar_proud = DORM_BRICK_PILLAR_PROUD
+    pillar_h = BRIDGE_DZ2 + DORM_BRICK_PILLAR_H_OFFSET
+    px1 = DORM_PIER_X - wall_hw - pillar_proud
+    px2 = DORM_PIER_X + wall_hw + pillar_proud
+    cap_h = DORM_BRICK_PILLAR_CAP_H
+    cap_overhang = DORM_BRICK_PILLAR_CAP_OVH
+    door_north = s_door_y + DORM_DOOR_W // 2
+    for py1, py2 in [
+        (
+            door_north + DORM_BRICK_PILLAR_GAP,
+            door_north + DORM_BRICK_PILLAR_GAP + pillar_w,
+        ),
+        (
+            door_north
+            + DORM_BRICK_PILLAR_GAP
+            + pillar_w
+            + DORM_BRICK_PILLAR_SEPARATION,
+            door_north
+            + DORM_BRICK_PILLAR_GAP
+            + pillar_w
+            + DORM_BRICK_PILLAR_SEPARATION
+            + pillar_w,
+        ),
+    ]:
+        # Base extends to grade so the pillar still meets the ground where the
+        # wall→fence strip declines north of the south pillar.
+        pillar_brushes = [
+            box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, Textures.BUILDING),
+            box(
+                px1 - cap_overhang,
+                py1 - cap_overhang,
+                pillar_h,
+                px2 + cap_overhang,
+                py2 + cap_overhang,
+                pillar_h + cap_h,
+                Textures.BUILDING,
+            ),
+        ]
+        ENTITIES.append(brush_ent("func_detail", pillar_brushes))
+    fence_brushes = iron_fence(
+        [
+            (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
+            (
+                s_door_y - DORM_DOOR_W // 2,
+                s_door_y + DORM_DOOR_W // 2,
+            ),  # over lintel
+            (s_door_y + DORM_DOOR_W // 2, wall_end_y),  # north of door to pier
+        ],
+        DORM_PIER_X - 1,
+        DORM_PIER_X + 1,
+        Textures.FENCE,
+        BRIDGE_DZ2,
+    )
+    if fence_brushes:
+        ENTITIES.append(brush_ent("func_detail", fence_brushes))
+
+
 def build():
     BRUSHES = []
     ENTITIES = []
 
     if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_FENCE:
         build_iron_fence(ENTITIES)
+
+    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_WALL:
+        build_brick_wall(BRUSHES, ENTITIES)
 
     if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS):
         return BRUSHES, ENTITIES
@@ -1418,111 +1541,6 @@ def build():
                 tt=Textures.ROAD,
             )
         )
-
-    # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
-    # Door is centered 160 units north of dorm 2; pillars and iron fence are detail
-    # (fence itself is built by build_iron_fence, called at the top of build()).
-    wall_hw = DORM_BRICK_WALL_HALF_W  # half-thickness (thinner than pier)
-    wall_start_y = DORM_SOUTH2_Y2  # wall stops at north face of dorm 2
-    s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF
-    # Gate opening now sits on the raised terrace (its sill is buried in the pad);
-    # the wall top stays at the bridge deck so the wall just reads as shorter.
-    gate_base = FLOOR_Z2 + SDORM_LIFT
-    gate_top = gate_base + DORM_BRICK_GATE_H
-    # Brick wall body (worldspawn — seals the level)
-    BRUSHES.append(
-        box(
-            DORM_PIER_X - wall_hw,
-            wall_start_y,
-            FLOOR_Z2,
-            DORM_PIER_X + wall_hw,
-            s_door_y - DORM_DOOR_W // 2,
-            BRIDGE_DZ2,
-            Textures.BUILDING,
-        )
-    )
-    BRUSHES.append(
-        box(
-            DORM_PIER_X - wall_hw,
-            s_door_y + DORM_DOOR_W // 2,
-            FLOOR_Z2,
-            DORM_PIER_X + wall_hw,
-            DORM_WALL_S_Y2,
-            BRIDGE_DZ2,
-            Textures.BUILDING,
-        )
-    )
-    BRUSHES.append(
-        box(
-            DORM_PIER_X - wall_hw,
-            s_door_y - DORM_DOOR_W // 2,
-            gate_top,
-            DORM_PIER_X + wall_hw,
-            s_door_y + DORM_DOOR_W // 2,
-            BRIDGE_DZ2,
-            Textures.BUILDING,
-        )
-    )
-    # Brick pillars + iron fence (func_detail — non-sealing)
-    wall_detail = []
-    pillar_w = DORM_BRICK_PILLAR_W
-    pillar_proud = DORM_BRICK_PILLAR_PROUD
-    pillar_h = BRIDGE_DZ2 + DORM_BRICK_PILLAR_H_OFFSET
-    px1 = DORM_PIER_X - wall_hw - pillar_proud
-    px2 = DORM_PIER_X + wall_hw + pillar_proud
-    cap_h = DORM_BRICK_PILLAR_CAP_H
-    cap_overhang = DORM_BRICK_PILLAR_CAP_OVH
-    door_north = s_door_y + DORM_DOOR_W // 2
-    for py1, py2 in [
-        (
-            door_north + DORM_BRICK_PILLAR_GAP,
-            door_north + DORM_BRICK_PILLAR_GAP + pillar_w,
-        ),
-        (
-            door_north
-            + DORM_BRICK_PILLAR_GAP
-            + pillar_w
-            + DORM_BRICK_PILLAR_SEPARATION,
-            door_north
-            + DORM_BRICK_PILLAR_GAP
-            + pillar_w
-            + DORM_BRICK_PILLAR_SEPARATION
-            + pillar_w,
-        ),
-    ]:
-        # Base extends to grade so the pillar still meets the ground where the
-        # wall→fence strip declines north of the south pillar.
-        wall_detail.append(
-            box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, Textures.BUILDING)
-        )
-        wall_detail.append(
-            box(
-                px1 - cap_overhang,
-                py1 - cap_overhang,
-                pillar_h,
-                px2 + cap_overhang,
-                py2 + cap_overhang,
-                pillar_h + cap_h,
-                Textures.BUILDING,
-            )
-        )
-    wall_detail.extend(
-        iron_fence(
-            [
-                (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
-                (
-                    s_door_y - DORM_DOOR_W // 2,
-                    s_door_y + DORM_DOOR_W // 2,
-                ),  # over lintel
-                (s_door_y + DORM_DOOR_W // 2, DORM_WALL_S_Y2),  # north of door to pier
-            ],
-            DORM_PIER_X - 1,
-            DORM_PIER_X + 1,
-            Textures.FENCE,
-            BRIDGE_DZ2,
-        )
-    )
-    ENTITIES.append(brush_ent("func_detail", wall_detail))
 
     # ── Flush stone walkway: a paved path inlaid into the terrace in front of the
     #    dorms (top level with the surrounding ground), with a spur running north

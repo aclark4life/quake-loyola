@@ -15,5 +15,6 @@ writes ``loyola.map``, which is then compiled with the ericw-tools pipeline
 
    overview
    reference
+   cli
    api
    quakec
