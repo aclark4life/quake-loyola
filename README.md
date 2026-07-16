@@ -35,6 +35,38 @@ just update-golden  # recompute and patch golden hash/counts after geometry chan
 ericw-tools are downloaded automatically to `.tools/` on first compile. WADs
 are downloaded from Quaketastic automatically by `just setup`.
 
+## Configuring the build
+
+Which modules get built (bridge, Knott Hall, terrain, lights, etc.) and a
+couple of compile-time settings (vis/light quality) are controlled by the
+`ql` CLI, backed by a `ql.toml` file at the repo root (gitignored — it's a
+per-user override layer on top of the hardcoded defaults in
+`src/quake_loyola/config.py`). `ql` works two ways — no install required
+(`./ql ...`, same convention as `python generate_map.py`), or installed as a
+regular console-script:
+
+```bash
+pip install -e .       # installs the `ql` command + typer into your environment
+ql config show
+```
+
+```bash
+./ql config show                          # (or `ql ...` if pip-installed)
+./ql config set KNOTT_HALL_ENABLED true   # flip a module/light flag on or off
+./ql config set vis_mode full             # "fast" (default) or "full" vis pass
+./ql config set light_extra true          # light -extra (2x2 supersampling)
+./ql config get KNOTT_HALL_ENABLED
+./ql config reset                         # delete ql.toml, back to defaults
+./ql generate                             # same as `just generate`, but config-aware
+./ql build                                # generate + qbsp + vis + light + deploy,
+                                           # using the [build] settings above
+```
+
+`generate_map.py` (and `just generate`) automatically pick up whatever is in
+`ql.toml` too — `ql config set ...` is just a convenient way to edit it.
+`just venv` already runs `pip install -e .` for you, so `.venv/bin/ql` is
+ready to use after `just test`/`just venv`.
+
 ## Playing
 
 ```

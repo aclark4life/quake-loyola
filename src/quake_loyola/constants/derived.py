@@ -2,6 +2,7 @@
 
 import math
 
+from ..config import get as _flag
 from .bridge import (
     BRIDGE_ARCH_PIER_RISE,
     BRIDGE_ARCH_RISE,
@@ -350,7 +351,7 @@ WORLD_Z2 = max(640, KNOTT_Z2 + 512)
 # ground plane (Z=0) sits exactly halfway between the new basement floor and
 # the existing ceiling. No access point (teleporter/hatch) exists yet — this
 # is just the sealed shell, to be connected once the basement has content.
-BASEMENT_ENABLED = True
+BASEMENT_ENABLED = _flag("BASEMENT_ENABLED")
 BASEMENT_SLAB_T = 16  # basement floor slab thickness, matches FLOOR_Z1..FLOOR_Z2
 BASEMENT_Z1 = -WORLD_Z2  # basement floor top (walkable surface)
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # basement floor slab bottom

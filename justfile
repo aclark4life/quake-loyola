@@ -56,7 +56,9 @@ venv:
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d .venv ]; then python3 -m venv .venv; fi
-    .venv/bin/pip install -q --upgrade pip pytest sphinx furo
+    .venv/bin/pip install -q --upgrade pip
+    .venv/bin/pip install -q -e . --group dev
+    .venv/bin/pip install -q sphinx furo
 
 # Run the Python unit + regression test suite with pytest
 test: venv

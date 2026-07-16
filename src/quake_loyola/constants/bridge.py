@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from ..config import get as _flag
+
 BRIDGE_ARCH_PIER_RISE = 82  # deck rise at the centre-span piers (PIER2/PIER3):
 # the two approach spans descend straight from here to 0 at the outer piers
 # (ref/bridge08).
@@ -62,7 +64,9 @@ BRIDGE_PILLAR_EXTRA = 64  # restored to the original 64 — see BRIDGE_PILLAR_CA
 # note above; the pillar tops read as too short at 26, so the above-deck
 # reduction from today is undone while the below-deck plinth reduction and the
 # arch-opening crown trim (BRIDGE_PILLAR_INNER_R/OUTER_R below) remain.
-BRIDGE_PIER_BASE_LIGHTS_ENABLED = False  # temporarily disabled — pier-base lights (some sit buried in the east-span fill)
+BRIDGE_PIER_BASE_LIGHTS_ENABLED = _flag(
+    "BRIDGE_PIER_BASE_LIGHTS_ENABLED"
+)  # temporarily disabled — pier-base lights (some sit buried in the east-span fill)
 BRIDGE_PIER_FILL_OFFSET = 16
 BRIDGE_PILLAR_INNER_R = (144, 84)  # rout trimmed from 160 to 144 — a small ~10%
 # reduction in the arch opening's own clear height (crown rises less above the

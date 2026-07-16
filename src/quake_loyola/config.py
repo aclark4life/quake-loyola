@@ -1,0 +1,158 @@
+"""User-configurable build-time settings.
+
+Every boolean "master switch" flag that used to be hardcoded directly in
+``constants/flags.py`` (and a handful of similar flags scattered in
+``constants/bridge.py``, ``constants/knott.py``, ``constants/derived.py``) is
+now looked up here instead. :data:`DEFAULTS` holds the fallback value for each
+flag (identical to what was hardcoded before this module existed); anything
+present in ``ql.toml`` (at the repository root) overrides its default.
+
+This file has no dependency on the rest of ``quake_loyola`` so it can be
+imported early (from ``constants/flags.py`` etc.) without any risk of a
+circular import.
+
+Edit ``ql.toml`` by hand, or use the ``ql config`` CLI (see ``cli.py``):
+
+    ./ql config show                      # list every flag/setting
+    ./ql config set KNOTT_HALL_ENABLED true
+    ./ql config set vis_mode full
+    ./ql config reset                      # delete ql.toml, back to defaults
+"""
+
+from __future__ import annotations
+
+import json
+import tomllib
+from pathlib import Path
+from typing import Any
+
+# Resolved from the current working directory (not the installed package
+# location) so this works whether quake_loyola is imported via `sys.path`
+# insertion from a repo checkout (generate_map.py / ./ql) or pip-installed
+# into site-packages — either way, `ql`/`generate_map.py` are meant to be
+# run from the repo root, same as `just`.
+CONFIG_PATH = Path.cwd() / "ql.toml"
+
+# ════════════════════════════════════════════════════════════════════════
+# Flag defaults — one entry per boolean switch, formerly hardcoded in
+# constants/flags.py, constants/bridge.py, constants/knott.py, and
+# constants/derived.py. Keys are the exact constant names used at their call
+# sites so `ql config set <NAME> <value>` maps 1:1 onto the Python constant.
+# ════════════════════════════════════════════════════════════════════════
+DEFAULTS: dict[str, bool] = {
+    # -- module masters (constants/flags.py) --
+    "BRIDGE_ENABLED": False,
+    "BRIDGE_ENABLED_WEST_APPROACH": True,
+    "BRIDGE_ENABLED_CENTER_SPAN": True,
+    "BRIDGE_ENABLED_EAST_APPROACH": True,
+    "BRIDGE_ENABLED_KH_SPAN": False,
+    "BRIDGE_ENABLED_EAST_EXT": False,
+    "STREETS_DETAILS_ENABLED": True,
+    "WEST_CAMPUS_ENABLED": False,
+    "WEST_CAMPUS_FENCE_ENABLED": True,
+    "WEST_CAMPUS_TERRAIN_ENABLED": True,
+    "NE_TERRAIN_ENABLED": True,
+    "KNOTT_TERRAIN_ENABLED": True,
+    "KNOTT_HALL_ENABLED": False,
+    "ENTITIES_ENABLED": False,
+    "MARYLAND_HALL_ENABLED": False,
+    "MARYLAND_TERRAIN_ENABLED": False,
+    # -- light-group masters (constants/flags.py) --
+    "LIGHTS_ENABLED": False,
+    "TORCH_LIGHTS_ENABLED": True,
+    "BASEMENT_LIGHTS_ENABLED": True,
+    # -- misc display flags (constants/flags.py) --
+    "DRAW_BRIDGE_FASCIA_TEXT": True,
+    "SHOW_SUPPORTS": True,
+    # -- other module-local flags --
+    "BRIDGE_PIER_BASE_LIGHTS_ENABLED": False,  # constants/bridge.py
+    "KNOTT_EXTERIOR_ENABLED": True,  # constants/knott.py
+    "KNOTT_INTERIOR_ENABLED": False,  # constants/knott.py
+    "KNOTT_MONSTERS_ENABLED": False,  # constants/knott.py
+    "KNOTT_WALKWAY_ENABLED": True,  # constants/knott.py
+    "BASEMENT_ENABLED": True,  # constants/derived.py
+}
+
+# ════════════════════════════════════════════════════════════════════════
+# Build-tool settings — not Python constants, consumed by `ql build`
+# (mirrors/extends the `just compile`/`just compile-fast` recipes).
+# ════════════════════════════════════════════════════════════════════════
+BUILD_DEFAULTS: dict[str, Any] = {
+    "vis_mode": "fast",  # "fast" (vis -fast, quick iteration) or "full" (vis, full PVS)
+    "light_extra": False,  # add light's -extra flag (2x2 supersampling, slower/higher quality)
+}
+
+
+def _read_toml(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def _toml_scalar(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return repr(value)
+    return json.dumps(str(value))
+
+
+def _write_toml(path: Path, sections: dict[str, dict[str, Any]]) -> None:
+    lines: list[str] = []
+    for section, kv in sections.items():
+        if not kv:
+            continue
+        lines.append(f"[{section}]")
+        for key in sorted(kv):
+            lines.append(f"{key} = {_toml_scalar(kv[key])}")
+        lines.append("")
+    path.write_text("\n".join(lines).rstrip() + "\n" if lines else "")
+
+
+_raw = _read_toml(CONFIG_PATH)
+FLAGS: dict[str, bool] = {**DEFAULTS, **_raw.get("flags", {})}
+BUILD: dict[str, Any] = {**BUILD_DEFAULTS, **_raw.get("build", {})}
+
+
+def get(name: str) -> bool:
+    """Return the effective value of a flag (default, overridden by ql.toml)."""
+    if name not in DEFAULTS:
+        raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
+    return FLAGS[name]
+
+
+def get_build(name: str) -> Any:
+    """Return the effective value of a build-tool setting."""
+    if name not in BUILD_DEFAULTS:
+        raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
+    return BUILD[name]
+
+
+def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
+    if name not in DEFAULTS:
+        raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
+    raw = _read_toml(path)
+    flags = dict(raw.get("flags", {}))
+    flags[name] = value
+    raw["flags"] = flags
+    _write_toml(path, raw)
+
+
+def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
+    if name not in BUILD_DEFAULTS:
+        raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
+    raw = _read_toml(path)
+    build = dict(raw.get("build", {}))
+    build[name] = value
+    raw["build"] = build
+    _write_toml(path, raw)
+
+
+def reset(path: Path = CONFIG_PATH) -> bool:
+    """Delete ql.toml, reverting every flag/setting to its default. Returns
+    True if a file was actually removed."""
+    if path.exists():
+        path.unlink()
+        return True
+    return False

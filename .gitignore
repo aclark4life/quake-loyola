@@ -30,3 +30,9 @@ loyola.vis
 __pycache__/
 .tools/
 .idea/
+
+# Local build-time settings written by `ql config set` (see src/quake_loyola/config.py)
+ql.toml
+
+build/
+*.egg-info/

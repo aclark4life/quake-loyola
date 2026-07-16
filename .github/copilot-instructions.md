@@ -6,7 +6,8 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 
 | Path | Purpose |
 |---|---|
-| `generate_map.py` | Entry point — assembles all modules into `loyola.map` |
+| `generate_map.py` | Entry point — thin wrapper delegating to `quake_loyola.mapgen`, writes `loyola.map` |
+| `src/quake_loyola/mapgen.py` | Actual module-assembly logic (`build_map`, `main`) — importable once pip-installed |
 | `src/quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
 | `src/quake_loyola/mapdata.py` | `MapBuilder` — collects brushes/entities and serialises to `.map` |
 | `src/quake_loyola/geometry/` | Low-level brush / face construction helpers (package: primitives, structures, prefabs, entities, helpers) |
@@ -19,6 +20,9 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/entities.py` | Player spawns, items, lights |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
+| `ql` | Typer CLI entry point — `./ql config ...` / `./ql generate` / `./ql build` |
+| `src/quake_loyola/config.py` | Flag/build-setting defaults + `ql.toml` load/save |
+| `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
 
 ## Workflow
 
@@ -67,6 +71,16 @@ just test
 ```
 
 Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBuilder` serialisation, and map-level regressions.
+
+## Configuring the build
+
+Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and vis/light
+quality settings are controlled via `ql.toml` (repo root, gitignored) and the
+`./ql config` CLI — see the module docstring of `src/quake_loyola/config.py`
+and the README's "Configuring the build" section. `generate_map.py` picks up
+`ql.toml` automatically through `constants/flags.py` (and a few flags in
+`constants/bridge.py`/`knott.py`/`derived.py`) at import time; no code changes
+needed to flip a module on/off — use `./ql config set <NAME> true|false`.
 
 ## Key conventions
 
