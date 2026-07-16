@@ -22,7 +22,7 @@ below).
 Kept independent of WEST_CAMPUS_ENABLED (own WEST_CAMPUS_TERRAIN_ENABLED
 flag) so the terrain can be reviewed/compiled on its own even while the
 dorm buildings themselves stay disabled — same reasoning as
-KNOTT_TERRAIN_ENABLED vs KNOTT_HALL_ENABLED.
+KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED.
 """
 
 from .constants import (

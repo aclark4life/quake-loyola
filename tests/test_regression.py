@@ -36,10 +36,10 @@ class EntitiesBuildTests(unittest.TestCase):
     def setUp(self):
         self._saved = {
             name: getattr(entities, name)
-            for name in ("ENTITIES_ENABLED", "KNOTT_INTERIOR_ENABLED")
+            for name in ("ENTITIES_ENABLED", "KNOTT_ENABLED_INTERIOR")
         }
         entities.ENTITIES_ENABLED = True
-        entities.KNOTT_INTERIOR_ENABLED = True
+        entities.KNOTT_ENABLED_INTERIOR = True
 
     def tearDown(self):
         for name, value in self._saved.items():
@@ -94,7 +94,7 @@ class EntitiesBuildTests(unittest.TestCase):
 
 
 class KnottTerrainToggleTests(unittest.TestCase):
-    """KNOTT_TERRAIN_ENABLED must be safely toggleable in either direction:
+    """KNOTT_ENABLED_TERRAIN must be safely toggleable in either direction:
     streets.py falls back to flat, flush-with-sidewalk ground on the east
     side of Charles St when the flag is off (see the verge-fill comments in
     streets.py), so disabling KH terrain should never leave a gap, leak, or
@@ -106,9 +106,9 @@ class KnottTerrainToggleTests(unittest.TestCase):
         self._saved = {
             (
                 knott_terrain,
-                "KNOTT_TERRAIN_ENABLED",
-            ): knott_terrain.KNOTT_TERRAIN_ENABLED,
-            (streets, "KNOTT_TERRAIN_ENABLED"): streets.KNOTT_TERRAIN_ENABLED,
+                "KNOTT_ENABLED_TERRAIN",
+            ): knott_terrain.KNOTT_ENABLED_TERRAIN,
+            (streets, "KNOTT_ENABLED_TERRAIN"): streets.KNOTT_ENABLED_TERRAIN,
         }
 
     def tearDown(self):
@@ -116,8 +116,8 @@ class KnottTerrainToggleTests(unittest.TestCase):
             setattr(module, name, value)
 
     def _build_with_flag(self, enabled):
-        knott_terrain.KNOTT_TERRAIN_ENABLED = enabled
-        streets.KNOTT_TERRAIN_ENABLED = enabled
+        knott_terrain.KNOTT_ENABLED_TERRAIN = enabled
+        streets.KNOTT_ENABLED_TERRAIN = enabled
         return generate_map.build_map()
 
     def test_enabled_and_disabled_both_build_cleanly(self):

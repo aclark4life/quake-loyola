@@ -17,13 +17,13 @@ from .constants import (
     FLOOR_Z1,
     INDENT,
     KNOTT,
+    KNOTT_ENABLED,
+    KNOTT_ENABLED_EXTERIOR,
+    KNOTT_ENABLED_INTERIOR,
     KNOTT_ENT_HALF_W,
-    KNOTT_EXTERIOR_ENABLED,
     KNOTT_FRONT_WINDOW_HALF_W,
     KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
     KNOTT_GROUND_Z,
-    KNOTT_HALL_ENABLED,
-    KNOTT_INTERIOR_ENABLED,
     KNOTT_MULLION_PRO,
     KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
@@ -71,20 +71,20 @@ from .geometry import (
 
 
 def build():
-    if not KNOTT_HALL_ENABLED:
+    if not KNOTT_ENABLED:
         return [], []
     BRUSHES = []
     ENTITIES = []
     # Genuinely interior-only content (floor slabs, elevator shaft, stairwell,
-    # partition/hallway walls) — cleared entirely when KNOTT_INTERIOR_ENABLED is False.
+    # partition/hallway walls) — cleared entirely when KNOTT_ENABLED_INTERIOR is False.
     DETAIL_BRUSHES = []
     # Non-structural exterior decoration (window mullions/dividers) — kept as
     # func_detail purely for BSP/vis performance, so it must survive independently
-    # of the interior toggle and only be trimmed by KNOTT_EXTERIOR_ENABLED.
+    # of the interior toggle and only be trimmed by KNOTT_ENABLED_EXTERIOR.
     EXTERIOR_DETAIL_BRUSHES = []
     knott_brush_start = len(
         BRUSHES
-    )  # checkpoint — trimmed below if KNOTT_EXTERIOR_ENABLED is False
+    )  # checkpoint — trimmed below if KNOTT_ENABLED_EXTERIOR is False
 
     # ── Sub-ground-floor crawlspace fill ─────────────────────────────────────
     # The building footprint's perimeter walls run full height (FLOOR_Z1 up to
@@ -1539,18 +1539,18 @@ def build():
             )
         )
 
-    if not KNOTT_EXTERIOR_ENABLED:
+    if not KNOTT_ENABLED_EXTERIOR:
         del BRUSHES[knott_brush_start:]
         EXTERIOR_DETAIL_BRUSHES.clear()
 
-    if not KNOTT_INTERIOR_ENABLED:
+    if not KNOTT_ENABLED_INTERIOR:
         DETAIL_BRUSHES.clear()
 
     DETAIL_BRUSHES.extend(EXTERIOR_DETAIL_BRUSHES)
 
     # Raised pixel-font letters on the Knott Hall sign plaque
     # Text reversed + mirrored so it reads correctly when viewed from north (facing south)
-    if KNOTT_EXTERIOR_ENABLED:
+    if KNOTT_ENABLED_EXTERIOR:
         BRUSHES.extend(
             render_text_flat(
                 KNOTT_SIGN_TEXT[::-1],

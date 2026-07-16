@@ -66,7 +66,7 @@ measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
 terrain) is temporarily disabled via the master switches in
 ``constants/flags.py`` (``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``,
-``KNOTT_TERRAIN_ENABLED``, ``KNOTT_HALL_ENABLED``, ``STREETS_DETAILS_ENABLED``,
+``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_DETAILS_ENABLED``,
 ``ENTITIES_ENABLED``)
 while each area's own dimensions are re-derived against this new world size
 from the ``ref/`` top-down views.
@@ -243,8 +243,8 @@ approximation is refined):
   first pass.
 
 **Action items for future terrain/building re-derivation** (not yet
-implemented — ``WEST_CAMPUS_ENABLED``, ``KNOTT_TERRAIN_ENABLED``,
-``KNOTT_HALL_ENABLED`` remain disabled):
+implemented — ``WEST_CAMPUS_ENABLED``, ``KNOTT_ENABLED_TERRAIN``,
+``KNOTT_ENABLED`` remain disabled):
 
 - Raise ``KNOTT_GROUND_Z`` from 64 to **221 units** (``ft_to_units(14.6)``)
   to match the re-measured rise at Knott Hall's west edge.
@@ -451,13 +451,13 @@ Knott Hall
      - The cement support structure under the bridge approach in front of Knott
        Hall. Consists of a horizontal cap beam running along the south bridge
        edge (Pier 4 → Pier 5) with 5 vertical drop piers reaching to ground
-       level. Only present when ``KNOTT_WALKWAY_ENABLED = True``.
+       level. Only present when ``KNOTT_ENABLED_WALKWAY = True``.
    * - **Accessible walkway**
      - The small N-S cement path running along the west face of Pier 5, from
        the Knott Hall north face up to the bridge south edge. A short E-W ramp
        at the north end wraps around Pier 5 and connects to the back-road west
        sidewalk. Generated alongside the main walkway when
-       ``KNOTT_WALKWAY_ENABLED = True``.
+       ``KNOTT_ENABLED_WALKWAY = True``.
 
 Street / road
 ~~~~~~~~~~~~~

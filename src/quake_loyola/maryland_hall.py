@@ -21,9 +21,9 @@ area module has a single clear responsibility.
 """
 
 from .constants import (
+    MARYLAND_ENABLED,
     MARYLAND_GROUND_Z,
     MARYLAND_H,
-    MARYLAND_HALL_ENABLED,
     MARYLAND_X1,
     MARYLAND_X2,
     MARYLAND_Y1,
@@ -34,7 +34,7 @@ from .geometry import box
 
 
 def build():
-    if not MARYLAND_HALL_ENABLED:
+    if not MARYLAND_ENABLED:
         return [], []
     BRUSHES = []
     ENTITIES = []

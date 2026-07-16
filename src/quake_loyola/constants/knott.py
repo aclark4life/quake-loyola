@@ -6,14 +6,14 @@ from ..config import get as _flag
 from .world import INDENT
 
 KNOTT_DRIVEWAY_HW = 128
-KNOTT_EXTERIOR_ENABLED = _flag(
-    "KNOTT_EXTERIOR_ENABLED"
+KNOTT_ENABLED_EXTERIOR = _flag(
+    "KNOTT_ENABLED_EXTERIOR"
 )  # KH exterior (walls, windows, roof, sign)
-KNOTT_INTERIOR_ENABLED = _flag(
-    "KNOTT_INTERIOR_ENABLED"
+KNOTT_ENABLED_INTERIOR = _flag(
+    "KNOTT_ENABLED_INTERIOR"
 )  # temporarily disabled — KH interior (floor slabs, stairs, hallway walls, partitions)
-KNOTT_MONSTERS_ENABLED = _flag(
-    "KNOTT_MONSTERS_ENABLED"
+KNOTT_ENABLED_MONSTERS = _flag(
+    "KNOTT_ENABLED_MONSTERS"
 )  # temporarily disabled — KH monsters (ogres + knights inside/on KH)
 KNOTT_FLOORS = 5
 KNOTT_FLOOR_H = 192
@@ -57,7 +57,7 @@ KNOTT_STAIR_RAIL_POST_D = 2
 KNOTT_STAIR_RAIL_POST_W = 8
 KNOTT_STEP_DEPTH = 24
 KNOTT_STEP_N = 5
-KNOTT_WALKWAY_ENABLED = _flag("KNOTT_WALKWAY_ENABLED")
+KNOTT_ENABLED_WALKWAY = _flag("KNOTT_ENABLED_WALKWAY")
 KNOTT_WALL = 16
 KNOTT_FRONT_WINDOW_HALF_W = 48
 KNOTT_FRONT_WINDOW_MULLION_HALF_GAP = 6

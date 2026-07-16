@@ -15,13 +15,13 @@ def test_defaults_load_without_config_file(tmp_path):
 
 def test_set_and_get_flag_round_trips(tmp_path):
     path = tmp_path / "ql.toml"
-    assert config.get("KNOTT_HALL_ENABLED") is False  # sanity: default unaffected
-    config.set_flag("KNOTT_HALL_ENABLED", True, path=path)
+    assert config.get("KNOTT_ENABLED") is False  # sanity: default unaffected
+    config.set_flag("KNOTT_ENABLED", True, path=path)
     raw = config._read_toml(path)
-    assert raw["flags"]["KNOTT_HALL_ENABLED"] is True
+    assert raw["flags"]["KNOTT_ENABLED"] is True
     # Re-merging on top of DEFAULTS should reflect the override.
     merged = {**config.DEFAULTS, **raw.get("flags", {})}
-    assert merged["KNOTT_HALL_ENABLED"] is True
+    assert merged["KNOTT_ENABLED"] is True
     # Unrelated flags stay at their defaults.
     assert merged["BASEMENT_ENABLED"] == config.DEFAULTS["BASEMENT_ENABLED"]
 
@@ -45,7 +45,7 @@ def test_set_and_get_build_setting_round_trips(tmp_path):
 
 def test_reset_removes_config_file(tmp_path):
     path = tmp_path / "ql.toml"
-    config.set_flag("KNOTT_HALL_ENABLED", True, path=path)
+    config.set_flag("KNOTT_ENABLED", True, path=path)
     assert path.exists()
     removed = config.reset(path=path)
     assert removed is True

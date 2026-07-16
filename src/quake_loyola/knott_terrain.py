@@ -48,7 +48,7 @@ from .constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
-    KNOTT_TERRAIN_ENABLED,
+    KNOTT_ENABLED_TERRAIN,
     ROAD_X2,
     WALL_T,
     WORLD_X2_EXT,
@@ -66,7 +66,7 @@ from .geometry import (
 
 
 def build():
-    if not KNOTT_TERRAIN_ENABLED:
+    if not KNOTT_ENABLED_TERRAIN:
         return [], []
     BRUSHES = []
 
@@ -1411,7 +1411,7 @@ def build():
     # "Topology check" section) shows the real east side climbs continuously from
     # Knott Hall (~+7.2 ft) to Ennis Parallel (~+21.7 ft, ~360 ft further east) —
     # not a flat shelf. This section needs to be rebuilt against a sloped
-    # elevation model before KNOTT_TERRAIN_ENABLED can be turned back on.
+    # elevation model before KNOTT_ENABLED_TERRAIN can be turned back on.
     #
     # TODO: rebuild hill fill + west ramp + north-face slope + entrance
     # staircase/platform using real elevation-derived Z values instead of a

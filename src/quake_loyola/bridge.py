@@ -93,8 +93,8 @@ from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_ENABLED_WALKWAY,
     KNOTT_GROUND_Z,
-    KNOTT_WALKWAY_ENABLED,
     PIER2_X,
     PIER3_X,
     PIER4_X,
@@ -1750,7 +1750,7 @@ def _build_all():
     # WALKWAY — flat bridge from south edge to building 2nd floor entrance
     # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; flat at WALK_ZT1 = WALK_ZT2
     # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_WALKWAY_ENABLED:
+    if KNOTT_ENABLED_WALKWAY:
         wk_zb1 = WALK_ZT1 - KNOTT.wall_t  # slab bottom at bridge end
         wk_zb2 = WALK_ZT2 - KNOTT.wall_t  # slab bottom at building end
         BRUSHES.append(
@@ -1828,7 +1828,7 @@ def _build_all():
     # sidewalk.  Provides ground-level access around Pier 5 without steps.
     # Spans Y=KNOTT.y2..BRIDGE.y1 (KH north face → bridge south edge).
     # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_WALKWAY_ENABLED:
+    if KNOTT_ENABLED_WALKWAY:
         east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
         east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
@@ -1877,7 +1877,7 @@ def _build_all():
     # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
     # visible under the KH bridge approach (ref: bridge01).
     # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_WALKWAY_ENABLED:
+    if KNOTT_ENABLED_WALKWAY:
         # Position just under the south edge of the bridge deck, shifted north
         # so the beam sits fully under the deck (south face flush with deck edge)
         support_y_center = (

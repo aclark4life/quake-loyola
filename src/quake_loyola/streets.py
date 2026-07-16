@@ -86,7 +86,7 @@ from .constants import (
     KNOTT_DRIVEWAY_RD_X2,
     KNOTT_DRIVEWAY_WS_X1,
     KNOTT_DRIVEWAY_WS_X2,
-    KNOTT_TERRAIN_ENABLED,
+    KNOTT_ENABLED_TERRAIN,
     MANHOLE_R,
     MANHOLE_X,
     MANHOLE_Y,
@@ -2744,7 +2744,7 @@ def build():
     # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
     # overlapping brushes.
     #   west side  -> owned by west_campus_terrain.py (WEST_CAMPUS_TERRAIN_ENABLED)
-    #   east side  -> owned by knott_terrain.py (KNOTT_TERRAIN_ENABLED)
+    #   east side  -> owned by knott_terrain.py (KNOTT_ENABLED_TERRAIN)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
         if WEST_CAMPUS_TERRAIN_ENABLED
@@ -2775,7 +2775,7 @@ def build():
             (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, _west_verge_y2),
             (KNOTT_DRIVEWAY_CORRIDOR_X2, _east_verge_x2, ENNIS_SW_EDGE),
         ]
-        if KNOTT_TERRAIN_ENABLED
+        if KNOTT_ENABLED_TERRAIN
         else [
             (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, _west_verge_y2),
             (KNOTT.x2, _east_verge_x2, ENNIS_SW_EDGE),
@@ -2890,9 +2890,9 @@ def build():
     # appears there when KH terrain is enabled — restricted to the Y range
     # north of the curb line (KNOTT_DRIVEWAY_EXT_Y2) so it doesn't overlap the
     # verge/ground fills above, which already cover everything south of it.
-    if not KNOTT_TERRAIN_ENABLED:
+    if not KNOTT_ENABLED_TERRAIN:
         # Sidewalk-band gap — the unconditional Ennis south-curb SIDEWALK strip
-        # above (built regardless of KNOTT_TERRAIN_ENABLED) leaves a corridor
+        # above (built regardless of KNOTT_ENABLED_TERRAIN) leaves a corridor
         # gap between KNOTT.x2 and KNOTT_DRIVEWAY_ES_X2 for knott_terrain.py to
         # fill; with it disabled, that band (Y: ENNIS_SW_EDGE to
         # ENNIS_SW_EDGE+CHARLES_WALK_W) was left empty. Fill it the same way

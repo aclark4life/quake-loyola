@@ -63,11 +63,12 @@ from .constants import (
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_EAST_ROOM_CX,
+    KNOTT_ENABLED_INTERIOR,
+    KNOTT_ENABLED_MONSTERS,
+    KNOTT_ENABLED_WALKWAY,
     KNOTT_ENT_X1,
     KNOTT_ENT_X2,
     KNOTT_GROUND_Z,
-    KNOTT_INTERIOR_ENABLED,
-    KNOTT_MONSTERS_ENABLED,
     KNOTT_ORIG_CX,
     KNOTT_ROOM_SPLITS,
     KNOTT_SHAFT_X1,
@@ -82,7 +83,6 @@ from .constants import (
     KNOTT_STAIRS_X2,
     KNOTT_STAIRS_Y1,
     KNOTT_STAIRS_Y2,
-    KNOTT_WALKWAY_ENABLED,
     KNOTT_WEST_ROOM_CX,
     KNOTT_Z2,
     ROAD_X1,
@@ -162,7 +162,7 @@ def build():
     # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
     knott_entity_start = len(
         ENTITIES
-    )  # checkpoint — trimmed below if KNOTT_INTERIOR_ENABLED is False
+    )  # checkpoint — trimmed below if KNOTT_ENABLED_INTERIOR is False
     room_goodies = [
         "item_health",
         "weapon_supershotgun",
@@ -373,7 +373,7 @@ def build():
                 )
             )
 
-    if not KNOTT_INTERIOR_ENABLED:
+    if not KNOTT_ENABLED_INTERIOR:
         del ENTITIES[knott_entity_start:]
 
     # Teleport destinations — west arch ↔ east arch
@@ -723,7 +723,7 @@ def build():
                     180,
                 )
             ]
-            if KNOTT_INTERIOR_ENABLED
+            if KNOTT_ENABLED_INTERIOR
             else []
         ),
         # Knott Hall — ground, mid, upper floors
@@ -750,7 +750,7 @@ def build():
                 # Knott Hall rooftop
                 ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
             ]
-            if KNOTT_INTERIOR_ENABLED
+            if KNOTT_ENABLED_INTERIOR
             else []
         ),
         # Charles Street
@@ -783,7 +783,7 @@ def build():
     _rl_y, _rl_z = _cs_offset(0, 0, BRIDGE_DECK_Z)
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_rocketlauncher",
@@ -809,7 +809,7 @@ def build():
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
     # Super shotgun — spread around mid-tier locations
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_supershotgun",
@@ -827,7 +827,7 @@ def build():
     )
 
     # Grenade launcher — Knott Hall floor 2, south building 2
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_grenadelauncher",
@@ -844,7 +844,7 @@ def build():
     # Nailgun — bridge approaches, Charles Street
     ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_nailgun",
@@ -857,7 +857,7 @@ def build():
     ENTITIES.append(
         ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}")
     )  # bridge centre
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_lightning",
@@ -892,7 +892,7 @@ def build():
         )
     )
     # Knott Hall floors
-    if KNOTT_INTERIOR_ENABLED and KNOTT_MONSTERS_ENABLED:
+    if KNOTT_ENABLED_INTERIOR and KNOTT_ENABLED_MONSTERS:
         ENTITIES.append(
             ent(
                 "monster_ogre",
@@ -1104,7 +1104,7 @@ def build():
     )
 
     # Light on underside of walkway slab illuminating the ramp below
-    if KNOTT_WALKWAY_ENABLED:
+    if KNOTT_ENABLED_WALKWAY:
         walk_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2
         walk_frac = (BRIDGE.y1 - walk_mid_y) / float(BRIDGE.y1 - KNOTT.y2)
         wk_zb1 = WALK_ZT1 - KNOTT.wall_t
@@ -1119,7 +1119,7 @@ def build():
         )
 
     # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         lift_travel = KNOTT_Z2 - (KNOTT_GROUND_Z + KNOTT.wall_t)
         lift_brush = [
             box(
@@ -1164,7 +1164,7 @@ def build():
                 )
 
     # Interior lights for Knott Hall — 3×4 grid per floor
-    if KNOTT_INTERIOR_ENABLED:
+    if KNOTT_ENABLED_INTERIOR:
         for knott_floor_index in range(KNOTT.floors):
             knott_light_z = (
                 KNOTT_GROUND_Z + knott_floor_index * KNOTT.floor_h + KNOTT.floor_h // 2
@@ -1599,7 +1599,7 @@ def build():
             )
         )
 
-    if KNOTT_MONSTERS_ENABLED:
+    if KNOTT_ENABLED_MONSTERS:
         # Knights inside KH rooms — one per floor in each room
         for fl in range(KNOTT.floors):
             fz = KNOTT_GROUND_Z + fl * KNOTT.floor_h + KNOTT.wall_t + 24

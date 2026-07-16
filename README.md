@@ -52,10 +52,10 @@ ql conf show
 
 ```bash
 ./ql conf show                          # (or `ql ...` if pip-installed)
-./ql conf set KNOTT_HALL_ENABLED true   # flip a module/light flag on or off
+./ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
 ./ql conf set vis_mode full             # "fast" (default) or "full" vis pass
 ./ql conf set light_extra true          # light -extra (2x2 supersampling)
-./ql conf get KNOTT_HALL_ENABLED
+./ql conf get KNOTT_ENABLED
 ./ql conf reset                         # delete ql.toml, back to defaults
 ./ql gen                                  # same as `just generate`, but config-aware
 ./ql build                                # generate + qbsp + vis + light + deploy,

@@ -14,7 +14,7 @@ circular import.
 Edit ``ql.toml`` by hand, or use the ``ql conf`` CLI (see ``cli.py``):
 
     ./ql conf show                      # list every flag/setting
-    ./ql conf set KNOTT_HALL_ENABLED true
+    ./ql conf set KNOTT_ENABLED true
     ./ql conf set vis_mode full
     ./ql conf reset                      # delete ql.toml, back to defaults
 """
@@ -52,11 +52,11 @@ DEFAULTS: dict[str, bool] = {
     "WEST_CAMPUS_FENCE_ENABLED": True,
     "WEST_CAMPUS_TERRAIN_ENABLED": True,
     "NE_TERRAIN_ENABLED": True,
-    "KNOTT_TERRAIN_ENABLED": True,
-    "KNOTT_HALL_ENABLED": False,
+    "KNOTT_ENABLED_TERRAIN": True,
+    "KNOTT_ENABLED": False,
     "ENTITIES_ENABLED": False,
-    "MARYLAND_HALL_ENABLED": False,
-    "MARYLAND_TERRAIN_ENABLED": False,
+    "MARYLAND_ENABLED": False,
+    "MARYLAND_ENABLED_TERRAIN": False,
     # -- light-group masters (constants/flags.py) --
     "LIGHTS_ENABLED": False,
     "TORCH_LIGHTS_ENABLED": True,
@@ -66,10 +66,10 @@ DEFAULTS: dict[str, bool] = {
     "SHOW_SUPPORTS": True,
     # -- other module-local flags --
     "BRIDGE_ENABLED_PIER_BASE_LIGHTS": False,  # constants/bridge.py
-    "KNOTT_EXTERIOR_ENABLED": True,  # constants/knott.py
-    "KNOTT_INTERIOR_ENABLED": False,  # constants/knott.py
-    "KNOTT_MONSTERS_ENABLED": False,  # constants/knott.py
-    "KNOTT_WALKWAY_ENABLED": True,  # constants/knott.py
+    "KNOTT_ENABLED_EXTERIOR": True,  # constants/knott.py
+    "KNOTT_ENABLED_INTERIOR": False,  # constants/knott.py
+    "KNOTT_ENABLED_MONSTERS": False,  # constants/knott.py
+    "KNOTT_ENABLED_WALKWAY": True,  # constants/knott.py
     "BASEMENT_ENABLED": True,  # constants/derived.py
 }
 

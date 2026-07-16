@@ -51,8 +51,8 @@ WEST_CAMPUS_TERRAIN_ENABLED = _flag(
     "WEST_CAMPUS_TERRAIN_ENABLED"
 )  # west_campus_terrain.py — real-elevation
 # ground fill under/around the dorm buildings + bridge west approach. Kept
-# independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_TERRAIN_ENABLED
-# vs KNOTT_HALL_ENABLED) so the terrain can be reviewed on its own even while
+# independent of WEST_CAMPUS_ENABLED (same reasoning as KNOTT_ENABLED_TERRAIN
+# vs KNOTT_ENABLED) so the terrain can be reviewed on its own even while
 # the buildings themselves stay off.
 NE_TERRAIN_ENABLED = _flag(
     "NE_TERRAIN_ENABLED"
@@ -61,11 +61,11 @@ NE_TERRAIN_ENABLED = _flag(
 # placeholder box streets.py used to build there. See ne_terrain.py's module
 # docstring for the real-elevation-derived design and the two flush ties
 # (Charles St east sidewalk to the west, Ennis Road north curb to the south).
-KNOTT_TERRAIN_ENABLED = _flag(
-    "KNOTT_TERRAIN_ENABLED"
+KNOTT_ENABLED_TERRAIN = _flag(
+    "KNOTT_ENABLED_TERRAIN"
 )  # knott_terrain.py — KH surrounding terrain/embankment/driveway
-KNOTT_HALL_ENABLED = _flag(
-    "KNOTT_HALL_ENABLED"
+KNOTT_ENABLED = _flag(
+    "KNOTT_ENABLED"
 )  # knott_hall.py — KH building shell (walls, windows, roof, sign)
 ENTITIES_ENABLED = _flag(
     "ENTITIES_ENABLED"
@@ -92,13 +92,13 @@ BASEMENT_ENABLED_LIGHTS = _flag(
 # "_light_group" field so they can be told apart from other "light"-
 # classname entities (pendant lights, pillar uplights, etc.) that aren't
 # part of any group yet and stay off until LIGHTS_ENABLED is True.
-MARYLAND_HALL_ENABLED = _flag(
-    "MARYLAND_HALL_ENABLED"
+MARYLAND_ENABLED = _flag(
+    "MARYLAND_ENABLED"
 )  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
-MARYLAND_TERRAIN_ENABLED = _flag(
-    "MARYLAND_TERRAIN_ENABLED"
+MARYLAND_ENABLED_TERRAIN = _flag(
+    "MARYLAND_ENABLED_TERRAIN"
 )  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
-# Kept independent of KNOTT_TERRAIN_ENABLED so each hill/mound can be flipped
+# Kept independent of KNOTT_ENABLED_TERRAIN so each hill/mound can be flipped
 # on and off separately while both are still placeholder/provisional models.
 
 DRAW_BRIDGE_FASCIA_TEXT = _flag("DRAW_BRIDGE_FASCIA_TEXT")

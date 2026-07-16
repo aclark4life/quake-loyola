@@ -16,7 +16,7 @@ Maryland Hall's) can be enabled/disabled independently — both are
 provisional models pending re-derivation, and neither should force the
 other on or off.
 
-When MARYLAND_TERRAIN_ENABLED is False, this module still emits a ring of
+When MARYLAND_ENABLED_TERRAIN is False, this module still emits a ring of
 HINT brushes around the footprint instead of nothing at all — see the
 comment in build() for why that's required for a clean compile. HINT
 brushes are non-solid/invisible (same technique bridge.py uses to force
@@ -26,9 +26,9 @@ vis splits), so this leaves the ground perfectly flush and flat.
 from .constants import (
     FLOOR_Z1,
     FLOOR_Z2,
+    MARYLAND_ENABLED,
+    MARYLAND_ENABLED_TERRAIN,
     MARYLAND_GROUND_Z,
-    MARYLAND_HALL_ENABLED,
-    MARYLAND_TERRAIN_ENABLED,
     MARYLAND_TERRAIN_MARGIN,
     MARYLAND_TERRAIN_RAMP_W,
     MARYLAND_X1,
@@ -42,7 +42,7 @@ from .geometry import box, corner_ramp, ramp_slab, ramp_slab_y
 
 
 def build():
-    if not MARYLAND_TERRAIN_ENABLED and not MARYLAND_HALL_ENABLED:
+    if not MARYLAND_ENABLED_TERRAIN and not MARYLAND_ENABLED:
         # Hall + mound both disabled for now. Leaving *nothing* here would let
         # the unconditional world floor (streets.py) expose one continuous,
         # unbroken top face across this whole footprint plus everything

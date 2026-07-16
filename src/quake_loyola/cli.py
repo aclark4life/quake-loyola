@@ -91,7 +91,7 @@ def config_set(name: str, value: str) -> None:
     """Set a flag (true/false) or build setting, persisted to ql.toml.
 
     Examples:
-        ql conf set KNOTT_HALL_ENABLED true
+        ql conf set KNOTT_ENABLED true
         ql conf set bridge_enabled true       # names are case-insensitive
         ql conf set vis_mode full
         ql conf set light_extra true
