@@ -420,7 +420,9 @@ def ft_to_units(feet, inches=0):
 BRIDGE_DECK_Z = deck_top_z(0) + 8
 WALK_ZT1 = int(deck_top_z(KNOTT_ORIG_CX))
 BRIDGE_PAR_W = ft_to_units(2, 6)
-BRIDGE_PILLAR_HW = ft_to_units(2, 5.5)
+BRIDGE_PILLAR_HW = ft_to_units(2, 5.5) + 8  # +8 units per user request to make the
+# piers a little thicker east-west (was a flush 37; the arch/cap geometry above
+# and DORM_X2/FENCE_X1 offsets below all key off this so they widen/shift with it)
 BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # cap flush with the pillar post below (was
 # a separate, wider constant — 45 vs 37 — which made the cap overhang the post
 # on its E/W faces; only the documented N/S overhangs (CAP_IN_OVH/CAP_OUT_OVH)
