@@ -114,7 +114,14 @@ _wct_cols = [
     _clamp0([-78, -8, 143, 146, 151, 129, 135, 152, 149, 144, 64, 233, 216]),
     _clamp0([-103, -19, 101, 102, 107, 114, 110, 124, 141, 134, 74, 227, 209]),
     _clamp0([-117, -23, 88, 92, 101, 106, 105, 108, 109, 122, 86, 206, 198]),
-    _clamp0([-116, -36, 62, 74, 88, 101, 104, 139, 113, 108, 93, 161, 186]),
+    # FENCE_X1 column: the real y=-1068 (index 7) sample is a 139 spike —
+    # inconsistent with its neighbors (104 at y=0, 113 at y=-1968, and the
+    # DORM_X2 column's own y=-1068 sample of 108) and well above the flat
+    # FLOOR_Z2 + SDORM_LIFT (128) walkway/spur that build_sidewalk() inlays
+    # right next to this column, poking up through/burying the walkway.
+    # Trimmed to 108 (matching DORM_X2's same row) to smooth the local
+    # spike and clear the walkway.
+    _clamp0([-116, -36, 62, 74, 88, 101, 104, 108, 113, 108, 93, 161, 186]),
     _clamp0([-137, -82, -28, -16, 12, 50, 67, 104, 105, 100, 105, 136, 154]),
 ]
 # The real -700 column rises to ~90-115 near the south end, but the

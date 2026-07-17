@@ -56,6 +56,7 @@ from .constants import (
     WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_FENCE,
+    WEST_CAMPUS_ENABLED_SIDEWALK,
     WEST_CAMPUS_ENABLED_WALL,
     WORLD_Y2,
     Textures,
@@ -298,6 +299,102 @@ def build_brick_wall(BRUSHES, ENTITIES):
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
 
+def build_sidewalk(BRUSHES):
+    """Flush stone walkway inlaid into the terrace in front of the dorms
+    (top level with the surrounding ground), with a spur running north to
+    the brick-wall door. Extracted so it can be shown even when
+    WEST_CAMPUS_ENABLED_DORMS (dorm buildings) is off, gated independently
+    by WEST_CAMPUS_ENABLED_SIDEWALK.
+
+    Uses its own (lower) lift rather than SDORM_LIFT (the dorm floor/gate
+    terrace height): real grade along this strip runs ~106-113 (see
+    west_campus_terrain.py), so a walkway-only height closer to real grade
+    sits nearly flush instead of floating ~20 units above it (still floats
+    ~5-10 units, but reads better than a full 20-unit gap or a too-buried
+    108 lift).
+
+    The frontage runs all the way south to CHARLES_Y1, matching the south
+    end of the iron fence (build_iron_fence's pillar/fence run), rather
+    than stopping at the dorm buildings' own south face.
+
+    Tiled into individual square concrete panels with expansion-joint gaps
+    (same 80-unit-square + 2-unit-gap convention as streets.py's sidewalk
+    slabs / knott_terrain.py's sidewalk_slabs_flat) rather than one long
+    continuous slab.
+
+    A standing curb runs along the east edge (facing the iron fence /
+    Charles St), separated from the sidewalk squares by an open gap
+    (_CURB_GAP) so it reads as its own distinct piece rather than the
+    sidewalk's own edge. The curb's
+    base follows the real hillside (terrain_z, chained at the wct_y grid
+    breakpoints like build_iron_fence's top rail) since the ground here
+    isn't flat, rising up to the sidewalk's own flat walk_lift height."""
+    walk_lift = SDORM_LIFT - 10
+    _SW_SLAB_LEN = 80
+    _SW_GAP = 2
+    _CURB_W = 8
+    _CURB_GAP = 2
+
+    def slabs_y(x1, x2, y1, y2):
+        """Tile a flat N-S run (y1 > y2, north to south) into square panels."""
+        brushes = []
+        step = _SW_SLAB_LEN + _SW_GAP
+        y = y1
+        while y > y2:
+            sy2 = max(y - _SW_SLAB_LEN, y2)
+            brushes.append(
+                box(x1, sy2, FLOOR_Z2, x2, y, FLOOR_Z2 + walk_lift, Textures.STONE)
+            )
+            y -= step
+        return brushes
+
+    def curb_y(x1, x2, y1, y2):
+        """Terrain-following standing curb along a N-S run (y1 > y2)."""
+        brushes = []
+        curb_cx = (x1 + x2) / 2
+        ys = sorted({y1, y2} | {y for y in wct_y if y2 < y < y1}, reverse=True)
+        for ny1, ny2 in zip(ys, ys[1:]):
+            b1, b2 = terrain_z(curb_cx, ny1), terrain_z(curb_cx, ny2)
+            brushes.append(
+                ramp_slab_y(
+                    x1,
+                    x2,
+                    ny1,
+                    ny2,
+                    b1,
+                    b2,
+                    FLOOR_Z2 + walk_lift,
+                    FLOOR_Z2 + walk_lift,
+                    Textures.STONE,
+                )
+            )
+        return brushes
+
+    walk = []
+    # Frontage parallel to the dorm east face — south end matches the
+    # fence's own south end (CHARLES_Y1) rather than the dorm footprint.
+    walk.extend(
+        slabs_y(
+            DORM_FRONT_WALKWAY_X1, DORM_FRONT_WALKWAY_X2, DORM_SOUTH2_Y2, CHARLES_Y1
+        )
+    )
+    # Spur north from the dorm corner to the brick-wall door (east side of wall)
+    walk.extend(
+        slabs_y(
+            DORM_FRONT_WALKWAY_SPUR_X1,
+            DORM_FRONT_WALKWAY_X2,
+            DORM_FRONT_WALKWAY_SPUR_Y2,
+            DORM_SOUTH2_Y2,
+        )
+    )
+    # East curb, separated from the sidewalk squares by an actual open gap
+    # (_CURB_GAP) rather than a flush filler, so it reads as a distinct piece.
+    curb_x1 = DORM_FRONT_WALKWAY_X2 + _CURB_GAP
+    curb_x2 = curb_x1 + _CURB_W
+    walk.extend(curb_y(curb_x1, curb_x2, DORM_FRONT_WALKWAY_SPUR_Y2, CHARLES_Y1))
+    BRUSHES.extend(walk)
+
+
 def build():
     BRUSHES = []
     ENTITIES = []
@@ -307,6 +404,9 @@ def build():
 
     if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_WALL:
         build_brick_wall(BRUSHES, ENTITIES)
+
+    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_SIDEWALK:
+        build_sidewalk(BRUSHES)
 
     if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS):
         return BRUSHES, ENTITIES
@@ -1542,32 +1642,7 @@ def build():
             )
         )
 
-    # ── Flush stone walkway: a paved path inlaid into the terrace in front of the
-    #    dorms (top level with the surrounding ground), with a spur running north
-    #    to the brick-wall door. These full-height blocks fill the matching
-    #    footprint carved out of the terrace crest in streets.py. ───────────────
-    walk = [
-        # Frontage parallel to the dorm east face
-        box(
-            DORM_FRONT_WALKWAY_X1,
-            DORM_SOUTH1_Y1,
-            FLOOR_Z2,
-            DORM_FRONT_WALKWAY_X2,
-            DORM_SOUTH2_Y2,
-            FLOOR_Z2 + SDORM_LIFT,
-            Textures.STONE,
-        ),
-        # Spur north from the dorm corner to the brick-wall door (east side of wall)
-        box(
-            DORM_FRONT_WALKWAY_SPUR_X1,
-            DORM_SOUTH2_Y2,
-            FLOOR_Z2,
-            DORM_FRONT_WALKWAY_X2,
-            DORM_FRONT_WALKWAY_SPUR_Y2,
-            FLOOR_Z2 + SDORM_LIFT,
-            Textures.STONE,
-        ),
-    ]
-    BRUSHES.extend(walk)
+    # ── Flush stone walkway: built by build_sidewalk(), gated by
+    #    WEST_CAMPUS_ENABLED_SIDEWALK near the top of build(). ──────────────
 
     return BRUSHES, ENTITIES

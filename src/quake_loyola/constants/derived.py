@@ -8,6 +8,7 @@ from .bridge import (
     BRIDGE_ARCH_RISE,
     BRIDGE_BLK_HW,
     BRIDGE_CENTER_PIER_SPAN,
+    BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
     BRIDGE_EAST_SPAN_ANGLE,
@@ -507,8 +508,9 @@ DORM_FRONT_WALKWAY_SPUR_X1 = (
     DORM_PIER_X + DORM_BRICK_WALL_HALF_W
 )  # spur west = wall E face
 DORM_FRONT_WALKWAY_SPUR_Y2 = (
-    DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2
-)  # spur runs north to the brick-wall door's north jamb
+    DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + BRIDGE_CENTER_SPAN_OFFSET[1]
+)  # spur runs north to the brick-wall door's north jamb (shifted with the wall
+# assembly to keep pace with Pier 1's shifted position, see west_campus.py)
 
 _fog = (
     make_fog(FOG_DENSITY, *[float(x) for x in LIGHTING.fog.split()[1:]])

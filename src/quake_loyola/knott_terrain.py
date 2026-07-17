@@ -431,49 +431,86 @@ def build():
             gz1b = _sgrid_z + gcol1[_seg_i + 1]
             gz2a = _sgrid_z + gcol2[_seg_i]
             gz2b = _sgrid_z + gcol2[_seg_i + 1]
-            # See _WRAMP_OVR note near the top of build() — overlap non-final
-            # segments to avoid the qbsp coincident-boundary leak.
-            if _seg_i < len(_far_south_y) - 2:
-                y2_ext = y2 - _WRAMP_OVR
-                t_ext = (y2_ext - y1) / (y2 - y1)
-                gz1b = gz1a + (gz1b - gz1a) * t_ext
-                gz2b = gz2a + (gz2b - gz2a) * t_ext
-                y2 = y2_ext
+            # This grid used to use the same _WRAMP_OVR seam overlap as the
+            # other far-south terrain columns. On this particular west-ground
+            # strip, though, the overlap itself was what triggered the
+            # remaining portal-clip warnings at the 1650 / y≈-3000 seam; once
+            # the first cell's diagonal was flipped (below), exact shared Y
+            # seams compile cleanly here and do not leak.
             # Note: y2 < y1 here (_far_south_y decreases going south) — the
             # opposite direction from the driveway-zone grids elsewhere in
             # this file, so B/C (and their z values) are swapped relative to
             # those north-going grids to keep the CCW winding tri_ramp_prism
             # requires. See the matching note in the east-side loop above.
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx1,
-                    y1,
-                    gx2,
-                    y2,
-                    gx2,
-                    y1,
-                    FLOOR_Z1,
-                    gz1a,
-                    gz2b,
-                    gz2a,
-                    Textures.GROUND,
+            # The first west-ground quad (KNOTT.x1..1650, -1888..-3004) used
+            # the same NW→SE split as the rest of the grid. qbsp repeatedly
+            # clipped away portals on that exact diagonal near
+            # (1637,-3016)/(1625,-3032) in hulls 1/2. Flipping just this one
+            # cell to the opposite diagonal keeps the same four corner heights
+            # and outer seam coordinates, but removes the degenerate internal
+            # cut.
+            if gx1 == KNOTT.x1 and _seg_i == 0:
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        gx1,
+                        y1,
+                        gx1,
+                        y2,
+                        gx2,
+                        y1,
+                        FLOOR_Z1,
+                        gz1a,
+                        gz1b,
+                        gz2a,
+                        Textures.GROUND,
+                    )
                 )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx1,
-                    y1,
-                    gx1,
-                    y2,
-                    gx2,
-                    y2,
-                    FLOOR_Z1,
-                    gz1a,
-                    gz1b,
-                    gz2b,
-                    Textures.GROUND,
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        gx2,
+                        y1,
+                        gx1,
+                        y2,
+                        gx2,
+                        y2,
+                        FLOOR_Z1,
+                        gz2a,
+                        gz1b,
+                        gz2b,
+                        Textures.GROUND,
+                    )
                 )
-            )
+            else:
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        gx1,
+                        y1,
+                        gx2,
+                        y2,
+                        gx2,
+                        y1,
+                        FLOOR_Z1,
+                        gz1a,
+                        gz2b,
+                        gz2a,
+                        Textures.GROUND,
+                    )
+                )
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        gx1,
+                        y1,
+                        gx1,
+                        y2,
+                        gx2,
+                        y2,
+                        FLOOR_Z1,
+                        gz1a,
+                        gz1b,
+                        gz2b,
+                        Textures.GROUND,
+                    )
+                )
     # Reference imagery (ref/gmaps-kh-satellite*.png, ref/gmaps-kh-place.png)
     # shows the real driveway loop ends at the building's south face — no
     # pavement continues south of it, just hillside/lawn. Ground fills the
@@ -630,36 +667,72 @@ def build():
         )
         gz1b_ext = gz1a + (gz1b - gz1a) * _t
         gz2b_ext = gz2a + (gz2b - gz2a) * _t
-        BRUSHES.append(
-            tri_ramp_prism(
-                gx1,
-                KNOTT_DRIVEWAY_Y1,
-                gx2,
-                KNOTT_DRIVEWAY_Y1,
-                gx2,
-                _sgrid_y2_ext,
-                FLOOR_Z1,
-                gz1a,
-                gz2a,
-                gz2b_ext,
-                Textures.GROUND,
+        # The steep final south-corner cell (900..KNOTT.x1) hit the same
+        # qbsp portal-clip pathology on its SW→NE diagonal near
+        # (1152,-449). Use the opposite diagonal there; the outer grid seam
+        # stays identical, only the buried internal split changes.
+        if gx2 == KNOTT.x1:
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx1,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx2,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx1,
+                    _sgrid_y2_ext,
+                    FLOOR_Z1,
+                    gz1a,
+                    gz2a,
+                    gz1b_ext,
+                    Textures.GROUND,
+                )
             )
-        )
-        BRUSHES.append(
-            tri_ramp_prism(
-                gx1,
-                KNOTT_DRIVEWAY_Y1,
-                gx2,
-                _sgrid_y2_ext,
-                gx1,
-                _sgrid_y2_ext,
-                FLOOR_Z1,
-                gz1a,
-                gz2b_ext,
-                gz1b_ext,
-                Textures.GROUND,
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx2,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx2,
+                    _sgrid_y2_ext,
+                    gx1,
+                    _sgrid_y2_ext,
+                    FLOOR_Z1,
+                    gz2a,
+                    gz2b_ext,
+                    gz1b_ext,
+                    Textures.GROUND,
+                )
             )
-        )
+        else:
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx1,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx2,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx2,
+                    _sgrid_y2_ext,
+                    FLOOR_Z1,
+                    gz1a,
+                    gz2a,
+                    gz2b_ext,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    gx1,
+                    KNOTT_DRIVEWAY_Y1,
+                    gx2,
+                    _sgrid_y2_ext,
+                    gx1,
+                    _sgrid_y2_ext,
+                    FLOOR_Z1,
+                    gz1a,
+                    gz2b_ext,
+                    gz1b_ext,
+                    Textures.GROUND,
+                )
+            )
 
     # ── Terrain west of west sidewalk — mirrors "Terrain east of east sidewalk" ──
     # Fills the building-footprint strip between Knott Hall's west edge and the
@@ -682,16 +755,12 @@ def build():
     # sidewalk's own sloped height (matching road_section's ZT_S→ZT_N slope
     # exactly) instead, turning that wall into a steep bank.
     #
-    # This loop's first segment (wx1 == KNOTT.x1) shares its west edge
-    # (KNOTT.x1, Y1) and (KNOTT.x1, Y2) exactly with the south-corner grid's
-    # (_sgrid) own last column and the south-extension fill's (_wg2) first
-    # column — the same 3-way coincident-vertex pattern that caused a real
-    # qbsp hull1 clip-hull degeneracy at the north-of-Y=0 hill ramp (see the
-    # notes there). It produces the same symptom here: a player falls in and
-    # ends up walking around beneath the surface, past a sharp compiled
-    # cliff that doesn't exist in this loop's own smooth single-prism model.
-    # Nudge this segment's west edge past KNOTT.x1 by a small overlap so it
-    # no longer pins the exact same vertex as those other two systems.
+    # This loop's first segment (wx1 == KNOTT.x1) used to nudge its west edge
+    # 2 units past KNOTT.x1 to break a 3-way coincident-vertex pin with the
+    # south-corner grid and south-extension fill. After flipping the two
+    # specific internal terrain-cell diagonals above, that buried overlap is
+    # no longer needed — and it was itself the source of the long
+    # x≈1204 portal-clip warning chain in qbsp hulls 1/2.
     #
     # The second segment's east edge (KNOTT_DRIVEWAY_WS_X1) has the same
     # problem from the other side: it's pinned by this loop AND by every one
@@ -703,7 +772,7 @@ def build():
     # east edge past WS_X1 too so it doesn't pin the exact same vertices as
     # those slabs (_sidewalk_h only depends on Y, so the overlap doesn't
     # need its own re-derived height — it's already consistent past WS_X1).
-    _west_x_ovr = 2
+    _west_x_ovr = 0
     _east_x_ovr = 2
     for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
         real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1

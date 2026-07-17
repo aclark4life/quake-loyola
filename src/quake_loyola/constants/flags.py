@@ -40,7 +40,7 @@ STREETS_ENABLED_DETAILS = _flag(
 )  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
 WEST_CAMPUS_ENABLED = _flag(
     "WEST_CAMPUS_ENABLED"
-)  # convenience master: if True, forces WEST_CAMPUS_ENABLED_DORMS, WEST_CAMPUS_ENABLED_FENCE, WEST_CAMPUS_ENABLED_TERRAIN, and WEST_CAMPUS_ENABLED_WALL all on, overriding their individual settings. Leave False and flip the per-section flags to review one piece at a time (same pattern as BRIDGE_ENABLED).
+)  # convenience master: if True, forces WEST_CAMPUS_ENABLED_DORMS, WEST_CAMPUS_ENABLED_FENCE, WEST_CAMPUS_ENABLED_TERRAIN, WEST_CAMPUS_ENABLED_WALL, and WEST_CAMPUS_ENABLED_SIDEWALK all on, overriding their individual settings. Leave False and flip the per-section flags to review one piece at a time (same pattern as BRIDGE_ENABLED).
 WEST_CAMPUS_ENABLED_DORMS = _flag(
     "WEST_CAMPUS_ENABLED_DORMS"
 )  # west_campus.py — dorm buildings and grounds
@@ -64,6 +64,13 @@ WEST_CAMPUS_ENABLED_WALL = _flag(
 # face of dorm 2 up to the pier. Kept independent of WEST_CAMPUS_ENABLED_DORMS
 # so the wall reads as a bridge-approach feature even while the dorm
 # buildings themselves stay off.
+WEST_CAMPUS_ENABLED_SIDEWALK = _flag(
+    "WEST_CAMPUS_ENABLED_SIDEWALK"
+)  # west_campus.py — flush stone walkway
+# in front of the dorms, with a spur running north to the brick-wall door.
+# Kept independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
+# WEST_CAMPUS_ENABLED_WALL) so the walkway/spur can be shown even while the
+# dorm buildings themselves stay off.
 NE_ENABLED_TERRAIN = _flag(
     "NE_ENABLED_TERRAIN"
 )  # ne_terrain.py — real-elevation ground fill for the
