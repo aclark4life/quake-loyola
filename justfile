@@ -115,3 +115,7 @@ clean:
     rm -f test_*.json
     rm -f *.log *.prt *.pts *.wad
     find . -name "__pycache__" -type d -exec rm -rf {} +
+
+# Run Quake
+r:
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad
