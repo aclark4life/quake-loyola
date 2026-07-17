@@ -26,8 +26,12 @@ KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED.
 """
 
 from .constants import (
+    BRIDGE_X1,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
+    DORM_X1,
+    DORM_X2,
+    FENCE_X1,
     FLOOR_Z1,
     FLOOR_Z2,
     ROAD_X1,
@@ -60,22 +64,104 @@ def _clamp0(zs):
 # ground brushes already occupy X in [ROAD_X1-CHARLES_WALK_W, ROAD_X1]
 # for the *entire* world Y range; tying real terrain all the way to
 # ROAD_X1 overlapped and effectively overrode that curb geometry.
+#
+# The DORM_X1/DORM_CX/DORM_X2/FENCE_X1 columns used to be hardcoded literal
+# copies of those constants' original values. Once Charles St/the bridge's
+# centre span started being widened west (moving DORM_PIER_X, and
+# everything derived from it including these, further west each time), the
+# stale literals no longer matched the live building positions and drifted
+# past the (also-shifting) sidewalk-tie column, breaking this grid's
+# required strict west-to-east ordering — producing degenerate/inverted
+# terrain brushes right at the west sidewalk seam. Reference the live
+# constants directly instead, so this grid re-derives automatically
+# whenever the dorm/fence positions move (e.g. from further Charles St
+# widening) with no manual re-tuning needed.
+_wct_dorm_cx = (DORM_X1 + DORM_X2) // 2
+# wcampus_ext_x-700_*: a real USGS-sampled elevation column at a fixed
+# real-world GPS location (docs/elevation_samples.csv) — this X must stay
+# literal, not re-derived, since it represents an actual surveyed point.
+_wct_real_ext_x = -700
 _wct_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
-_wct_x = [
-    WORLD_X1 + WALL_T,
-    -4500,
-    -3500,
-    -2500,
-    -1967,  # BRIDGE_X1 — bridge west abutment
-    -1753,  # DORM_X1
-    -1465,  # DORM_CX
-    -1177,  # DORM_X2
-    -961,  # FENCE_X1
-    -700,
-    -550,
-    -420,
+# Two synthetic (non-surveyed) transition columns spread the height taper
+# from the real -700 sample down to the flat sidewalk height over more
+# distance than a single hop (see _wct_taper below) — spaced at the same
+# fractions of the *live* real->sidewalk gap, so they stay correctly
+# ordered between _wct_real_ext_x and _wct_sidewalk_x automatically even as
+# that gap shrinks/grows with future Charles St widening.
+_WCT_TAPER_FRACS = (0.4, 0.75)
+assert FENCE_X1 < _wct_real_ext_x < _wct_sidewalk_x, (
+    "west_campus_terrain X grid must stay in strict west-to-east order; "
+    "FENCE_X1 has drifted past the real x=-700 elevation sample (or Charles "
+    "St has widened enough to swallow it) — re-derive the terrain grid "
+    "before widening further."
+)
+
+
+def _wct_taper_x(frac):
+    return round(_wct_real_ext_x + (_wct_sidewalk_x - _wct_real_ext_x) * frac)
+
+
+# Raw (X, real-elevation-column) pairs for the surveyed portion of the grid
+# (world wall through the real x=-700 sample). DORM_X1/_wct_dorm_cx/DORM_X2/
+# FENCE_X1 track the *live* building/fence positions rather than the
+# original literal survey X's (-1753/-1465/-1177/-961) they replaced, so the
+# terrain stays aligned with the buildings even as Charles St/the bridge's
+# centre span keep widening west — at the cost of these particular columns'
+# real elevation data no longer being tied to their exact original GPS X
+# (same "deliberate deviation for gameplay" tradeoff as ROAD_X1/
+# BRIDGE_CENTER_PIER_SPAN — see docs/reference.rst "Charles St width
+# validation"). WORLD_X1/-4500/-3500/-2500/BRIDGE_X1 stay literal: they're
+# real, fixed-GPS audit-grid samples that don't track any building.
+#
+# Sorted by X (rather than assumed pre-ordered) so this grid self-corrects
+# if further widening ever pushes a building column past a fixed real-sample
+# column (e.g. DORM_X1 now sits west of BRIDGE_X1) — each column keeps its
+# own real elevation data; only the column *order* is re-derived.
+_wct_raw = list(
+    zip(
+        [WORLD_X1 + WALL_T, -4500, -3500, -2500, BRIDGE_X1],
+        [
+            [-79, 9, 83, 90, 129, 134, 172, 163, 92, 51, -74, 124, 167],
+            [-66, -6, 74, 83, 106, 132, 145, 133, 89, 52, -42, 182, 215],
+            [-36, 10, 123, 115, 98, 111, 122, 104, 100, 67, 2, 226, 245],
+            [-119, 85, 124, 125, 142, 143, 145, 143, 165, 149, 40, 232, 223],
+            [-78, 13, 142, 147, 155, 141, 146, 150, 142, 147, 58, 233, 221],
+        ],
+    )
+) + list(
+    zip(
+        [DORM_X1, _wct_dorm_cx, DORM_X2, FENCE_X1, _wct_real_ext_x],
+        [
+            [-78, -8, 143, 146, 151, 129, 135, 152, 149, 144, 64, 233, 216],
+            [-103, -19, 101, 102, 107, 114, 110, 124, 141, 134, 74, 227, 209],
+            [-117, -23, 88, 92, 101, 106, 105, 108, 109, 122, 86, 206, 198],
+            # FENCE_X1 column: the real y=-1068 (index 7) sample is a 139
+            # spike — inconsistent with its neighbors (104 at y=0, 113 at
+            # y=-1968, and the DORM_X2 column's own y=-1068 sample of 108)
+            # and well above the flat FLOOR_Z2 + SDORM_LIFT (128)
+            # walkway/spur that build_sidewalk() inlays right next to this
+            # column, poking up through/burying the walkway. Trimmed to
+            # 108 (matching DORM_X2's same row) to smooth the local spike
+            # and clear the walkway.
+            [-116, -36, 62, 74, 88, 101, 104, 108, 113, 108, 93, 161, 186],
+            [-137, -82, -28, -16, 12, 50, 67, 104, 105, 100, 105, 136, 154],
+        ],
+    )
+)
+_wct_raw.sort(key=lambda pair: pair[0])
+_wct_raw_x = [x for x, _ in _wct_raw]
+assert len(_wct_raw_x) == len(set(_wct_raw_x)) and _wct_raw_x == sorted(_wct_raw_x), (
+    "west_campus_terrain surveyed X columns collided or failed to sort "
+    "strictly ascending — two grid columns landed on the same X (or the "
+    "sort itself is broken); re-derive the terrain grid before widening "
+    "further."
+)
+_wct_x = _wct_raw_x + [
+    _wct_taper_x(_WCT_TAPER_FRACS[0]),
+    _wct_taper_x(_WCT_TAPER_FRACS[1]),
     _wct_sidewalk_x,
 ]
+
 # Y grid: full world Y range, north to south. streets.py's Charles St
 # sidewalk/curb geometry runs the *actual* world Y extent
 # (WORLD_Y1+WALL_T .. WORLD_Y2-WALL_T) — noticeably further both north
@@ -101,29 +187,12 @@ wct_y = [
 ]
 # Real USGS z-units-above-baseline samples (docs/elevation_samples.csv,
 # wcampus_audit_x{X}_y{Y} / wcampus_ext_x{X}_y{Y} / wcampus_far_x{X}_y{Y}
-# rows), one column per _wct_x entry (except the last, flat sidewalk-tie
-# column), values in the same order as wct_y. The baseline (0) already
-# corresponds to FLOOR_Z2 (bridge-crossing grade), so no extra
-# curb-style offset is needed for these, unlike the last column.
-_wct_cols = [
-    _clamp0([-79, 9, 83, 90, 129, 134, 172, 163, 92, 51, -74, 124, 167]),
-    _clamp0([-66, -6, 74, 83, 106, 132, 145, 133, 89, 52, -42, 182, 215]),
-    _clamp0([-36, 10, 123, 115, 98, 111, 122, 104, 100, 67, 2, 226, 245]),
-    _clamp0([-119, 85, 124, 125, 142, 143, 145, 143, 165, 149, 40, 232, 223]),
-    _clamp0([-78, 13, 142, 147, 155, 141, 146, 150, 142, 147, 58, 233, 221]),
-    _clamp0([-78, -8, 143, 146, 151, 129, 135, 152, 149, 144, 64, 233, 216]),
-    _clamp0([-103, -19, 101, 102, 107, 114, 110, 124, 141, 134, 74, 227, 209]),
-    _clamp0([-117, -23, 88, 92, 101, 106, 105, 108, 109, 122, 86, 206, 198]),
-    # FENCE_X1 column: the real y=-1068 (index 7) sample is a 139 spike —
-    # inconsistent with its neighbors (104 at y=0, 113 at y=-1968, and the
-    # DORM_X2 column's own y=-1068 sample of 108) and well above the flat
-    # FLOOR_Z2 + SDORM_LIFT (128) walkway/spur that build_sidewalk() inlays
-    # right next to this column, poking up through/burying the walkway.
-    # Trimmed to 108 (matching DORM_X2's same row) to smooth the local
-    # spike and clear the walkway.
-    _clamp0([-116, -36, 62, 74, 88, 101, 104, 108, 113, 108, 93, 161, 186]),
-    _clamp0([-137, -82, -28, -16, 12, 50, 67, 104, 105, 100, 105, 136, 154]),
-]
+# rows), one column per surveyed _wct_x entry, in the same order as wct_y
+# (paired with X above via _wct_raw, then clamped and re-ordered to match
+# the sorted _wct_x). The baseline (0) already corresponds to FLOOR_Z2
+# (bridge-crossing grade), so no extra curb-style offset is needed for
+# these, unlike the flat taper/sidewalk-tie columns below.
+_wct_cols = [_clamp0(col) for _, col in _wct_raw]
 # The real -700 column rises to ~90-115 near the south end, but the
 # sidewalk-tie column (below) is forced flat at the curb height for the
 # *entire* Y range (streets.py already owns that ground). Blending
@@ -131,9 +200,9 @@ _wct_cols = [
 # column) created a near-vertical cliff right next to the sidewalk,
 # worst in the south where the real/flat gap is largest — reported as an
 # unnatural steep drop-off close to Charles St. Taper across two more
-# steps (-550, -420) instead, each moving partway from the real -700
-# column toward the flat curb height, so the same total drop is spread
-# over ~364 units rather than 64.
+# steps (spaced per _WCT_TAPER_FRACS) instead, each moving partway from
+# the real -700 column toward the flat curb height, so the same total
+# drop is spread over a wider span rather than a single hop.
 _wct_real_700 = _wct_cols[-1]
 _wct_flat_walk = [CHARLES_WALK_H] * len(wct_y)
 
@@ -143,8 +212,8 @@ def _wct_taper(frac):
 
 
 _wct_cols += [
-    _wct_taper(0.4),  # -550
-    _wct_taper(0.75),  # -420
+    _wct_taper(_WCT_TAPER_FRACS[0]),  # -550
+    _wct_taper(_WCT_TAPER_FRACS[1]),  # -420
     # Sidewalk-tie column: flat at the curb/raised-ground height
     # streets.py already builds along this whole edge, for every Y row.
     _wct_flat_walk,

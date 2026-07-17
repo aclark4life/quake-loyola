@@ -111,17 +111,18 @@ BRIDGE_WALK_WALL = 32
 BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-unit
 # parapets, interior walking width = 220 units = ft_to_units(14,6) ≈ 14.5 ft
 
-BRIDGE_CENTER_PIER_SPAN = 1000  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
+BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
 # BRIDGE_OUTER_PIER_SPAN and stays put (it anchors the hill profile's real-elevation
 # "Pier 3" sample and the Ennis Drive entrance pillars/gate, so moving it has a much
 # wider blast radius); this span only pulls PIER2 (west side, on flat/low terrain)
 # west. Was 1050, then briefly 850 (too tight/"squished" per playtest feedback —
-# pulled the west pier further back out to 950), then bumped +50 to 1000 (centre
-# span parapet blocks read as too compressed again at 950) — paired with a
-# matching +50 shift to ROAD_X1 (constants/streets.py, widening Charles St to the
-# west) so PIER2's setback from the curb stays ~169 units even as the centre
-# span's own length grows. Everything positioned relative to the west pier group
-# (DORM_PIER_X and its dependents) follows PIER2/PIER1 automatically.
+# pulled the west pier further back out to 950), then bumped +50 to 1000, then
+# +100 to 1100, then +200 to 1300 (kept wanting it wider) — paired with a
+# matching shift to ROAD_X1 (constants/streets.py, widening Charles St to the
+# west by the same delta each time) so PIER2's setback from the curb stays
+# ~169 units even as the centre span's own length grows. Everything positioned
+# relative to the west pier group (DORM_PIER_X and its dependents) follows
+# PIER2/PIER1 automatically.
 # Playwright/Google-Maps + ref/bridge08 street-view comparison showed real piers
 # sitting closer to the curb than the original 1050, but 850 overcorrected. Terrain
 # under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-

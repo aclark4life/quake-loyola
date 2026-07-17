@@ -161,25 +161,42 @@ Curb-to-curb width of N Charles St was measured at three rows in
 ``ref/gmaps-kh-satellite.png`` (chosen away from the bridge crossing and
 parked cars), using RGB pixel sampling to find the road-surface/verge
 boundary: 48px, 44px, and 52px, averaging **~35.8 ft** (35.8, 32.8, 38.8 ft
-respectively; 0.7463 ft/px). This matches the existing ``ROAD_X1``/``ROAD_X2``
-constant (``-256``/``256`` = 33.9 ft) well within measurement noise — no
-change was needed. ``STREETS_ENABLED_DETAILS`` was re-enabled as the first
+respectively; 0.7463 ft/px). This originally matched ``ROAD_X1``/``ROAD_X2``
+(``-256``/``256`` = 33.9 ft) well within measurement noise — no change was
+needed at the time. ``STREETS_ENABLED_DETAILS`` was re-enabled as the first
 re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
 entrance features); compiles with no leaks at the new world size.
 
+**Deliberate deviation from the real-world measurement (2026-07)** — Charles
+St was subsequently widened to the west several times on request, purely for
+gameplay/visual reasons (the bridge's centre span read as too visually
+compressed, with its parapet decoration blocks too close together).
+``ROAD_X1`` moved from ``-256`` to ``-606`` (``ROAD_X2`` unchanged at
+``256``), i.e. the modeled curb-to-curb width grew from the real-world-
+matching 33.9 ft to **~56.7 ft** — no longer intended to match the surveyed
+~35.8 ft figure above. ``BRIDGE_CENTER_PIER_SPAN`` (see "Bridge structure"
+below) was widened by the same deltas in lockstep, so the Pier2-to-west-curb
+setback (``PIER2_X - ROAD_X1`` ≈ 169 units) is preserved even as both the
+street and the bridge's centre span grow. Real-world curb positions are kept
+here for reference/history; the in-game street is now intentionally wider
+than the surveyed street.
+
 **Lane-marking re-check** — a closer crop of the same satellite image showed
 more painted lines than the map originally modeled (a single dashed
-centerline). The extra lines are not additional travel lanes: N Charles St
-here is 1 travel lane each direction (solid double-yellow, no-passing
-centerline) plus a dashed stripe delineating a curbside parking lane on each
-side — 2 travel lanes + 2 parking lanes, matching the already-validated
-curb-to-curb width. The road surface is now split into 4 slabs
-(``CHARLES_PARKING_LANE_W`` = 96 units from each curb) with a solid centre
-stripe and two dashed parking-lane stripes (``STREET_DIV_LINE_HW``),
-instead of a single dashed centerline. (Later revised for gameplay: the
-parking-lane stripe was moved to the midpoint of each half-section instead
-of this fixed 96-unit curb offset, so the travel and parking lanes are
-equal width — see ``CHARLES_PARKING_LINE_X`` in streets.py.)
+centerline). N Charles St here is 1 travel lane each direction (solid
+double-yellow, no-passing centerline) plus a single solid white line
+marking the outer edge of each travel lane. The road surface is split into
+4 equal-width slabs (``WEST_LANE_LINE_X``/``EAST_LANE_LINE_X``, streets.py)
+with a solid double-yellow centre stripe and two solid white lane-line
+stripes (``STREET_DIV_LINE_HW``), all evenly spaced across the road rather
+than a fixed curb offset — so every lane comes out an equal width. (This
+was originally modeled as 2 travel lanes + 2 dashed curbside parking
+lanes, then simplified to solid single white lines with no parking lane,
+per gameplay feedback.) Both the centre divider and the two lane-line
+stripes are centred on ``ROAD_CX = (ROAD_X1 + ROAD_X2) / 2`` rather than a
+fixed X=0, so they stay correctly centred in the roadway even though
+``ROAD_X1`` has since been widened west of ``ROAD_X2`` — see the
+"Deliberate deviation" note above.
 
 Topology check
 ~~~~~~~~~~~~~~
@@ -331,19 +348,27 @@ Bridge structure
    * - Term
      - Description
    * - **Arch span**
-     - The curved centre deck section over Charles Street, X ∈ [−525, +525]
-       (``BRIDGE_ARCH_X[1]`` … ``BRIDGE_ARCH_X[2]``), a shallow parabola cresting
-       at X=0. The two approach spans (±525 … ±1246) descend as straight rakes to
-       the outer piers (ref/bridge08).
+     - The curved centre deck section over Charles Street, X ∈
+       [``PIER2_X``, ``PIER3_X``] (originally ±525 when the span was
+       symmetric about X=0; now ``−775`` … ``525`` after Charles St/the
+       centre span were widened west of Pier 3 — see "Deliberate deviation"
+       under "Charles St width validation"), a shallow parabola cresting at
+       the midpoint of ``PIER2_X``/``PIER3_X`` (**not** a fixed X=0 — Pier 3
+       is a fixed anchor while Pier 2 shifts west whenever
+       ``BRIDGE_CENTER_PIER_SPAN`` grows, so the crest position is derived
+       from the actual pier X's, not hardcoded). The two approach spans
+       (``PIER1_X..PIER2_X`` west, ``PIER3_X..PIER4_X`` east) descend as
+       straight rakes to the outer piers (ref/bridge08).
    * - **Flat approach**
-     - Straight deck west of −1246, extending to the world wall at constant Z.
+     - Straight deck west of ``PIER1_X``, extending to the world wall at
+       constant Z.
    * - **Deck**
      - The walkable surface. ``deck_top_z(x)`` = top face Z, ``deck_bot_z(x)`` =
        bottom face Z; slab thickness ``BRIDGE_DZ2 − BRIDGE_DZ1`` = 16 units.
    * - **Arch rise**
      - Height the deck crown is raised above the flat datum
-       (``BRIDGE_ARCH_RISE = 100`` units at X=0, ``BRIDGE_ARCH_PIER_RISE = 82``
-       at the centre piers).
+       (``BRIDGE_ARCH_RISE = 100`` units at the Pier2/Pier3 midpoint,
+       ``BRIDGE_ARCH_PIER_RISE = 82`` at the centre piers themselves).
    * - **Parapet**
      - Low stone wall along the deck's north/south edges,
        ``BRIDGE_PAR_H = 40`` units tall. Players can jump onto it.
@@ -352,7 +377,12 @@ Pier numbering
 ~~~~~~~~~~~~~~
 
 The bridge has five piers, numbered west to east. This naming is used
-consistently in the code (``PIER1_X`` … ``PIER5_X``).
+consistently in the code (``PIER1_X`` … ``PIER5_X``). Pier X positions
+below reflect the current values after Charles St/the centre span were
+widened west several times (2026-07) — see "Deliberate deviation" under
+"Charles St width validation"; only ``PIER1_X``/``PIER2_X`` move when
+``BRIDGE_CENTER_PIER_SPAN`` changes, ``PIER3_X``/``PIER4_X``/``PIER5_X``
+are fixed anchors.
 
 .. list-table::
    :header-rows: 1
@@ -364,12 +394,12 @@ consistently in the code (``PIER1_X`` … ``PIER5_X``).
      - Notes
    * - **Pier 1**
      - ``PIER1_X``
-     - −1246
+     - −1496
      - West abutment pier — embedded in the embankment hill; flanked by the
        abutment building.
    * - **Pier 2**
      - ``PIER2_X``
-     - −525
+     - −775
      - Second pier west of centre.
    * - **Pier 3**
      - ``PIER3_X``
@@ -494,8 +524,10 @@ Map layout
                  ↑arch              arch↑
          5 stone pillars supporting the span
 
-- **Bridge span**: arched deck over Charles Street, crown at X=0; deck top
-  ranges Z 240 (flat approach) → 384 (crown).
+- **Bridge span**: arched deck over Charles Street, crown at the midpoint of
+  ``PIER2_X``/``PIER3_X`` (originally X=0 when the centre span was symmetric;
+  see "Deliberate deviation" under "Charles St width validation" for why it
+  has since shifted west); deck top ranges Z 240 (flat approach) → 384 (crown).
 - **Entry arch gates**: Semicircular stone arch portals at each end with
   teleport fields.
 - **Stone pillars**: 5 supporting piers with narrow arched openings.

@@ -91,8 +91,6 @@ from .constants import (
     MANHOLE_X,
     MANHOLE_Y,
     NE_ENABLED_TERRAIN,
-    ROAD_DASH_LEN,
-    ROAD_GAP_LEN,
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
@@ -1723,25 +1721,36 @@ def build():
     ENNIS_CROSSING_X1 = ROAD_X2
     ENNIS_CROSSING_X2 = ROAD_X2 + CHARLES_WALK_W
 
-    # Charles St curb-to-curb models 1 travel lane + 1 parking lane each side
-    # (see docs/reference.rst "Charles St width validation"). Parking lane sits
-    # nearest each curb; travel lane sits between it and the centre divider.
-    # Road surface split into 4 slabs, leaving narrow slots for the centre
-    # double-yellow divider and the two parking-lane stripes. The parking
-    # line sits at the midpoint of each half-section (from the centre
-    # divider's edge to the curb) so the travel and parking lanes come out
-    # equal width, rather than the parking lane having a fixed width.
-    CHARLES_PARKING_LINE_X = (STREET_DIV_HW + ROAD_X2) / 2
+    # Charles St curb-to-curb models 2 travel lanes (one each direction),
+    # divided by a centre double-yellow (no-passing) line and a single solid
+    # white line on each side marking the outer edge of each travel lane —
+    # see docs/reference.rst "Charles St width validation". Road surface
+    # split into 4 equal-width slabs, leaving narrow slots for the centre
+    # divider and the two lane-line stripes, so all lanes come out an equal
+    # width, evenly spaced across the road rather than a fixed lane width.
+    # ROAD_CX is the midpoint of the curb-to-curb width (not a fixed X=0) so
+    # the centre divider/lanes stay correctly centred automatically even when
+    # ROAD_X1/ROAD_X2 aren't mirror images of each other (e.g. after widening
+    # Charles St to only one side).
+    ROAD_CX = (ROAD_X1 + ROAD_X2) / 2
+    WEST_LANE_LINE_X = (ROAD_X1 + ROAD_CX - STREET_DIV_HW) / 2
+    EAST_LANE_LINE_X = (ROAD_CX + STREET_DIV_HW + ROAD_X2) / 2
     for lane_x1, lane_x2 in (
-        (ROAD_X1, -CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW),  # west parking lane
-        (-CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW, -STREET_DIV_HW),  # west travel
-        (STREET_DIV_HW, CHARLES_PARKING_LINE_X - STREET_DIV_LINE_HW),  # east travel
-        (CHARLES_PARKING_LINE_X + STREET_DIV_LINE_HW, ROAD_X2),  # east parking lane
+        (ROAD_X1, WEST_LANE_LINE_X - STREET_DIV_LINE_HW),  # west outer lane
+        (
+            WEST_LANE_LINE_X + STREET_DIV_LINE_HW,
+            ROAD_CX - STREET_DIV_HW,
+        ),  # west inner lane
+        (
+            ROAD_CX + STREET_DIV_HW,
+            EAST_LANE_LINE_X - STREET_DIV_LINE_HW,
+        ),  # east inner lane
+        (EAST_LANE_LINE_X + STREET_DIV_LINE_HW, ROAD_X2),  # east outer lane
     ):
         for lane_y1, lane_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
-            # The manhole opening (MANHOLE_X/Y/R) falls in the east parking
+            # The manhole opening (MANHOLE_X/Y/R) falls in the east outer
             # lane — the hole through this slab (and any other overlapping
             # decorative layer at this intersection) is punched generically
             # further down (see punch_manhole_detail sweep over
@@ -2482,13 +2491,14 @@ def build():
     # (see docs/reference.rst "Charles St width validation"). Textures.CENTERLINE
     # is a placeholder stand-in until a dedicated yellow line texture is sourced.
     # The bridge deck overhead is an overpass with piers landing well outside
-    # the road (nearest piers at X=-1246/525, road is only X=-256..256), so
-    # nothing in the road is ever obstructed — stripe the whole length
-    # regardless of BRIDGE_ENABLED.
+    # the road, so nothing in the road is ever obstructed — stripe the whole
+    # length regardless of BRIDGE_ENABLED. Centred on ROAD_CX (the midpoint of
+    # ROAD_X1/ROAD_X2) rather than a fixed X=0, so the stripe stays centred in
+    # the roadway even when ROAD_X1/ROAD_X2 aren't mirror images of each other.
     _centerline_gap_hw = 2  # half-width of the gap between the two lines
     for line_x1, line_x2 in (
-        (-STREET_DIV_HW, -_centerline_gap_hw),
-        (_centerline_gap_hw, STREET_DIV_HW),
+        (ROAD_CX - STREET_DIV_HW, ROAD_CX - _centerline_gap_hw),
+        (ROAD_CX + _centerline_gap_hw, ROAD_CX + STREET_DIV_HW),
     ):
         for line_y1, line_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
@@ -2509,51 +2519,44 @@ def build():
     ):
         dash_brushes.append(
             box(
-                -_centerline_gap_hw,
+                ROAD_CX - _centerline_gap_hw,
                 gap_y1,
                 FLOOR_Z2,
-                _centerline_gap_hw,
+                ROAD_CX + _centerline_gap_hw,
                 gap_y2,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
             )
         )
-    # Charles Street parking-lane stripes — dashed, delineating the travel lane
-    # from the curbside parking lane on each side.
-    for parking_x in (-CHARLES_PARKING_LINE_X, CHARLES_PARKING_LINE_X):
+    # Charles Street lane-divider stripes — single solid white line on each
+    # side, at the midpoint of each half-section (from the centre divider's
+    # edge to the curb), so the two travel lanes on each side of the centre
+    # come out equal width, evenly spaced across the road.
+    for lane_line_x in (WEST_LANE_LINE_X, EAST_LANE_LINE_X):
         # Quake tiles top-face textures by absolute world X (u = X + offset_x).
-        # The east stripe sits at +CHARLES_PARKING_LINE_X vs the west stripe's
-        # -CHARLES_PARKING_LINE_X, so without a compensating offset it samples
-        # a different part of the texture. Shift east's offset by the mirror
-        # distance so both stripes read the same texture region.
-        tex_offset_x = -(parking_x + CHARLES_PARKING_LINE_X)
+        # The two stripes sit at different world X (not necessarily mirror
+        # images of each other), so without a compensating offset they'd
+        # sample different parts of the texture. Shift each stripe's offset so
+        # it always samples as if it were at WEST_LANE_LINE_X's position.
+        tex_offset_x = WEST_LANE_LINE_X - lane_line_x
         divider_tt_params = f"{tex_offset_x} 0 0 1 1"
-        divider_y = CHARLES_Y1
-        dash_on = True
-        while divider_y < CHARLES_Y2:
-            next_divider_y = min(
-                divider_y + (ROAD_DASH_LEN if dash_on else ROAD_GAP_LEN), CHARLES_Y2
-            )
-            divider_tex = Textures.PARKING_STRIPE if dash_on else Textures.ROAD
-            # Skip/clip the portion (if any) inside the Charles St crossing
-            # band — the crosswalk stripes below take over that stretch.
-            for seg_y1, seg_y2 in ranges_excluding(
-                divider_y, next_divider_y, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
-            ):
-                dash_brushes.append(
-                    box(
-                        parking_x - STREET_DIV_LINE_HW,
-                        seg_y1,
-                        FLOOR_Z2,
-                        parking_x + STREET_DIV_LINE_HW,
-                        seg_y2,
-                        FLOOR_Z2 + STREET_SURFACE_T,
-                        divider_tex,
-                        tt_params=divider_tt_params,
-                    )
+        # Skip/clip the portion (if any) inside the Charles St crossing
+        # band — the crosswalk stripes below take over that stretch.
+        for seg_y1, seg_y2 in ranges_excluding(
+            CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
+        ):
+            dash_brushes.append(
+                box(
+                    lane_line_x - STREET_DIV_LINE_HW,
+                    seg_y1,
+                    FLOOR_Z2,
+                    lane_line_x + STREET_DIV_LINE_HW,
+                    seg_y2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    Textures.PARKING_STRIPE,
+                    tt_params=divider_tt_params,
                 )
-            divider_y = next_divider_y
-            dash_on = not dash_on
+            )
     # Charles St pedestrian crossing — thick white zebra stripes filling the
     # CHARLES_CROSSING_Y1..Y2 band carved out of the road/lane markings above;
     # gaps between stripes are filled with plain road so no void is left.

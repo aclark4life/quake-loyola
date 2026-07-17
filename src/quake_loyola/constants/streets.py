@@ -14,20 +14,19 @@ CHARLES_RAMP_W = 64
 CHARLES_WALK_H = 8
 CHARLES_WALK_W = 80
 
-ROAD_DASH_LEN = 64
-ROAD_GAP_LEN = 64
 STREET_CHARLES_CURB_W = 8
 STREET_DIV_HW = (
     6  # carved centerline slot half-width (doubled stripe thickness; see streets.py)
 )
 STREET_ENNIS_DIV_HW = 16
 STREET_SURFACE_T = 2
-ROAD_X1, ROAD_X2 = -306, 256
-# ROAD_X1 shifted 50 units further west (was -256) to widen Charles St to the
-# west, in step with the matching +50 bump to BRIDGE_CENTER_PIER_SPAN
-# (constants/bridge.py) — the two move together so the Pier2-to-curb setback
-# stays the same while the bridge's compressed centre span gets more room and
-# everything already positioned relative to the west bridge pier group
+ROAD_X1, ROAD_X2 = -606, 256
+# ROAD_X1 shifted a further 200 units west (was -406, before that -306, -256)
+# to widen Charles St to the west, in step with the matching +200 bump to
+# BRIDGE_CENTER_PIER_SPAN (constants/bridge.py) — the two move together so
+# the Pier2-to-curb setback stays the same while the bridge's compressed
+# centre span gets more room and everything already positioned relative to
+# the west bridge pier group
 # (DORM_PIER_X and its dependents) follows automatically.
 # Charles St curb-to-curb width models 1 travel lane + 1 parking lane each side
 # (see docs/reference.rst "Charles St width validation" + satellite re-check):

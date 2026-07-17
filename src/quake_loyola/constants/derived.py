@@ -374,22 +374,38 @@ def arch_z_at(x):
     """Z offset above flat datum for the deck profile at x.
 
     Piecewise, matching the real Loyola bridge (ref/bridge08): the centre span
-    over Charles Street (|x| <= half the centre pier span, ±525) is a shallow
-    parabolic arch cresting at BRIDGE_ARCH_RISE over X=0; the two approach spans
-    (525 <= |x| <= 1246) descend as straight rakes from BRIDGE_ARCH_PIER_RISE at
-    the centre piers down to 0 at the outer piers. Beyond ±BRIDGE_X2 the deck is
-    flat (approach to world wall / KH walkway).
+    between PIER2_X and PIER3_X is a shallow parabolic arch cresting at
+    BRIDGE_ARCH_RISE over the midpoint of those two piers; the two approach
+    spans (PIER1_X..PIER2_X west, PIER3_X..PIER4_X east) descend as straight
+    rakes from BRIDGE_ARCH_PIER_RISE at the centre piers down to 0 at the
+    outer piers. Beyond PIER1_X/PIER4_X the deck is flat (approach to world
+    wall / KH walkway).
+
+    Uses the actual pier X-positions rather than a fixed radius around X=0,
+    so the crest and rakes stay correctly anchored to PIER1_X..PIER4_X
+    automatically whenever BRIDGE_CENTER_PIER_SPAN (or any other pier-spacing
+    constant) changes — PIER3_X/PIER4_X are fixed while PIER1_X/PIER2_X shift
+    west, so a fixed ±X radius around 0 would leave the crest off-centre and
+    misalign the west rake with the actual west pier.
     """
-    ax = abs(x)
-    if ax >= BRIDGE_X2:
-        return 0.0
-    center_half = BRIDGE_CENTER_PIER_SPAN / 2.0  # ±525, PIER2/PIER3
-    if ax <= center_half:
+    center_mid = (PIER2_X + PIER3_X) / 2.0
+    center_half = (PIER3_X - PIER2_X) / 2.0  # half the actual centre-pier span
+    dx = x - center_mid
+    adx = abs(dx)
+    if adx <= center_half:
         return (
             BRIDGE_ARCH_RISE
-            - (BRIDGE_ARCH_RISE - BRIDGE_ARCH_PIER_RISE) * (ax / center_half) ** 2
+            - (BRIDGE_ARCH_RISE - BRIDGE_ARCH_PIER_RISE) * (adx / center_half) ** 2
         )
-    return BRIDGE_ARCH_PIER_RISE * (BRIDGE_X2 - ax) / float(BRIDGE_X2 - center_half)
+    if dx < 0:
+        # West approach span: rakes down from PIER2_X to PIER1_X.
+        if x <= PIER1_X:
+            return 0.0
+        return BRIDGE_ARCH_PIER_RISE * (x - PIER1_X) / float(PIER2_X - PIER1_X)
+    # East approach span: rakes down from PIER3_X to PIER4_X.
+    if x >= PIER4_X:
+        return 0.0
+    return BRIDGE_ARCH_PIER_RISE * (PIER4_X - x) / float(PIER4_X - PIER3_X)
 
 
 def deck_bot_z(x):
