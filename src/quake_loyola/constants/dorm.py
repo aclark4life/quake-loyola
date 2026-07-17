@@ -18,12 +18,8 @@ DORM_BRICK_PILLAR_SEPARATION = 380
 DORM_BRICK_PILLAR_W = 56
 DORM_BRICK_WALL_HALF_W = 12
 DORM_BRICK_GATE_H = 96
-DORM_DOOR_H = (
-    128  # door opening height — embankment rises ~56 units at wall, need clearance
-)
 DORM_DOOR_OFF = 160
 DORM_DOOR_W = 80
-DORM_EMB_X2 = -1146
 DORM_ENT_H = 100
 DORM_ENT_HW = 48
 DORM_FLOORS = 3

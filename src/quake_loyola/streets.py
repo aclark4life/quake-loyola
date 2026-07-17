@@ -501,7 +501,7 @@ def build_ennis_entrance_features():
     def sw_shear_x_brace(z1, z2, cross_hw, opening_x1, opening_x2):
         # Diagonal iron cross-brace bar, sheared along X as a function of Z
         # (height), flat through the panel's Y depth — same shape as the
-        # adjacent gate's pillar cross-braces, just built along the other axis.
+        # adjacent gate's arch post cross-braces, just built along the other axis.
         b = shear_box_y(
             z1,
             -cross_hw,
@@ -515,14 +515,14 @@ def build_ennis_entrance_features():
         )
         return swap_xy(swap_xz(b))
 
-    def sw_add_pillar(center_x):
-        # U-shaped arched iron pillar bookending the panel run, matching the
-        # adjacent gate's separator pillars.
+    def sw_add_arch_post(center_x):
+        # U-shaped arched iron fence post bookending the panel run, matching
+        # the adjacent gate's separator posts.
         leg_t = ENNIS_GATE_PILLAR_LEG_T
         arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
         arch_rout = arch_rin + leg_t
-        pillar_top_z = sw_panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
-        legs_top_z = pillar_top_z - arch_rout
+        post_top_z = sw_panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
+        legs_top_z = post_top_z - arch_rout
         leg_x1 = center_x - arch_rout
         leg_x2 = center_x + arch_rout
         brushes.extend(
@@ -579,28 +579,30 @@ def build_ennis_entrance_features():
             ]
         )
 
-    # Leading arch pillar right next to the wall's own corner cap post
+    # Leading arch post right next to the wall's own corner cap post
     # (bw_cx/bw_cy, built further below), same offset the main gate run uses
     # from its own corner post, then a connector into the first panel.
     sw_panel_z2_o = sw_panel_z_center + ENNIS_PANEL_OUTER_H // 2
-    sw_pillar_lead_x = (
+    sw_arch_post_lead_x = (
         ennis_wall_x1 + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
     )
-    sw_add_pillar(sw_pillar_lead_x + ENNIS_GATE_PILLAR_W // 2)
-    sw_cursor_x = sw_pillar_lead_x + ENNIS_GATE_PILLAR_W
+    sw_add_arch_post(sw_arch_post_lead_x + ENNIS_GATE_PILLAR_W // 2)
+    sw_cursor_x = sw_arch_post_lead_x + ENNIS_GATE_PILLAR_W
     sw_gap_x1 = sw_cursor_x
     sw_cursor_x += ENNIS_GATE_PILLAR_GAP
     sw_add_connector(sw_gap_x1, sw_cursor_x)
 
-    # Evenly space three narrower panels in the remaining run (east of the
-    # leading pillar) to match the adjacent gate's three-square rhythm, with
-    # equal margins at each end and a connector filling every inter-panel gap.
+    # Three narrower panels in the remaining run (east of the leading arch
+    # post) to match the adjacent gate's three-square rhythm, with a
+    # connector filling every inter-panel gap. The run starts immediately
+    # after the leading post's connector (no leading margin) so the panel
+    # fence connects directly to it instead of leaving an unfenced gap; any
+    # leftover space falls at the east end instead.
     sw_panel_count = 3
-    sw_avail = bwex2 - sw_cursor_x
     sw_run_w = (
         sw_panel_count * sw_panel_outer_w + (sw_panel_count - 1) * ENNIS_PANEL_GAP
     )
-    sw_run_x1 = sw_cursor_x + (sw_avail - sw_run_w) // 2
+    sw_run_x1 = sw_cursor_x
     for i in range(sw_panel_count):
         panel_center_x = (
             sw_run_x1 + i * (sw_panel_outer_w + ENNIS_PANEL_GAP) + sw_panel_outer_w // 2
@@ -611,6 +613,13 @@ def build_ennis_entrance_features():
                 panel_center_x - sw_panel_outer_w // 2 - ENNIS_PANEL_GAP,
                 panel_center_x - sw_panel_outer_w // 2,
             )
+    # Trailing bookend arch post closing out the east end of the run,
+    # matching the leading post at the west end (and the main gate run's own
+    # trailing bookend), with a connector tying it to the last panel.
+    sw_trailing_gap_x1 = sw_run_x1 + sw_run_w
+    sw_trailing_gap_x2 = sw_trailing_gap_x1 + ENNIS_GATE_PILLAR_GAP
+    sw_add_connector(sw_trailing_gap_x1, sw_trailing_gap_x2)
+    sw_add_arch_post(sw_trailing_gap_x2 + ENNIS_GATE_PILLAR_W // 2)
     # Small section of iron fence bridging the short wall's east end down to
     # the main east iron gate's baseline (east_gate_y1/y2 below), where the
     # small brick return wall used to be. Same treatment as the connector
@@ -673,10 +682,10 @@ def build_ennis_entrance_features():
         ]
     )
     # Fixed dozen-panel decorative iron gate: 12 rectangular panels grouped
-    # into 6 pairs. A U-shaped iron pillar bookends the run (one at the very
-    # south start, one at the very north end) and separates every pair in
-    # between. The run starts clear of the existing brick/cement corner cap
-    # pillar at the Ennis Rd corner (bw_cx/bw_cy below) so the two don't
+    # into 6 pairs. A U-shaped iron arch post bookends the run (one at the
+    # very south start, one at the very north end) and separates every pair
+    # in between. The run starts clear of the existing brick/cement corner
+    # cap pillar at the Ennis Rd corner (bw_cx/bw_cy below) so the two don't
     # overlap. The brick wall's north end (bw_mid_y) is sized to exactly fit
     # this run, after which the plain picket fence continues to the world edge.
     # The wall/run is anchored to ENNIS_SHORT_WALL_NY (not the older
@@ -688,10 +697,12 @@ def build_ennis_entrance_features():
         + ENNIS_GATE_PILLAR_GAP
     )
     _pair_w = 2 * ENNIS_PANEL_OUTER_W + ENNIS_PANEL_GAP
-    _pillar_unit_lead = ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
-    _pillar_unit_trail = 2 * ENNIS_GATE_PILLAR_GAP + ENNIS_GATE_PILLAR_W
+    _arch_post_unit_lead = ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
+    _arch_post_unit_trail = 2 * ENNIS_GATE_PILLAR_GAP + ENNIS_GATE_PILLAR_W
     _pair_count = ENNIS_GATE_PANEL_COUNT // 2
-    total_gate_w = _pillar_unit_lead + _pair_count * (_pair_w + _pillar_unit_trail)
+    total_gate_w = _arch_post_unit_lead + _pair_count * (
+        _pair_w + _arch_post_unit_trail
+    )
     bw_mid_y = gate_run_start_y + total_gate_w
     brushes.append(
         box(
@@ -978,15 +989,15 @@ def build_ennis_entrance_features():
             ]
         )
 
-    def add_pillar(center_y):
-        # Arched iron pillar: two vertical legs topped with a rounded arch
-        # (rin/rout ring), slightly taller overall than the panels it
+    def add_arch_post(center_y):
+        # Arched iron fence post: two vertical legs topped with a rounded
+        # arch (rin/rout ring), slightly taller overall than the panels it
         # separates, in place of a flat crossbar.
         leg_t = ENNIS_GATE_PILLAR_LEG_T
         arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
         arch_rout = arch_rin + leg_t
-        pillar_top_z = panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
-        legs_top_z = pillar_top_z - arch_rout
+        post_top_z = panel_z2_o + ENNIS_GATE_PILLAR_EXTRA_H
+        legs_top_z = post_top_z - arch_rout
         leg_y1 = center_y - arch_rout
         leg_y2 = center_y + arch_rout
         brushes.extend(
@@ -1061,7 +1072,7 @@ def build_ennis_entrance_features():
 
     def add_connector(y1, y2):
         # Two small decorative horizontal iron bars bridging the narrow gap
-        # between adjacent panels/pillars, matching the real fence's look.
+        # between adjacent panels/arch posts, matching the real fence's look.
         if y2 <= y1:
             return
         bar_t = ENNIS_GATE_FENCE_BAR_T
@@ -1092,8 +1103,8 @@ def build_ennis_entrance_features():
         )
 
     cursor_y = gate_run_start_y
-    # Leading bookend pillar, then a gap into the first panel.
-    add_pillar(cursor_y + ENNIS_GATE_PILLAR_W // 2)
+    # Leading bookend arch post, then a gap into the first panel.
+    add_arch_post(cursor_y + ENNIS_GATE_PILLAR_W // 2)
     cursor_y += ENNIS_GATE_PILLAR_W
     gap_y1 = cursor_y
     cursor_y += ENNIS_GATE_PILLAR_GAP
@@ -1106,16 +1117,16 @@ def build_ennis_entrance_features():
         add_connector(gap_y1, cursor_y)
         add_panel(cursor_y + ENNIS_PANEL_OUTER_W // 2)
         cursor_y += ENNIS_PANEL_OUTER_W
-        # A pillar follows every pair — the interior separators, and (on the
-        # last pair) the trailing bookend pillar that closes out the run.
+        # An arch post follows every pair — the interior separators, and (on
+        # the last pair) the trailing bookend post that closes out the run.
         gap_y1 = cursor_y
         cursor_y += ENNIS_GATE_PILLAR_GAP
         add_connector(gap_y1, cursor_y)
-        add_pillar(cursor_y + ENNIS_GATE_PILLAR_W // 2)
+        add_arch_post(cursor_y + ENNIS_GATE_PILLAR_W // 2)
         cursor_y += ENNIS_GATE_PILLAR_W
         gap_y1 = cursor_y
         cursor_y += ENNIS_GATE_PILLAR_GAP
-        # Skip the connector tie after the trailing (north) bookend pillar —
+        # Skip the connector tie after the trailing (north) bookend post —
         # it would otherwise reach toward the plain picket fence, which
         # doesn't share the same decorative style.
         if pair_i < _pair_count - 1:

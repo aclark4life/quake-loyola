@@ -92,7 +92,6 @@ DORM_PIER_FACE_OFFSET = 32
 BRIDGE_LAMP_POST_CLEARANCE = 32
 
 CHARLES_CRN_R = CHARLES_WALK_W
-ENNIS_PILLAR_ZB = FLOOR_Z2
 KNOTT_DRIVEWAY_CURB_CRN_R = CHARLES_WALK_W
 KNOTT_DRIVEWAY_CURB_CRN_SEGS = CHARLES_CRN_SEGS
 KNOTT_DRIVEWAY_CURB_WALK_W = CHARLES_WALK_W
@@ -166,15 +165,11 @@ CHARLES_LAMP_POST_XS = [
     KNOTT_PIER_X,
 ]
 ENNIS_PILLAR_EAST_SHIFT = 100  # nudges the Ennis entrance pillars (and the gate,
-# which tracks this shift below) east together, preserving the 80-unit gap
+# which tracks this shift below) east together, preserving the 20-unit gap
 # between the pillar cap and ENNIS_GATE_X1
-ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT + 80
+ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT + 20
 ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
-ENNIS_PILLAR_X2 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
 CHARLES_LAMP_POST_H = BRIDGE_DZ2 - BRIDGE_LAMP_POST_CLEARANCE
-_KNOTT_GROUND_FLOOR_H = (
-    160  # nominal floor height used to anchor building to bridge/hill;
-)
 # independent of KNOTT_FLOOR_H (192) so scaling floor height doesn't flatten the hill.
 KNOTT_GROUND_Z = 221  # hill-height anchor, re-derived from real-world elevation data.
 # Was 64 (4.24 ft), based on an old, unscripted "~+7.2 ft at Knott Hall's west edge"
@@ -253,7 +248,6 @@ DORM_H = DORM_FLOORS * DORM_FLOOR_H
 DORM_PIER_X = min(BRIDGE_ARCH_X)
 DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL
 DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H
-DORM_WALL_N_Y1 = BRIDGE_Y2 + BRIDGE_PILLAR_OVERHANG
 DORM_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PILLAR_OVERHANG)
 CHARLES_PLT_X_OUT = ROAD_X2 // 4
 CHARLES_PLT_X_RET = -(ROAD_X2 * 3 // 4)
@@ -302,10 +296,6 @@ ENNIS_CEMENT_X2 = (
 )  # aligned with east teleport centre, plus ENNIS_CEMENT_EAST_SHIFT
 ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
-ENNIS_CEMENT_LAMP_POSTS = [
-    (ENNIS_CEMENT_X1, ENNIS_WALL_NY + ENNIS_WALL_T // 2, FLOOR_Z2 + 234),
-    (ENNIS_CEMENT_X2, ENNIS_WALL_NY + ENNIS_WALL_T // 2, FLOOR_Z2 + 234),
-]
 ENNIS_X2 = _EAST_FEATURES_X2_EXT - WALL_T
 BRIDGE_EAST_SHIFT_END = -(
     (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[4]
@@ -472,17 +462,8 @@ DORM = DormSpec(
 )
 
 # South-dorm raised terrace + gentler frontage hill out to Charles Street.
-# The south-dorm pad sits flat on a terrace at FLOOR_Z2 + SDORM_LIFT; east of the
-# pad a gentle ramp descends to grade at SDORM_TOE_X (the "hill out to Charles St").
+# The south-dorm pad sits flat on a terrace at FLOOR_Z2 + SDORM_LIFT.
 SDORM_LIFT = 128  # terrace height = new south-dorm floor level
-SDORM_TERRACE_X2 = DORM_X2 + 216  # east edge of flat terrace (= south fence line)
-SDORM_TOE_X = -400  # frontage ramp reaches grade (z=0) here, near the road
-# N-S decline at/east of the front fence: from the brick wall's south pillar down
-# to the north side of the bridge, so the iron fence stays connected to grade.
-SDORM_SLOPE_Y_S = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + 96  # south pillar
-SDORM_SLOPE_Y_N = BRIDGE_Y2  # north side of bridge
-SDORM_WALL_X = DORM_PIER_X  # brick-wall centreline: divides the flat dorm pad (west)
-# from the strip that declines north between the wall and the fence (east).
 
 # South-dorm stairwell — steps cut into the south-dorm-1 footprint, descending west
 # to the existing west-wall tunnel door, bridging the SDORM_LIFT drop down to the

@@ -30,7 +30,6 @@ BRIDGE_DZ1, BRIDGE_DZ2 = (
 )  # raised 32 units (was 224/240) so the flat deck at KNOTT_ORIG_CX (WALK_ZT1) is
 # level with the KH 2nd-floor walkway landing (WALK_ZT2); see KNOTT_GROUND_Z below,
 # now a fixed hill-height anchor independent of this deck elevation.
-BRIDGE_EAST_SHIFT_START = 0.0
 BRIDGE_EAST_SPAN_ANGLE = 12.0
 BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = (
     4,
@@ -112,13 +111,17 @@ BRIDGE_WALK_WALL = 32
 BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-unit
 # parapets, interior walking width = 220 units = ft_to_units(14,6) ≈ 14.5 ft
 
-BRIDGE_CENTER_PIER_SPAN = 950  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
+BRIDGE_CENTER_PIER_SPAN = 1000  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
 # BRIDGE_OUTER_PIER_SPAN and stays put (it anchors the hill profile's real-elevation
 # "Pier 3" sample and the Ennis Drive entrance pillars/gate, so moving it has a much
 # wider blast radius); this span only pulls PIER2 (west side, on flat/low terrain)
-# east, from -525 to -425, tightening its setback from the Charles St curb (ROAD_X2
-# =256) from ~269 to ~169 units. Was 1050, then briefly 850 (too tight/"squished"
-# per playtest feedback — pulled the west pier further back out to 950).
+# west. Was 1050, then briefly 850 (too tight/"squished" per playtest feedback —
+# pulled the west pier further back out to 950), then bumped +50 to 1000 (centre
+# span parapet blocks read as too compressed again at 950) — paired with a
+# matching +50 shift to ROAD_X1 (constants/streets.py, widening Charles St to the
+# west) so PIER2's setback from the curb stays ~169 units even as the centre
+# span's own length grows. Everything positioned relative to the west pier group
+# (DORM_PIER_X and its dependents) follows PIER2/PIER1 automatically.
 # Playwright/Google-Maps + ref/bridge08 street-view comparison showed real piers
 # sitting closer to the curb than the original 1050, but 850 overcorrected. Terrain
 # under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-
