@@ -118,4 +118,4 @@ clean:
 
 # Run Quake
 r:
-    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad -nosound
