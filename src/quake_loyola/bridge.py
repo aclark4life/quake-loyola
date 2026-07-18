@@ -564,8 +564,29 @@ def _build_all():
         )
 
     # Western span (BRIDGE.x1 → BRIDGE_ARCH_X[0]): no blocks — open span
-    # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks
-    add_parapet_blocks(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
+    # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks.
+    # Margin set to 0 (rather than the default fixed BRIDGE_BLK_PIR_M pier
+    # clearance margin) so the n+1 gaps — pier-to-block AND block-to-block —
+    # come out perfectly even, dividing the full pier-to-pier span equally.
+    # The default clearance margin instead reserved extra pier-side space,
+    # making the pier-to-block gaps visibly larger than the inter-block gaps
+    # once this span was independently lengthened (BRIDGE_WEST_OUTER_PIER_SPAN).
+    # Safe as long as the resulting gap exceeds the minimum pier clearance
+    # (BRIDGE_BLK_PIR_M); true here (span/(n+1) = 230 >> ~73-unit clearance).
+    _span1_n = 3
+    _span1_gap = (BRIDGE_ARCH_X[1] - BRIDGE_ARCH_X[0]) / (_span1_n + 1)
+    assert _span1_gap >= BRIDGE_BLK_PIR_M, (
+        f"Span 1 parapet-block gap ({_span1_gap:.1f}) is tighter than the minimum "
+        f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
+        "even-margin spacing before it can safely use margin=0."
+    )
+    add_parapet_blocks(
+        BRIDGE_ARCH_X[0],
+        BRIDGE_ARCH_X[1],
+        _span1_n,
+        west_margin=0,
+        east_margin=0,
+    )
     # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 4 blocks — corrected
     # after re-checking ref/bridge08.png; the earlier 5th block (assumed to sit
     # in a foliage-obscured gap) was a miscount.
@@ -636,7 +657,13 @@ def _build_all():
             y_shift_fn=y_shift_fn,
         )
 
-    add_parapet_squares(BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3)
+    add_parapet_squares(
+        BRIDGE_ARCH_X[0],
+        BRIDGE_ARCH_X[1],
+        _span1_n,
+        west_margin=0,
+        east_margin=0,
+    )
     add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
     add_parapet_squares(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
     add_parapet_squares(

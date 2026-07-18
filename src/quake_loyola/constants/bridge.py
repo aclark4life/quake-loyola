@@ -128,7 +128,19 @@ BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side) is pinned via KNOTT_PIER_X 
 # under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-
 # BRIDGE_PILLAR_HW) stays well above the pier's base Z (0), so no floating-pier
 # risk from this move.
-BRIDGE_OUTER_PIER_SPAN = 721
+BRIDGE_OUTER_PIER_SPAN = 721  # east outer span (Pier3-Pier4, Knott side) — fixed;
+# Pier3/Pier4 anchor the hill profile's real-elevation sample and the Ennis Drive
+# entrance pillars/gate (see BRIDGE_CENTER_PIER_SPAN comment above), so this span's
+# length must not change the position of either pier. Kept separate from
+# BRIDGE_WEST_OUTER_PIER_SPAN below so the two outer spans can differ in length.
+BRIDGE_WEST_OUTER_PIER_SPAN = 921  # west outer span (Pier1-Pier2) — only pulls
+# PIER1 (west abutment, on flat/low terrain) further west; PIER2 stays put (it's
+# governed by BRIDGE_CENTER_PIER_SPAN + BRIDGE_OUTER_PIER_SPAN off KNOTT_PIER_X).
+# Was 721 (same as the east span, before the two were split apart), bumped +100
+# to 821 per playtest feedback that the first (west) span felt short, then +100
+# again to 921 (same feedback) — everything west of the west pier group
+# (DORM_PIER_X and its dependents: fence, brick wall, sidewalk, terrain) follows
+# PIER1_X automatically since DORM_PIER_X = min(BRIDGE_ARCH_X).
 BRIDGE_CENTER_SPAN_OFFSET = (0.0, 320.0, 96.0)  # (dx, dy, dz) applied to just the
 # centre span (PIER2..PIER3) in bridge.build(), independent of the other
 # sections — for experimenting with its position (e.g. shifting it north/up)

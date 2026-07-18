@@ -382,7 +382,17 @@ below reflect the current values after Charles St/the centre span were
 widened west several times (2026-07) — see "Deliberate deviation" under
 "Charles St width validation"; only ``PIER1_X``/``PIER2_X`` move when
 ``BRIDGE_CENTER_PIER_SPAN`` changes, ``PIER3_X``/``PIER4_X``/``PIER5_X``
-are fixed anchors.
+are fixed anchors. The west outer span (``PIER1_X..PIER2_X``) was also
+independently lengthened (721 → 821 → 921 units,
+``BRIDGE_WEST_OUTER_PIER_SPAN``) so it no longer has to match the east
+outer span (``PIER3_X..PIER4_X`` = ``BRIDGE_OUTER_PIER_SPAN`` = 721,
+unchanged) — only ``PIER1_X`` moves further west as a result; everything
+keyed off ``DORM_PIER_X`` (fence, brick wall, sidewalk, terrain) follows it
+automatically. The parapet blocks on this span are spaced with
+``west_margin=east_margin=0`` (see ``bridge.py``) rather than the default
+fixed pier-clearance margin, so the pier-to-block gap and the
+block-to-block gaps come out equal instead of the pier-to-block gap being
+larger.
 
 .. list-table::
    :header-rows: 1
@@ -394,7 +404,7 @@ are fixed anchors.
      - Notes
    * - **Pier 1**
      - ``PIER1_X``
-     - −1496
+     - −1696
      - West abutment pier — embedded in the embankment hill; flanked by the
        abutment building.
    * - **Pier 2**

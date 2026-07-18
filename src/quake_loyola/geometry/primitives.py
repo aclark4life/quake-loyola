@@ -248,6 +248,15 @@ def ramp_slab(
     x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
 ):
     tt, tb, te, ts = tt or tex, tb or tex, te or tex, ts or tex
+    if x1 > x2:
+        # Normalize so x1 < x2 (mirrors ramp_slab_y's y1/y2 normalization) —
+        # callers sometimes pass endpoints derived from constants whose
+        # relative order can flip after later widening (e.g. DORM_X1 moving
+        # west of a previously-fixed anchor), which would otherwise produce
+        # a degenerate/inverted brush.
+        x1, x2 = x2, x1
+        zb1, zb2 = zb2, zb1
+        zt1, zt2 = zt2, zt1
     faces = []
     if zt1 != zb1:
         faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), te))

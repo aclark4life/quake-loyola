@@ -17,6 +17,7 @@ from .bridge import (
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_SEG_SPAN_W,
     BRIDGE_WALK_WALL,
+    BRIDGE_WEST_OUTER_PIER_SPAN,
     BRIDGE_Y1,
     BRIDGE_Y2,
     BridgeSpec,
@@ -143,14 +144,15 @@ KNOTT_DRIVEWAY_Y1 = KNOTT_Y1
 KNOTT_DRIVEWAY_Y2 = KNOTT_Y2
 KNOTT_DRIVEWAY_EXT_Y1 = KNOTT_DRIVEWAY_Y2
 KNOTT_STAIRS_Y1 = KNOTT_BIY2 - 256
-# West bridge piers step back from the Knott pier using the two reference span widths.
-# Piers 1-3 are derived; Pier 4 = KNOTT_PIER_X; Pier 5 = KNOTT_NE_PIER_X.
-# Individual names are unpacked immediately after.
+# West bridge piers step back from the Knott pier using the three reference span
+# widths (east outer, centre, west outer). Piers 1-3 are derived; Pier 4 =
+# KNOTT_PIER_X; Pier 5 = KNOTT_NE_PIER_X. Individual names are unpacked immediately
+# after.
 BRIDGE_ARCH_X = [
     KNOTT_PIER_X
     - BRIDGE_OUTER_PIER_SPAN
     - BRIDGE_CENTER_PIER_SPAN
-    - BRIDGE_OUTER_PIER_SPAN,  # Pier 1 — west abutment pier
+    - BRIDGE_WEST_OUTER_PIER_SPAN,  # Pier 1 — west abutment pier
     KNOTT_PIER_X - BRIDGE_OUTER_PIER_SPAN - BRIDGE_CENTER_PIER_SPAN,  # Pier 2
     KNOTT_PIER_X
     - BRIDGE_OUTER_PIER_SPAN,  # Pier 3 (anchors Ennis Drive entrance pillars)
