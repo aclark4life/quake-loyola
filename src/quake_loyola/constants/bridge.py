@@ -19,6 +19,13 @@ BRIDGE_BLK_H = 36
 BRIDGE_BLK_HW = 24
 BRIDGE_BLK_OVH = 0
 BRIDGE_BLK_PIER_CLEARANCE = 4
+BRIDGE_BASE_LIGHT_HW = 32  # half-width of the small wall light fixture mounted at
+# the base of each parapet-block wall segment, on the inside (walkway-facing)
+# face, right above the deck floor. 64x64 to match the light1_4 texture size.
+BRIDGE_BASE_LIGHT_H = 64  # rise above the deck floor (matches texture size)
+BRIDGE_BASE_LIGHT_D = 2  # protrusion into the walkway from the inner wall face
+BRIDGE_BASE_LIGHT_Z_LIFT = 12  # raise the fixture up from the deck floor a bit
+BRIDGE_BASE_LIGHT_BRIGHTNESS = "150"  # subtle low uplight, not a strong light source
 BRIDGE_DECK_EAST_RECESS = 1
 BRIDGE_DECK_EDGE_CEMENT_W = 16  # width of the cement margin kept along each side
 # (north/south) of the deck's wood-textured (GABLE) underside — a small strip of

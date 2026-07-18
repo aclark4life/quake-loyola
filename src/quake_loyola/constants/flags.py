@@ -93,6 +93,11 @@ LIGHTS_ENABLED = _flag(
 LIGHTS_ENABLED_TORCHES = _flag(
     "LIGHTS_ENABLED_TORCHES"
 )  # light "group" flag: torch/flame fixtures only
+LIGHTS_ENABLED_DECK_WALL = _flag(
+    "LIGHTS_ENABLED_DECK_WALL"
+)  # light "group" flag: bridge.py parapet-block base wall lights only — on by
+# default (unlike LIGHTS_ENABLED_TORCHES) since they're a small, low-impact
+# decorative detail meant to always show, independent of the LIGHTS_ENABLED master.
 BASEMENT_ENABLED_LIGHTS = _flag(
     "BASEMENT_ENABLED_LIGHTS"
 )  # light "group" flag: basement.py fixtures only —

@@ -23,6 +23,7 @@ class Textures:
     HINT = "hint"
     MULCH = "grave13c"
     LAVA = "*lava1"
+    PARAPET_LIGHT = "light1_4"  # from quake101.wad/ad.wad — small wall light fixture
     PILLAR = "city6_8"
     RAIL = "metal5_4"
     ROAD = "thantech10_9"

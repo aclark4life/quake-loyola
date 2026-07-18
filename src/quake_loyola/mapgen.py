@@ -23,6 +23,7 @@ from . import (
 from .constants import (
     BASEMENT_ENABLED_LIGHTS,
     LIGHTS_ENABLED,
+    LIGHTS_ENABLED_DECK_WALL,
     LIGHTS_ENABLED_TORCHES,
     WORLDSPAWN_FIELDS,
 )
@@ -49,6 +50,7 @@ MODULES = [
 LIGHT_GROUP_FLAGS = {
     "torch": LIGHTS_ENABLED_TORCHES,
     "basement": BASEMENT_ENABLED_LIGHTS,
+    "deck_wall": LIGHTS_ENABLED_DECK_WALL,
 }
 
 

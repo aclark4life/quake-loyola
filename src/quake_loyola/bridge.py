@@ -25,6 +25,11 @@ from .constants import (
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
     BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
+    BRIDGE_BASE_LIGHT_BRIGHTNESS,
+    BRIDGE_BASE_LIGHT_D,
+    BRIDGE_BASE_LIGHT_H,
+    BRIDGE_BASE_LIGHT_HW,
+    BRIDGE_BASE_LIGHT_Z_LIFT,
     BRIDGE_BLK_H,
     BRIDGE_BLK_HW,
     BRIDGE_BLK_OVH,
@@ -477,10 +482,14 @@ def _build_all():
                 yield cx, sy, z_at_center(cx)
 
         for cx, sy, bz in iter_positions(n, x1_n):
-            BRUSHES.append(north_brush(cx, sy, bz))
+            brush = north_brush(cx, sy, bz)
+            if brush is not None:
+                BRUSHES.append(brush)
         for cx, sy, bz in iter_positions(n_s, x1_s):
             if not (cx - x_half_width < WALK_X2 and cx + x_half_width > WALK_X1):
-                BRUSHES.append(south_brush(cx, sy, bz))
+                brush = south_brush(cx, sy, bz)
+                if brush is not None:
+                    BRUSHES.append(brush)
 
     def add_parapet_blocks(
         x_start,
@@ -672,6 +681,86 @@ def _build_all():
             east_margin_n=east_margin_n,
             y_shift_fn=y_shift_fn,
         )
+
+    # ── Base lights on parapet inner faces (one per block position) ──────────────
+    def add_parapet_base_lights(
+        x_start,
+        x_end,
+        n,
+        west_margin=None,
+        east_margin=None,
+        n_south=None,
+        east_margin_n=None,
+        y_shift_fn=None,
+    ):
+        """Add a small wall-light fixture + light entity at the base of each
+        parapet-block wall segment, on the INSIDE (walkway-facing) face, right
+        above the deck floor — same X positions as the blocks above, using
+        wall_tilt_z (not deck_top_z + parapet_h) so the fixture sits flush
+        with the wall's own base rather than at block height."""
+
+        def _fixture(cx, sy, y_wall, y_dir):
+            zb1_raw, zb2_raw = wall_tilt_z(cx, BRIDGE_BASE_LIGHT_HW)
+            # Round each edge independently (rather than forcing a flat
+            # average) so the fixture picks up even a slight tilt from the
+            # curved centre span — it should rotate with the wall it's
+            # mounted on, not just sit dead level everywhere.
+            zb1 = round(zb1_raw) + BRIDGE_BASE_LIGHT_Z_LIFT
+            zb2 = round(zb2_raw) + BRIDGE_BASE_LIGHT_Z_LIFT
+            y1v = y_wall + sy
+            y2v = y_wall + y_dir * BRIDGE_BASE_LIGHT_D + sy
+            ylo, yhi = (y1v, y2v) if y1v <= y2v else (y2v, y1v)
+            ENTITIES.append(
+                ent(
+                    "light",
+                    origin=(
+                        f"{cx} {(ylo + yhi) // 2} "
+                        f"{int((zb1 + zb2) / 2) + BRIDGE_BASE_LIGHT_H // 2}"
+                    ),
+                    light=BRIDGE_BASE_LIGHT_BRIGHTNESS,
+                    _light_group="deck_wall",
+                )
+            )
+            # Fixture geometry (brush) is dropped for now — only the light
+            # entity itself is kept — per explicit request to pause the
+            # visible fixture while iterating on texture/placement later.
+            return None
+
+        add_repeated_parapet_decorations(
+            x_start,
+            x_end,
+            n,
+            x_half_width=BRIDGE_BASE_LIGHT_HW,
+            z_at_center=lambda cx: int(deck_top_z(cx)),
+            north_brush=lambda cx, sy, bz: _fixture(
+                cx, sy, BRIDGE.y2 - BRIDGE_PAR_W, -1
+            ),
+            south_brush=lambda cx, sy, bz: _fixture(
+                cx, sy, BRIDGE.y1 + BRIDGE_PAR_W, +1
+            ),
+            center_fn=int,
+            west_margin=west_margin,
+            east_margin=east_margin,
+            n_south=n_south,
+            east_margin_n=east_margin_n,
+            y_shift_fn=y_shift_fn,
+        )
+
+    add_parapet_base_lights(
+        BRIDGE_ARCH_X[0],
+        BRIDGE_ARCH_X[1],
+        _span1_n,
+        west_margin=0,
+        east_margin=0,
+    )
+    add_parapet_base_lights(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+    add_parapet_base_lights(
+        BRIDGE_ARCH_X[2],
+        BRIDGE_ARCH_X[3],
+        _span3_n,
+        west_margin=0,
+        east_margin=0,
+    )
 
     add_parapet_squares(
         BRIDGE_ARCH_X[0],

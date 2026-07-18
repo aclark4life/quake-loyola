@@ -65,6 +65,7 @@ DEFAULTS: dict[str, bool] = {
     # -- light-group masters (constants/flags.py) --
     "LIGHTS_ENABLED": False,
     "LIGHTS_ENABLED_TORCHES": True,
+    "LIGHTS_ENABLED_DECK_WALL": True,
     "BASEMENT_ENABLED_LIGHTS": True,
     # -- misc display flags (constants/flags.py) --
     "BRIDGE_ENABLED_FASCIA_TEXT": True,
