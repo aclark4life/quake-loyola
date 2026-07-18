@@ -591,8 +591,24 @@ def _build_all():
     # after re-checking ref/bridge08.png; the earlier 5th block (assumed to sit
     # in a foliage-obscured gap) was a miscount.
     add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
-    # Eastern span 2 (BRIDGE_ARCH_X[2] → BRIDGE_ARCH_X[3]): 3 blocks
-    add_parapet_blocks(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
+    # Eastern span 2 (BRIDGE_ARCH_X[2] → BRIDGE_ARCH_X[3]): 3 blocks. Same
+    # even-margin treatment as span 1 above — margin=0 so pier-to-block and
+    # block-to-block gaps come out equal now that this span
+    # (BRIDGE_OUTER_PIER_SPAN) was lengthened to match the west span.
+    _span3_n = 3
+    _span3_gap = (BRIDGE_ARCH_X[3] - BRIDGE_ARCH_X[2]) / (_span3_n + 1)
+    assert _span3_gap >= BRIDGE_BLK_PIR_M, (
+        f"Span 3 parapet-block gap ({_span3_gap:.1f}) is tighter than the minimum "
+        f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
+        "even-margin spacing before it can safely use margin=0."
+    )
+    add_parapet_blocks(
+        BRIDGE_ARCH_X[2],
+        BRIDGE_ARCH_X[3],
+        _span3_n,
+        west_margin=0,
+        east_margin=0,
+    )
     # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
     add_parapet_blocks(
         BRIDGE.x2,
@@ -665,7 +681,13 @@ def _build_all():
         east_margin=0,
     )
     add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
-    add_parapet_squares(BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3)
+    add_parapet_squares(
+        BRIDGE_ARCH_X[2],
+        BRIDGE_ARCH_X[3],
+        _span3_n,
+        west_margin=0,
+        east_margin=0,
+    )
     add_parapet_squares(
         BRIDGE.x2,
         BRIDGE_ARCH_X[4],

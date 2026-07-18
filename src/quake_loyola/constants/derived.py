@@ -11,6 +11,7 @@ from .bridge import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
+    BRIDGE_EAST_SPAN2_LEN,
     BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_OUTER_PIER_SPAN,
     BRIDGE_PAR_H,
@@ -144,19 +145,28 @@ KNOTT_DRIVEWAY_Y1 = KNOTT_Y1
 KNOTT_DRIVEWAY_Y2 = KNOTT_Y2
 KNOTT_DRIVEWAY_EXT_Y1 = KNOTT_DRIVEWAY_Y2
 KNOTT_STAIRS_Y1 = KNOTT_BIY2 - 256
-# West bridge piers step back from the Knott pier using the three reference span
-# widths (east outer, centre, west outer). Piers 1-3 are derived; Pier 4 =
-# KNOTT_PIER_X; Pier 5 = KNOTT_NE_PIER_X. Individual names are unpacked immediately
-# after.
+# West bridge piers step back from the Knott pier using the reference span
+# widths (outer, centre, west outer). Piers 1-3 are derived from KNOTT_PIER_X
+# (Pier 3's position is the real GPS-surveyed "pier3_center_span_e" anchor —
+# see docs/elevation_samples.csv — so it must NOT move); Pier 4 is derived
+# from PIER3_X instead of KNOTT_PIER_X (see BRIDGE_EAST_SPAN2_LEN below —
+# deliberately NOT pinned to the real Knott Hall pier position, so lengthening
+# span 2 can't disturb Pier 3/the centre span); Pier 5 = KNOTT_NE_PIER_X.
+# Individual names are unpacked immediately after.
 BRIDGE_ARCH_X = [
     KNOTT_PIER_X
     - BRIDGE_OUTER_PIER_SPAN
     - BRIDGE_CENTER_PIER_SPAN
     - BRIDGE_WEST_OUTER_PIER_SPAN,  # Pier 1 — west abutment pier
     KNOTT_PIER_X - BRIDGE_OUTER_PIER_SPAN - BRIDGE_CENTER_PIER_SPAN,  # Pier 2
+    KNOTT_PIER_X - BRIDGE_OUTER_PIER_SPAN,  # Pier 3 (real GPS anchor; also anchors the
+    # Ennis Drive entrance pillars)
     KNOTT_PIER_X
-    - BRIDGE_OUTER_PIER_SPAN,  # Pier 3 (anchors Ennis Drive entrance pillars)
-    KNOTT_PIER_X,  # Pier 4 — west KH pier (arch span terminus)
+    - BRIDGE_OUTER_PIER_SPAN
+    + BRIDGE_EAST_SPAN2_LEN,  # Pier 4 — span-2 terminus, deliberately NOT
+    # pinned to KNOTT_PIER_X (the real KH west pier) so span 2 can be
+    # lengthened without moving Pier 3/the centre span; the resulting gap to
+    # the real building pier is absorbed by the flat Pier4-Pier5 span below.
     KNOTT_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
     3150,  # Pier 6 — mid-span pier in extended east section (moved east, clear of
     # KH driveway roadway [2566-2822]/sidewalks [2486-2902]; sits in Ennis Rd
@@ -184,7 +194,8 @@ KNOTT_GROUND_Z = 221  # hill-height anchor, re-derived from real-world elevation
 # without re-flattening the hill.
 KNOTT_DRIVEWAY_ZT_S = KNOTT_GROUND_Z
 KNOTT_Z2 = KNOTT_GROUND_Z + KNOTT_FLOORS * KNOTT_FLOOR_H
-BRIDGE_X2 = KNOTT_PIER_X
+BRIDGE_X2 = BRIDGE_ARCH_X[3]  # Pier 4 (span-2 terminus) — no longer literally
+# KNOTT_PIER_X; see BRIDGE_ARCH_X comment above.
 ENNIS_Y = BRIDGE_Y2 + ENNIS_NORTH_OFFSET
 CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - CHARLES_LAMP_POST_SETBACK]
 CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + CHARLES_PLATFORM_ROAD_OFFSET
@@ -234,10 +245,11 @@ BRIDGE_PIER_GROUND_Z = {
     # PIER2 (now -425, tightened toward the curb from -525 — see
     # BRIDGE_CENTER_PIER_SPAN): west terrain min under the new footprint ≈17 —
     # use FLOOR_Z2 (0), still safely below.
-    # PIER3 (+525): KH hill profile min under full footprint ≈30 (re-sampled;
-    # the old "~57" figure predates later hill-profile edits and left this
-    # pier's base — previously 48 — floating above ground near its west/edge
-    # corners). Use 20 for a safe margin below the resampled minimum.
+    # PIER3 (+525, unchanged — real GPS anchor, never moves): KH hill profile
+    # min under full footprint ≈30 (re-sampled; the old "~57" figure predates
+    # later hill-profile edits and left this pier's base — previously 48 —
+    # floating above ground near its west/edge corners). Use 20 for a safe
+    # margin below the resampled minimum.
     PIER2_X: 0,  # west campus terrain min under bridge span ≈17 (was ≈15 at -525) -
     # use 0 (FLOOR_Z2)
     PIER3_X: 20,  # KH hill min under full pier footprint ≈30; use 20 to stay buried

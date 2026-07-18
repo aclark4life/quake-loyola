@@ -111,11 +111,10 @@ BRIDGE_WALK_WALL = 32
 BRIDGE_Y1, BRIDGE_Y2 = -148, 148  # 296-unit (~19.6 ft) deck; after the two 38-unit
 # parapets, interior walking width = 220 units = ft_to_units(14,6) ≈ 14.5 ft
 
-BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side) is pinned via KNOTT_PIER_X -
-# BRIDGE_OUTER_PIER_SPAN and stays put (it anchors the hill profile's real-elevation
-# "Pier 3" sample and the Ennis Drive entrance pillars/gate, so moving it has a much
-# wider blast radius); this span only pulls PIER2 (west side, on flat/low terrain)
-# west. Was 1050, then briefly 850 (too tight/"squished" per playtest feedback —
+BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side, real GPS anchor — see
+# docs/elevation_samples.csv "pier3_center_span_e") stays put when THIS span
+# changes; this span only pulls PIER2 (west side, on flat/low terrain) west.
+# Was 1050, then briefly 850 (too tight/"squished" per playtest feedback —
 # pulled the west pier further back out to 950), then bumped +50 to 1000, then
 # +100 to 1100, then +200 to 1300 (kept wanting it wider) — paired with a
 # matching shift to ROAD_X1 (constants/streets.py, widening Charles St to the
@@ -128,11 +127,22 @@ BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side) is pinned via KNOTT_PIER_X 
 # under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-
 # BRIDGE_PILLAR_HW) stays well above the pier's base Z (0), so no floating-pier
 # risk from this move.
-BRIDGE_OUTER_PIER_SPAN = 721  # east outer span (Pier3-Pier4, Knott side) — fixed;
-# Pier3/Pier4 anchor the hill profile's real-elevation sample and the Ennis Drive
-# entrance pillars/gate (see BRIDGE_CENTER_PIER_SPAN comment above), so this span's
-# length must not change the position of either pier. Kept separate from
-# BRIDGE_WEST_OUTER_PIER_SPAN below so the two outer spans can differ in length.
+BRIDGE_OUTER_PIER_SPAN = 721  # KNOTT_PIER_X - PIER3_X: fixes PIER3 at its real
+# GPS-surveyed position (docs/elevation_samples.csv "pier3_center_span_e",
+# X=525) relative to the real Knott Hall west pier. Deliberately NOT the
+# east span 2 length — see BRIDGE_EAST_SPAN2_LEN below, which governs PIER4
+# independently so lengthening span 2 can't move PIER3/the centre span.
+BRIDGE_EAST_SPAN2_LEN = 921  # East outer span (Pier3→Pier4) length. PIER4 is
+# derived as PIER3_X + this value rather than pinned to KNOTT_PIER_X (the real
+# KH west pier) — deliberately unpinned so this span can be lengthened without
+# moving PIER3 (the real GPS anchor)/the centre span. Was 721 (implicitly,
+# when PIER4 == KNOTT_PIER_X and PIER3 sat 721 west of it); bumped +200 to 921
+# to match BRIDGE_WEST_OUTER_PIER_SPAN so both outer spans read as the same
+# length, per playtest feedback. The resulting ~200-unit gap between PIER4 and
+# the real KH west pier (KNOTT_PIER_X) is absorbed by the existing flat
+# PIER4→PIER5 span (1208 units before this change, still 1008 after — plenty
+# of clearance). Lamp posts / KH driveway / Ennis geometry reference
+# KNOTT_PIER_X directly (not PIER4/BRIDGE_X2), so they're unaffected.
 BRIDGE_WEST_OUTER_PIER_SPAN = 921  # west outer span (Pier1-Pier2) — only pulls
 # PIER1 (west abutment, on flat/low terrain) further west; PIER2 stays put (it's
 # governed by BRIDGE_CENTER_PIER_SPAN + BRIDGE_OUTER_PIER_SPAN off KNOTT_PIER_X).

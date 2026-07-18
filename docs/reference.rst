@@ -381,14 +381,22 @@ consistently in the code (``PIER1_X`` … ``PIER5_X``). Pier X positions
 below reflect the current values after Charles St/the centre span were
 widened west several times (2026-07) — see "Deliberate deviation" under
 "Charles St width validation"; only ``PIER1_X``/``PIER2_X`` move when
-``BRIDGE_CENTER_PIER_SPAN`` changes, ``PIER3_X``/``PIER4_X``/``PIER5_X``
-are fixed anchors. The west outer span (``PIER1_X..PIER2_X``) was also
-independently lengthened (721 → 821 → 921 units,
-``BRIDGE_WEST_OUTER_PIER_SPAN``) so it no longer has to match the east
-outer span (``PIER3_X..PIER4_X`` = ``BRIDGE_OUTER_PIER_SPAN`` = 721,
-unchanged) — only ``PIER1_X`` moves further west as a result; everything
-keyed off ``DORM_PIER_X`` (fence, brick wall, sidewalk, terrain) follows it
-automatically. The parapet blocks on this span are spaced with
+``BRIDGE_CENTER_PIER_SPAN`` changes, and ``PIER3_X``/``PIER5_X`` are fixed
+anchors (``PIER3_X`` is the real GPS-surveyed "pier3_center_span_e" sample —
+see ``docs/elevation_samples.csv``; ``PIER5_X`` tracks the real Knott Hall
+NE pier). The west outer span (``PIER1_X..PIER2_X``) and the east outer
+span (``PIER3_X..PIER4_X``) were both independently lengthened to 921 units
+(``BRIDGE_WEST_OUTER_PIER_SPAN`` / ``BRIDGE_EAST_SPAN2_LEN``, both were 721)
+so they read as the same length again. ``PIER4_X`` is deliberately **not**
+pinned to ``KNOTT_PIER_X`` (the real Knott Hall west pier) any more — it's
+derived as ``PIER3_X + BRIDGE_EAST_SPAN2_LEN`` instead, so lengthening this
+span moves only ``PIER4_X`` east, leaving ``PIER3_X``/the centre span
+untouched; the ~200-unit gap this opens up to the real KH west pier is
+absorbed by the flat ``PIER4_X..PIER5_X`` span (1208 → 1008 units, still
+ample clearance). ``BRIDGE_X2`` now equals ``PIER4_X`` rather than
+``KNOTT_PIER_X`` directly. Everything keyed off ``DORM_PIER_X`` (fence,
+brick wall, sidewalk, terrain) follows ``PIER1_X`` automatically. The
+parapet blocks on both outer spans are spaced with
 ``west_margin=east_margin=0`` (see ``bridge.py``) rather than the default
 fixed pier-clearance margin, so the pier-to-block gap and the
 block-to-block gaps come out equal instead of the pier-to-block gap being
@@ -414,12 +422,14 @@ larger.
    * - **Pier 3**
      - ``PIER3_X``
      - 525
-     - Centre-east pier — anchors the Ennis Drive entrance pillars.
+     - Centre-east pier — anchors the Ennis Drive entrance pillars and the
+       real GPS-surveyed "pier3_center_span_e" elevation sample; never moves.
    * - **Pier 4**
      - ``PIER4_X``
-     - 1246
-     - West KH pier — marks the eastern end of the main arch span
-       (``BRIDGE_X2 = KNOTT_PIER_X``).
+     - 1446
+     - East span-2 terminus — marks the eastern end of the outer east arch
+       span. No longer pinned to the real KH west pier (``KNOTT_PIER_X``,
+       1246); ``BRIDGE_X2 = PIER4_X``.
    * - **Pier 5**
      - ``PIER5_X``
      - 2454
