@@ -1004,6 +1004,10 @@ def _build_all():
     # Each pillar position now features a narrow arched pier supporting the deck.
     # Arch openings span most of the bridge N-S width (BRIDGE.y2=113, bridge=226 units)
     # rin = half-width of clear opening; rout = outer radius of arch ring
+    # Pier 5's arch crown is nudged slightly lower than a full-height arch would
+    # otherwise land, so the opening doesn't feel like it's floating right up
+    # against the deck underside.
+    PIER5_LINTEL_GAP = 24
     if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             if px == PIER6_X:
@@ -1083,6 +1087,13 @@ def _build_all():
             # recessed behind them.
             arch_overhang = max(0, max_outer_radius - a_rout)
 
+            # Pier 5's arch crown otherwise lands right at the deck underside.
+            # Shrink the stilt height slightly (lowering the whole arch, crown
+            # included) so the opening sits a bit lower and doesn't look like
+            # it's floating right up against the deck.
+            pier5_lintel_gap = PIER5_LINTEL_GAP if px == PIER5_X else 0
+            a_stilt = max(0, a_stilt - pier5_lintel_gap)
+
             # Ramped plinth: outer piers ramp up on their outward face so players
             # can run up from outside. East piers: high east side; west piers: high west side.
             # No pier sits at x=0, so every pier gets a ramped plinth.
@@ -1099,9 +1110,9 @@ def _build_all():
                     pier_floor_z + BRIDGE_PILLAR_BASE_H,
                 )
 
-            # Add pier structure — BRIDGE_ARCH_X[4] (KNOTT_NE_PIER_X) and the new
-            # mid-span pier get square openings; all other piers get rounded arches.
-            # The west abutment (min(BRIDGE_ARCH_X)) has a solid cement fill
+            # Add pier structure — the new mid-span pier (max(BRIDGE_ARCH_X)) gets a
+            # square opening; every other pier, including Pier 5, gets a rounded
+            # arch. The west abutment (min(BRIDGE_ARCH_X)) has a solid cement fill
             # instead of an open archway, so it gets no cement opening lining.
             pier_recess = (
                 None
@@ -1112,7 +1123,7 @@ def _build_all():
                     Textures.CEMENT,
                 )
             )
-            if px in (BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
+            if px == max(BRIDGE_ARCH_X):
                 # Overhang must reach by2+BRIDGE_PILLAR_OVERHANG to match pillar tops above deck
                 sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
                 BRUSHES.extend(
@@ -1213,7 +1224,7 @@ def _build_all():
             # opening piers get a straight row across the flat lintel area
             # above the opening instead (they have no curve to trace).
             if px != min(BRIDGE_ARCH_X):
-                is_square_pier = px in (BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X))
+                is_square_pier = px == max(BRIDGE_ARCH_X)
                 for face_x, protrude in (
                     (x1, -BRIDGE_PIER_PLATE_D),  # west face
                     (x2, BRIDGE_PIER_PLATE_D),  # east face
