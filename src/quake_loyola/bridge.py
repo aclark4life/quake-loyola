@@ -35,6 +35,7 @@ from .constants import (
     BRIDGE_BASE_LIGHT_Z_LIFT,
     BRIDGE_BLK_H,
     BRIDGE_BLK_HW,
+    BRIDGE_BLK_INSET,
     BRIDGE_BLK_OVH,
     BRIDGE_BLK_PIER_CLEARANCE,
     BRIDGE_CENTER_SPAN_OFFSET,
@@ -694,10 +695,16 @@ def _build_all():
                 + BRIDGE.parapet_h
             ),
             north_brush=lambda cx, sy, bz: _block(
-                cx, sy, BRIDGE.y2 - BRIDGE_PAR_W, BRIDGE.y2 + BRIDGE_BLK_OVH
+                cx,
+                sy,
+                BRIDGE.y2 - BRIDGE_PAR_W + BRIDGE_BLK_INSET,
+                BRIDGE.y2 + BRIDGE_BLK_OVH - BRIDGE_BLK_INSET,
             ),
             south_brush=lambda cx, sy, bz: _block(
-                cx, sy, BRIDGE.y1 - BRIDGE_BLK_OVH, BRIDGE.y1 + BRIDGE_PAR_W
+                cx,
+                sy,
+                BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
+                BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
             ),
             west_margin=west_margin,
             east_margin=east_margin,
@@ -933,10 +940,10 @@ def _build_all():
     BRUSHES.append(
         box(
             cx_walk_e - BRIDGE_BLK_HW,
-            BRIDGE.y1 - BRIDGE_BLK_OVH,
+            BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             cx_walk_e + BRIDGE_BLK_HW,
-            BRIDGE.y1 + BRIDGE_PAR_W,
+            BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
             Textures.CEMENT,
         )
@@ -946,10 +953,10 @@ def _build_all():
     BRUSHES.append(
         box(
             cx_walk_w - BRIDGE_BLK_HW,
-            BRIDGE.y1 - BRIDGE_BLK_OVH,
+            BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             cx_walk_w + BRIDGE_BLK_HW,
-            BRIDGE.y1 + BRIDGE_PAR_W,
+            BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
             Textures.CEMENT,
         )

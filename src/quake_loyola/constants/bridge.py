@@ -20,6 +20,9 @@ BRIDGE_BLK_HW = 32  # half-width (X) of each parapet cap block — widened from 
 # so the block reads as a clearly rectangular slab (64 wide x 36 tall) rather
 # than a near-square one, viewed face-on from the north/south.
 BRIDGE_BLK_OVH = 0
+BRIDGE_BLK_INSET = 4  # inset (Y) of each parapet cap block from both faces of the
+# parapet wall it sits on, so the block reads as visibly thinner than the wall
+# instead of flush/matching its full thickness.
 BRIDGE_BLK_PIER_CLEARANCE = 4
 BRIDGE_BASE_LIGHT_HW = 32  # half-width of the small wall light fixture mounted at
 # the base of each parapet-block wall segment, on the inside (walkway-facing)
