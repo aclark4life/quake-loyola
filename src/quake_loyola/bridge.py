@@ -20,6 +20,13 @@ from .constants import (
     ARCH_SLAB_W,
     ARCH_STILT_H,
     BRIDGE,
+    BRIDGE_ABUTMENT_CEMENT_MAX_H,
+    BRIDGE_ABUTMENT_CEMENT_RIN,
+    BRIDGE_ABUTMENT_CEMENT_X1_OFFSET,
+    BRIDGE_ABUTMENT_CEMENT_X2_OFFSET,
+    BRIDGE_ABUTMENT_RAMP_CAP_H,
+    BRIDGE_ABUTMENT_RAMP_HIGH_H,
+    BRIDGE_ABUTMENT_RAMP_LOW_H,
     BRIDGE_ARCH_X,
     BRIDGE_BASE_LIGHT_BRIGHTNESS,
     BRIDGE_BASE_LIGHT_D,
@@ -1096,8 +1103,19 @@ def _build_all():
 
             # Ramped plinth: outer piers ramp up on their outward face so players
             # can run up from outside. East piers: high east side; west piers: high west side.
-            # No pier sits at x=0, so every pier gets a ramped plinth.
-            if px > 0:
+            # No pier sits at x=0, so every pier gets a ramped plinth. The west
+            # abutment (min(BRIDGE_ARCH_X)) is a solid dead-end (no walkable
+            # archway) that hosts two recessed openings (west teleport, east
+            # cement) instead — it gets the SAME kind of ramp, just taller
+            # (BRIDGE_ABUTMENT_RAMP_HIGH_H/LOW_H) so both openings' floors can
+            # sit on top of it, flush with the pier's true west/east faces
+            # (not inset) and with the cap clearly visible along the whole span.
+            if px == min(BRIDGE_ARCH_X):
+                base_ramp = (
+                    pier_floor_z + BRIDGE_ABUTMENT_RAMP_HIGH_H,
+                    pier_floor_z + BRIDGE_ABUTMENT_RAMP_LOW_H,
+                )
+            elif px > 0:
                 # East of road — ramp slopes up toward east (low at x1, high at x2)
                 base_ramp = (
                     pier_floor_z + BRIDGE_PILLAR_BASE_H,
@@ -1161,7 +1179,7 @@ def _build_all():
                         overhang=arch_overhang,
                         base_h=BRIDGE_PILLAR_BASE_H,
                         base_ramp=base_ramp,
-                        base_cap_h=0
+                        base_cap_h=BRIDGE_ABUTMENT_RAMP_CAP_H
                         if px == min(BRIDGE_ARCH_X)
                         else BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
@@ -1216,47 +1234,47 @@ def _build_all():
                 )
 
             # ── Decorative square cement plates on the pier's east/west faces ──
-            # Applied to the flat end-faces (x=x1 west, x=x2 east) of every
-            # pier except the west abutment (min(BRIDGE_ARCH_X)), which has a
-            # solid cement fill and teleport arch instead of an open archway.
+            # Applied to the flat end-faces (x=x1 west, x=x2 east) of every pier,
+            # including the west abutment (min(BRIDGE_ARCH_X)) — even though its
+            # opening is filled with cement + a teleport arch rather than being a
+            # walkable passage, it still has the same rounded stone arch face as
+            # the other round piers and should carry the same plate ring.
             # Rounded-arch piers get a curved ring of plates tracing the arch
             # curve (voussoir style, radius mid-way between rin/rout); square-
             # opening piers get a straight row across the flat lintel area
             # above the opening instead (they have no curve to trace).
-            if px != min(BRIDGE_ARCH_X):
-                is_square_pier = px == max(BRIDGE_ARCH_X)
-                for face_x, protrude in (
-                    (x1, -BRIDGE_PIER_PLATE_D),  # west face
-                    (x2, BRIDGE_PIER_PLATE_D),  # east face
-                ):
-                    if is_square_pier:
-                        BRUSHES.extend(
-                            tile_face_plates(
-                                face_x,
-                                protrude,
-                                -a_rin,
-                                a_rin,
-                                pier_ceiling_z
-                                - 16,  # matches square_wall's lintel height
-                                pier_ceiling_z,
-                                Textures.CEMENT,
-                                tile=BRIDGE_PIER_PLATE_SIZE,
-                                gap=BRIDGE_PIER_PLATE_GAP,
-                            )
+            is_square_pier = px == max(BRIDGE_ARCH_X)
+            for face_x, protrude in (
+                (x1, -BRIDGE_PIER_PLATE_D),  # west face
+                (x2, BRIDGE_PIER_PLATE_D),  # east face
+            ):
+                if is_square_pier:
+                    BRUSHES.extend(
+                        tile_face_plates(
+                            face_x,
+                            protrude,
+                            -a_rin,
+                            a_rin,
+                            pier_ceiling_z - 16,  # matches square_wall's lintel height
+                            pier_ceiling_z,
+                            Textures.CEMENT,
+                            tile=BRIDGE_PIER_PLATE_SIZE,
+                            gap=BRIDGE_PIER_PLATE_GAP,
                         )
-                    else:
-                        BRUSHES.extend(
-                            arch_plate_ring(
-                                face_x,
-                                protrude,
-                                0.0,
-                                pier_floor_z + a_stilt,
-                                a_rin + 2,
-                                Textures.CEMENT,
-                                tile=BRIDGE_PIER_PLATE_SIZE,
-                                gap=BRIDGE_PIER_PLATE_GAP,
-                            )
+                    )
+                else:
+                    BRUSHES.extend(
+                        arch_plate_ring(
+                            face_x,
+                            protrude,
+                            0.0,
+                            pier_floor_z + a_stilt,
+                            a_rin + 2,
+                            Textures.CEMENT,
+                            tile=BRIDGE_PIER_PLATE_SIZE,
+                            gap=BRIDGE_PIER_PLATE_GAP,
                         )
+                    )
 
             # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
             pier_outer_y = (
@@ -1412,29 +1430,62 @@ def _build_all():
                 )
                 ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
-            # Abutment pier (westernmost): solid cement fill + arch teleport on west face
+            # Abutment pier (westernmost): solid cement fill, with two distinct
+            # openings on opposite faces —
+            #  * WEST face: a hidden arch-shaped teleport (never actually seen —
+            #    it faces away from the bridge into unreachable terrain) that
+            #    whisks the player up onto the deck.
+            #  * EAST face: a purely decorative, solid cement "opening" (no
+            #    teleport) facing into the walkable west-approach span — this
+            #    is the feature players actually walk past and see.
+            # Both openings sit on top of the shared stone base + cement cap
+            # ramp (built generically for every pier, above, via base_ramp/
+            # base_cap_h — tallest at the west face, descending toward the
+            # east) so the stone is flush with the pier's true faces (not
+            # inset) and the cap is visible along the whole span, starting
+            # at the west face. pier_floor_z tracks the real hillside grade
+            # here (see BRIDGE_PIER_GROUND_Z), so neither opening extends
+            # below grade.
             if px == min(BRIDGE_ARCH_X):
-                # Cement fill starts 16 units east of pier face to make room for arch
+                ramp_top_west_z = (
+                    pier_floor_z
+                    + BRIDGE_ABUTMENT_RAMP_HIGH_H
+                    + BRIDGE_ABUTMENT_RAMP_CAP_H
+                )
+                ramp_top_east_z = (
+                    pier_floor_z
+                    + BRIDGE_ABUTMENT_RAMP_LOW_H
+                    + BRIDGE_ABUTMENT_RAMP_CAP_H
+                )
+                # Cement fill leaves room on both faces for their respective
+                # recessed openings, starting above the shared ramp/cap.
                 BRUSHES.append(
                     box(
                         x1 + BRIDGE_PIER_FILL_OFFSET,
                         -a_rin,
-                        FLOOR_Z2,
-                        x2,
+                        ramp_top_east_z,
+                        x2 - BRIDGE_PIER_FILL_OFFSET,
                         a_rin,
                         int(pdeck) - BRIDGE_PIER_FILL_OFFSET,
                         Textures.CEMENT,
                     )
                 )
-                # Arch-shaped teleport flush with the west face (recessed into pier)
+
+                # -- West face: hidden teleport arch (flush, no player-visible
+                # framing needed since this face is never seen), floor raised
+                # to sit on top of the ramp/cap's tall west end. --
+                teleport_floor_z = ramp_top_west_z
                 teleport_stilt_height = (
-                    pier_top_z - FLOOR_Z2 - a_rin - BRIDGE_TELEPORT_ARCH_CLEARANCE
+                    pier_top_z
+                    - teleport_floor_z
+                    - a_rin
+                    - BRIDGE_TELEPORT_ARCH_CLEARANCE
                 )
                 abutment_teleport_brush = arch_fill(
                     x1 + BRIDGE_TELEPORT_ARCH_X1_OFFSET,
                     x1 + BRIDGE_TELEPORT_ARCH_X2_OFFSET,
                     0.0,
-                    FLOOR_Z2,
+                    teleport_floor_z,
                     a_rin,
                     A_SEGS,
                     Textures.TELEPORT,
@@ -1443,6 +1494,29 @@ def _build_all():
                 abutment_teleport_dest_z = (
                     int(pdeck) + BRIDGE_TELEPORT_DEST_Z
                 )  # spawn height above deck
+
+                # -- East face: decorative cement "opening" — inset from the
+                # pier face (not flush) so a stone rim shows around it, sized
+                # down from the pier's own arch opening so it reads as a
+                # modest doorway, floor raised to sit on top of the ramp/
+                # cap's lower east end.
+                cem_rin = BRIDGE_ABUTMENT_CEMENT_RIN
+                cem_floor_z = ramp_top_east_z
+                cem_stilt_h = max(0, BRIDGE_ABUTMENT_CEMENT_MAX_H - cem_rin)
+                cem_x1 = x2 - BRIDGE_ABUTMENT_CEMENT_X1_OFFSET
+                cem_x2 = x2 - BRIDGE_ABUTMENT_CEMENT_X2_OFFSET
+                BRUSHES.extend(
+                    arch_fill(
+                        cem_x1,
+                        cem_x2,
+                        0.0,
+                        cem_floor_z,
+                        cem_rin,
+                        A_SEGS,
+                        Textures.CEMENT,
+                        stilt_h=cem_stilt_h,
+                    )
+                )
 
     # ── Pier 6 — explicit duplicate of Pier 5 (KNOTT_NE_PIER_X) ─────────────────
     # Pier 5 uses square_wall + OUTER_R. Pier 6 is identical but sits in the angled

@@ -103,10 +103,40 @@ BRIDGE_SQ_HW = 8
 BRIDGE_SUPPORT_BEAM_H = 20
 BRIDGE_SUPPORT_HALF_W = 16
 BRIDGE_SUPPORT_PIER_HALF_W = 20
-BRIDGE_TELEPORT_ARCH_CLEARANCE = 8
-BRIDGE_TELEPORT_ARCH_X1_OFFSET = 2
-BRIDGE_TELEPORT_ARCH_X2_OFFSET = 18
+BRIDGE_TELEPORT_ARCH_X1_OFFSET = 2  # inset from the pier's west face — small, this
+# recess is a hidden/secret teleport, not a player-visible feature.
+BRIDGE_TELEPORT_ARCH_X2_OFFSET = 18  # 16-unit slab thickness
+BRIDGE_TELEPORT_ARCH_CLEARANCE = 8  # gap kept between the teleport arch's crown and
+# the underside of the deck above.
 BRIDGE_TELEPORT_DEST_Z = 40
+
+# West-abutment pier (min(BRIDGE_ARCH_X)) plinth: a single stone base + cement cap
+# ramp spans the ENTIRE pier face flush (x1 to x2, no inset) — high at the west
+# face (the "starting point" of the slanted ramp) descending to a lower, but
+# still-visible-thickness, cap at the east face — matching the ramped-plinth
+# style used on every other pier, just taller since this pier hosts two full
+# recessed openings (west teleport, east cement) instead of a walkable archway.
+# Both openings' floors sit on TOP of this shared ramp/cap, so raising the ramp
+# automatically shortens each opening's own visible height.
+BRIDGE_ABUTMENT_RAMP_HIGH_H = 64  # ramp height at the west face (x1)
+BRIDGE_ABUTMENT_RAMP_LOW_H = 24  # ramp height at the east face (x2)
+BRIDGE_ABUTMENT_RAMP_CAP_H = 12  # cap thickness — uniform along the full ramp length
+# (not tapering to 0) so it stays clearly visible everywhere, including at the
+# east/low end.
+
+# East-face decorative "cement opening" on the west-abutment pier: a solid,
+# non-teleporting arch-shaped recess facing into the walkable west approach
+# span — this is the player-visible feature (vs. the hidden west-face
+# teleport arch above).
+BRIDGE_ABUTMENT_CEMENT_X1_OFFSET = 40  # inset of the recess's inner (west) edge from
+# the pier's east face (x2) — together with X2_OFFSET this sets a 32-unit-wide opening.
+BRIDGE_ABUTMENT_CEMENT_X2_OFFSET = 8  # inset of the recess's outer (east) edge from
+# the pier's east face — kept off x2 (not flush) so a stone rim shows around it.
+BRIDGE_ABUTMENT_CEMENT_RIN = 48  # half-width/crown-rise of the visible cement arch —
+# smaller than BRIDGE_PILLAR_OUTER_R's rin (72) so the "opening" reads as a modest
+# doorway rather than spanning nearly the full pier height.
+BRIDGE_ABUTMENT_CEMENT_MAX_H = 72  # total floor(above ramp/cap)-to-crown height of the
+# cement arch.
 BRIDGE_TORCH_CUP_H = 4
 BRIDGE_TORCH_CUP_HW = 5
 BRIDGE_TORCH_POST_H = 16
