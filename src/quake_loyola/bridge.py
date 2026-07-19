@@ -337,19 +337,26 @@ def _build_all():
     # Split across Y into cement-margin / wood / cement-margin strips so a
     # small strip of cement remains visible on each side of the wood-textured
     # underside instead of the whole underside being wood.
-    _dw_y1a, _dw_y1b = (
-        BRIDGE.y1,
-        BRIDGE.y1 + BRIDGE_DECK_EDGE_CEMENT_W,
+    # The parapet walls sit ON TOP of the deck slab, spanning BRIDGE_PAR_W in
+    # from each outer edge — so a texture split at the raw edge (BRIDGE.y1/y2)
+    # is entirely hidden beneath the parapet's footprint and never visible to
+    # a player. The visible edge-accent strip is placed just inside the
+    # parapet's inner face instead, where the walkable surface actually
+    # begins.
+    _dw_y1a = BRIDGE.y1
+    _dw_y1b = BRIDGE.y1 + BRIDGE_PAR_W  # inner face of south parapet
+    _dw_y1c = _dw_y1b + BRIDGE_DECK_EDGE_CEMENT_W  # inner edge of visible strip
+    _dw_y2c = BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_DECK_EDGE_CEMENT_W
+    _dw_y2b = BRIDGE.y2 - BRIDGE_PAR_W  # inner face of north parapet
+    _dw_y2a = BRIDGE.y2
+    _DECK_BANDS = (
+        (_dw_y1a, _dw_y1b, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
+        (_dw_y1b, _dw_y1c, Textures.DECK_EDGE, Textures.GABLE),  # visible edge strip
+        (_dw_y1c, _dw_y2c, Textures.FLOOR1, Textures.GABLE),  # visible walk centre
+        (_dw_y2c, _dw_y2b, Textures.DECK_EDGE, Textures.GABLE),  # visible edge strip
+        (_dw_y2b, _dw_y2a, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
     )
-    _dw_y2a, _dw_y2b = (
-        BRIDGE.y2 - BRIDGE_DECK_EDGE_CEMENT_W,
-        BRIDGE.y2,
-    )
-    for _ys1, _ys2, _tb in (
-        (_dw_y1a, _dw_y1b, Textures.CEMENT),
-        (_dw_y1b, _dw_y2a, Textures.GABLE),
-        (_dw_y2a, _dw_y2b, Textures.CEMENT),
-    ):
+    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -359,7 +366,7 @@ def _build_all():
                 _ys2,
                 BRIDGE_DZ2,
                 Textures.STONE,
-                tt=Textures.FLOOR,
+                tt=_tt,  # deck walking surface — thin edge strip along each side
                 tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
             )
         )
@@ -376,11 +383,7 @@ def _build_all():
         (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
         (MID_PIER_X, DECK_EAST_END_X),
     ]:
-        for _ys1, _ys2, _tb in (
-            (_dw_y1a, _dw_y1b, Textures.CEMENT),
-            (_dw_y1b, _dw_y2a, Textures.GABLE),
-            (_dw_y2a, _dw_y2b, Textures.CEMENT),
-        ):
+        for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
             BRUSHES.append(
                 shear_box_y(
                     seg_x1,
@@ -392,7 +395,7 @@ def _build_all():
                     east_y_shift(seg_x1),
                     east_y_shift(seg_x2),
                     Textures.STONE,
-                    tt=Textures.FLOOR,
+                    tt=_tt,  # deck walking surface — thin edge strip along each side
                     tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
                 )
             )
@@ -441,11 +444,7 @@ def _build_all():
 
     # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
     for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
-        for _ys1, _ys2, _tb in (
-            (_dw_y1a, _dw_y1b, Textures.CEMENT),
-            (_dw_y1b, _dw_y2a, Textures.GABLE),
-            (_dw_y2a, _dw_y2b, Textures.CEMENT),
-        ):
+        for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
             BRUSHES.append(
                 ramp_slab(
                     sx1,
@@ -457,16 +456,16 @@ def _build_all():
                     pb1,
                     pb2,
                     Textures.STONE,
-                    tt=Textures.FLOOR,
+                    tt=_tt,  # deck walking surface — thin edge strip along each side
                     tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
                 )
             )
 
     # Cross-strip decals (see note above): one func_illusionary brush per
     # CROSS_STRIP_X position, spanning the same Y-extent as the longitudinal
-    # wood band (_dw_y1b.._dw_y2a — stopping short of the true edge, same as
-    # the rest of the underside), hung BRIDGE_DECK_CROSS_STRIP_DROP units
-    # below the structural deck bottom at that X so it reads as flush without
+    # wood band (_dw_y1b.._dw_y2b — stopping short of the parapet-hidden
+    # edges, same as the rest of the underside), hung BRIDGE_DECK_CROSS_STRIP_DROP
+    # units below the structural deck bottom at that X so it reads as flush without
     # being exactly coplanar with (and z-fighting against) the structural slab.
     _cross_strip_brushes = []
     for _cx in CROSS_STRIP_X:
@@ -478,7 +477,7 @@ def _build_all():
                 _dw_y1b,
                 _strip_z1,
                 _cx + BRIDGE_DECK_CROSS_STRIP_HW,
-                _dw_y2a,
+                _dw_y2b,
                 _strip_z2,
                 Textures.GABLE,
                 tb_params="0 0 90 1 1",

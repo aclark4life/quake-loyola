@@ -36,6 +36,8 @@ class Textures:
     )
     ENNIS_PILLAR = "stn_f14_wht1"  # from makkon_stone.wad
     FLOOR = "sfloor3_2"
+    FLOOR1 = "floor01_5lrg"  # from ad.wad — bridge deck walking surface
+    DECK_EDGE = "dk3_floor1a"  # from ad.wad — thin edge strip along the deck walk
     FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
     HINT = "hint"

@@ -8,7 +8,7 @@ from quake_loyola import entities, knott_terrain, streets
 # deliberately (and review the .map diff) whenever the geometry changes.
 EXPECTED_BRUSHES = 1027
 EXPECTED_ENTITIES = 105
-EXPECTED_MD5 = "0f7677c7954fd79a5a1d37e055b7e983"
+EXPECTED_MD5 = "30752d5786be69bc171819cdb3c11342"
 
 
 class MapRegressionTests(unittest.TestCase):
