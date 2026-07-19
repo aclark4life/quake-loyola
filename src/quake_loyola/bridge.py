@@ -1415,6 +1415,39 @@ def _build_all():
                 )
             )
 
+            # Matching seam on the west-facing end of each post — visible to
+            # a player walking the deck (approaching along the bridge), unlike
+            # a true north/south exterior face which only faces out over the
+            # void. Y-centred on the wall's exterior plane (by2/by1, the
+            # "aligns with the wall exteriors" position), protruding out
+            # past the post's west face (px - BRIDGE_PILLAR_HW) by
+            # BRIDGE_PILLAR_SEAM_D. Runs the full post height, from the deck
+            # up to the cap slab (pdeck to ppil), continuing down through the
+            # wall's own height so it reads as one continuous seam rather
+            # than stopping abruptly at the wall top.
+            BRUSHES.append(
+                box(
+                    px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                    by2 - BRIDGE_PILLAR_SEAM_HW,
+                    pdeck,
+                    px - BRIDGE_PILLAR_HW,
+                    by2 + BRIDGE_PILLAR_SEAM_HW,
+                    ppil,
+                    Textures.CEMENT,
+                )
+            )
+            BRUSHES.append(
+                box(
+                    px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                    by1 - BRIDGE_PILLAR_SEAM_HW,
+                    pdeck,
+                    px - BRIDGE_PILLAR_HW,
+                    by1 + BRIDGE_PILLAR_SEAM_HW,
+                    ppil,
+                    Textures.CEMENT,
+                )
+            )
+
             # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
             BRUSHES.append(
@@ -1951,6 +1984,42 @@ def _build_all():
                 ppil,
                 shear_at(px - BRIDGE_PILLAR_SEAM_HW),
                 shear_at(px + BRIDGE_PILLAR_SEAM_HW),
+                Textures.CEMENT,
+            )
+        )
+        # Matching seam on the west-facing end of each post — visible to a
+        # player walking the deck (approaching along the bridge), unlike a
+        # true north/south exterior face which only faces out over the void.
+        # Y-centred on the wall's exterior plane (by2/by1, the "aligns with
+        # the wall exteriors" position), protruding out past the post's west
+        # face (px - BRIDGE_PILLAR_HW) by BRIDGE_PILLAR_SEAM_D (see main pier
+        # loop's comment above). Runs from the deck (pdeck) up to the cap
+        # slab (ppil), continuing down through the wall's own height so it
+        # reads as one continuous seam rather than stopping abruptly at the
+        # wall top.
+        BRUSHES.append(
+            shear_box_y(
+                px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                by2 - BRIDGE_PILLAR_SEAM_HW,
+                pdeck,
+                px - BRIDGE_PILLAR_HW,
+                by2 + BRIDGE_PILLAR_SEAM_HW,
+                ppil,
+                shear_at(px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D),
+                shear_at(px - BRIDGE_PILLAR_HW),
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            shear_box_y(
+                px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                by1 - BRIDGE_PILLAR_SEAM_HW,
+                pdeck,
+                px - BRIDGE_PILLAR_HW,
+                by1 + BRIDGE_PILLAR_SEAM_HW,
+                ppil,
+                shear_at(px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D),
+                shear_at(px - BRIDGE_PILLAR_HW),
                 Textures.CEMENT,
             )
         )
