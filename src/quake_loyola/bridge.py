@@ -82,6 +82,8 @@ from .constants import (
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_PILLAR_PYR_H,
     BRIDGE_PILLAR_PYR_W,
+    BRIDGE_PILLAR_SEAM_D,
+    BRIDGE_PILLAR_SEAM_HW,
     BRIDGE_SEG_W,
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
@@ -1381,6 +1383,38 @@ def _build_all():
                 )
             )
 
+            # Thin cement mortar-seam strip down the middle of each pillar
+            # post's walkway-facing (inside) face — as if the stone posts
+            # were assembled from two halves around a cement core, only
+            # visible from the walkway. A separate protruding decal brush
+            # (not a split of the post's own single brush) to avoid the
+            # qbsp portal-clipping bug documented above the deck-bottom
+            # cross-strip code.
+            north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
+            BRUSHES.append(
+                box(
+                    px - BRIDGE_PILLAR_SEAM_HW,
+                    north_inside_y - BRIDGE_PILLAR_SEAM_D,
+                    pdeck,
+                    px + BRIDGE_PILLAR_SEAM_HW,
+                    north_inside_y,
+                    ppil,
+                    Textures.CEMENT,
+                )
+            )
+            south_inside_y = by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG
+            BRUSHES.append(
+                box(
+                    px - BRIDGE_PILLAR_SEAM_HW,
+                    south_inside_y,
+                    pdeck,
+                    px + BRIDGE_PILLAR_SEAM_HW,
+                    south_inside_y + BRIDGE_PILLAR_SEAM_D,
+                    ppil,
+                    Textures.CEMENT,
+                )
+            )
+
             # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
             BRUSHES.append(
@@ -1887,6 +1921,37 @@ def _build_all():
                 pdeck,
                 ppil,
                 Textures.PILLAR,
+            )
+        )
+        # Thin cement mortar-seam strip down the middle of each pillar
+        # post's walkway-facing (inside) face (see the main pier loop's
+        # comment above for why this is a separate protruding decal brush).
+        north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
+        BRUSHES.append(
+            shear_box_y(
+                px - BRIDGE_PILLAR_SEAM_HW,
+                north_inside_y - BRIDGE_PILLAR_SEAM_D,
+                pdeck,
+                px + BRIDGE_PILLAR_SEAM_HW,
+                north_inside_y,
+                ppil,
+                shear_at(px - BRIDGE_PILLAR_SEAM_HW),
+                shear_at(px + BRIDGE_PILLAR_SEAM_HW),
+                Textures.CEMENT,
+            )
+        )
+        south_inside_y = by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG
+        BRUSHES.append(
+            shear_box_y(
+                px - BRIDGE_PILLAR_SEAM_HW,
+                south_inside_y,
+                pdeck,
+                px + BRIDGE_PILLAR_SEAM_HW,
+                south_inside_y + BRIDGE_PILLAR_SEAM_D,
+                ppil,
+                shear_at(px - BRIDGE_PILLAR_SEAM_HW),
+                shear_at(px + BRIDGE_PILLAR_SEAM_HW),
+                Textures.CEMENT,
             )
         )
         # Fill gap between pier top and deck in the overhang zone

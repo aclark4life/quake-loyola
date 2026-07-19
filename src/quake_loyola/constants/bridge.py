@@ -98,6 +98,10 @@ BRIDGE_PILLAR_INNER_R = (144, 84)  # rout trimmed from 160 to 144 — a small ~1
 BRIDGE_PILLAR_OUTER_R = (126, 72)  # rout trimmed from 140 to 126, same ~10% cut as
 # BRIDGE_PILLAR_INNER_R above; rin unchanged.
 BRIDGE_PILLAR_OVERHANG = 16
+BRIDGE_PILLAR_SEAM_HW = 3  # half-width (X) of the thin cement mortar-seam strip
+# down the middle of each above-deck pillar post's walkway-facing (inside) face
+BRIDGE_PILLAR_SEAM_D = 1  # protrusion of the seam strip out from that face,
+# toward the walkway, so it's visible while walking past instead of flush
 # Decorative square cement plates on the interior (facing the opposite pillar
 # across the opening) and exterior (facing outward) walls of each arch/square
 # pier. See bridge.py "Pillar posts" — plates protrude slightly from the flat
