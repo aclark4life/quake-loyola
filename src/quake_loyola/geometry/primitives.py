@@ -40,6 +40,11 @@ def box(
         y1, y2 = y2, y1
     if z1 > z2:
         z1, z2 = z2, z1
+    if x1 == x2 or y1 == y2 or z1 == z2:
+        raise ValueError(
+            f"box: degenerate (zero-thickness) brush "
+            f"({x1}, {y1}, {z1}) - ({x2}, {y2}, {z2})"
+        )
     return Brush(
         [
             Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw),
@@ -134,6 +139,8 @@ def clip_poly_to_rect(poly, x1, y1, x2, y2):
 
 
 def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
+    if n < 3:
+        raise ValueError(f"radial_fan_fills: n must be >= 3, got {n}")
     sx1, sy1, sx2, sy2 = cx - r, cy - r, cx + r, cy + r
     verts = []
     box_pts = []

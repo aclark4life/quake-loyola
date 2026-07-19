@@ -20,10 +20,6 @@ from .constants import (
     ARCH_SLAB_W,
     ARCH_STILT_H,
     BRIDGE,
-    BRIDGE_ACCESS_WALK_CENTER_X,
-    BRIDGE_ACCESS_WALK_HALF_W,
-    BRIDGE_ACCESS_WALK_NORTH_OFFSET,
-    BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
     BRIDGE_BASE_LIGHT_BRIGHTNESS,
     BRIDGE_BASE_LIGHT_D,
@@ -79,9 +75,6 @@ from .constants import (
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
     BRIDGE_SQ_HW,
-    BRIDGE_SUPPORT_BEAM_H,
-    BRIDGE_SUPPORT_HALF_W,
-    BRIDGE_SUPPORT_PIER_HALF_W,
     BRIDGE_TELEPORT_ARCH_CLEARANCE,
     BRIDGE_TELEPORT_ARCH_X1_OFFSET,
     BRIDGE_TELEPORT_ARCH_X2_OFFSET,
@@ -93,23 +86,17 @@ from .constants import (
     BRIDGE_TUBE_GAP,
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
-    CHARLES_WALK_H,
-    ENNIS_SW_EDGE,
     FASCIA_FONT,
     FLOOR_Z1,
     FLOOR_Z2,
-    KNOTT,
-    KNOTT_ENABLED_WALKWAY,
-    KNOTT_GROUND_Z,
     PIER2_X,
     PIER3_X,
     PIER4_X,
+    PIER5_X,
     PIER6_X,
     STREET_SURFACE_T,
     WALK_X1,
     WALK_X2,
-    WALK_ZT1,
-    WALK_ZT2,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
@@ -132,7 +119,6 @@ from .geometry import (
     ent,
     pyramid,
     ramp_slab,
-    ramp_slab_y,
     shear_box_y,
     shear_pyramid_y,
     square_wall,
@@ -153,20 +139,93 @@ def _section_x_ranges():
     }
 
 
-def _filter_sections(brushes, entities, enabled_names):
-    """Keep only geometry overlapping one of the named sections' pier-to-pier
-    spans (each with a small margin to include the bounding piers). Catches
-    brushes already wrapped in func_detail entities (the bridge
-    superstructure) as well as worldspawn brushes (e.g. hint brushes, which
-    are dropped entirely — they're only useful when the full bridge exists).
-    """
-    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+# West-to-east chain order, matching _section_x_ranges' pier-to-pier layout.
+# Used to resolve which of two adjacent sections owns their shared boundary
+# pier (see _boundary_owner/_section_accept_ranges) so every pier is built by
+# exactly one section — never duplicated, never dropped — however the
+# individual section flags are combined.
+_SECTION_ORDER = [
+    "west_approach",
+    "center_span",
+    "east_approach",
+    "kh_span",
+    "east_ext",
+]
+
+
+def _boundary_owner(left_name, right_name, enabled_names):
+    """Return which of two adjacent sections sharing an internal boundary
+    pier should build it. center_span is always preferred (it's the anchor
+    every other section connects to); for boundaries not touching
+    center_span, the section closer to center_span (the left one, since our
+    chain only extends outward to the east past center_span) is preferred.
+    Falls back to whichever of the two IS enabled if the preferred owner
+    isn't, so a shared pier is never silently dropped just because its
+    usual owner is currently disabled."""
+    if right_name == "center_span":
+        preferred, fallback = right_name, left_name
+    elif left_name == "center_span":
+        preferred, fallback = left_name, right_name
+    else:
+        preferred, fallback = left_name, right_name
+    return preferred if preferred in enabled_names else fallback
+
+
+def _section_accept_ranges(enabled_names, margin):
+    """Return {section_name: (x1, x2)} acceptance windows, one per section in
+    _SECTION_ORDER, each extended by `margin` only on the sides where that
+    section owns the bounding pier (per _boundary_owner) and pulled back by
+    `margin` on sides owned by a neighbor. This makes the windows an exact,
+    non-overlapping partition of the bridge's X extent — every pier
+    (including internal boundary piers shared between two sections) is
+    claimed by exactly one currently-enabled section, so filtering never
+    duplicates or drops pier geometry, whichever sections are enabled."""
     section_piers = _section_x_ranges()
-    enabled_spans = [
-        (px1 - margin, px2 + margin)
-        for name, (px1, px2) in section_piers.items()
-        if name in enabled_names
-    ]
+    ranges = {}
+    for idx, name in enumerate(_SECTION_ORDER):
+        px1, px2 = section_piers[name]
+        if idx == 0:
+            ax1 = px1 - margin  # outer terminus (Pier 1) — always owned
+        else:
+            owner = _boundary_owner(_SECTION_ORDER[idx - 1], name, enabled_names)
+            # Owned: extend outward by margin to capture the full pier
+            # brush width. Not owned: use the raw pier X (no pull-back) —
+            # this still excludes the neighbor's pier brush (which extends
+            # margin past px1 into *this* section) while leaving the full
+            # deck/parapet run, which starts exactly at px1, untouched.
+            ax1 = px1 - margin if owner == name else px1
+        if idx == len(_SECTION_ORDER) - 1:
+            ax2 = px2 + margin  # outer terminus (last pier) — always owned
+        else:
+            owner = _boundary_owner(name, _SECTION_ORDER[idx + 1], enabled_names)
+            ax2 = px2 + margin if owner == name else px2
+        ranges[name] = (ax1, ax2)
+    return ranges
+
+
+def _filter_sections(brushes, entities, enabled_names, extract_names=None):
+    """Keep only geometry overlapping one of the named sections' pier-to-pier
+    spans (each with a small margin to include the bounding piers — see
+    _section_accept_ranges). Catches brushes already wrapped in func_detail
+    entities (the bridge superstructure) as well as worldspawn brushes (e.g.
+    hint brushes, which are dropped entirely — they're only useful when the
+    full bridge exists).
+
+    `enabled_names` is the full set of currently-enabled sections, used to
+    resolve shared-boundary-pier ownership consistently even when only one
+    section's geometry is being extracted (see `extract_names`).
+    `extract_names`, if given, restricts the returned geometry to this
+    subset of `enabled_names` — e.g. _shift_center_span() extracts one
+    section at a time (to translate it independently) while still passing
+    the full enabled_names so ownership resolves the same way it would for
+    a single combined call. Defaults to `enabled_names` (i.e. return
+    everything enabled).
+    """
+    if extract_names is None:
+        extract_names = enabled_names
+    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+    accept_ranges = _section_accept_ranges(enabled_names, margin)
+    enabled_spans = [accept_ranges[name] for name in extract_names]
 
     def _in_any_span(b):
         xs = [p[0] for f in b.faces for p in (f.p1, f.p2, f.p3)]
@@ -761,6 +820,14 @@ def _build_all():
         west_margin=0,
         east_margin=0,
     )
+    add_parapet_base_lights(
+        BRIDGE.x2,
+        BRIDGE_ARCH_X[4],
+        3,
+        west_margin=BRIDGE_BLK_HW + 8,
+        n_south=0,
+        y_shift_fn=east_y_shift,
+    )
 
     add_parapet_squares(
         BRIDGE_ARCH_X[0],
@@ -1092,14 +1159,20 @@ def _build_all():
                     )
                 )
 
-            if px in (PIER2_X, PIER3_X, PIER4_X) and BRIDGE_CENTER_SPAN_OFFSET != (
+            if px in (
+                PIER2_X,
+                PIER3_X,
+                PIER4_X,
+                PIER5_X,
+            ) and BRIDGE_CENTER_SPAN_OFFSET != (
                 0.0,
                 0.0,
                 0.0,
             ):
-                # The centre span (and, since west_approach/east_approach now
-                # ride along with it as one rigid assembly, Pier 4 at its east
-                # end too) has been shifted away from the real-elevation
+                # The centre span (and, since every other currently-enabled
+                # section now rides along with it as one rigid assembly —
+                # see _shift_center_span — every pier from Pier 4 through
+                # Pier 5 too) has been shifted away from the real-elevation
                 # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
                 # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
                 # itself (which would drag the visible base plinth/cap down
@@ -1887,189 +1960,6 @@ def _build_all():
         )
     )
 
-    # ════════════════════════════════════════════════════════════════════════════════
-    # WALKWAY — flat bridge from south edge to building 2nd floor entrance
-    # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; flat at WALK_ZT1 = WALK_ZT2
-    # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_ENABLED_WALKWAY:
-        wk_zb1 = WALK_ZT1 - KNOTT.wall_t  # slab bottom at bridge end
-        wk_zb2 = WALK_ZT2 - KNOTT.wall_t  # slab bottom at building end
-        BRUSHES.append(
-            ramp_slab_y(
-                WALK_X1,
-                WALK_X2,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                WALK_ZT1,
-                WALK_ZT2,
-                Textures.CEMENT,
-                tt=Textures.FLOOR,
-            )
-        )
-        # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
-        DETAIL_BRUSHES.append(
-            ramp_slab_y(
-                WALK_X1 - BRIDGE.walk_wall,
-                WALK_X1,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                WALK_ZT1 + BRIDGE.parapet_h,
-                WALK_ZT2 + BRIDGE.parapet_h,
-                Textures.CEMENT,
-            )
-        )
-        DETAIL_BRUSHES.append(
-            ramp_slab_y(
-                WALK_X2,
-                WALK_X2 + BRIDGE.walk_wall,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                WALK_ZT1 + BRIDGE.parapet_h,
-                WALK_ZT2 + BRIDGE.parapet_h,
-                Textures.CEMENT,
-            )
-        )
-        # Handrail tubes along walkway sides, centred in the wall thickness
-        for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-            tube_base_z = WALK_ZT1 + BRIDGE.parapet_h + tube_z_offset
-            ww_cx = BRIDGE.walk_wall // 2
-            DETAIL_BRUSHES.append(
-                box(
-                    WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
-                    KNOTT.y2,
-                    tube_base_z,
-                    WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
-                    BRIDGE.y1,
-                    tube_base_z + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
-            )
-            DETAIL_BRUSHES.append(
-                box(
-                    WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
-                    KNOTT.y2,
-                    tube_base_z,
-                    WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
-                    BRIDGE.y1,
-                    tube_base_z + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
-            )
-
-    # ════════════════════════════════════════════════════════════════════════════════
-    # ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KNOTT_GROUND_Z),
-    # running alongside Pier 5 (west face).  Connects Knott Hall north face to the
-    # bridge south edge, then wraps east via a short E-W ramp to the back-road west
-    # sidewalk.  Provides ground-level access around Pier 5 without steps.
-    # Spans Y=KNOTT.y2..BRIDGE.y1 (KH north face → bridge south edge).
-    # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_ENABLED_WALKWAY:
-        east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
-        east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
-        east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
-        east_walk_y2 = (
-            BRIDGE.y2
-            + BRIDGE_PILLAR_OVERHANG
-            + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
-            + BRIDGE_ACCESS_WALK_NORTH_OFFSET
-        )  # north anchor: ramp moved 80 units north
-        terrain_z2 = int(
-            KNOTT_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_y2 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        )
-        # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KNOTT.x2
-        east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
-        east_walk_ext_y2 = east_walk_y2
-        extension_terrain_z1 = int(
-            KNOTT_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_ext_y1 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        )
-        extension_terrain_z2 = terrain_z2
-        extension_terrain_z_west = (
-            extension_terrain_z1 + extension_terrain_z2
-        ) // 2  # Z at west end (N-S path side)
-        DETAIL_BRUSHES.append(
-            ramp_slab(
-                east_walk_x2,
-                KNOTT.x2,
-                east_walk_ext_y1,
-                east_walk_ext_y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                extension_terrain_z_west,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
-                tt=Textures.FLOOR,
-            )
-        )
-
-    # ════════════════════════════════════════════════════════════════════════════════
-    # WALKWAY BENT — cement cap beam + 5 drop piers under the south edge of the bridge
-    # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
-    # visible under the KH bridge approach (ref: bridge01).
-    # ════════════════════════════════════════════════════════════════════════════════
-    if KNOTT_ENABLED_WALKWAY:
-        # Position just under the south edge of the bridge deck, shifted north
-        # so the beam sits fully under the deck (south face flush with deck edge)
-        support_y_center = (
-            BRIDGE.y1 + BRIDGE_SUPPORT_HALF_W
-        )  # flush with south deck edge
-        support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
-        support_y1 = support_y_center - support_half_width
-        support_y2 = support_y_center + support_half_width
-        # Beam sits just below the walkway slab bottom
-        beam_top_z = WALK_ZT1 - KNOTT.wall_t  # bottom of walkway slab at bridge end
-        beam_height = BRIDGE_SUPPORT_BEAM_H
-        beam_bottom_z = beam_top_z - beam_height
-        # Span between the two bridge arch piers flanking the walkway (east span)
-        beam_x1 = BRIDGE_ARCH_X[3]
-        beam_x2 = BRIDGE_ARCH_X[4]
-        # Horizontal crossbeam
-        DETAIL_BRUSHES.append(
-            box(
-                beam_x1,
-                support_y1,
-                beam_bottom_z,
-                beam_x2,
-                support_y2,
-                beam_top_z,
-                Textures.CEMENT,
-            )
-        )
-        # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
-        rail_x1 = WALK_X1 - BRIDGE.walk_wall  # west rail outer edge
-        rail_x2 = WALK_X2 + BRIDGE.walk_wall  # east rail outer edge
-        west_support_piers = [
-            int(beam_x1 + (rail_x1 - beam_x1) * f) for f in (0.28, 0.63, 0.93)
-        ]
-        east_support_piers = [
-            int(rail_x2 + (beam_x2 - rail_x2) * f) for f in (0.0, 0.45)
-        ]
-        support_pier_xs = west_support_piers + east_support_piers
-        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
-        for pier_x in support_pier_xs:
-            DETAIL_BRUSHES.append(
-                box(
-                    pier_x - support_pier_half_width,
-                    support_y1,
-                    FLOOR_Z2,
-                    pier_x + support_pier_half_width,
-                    support_y2,
-                    beam_bottom_z,
-                    Textures.CEMENT,
-                )
-            )
-
     if "abutment_teleport_brush" in locals():
         ENTITIES.append(
             ent(
@@ -2213,53 +2103,37 @@ def build():
 
 
 def _shift_center_span(brushes, entities, enabled_names, offset):
-    """Translate the centre span plus any enabled approach spans adjacent to
-    it — west_approach and east_approach — within a build() result by
-    `offset`, as one rigid unit (piers included), leaving unrelated sections
-    (kh_span, east_ext) untouched.
+    """Translate the centre span plus every other currently-enabled section
+    within a build() result by `offset`, as one rigid unit (piers included).
+    The whole bridge is one continuous chain of pier-to-pier sections, so
+    once the centre span moves, every enabled section on either side of it
+    must move with it to stay connected at their shared piers — otherwise
+    whichever section is left behind ends up detached from (and, since the
+    offset here is +Y/+Z, visibly south of and below) the pier it's
+    supposed to meet.
 
-    Section spans are filtered independently with a margin padding each
-    side to include their bounding piers (see _filter_sections). That means
-    a pier shared between center_span and a neighboring section (e.g. Pier 2
-    between west_approach and center_span) can satisfy both sections'
-    filters. Filtering "center_span" and the neighbor separately therefore
-    picks up that shared brush geometry twice — once shifted (as part of
-    the center span) and once at its original position (as part of the
-    neighbor) — unless explicitly deduped. Dedupe by brush identity here,
-    keeping the shifted (center-span) copy, since the offset is meant to
-    move the whole assembly, including its own bounding piers.
+    _filter_sections()/_section_accept_ranges() now partition the bridge's
+    piers exclusively — each internal boundary pier is claimed by exactly
+    one currently-enabled section — so extracting each section's geometry
+    one at a time via `extract_names` (while still passing the *full*
+    enabled_names for consistent ownership resolution) can no longer double
+    -count a shared pier; no manual de-dup step is needed.
     """
-    span_b, span_e = _filter_sections(brushes, entities, ["center_span"])
-
-    span_brush_ids = {id(b) for b in span_b}
-    for e in span_e:
-        span_brush_ids.update(id(b) for b in e.brushes)
-
-    def _dedupe(sect_b, sect_e):
-        sect_b = [b for b in sect_b if id(b) not in span_brush_ids]
-        deduped_e = []
-        for e in sect_e:
-            if not e.brushes:
-                deduped_e.append(e)
-                continue
-            kept = [b for b in e.brushes if id(b) not in span_brush_ids]
-            if kept:
-                deduped_e.append(brush_ent(e.classname, kept, **e.fields))
-        return sect_b, deduped_e
-
     dx, dy, dz = offset
-    SHIFT_WITH_CENTER = {"west_approach", "east_approach"}
     other_names = [n for n in enabled_names if n != "center_span"]
     result_b, result_e = [], []
     for name in other_names:
-        sect_b, sect_e = _filter_sections(brushes, entities, [name])
-        sect_b, sect_e = _dedupe(sect_b, sect_e)
-        if name in SHIFT_WITH_CENTER:
-            sect_b = [b.translated(dx, dy, dz) for b in sect_b]
-            sect_e = [e.translated(dx, dy, dz) for e in sect_e]
+        sect_b, sect_e = _filter_sections(
+            brushes, entities, enabled_names, extract_names=[name]
+        )
+        sect_b = [b.translated(dx, dy, dz) for b in sect_b]
+        sect_e = [e.translated(dx, dy, dz) for e in sect_e]
         result_b.extend(sect_b)
         result_e.extend(sect_e)
 
+    span_b, span_e = _filter_sections(
+        brushes, entities, enabled_names, extract_names=["center_span"]
+    )
     span_b = [b.translated(dx, dy, dz) for b in span_b]
     span_e = [e.translated(dx, dy, dz) for e in span_e]
     return result_b + span_b, result_e + span_e

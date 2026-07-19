@@ -80,7 +80,7 @@ from .constants import (
     KNOTT_DRIVEWAY_ES_X2,
     KNOTT_DRIVEWAY_EXT_Y2,
     KNOTT_DRIVEWAY_JCX_E,
-    KNOTT_DRIVEWAY_JCX_W,
+    KNOTT_DRIVEWAY_JCX_X1,
     KNOTT_DRIVEWAY_JCY,
     KNOTT_DRIVEWAY_RD_X1,
     KNOTT_DRIVEWAY_RD_X2,
@@ -3040,11 +3040,11 @@ def build():
             t0, t1 = math.radians(a0), math.radians(a1)
             BRUSHES.append(
                 tri_prism(
-                    KNOTT_DRIVEWAY_JCX_W,
+                    KNOTT_DRIVEWAY_JCX_X1,
                     KNOTT_DRIVEWAY_EXT_Y2,
-                    KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t0),
+                    KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t0),
                     KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t0),
-                    KNOTT_DRIVEWAY_JCX_W + _r_inner * math.cos(t1),
+                    KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t1),
                     KNOTT_DRIVEWAY_EXT_Y2 + _r_inner * math.sin(t1),
                     FLOOR_Z2,
                     FLOOR_Z2 + CHARLES_WALK_H,
@@ -3053,7 +3053,7 @@ def build():
             )
             BRUSHES.append(
                 curb_seg(
-                    KNOTT_DRIVEWAY_JCX_W,
+                    KNOTT_DRIVEWAY_JCX_X1,
                     KNOTT_DRIVEWAY_EXT_Y2,
                     FLOOR_Z2,
                     FLOOR_Z2 + CHARLES_WALK_H,

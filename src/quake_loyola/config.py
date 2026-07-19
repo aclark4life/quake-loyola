@@ -47,7 +47,7 @@ DEFAULTS: dict[str, bool] = {
     "BRIDGE_ENABLED_SPAN_WEST_APPROACH": True,
     "BRIDGE_ENABLED_SPAN_CENTER": True,
     "BRIDGE_ENABLED_SPAN_EAST_APPROACH": True,
-    "BRIDGE_ENABLED_SPAN_KH": False,
+    "BRIDGE_ENABLED_SPAN_KH": True,
     "BRIDGE_ENABLED_SPAN_EAST_EXT": False,
     "STREETS_ENABLED_DETAILS": True,
     "WEST_CAMPUS_ENABLED": False,
@@ -75,7 +75,10 @@ DEFAULTS: dict[str, bool] = {
     "KNOTT_ENABLED_EXTERIOR": True,  # constants/knott.py
     "KNOTT_ENABLED_INTERIOR": False,  # constants/knott.py
     "KNOTT_ENABLED_MONSTERS": False,  # constants/knott.py
-    "KNOTT_ENABLED_WALKWAY": True,  # constants/knott.py
+    # Off by default — the KH pedestrian walkway/sidewalk/support bent are
+    # opt-in extras layered on top of the KH terrain, not part of the core
+    # map; enable explicitly with `ql conf set KNOTT_ENABLED_WALKWAY true`.
+    "KNOTT_ENABLED_WALKWAY": False,  # constants/knott.py
     "BASEMENT_ENABLED": True,  # constants/derived.py
 }
 
@@ -145,6 +148,8 @@ def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
     flags[name] = value
     raw["flags"] = flags
     _write_toml(path, raw)
+    if path == CONFIG_PATH:
+        FLAGS[name] = value
 
 
 def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
@@ -155,6 +160,8 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     build[name] = value
     raw["build"] = build
     _write_toml(path, raw)
+    if path == CONFIG_PATH:
+        BUILD[name] = value
 
 
 def reset(path: Path = CONFIG_PATH) -> bool:

@@ -23,6 +23,8 @@ def tile_grid_origins(width, height, tile=34, gap=3):
 
 
 def tile_face_plates(x_face, thickness, y1, y2, z1, z2, tex, tile=34, gap=3):
+    if thickness == 0:
+        raise ValueError("tile_face_plates: thickness must be non-zero")
     x1v, x2v = (
         (x_face, x_face + thickness) if thickness >= 0 else (x_face + thickness, x_face)
     )
@@ -140,8 +142,9 @@ def square_wall(
             )
         )
     else:
-        brushes.append(box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex))
-        brushes.append(box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex))
+        if ext > open_hw:
+            brushes.append(box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex))
+            brushes.append(box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex))
         brushes.append(
             box(x1, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
         )
@@ -193,6 +196,8 @@ def arch_wall(
     recess=None,
 ):
     stilt_h = rin if stilt_h is None else stilt_h
+    if segs <= 0:
+        raise ValueError(f"arch_wall: segs must be > 0, got {segs}")
     sprz, seg = floor_z + stilt_h, 180.0 / segs
     brushes, pillar_top = [], sprz if freestanding else ceil_z
     if not freestanding:
@@ -311,6 +316,8 @@ def arch_wall(
 def arch_wall_y(
     y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, xc=0.0
 ):
+    if segs <= 0:
+        raise ValueError(f"arch_wall_y: segs must be > 0, got {segs}")
     stilt_h = rin if stilt_h is None else stilt_h
     sprz, seg = floor_z + stilt_h, 180.0 / segs
     brushes = [
@@ -327,6 +334,8 @@ def arch_wall_y(
 def gable_slats(
     bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=24, gap=2, min_w=6
 ):
+    if n <= 0:
+        raise ValueError(f"gable_slats: n must be > 0, got {n}")
     y0, y1 = sorted((yface, yface + depth))
     denom = ridge_z - (eave_z + slab_t)
     if denom == 0:
@@ -639,6 +648,8 @@ def win_frame_ywall(
 
 
 def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
+    if segs <= 0:
+        raise ValueError(f"arch_fill: segs must be > 0, got {segs}")
     stilt_h = rin if stilt_h is None else stilt_h
     sprz, seg, brushes = floor_z + stilt_h, 180.0 / segs, []
     brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, sprz, tex))
