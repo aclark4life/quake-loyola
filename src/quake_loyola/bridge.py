@@ -1451,9 +1451,12 @@ def _build_all():
                     Textures.CEMENT,
                 )
             )
-            # Torch bases above pyramid apex — narrow post + wide cup
+            # Torch bases above pyramid apex — narrow post + wide cup.
+            # Piers 2/3/5 (PIER2_X/PIER3_X/PIER5_X) skip these: they don't
+            # exist in real life, unlike the other piers' torches.
             pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
-            for torch_center_y in [cy_n, cy_s]:
+            torch_ys = [] if px in (PIER2_X, PIER3_X, PIER5_X) else [cy_n, cy_s]
+            for torch_center_y in torch_ys:
                 # Narrow stone post (6x6) rising from pyramid tip
                 BRUSHES.append(
                     box(

@@ -16,7 +16,9 @@ BRIDGE_ACCESS_WALK_HALF_W = 32
 BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
 BRIDGE_ACCESS_WALK_PIER_CLEARANCE = 96
 BRIDGE_BLK_H = 36
-BRIDGE_BLK_HW = 24
+BRIDGE_BLK_HW = 32  # half-width (X) of each parapet cap block — widened from 24
+# so the block reads as a clearly rectangular slab (64 wide x 36 tall) rather
+# than a near-square one, viewed face-on from the north/south.
 BRIDGE_BLK_OVH = 0
 BRIDGE_BLK_PIER_CLEARANCE = 4
 BRIDGE_BASE_LIGHT_HW = 32  # half-width of the small wall light fixture mounted at
@@ -130,7 +132,14 @@ BRIDGE_TELEPORT_DEST_Z = 40
 # recessed openings (west teleport, east cement) instead of a walkable archway.
 # Both openings' floors sit on TOP of this shared ramp/cap, so raising the ramp
 # automatically shortens each opening's own visible height.
-BRIDGE_ABUTMENT_RAMP_HIGH_H = 64  # ramp height at the west face (x1)
+BRIDGE_ABUTMENT_RAMP_HIGH_H = 40  # ramp height at the west face (x1) — a bit
+# taller than BRIDGE_ABUTMENT_RAMP_LOW_H so the cap still visibly slopes down
+# west->east (matching every other pier's ramped-plinth look) while staying
+# low enough for a player to reach the top with a normal jump (was 64, too
+# tall to jump up onto and mismatched with the east face; dropping to 24
+# flattened the slope entirely — see BRIDGE_ABUTMENT_RAMP_LOW_H's history).
+# The (hidden) west teleport opening's floor tracks this and shrinks back
+# down a bit to match.
 BRIDGE_ABUTMENT_RAMP_LOW_H = 24  # ramp height at the east face (x2)
 BRIDGE_ABUTMENT_RAMP_CAP_H = 12  # cap thickness — uniform along the full ramp length
 # (not tapering to 0) so it stays clearly visible everywhere, including at the
