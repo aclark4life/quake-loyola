@@ -24,7 +24,7 @@ from .constants import (
     KNOTT_FRONT_WINDOW_HALF_W,
     KNOTT_FRONT_WINDOW_MULLION_HALF_GAP,
     KNOTT_GROUND_Z,
-    KNOTT_MULLION_PRO,
+    KNOTT_MULLION_PROUD,
     KNOTT_MULLION_W,
     KNOTT_ORIG_CX,
     KNOTT_ROOM_SPLITS,
@@ -301,7 +301,7 @@ def build():
                 KNOTT.y1 + INDENT - KNOTT.wall_t,
                 KNOTT_GROUND_Z + KNOTT.floor_h,
                 mx + KNOTT_MULLION_W,
-                KNOTT.y1 + INDENT + KNOTT_MULLION_PRO,
+                KNOTT.y1 + INDENT + KNOTT_MULLION_PROUD,
                 KNOTT_Z2,
                 Textures.CEMENT,
             )
@@ -313,7 +313,7 @@ def build():
                 KNOTT.y1 + INDENT - KNOTT.wall_t,
                 KNOTT_GROUND_Z + KNOTT.floor_h,
                 mx + KNOTT_MULLION_W,
-                KNOTT.y1 + INDENT + KNOTT_MULLION_PRO,
+                KNOTT.y1 + INDENT + KNOTT_MULLION_PROUD,
                 KNOTT_Z2,
                 Textures.CEMENT,
             )
@@ -329,7 +329,7 @@ def build():
                     KNOTT.y1 + INDENT - KNOTT.wall_t,
                     mz,
                     wx + WIN_HALF,
-                    KNOTT.y1 + INDENT + KNOTT_MULLION_PRO,
+                    KNOTT.y1 + INDENT + KNOTT_MULLION_PROUD,
                     mz + 4,
                     Textures.RAIL,
                 )
@@ -343,7 +343,7 @@ def build():
                     KNOTT.y1 + INDENT - KNOTT.wall_t,
                     fz - 4,
                     wx + WIN_HALF,
-                    KNOTT.y1 + INDENT + KNOTT_MULLION_PRO,
+                    KNOTT.y1 + INDENT + KNOTT_MULLION_PROUD,
                     fz,
                     Textures.RAIL,
                 )
@@ -569,7 +569,7 @@ def build():
         EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
-                KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
+                KNOTT.y2 - INDENT - KNOTT_MULLION_PROUD,
                 KNOTT_GROUND_Z + KNOTT.floor_h,
                 mx + KNOTT_MULLION_W,
                 KNOTT.y2 - INDENT + KNOTT.wall_t,
@@ -582,7 +582,7 @@ def build():
         EXTERIOR_DETAIL_BRUSHES.append(
             box(
                 mx,
-                KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
+                KNOTT.y2 - INDENT - KNOTT_MULLION_PROUD,
                 KNOTT_GROUND_Z + KNOTT.floor_h,
                 mx + KNOTT_MULLION_W,
                 KNOTT.y2 - INDENT + KNOTT.wall_t,
@@ -603,7 +603,7 @@ def build():
                 KNOTT.y2 - KNOTT.wall_t,
                 KNOTT_GROUND_Z + KNOTT.floor_h * 2,
                 mx + KNOTT_MULLION_W,
-                KNOTT.y2 + KNOTT_MULLION_PRO,
+                KNOTT.y2 + KNOTT_MULLION_PROUD,
                 KNOTT_Z2,
                 Textures.CEMENT,
             )
@@ -853,7 +853,7 @@ def build():
                 KNOTT.y2 - KNOTT.wall_t,
                 mz,
                 win_n_x2,
-                KNOTT.y2 + KNOTT_MULLION_PRO,
+                KNOTT.y2 + KNOTT_MULLION_PROUD,
                 mz + 4,
                 Textures.RAIL,
             )
@@ -873,7 +873,7 @@ def build():
                     KNOTT.y2 - KNOTT.wall_t,
                     fz - 4,
                     hx2,
-                    KNOTT.y2 + KNOTT_MULLION_PRO,
+                    KNOTT.y2 + KNOTT_MULLION_PROUD,
                     fz,
                     Textures.RAIL,
                 )
@@ -889,7 +889,7 @@ def build():
             EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
-                    KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
+                    KNOTT.y2 - INDENT - KNOTT_MULLION_PROUD,
                     mz,
                     window_center_x + window_half_width,
                     KNOTT.y2 - INDENT + KNOTT.wall_t,
@@ -907,7 +907,7 @@ def build():
             EXTERIOR_DETAIL_BRUSHES.append(
                 box(
                     window_center_x - window_half_width,
-                    KNOTT.y2 - INDENT - KNOTT_MULLION_PRO,
+                    KNOTT.y2 - INDENT - KNOTT_MULLION_PROUD,
                     fz - 4,
                     window_center_x + window_half_width,
                     KNOTT.y2 - INDENT + KNOTT.wall_t,

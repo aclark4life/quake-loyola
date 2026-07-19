@@ -69,7 +69,16 @@ class Brush:
         return all(f.is_inside(p, eps) for f in self.faces)
 
     def get_bbox(self) -> tuple[Point, Point]:
-        """Return (min_point, max_point) bounding box of this brush."""
+        """Return an approximate (min_point, max_point) bounding box of this
+        brush, derived from each Face's three plane-defining points.
+
+        This is exact for axis-aligned box() brushes (every corner appears
+        among the collected points), but for non-box brushes — e.g. prisms
+        or arches whose faces have more vertices than the 3 used to define
+        the plane — it can under-report the true extent, since vertices not
+        chosen as plane-definition points are not considered. Treat this as
+        a fast, conservative "face-point bounds", not a precise solid bbox.
+        """
         if not self.faces:
             raise ValueError("Brush.get_bbox() called on a brush with no faces")
         pts = []
@@ -100,6 +109,12 @@ class Entity:
     brushes: list[Brush] = field(default_factory=list)
 
     def to_map(self) -> str:
+        for k, v in [("classname", self.classname), *self.fields.items()]:
+            if '"' in str(k) or '"' in str(v) or "\n" in str(k) or "\n" in str(v):
+                raise ValueError(
+                    f"Entity field {k!r}={v!r} contains a quote or newline, "
+                    "which would corrupt MAP text serialization"
+                )
         lines = ["{", f'"classname" "{self.classname}"']
         for k, v in self.fields.items():
             lines.append(f'"{k}" "{v}"')

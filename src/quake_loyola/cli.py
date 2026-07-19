@@ -104,13 +104,15 @@ def config_get(name: str) -> None:
         raise typer.Exit(code=1)
 
 
-def _set_one(name: str, value: str) -> str:
-    """Validate and persist a single NAME/value pair; returns the echo message."""
+def _validate_one(name: str, value: str) -> tuple[str, str, object]:
+    """Validate a single NAME/value pair without persisting it.
+
+    Returns (kind, key, parsed_value) where kind is "flag" or "build".
+    Raises typer.BadParameter / typer.Exit on invalid input.
+    """
     name_u = name.upper()
     if name_u in config.DEFAULTS:
-        parsed = _parse_bool(value)
-        config.set_flag(name_u, parsed)
-        return f"{name_u} = {parsed}"
+        return "flag", name_u, _parse_bool(value)
     elif name in config.BUILD_DEFAULTS:
         if name == "vis_mode":
             if value not in ("fast", "full"):
@@ -146,8 +148,7 @@ def _set_one(name: str, value: str) -> str:
             parsed_build = value
         else:
             parsed_build = _parse_bool(value)
-        config.set_build(name, parsed_build)
-        return f"{name} = {parsed_build}"
+        return "build", name, parsed_build
     else:
         typer.echo(
             f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
@@ -196,8 +197,16 @@ def config_set(
             name, _, value = arg.partition("=")
             pairs.append((name, value))
 
-    for name, value in pairs:
-        typer.echo(_set_one(name, value))
+    # Validate every pair before persisting any of them, so a bad later pair
+    # doesn't leave the file partially updated from earlier pairs in the
+    # same command.
+    validated = [_validate_one(name, value) for name, value in pairs]
+    for kind, key, parsed in validated:
+        if kind == "flag":
+            config.set_flag(key, parsed)
+        else:
+            config.set_build(key, parsed)
+        typer.echo(f"{key} = {parsed}")
 
 
 @config_app.command("reset")

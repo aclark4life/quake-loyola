@@ -59,6 +59,18 @@ def box(
 
 
 def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
+    # Normalize reversed outer/hole bounds first — mirrors box()'s contract —
+    # so a caller passing x1>x2 (or a reversed hole) doesn't silently break
+    # the clipping logic below and produce a solid box instead of a punched
+    # one.
+    if x1 > x2:
+        x1, x2 = x2, x1
+    if y1 > y2:
+        y1, y2 = y2, y1
+    if hx1 > hx2:
+        hx1, hx2 = hx2, hx1
+    if hy1 > hy2:
+        hy1, hy2 = hy2, hy1
     hx1, hx2 = max(hx1, x1), min(hx2, x2)
     hy1, hy2 = max(hy1, y1), min(hy2, y2)
     if hx1 >= hx2 or hy1 >= hy2:
@@ -280,6 +292,15 @@ def ramp_slab(
         x1, x2 = x2, x1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
+    if x1 == x2 or y1 == y2:
+        raise ValueError(
+            f"ramp_slab: degenerate (zero-span) brush x=({x1}, {x2}) y=({y1}, {y2})"
+        )
+    if zt1 == zb1 and zt2 == zb2:
+        raise ValueError(
+            f"ramp_slab: degenerate (zero-thickness everywhere) brush "
+            f"zb=({zb1}, {zb2}) zt=({zt1}, {zt2}) — use box() for a flat slab"
+        )
     faces = []
     if zt1 != zb1:
         faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), te))

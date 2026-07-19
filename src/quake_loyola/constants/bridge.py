@@ -51,16 +51,20 @@ BRIDGE_DECK_CROSS_STRIP_H = 4  # thickness of the cross-strip decal brush
 BRIDGE_DZ1, BRIDGE_DZ2 = (
     256,
     272,
-)  # raised 32 units (was 224/240) so the flat deck at KNOTT_ORIG_CX (WALK_ZT1) is
-# level with the KH 2nd-floor walkway landing (WALK_ZT2); see KNOTT_GROUND_Z below,
-# now a fixed hill-height anchor independent of this deck elevation.
+)  # raised 32 units (was 224/240) so the flat deck at KNOTT_ORIG_CX (WALK_ZT1) was
+# level with the KH 2nd-floor walkway landing (WALK_ZT2) at the time of this
+# change; see KNOTT_GROUND_Z below, now a fixed hill-height anchor independent of
+# this deck elevation — a later 64->221 re-measurement of KNOTT_GROUND_Z moved
+# WALK_ZT2 up without a matching re-derivation here, so WALK_ZT1 and WALK_ZT2 are
+# no longer equal (see the WALK_ZT1/derived.py comment for the current gap and
+# why the walkway connector still works via a sloped ramp).
 BRIDGE_EAST_SPAN_ANGLE = 12.0
 BRIDGE_FASCIA_PX_W, BRIDGE_FASCIA_PX_H = (
     4,
     4,
 )  # sized to fit just inside the middle span's two exterior parapet
-# blocks (cx=-276/276, half-width BRIDGE_BLK_HW=24, so inner edges at
-# -252/252 -> 504 units of clearance); at px_w=5 the lettering was
+# blocks (cx=-276/276, half-width BRIDGE_BLK_HW=32, so inner edges at
+# -244/244 -> 488 units of clearance); at px_w=5 the lettering was
 # 531 units wide, overlapping those blocks — px_w=4 comes to 402 units.
 BRIDGE_FASCIA_TEXT = "LOYOLA UNIVERSITY MARYLAND"
 BRIDGE_PAR_H = 40

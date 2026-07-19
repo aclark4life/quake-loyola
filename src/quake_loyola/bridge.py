@@ -112,7 +112,6 @@ from .constants import (
     WALK_X2,
     WALL_T,
     WORLD_X1,
-    WORLD_X2,
     WORLD_X2_EXT,
     WORLD_Y1,
     WORLD_Y2,

@@ -1437,7 +1437,10 @@ def build_ennis_entrance_features():
     _ext_run_x1 = ENNIS_CEMENT_X2_EXT
     _ext_run_x2 = WORLD_X2 - WALL_T
     _ext_run_len = _ext_run_x2 - _ext_run_x1
-    _ext_pillar_count = round(_ext_run_len / ENNIS_CEMENT_WALL_PILLAR_SPACING)
+    _ext_pillar_count = max(
+        1, round(_ext_run_len / ENNIS_CEMENT_WALL_PILLAR_SPACING)
+    )  # clamp to at least 1 so a short/zero-length extension can't divide by
+    # zero below
     _ext_pillar_spacing = _ext_run_len / _ext_pillar_count
     _ext_pillar_xs = [
         _ext_run_x1 + round(i * _ext_pillar_spacing)

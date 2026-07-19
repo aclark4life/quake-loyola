@@ -15,6 +15,12 @@ from .primitives import (
 
 
 def tile_grid_origins(width, height, tile=34, gap=3):
+    # A face smaller than a single tile can't fit any tile without spilling
+    # outside the requested bounds — return no tiles rather than forcing one
+    # (which would previously yield a negative origin and an out-of-bounds
+    # brush from tile_face_plates()).
+    if width < tile or height < tile:
+        return []
     pitch = tile + gap
     nx, nz = max(1, int((width + gap) // pitch)), max(1, int((height + gap) // pitch))
     total_x, total_z = nx * tile + (nx - 1) * gap, nz * tile + (nz - 1) * gap

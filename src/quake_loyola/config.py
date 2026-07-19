@@ -124,8 +124,43 @@ def _write_toml(path: Path, sections: dict[str, dict[str, Any]]) -> None:
 
 
 _raw = _read_toml(CONFIG_PATH)
-FLAGS: dict[str, bool] = {**DEFAULTS, **_raw.get("flags", {})}
-BUILD: dict[str, Any] = {**BUILD_DEFAULTS, **_raw.get("build", {})}
+
+
+def _validate_section(
+    section_name: str, data: Any, allowed: dict[str, Any]
+) -> dict[str, Any]:
+    """Validate a loaded ql.toml section against its known keys/defaults.
+
+    Rejects a non-table section, unknown keys, and boolean-flag values that
+    aren't actually booleans (e.g. a string leaking through and becoming
+    silently truthy downstream).
+    """
+    if not isinstance(data, dict):
+        raise TypeError(
+            f"ql.toml [{section_name}] must be a table, got {type(data).__name__}"
+        )
+    for key, value in data.items():
+        if key not in allowed:
+            raise KeyError(
+                f"ql.toml [{section_name}] has unknown key {key!r} "
+                f"(known: {sorted(allowed)})"
+            )
+        if isinstance(allowed[key], bool) and not isinstance(value, bool):
+            raise TypeError(
+                f"ql.toml [{section_name}] {key!r} must be a bool, "
+                f"got {type(value).__name__}"
+            )
+    return data
+
+
+FLAGS: dict[str, bool] = {
+    **DEFAULTS,
+    **_validate_section("flags", _raw.get("flags", {}), DEFAULTS),
+}
+BUILD: dict[str, Any] = {
+    **BUILD_DEFAULTS,
+    **_validate_section("build", _raw.get("build", {}), BUILD_DEFAULTS),
+}
 
 
 def get(name: str) -> bool:
@@ -169,7 +204,16 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
 def reset(path: Path = CONFIG_PATH) -> bool:
     """Delete ql.toml, reverting every flag/setting to its default. Returns
     True if a file was actually removed."""
+    removed = False
     if path.exists():
         path.unlink()
-        return True
-    return False
+        removed = True
+    if path == CONFIG_PATH:
+        # Repopulate the in-memory caches so config.get()/get_build() reflect
+        # the defaults immediately, even within a long-lived process that
+        # already read overridden values from the now-deleted file.
+        FLAGS.clear()
+        FLAGS.update(DEFAULTS)
+        BUILD.clear()
+        BUILD.update(BUILD_DEFAULTS)
+    return removed

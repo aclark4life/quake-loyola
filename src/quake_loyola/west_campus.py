@@ -466,10 +466,6 @@ def build():
                     )
         return openings
 
-    def nb_wins_xz(wx_list):
-        """Window openings (all floors) for X-facing wall (south/north)."""
-        return dorm_window_openings(wx_list)
-
     def nb_wins_yz(wy_list):
         """Window openings (all floors) for Y-facing wall (east/west)."""
         return dorm_window_openings(wy_list)
@@ -1228,12 +1224,6 @@ def build():
         sy2 = by2 - depth if slat_hi else by2
         if chimney:
             # Both slopes split around the shaft so it passes through the ridge
-            def _wtop(x):
-                return int(
-                    eave_z
-                    + slab_t
-                    + (x - bx1) * (ridge_z - eave_z - slab_t) // (cx - bx1)
-                )
 
             def _etop(x):
                 return int(

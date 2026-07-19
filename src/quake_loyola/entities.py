@@ -12,14 +12,10 @@ from .constants import (
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_ENABLED_PIER_BASE_LIGHTS,
     BRIDGE_ENABLED_SUPPORTS,
-    BRIDGE_PAR_W,
     BRIDGE_PEND_XS,
     BRIDGE_PILLAR_BASE_H,
     BRIDGE_PILLAR_BASE_RAMP_H,
-    BRIDGE_PILLAR_CAP_H,
-    BRIDGE_PILLAR_EXTRA,
     BRIDGE_PILLAR_HW,
-    BRIDGE_PILLAR_PYR_H,
     CHARLES_ARCH_RIN,
     CHARLES_ARCH_ROUT,
     CHARLES_ARCH_STILT,
@@ -40,7 +36,6 @@ from .constants import (
     ENNIS_CEMENT_X1,
     ENNIS_CEMENT_X2,
     ENNIS_GATE_X1,
-    ENNIS_GATE_X2,
     ENNIS_HW,
     ENNIS_WALL_NY,
     ENNIS_WALL_T,
@@ -89,6 +84,7 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
+    STREET_DIV_HW,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -110,12 +106,10 @@ from .geometry import (
     arch_wall_y,
     box,
     brush_ent,
-    east_y_shift,
     ent,
     make_bush,
     make_giant_tree,
     make_pixel_tree,
-    make_tree,
     render_text_flat,
     render_text_flat_x,
 )
@@ -154,19 +148,23 @@ def build():
         ]
     BRUSHES = []
     ENTITIES = []
-    BRIDGE_DECK_Z = deck_top_z(0) + 8  # centre of arch deck + a bit (spawn/item height)
     ROAD_Z = FLOOR_Z2 + 8
 
-    # The centre span (Pier2..Pier3, i.e. X in [BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]])
-    # is translated by BRIDGE_CENTER_SPAN_OFFSET in bridge.py's
-    # _shift_center_span(). Any entity placed on that span's deck must follow
-    # the same Y/Z shift or it ends up floating beside/below the actual
-    # (shifted) deck. dx is currently 0, so only Y/Z need adjusting.
+    # bridge.py's _shift_center_span() translates the centre span *plus every
+    # other currently-enabled section* as one rigid unit whenever
+    # BRIDGE_CENTER_SPAN_OFFSET is non-zero (see that function's docstring —
+    # every enabled section must move with the centre span to stay connected
+    # at shared piers). So any entity anywhere on the bridge deck (Pier1..
+    # Pier6, i.e. the full BRIDGE_ARCH_X span), not just the centre span
+    # itself, must follow the same Y/Z shift or it ends up floating beside/
+    # below the actual (shifted) deck. dx is currently 0, so only Y/Z need
+    # adjusting.
+    BRIDGE_X_MIN, BRIDGE_X_MAX = min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)
     CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
     CS_DY, CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
 
     def _cs_offset(x, y, z):
-        if CS_X1 <= x <= CS_X2:
+        if BRIDGE_X_MIN <= x <= BRIDGE_X_MAX:
             return y + CS_DY, z + CS_DZ
         return y, z
 
@@ -799,7 +797,7 @@ def build():
 
     # ── Weapons ───────────────────────────────────────────────────────────────
     # Rocket launcher — bridge centre (high value, exposed position)
-    _rl_y, _rl_z = _cs_offset(0, 0, BRIDGE_DECK_Z)
+    _rl_y, _rl_z = _cs_offset(0, 0, int(deck_top_z(0) + 8))
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
     # Rocket launcher — Knott Hall floor 3 (reward for climbing)
     if KNOTT_ENABLED_INTERIOR:
@@ -818,9 +816,9 @@ def build():
         f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
         f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
         # Bridge deck — one per span. Each deck height is sampled at its own
-        # X via deck_top_z(x) rather than reusing the X=0 BRIDGE_DECK_Z
-        # constant, since the arch curve drops the deck by 59-100 units away
-        # from centre (these spans sit well off the arch's peak).
+        # X via deck_top_z(x) rather than a single fixed height, since the
+        # arch curve drops the deck by 59-100 units away from centre (these
+        # spans sit well off the arch's peak).
         f"{span1_x} 0 {int(deck_top_z(span1_x) + 8)}",  # span 1
         f"{span4_x} 0 {int(deck_top_z(span4_x) + 8)}",  # span 4
         f"{span5_x} 0 {int(deck_top_z(span5_x) + 8)}",  # span 5 (east angled)
@@ -872,7 +870,7 @@ def build():
         )
 
     # Lightning gun — high-value, contested spots
-    _lg_y, _lg_z = _cs_offset(200, 0, BRIDGE_DECK_Z)
+    _lg_y, _lg_z = _cs_offset(200, 0, int(deck_top_z(200) + 8))
     ENTITIES.append(
         ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}")
     )  # bridge centre
@@ -889,8 +887,8 @@ def build():
 
     # ── Ogres — spread across open areas and upper floors ─────────────────────
     # Bridge deck
-    _og1_y, _og1_z = _cs_offset(-300, 0, BRIDGE_DECK_Z)
-    _og2_y, _og2_z = _cs_offset(300, 0, BRIDGE_DECK_Z)
+    _og1_y, _og1_z = _cs_offset(-300, 0, int(deck_top_z(-300) + 8))
+    _og2_y, _og2_z = _cs_offset(300, 0, int(deck_top_z(300) + 8))
     ENTITIES.append(ent("monster_ogre", origin=f"-300 {_og1_y} {_og1_z}", angle="90"))
     ENTITIES.append(ent("monster_ogre", origin=f"300 {_og2_y} {_og2_z}", angle="270"))
     # Charles Street
@@ -941,13 +939,14 @@ def build():
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
-    for kf in range(1, KNOTT.floors):
-        ENTITIES.append(
-            ent(
-                "item_rockets",
-                origin=f"{KNOTT_CX + 80} {knott_cy} {KNOTT_GROUND_Z + kf * KNOTT.floor_h + 40}",
+    if KNOTT_ENABLED_INTERIOR:
+        for kf in range(1, KNOTT.floors):
+            ENTITIES.append(
+                ent(
+                    "item_rockets",
+                    origin=f"{KNOTT_CX + 80} {knott_cy} {KNOTT_GROUND_Z + kf * KNOTT.floor_h + 40}",
+                )
             )
-        )
     ENTITIES.append(
         ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}")
     )  # west sidewalk
@@ -961,23 +960,24 @@ def build():
     # Health — scattered throughout
     # Offset from the bridge-centre rocket launcher (X=0) so the two
     # pickups don't stack on the exact same origin.
-    _hp_y, _hp_z = _cs_offset(-100, 0, BRIDGE_DECK_Z)
+    _hp_y, _hp_z = _cs_offset(-100, 0, int(deck_top_z(-100) + 8))
     ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
-    ENTITIES.append(
-        ent(
-            "item_health",
-            origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT.y2 - 64} {KNOTT_GROUND_Z + 40}",
+    if KNOTT_ENABLED_INTERIOR:
+        ENTITIES.append(
+            ent(
+                "item_health",
+                origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT.y2 - 64} {KNOTT_GROUND_Z + 40}",
+            )
         )
-    )
-    ENTITIES.append(
-        ent(
-            "item_health",
-            # Offset from the floor-2 grenade launcher (also at KNOTT_CX,
-            # knott_cy) so the two pickups don't stack on the exact same
-            # origin.
-            origin=f"{KNOTT_CX - 100} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
+        ENTITIES.append(
+            ent(
+                "item_health",
+                # Offset from the floor-2 grenade launcher (also at KNOTT_CX,
+                # knott_cy) so the two pickups don't stack on the exact same
+                # origin.
+                origin=f"{KNOTT_CX - 100} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
+            )
         )
-    )
     ENTITIES.append(
         ent("item_health", origin=f"-300 400 {ROAD_Z + 24}")
     )  # west sidewalk
@@ -991,16 +991,17 @@ def build():
         )
     )
     # Armor — contested locations
-    _arm_y, _arm_z = _cs_offset(-200, 0, BRIDGE_DECK_Z)
+    _arm_y, _arm_z = _cs_offset(-200, 0, int(deck_top_z(-200) + 8))
     ENTITIES.append(
         ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}")
     )  # yellow armor on bridge
-    ENTITIES.append(
-        ent(
-            "item_armor2",
-            origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
-        )
-    )  # red armor top floor
+    if KNOTT_ENABLED_INTERIOR:
+        ENTITIES.append(
+            ent(
+                "item_armor2",
+                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
+            )
+        )  # red armor top floor
     ENTITIES.append(
         ent(
             "item_armorInv",
@@ -1039,19 +1040,21 @@ def build():
     # up when ENTITIES_ENABLED is turned back on.
 
     # Under-bridge amber pendant lights — flicker style, hang below deck.
-    # The centre span (Pier2..Pier3) is translated by BRIDGE_CENTER_SPAN_OFFSET
-    # in bridge.py, so its pendant lights must follow the same Y/Z shift or
-    # they end up floating off to the side of / detached from the actual
-    # (shifted) deck's underside.
-    # It's also the only span currently enabled (see flags.py), so it gets a
-    # few pendants spread along its length rather than just one at centre.
+    # Every enabled bridge section (not just the centre span) is translated
+    # together by BRIDGE_CENTER_SPAN_OFFSET whenever it's non-zero (see
+    # bridge.py's _shift_center_span()), so pendant lights anywhere on the
+    # deck must follow via _cs_offset() or they end up floating off to the
+    # side of / detached from the actual (shifted) deck's underside.
+    # The centre span additionally gets a few extra pendants spread along
+    # its length rather than just one at centre.
     for pier_x in BRIDGE_PEND_XS:
         if CS_X1 <= pier_x <= CS_X2:
             continue  # handled below with extra pendants + the correct Y/Z offset
+        _pend_y, _pend_z = _cs_offset(pier_x, 0, int(deck_bot_z(pier_x)) - 20)
         ENTITIES.append(
             ent(
                 "light",
-                origin=f"{pier_x} 0 {int(deck_bot_z(pier_x)) - 20}",
+                origin=f"{pier_x} {_pend_y} {_pend_z}",
                 light="350",
                 style="1",
             )
@@ -1331,7 +1334,6 @@ def build():
     # Rejection sampling enforces a minimum separation so trees don't overlap.
     east_side_tree_height = int(KNOTT_Z2 * 0.65)
     east_side_foliage_hw = 160  # widest foliage half-width (make_giant_tree)
-    _world_x2_ext = WORLD_X2 + 512  # WORLD_X2_EXT
     _ennis_south = ENNIS_Y - ENNIS_HW  # Ennis road south edge
     _ennis_sw_edge = _ennis_south - 3 * CHARLES_WALK_W - 32  # Ennis south sidewalk edge
     east_tele_brushes = []
@@ -1340,7 +1342,7 @@ def build():
         WORLD_X2 + WALL_T + east_side_foliage_hw + 20
     )  # foliage clears the world wall / teleport
     et_x2 = (
-        _world_x2_ext - WALL_T - east_side_foliage_hw
+        WORLD_X2_EXT - WALL_T - east_side_foliage_hw
     )  # keep foliage clear of east wall
     et_y1 = WORLD_Y1 + WALL_T + 120
     et_y2 = _ennis_sw_edge - east_side_foliage_hw  # keep foliage clear of the sidewalk
@@ -1435,8 +1437,20 @@ def build():
     CHARLES_PLT_H = 12  # platform slab thickness
     CHARLES_PLT_SPEED = 180  # units per second
 
-    CHARLES_PLT_X_OUT = ROAD_X2 // 4  # outbound Charles lane  (east,   X=+64)
-    CHARLES_PLT_X_RET = -(ROAD_X2 * 3 // 4)  # return  Charles lane   (west,   X=-192)
+    # Lane centre Xs derived the same way as streets.py's road striping (an
+    # evenly-split centre divider + two lane widths), rather than a fixed
+    # fraction of ROAD_X2 alone — Charles St is asymmetric (ROAD_X1 != -ROAD_X2),
+    # so a ROAD_X2-only fraction put the return (west) lane ~300 units east of
+    # its actual lane centre.
+    _road_cx = (ROAD_X1 + ROAD_X2) / 2
+    _west_lane_line_x = (ROAD_X1 + _road_cx - STREET_DIV_HW) / 2
+    _east_lane_line_x = (_road_cx + STREET_DIV_HW + ROAD_X2) / 2
+    CHARLES_PLT_X_OUT = int(
+        (_east_lane_line_x + ROAD_X2) / 2
+    )  # outbound Charles lane (east)
+    CHARLES_PLT_X_RET = int(
+        (ROAD_X1 + _west_lane_line_x) / 2
+    )  # return  Charles lane (west)
     CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48  # south turnaround
     CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16  # outbound Ennis lane (south Y≈792)
     CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8  # return  Ennis lane  (north Y≈956)
@@ -1585,13 +1599,17 @@ def build():
 
     # Ogres on the back road hill — like guards on the slope
     backroad_center_x = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
+    _backroad_rise = (
+        KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N
+    )  # matches the driveway's actual slope (was hardcoded 64, stale vs. the
+    # current KNOTT_GROUND_Z-derived slope)
     for ogre_y, ogre_z in [
         (
             -600,
             FLOOR_Z2
             + 2
             + (
-                64
+                _backroad_rise
                 * ((-600) - KNOTT_DRIVEWAY_Y2)
                 // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
             )
@@ -1602,7 +1620,7 @@ def build():
             FLOOR_Z2
             + 2
             + (
-                64
+                _backroad_rise
                 * ((-1200) - KNOTT_DRIVEWAY_Y2)
                 // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
             )
@@ -1679,30 +1697,34 @@ def build():
     # The walkway itself spans X=WALK_X1..WALK_X2, Y=BRIDGE.y1..KNOTT.y2
     # (see bridge.py); the previous X/Y here (BRIDGE.x2..WALK_X1 midpoint,
     # Y=0) placed the monster well before the walkway even starts.
-    walkway_mid_x = (WALK_X1 + WALK_X2) // 2  # midpoint across the ramp
-    walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2  # midpoint along the ramp's slope
-    walkway_mid_z = (WALK_ZT1 + WALK_ZT2) // 2
-    ENTITIES.append(
-        ent(
-            "monster_hell_knight",
-            origin=f"{walkway_mid_x} {walkway_mid_y} {walkway_mid_z + 24}",
-            angle="180",
-        )
-    )
-
-    # Two on the accessible walkway alongside Pier 5
-    accessible_walk_z = KNOTT_GROUND_Z + 24  # walkway surface + standing height
-    for accessible_walk_y, accessible_walk_angle in [
-        (-128, 90),  # mid-path, facing north toward bridge
-        (180, 270),  # north end near bridge south edge, facing south
-    ]:
+    # Gated by KNOTT_ENABLED_WALKWAY (same flag as the walkway/accessible-path
+    # geometry itself in knott_terrain.py) so it doesn't spawn floating in
+    # empty space when that opt-in geometry is disabled.
+    if KNOTT_ENABLED_WALKWAY:
+        walkway_mid_x = (WALK_X1 + WALK_X2) // 2  # midpoint across the ramp
+        walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2  # midpoint along the ramp's slope
+        walkway_mid_z = (WALK_ZT1 + WALK_ZT2) // 2
         ENTITIES.append(
             ent(
                 "monster_hell_knight",
-                origin=f"2120 {accessible_walk_y} {accessible_walk_z}",
-                angle=str(accessible_walk_angle),
+                origin=f"{walkway_mid_x} {walkway_mid_y} {walkway_mid_z + 24}",
+                angle="180",
             )
         )
+
+        # Two on the accessible walkway alongside Pier 5
+        accessible_walk_z = KNOTT_GROUND_Z + 24  # walkway surface + standing height
+        for accessible_walk_y, accessible_walk_angle in [
+            (-128, 90),  # mid-path, facing north toward bridge
+            (180, 270),  # north end near bridge south edge, facing south
+        ]:
+            ENTITIES.append(
+                ent(
+                    "monster_hell_knight",
+                    origin=f"2120 {accessible_walk_y} {accessible_walk_z}",
+                    angle=str(accessible_walk_angle),
+                )
+            )
 
     # ── Single-player exit — inside north dorm 2 (southern north dorm) ──────────
     # Loops back to this map. Portal stands inside north dorm 2.

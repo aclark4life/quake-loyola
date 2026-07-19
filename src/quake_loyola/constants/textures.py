@@ -2,8 +2,8 @@
 
 The sky texture (used on every sky-textured face in bridge.py/streets.py,
 and as the worldspawn "sky" field) is selectable via the ``sky_preset``
-build setting — ``"day"`` (default, quake101.wad's blue-cloud ``sky1``) or
-``"night"`` (ad.wad's dark starfield-like ``skyzig``). Override with
+build setting — ``"day"`` (default, quake101.wad's bright daytime ``sky4``) or
+``"night"`` (quake101.wad's dark nighttime ``sky1``). Override with
 ``ql conf set sky_preset night`` or by editing ql.toml.
 """
 
@@ -26,8 +26,6 @@ class Textures:
     BRICK_KH = "city6_8"
     BUILDING = "city2_1"
     CEMENT = "sfloor3_2"
-    EXIT = "z_exit"
-    DIVIDER = "sfloor3_2"
     FENCE = "metal4_4"
     CENTERLINE = (
         "win_fbylw_01"  # fullbright yellow, stand-in for a yellow line marking texture
@@ -43,7 +41,6 @@ class Textures:
     HINT = "hint"
     MULCH = "grave13c"
     LAVA = "*lava1"
-    PARAPET_LIGHT = "light1_4"  # from quake101.wad/ad.wad — small wall light fixture
     PILLAR = "city6_8"
     RAIL = "metal5_4"
     ROAD = "thantech10_9"
@@ -54,5 +51,4 @@ class Textures:
     SKY = SKY_PRESETS[_get_build("sky_preset")]
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
-    WALL = "city2_7"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad

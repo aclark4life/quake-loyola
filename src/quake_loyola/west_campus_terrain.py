@@ -251,6 +251,13 @@ def terrain_z(x, y):
 
 
 def build():
+    # WEST_CAMPUS_ENABLED_TERRAIN is not a strict, independent on/off switch:
+    # this terrain also builds whenever the WEST_CAMPUS_ENABLED master is
+    # True, even if WEST_CAMPUS_ENABLED_TERRAIN itself is False — the west
+    # campus buildings/fence/wall rely on this terrain fill to avoid floating
+    # over a bare cliff, so the master intentionally forces it on. To
+    # preview the terrain with west campus otherwise disabled, set
+    # WEST_CAMPUS_ENABLED_TERRAIN true and leave WEST_CAMPUS_ENABLED false.
     if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_TERRAIN):
         return [], []
     BRUSHES = []

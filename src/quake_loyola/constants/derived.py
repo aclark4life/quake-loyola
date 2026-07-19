@@ -190,8 +190,16 @@ KNOTT_GROUND_Z = 221  # hill-height anchor, re-derived from real-world elevation
 # crossing baseline) -> round(14.6 * SCALE) == 221. See docs/reference.rst
 # "Topology check" for the full re-measurement and its caveats (1 m DEM resolution,
 # approximate anchor/bearing). Independent of BRIDGE_DZ2: the bridge deck (not the
-# hill) was raised 32 units to make the KH walkway level (WALK_ZT1 == WALK_ZT2)
-# without re-flattening the hill.
+# hill) was previously raised 32 units to make the KH walkway level (WALK_ZT1 ==
+# WALK_ZT2) *before* this 64->221 re-measurement; that re-measurement moved
+# WALK_ZT2 up by 157 units without a matching re-derivation of the bridge deck, so
+# WALK_ZT1 and WALK_ZT2 are no longer equal (see their definitions below). The KH
+# walkway connector (knott_terrain.py's KNOTT_ENABLED_WALKWAY-gated build, off by
+# default) already builds a sloped ramp_slab_y() between the two rather than
+# assuming a flat deck, so it still connects correctly — just at a steeper slope
+# than originally intended. TODO: re-derive BRIDGE_DZ2 (or a KH-approach-local
+# rise) so WALK_ZT1 meets WALK_ZT2 with a gentler grade; deferred because it
+# cascades into arch/pier tuning that needs an in-game walkthrough to validate.
 KNOTT_DRIVEWAY_ZT_S = KNOTT_GROUND_Z
 KNOTT_Z2 = KNOTT_GROUND_Z + KNOTT_FLOORS * KNOTT_FLOOR_H
 BRIDGE_X2 = BRIDGE_ARCH_X[3]  # Pier 4 (span-2 terminus) — no longer literally

@@ -10,7 +10,6 @@ the player back to the map's spawn point.
 """
 
 from .constants import (
-    A_SEGS,
     BASEMENT_ENABLED,
     BASEMENT_FLOOR_Z1,
     BASEMENT_Z1,
@@ -168,7 +167,8 @@ def build():
         0.0,
         BASEMENT_Z1 + 4,
         CHARLES_ARCH_RIN,
-        A_SEGS,
+        charles_arch_segs,  # was A_SEGS (16) — mismatched the arch surround's
+        # charles_arch_segs (24) below, misregistering the glow against it
         Textures.TELEPORT,
         stilt_h=CHARLES_ARCH_STILT,
     )

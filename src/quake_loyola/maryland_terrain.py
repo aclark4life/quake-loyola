@@ -16,7 +16,16 @@ Maryland Hall's) can be enabled/disabled independently — both are
 provisional models pending re-derivation, and neither should force the
 other on or off.
 
-When MARYLAND_ENABLED_TERRAIN is False, this module still emits a ring of
+MARYLAND_ENABLED_TERRAIN is not a strict, independent on/off switch: the
+full terrain mound also builds whenever MARYLAND_ENABLED (the Maryland Hall
+building module) is True, even if MARYLAND_ENABLED_TERRAIN itself is False —
+otherwise the building stub would float above a bare vertical cliff with
+nothing filling the gap down to grade (see above). To preview the terrain
+mound with no building, set MARYLAND_ENABLED_TERRAIN true and leave
+MARYLAND_ENABLED false; there is currently no supported way to show the
+building without its supporting terrain.
+
+When both flags are False, this module still emits a ring of
 HINT brushes around the footprint instead of nothing at all — see the
 comment in build() for why that's required for a clean compile. HINT
 brushes are non-solid/invisible (same technique bridge.py uses to force

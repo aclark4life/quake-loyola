@@ -1535,8 +1535,10 @@ def build_walkway():
     DETAIL_BRUSHES = []
 
     # ════════════════════════════════════════════════════════════════════════════════
-    # WALKWAY — flat bridge from south edge to building 2nd floor entrance
-    # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; flat at WALK_ZT1 = WALK_ZT2
+    # WALKWAY — sloped bridge from south edge to building 2nd floor entrance
+    # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; ramps between WALK_ZT1 (bridge end) and
+    # WALK_ZT2 (building end) — these two are no longer equal (see the WALK_ZT1
+    # comment in constants/derived.py for why), so this is a real ramp, not flat.
     # ════════════════════════════════════════════════════════════════════════════════
     wk_zb1 = WALK_ZT1 - KNOTT.wall_t  # slab bottom at bridge end
     wk_zb2 = WALK_ZT2 - KNOTT.wall_t  # slab bottom at building end
