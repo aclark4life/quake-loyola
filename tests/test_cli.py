@@ -2,27 +2,32 @@
 `ql conf` subcommands' validation of named-preset build settings
 (sky_preset, lighting_preset, fog_density, vis_mode).
 
-Each test invokes the installed `ql` console-script as a subprocess with
-its cwd pointed at an isolated tmp_path, so `config.CONFIG_PATH` (which is
-resolved from `Path.cwd()` at import time inside the subprocess) never
-touches the real repo's ql.toml.
+Each test invokes the CLI in a fresh subprocess (via `python -c`, with
+PYTHONPATH pointed at src/ — same as pytest's own `pythonpath` config in
+pyproject.toml, so this works whether or not the package is pip-installed)
+with its cwd pointed at an isolated tmp_path, so `config.CONFIG_PATH`
+(which is resolved from `Path.cwd()` at import time inside the subprocess)
+never touches the real repo's ql.toml.
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
-QL_BIN = Path(sys.executable).parent / "ql"
+SRC_DIR = Path(__file__).resolve().parent.parent / "src"
 
 
 def run_ql(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    env = {**os.environ, "PYTHONPATH": str(SRC_DIR)}
     return subprocess.run(
-        [str(QL_BIN), *args],
+        [sys.executable, "-c", "from quake_loyola.cli import app; app()", *args],
         cwd=cwd,
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
