@@ -91,7 +91,7 @@ BUILD_DEFAULTS: dict[str, Any] = {
     "vis_mode": "fast",  # "fast" (vis -fast, quick iteration) or "full" (vis, full PVS)
     "light_extra": False,  # add light's -extra flag (2x2 supersampling, slower/higher quality)
     "lighting_preset": "bright",  # key into constants/lighting.py's LIGHTING_PRESETS (dawn, midday, golden_hour, dusk, overcast, night, bright, afternoon)
-    "fog_density": "default",  # "default" (use the preset's own density), a named FogDensity level (off, low, med, high), or a custom float
+    "fog_density": "low",  # "default" (use the preset's own density), a named FogDensity level (off, low, med, high), or a custom float
     "sky_preset": "day",  # key into constants/textures.py's SKY_PRESETS (day, night) — which skybox texture is used on every sky-textured face
 }
 
