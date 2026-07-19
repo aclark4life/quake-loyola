@@ -512,30 +512,22 @@ def _build_all():
         )
     )  # North east segment — single brush avoids split-point portal clipping
     # South east — gaps at WALK_X1..WALK_X2 and east_walk_x1..east_walk_x2 for walkway/accessible-walkway connections
-    # West piece (BRIDGE.x2→WALK_X1): entirely before main walkway gap
+    # West piece — wall stays attached to Pier 4, extending east to the
+    # midpoint; opening continues from the midpoint to WALK_X1 for steps.
+    _span4_west_mid = (BRIDGE.x2 + WALK_X1) / 2
     BRUSHES.append(
         box(
             BRIDGE.x2,
             BRIDGE.y1,
             BRIDGE_DZ2,
-            WALK_X1,
+            _span4_west_mid,
             BRIDGE.y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             Textures.CEMENT,
         )
     )
-    # East piece (WALK_X2→world wall): straight to pier, then angled
-    BRUSHES.append(
-        box(
-            WALK_X2,
-            BRIDGE.y1,
-            BRIDGE_DZ2,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y1 + BRIDGE_PAR_W,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            Textures.CEMENT,
-        )
-    )
+    # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
+    # is now fully open for steps down to the ground.
     _ws.append(
         shear_box_y(
             BRIDGE_EAST_PIVOT_X,
@@ -935,32 +927,22 @@ def _build_all():
         y_shift_fn=east_y_shift,
     )
     # South east of walkway: corner blocks only at each side of the opening
-    # Corner block on east side of walkway opening (west face flush with WALK_X2)
-    cx_walk_e = WALK_X2 + BRIDGE_BLK_HW
+    # East end cap: one corner block at the end of the kept west wall
+    # segment (midpoint, X≈1666), capping the opening's west edge.
+    cx_wall_end = _span4_west_mid - BRIDGE_BLK_HW
     BRUSHES.append(
         box(
-            cx_walk_e - BRIDGE_BLK_HW,
+            cx_wall_end - BRIDGE_BLK_HW,
             BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
-            cx_walk_e + BRIDGE_BLK_HW,
+            cx_wall_end + BRIDGE_BLK_HW,
             BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
             BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
             Textures.CEMENT,
         )
     )
-    # Extra block on west side of walkway opening (east face flush with WALK_X1)
-    cx_walk_w = WALK_X1 - BRIDGE_BLK_HW
-    BRUSHES.append(
-        box(
-            cx_walk_w - BRIDGE_BLK_HW,
-            BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            cx_walk_w + BRIDGE_BLK_HW,
-            BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
-            Textures.CEMENT,
-        )
-    )
+    # East opening (midpoint→Pier5) has no corner block — wall/blocks removed
+    # there for the steps down to the ground.
 
     # ── Parapet handrail tubes (two 4×4 rods stacked, through parapet blocks/pillars) ─
     tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
@@ -1040,30 +1022,21 @@ def _build_all():
                     Textures.RAIL,
                 )
             )
-        # South tube west piece (BRIDGE.x2→WALK_X1): before pier, straight
+        # South tube west piece — matches the wall: stays attached to Pier 4,
+        # extending east only to the midpoint.
         BRUSHES.append(
             box(
                 BRIDGE.x2,
                 tube_sy1,
                 tube_base_z,
-                WALK_X1,
+                _span4_west_mid,
                 tube_sy2,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 Textures.RAIL,
             )
         )
-        # South tube east piece (WALK_X2→world wall): straight to pivot, then two angled segments
-        BRUSHES.append(
-            box(
-                WALK_X2,
-                tube_sy1,
-                tube_base_z,
-                BRIDGE_EAST_PIVOT_X,
-                tube_sy2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
-        )
+        # South tube east piece (WALK_X2→Pier5) removed — no railing on the
+        # open east half of span 4.
         for seg_x1, seg_x2 in [
             (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
             (MID_PIER_X, PAR_EAST_END_X),
