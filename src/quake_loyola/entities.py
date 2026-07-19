@@ -119,25 +119,36 @@ from .geometry import (
     render_text_flat,
     render_text_flat_x,
 )
+from .west_campus_terrain import terrain_z
 
 
 def build():
     if not ENTITIES_ENABLED:
-        # Keep the map loadable with a single spawn on Charles St at ground
-        # level (centre span, directly under the bridge), rather than on
-        # top of the bridge deck.
+        # Keep the map loadable with a single spawn on the walkable
+        # west-campus ground near Pier 1 (real terrain_z grade, via the
+        # driveway between the dorm's north/south wings), facing east
+        # toward the bridge. The hidden west teleport built into Pier 1
+        # (see abutment_teleport_brush in bridge.py) sits inside
+        # unreachable terrain by design — there's no normal walkable path
+        # leading to it — so this spawns on solid ground near the pier
+        # instead of trying to spawn "at" the teleport itself.
         # Also expose it as "dest_start" so trigger_teleports elsewhere (e.g.
         # the basement's teleport back up, basement.py) can target it even
         # while the full entity set is disabled. Offset slightly from the
         # spawn origin so the two point entities don't exactly coincide
         # (see test_no_duplicate_point_entity_origins).
-        start_z = int(FLOOR_Z2 + 32)
+        pier1_west_face = min(BRIDGE_ARCH_X) - BRIDGE_PILLAR_HW
+        start_x = pier1_west_face - 96
+        start_y = 0
+        start_z = int(terrain_z(start_x, start_y) + 24)
         return [], [
-            ent("info_player_start", origin=f"0 0 {start_z}", angle="0"),
+            ent(
+                "info_player_start", origin=f"{start_x} {start_y} {start_z}", angle="0"
+            ),
             ent(
                 "info_teleport_destination",
                 targetname="dest_start",
-                origin=f"0 24 {start_z}",
+                origin=f"{start_x} {start_y + 24} {start_z}",
                 angle="0",
             ),
         ]
@@ -677,11 +688,19 @@ def build():
     )
     ENTITIES.append(brush_ent("func_detail", kh_stone_arch))
 
+    # West abutment (min(BRIDGE_ARCH_X), Pier 1) teleport lands the player on
+    # the deck right above it (dest_abutment_deck, see bridge.py) — spawn
+    # nearby on the open deck (clear of the pier's parapet cap blocks and
+    # offset a little east of the teleport landing spot so the two point
+    # entities don't exactly coincide, see test_no_duplicate_point_entity_
+    # origins), facing east back across the bridge toward Knott Hall.
+    spawn_x = min(BRIDGE_ARCH_X) + 64
+    spawn_z = int(deck_top_z(spawn_x) + 24)
     ENTITIES.append(
         ent(
             "info_player_start",
-            origin=f"{KNOTT_CX} {BRIDGE.y1 + BRIDGE_PAR_W + 32} {int(BRIDGE_DZ2 + 24)}",
-            angle="180",
+            origin=f"{spawn_x} 0 {spawn_z}",
+            angle="0",
         )
     )
     # Also exposed as "dest_start" so trigger_teleports elsewhere (e.g. the
@@ -692,8 +711,8 @@ def build():
         ent(
             "info_teleport_destination",
             targetname="dest_start",
-            origin=f"{KNOTT_CX} {BRIDGE.y1 + BRIDGE_PAR_W + 32 + 24} {int(BRIDGE_DZ2 + 24)}",
-            angle="180",
+            origin=f"{spawn_x} 24 {spawn_z}",
+            angle="0",
         )
     )
 
