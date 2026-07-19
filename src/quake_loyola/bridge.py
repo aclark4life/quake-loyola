@@ -39,6 +39,9 @@ from .constants import (
     BRIDGE_BLK_PIER_CLEARANCE,
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_CENTER_SPAN_PIER_EMBED,
+    BRIDGE_DECK_CROSS_STRIP_DROP,
+    BRIDGE_DECK_CROSS_STRIP_H,
+    BRIDGE_DECK_CROSS_STRIP_HW,
     BRIDGE_DECK_EAST_RECESS,
     BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
@@ -286,6 +289,47 @@ def _build_all():
     DETAIL_BRUSHES = []
     _worldspawn_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
+
+    # ── Deck-bottom cross strips — one under each parapet block ───────────────────
+    # A separate thin, non-solid func_illusionary decal per block position: same
+    # GABLE (wood) texture as the longitudinal underside strip, rotated 90° so
+    # its grain runs perpendicular to the bridge's length, hung
+    # BRIDGE_DECK_CROSS_STRIP_DROP units below the structural deck-bottom face
+    # so it reads as flush from the ground without z-fighting against the
+    # structural slab. Built this way (a separate overlay, not by splitting the
+    # structural deck slab in X) because splitting previously-unified flat deck
+    # spans caused qbsp "WARNING 12: New portal was clipped away" and actual
+    # missing polygons in-game — see the note by iter_bridge_span_segments()
+    # below on why those spans are kept as single unsplit segments.
+    # Positions are computed here (independent of the actual block-placement
+    # closures defined later) purely from each span's block-count/margin.
+    BRIDGE_BLK_PIR_M = (
+        BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
+    )  # clearance from pier centre to block centre
+
+    def _parapet_block_centers(x_start, x_end, n, west_margin=None, east_margin=None):
+        """Same spacing formula add_parapet_blocks uses for its north-side
+        blocks (west_margin/east_margin default to the pier-clearance margin,
+        BRIDGE_BLK_PIR_M, same as add_repeated_parapet_decorations below)."""
+        mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
+        mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
+        x0 = x_start + mx0
+        x1_lim = x_end - mx1
+        return [x0 + (x1_lim - x0) * (k + 1) / (n + 1) for k in range(n)]
+
+    CROSS_STRIP_X = sorted(
+        _parapet_block_centers(
+            BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], 3, west_margin=0, east_margin=0
+        )
+        + _parapet_block_centers(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+        + _parapet_block_centers(
+            BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3, west_margin=0, east_margin=0
+        )
+        + _parapet_block_centers(
+            BRIDGE.x2, BRIDGE_ARCH_X[4], 3, west_margin=BRIDGE_BLK_HW + 8
+        )
+    )
+
     # ── Bridge deck slab — the walkable surface across the whole span ─────────────
     # Straight section: arch terminus → easternmost pier
     # Split across Y into cement-margin / wood / cement-margin strips so a
@@ -415,6 +459,31 @@ def _build_all():
                     tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
                 )
             )
+
+    # Cross-strip decals (see note above): one func_illusionary brush per
+    # CROSS_STRIP_X position, spanning the same Y-extent as the longitudinal
+    # wood band (_dw_y1b.._dw_y2a — stopping short of the true edge, same as
+    # the rest of the underside), hung BRIDGE_DECK_CROSS_STRIP_DROP units
+    # below the structural deck bottom at that X so it reads as flush without
+    # being exactly coplanar with (and z-fighting against) the structural slab.
+    _cross_strip_brushes = []
+    for _cx in CROSS_STRIP_X:
+        _strip_z2 = deck_bot_z(_cx) - BRIDGE_DECK_CROSS_STRIP_DROP
+        _strip_z1 = _strip_z2 - BRIDGE_DECK_CROSS_STRIP_H
+        _cross_strip_brushes.append(
+            box(
+                _cx - BRIDGE_DECK_CROSS_STRIP_HW,
+                _dw_y1b,
+                _strip_z1,
+                _cx + BRIDGE_DECK_CROSS_STRIP_HW,
+                _dw_y2a,
+                _strip_z2,
+                Textures.GABLE,
+                tb_params="0 0 90 1 1",
+            )
+        )
+    ENTITIES.append(brush_ent("func_illusionary", _cross_strip_brushes))
+
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
     # North east parapet: straight BRIDGE.x2→pier, then angled pier→world wall
     BRUSHES.append(
@@ -512,9 +581,8 @@ def _build_all():
             )
 
     # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
-    BRIDGE_BLK_PIR_M = (
-        BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
-    )  # clearance from pier centre to block centre
+    # BRIDGE_BLK_PIR_M already computed above (deck-bottom cross-strip section)
+    # using this same formula.
 
     def add_repeated_parapet_decorations(
         x_start,

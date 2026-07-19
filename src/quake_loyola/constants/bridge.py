@@ -31,6 +31,18 @@ BRIDGE_DECK_EDGE_CEMENT_W = 16  # width of the cement margin kept along each sid
 # (north/south) of the deck's wood-textured (GABLE) underside — a small strip of
 # the original cement/stone edge beam remains visible on both sides rather than
 # the whole underside being wood.
+BRIDGE_DECK_CROSS_STRIP_HW = BRIDGE_BLK_HW  # half-width (X) of each deck-bottom
+# cross strip — matches the parapet block's own half-width so the strip (same
+# GABLE wood texture as the underside, rotated 90°) reads as a transverse
+# joist directly under that block.
+BRIDGE_DECK_CROSS_STRIP_DROP = 1  # units the cross-strip decal hangs below the
+# structural deck-bottom face — just enough to avoid z-fighting against it
+# while still reading as flush from normal viewing distance. Built as a
+# separate non-solid (func_illusionary) brush rather than by splitting the
+# structural deck slab itself, since splitting the previously-unified flat
+# spans there caused qbsp "WARNING 12: New portal was clipped away" and
+# actual missing polygons in-game.
+BRIDGE_DECK_CROSS_STRIP_H = 4  # thickness of the cross-strip decal brush
 BRIDGE_DZ1, BRIDGE_DZ2 = (
     256,
     272,

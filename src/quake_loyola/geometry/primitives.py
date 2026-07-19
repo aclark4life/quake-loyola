@@ -15,6 +15,7 @@ def box(
     tt=None,
     tb=None,
     tt_params="0 0 0 1 1",
+    tb_params="0 0 0 1 1",
     tw=None,
     te=None,
     ts=None,
@@ -51,7 +52,7 @@ def box(
             Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), te),
             Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ts),
             Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tn),
-            Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb),
+            Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb, tb_params),
             Face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
         ]
     )
@@ -202,7 +203,9 @@ def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
     return pieces
 
 
-def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
+def shear_box_y(
+    x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
+):
     tt, tb = tt or tex, tb or tex
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2
@@ -212,7 +215,7 @@ def shear_box_y(x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None):
             Face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),
             Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),
             Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),
-            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb),
+            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb, tb_params),
             Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),
         ]
     )
@@ -252,7 +255,20 @@ def pyramid(x1, y1, z1, x2, y2, z2, tex):
 
 
 def ramp_slab(
-    x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
+    x1,
+    x2,
+    y1,
+    y2,
+    zb1,
+    zb2,
+    zt1,
+    zt2,
+    tex,
+    tt=None,
+    tb=None,
+    te=None,
+    ts=None,
+    tb_params="0 0 0 1 1",
 ):
     tt, tb, te, ts = tt or tex, tb or tex, te or tex, ts or tex
     if x1 > x2:
@@ -272,7 +288,7 @@ def ramp_slab(
     faces += [
         Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), ts),
         Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), ts),
-        Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb),
+        Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb, tb_params),
         Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),
     ]
     return Brush(faces)
