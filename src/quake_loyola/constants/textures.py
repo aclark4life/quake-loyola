@@ -1,4 +1,24 @@
-"""The Textures table of WAD texture names used across every area module."""
+"""The Textures table of WAD texture names used across every area module.
+
+The sky texture (used on every sky-textured face in bridge.py/streets.py,
+and as the worldspawn "sky" field) is selectable via the ``sky_preset``
+build setting — ``"day"`` (default, quake101.wad's blue-cloud ``sky1``) or
+``"night"`` (ad.wad's dark starfield-like ``skyzig``). Override with
+``ql conf set sky_preset night`` or by editing ql.toml.
+"""
+
+from ..config import get_build as _get_build
+
+# Named `sky_preset` build-setting values that map to a WAD sky texture name.
+SKY_PRESETS: dict[str, str] = {
+    "day": "sky4",  # quake101.wad — bright daytime sky
+    "night": "sky1",  # quake101.wad — dark nighttime sky
+}
+
+# Sorted list of valid `sky_preset` build-setting values — used by the
+# `ql conf set sky_preset <name>` CLI to validate input and by docs/help
+# text without needing to import the full SKY_PRESETS dict.
+SKY_PRESET_NAMES: list[str] = sorted(SKY_PRESETS)
 
 
 class Textures:
@@ -31,7 +51,7 @@ class Textures:
     ROOF = "roofkell1"
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
-    SKY = "sky1"
+    SKY = SKY_PRESETS[_get_build("sky_preset")]
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WALL = "city2_7"

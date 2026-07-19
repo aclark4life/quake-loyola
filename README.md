@@ -55,6 +55,7 @@ ql conf set vis_mode full             # "fast" (default) or "full" vis pass
 ql conf set light_extra true          # light -extra (2x2 supersampling)
 ql conf set lighting_preset dusk      # dawn/midday/golden_hour/dusk/overcast/night/bright/afternoon
 ql conf set fog_density high          # "default" (preset's own), off/low/med/high, or a custom float
+ql conf set sky_preset night          # day (default) or night
 ql conf set vis_mode=full lighting_preset=dusk fog_density=high  # set several at once
 ql conf get KNOTT_ENABLED
 ql conf reset                         # delete ql.toml, back to defaults

@@ -43,6 +43,21 @@ def test_set_and_get_build_setting_round_trips(tmp_path):
     assert raw["build"]["vis_mode"] == "full"
 
 
+def test_sky_preset_default_is_day():
+    assert config.get_build("sky_preset") == "day"
+
+
+def test_set_and_get_sky_preset_round_trips(tmp_path):
+    path = tmp_path / "ql.toml"
+    config.set_build("sky_preset", "night", path=path)
+    raw = config._read_toml(path)
+    assert raw["build"]["sky_preset"] == "night"
+    merged = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
+    assert merged["sky_preset"] == "night"
+    # The global default (unaffected by a path-scoped write) stays "day".
+    assert config.get_build("sky_preset") == "day"
+
+
 def test_reset_removes_config_file(tmp_path):
     path = tmp_path / "ql.toml"
     config.set_flag("KNOTT_ENABLED", True, path=path)

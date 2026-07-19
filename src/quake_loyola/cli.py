@@ -78,6 +78,10 @@ def config_show() -> None:
             options = (
                 f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
             )
+        elif name == "sky_preset":
+            from .constants.textures import SKY_PRESET_NAMES
+
+            options = f", options: {', '.join(SKY_PRESET_NAMES)}"
         typer.echo(
             f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
         )
@@ -132,6 +136,14 @@ def _set_one(name: str, value: str) -> str:
                         f"{sorted(FOG_DENSITY_NAMES)}, or a numeric string"
                     ) from None
             parsed_build = value
+        elif name == "sky_preset":
+            from .constants.textures import SKY_PRESET_NAMES
+
+            if value not in SKY_PRESET_NAMES:
+                raise typer.BadParameter(
+                    f"sky_preset must be one of {SKY_PRESET_NAMES}"
+                )
+            parsed_build = value
         else:
             parsed_build = _parse_bool(value)
         config.set_build(name, parsed_build)
@@ -161,6 +173,7 @@ def config_set(
         ql conf set light_extra true
         ql conf set lighting_preset dusk
         ql conf set fog_density high           # or "default"/"off"/"low"/"med"/"high"/a float
+        ql conf set sky_preset night           # or "day"
 
     Multiple settings at once (NAME=VALUE form, space-separated):
         ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
