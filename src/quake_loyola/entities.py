@@ -41,6 +41,15 @@ from .constants import (
     ENNIS_WALL_T,
     ENNIS_Y,
     ENTITIES_ENABLED,
+    ENTITIES_ENABLED_AMMO,
+    ENTITIES_ENABLED_DM_SPAWNS,
+    ENTITIES_ENABLED_EXIT,
+    ENTITIES_ENABLED_HEALTH,
+    ENTITIES_ENABLED_MONSTERS,
+    ENTITIES_ENABLED_PLATFORM,
+    ENTITIES_ENABLED_TELEPORTS,
+    ENTITIES_ENABLED_VEGETATION,
+    ENTITIES_ENABLED_WEAPONS,
     FLOOR_Z2,
     INDENT,
     KH_ROOFTOP_ORIGIN,
@@ -382,6 +391,8 @@ def build():
     if not KNOTT_ENABLED_INTERIOR:
         del ENTITIES[knott_entity_start:]
 
+    # ── Teleports (bridge arches, Charles St arches, Ennis/KH-driveway arches) ────
+    teleports_start = len(ENTITIES)
     # Teleport destinations — west arch ↔ east arch
     ENTITIES.append(
         ent(
@@ -683,6 +694,9 @@ def build():
     )
     ENTITIES.append(brush_ent("func_detail", kh_stone_arch))
 
+    if not ENTITIES_ENABLED_TELEPORTS:
+        del ENTITIES[teleports_start:]
+
     # Temporarily right on span 5's deck next to Pier 6, instead of the west
     # abutment or the KH driveway, for direct on-the-spot testing of the
     # Pier 6 / span 5 invisible-wall debugging (see bridge.py). Spawn just
@@ -716,83 +730,99 @@ def build():
     DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2  # south building 2 center Y
 
     # ── Deathmatch spawns — spread across all areas ──────────────────────────
-    for pos, angle in [
-        # Bridge deck (centre span — Y/Z shifted via _cs_offset)
-        ((0, *_cs_offset(0, 0, int(deck_top_z(0) + 32))), 180),
-        ((-200, *_cs_offset(-200, 0, int(deck_top_z(-200) + 32))), 90),
-        ((200, *_cs_offset(200, 0, int(deck_top_z(200) + 32))), 270),
-        ((-400, *_cs_offset(-400, 0, int(deck_top_z(-400) + 32))), 90),
-        ((400, *_cs_offset(400, 0, int(deck_top_z(400) + 32))), 270),
-        # Walkway — centred over the ramp span (X=WALK_X1..WALK_X2, not
-        # KNOTT_CX which sits ~40 units west of the walkway) with Z
-        # interpolated between the sloped ramp's two end heights.
-        *(
-            [
-                (
+    if ENTITIES_ENABLED_DM_SPAWNS:
+        for pos, angle in [
+            # Bridge deck (centre span — Y/Z shifted via _cs_offset)
+            ((0, *_cs_offset(0, 0, int(deck_top_z(0) + 32))), 180),
+            ((-200, *_cs_offset(-200, 0, int(deck_top_z(-200) + 32))), 90),
+            ((200, *_cs_offset(200, 0, int(deck_top_z(200) + 32))), 270),
+            ((-400, *_cs_offset(-400, 0, int(deck_top_z(-400) + 32))), 90),
+            ((400, *_cs_offset(400, 0, int(deck_top_z(400) + 32))), 270),
+            # Walkway — centred over the ramp span (X=WALK_X1..WALK_X2, not
+            # KNOTT_CX which sits ~40 units west of the walkway) with Z
+            # interpolated between the sloped ramp's two end heights.
+            *(
+                [
                     (
-                        (WALK_X1 + WALK_X2) // 2,
-                        (BRIDGE.y1 + KNOTT.y2) // 2,
-                        int((WALK_ZT1 + WALK_ZT2) // 2 + 32),
+                        (
+                            (WALK_X1 + WALK_X2) // 2,
+                            (BRIDGE.y1 + KNOTT.y2) // 2,
+                            int((WALK_ZT1 + WALK_ZT2) // 2 + 32),
+                        ),
+                        180,
+                    )
+                ]
+                if KNOTT_ENABLED_INTERIOR
+                else []
+            ),
+            # Knott Hall — ground, mid, upper floors
+            *(
+                [
+                    (
+                        (
+                            (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2,
+                            KNOTT.y2 - 80,
+                            KNOTT_GROUND_Z + 40,
+                        ),
+                        180,
+                    ),  # entrance hallway, north
+                    (
+                        (KNOTT_CX - 100, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h + 40),
+                        270,
                     ),
-                    180,
+                    (
+                        (
+                            KNOTT_CX + 100,
+                            knott_cy,
+                            KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40,
+                        ),
+                        90,
+                    ),
+                    (
+                        (
+                            KNOTT_CX,
+                            KNOTT.y1 + 100,
+                            KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40,
+                        ),
+                        0,
+                    ),
+                    (
+                        (KNOTT_CX, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40),
+                        180,
+                    ),
+                    # Knott Hall rooftop
+                    ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
+                ]
+                if KNOTT_ENABLED_INTERIOR
+                else []
+            ),
+            # Charles Street
+            ((0, 300, ROAD_Z + 24), 180),
+            ((0, -400, ROAD_Z + 24), 0),
+            ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
+            # North building interior
+            ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
+            ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
+            # North building roof ridge — offset from the ridge-centre teleport
+            # destination / mega-armor pickup to avoid spawn telefrags.
+            ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
+            # South buildings interiors
+            ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
+            ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
+            # Ground east/west of bridge
+            ((800, 0, ROAD_Z + 24), 270),
+            ((-800, 0, ROAD_Z + 24), 90),
+        ]:
+            ENTITIES.append(
+                ent(
+                    "info_player_deathmatch",
+                    origin=f"{pos[0]} {pos[1]} {pos[2]}",
+                    angle=str(angle),
                 )
-            ]
-            if KNOTT_ENABLED_INTERIOR
-            else []
-        ),
-        # Knott Hall — ground, mid, upper floors
-        *(
-            [
-                (
-                    (
-                        (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2,
-                        KNOTT.y2 - 80,
-                        KNOTT_GROUND_Z + 40,
-                    ),
-                    180,
-                ),  # entrance hallway, north
-                ((KNOTT_CX - 100, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h + 40), 270),
-                (
-                    (KNOTT_CX + 100, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40),
-                    90,
-                ),
-                (
-                    (KNOTT_CX, KNOTT.y1 + 100, KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40),
-                    0,
-                ),
-                ((KNOTT_CX, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40), 180),
-                # Knott Hall rooftop
-                ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
-            ]
-            if KNOTT_ENABLED_INTERIOR
-            else []
-        ),
-        # Charles Street
-        ((0, 300, ROAD_Z + 24), 180),
-        ((0, -400, ROAD_Z + 24), 0),
-        ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
-        # North building interior
-        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
-        ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
-        # North building roof ridge — offset from the ridge-centre teleport
-        # destination / mega-armor pickup to avoid spawn telefrags.
-        ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
-        # South buildings interiors
-        ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
-        ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
-        # Ground east/west of bridge
-        ((800, 0, ROAD_Z + 24), 270),
-        ((-800, 0, ROAD_Z + 24), 90),
-    ]:
-        ENTITIES.append(
-            ent(
-                "info_player_deathmatch",
-                origin=f"{pos[0]} {pos[1]} {pos[2]}",
-                angle=str(angle),
             )
-        )
 
     # ── Weapons ───────────────────────────────────────────────────────────────
+    weapons_start = len(ENTITIES)
     # Rocket launcher — bridge centre (high value, exposed position)
     _rl_y, _rl_z = _cs_offset(0, 0, int(deck_top_z(0) + 8))
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
@@ -882,7 +912,11 @@ def build():
         ent("weapon_lightning", origin=f"0 -500 {ROAD_Z + 24}")
     )  # south Charles St
 
+    if not ENTITIES_ENABLED_WEAPONS:
+        del ENTITIES[weapons_start:]
+
     # ── Ogres — spread across open areas and upper floors ─────────────────────
+    monsters_start = len(ENTITIES)
     # Bridge deck
     _og1_y, _og1_z = _cs_offset(-300, 0, int(deck_top_z(-300) + 8))
     _og2_y, _og2_z = _cs_offset(300, 0, int(deck_top_z(300) + 8))
@@ -931,6 +965,9 @@ def build():
         )
 
     # ── Ammo ──────────────────────────────────────────────────────────────────
+    if not ENTITIES_ENABLED_MONSTERS:
+        del ENTITIES[monsters_start:]
+    ammo_start = len(ENTITIES)
     for ax in BRIDGE_ARCH_X:
         ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(deck_top_z(ax) + 8)}"))
     for rx in [400, 800]:
@@ -953,7 +990,11 @@ def build():
     ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 
+    if not ENTITIES_ENABLED_AMMO:
+        del ENTITIES[ammo_start:]
+
     # ── Health & Armor ────────────────────────────────────────────────────────
+    health_start = len(ENTITIES)
     # Health — scattered throughout
     # Offset from the bridge-centre rocket launcher (X=0) so the two
     # pickups don't stack on the exact same origin.
@@ -1005,6 +1046,9 @@ def build():
             origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
         )
     )  # mega armor on roof ridge (teleport reward)
+
+    if not ENTITIES_ENABLED_HEALTH:
+        del ENTITIES[health_start:]
 
     # Torch lights on pillar caps are now built alongside the pier geometry in
     # bridge.py's own BRIDGE_ENABLED_SUPPORTS loops (unconditional on ENTITIES_ENABLED),
@@ -1203,6 +1247,7 @@ def build():
                     )
 
     # ── Featured pixel-art tree — in front of Knott Hall ────────────────────────
+    vegetation_start = len(ENTITIES)
     # Centred on KH's Y midpoint, set just west of the KH facade.
     _tree_cx = KNOTT.x1 - 200
     _tree_cy = (KNOTT.y1 + KNOTT.y2) // 2
@@ -1424,7 +1469,11 @@ def build():
 
     ENTITIES.append(brush_ent("func_detail", all_bush_brushes))
 
+    if not ENTITIES_ENABLED_VEGETATION:
+        del ENTITIES[vegetation_start:]
+
     # ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
+    platform_start = len(ENTITIES)
     # Outbound: east lane north on Charles → south lane east on Ennis → east end
     # Return:   west lane south on Charles ← north lane west on Ennis ← east end
     # ── Charles Street platform — via back road, no Ennis lane switch ─────────────
@@ -1562,7 +1611,11 @@ def build():
             ent("weapon_rocketlauncher", origin=f"{rocket_x} {rocket_y} {rocket_z}")
         )
 
+    if not ENTITIES_ENABLED_PLATFORM:
+        del ENTITIES[platform_start:]
+
     # ── Monsters ──────────────────────────────────────────────────────────────────
+    monsters2_start = len(ENTITIES)
     # Grunts patrol Charles Street and Ennis
     monster_stand_z = ROAD_Z + 24
     for monster_x, monster_y, monster_angle in [
@@ -1723,7 +1776,11 @@ def build():
                 )
             )
 
+    if not ENTITIES_ENABLED_MONSTERS:
+        del ENTITIES[monsters2_start:]
+
     # ── Single-player exit — inside north dorm 2 (southern north dorm) ──────────
+    exit_start = len(ENTITIES)
     # Loops back to this map. Portal stands inside north dorm 2.
     dorm_exit_xc = (DORM.x1 + DORM.x2) // 2
     _north2_y2 = DORM_NORTH_Y1  # north face of dorm 2 = south face of dorm 1
@@ -1851,6 +1908,9 @@ def build():
         )
         if lb:
             ENTITIES.append(brush_ent("func_detail", lb))
+
+    if not ENTITIES_ENABLED_EXIT:
+        del ENTITIES[exit_start:]
 
     ENTITIES.append(
         ent(

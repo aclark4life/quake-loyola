@@ -92,6 +92,31 @@ KNOTT_ENABLED = _flag(
 ENTITIES_ENABLED = _flag(
     "ENTITIES_ENABLED"
 )  # entities.py — items, monsters, decorative lights, extra spawns (a single info_player_start is always kept so the map stays loadable)
+# Per-group sub-flags nested under ENTITIES_ENABLED (only take effect when
+# that master is True) — mirrors the BRIDGE_ENABLED_SPAN_*/WEST_CAMPUS_ENABLED_*
+# pattern so each entity group can be toggled independently while testing.
+ENTITIES_ENABLED_TELEPORTS = _flag(
+    "ENTITIES_ENABLED_TELEPORTS"
+)  # bridge west/east arch + Charles St arches + Ennis/KH-driveway arch teleports
+ENTITIES_ENABLED_DM_SPAWNS = _flag(
+    "ENTITIES_ENABLED_DM_SPAWNS"
+)  # info_player_deathmatch spawns
+ENTITIES_ENABLED_WEAPONS = _flag("ENTITIES_ENABLED_WEAPONS")  # weapon_* pickups
+ENTITIES_ENABLED_AMMO = _flag("ENTITIES_ENABLED_AMMO")  # item_rockets/shells/spikes
+ENTITIES_ENABLED_HEALTH = _flag("ENTITIES_ENABLED_HEALTH")  # item_health/armor pickups
+ENTITIES_ENABLED_MONSTERS = _flag(
+    "ENTITIES_ENABLED_MONSTERS"
+)  # non-KH-interior monsters (ogres, grunts, demon knights); KH-interior
+# monsters remain separately gated by KNOTT_ENABLED_MONSTERS
+ENTITIES_ENABLED_VEGETATION = _flag(
+    "ENTITIES_ENABLED_VEGETATION"
+)  # decorative trees/bushes
+ENTITIES_ENABLED_PLATFORM = _flag(
+    "ENTITIES_ENABLED_PLATFORM"
+)  # Charles St scrolling platform loop + its rocket launchers
+ENTITIES_ENABLED_EXIT = _flag(
+    "ENTITIES_ENABLED_EXIT"
+)  # single-player trigger_changelevel exit portal
 LIGHTS_ENABLED = _flag(
     "LIGHTS_ENABLED"
 )  # master switch for every "light"-classname entity across all modules (streets, entities, west_campus, bridge, etc.); see generate_map.py filter
