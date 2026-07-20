@@ -1139,18 +1139,10 @@ def build():
         for floor_index in range(KNOTT.floors)
     ]
 
-    # Shaft North wall (internal, solid)
-    DETAIL_BRUSHES.append(
-        box(
-            KNOTT_SHAFT_X1,
-            KNOTT_SHAFT_Y2,
-            KNOTT_GROUND_Z,
-            KNOTT_SHAFT_X2,
-            KNOTT_SHAFT_Y2 + shaft_wall,
-            KNOTT_Z2,
-            Textures.FLOOR_KH,
-        )
-    )
+    # Shaft North wall: omitted — KNOTT_SHAFT_Y2 == KNOTT_BIY2 (the building's
+    # exterior north wall's interior face), so a wall brush here would sit
+    # entirely inside the already-solid exterior wall. Unlike the south wall
+    # below, there's no open interior space on this side to seal.
     # Shaft South wall (internal, solid)
     DETAIL_BRUSHES.append(
         box(
@@ -1215,18 +1207,10 @@ def build():
         for _, fz1, _, _, _ in floor_levels()
     ]
 
-    # West stairwell North wall (internal, solid)
-    DETAIL_BRUSHES.append(
-        box(
-            KNOTT_STAIRS_X1,
-            KNOTT_STAIRS_Y2,
-            KNOTT_GROUND_Z,
-            KNOTT_STAIRS_X2,
-            KNOTT_STAIRS_Y2 + shaft_wall,
-            KNOTT_Z2,
-            Textures.FLOOR_KH,
-        )
-    )
+    # West stairwell North wall: omitted — KNOTT_STAIRS_Y2 == KNOTT_BIY2 (the
+    # building's exterior north wall's interior face), so a wall brush here
+    # would sit entirely inside the already-solid exterior wall (same
+    # reasoning as the shaft's north wall above).
     # West stairwell South wall (internal, solid)
     DETAIL_BRUSHES.append(
         box(

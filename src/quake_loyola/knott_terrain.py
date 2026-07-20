@@ -1366,14 +1366,16 @@ def build():
 
     # East junction corner: center at NE corner of east sidewalk (pushed north
     # to _east_ext_y2, mirroring the NW corner's bulge treatment), arc sweeps
-    # 90°→180°.
+    # 90°→180° — background pushed north (and its far edge extended) to match
+    # the corner's new center at _east_ext_y2 (mirrors the west junction fix).
+    _east_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _east_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_ES_X1,
             _east_ext_y2,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_JCY,
+            _east_jc_y2,
             FLOOR_Z2 + 2,
             Textures.ROAD,
         )
