@@ -615,6 +615,20 @@ def _build_all():
     )
     # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
     # is now fully open for steps down to the ground.
+    # Span 5 (Pier5→MID_PIER_X) straight piece — mirrors the north east
+    # parapet's (PIER5_X, BRIDGE_EAST_PIVOT_X) segment; this side was
+    # previously missing, leaving span 5's south edge with no deck wall.
+    BRUSHES.append(
+        box(
+            PIER5_X,
+            BRIDGE.y1,
+            BRIDGE_DZ2,
+            MID_PIER_X,
+            BRIDGE.y1 + BRIDGE_PAR_W,
+            BRIDGE_DZ2 + BRIDGE.parapet_h,
+            Textures.CEMENT,
+        )
+    )
     # Angled piece split at MID_PIER_X (=PIER6_X) — same overlap reasoning as
     # the north east parapet above.
     for _seg_x1, _seg_x2 in [
@@ -1130,6 +1144,21 @@ def _build_all():
         )
         # South tube east piece (WALK_X2→Pier5) removed — no railing on the
         # open east half of span 4.
+        # Span 5 (Pier5→MID_PIER_X) straight piece — mirrors the north
+        # tube's (PIER5_X, BRIDGE_EAST_PIVOT_X) segment; matches the deck
+        # wall fix above so span 5's south railing isn't floating with no
+        # wall beneath it.
+        BRUSHES.append(
+            box(
+                PIER5_X,
+                tube_sy1,
+                tube_base_z,
+                MID_PIER_X,
+                tube_sy2,
+                tube_base_z + BRIDGE_TUBE_HW * 2,
+                Textures.RAIL,
+            )
+        )
         for seg_x1, seg_x2 in [
             (MID_PIER_X, PAR_EAST_END_X),
         ]:
