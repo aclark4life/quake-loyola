@@ -126,6 +126,9 @@ from .bridge import (
     BRIDGE_WEST_OUTER_PIER_SPAN,
     BRIDGE_Y1,
     BRIDGE_Y2,
+    PIER6_NOTCH_LEN,
+    PIER6_ROTATION_DEG,
+    PIER6_ROTATION_MARGIN,
     BridgeSpec,
 )
 from .derived import (
@@ -940,6 +943,9 @@ __all__ = [
     "PIER4_X",
     "PIER5_X",
     "PIER6_X",
+    "PIER6_ROTATION_DEG",
+    "PIER6_ROTATION_MARGIN",
+    "PIER6_NOTCH_LEN",
     "PLAT_H",
     "ROAD_VERGE_BUFFER",
     "ROAD_X1",

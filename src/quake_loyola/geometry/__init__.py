@@ -31,6 +31,7 @@ from .primitives import (
     shear_box_z,
     shear_pyramid_y,
     slab_chamfered_y,
+    taper_box_y,
     tri_prism,
     tri_ramp_prism,
 )
@@ -95,6 +96,7 @@ __all__ = [
     "shear_pyramid_y",
     "slab_chamfered_y",
     "square_wall",
+    "taper_box_y",
     "tile_face_plates",
     "tile_grid_origins",
     "torch_flame",

@@ -237,6 +237,27 @@ def shear_box_z(x1, y1, z1, x2, y2, z2, s1, s2, tex):
     return swap_xz(shear_box_y(z1, y1, x1, z2, y2, x2, s1, s2, tex))
 
 
+def taper_box_y(
+    x1, y1a, y2a, z1, x2, y1b, y2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
+):
+    """Like shear_box_y, but the Y-range at x1 (y1a..y2a) and at x2
+    (y1b..y2b) are given directly instead of as a shared shift — allowing
+    an asymmetric taper (e.g. the south edge staying put while the north
+    edge recedes), producing a trapezoid footprint rather than a
+    parallelogram."""
+    tt, tb = tt or tex, tb or tex
+    return Brush(
+        [
+            Face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),
+            Face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),
+            Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),
+            Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),
+            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb, tb_params),
+            Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),
+        ]
+    )
+
+
 def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2

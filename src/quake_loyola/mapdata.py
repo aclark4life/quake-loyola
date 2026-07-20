@@ -7,6 +7,7 @@ modules build these objects; generate_map.py assembles them through MapBuilder.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 from .utils import format_point, format_value
@@ -35,6 +36,35 @@ class Face:
             return (p[0] + dx, p[1] + dy, p[2] + dz)
 
         return Face(t(self.p1), t(self.p2), t(self.p3), self.tex, self.params)
+
+    def rotated_z(self, angle_deg: float, cx: float = 0.0, cy: float = 0.0) -> Face:
+        """Return a copy rotated by angle_deg (degrees, positive = counter-
+        clockwise looking down the -Z axis, i.e. standard math convention in
+        the XY plane) about the vertical axis through (cx, cy). Z is
+        unaffected.
+
+        Rotated coordinates are snapped to the nearest 0.1 unit. Off-grid
+        float coordinates from an arbitrary rotation angle are a known qbsp
+        fragility (WARNING 12 "New portal was clipped away in
+        CutNodePortals_r" plus outright missing/invisible polygons in-game),
+        and snapping noticeably reduces it. A full integer snap was tried
+        first but collapsed some of Pier 6's thin decorative tile-plate
+        faces (sub-1-unit thick) into degenerate zero-area planes ("Brush
+        plane with no normal"); 0.1-unit precision keeps those thin faces
+        intact while still rounding away most of the floating-point noise
+        that trips up qbsp's portal splitting."""
+        rad = math.radians(angle_deg)
+        cos_a, sin_a = math.cos(rad), math.sin(rad)
+
+        def r(p: Point) -> Point:
+            x, y = p[0] - cx, p[1] - cy
+            return (
+                round(cx + x * cos_a - y * sin_a, 1),
+                round(cy + x * sin_a + y * cos_a, 1),
+                p[2],
+            )
+
+        return Face(r(self.p1), r(self.p2), r(self.p3), self.tex, self.params)
 
     def is_inside(self, p: Point, eps: float = 1e-4) -> bool:
         """Return True if point p is on the solid (positive) side of this face's plane."""
@@ -96,6 +126,11 @@ class Brush:
         """Return a copy of this brush shifted by (dx, dy, dz)."""
         return Brush([f.translated(dx, dy, dz) for f in self.faces])
 
+    def rotated_z(self, angle_deg: float, cx: float = 0.0, cy: float = 0.0) -> Brush:
+        """Return a copy of this brush rotated angle_deg degrees about the
+        vertical axis through (cx, cy) — see Face.rotated_z."""
+        return Brush([f.rotated_z(angle_deg, cx, cy) for f in self.faces])
+
 
 @dataclass
 class Entity:
@@ -145,6 +180,44 @@ class Entity:
                 f"{format_value(ox + dx)} {format_value(oy + dy)} {format_value(oz + dz)}"
             )
         brushes = [b.translated(dx, dy, dz) for b in self.brushes]
+        return Entity(self.classname, fields, brushes)
+
+    def rotated_z(self, angle_deg: float, cx: float = 0.0, cy: float = 0.0) -> Entity:
+        """Return a copy rotated angle_deg degrees about the vertical axis
+        through (cx, cy) — brushes, and the "origin"/"angle" fields (if
+        present) for point entities such as lights or torch flames. Z is
+        unaffected. The "angle" field (Quake yaw, degrees, counter-clockwise
+        from east looking down) is adjusted by the same amount so directional
+        point entities keep facing the same relative way."""
+        fields = dict(self.fields)
+        origin = fields.get("origin")
+        if origin is not None:
+            parts = origin.split()
+            if len(parts) != 3:
+                raise ValueError(
+                    f'Entity "origin" field must have exactly 3 components, got {origin!r}'
+                )
+            try:
+                ox, oy, oz = (float(v) for v in parts)
+            except ValueError as exc:
+                raise ValueError(
+                    f'Entity "origin" field must contain numeric values, got {origin!r}'
+                ) from exc
+            rad = math.radians(angle_deg)
+            cos_a, sin_a = math.cos(rad), math.sin(rad)
+            x, y = ox - cx, oy - cy
+            nx = cx + x * cos_a - y * sin_a
+            ny = cy + x * sin_a + y * cos_a
+            fields["origin"] = (
+                f"{format_value(nx)} {format_value(ny)} {format_value(oz)}"
+            )
+        angle = fields.get("angle")
+        if angle is not None:
+            try:
+                fields["angle"] = format_value(float(angle) + angle_deg)
+            except ValueError:
+                pass
+        brushes = [b.rotated_z(angle_deg, cx, cy) for b in self.brushes]
         return Entity(self.classname, fields, brushes)
 
 

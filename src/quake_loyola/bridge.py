@@ -13,6 +13,8 @@ knott_hall.py (building walls, floors, interior) so each module has
 a single clear responsibility.
 """
 
+import math
+
 from .constants import (
     A_SEGS,
     ARCH_RIN,
@@ -107,6 +109,9 @@ from .constants import (
     PIER3_X,
     PIER4_X,
     PIER5_X,
+    PIER6_NOTCH_LEN,
+    PIER6_ROTATION_DEG,
+    PIER6_ROTATION_MARGIN,
     PIER6_X,
     STREET_SURFACE_T,
     WALK_X1,
@@ -135,6 +140,7 @@ from .geometry import (
     shear_box_y,
     shear_pyramid_y,
     square_wall,
+    taper_box_y,
     tile_face_plates,
     torch_flame_only,
 )
@@ -236,7 +242,15 @@ def _filter_sections(brushes, entities, enabled_names, extract_names=None):
     """
     if extract_names is None:
         extract_names = enabled_names
-    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+    # Extra allowance beyond the normal pillar footprint: Pier 6's below/
+    # above-deck assembly is rotated PIER6_ROTATION_DEG about its own
+    # center (see the per-pier loop), which pushes some of its brushes'
+    # X-extent well past a straight pillar's — without this, full-
+    # containment below would silently drop those brushes/entities out of
+    # every section (they'd fit in none), which read as missing/invisible
+    # geometry in-game. Piers are spaced hundreds of units apart, so this
+    # extra margin is always far short of encroaching on a neighbor.
+    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG + PIER6_ROTATION_MARGIN
     accept_ranges = _section_accept_ranges(enabled_names, margin)
     enabled_spans = [accept_ranges[name] for name in extract_names]
 
@@ -381,25 +395,80 @@ def _build_all():
     # Angled east section parapets go to worldspawn (not func_detail) to ensure
     # ericw-tools qbsp generates draw surfaces for the outer (Y-facing) faces.
     _ws = _worldspawn_brushes
+
+    # Triangular deck notch around rotated Pier 6: the deck's north edge
+    # recedes from MID_PIER_X (full width) to NOTCH_END_X (max recede), at
+    # the same angle as PIER6_ROTATION_DEG so the cut visually lines up
+    # with the rotated pier. There is no "recovering" leg back to full
+    # width — past Pier 6 the deck has never visibly extended further than
+    # this same short stub, so it just continues at the receded width.
+    # Only the "north family" band boundaries (y2c/y2b/y2a) recede; the
+    # south side (y1a/y1b/y1c) is untouched.
+    NOTCH_END_X = MID_PIER_X + PIER6_NOTCH_LEN
+    NOTCH_DROP = PIER6_NOTCH_LEN * abs(math.tan(math.radians(PIER6_ROTATION_DEG)))
+    _NORTH_YS = {_dw_y2c, _dw_y2b, _dw_y2a}
+
+    def _notch_drop(ys):
+        return NOTCH_DROP if ys in _NORTH_YS else 0.0
+
+    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+        # Receding leg: MID_PIER_X (full width) → NOTCH_END_X (max recede).
+        # Only the bands fully within the receded north-family region
+        # (both boundaries in _NORTH_YS) are built here — the south/centre
+        # bands (which straddle or sit entirely outside the notch) are
+        # skipped in this short stub: the rotated Pier 6 body already
+        # occupies that footprint, so building them there just produced a
+        # redundant sliver of overlapping geometry (the visible wedge
+        # artifact at the pier).
+        if _ys1 not in _NORTH_YS:
+            continue
+        BRUSHES.append(
+            taper_box_y(
+                MID_PIER_X,
+                _ys1 + east_y_shift(MID_PIER_X),
+                _ys2 + east_y_shift(MID_PIER_X),
+                BRIDGE_DZ1,
+                NOTCH_END_X,
+                _ys1 + east_y_shift(NOTCH_END_X) - _notch_drop(_ys1),
+                _ys2 + east_y_shift(NOTCH_END_X) - _notch_drop(_ys2),
+                BRIDGE_DZ2,
+                Textures.STONE,
+                tt=_tt,
+                tb=_tb,
+            )
+        )
+
     for seg_x1, seg_x2 in [
-        (MID_PIER_X, DECK_EAST_END_X),
+        (NOTCH_END_X, DECK_EAST_END_X),
     ]:
         for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+            # Stays at the receded (max-recede) width the whole way — no
+            # taper back to full width (see notch comment above).
             BRUSHES.append(
-                shear_box_y(
+                taper_box_y(
                     seg_x1,
-                    _ys1,
+                    _ys1 + east_y_shift(seg_x1) - _notch_drop(_ys1),
+                    _ys2 + east_y_shift(seg_x1) - _notch_drop(_ys2),
                     BRIDGE_DZ1,
                     seg_x2,
-                    _ys2,
+                    _ys1 + east_y_shift(seg_x2) - _notch_drop(_ys1),
+                    _ys2 + east_y_shift(seg_x2) - _notch_drop(_ys2),
                     BRIDGE_DZ2,
-                    east_y_shift(seg_x1),
-                    east_y_shift(seg_x2),
                     Textures.STONE,
                     tt=_tt,  # deck walking surface — thin edge strip along each side
                     tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
                 )
             )
+
+    # Pier 6's north "fill gap between pier top and deck surface" skirt is
+    # intentionally omitted here (unlike every other pier): with the deck
+    # notch removed back to a single permanently-receded leg, the deck's
+    # north edge simply stays pulled back for good past MID_PIER_X, so
+    # there's open space there rather than a seam needing a filler patch.
+    # Adding a skirt/taper of any size in this region (both the constant-
+    # offset and exact-rotated-line versions were tried) only produced a
+    # visible, wrong-shaped wedge — bigger skirts made it worse, so no
+    # skirt at all is closest to correct.
 
     # Span-segment boundaries shared by the wall (iter_bridge_span_segments)
     # and the parapet decorations below, so decorative blocks always sit
@@ -510,17 +579,19 @@ def _build_all():
     # fully overlaps the pier's solid geometry there — qbsp then mis-clips
     # portals across that overlap, producing invisible-but-solid walls. The
     # deck bands above already split at MID_PIER_X for the same reason; this
-    # matches that.
+    # matches that. The railing is further omitted from MID_PIER_X to
+    # NOTCH_END_X to match the deck's triangular notch there (open railing
+    # gap over the receded deck edge, prep for a future branch span).
     for _seg_x1, _seg_x2 in [
-        (MID_PIER_X, PAR_EAST_END_X),
+        (NOTCH_END_X, PAR_EAST_END_X),
     ]:
         _ws.append(
             shear_box_y(
                 _seg_x1,
-                BRIDGE.y2 - BRIDGE_PAR_W,
+                BRIDGE.y2 - BRIDGE_PAR_W - NOTCH_DROP,
                 BRIDGE_DZ2,
                 _seg_x2,
-                BRIDGE.y2,
+                BRIDGE.y2 - NOTCH_DROP,
                 BRIDGE_DZ2 + BRIDGE.parapet_h,
                 east_y_shift(_seg_x1),
                 east_y_shift(_seg_x2),
@@ -1091,6 +1162,8 @@ def _build_all():
                 and px not in BRIDGE_ENABLED_SUPPORTS
             ):
                 continue
+            _pier6_rot_bstart = len(BRUSHES) if px == PIER6_X else None
+            _pier6_rot_estart = len(ENTITIES) if px == PIER6_X else None
             pdeck = deck_top_z(px)  # deck surface at this X
             ppar = pdeck + BRIDGE.parapet_h  # parapet top
             ppil = ppar + BRIDGE_PILLAR_EXTRA  # pillar post top
@@ -1466,9 +1539,18 @@ def _build_all():
 
             # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
-            BRUSHES.append(
-                box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
-            )  # north
+            # Pier 6's north fill is built separately (after rotation, as a
+            # taper matching the deck notch slope) instead of here: this
+            # box sits off to one side of the rotation pivot (at by2, far
+            # from the pivot's y=py_shift), so sweeping it through the
+            # rigid-body whole-pier rotation swings its inner edge away
+            # from the deck's actual (fixed) edge at MID_PIER_X, opening a
+            # gap/wedge there rather than closing one. See the taper piece
+            # built alongside the deck notch below.
+            if px != PIER6_X:
+                BRUSHES.append(
+                    box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
+                )  # north
             BRUSHES.append(
                 box(
                     x1,
@@ -1590,6 +1672,28 @@ def _build_all():
                     Textures.SKY,
                 )
                 ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
+
+            if _pier6_rot_bstart is not None:
+                # Rotate Pier 6's entire assembly — below-deck walls/footer/
+                # lintel/base, and the above-deck pillar posts, mortar seams,
+                # pyramid caps, and torches built for this same px above —
+                # together as one rigid unit about the pier's own center.
+                # Earlier this only rotated the below-deck body, leaving the
+                # above-deck pillar posts (and the torches mounted on them)
+                # in their old straight positions; that mismatch at the
+                # deck-level seam was producing overlapping/mis-clipped
+                # brushes there (reported as "invisible brushes" in-game).
+                # Rotating everything together removes that seam entirely.
+                # This is prep for a future new bridge span branching south
+                # at ~PIER6_ROTATION_DEG from here.
+                BRUSHES[_pier6_rot_bstart:] = [
+                    b.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                    for b in BRUSHES[_pier6_rot_bstart:]
+                ]
+                ENTITIES[_pier6_rot_estart:] = [
+                    e.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                    for e in ENTITIES[_pier6_rot_estart:]
+                ]
 
             # Abutment pier (westernmost): solid cement fill, with two distinct
             # openings on opposite faces —

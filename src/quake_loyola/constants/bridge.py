@@ -241,6 +241,28 @@ BRIDGE_CENTER_SPAN_PIER_EMBED = 96  # extra depth subtracted from PIER2/PIER3's
 # still reach well into the ground after the span is shifted away from the
 # real-elevation terrain their original BRIDGE_PIER_GROUND_Z values were
 # sampled against.
+PIER6_ROTATION_DEG = -20  # rotates Pier 6's below-deck body (walls, footer,
+# lintel tiles, base plinth/cap) about its own center, in the XY plane —
+# negative = clockwise looking down from above, i.e. the pier's east face
+# turns from due-east toward the south. First step toward a new bridge span
+# branching south from here at roughly this same angle; the span itself
+# (and the matching deck notch that will connect to it) isn't built yet.
+PIER6_ROTATION_MARGIN = 150  # extra bridge-section-boundary allowance (see
+# _filter_sections()) so Pier 6's rotated footprint — which reaches further
+# in X than a straight pillar's — doesn't get clipped out of every section
+# and silently dropped from the map.
+PIER6_NOTCH_LEN = 60  # length (in X) of the triangular deck/parapet notch
+# carved into the north side of the deck around Pier 6: the deck's north
+# edge recedes from MID_PIER_X (full width) to MID_PIER_X + PIER6_NOTCH_LEN
+# (max recede), at the same angle as PIER6_ROTATION_DEG so the cut visually
+# lines up with the rotated pier. There is no "recovering" leg back to full
+# width — past Pier 6 the deck has never visibly extended further than
+# this same short stub (bounded by BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
+# in _filter_sections' accept-range margin, which this length must stay
+# within); the rest of the nominal east_ext deck is an unsupported,
+# pier-less future stub that stays hidden. This is the deck-side half of
+# the "rotate Pier 6, cut a matching deck notch" prep for a future branch
+# span.
 
 
 @dataclass
