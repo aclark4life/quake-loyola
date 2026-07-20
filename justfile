@@ -15,6 +15,9 @@ map_name  := "loyola"
 default:
     @just all
 
+# Alias for run
+alias r := run
+
 # Default task: setup, generate, compile, and deploy
 all: setup generate compile-fast deploy
 
@@ -117,5 +120,12 @@ clean:
     find . -name "__pycache__" -type d -exec rm -rf {} +
 
 # Run Quake
-r:
+run:
     /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad
+
+# Alias for r-nosound
+alias r-ns := r-nosound
+
+# Run Quake with sound disabled
+r-nosound:
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad -nosound
