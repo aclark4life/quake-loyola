@@ -12,7 +12,10 @@ rows) show real ground here climbing well above grade close to Charles
 St/Ennis Road (150-240 z-units), rising further into a local hill around
 X=5000 (up to 414 z-units), then easing off toward the world's NE corner —
 and dipping below grade in the northernmost rows (clamped to 0 — see
-_clamp0 below), similar to west_campus_terrain.py's north rows.
+_clamp0 below), similar to west_campus_terrain.py's north rows. The raw
+deltas between adjacent grid points produced near-vertical cliffs in-game,
+so _clamp0 applies _NE_HEIGHT_SCALE (0.5) to gentle the relief — actual
+in-map heights are half the raw USGS figures quoted above.
 
 Two edges of this quadrant border existing flush (CHARLES_WALK_H) built
 infrastructure and need a flat tie, same technique used for
@@ -57,13 +60,25 @@ from .constants import (
 )
 from .geometry import tri_ramp_prism
 
+# Real USGS relief here produced near-vertical drops between adjacent grid
+# points (visible in-game as cliffs). Scale the real-elevation deltas down
+# to a gentler hill while keeping the flat sidewalk/curb tie (CHARLES_WALK_H)
+# untouched — the tie values never pass through _clamp0.
+_NE_HEIGHT_SCALE = 0.5
+
+# The row closest to Ennis Road (_ne_y[1], right after the flat curb tie)
+# still rose steeply over a short Y run, reading as a small cliff right at
+# the road edge. Ease the climb in over the first few rows — index 0 here
+# is _ne_y[1] (nearest Ennis), ramping up to full scale by index 3.
+_NE_ROW_TAPER = [0.25, 0.45, 0.7, 1.0, 1.0, 1.0]
+
 
 def _clamp0(zs):
     """Real elevation dips below the FLOOR_Z2 baseline in the northernmost
     rows — using those negative values directly would push a brush's top
     below its FLOOR_Z1 bottom cap (a degenerate/inverted brush). Clamp to
     flat grade instead, matching west_campus_terrain.py's convention."""
-    return [max(0, z) for z in zs]
+    return [max(0, z * _NE_HEIGHT_SCALE * taper) for z, taper in zip(zs, _NE_ROW_TAPER)]
 
 
 def build():
