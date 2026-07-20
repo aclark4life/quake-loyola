@@ -57,6 +57,8 @@ def config_show() -> None:
         note = (
             "  (master: forces every BRIDGE_ENABLED_<section> flag on)"
             if name == "BRIDGE_ENABLED"
+            else "  (master: when off, none of the ENTITIES_ENABLED_<group> flags apply)"
+            if name == "ENTITIES_ENABLED"
             else ""
         )
         typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default}){note}")
