@@ -120,6 +120,17 @@ BRIDGE_PIER_PLATE_D = (
 # a stone border at each opening end (margin) before the lining begins.
 BRIDGE_PIER_LINING_MARGIN = 6
 BRIDGE_PIER_LINING_THICK = 3
+BRIDGE_SQ_LINTEL_TILE_H = 34  # height of the tiled band directly above Pier 6's
+# square opening — a single row of BRIDGE_PIER_PLATE_SIZE (34) tiles, spanning
+# the full pier width in one row rather than stacking multiple rows.
+BRIDGE_SQ_LINTEL_STONE_H = 32  # plain stone course above the tiled band, below
+# the pier ceiling/deck underside — reads as a stone coping capping the tiles
+# rather than tiles running all the way up to the ceiling.
+BRIDGE_SQ_LINTEL_H = (
+    BRIDGE_SQ_LINTEL_TILE_H + BRIDGE_SQ_LINTEL_STONE_H
+)  # total solid lintel height above Pier 6's square opening (was hardcoded to
+# 16 — too thin for even a single 34-unit tile row to fit; tile_grid_origins()
+# returns zero tiles whenever the target area is shorter than one tile).
 BRIDGE_PILLAR_PYR_H = 20
 BRIDGE_SEG_SPAN_W = 32
 BRIDGE_SQ_D = 1

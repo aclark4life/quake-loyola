@@ -87,6 +87,8 @@ from .constants import (
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
     BRIDGE_SQ_HW,
+    BRIDGE_SQ_LINTEL_H,
+    BRIDGE_SQ_LINTEL_STONE_H,
     BRIDGE_TELEPORT_ARCH_CLEARANCE,
     BRIDGE_TELEPORT_ARCH_X1_OFFSET,
     BRIDGE_TELEPORT_ARCH_X2_OFFSET,
@@ -1220,12 +1222,13 @@ def _build_all():
                         a_rin,
                         Textures.PILLAR,
                         overhang=sq_overhang,
-                        base_h=BRIDGE_PILLAR_BASE_H,
+                        base_ramp=base_ramp,
                         yc=py_shift,
                         base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
                         recess=pier_recess,
+                        lintel_h=BRIDGE_SQ_LINTEL_H,
                     )
                 )
             else:
@@ -1260,6 +1263,7 @@ def _build_all():
                 PIER3_X,
                 PIER4_X,
                 PIER5_X,
+                PIER6_X,
             ) and BRIDGE_CENTER_SPAN_OFFSET != (
                 0.0,
                 0.0,
@@ -1268,7 +1272,7 @@ def _build_all():
                 # The centre span (and, since every other currently-enabled
                 # section now rides along with it as one rigid assembly —
                 # see _shift_center_span — every pier from Pier 4 through
-                # Pier 5 too) has been shifted away from the real-elevation
+                # Pier 6 too) has been shifted away from the real-elevation
                 # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
                 # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
                 # itself (which would drag the visible base plinth/cap down
@@ -1282,7 +1286,18 @@ def _build_all():
                 # well into the ground. Span the full outer footprint
                 # (±max_outer_radius, which the arch ring/overhang always
                 # reaches — see above — and can exceed by1/by2) so the north
-                # and south flared edges of the base are covered too.
+                # and south flared edges of the base are covered too. Pier 6's
+                # square_wall, unlike arch_wall, never flares past by1/by2 (its
+                # solid outer walls stop exactly there), so the wider
+                # max_outer_radius allowance would only make the footer stick
+                # out past the pier's own walls — narrow it to by1/by2 there
+                # so the buried stem doesn't read as an oversized flared slab
+                # under an otherwise slender pier.
+                #
+                # UPDATE: narrowing Pier 6's footer to by1/by2 made it read as
+                # too narrow next to Piers 2-5 (which all use the wider
+                # max_outer_radius footprint below the arch opening) — use the
+                # same footprint as every other pier for visual consistency.
                 footer_y1 = min(by1, -max_outer_radius)
                 footer_y2 = max(by2, max_outer_radius)
                 footer_depth = max(
@@ -1316,14 +1331,25 @@ def _build_all():
                 (x2, BRIDGE_PIER_PLATE_D),  # east face
             ):
                 if is_square_pier:
+                    # Inset one tile+gap pitch from each end so the row reads
+                    # as one tile narrower on each side than the full pier
+                    # width (the base cap below is the one meant to reach the
+                    # full width — see base_cap_y1/y2 above).
+                    _tile_pitch = BRIDGE_PIER_PLATE_SIZE + BRIDGE_PIER_PLATE_GAP
                     BRUSHES.extend(
                         tile_face_plates(
                             face_x,
                             protrude,
-                            -a_rin,
-                            a_rin,
-                            pier_ceiling_z - 16,  # matches square_wall's lintel height
-                            pier_ceiling_z,
+                            by1 + _tile_pitch,
+                            by2 - _tile_pitch,
+                            pier_ceiling_z
+                            - BRIDGE_SQ_LINTEL_H,  # bottom of tiled band, flush
+                            # with the bottom of square_wall's full lintel
+                            pier_ceiling_z
+                            - BRIDGE_SQ_LINTEL_STONE_H,  # top of tiled band —
+                            # leaves a plain stone course above (part of the
+                            # same solid lintel brush) instead of tiling all
+                            # the way up to the ceiling/deck underside
                             Textures.CEMENT,
                             tile=BRIDGE_PIER_PLATE_SIZE,
                             gap=BRIDGE_PIER_PLATE_GAP,

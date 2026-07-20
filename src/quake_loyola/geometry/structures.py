@@ -73,11 +73,15 @@ def square_wall(
     tex,
     overhang=0,
     base_h=0,
+    base_ramp=None,
     yc=0.0,
     base_cap_h=0,
     base_cap_tex=None,
     base_cap_ovh=0,
     recess=None,
+    lintel_h=16,
+    base_cap_y1=None,
+    base_cap_y2=None,
 ):
     brushes, ext = [], open_hw + overhang
     if y1 < yc - ext:
@@ -120,16 +124,16 @@ def square_wall(
             )
         )
         brushes.append(
-            box(x1, yc - open_hw, ceil_z - 16, rx1, yc + open_hw, ceil_z, tex)
+            box(x1, yc - open_hw, ceil_z - lintel_h, rx1, yc + open_hw, ceil_z, tex)
         )
         brushes.append(
-            box(rx2, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
+            box(rx2, yc - open_hw, ceil_z - lintel_h, x2, yc + open_hw, ceil_z, tex)
         )
         brushes.append(
             box(
                 rx1,
                 yc - open_hw,
-                ceil_z - 16,
+                ceil_z - lintel_h,
                 rx2,
                 yc + open_hw,
                 ceil_z - recess_depth,
@@ -152,11 +156,19 @@ def square_wall(
             brushes.append(box(x1, yc - ext, floor_z, x2, yc - open_hw, ceil_z, tex))
             brushes.append(box(x1, yc + open_hw, floor_z, x2, yc + ext, ceil_z, tex))
         brushes.append(
-            box(x1, yc - open_hw, ceil_z - 16, x2, yc + open_hw, ceil_z, tex)
+            box(x1, yc - open_hw, ceil_z - lintel_h, x2, yc + open_hw, ceil_z, tex)
         )
-    if base_h > 0:
+    if base_ramp is not None:
+        # Mirrors arch_wall's base_ramp handling: a stone plinth ramping in Z
+        # from x1 to x2 (east-west slant), with a matching cement cap ramping
+        # on top of it — both scoped to the opening width (+ base_cap_ovh for
+        # the cap), not the pier's full face width, matching the flat-base
+        # behaviour below.
+        zt1, zt2 = base_ramp
         brushes.append(
-            box(x1, yc - open_hw, floor_z, x2, yc + open_hw, floor_z + base_h, tex)
+            ramp_slab(
+                x1, x2, yc - open_hw, yc + open_hw, floor_z, floor_z, zt1, zt2, tex
+            )
         )
         if base_cap_h > 0:
             cap_tex, cx1, cx2, crin = (
@@ -166,12 +178,38 @@ def square_wall(
                 open_hw + base_cap_ovh,
             )
             brushes.append(
+                ramp_slab(
+                    cx1,
+                    cx2,
+                    yc - crin,
+                    yc + crin,
+                    zt1,
+                    zt2,
+                    zt1 + base_cap_h,
+                    zt2 + base_cap_h,
+                    cap_tex,
+                )
+            )
+    elif base_h > 0:
+        base_y1 = base_cap_y1 if base_cap_y1 is not None else yc - open_hw
+        base_y2 = base_cap_y2 if base_cap_y2 is not None else yc + open_hw
+        brushes.append(box(x1, base_y1, floor_z, x2, base_y2, floor_z + base_h, tex))
+        if base_cap_h > 0:
+            cap_tex, cx1, cx2, crin = (
+                base_cap_tex or tex,
+                x1 - base_cap_ovh,
+                x2 + base_cap_ovh,
+                open_hw + base_cap_ovh,
+            )
+            cy1 = base_cap_y1 if base_cap_y1 is not None else yc - crin
+            cy2 = base_cap_y2 if base_cap_y2 is not None else yc + crin
+            brushes.append(
                 box(
                     cx1,
-                    yc - crin,
+                    cy1,
                     floor_z + base_h,
                     cx2,
-                    yc + crin,
+                    cy2,
                     floor_z + base_h + base_cap_h,
                     cap_tex,
                 )
