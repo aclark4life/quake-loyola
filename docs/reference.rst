@@ -64,10 +64,10 @@ measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 ``WORLD_Y2`` were scaled from their previous values to match this target
 (X: -5135..7708 = 850 ft; Y: -6642..4085 = 710 ft), keeping Charles Street's
 centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
-terrain) is temporarily disabled via the master switches in
-``constants/flags.py`` (``BRIDGE_ENABLED``, ``WEST_CAMPUS_ENABLED``,
+terrain) was, at the time, disabled or scoped down via the per-section flags in
+``constants/flags.py`` (bridge span flags, west-campus section flags,
 ``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_ENABLED_DETAILS``,
-``ENTITIES_ENABLED``)
+entities.py's per-group flags)
 while each area's own dimensions are re-derived against this new world size
 from the ``ref/`` top-down views.
 

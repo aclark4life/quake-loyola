@@ -53,7 +53,6 @@ from .constants import (
     SDORM_STAIR_Y1,
     SDORM_STAIR_Y2,
     WALL_T,
-    WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_FENCE,
     WEST_CAMPUS_ENABLED_SIDEWALK,
@@ -399,16 +398,16 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_FENCE:
+    if WEST_CAMPUS_ENABLED_FENCE:
         build_iron_fence(ENTITIES)
 
-    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_WALL:
+    if WEST_CAMPUS_ENABLED_WALL:
         build_brick_wall(BRUSHES, ENTITIES)
 
-    if WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_SIDEWALK:
+    if WEST_CAMPUS_ENABLED_SIDEWALK:
         build_sidewalk(BRUSHES)
 
-    if not (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS):
+    if not WEST_CAMPUS_ENABLED_DORMS:
         return BRUSHES, ENTITIES
     # ── North building — hollow shell with windows, entrance, and gable roof ───────
     TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening

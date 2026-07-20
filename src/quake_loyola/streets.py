@@ -101,7 +101,6 @@ from .constants import (
     STREET_SURFACE_T,
     STREETS_ENABLED_DETAILS,
     WALL_T,
-    WEST_CAMPUS_ENABLED,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_TERRAIN,
     WORLD_X1,
@@ -1490,11 +1489,7 @@ def build():
     # present (built by west_campus.py); with WEST_CAMPUS_ENABLED_DORMS off,
     # those inner faces should read as sky, regardless of
     # STREETS_ENABLED_DETAILS.
-    _tunnel_wall_tex = (
-        Textures.GROUND
-        if (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_DORMS)
-        else Textures.SKY
-    )
+    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_DORMS else Textures.SKY
     BRUSHES.extend(
         box_with_round_hole(
             WORLD_X1,
@@ -2495,7 +2490,7 @@ def build():
     # is a placeholder stand-in until a dedicated yellow line texture is sourced.
     # The bridge deck overhead is an overpass with piers landing well outside
     # the road, so nothing in the road is ever obstructed — stripe the whole
-    # length regardless of BRIDGE_ENABLED. Centred on ROAD_CX (the midpoint of
+    # length regardless of the bridge's span flags. Centred on ROAD_CX (the midpoint of
     # ROAD_X1/ROAD_X2) rather than a fixed X=0, so the stripe stays centred in
     # the roadway even when ROAD_X1/ROAD_X2 aren't mirror images of each other.
     _centerline_gap_hw = 2  # half-width of the gap between the two lines
@@ -2770,7 +2765,7 @@ def build():
     #   east side  -> owned by knott_terrain.py (KNOTT_ENABLED_TERRAIN)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
-        if (WEST_CAMPUS_ENABLED or WEST_CAMPUS_ENABLED_TERRAIN)
+        if WEST_CAMPUS_ENABLED_TERRAIN
         else WORLD_X1 + WALL_T
     )
     _east_verge_x2 = WORLD_X2_EXT - WALL_T

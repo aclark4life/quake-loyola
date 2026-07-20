@@ -22,8 +22,11 @@ from . import (
 )
 from .constants import (
     BASEMENT_ENABLED_LIGHTS,
-    LIGHTS_ENABLED,
+    LIGHTS_ENABLED_ABUTMENT_ARCH,
     LIGHTS_ENABLED_DECK_WALL,
+    LIGHTS_ENABLED_DORM_INTERIOR,
+    LIGHTS_ENABLED_PENDANTS,
+    LIGHTS_ENABLED_PIER_UPLIGHTS,
     LIGHTS_ENABLED_TORCHES,
     WORLDSPAWN_FIELDS,
 )
@@ -44,13 +47,16 @@ MODULES = [
 ]
 
 # Per-group overrides, keyed by the "_light_group" field torch_flame()/light
-# calls tag themselves with (see geometry.py). LIGHTS_ENABLED=True is a
-# convenience master that forces every group on, same pattern as
-# BRIDGE_ENABLED vs its per-section flags — see constants.py.
+# calls tag themselves with (see geometry.py). Each fixture type is toggled
+# independently — there is no overall "LIGHTS_ENABLED" master.
 LIGHT_GROUP_FLAGS = {
     "torch": LIGHTS_ENABLED_TORCHES,
     "basement": BASEMENT_ENABLED_LIGHTS,
     "deck_wall": LIGHTS_ENABLED_DECK_WALL,
+    "pendant": LIGHTS_ENABLED_PENDANTS,
+    "pier_uplight": LIGHTS_ENABLED_PIER_UPLIGHTS,
+    "abutment_arch": LIGHTS_ENABLED_ABUTMENT_ARCH,
+    "dorm_interior": LIGHTS_ENABLED_DORM_INTERIOR,
 }
 
 
@@ -64,10 +70,12 @@ def build_map():
             group = e.fields.pop("_light_group", None)
             if not e.classname.startswith("light"):
                 kept.append(e)
-            elif LIGHTS_ENABLED or LIGHT_GROUP_FLAGS.get(group):
-                # Master on, or this entity's group has its own flag on —
-                # keep it (ungrouped "light" entities have no flag yet, so
-                # they only pass through when the master itself is on).
+            elif group is None or LIGHT_GROUP_FLAGS.get(group):
+                # Ungrouped "light" entities have no flag of their own, so
+                # they pass through unfiltered, relying entirely on whatever
+                # section-level flag (if any) already wraps them in their
+                # source module. Grouped entities are kept only when their
+                # own group flag is on.
                 kept.append(e)
         mb.add_brushes(brushes)
         mb.add_entities(kept)

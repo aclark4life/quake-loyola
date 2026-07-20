@@ -49,7 +49,6 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
-    BRIDGE_ENABLED,
     BRIDGE_ENABLED_FASCIA_TEXT,
     BRIDGE_ENABLED_SPAN_CENTER,
     BRIDGE_ENABLED_SPAN_EAST_APPROACH,
@@ -1544,10 +1543,10 @@ def _build_all():
                     )
                 )
                 # Flame decal + damaging trigger — built here (unconditional on
-                # BRIDGE_ENABLED/BRIDGE_ENABLED_SUPPORTS, not entities.py's ENTITIES_ENABLED
-                # master) so pier torches always render, matching streets.py's
-                # own lamp-post/entrance-torch pattern of keeping decorative
-                # lights alongside the geometry they sit on.
+                # bridge.py's own BRIDGE_ENABLED_SUPPORTS, not any entities.py
+                # per-group flag) so pier torches always render, matching
+                # streets.py's own lamp-post/entrance-torch pattern of keeping
+                # decorative lights alongside the geometry they sit on.
                 flame_z = int(
                     pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4
                 )
@@ -1894,14 +1893,13 @@ def _build_all():
 
 def build():
     # Per-section enable flags — each covers one span between adjacent piers.
-    # BRIDGE_ENABLED is a convenience master: if True, every section is on,
-    # regardless of its individual flag below.
+    # There is no overall master; each span is toggled independently.
     sections_enabled = {
-        "west_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_WEST_APPROACH,
-        "center_span": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_CENTER,
-        "east_approach": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_EAST_APPROACH,
-        "kh_span": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_KH,
-        "east_ext": BRIDGE_ENABLED or BRIDGE_ENABLED_SPAN_EAST_EXT,
+        "west_approach": BRIDGE_ENABLED_SPAN_WEST_APPROACH,
+        "center_span": BRIDGE_ENABLED_SPAN_CENTER,
+        "east_approach": BRIDGE_ENABLED_SPAN_EAST_APPROACH,
+        "kh_span": BRIDGE_ENABLED_SPAN_KH,
+        "east_ext": BRIDGE_ENABLED_SPAN_EAST_EXT,
     }
     if not any(sections_enabled.values()):
         return [], []

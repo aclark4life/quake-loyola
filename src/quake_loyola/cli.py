@@ -54,14 +54,7 @@ def config_show() -> None:
         value = config.get(name)
         default = config.DEFAULTS[name]
         marker = "*" if value != default else " "
-        note = (
-            "  (master: forces every BRIDGE_ENABLED_<section> flag on)"
-            if name == "BRIDGE_ENABLED"
-            else "  (master: when off, none of the ENTITIES_ENABLED_<group> flags apply)"
-            if name == "ENTITIES_ENABLED"
-            else ""
-        )
-        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default}){note}")
+        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
     typer.echo("\n[build]")
     for name in sorted(config.BUILD_DEFAULTS):
         value = config.get_build(name)
@@ -171,7 +164,7 @@ def config_set(
 
     Examples:
         ql conf set KNOTT_ENABLED true
-        ql conf set bridge_enabled true       # names are case-insensitive
+        ql conf set west_campus_enabled_dorms true   # names are case-insensitive
         ql conf set vis_mode full
         ql conf set light_extra true
         ql conf set lighting_preset dusk
@@ -180,11 +173,6 @@ def config_set(
 
     Multiple settings at once (NAME=VALUE form, space-separated):
         ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
-
-    Note: BRIDGE_ENABLED is a convenience master switch — setting it true
-    forces every BRIDGE_ENABLED_<section> flag (west_approach, center_span,
-    east_approach, kh_span, east_ext) on too, overriding their individual
-    settings.
     """
     if len(args) == 2 and "=" not in args[0] and "=" not in args[1]:
         pairs = [(args[0], args[1])]

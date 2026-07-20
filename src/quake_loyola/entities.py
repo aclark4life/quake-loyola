@@ -40,7 +40,6 @@ from .constants import (
     ENNIS_WALL_NY,
     ENNIS_WALL_T,
     ENNIS_Y,
-    ENTITIES_ENABLED,
     ENTITIES_ENABLED_AMMO,
     ENTITIES_ENABLED_DM_SPAWNS,
     ENTITIES_ENABLED_EXIT,
@@ -90,6 +89,10 @@ from .constants import (
     KNOTT_STAIRS_Y2,
     KNOTT_WEST_ROOM_CX,
     KNOTT_Z2,
+    LIGHTS_ENABLED_ABUTMENT_ARCH,
+    LIGHTS_ENABLED_DORM_INTERIOR,
+    LIGHTS_ENABLED_PENDANTS,
+    LIGHTS_ENABLED_PIER_UPLIGHTS,
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
@@ -127,31 +130,6 @@ from .west_campus_terrain import terrain_z
 
 
 def build():
-    if not ENTITIES_ENABLED:
-        # Temporarily spawning right on span 5's deck next to Pier 6 instead
-        # of near Pier 1, for direct on-the-spot testing of the Pier 6 /
-        # span 5 invisible-wall debugging (see bridge.py). Spawn just west
-        # of Pier 6, on the angled deck at that X's actual east_y_shift
-        # offset, facing east straight at the pier.
-        # Also expose it as "dest_start" so trigger_teleports elsewhere (e.g.
-        # the basement's teleport back up, basement.py) can target it even
-        # while the full entity set is disabled. Offset slightly from the
-        # spawn origin so the two point entities don't exactly coincide
-        # (see test_no_duplicate_point_entity_origins).
-        start_x = BRIDGE_ARCH_X[5] - 96
-        start_y = int(east_y_shift(start_x))
-        start_z = int(deck_top_z(start_x) + 24)
-        return [], [
-            ent(
-                "info_player_start", origin=f"{start_x} {start_y} {start_z}", angle="0"
-            ),
-            ent(
-                "info_teleport_destination",
-                targetname="dest_start",
-                origin=f"{start_x} {start_y + 24} {start_z}",
-                angle="0",
-            ),
-        ]
     BRUSHES = []
     ENTITIES = []
     ROAD_Z = FLOOR_Z2 + 8
@@ -1051,10 +1029,10 @@ def build():
         del ENTITIES[health_start:]
 
     # Torch lights on pillar caps are now built alongside the pier geometry in
-    # bridge.py's own BRIDGE_ENABLED_SUPPORTS loops (unconditional on ENTITIES_ENABLED),
-    # matching streets.py's lamp-post/entrance-torch pattern — see the comment
-    # there for why. Kept out of this ENTITIES_ENABLED-gated module so pier
-    # torches always render regardless of that master switch.
+    # bridge.py's own BRIDGE_ENABLED_SUPPORTS loops (unconditional on any
+    # entities.py per-group flag), matching streets.py's lamp-post/
+    # entrance-torch pattern — see the comment there for why. Kept out of
+    # this module's gated groups so pier torches always render.
 
     # Pillar base uplights — ground-level spots wash light up the pier faces
     if BRIDGE_ENABLED_SUPPORTS:
@@ -1071,14 +1049,19 @@ def build():
                 ):
                     continue
                 ENTITIES.append(
-                    ent("light", origin=f"{px} {underbridge_light_y} 16", light="200")
+                    ent(
+                        "light",
+                        origin=f"{px} {underbridge_light_y} 16",
+                        light="200",
+                        _light_group="pier_uplight",
+                    )
                 )
 
     # Campus lamp post lights, Ennis cement wall lamppost lights, and Ennis
     # entrance pillar torches are now all built alongside their pole/pillar
     # geometry (in streets.py's build_ennis_entrance_features, unconditional
     # on STREETS_ENABLED_DETAILS) so they can't drift out of sync or double
-    # up when ENTITIES_ENABLED is turned back on.
+    # up with anything in entities.py's own groups.
 
     # Under-bridge amber pendant lights — flicker style, hang below deck.
     # Every enabled bridge section (not just the centre span) is translated
@@ -1098,6 +1081,7 @@ def build():
                 origin=f"{pier_x} {_pend_y} {_pend_z}",
                 light="350",
                 style="1",
+                _light_group="pendant",
             )
         )
     for _center_pend_x in (
@@ -1114,6 +1098,7 @@ def build():
                 origin=f"{_center_pend_x} {_pend_y} {_pend_z}",
                 light="350",
                 style="1",
+                _light_group="pendant",
             )
         )
 
@@ -1149,6 +1134,7 @@ def build():
             "light",
             origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} 0 {abutment_arch_z}",
             light="700",
+            _light_group="abutment_arch",
         )
     )
     ENTITIES.append(
@@ -1156,6 +1142,7 @@ def build():
             "light",
             origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} {BRIDGE.y2 // 2} {abutment_arch_z}",
             light="500",
+            _light_group="abutment_arch",
         )
     )
     ENTITIES.append(
@@ -1163,6 +1150,7 @@ def build():
             "light",
             origin=f"{abutment_pier_x + BRIDGE_PILLAR_HW + 32} {BRIDGE.y1 // 2} {abutment_arch_z}",
             light="500",
+            _light_group="abutment_arch",
         )
     )
 
@@ -1223,6 +1211,7 @@ def build():
                         "light",
                         origin=f"{bldg_light_x} {building_y} {building_light_z}",
                         light="250",
+                        _light_group="dorm_interior",
                     )
                 )
 

@@ -7,8 +7,8 @@ from quake_loyola import entities, knott_terrain, streets
 # Golden values captured from the known-good map output. Update these
 # deliberately (and review the .map diff) whenever the geometry changes.
 EXPECTED_BRUSHES = 1029
-EXPECTED_ENTITIES = 110
-EXPECTED_MD5 = "3c1fd88696309d74feddd4dc59dfa109"
+EXPECTED_ENTITIES = 111
+EXPECTED_MD5 = "1b214b14014b364be3267e93cf8092c2"
 
 
 class MapRegressionTests(unittest.TestCase):
@@ -27,18 +27,30 @@ class MapRegressionTests(unittest.TestCase):
 
 
 class EntitiesBuildTests(unittest.TestCase):
-    """entities.build() only runs its full ~1700-line placement logic when
-    ENTITIES_ENABLED is True, which is not the case in normal map generation
-    (or the tests above). Force the flags on here so that path gets exercised
-    and basic entity-placement invariants are checked.
+    """entities.build() always runs its full ~1700-line placement logic now,
+    but every per-group ENTITIES_ENABLED_<group> flag defaults to False in
+    normal map generation (or the tests above). Force them on here so each
+    group actually gets exercised and basic entity-placement invariants are
+    checked.
     """
 
+    _ENTITY_GROUP_FLAGS = (
+        "ENTITIES_ENABLED_TELEPORTS",
+        "ENTITIES_ENABLED_DM_SPAWNS",
+        "ENTITIES_ENABLED_WEAPONS",
+        "ENTITIES_ENABLED_AMMO",
+        "ENTITIES_ENABLED_HEALTH",
+        "ENTITIES_ENABLED_MONSTERS",
+        "ENTITIES_ENABLED_VEGETATION",
+        "ENTITIES_ENABLED_PLATFORM",
+        "ENTITIES_ENABLED_EXIT",
+    )
+
     def setUp(self):
-        self._saved = {
-            name: getattr(entities, name)
-            for name in ("ENTITIES_ENABLED", "KNOTT_ENABLED_INTERIOR")
-        }
-        entities.ENTITIES_ENABLED = True
+        names = (*self._ENTITY_GROUP_FLAGS, "KNOTT_ENABLED_INTERIOR")
+        self._saved = {name: getattr(entities, name) for name in names}
+        for name in self._ENTITY_GROUP_FLAGS:
+            setattr(entities, name, True)
         entities.KNOTT_ENABLED_INTERIOR = True
 
     def tearDown(self):
