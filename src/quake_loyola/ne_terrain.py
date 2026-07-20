@@ -21,9 +21,10 @@ west_campus_terrain.py's Charles St sidewalk tie:
     north segment runs this whole Y range at CHARLES_WALK_H — real terrain
     ties flush there instead of using real data, to avoid overlapping the
     sidewalk.
-  - South edge (Y = ENNIS_Y + ENNIS_HW + CHARLES_WALK_W): Ennis Road's north
-    curb (streets.py) runs the full X range of this quadrant at the same
-    CHARLES_WALK_H — real terrain ties flush there too, for the same reason.
+  - South edge (Y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W):
+    Ennis Road's north curb (streets.py) runs the full X range of this
+    quadrant at the same CHARLES_WALK_H — real terrain ties flush there
+    too, for the same reason.
 Real elevation data starts one grid step in from each of those two edges,
 same "flat tie column/row, real data begins next column/row over" approach
 as west_campus_terrain.py used at its Charles St edge.
@@ -41,6 +42,7 @@ from .constants import (
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_HW,
+    ENNIS_WIDEN_N,
     ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
@@ -88,7 +90,7 @@ def build():
     # ties flush to the curb (see module docstring); real data begins at
     # the second row.
     _ne_y = [
-        ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
         1546,
         1696,
         2200,
@@ -121,7 +123,7 @@ def build():
     # west_campus_terrain.py for the bisection that found this. Overlap
     # each non-final segment's north edge by a hair, linearly extrapolating
     # that column's own slope.
-    _NE_OVR = 4
+    _NE_OVR = 8
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
         zip(_ne_x, _ne_cols), zip(_ne_x[1:], _ne_cols[1:])

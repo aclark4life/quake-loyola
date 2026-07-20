@@ -39,6 +39,16 @@ ENNIS_PANEL_OUTER_W = 48
 ENNIS_PANEL_MOUNT_FOOT_DROP = 6  # how far the bracket drops onto the brick top
 ENNIS_PANEL_MOUNT_FOOT_INSET = 6  # shift feet in from the corners toward center
 ENNIS_HW = 160
+# Extra width added to the road's north lane only (centerline/south lane
+# unchanged) — makes room for the enlarged KH driveway junction bulges
+# (KNOTT_DRIVEWAY_CURB_BULGE_D/FLAT_W). Everything anchored to the north
+# edge (curb, sidewalk, verge, fence, wall, lamp posts, NE-quadrant terrain
+# tie-in) shifts north by this amount along with it.
+ENNIS_WIDEN_N = 64
+# Extra nudge for the road's centerline/divider split point only (on top of
+# the ENNIS_WIDEN_N / 2 curb-to-curb centering) — moves the stripe a bit
+# further north without touching the curbs or overall road width.
+ENNIS_DIVIDER_EXTRA_N = 16
 ENNIS_PILLAR_BELL2_H = 27
 ENNIS_PILLAR_BELL2_HW = (
     19  # tapered top section half-width (wider than before, less than post)

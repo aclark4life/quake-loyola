@@ -27,6 +27,7 @@ from .constants import (
     ENNIS_CEMENT_X2,
     ENNIS_CURB_BULGE_LEN,
     ENNIS_CURB_W,
+    ENNIS_DIVIDER_EXTRA_N,
     ENNIS_GATE_FENCE_BAR_T,
     ENNIS_GATE_FENCE_HEIGHT,
     ENNIS_GATE_FENCE_POST_W,
@@ -68,6 +69,7 @@ from .constants import (
     ENNIS_WALL_PILLAR_HW,
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
+    ENNIS_WIDEN_N,
     ENNIS_Y,
     FLOOR_Z1,
     FLOOR_Z2,
@@ -2094,7 +2096,7 @@ def build():
             [(508, Textures.WHITE_STONE)],  # accent square next to the Ennis
             # south-curb white-stone/cement pair built above
         ),
-        (ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, CHARLES_Y2, None),
+        (ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W, CHARLES_Y2, None),
     ):
         sw_slabs_y(
             BRUSHES,
@@ -2136,6 +2138,13 @@ def build():
     # rotated 90° from Charles St's orientation to keep the tech-panel grain
     # running the right way.
     ENNIS_ROAD_TT_PARAMS = "0 0 90 1 1"
+    # The north curb was pushed out by ENNIS_WIDEN_N (south curb unchanged),
+    # so the true curb-to-curb midpoint is ENNIS_Y + ENNIS_WIDEN_N / 2, not
+    # ENNIS_Y itself. Centre the divider slot there (and shrink the south
+    # lane / grow the north lane to match) so the centerline sits in the
+    # middle of the road instead of biased toward the south curb, with the
+    # lane road surfaces staying flush against the divider (no gap).
+    _ennis_center_y = ENNIS_Y + ENNIS_WIDEN_N / 2 + ENNIS_DIVIDER_EXTRA_N
     # West section (near Charles St, no curb strip here)
     for wx1, wx2 in ranges_excluding(
         ENNIS_X1, ROAD_X2 + CHARLES_WALK_W, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
@@ -2146,7 +2155,7 @@ def build():
                 ENNIS_Y - ENNIS_HW,
                 FLOOR_Z2,
                 wx2,
-                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                _ennis_center_y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
                 tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2163,7 +2172,7 @@ def build():
                 ENNIS_Y - ENNIS_HW,
                 FLOOR_Z2,
                 road_x2,
-                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                _ennis_center_y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
                 tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2176,7 +2185,7 @@ def build():
             ENNIS_Y - ENNIS_HW,
             FLOOR_Z2,
             KNOTT_DRIVEWAY_CORRIDOR_X2,
-            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            _ennis_center_y - STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2188,10 +2197,10 @@ def build():
         BRUSHES.append(
             box(
                 nx1,
-                ENNIS_Y + STREET_ENNIS_DIV_HW,
+                _ennis_center_y + STREET_ENNIS_DIV_HW,
                 FLOOR_Z2,
                 nx2,
-                ENNIS_Y + ENNIS_HW,
+                ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
                 tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2212,8 +2221,8 @@ def build():
         BRUSHES,
         ROAD_X2 + CHARLES_WALK_W,
         ENNIS_X2,
-        ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
-        ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
+        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
@@ -2247,10 +2256,10 @@ def build():
     BRUSHES.append(  # flush gap between the sidewalk squares and the curb
         box(
             ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
             FLOOR_Z2,
             _CURB_BULGE_X1,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.SIDEWALK,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2259,10 +2268,10 @@ def build():
     BRUSHES.append(  # flush gap resumes east of the bulge
         box(
             _CURB_BULGE_X2,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
             FLOOR_Z2,
             ENNIS_X2,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.SIDEWALK,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2285,14 +2294,16 @@ def build():
     _CURB_BULGE_DEPTH = _CURB_BULGE_HALF_LEN / 2  # half as deep as it is long
     _CURB_BULGE_CX = (_CURB_BULGE_X1 + _CURB_BULGE_X2) / 2
     _CURB_BULGE_SEGMENTS = 24
-    _CURB_BULGE_FAR_Y = ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP
+    _CURB_BULGE_FAR_Y = (
+        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP
+    )
     BRUSHES.append(  # north curb — straight run west of the bulge
         box(
             ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2 + STREET_SURFACE_T,
             _CURB_BULGE_X1,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2310,8 +2321,8 @@ def build():
         _bx2 = _bx1 + _bulge_step
         _bd1 = _bulge_depth_at(_bx1)
         _bd2 = _bulge_depth_at(_bx2)
-        _outer1_y = ENNIS_Y + ENNIS_HW - _bd1
-        _outer2_y = ENNIS_Y + ENNIS_HW - _bd2
+        _outer1_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - _bd1
+        _outer2_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - _bd2
         _inner1_y = _outer1_y + _ENNIS_CURB_CAP_D
         _inner2_y = _outer2_y + _ENNIS_CURB_CAP_D
         _z1, _z2 = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
@@ -2377,10 +2388,10 @@ def build():
     BRUSHES.append(  # north curb — straight run east of the bulge
         box(
             _CURB_BULGE_X2,
-            ENNIS_Y + ENNIS_HW,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2 + STREET_SURFACE_T,
             ENNIS_X2,
-            ENNIS_Y + ENNIS_HW + _ENNIS_CURB_CAP_D,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2586,16 +2597,19 @@ def build():
     # with plain Textures.ROAD instead.
     _ennis_line_hw = STREET_DIV_LINE_HW
     _ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW  # pillar centerline
+    # _ennis_center_y (the true curb-to-curb midpoint, defined above where
+    # the base road slabs are built) is reused here so the divider slot,
+    # centerline stripe, and the road slabs it sits flush against all agree.
     for gx1, gx2 in ranges_excluding(
         ROAD_X2, _ennis_line_x1, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
     ):
         dash_brushes.append(
             box(
                 gx1,
-                ENNIS_Y - STREET_ENNIS_DIV_HW,
+                _ennis_center_y - STREET_ENNIS_DIV_HW,
                 FLOOR_Z2,
                 gx2,
-                ENNIS_Y + STREET_ENNIS_DIV_HW,
+                _ennis_center_y + STREET_ENNIS_DIV_HW,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
                 tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2604,10 +2618,10 @@ def build():
     dash_brushes.append(
         box(
             _ennis_line_x1,
-            ENNIS_Y - STREET_ENNIS_DIV_HW,
+            _ennis_center_y - STREET_ENNIS_DIV_HW,
             FLOOR_Z2,
             ENNIS_X2,
-            ENNIS_Y - _ennis_line_hw,
+            _ennis_center_y - _ennis_line_hw,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2616,10 +2630,10 @@ def build():
     dash_brushes.append(
         box(
             _ennis_line_x1,
-            ENNIS_Y - _ennis_line_hw,
+            _ennis_center_y - _ennis_line_hw,
             FLOOR_Z2,
             ENNIS_X2,
-            ENNIS_Y + _ennis_line_hw,
+            _ennis_center_y + _ennis_line_hw,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.CENTERLINE,
         )
@@ -2627,10 +2641,10 @@ def build():
     dash_brushes.append(
         box(
             _ennis_line_x1,
-            ENNIS_Y + _ennis_line_hw,
+            _ennis_center_y + _ennis_line_hw,
             FLOOR_Z2,
             ENNIS_X2,
-            ENNIS_Y + STREET_ENNIS_DIV_HW,
+            _ennis_center_y + STREET_ENNIS_DIV_HW,
             FLOOR_Z2 + STREET_SURFACE_T,
             Textures.ROAD,
             tt_params=ENNIS_ROAD_TT_PARAMS,
@@ -2642,7 +2656,7 @@ def build():
     # to match Ennis's grain) so no void is left. At the Ennis entrance,
     # lined up with the Charles St east sidewalk.
     _ey = ENNIS_Y - ENNIS_HW
-    _ennis_crossing_y2 = ENNIS_Y + ENNIS_HW
+    _ennis_crossing_y2 = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N
     _stripe_on = True
     while _ey < _ennis_crossing_y2:
         next_ey = min(
@@ -2711,11 +2725,11 @@ def build():
 
     # NE corner: far corner is at NE of cut square
     cx_ne = ROAD_X2 + CHARLES_CRN_R
-    cy_ne = ENNIS_Y + ENNIS_HW + CHARLES_CRN_R
+    cy_ne = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_CRN_R
     BRUSHES.append(
         box(
             ROAD_X2,
-            ENNIS_Y + ENNIS_HW,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2,
             cx_ne,
             cy_ne,
@@ -2821,7 +2835,7 @@ def build():
         BRUSHES.append(
             box(
                 ROAD_X2 + CHARLES_WALK_W,
-                ENNIS_Y + ENNIS_HW + CHARLES_WALK_W,
+                ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
                 FLOOR_Z2,
                 ENNIS_X2,
                 CHARLES_Y2,

@@ -42,6 +42,7 @@ from .ennis import (
     ENNIS_HW,
     ENNIS_PILLAR_HW,
     ENNIS_WALL_T,
+    ENNIS_WIDEN_N,
 )
 from .knott import (
     KNOTT_BUILDING_W,
@@ -76,7 +77,11 @@ KNOTT_SHAFT_W = 128
 KNOTT_SHAFT_Y_OFFSET = 128
 # Bridge north edge → Ennis south curb offset; ENNIS_NORTH_OFFSET then adds half-width.
 ENNIS_BRIDGE_TO_SOUTH_EDGE = 640
-ENNIS_NORTH_OFFSET = ENNIS_BRIDGE_TO_SOUTH_EDGE + ENNIS_HW
+# Small additional nudge shifting the whole Ennis centerline (and everything
+# derived from it, both lanes) north — separate from ENNIS_WIDEN_N, which
+# only widens the north lane without moving the centerline.
+ENNIS_CENTERLINE_SHIFT_N = 183
+ENNIS_NORTH_OFFSET = ENNIS_BRIDGE_TO_SOUTH_EDGE + ENNIS_HW + ENNIS_CENTERLINE_SHIFT_N
 CHARLES_LAMP_POST_SETBACK = 104  # was 160 — the Ennis-area lamp post sits at
 # this offset south of the Ennis curb, which streets.py also uses as the south
 # edge of the grass verge (see ROAD_VERGE_BUFFER below); shrunk in lockstep
@@ -106,8 +111,8 @@ KNOTT_DRIVEWAY_CURB_WALK_W = CHARLES_WALK_W
 # straight closing curb slopes back down to the pre-bulge corner position
 # over KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W (kept long/gradual for a subtle
 # slope), with ground filling the wedge behind it.
-KNOTT_DRIVEWAY_CURB_BULGE_D = 64
-KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W = 64
+KNOTT_DRIVEWAY_CURB_BULGE_D = 128
+KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W = 128
 KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W = 320
 KNOTT_DRIVEWAY_ZT_N = FLOOR_Z2
 # Treat the Knott west face as the root X anchor; nearby anchors derive from it.
@@ -215,17 +220,24 @@ CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - CHARLES_LAMP_POST_SETBACK]
 CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + CHARLES_PLATFORM_ROAD_OFFSET
 CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
 ENNIS_SW_EDGE = ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - ROAD_VERGE_BUFFER
-ENNIS_WALL_NY = ENNIS_Y + ENNIS_HW + ENNIS_PILLAR_HW * 2
+ENNIS_WALL_NY = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ENNIS_PILLAR_HW * 2
 ENNIS_SHORT_WALL_GAP = 8  # gap north of the sidewalk squares
 ENNIS_SHORT_WALL_NY = (
-    ENNIS_Y + ENNIS_HW + CHARLES_WALK_W + ENNIS_SHORT_WALL_GAP
+    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + ENNIS_SHORT_WALL_GAP
 )  # short brick wall segment near the north pillar, moved north clear of the
-# sidewalk squares (which run up to ENNIS_Y + ENNIS_HW + CHARLES_WALK_W)
-# North sidewalk squares span ENNIS_Y + ENNIS_HW + 10 (curb cap + gap) to
-# ENNIS_Y + ENNIS_HW + CHARLES_WALK_W, per the sw_slabs_x() call in
-# streets.py; the pillar sits at the midpoint of that band.
+# sidewalk squares (which run up to ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W)
+# North sidewalk squares span ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + 10 (curb cap
+# + gap) to ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W, per the
+# sw_slabs_x() call in streets.py; the pillar sits at the midpoint of that band.
 ENNIS_PILLAR_NORTH_Y = (
-    ENNIS_Y + ENNIS_HW + 10 + ENNIS_Y + ENNIS_HW + CHARLES_WALK_W
+    ENNIS_Y
+    + ENNIS_HW
+    + ENNIS_WIDEN_N
+    + 10
+    + ENNIS_Y
+    + ENNIS_HW
+    + ENNIS_WIDEN_N
+    + CHARLES_WALK_W
 ) // 2
 # South pillar — centred in the south grass verge (between the Ennis curb and
 # the south sidewalk), rather than flush against the curb, so it reads as a

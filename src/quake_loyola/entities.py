@@ -39,6 +39,7 @@ from .constants import (
     ENNIS_HW,
     ENNIS_WALL_NY,
     ENNIS_WALL_T,
+    ENNIS_WIDEN_N,
     ENNIS_Y,
     ENTITIES_ENABLED_AMMO,
     ENTITIES_ENABLED_DM_SPAWNS,
@@ -584,7 +585,7 @@ def build():
             ENNIS_Y - ENNIS_HW + ARCH_TRIG_INSET,
             FLOOR_Z2 + 4,
             ennis_arch_x2,
-            ENNIS_Y + ENNIS_HW - ARCH_TRIG_INSET,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - ARCH_TRIG_INSET,
             ennis_arch_top_z,
             Textures.TELEPORT,
         )
@@ -1622,7 +1623,7 @@ def build():
     # Grunts on Ennis
     for monster_x, monster_y, monster_angle in [
         (500, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis east, south lane
-        (1200, ENNIS_Y + ENNIS_HW - 40, 180),  # Ennis east, north lane
+        (1200, ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - 40, 180),  # Ennis east, north lane
         (1800, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis further east
     ]:
         ENTITIES.append(

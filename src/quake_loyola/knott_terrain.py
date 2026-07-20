@@ -284,7 +284,14 @@ def build():
     # fills (below) and the west/east-of-sidewalk strips (further below).
     _WS_TAPER_W = 200
     _ws_taper_x = KNOTT_DRIVEWAY_WS_X1 - _WS_TAPER_W
-    _ES_TAPER_W = 200
+    # Wider than the west side's buffer — a 200-unit taper here dropped from
+    # the sidewalk-matching height (~229) to the (already-halved) real
+    # elevation (~92-100) over a short run, reading as a sharp cliff right
+    # behind the driveway instead of a hillside continuing east. Widening to
+    # 1000 stretches that same drop over a much longer run so the ground
+    # east of the driveway reads as high ground easing down gradually,
+    # rather than falling away immediately past the sidewalk.
+    _ES_TAPER_W = 1000
     _es_taper_x = KNOTT_DRIVEWAY_ES_X2 + _ES_TAPER_W
 
     def _sidewalk_h(y):
