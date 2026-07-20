@@ -498,19 +498,30 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    _ws.append(
-        shear_box_y(
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y2 - BRIDGE_PAR_W,
-            BRIDGE_DZ2,
-            PAR_EAST_END_X,
-            BRIDGE.y2,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            east_y_shift(BRIDGE_EAST_PIVOT_X),
-            east_y_shift(PAR_EAST_END_X),
-            Textures.CEMENT,
+    # Angled piece split at MID_PIER_X (=PIER6_X): Pier 6's own flanking wall
+    # brushes (built by the general pier loop) occupy this same Y-range at
+    # that X, so a single unsplit brush spanning straight through the pier
+    # fully overlaps the pier's solid geometry there — qbsp then mis-clips
+    # portals across that overlap, producing invisible-but-solid walls. The
+    # deck bands above already split at MID_PIER_X for the same reason; this
+    # matches that.
+    for _seg_x1, _seg_x2 in [
+        (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
+        (MID_PIER_X, PAR_EAST_END_X),
+    ]:
+        _ws.append(
+            shear_box_y(
+                _seg_x1,
+                BRIDGE.y2 - BRIDGE_PAR_W,
+                BRIDGE_DZ2,
+                _seg_x2,
+                BRIDGE.y2,
+                BRIDGE_DZ2 + BRIDGE.parapet_h,
+                east_y_shift(_seg_x1),
+                east_y_shift(_seg_x2),
+                Textures.CEMENT,
+            )
         )
-    )  # North east segment — single brush avoids split-point portal clipping
     # South east — gaps at WALK_X1..WALK_X2 and east_walk_x1..east_walk_x2 for walkway/accessible-walkway connections
     # West piece — wall stays attached to Pier 4, extending east to the
     # midpoint; opening continues from the midpoint to WALK_X1 for steps.
@@ -528,19 +539,25 @@ def _build_all():
     )
     # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
     # is now fully open for steps down to the ground.
-    _ws.append(
-        shear_box_y(
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y1,
-            BRIDGE_DZ2,
-            PAR_EAST_END_X,
-            BRIDGE.y1 + BRIDGE_PAR_W,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            east_y_shift(BRIDGE_EAST_PIVOT_X),
-            east_y_shift(PAR_EAST_END_X),
-            Textures.CEMENT,
+    # Angled piece split at MID_PIER_X (=PIER6_X) — same overlap reasoning as
+    # the north east parapet above.
+    for _seg_x1, _seg_x2 in [
+        (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
+        (MID_PIER_X, PAR_EAST_END_X),
+    ]:
+        _ws.append(
+            shear_box_y(
+                _seg_x1,
+                BRIDGE.y1,
+                BRIDGE_DZ2,
+                _seg_x2,
+                BRIDGE.y1 + BRIDGE_PAR_W,
+                BRIDGE_DZ2 + BRIDGE.parapet_h,
+                east_y_shift(_seg_x1),
+                east_y_shift(_seg_x2),
+                Textures.CEMENT,
+            )
         )
-    )  # South east segment — single brush avoids split-point portal clipping
 
     for sx1, sx2, _, _, pb1, pb2, pt1, pt2 in iter_bridge_span_segments():
         # North parapet
@@ -1065,8 +1082,6 @@ def _build_all():
     PIER5_LINTEL_GAP = 24
     if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
-            if px == PIER6_X:
-                continue  # built explicitly below as a duplicate of Pier 5
             if (
                 BRIDGE_ENABLED_SUPPORTS is not True
                 and px not in BRIDGE_ENABLED_SUPPORTS
@@ -1115,9 +1130,9 @@ def _build_all():
             else:
                 pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
 
-            # Arch opening varies by pillar type. The westernmost abutment, Pier 5
-            # (KNOTT_NE_PIER_X), and the new Pier 6 use the wider outer radii;
-            # interior piers use the inner radii.
+            # Arch opening varies by pillar type. The westernmost abutment,
+            # Pier 5, and Pier 6 use the wider outer radii; interior piers use
+            # the inner radii.
             if px in (min(BRIDGE_ARCH_X), BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
                 a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
             else:
@@ -1204,6 +1219,7 @@ def _build_all():
                         Textures.PILLAR,
                         overhang=sq_overhang,
                         base_h=BRIDGE_PILLAR_BASE_H,
+                        yc=py_shift,
                         base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
                         base_cap_tex=Textures.CEMENT,
                         base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
@@ -1227,6 +1243,7 @@ def _build_all():
                         overhang=arch_overhang,
                         base_h=BRIDGE_PILLAR_BASE_H,
                         base_ramp=base_ramp,
+                        yc=py_shift,
                         base_cap_h=BRIDGE_ABUTMENT_RAMP_CAP_H
                         if px == min(BRIDGE_ARCH_X)
                         else BRIDGE_PILLAR_BASE_CAP_H,
@@ -1633,477 +1650,6 @@ def _build_all():
                         stilt_h=cem_stilt_h,
                     )
                 )
-
-    # ── Pier 6 — explicit duplicate of Pier 5 (KNOTT_NE_PIER_X) ─────────────────
-    # Pier 5 uses square_wall + OUTER_R. Pier 6 is identical but sits in the angled
-    # east span, so all Y coords are shifted south by east_y_shift(PIER6_X).
-    if BRIDGE_ENABLED_SUPPORTS:
-        px = PIER6_X
-        pdeck = deck_top_z(px)
-        ppar = pdeck + BRIDGE.parapet_h
-        ppil = ppar + BRIDGE_PILLAR_EXTRA
-        pcap = ppil + BRIDGE_PILLAR_CAP_H
-        py_shift = east_y_shift(px)
-        by1 = BRIDGE.y1 + py_shift
-        by2 = BRIDGE.y2 + py_shift
-        cy_n = by2 - BRIDGE_PAR_W // 2
-        cy_s = by1 + BRIDGE_PAR_W // 2
-        x1, x2 = px - BRIDGE_PILLAR_HW, px + BRIDGE_PILLAR_HW
-        pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
-        a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
-        sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
-        # Relative shear at x1/x2 so the pier faces align with the angled deck direction.
-        s1r = east_y_shift(x1) - py_shift
-        s2r = east_y_shift(x2) - py_shift
-
-        def sb(ya, yb, za, zb, tex):
-            return shear_box_y(x1, ya, za, x2, yb, zb, s1r, s2r, tex)
-
-        yc = py_shift
-        ext = a_rin + sq_overhang
-        # Recessed opening lining setup: carve the stone side walls and
-        # lintel underside back by BRIDGE_PIER_LINING_THICK across the X
-        # band [rx1, rx2] (inset from the pier faces by the margin), and
-        # fill the freed gap with cement — leaving the bore radius/width
-        # unchanged (no narrowing) with a stone border at each open end.
-        rx1 = x1 + BRIDGE_PIER_LINING_MARGIN
-        rx2 = x2 - BRIDGE_PIER_LINING_MARGIN
-        lining_depth = BRIDGE_PIER_LINING_THICK
-        has_lining = rx2 > rx1
-
-        def shear_at(x):
-            return s1r + (x - x1) * (s2r - s1r) / (x2 - x1)
-
-        rs1, rs2 = (shear_at(rx1), shear_at(rx2)) if has_lining else (s1r, s2r)
-
-        # Main pier body (square opening, rotated to follow deck angle)
-        if has_lining:
-            BRUSHES.append(
-                shear_box_y(
-                    x1,
-                    yc - ext,
-                    FLOOR_Z2,
-                    rx1,
-                    yc - a_rin,
-                    pier_ceiling_z,
-                    s1r,
-                    rs1,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx2,
-                    yc - ext,
-                    FLOOR_Z2,
-                    x2,
-                    yc - a_rin,
-                    pier_ceiling_z,
-                    rs2,
-                    s2r,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc - ext,
-                    FLOOR_Z2,
-                    rx2,
-                    yc - a_rin - lining_depth,
-                    pier_ceiling_z,
-                    rs1,
-                    rs2,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc - a_rin - lining_depth,
-                    FLOOR_Z2,
-                    rx2,
-                    yc - a_rin,
-                    pier_ceiling_z,
-                    rs1,
-                    rs2,
-                    Textures.CEMENT,
-                )
-            )  # south pillar
-            BRUSHES.append(
-                shear_box_y(
-                    x1,
-                    yc + a_rin,
-                    FLOOR_Z2,
-                    rx1,
-                    yc + ext,
-                    pier_ceiling_z,
-                    s1r,
-                    rs1,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx2,
-                    yc + a_rin,
-                    FLOOR_Z2,
-                    x2,
-                    yc + ext,
-                    pier_ceiling_z,
-                    rs2,
-                    s2r,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc + a_rin + lining_depth,
-                    FLOOR_Z2,
-                    rx2,
-                    yc + ext,
-                    pier_ceiling_z,
-                    rs1,
-                    rs2,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc + a_rin,
-                    FLOOR_Z2,
-                    rx2,
-                    yc + a_rin + lining_depth,
-                    pier_ceiling_z,
-                    rs1,
-                    rs2,
-                    Textures.CEMENT,
-                )
-            )  # north pillar
-            BRUSHES.append(
-                shear_box_y(
-                    x1,
-                    yc - a_rin,
-                    pier_ceiling_z - 16,
-                    rx1,
-                    yc + a_rin,
-                    pier_ceiling_z,
-                    s1r,
-                    rs1,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx2,
-                    yc - a_rin,
-                    pier_ceiling_z - 16,
-                    x2,
-                    yc + a_rin,
-                    pier_ceiling_z,
-                    rs2,
-                    s2r,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc - a_rin,
-                    pier_ceiling_z - 16,
-                    rx2,
-                    yc + a_rin,
-                    pier_ceiling_z - lining_depth,
-                    rs1,
-                    rs2,
-                    Textures.PILLAR,
-                )
-            )
-            BRUSHES.append(
-                shear_box_y(
-                    rx1,
-                    yc - a_rin,
-                    pier_ceiling_z - lining_depth,
-                    rx2,
-                    yc + a_rin,
-                    pier_ceiling_z,
-                    rs1,
-                    rs2,
-                    Textures.CEMENT,
-                )
-            )  # lintel
-        else:
-            BRUSHES.append(
-                sb(yc - ext, yc - a_rin, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
-            )  # south pillar
-            BRUSHES.append(
-                sb(yc + a_rin, yc + ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR)
-            )  # north pillar
-            BRUSHES.append(
-                sb(
-                    yc - a_rin,
-                    yc + a_rin,
-                    pier_ceiling_z - 16,
-                    pier_ceiling_z,
-                    Textures.PILLAR,
-                )
-            )  # lintel
-        if BRIDGE_PILLAR_BASE_H > 0:
-            BRUSHES.append(
-                sb(
-                    yc - a_rin,
-                    yc + a_rin,
-                    FLOOR_Z2,
-                    FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
-                    Textures.PILLAR,
-                )
-            )  # base
-            # Cement cap slab on top of base plinth (matches arch-pier base caps)
-            if BRIDGE_PILLAR_BASE_CAP_H > 0:
-                cap_crin = a_rin + BRIDGE_PILLAR_BASE_CAP_OVH
-                BRUSHES.append(
-                    shear_box_y(
-                        px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_BASE_CAP_OVH,
-                        yc - cap_crin,
-                        FLOOR_Z2 + BRIDGE_PILLAR_BASE_H,
-                        px + BRIDGE_PILLAR_HW + BRIDGE_PILLAR_BASE_CAP_OVH,
-                        yc + cap_crin,
-                        FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + BRIDGE_PILLAR_BASE_CAP_H,
-                        s1r,
-                        s2r,
-                        Textures.CEMENT,
-                    )
-                )  # base cap
-        # Decorative square cement plates above the opening on the pier's
-        # east/west end faces (square opening → straight row, no curve to
-        # trace; see main pier loop above for the rounded-arch version). No
-        # per-tile shear needed here since each face plate sits at a single
-        # fixed X (the face itself), just offset in Y by that face's own
-        # local shear (s1r for the west face at x1, s2r for the east face at x2).
-        for face_x, y_shift, protrude in (
-            (x1, s1r, -BRIDGE_PIER_PLATE_D),  # west face
-            (x2, s2r, BRIDGE_PIER_PLATE_D),  # east face
-        ):
-            BRUSHES.extend(
-                tile_face_plates(
-                    face_x,
-                    protrude,
-                    yc + y_shift - a_rin,
-                    yc + y_shift + a_rin,
-                    pier_ceiling_z - 16,  # matches square_wall's lintel height
-                    pier_ceiling_z,
-                    Textures.CEMENT,
-                    tile=BRIDGE_PIER_PLATE_SIZE,
-                    gap=BRIDGE_PIER_PLATE_GAP,
-                )
-            )
-        # Cement lining already carved into the pier body above (see
-        # has_lining block) — leaves a stone border at each opening end.
-        if by1 < yc - ext:
-            BRUSHES.append(sb(by1, yc - ext, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
-        if by2 > yc + ext:
-            BRUSHES.append(sb(yc + ext, by2, FLOOR_Z2, pier_ceiling_z, Textures.PILLAR))
-        pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
-        pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
-        # North pillar top (above deck)
-        BRUSHES.append(
-            sb(
-                by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
-                pier_outer_y,
-                pdeck,
-                ppil,
-                Textures.PILLAR,
-            )
-        )
-        # South pillar top (above deck)
-        BRUSHES.append(
-            sb(
-                by1 - BRIDGE_PILLAR_OVERHANG,
-                by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
-                pdeck,
-                ppil,
-                Textures.PILLAR,
-            )
-        )
-        # Thin cement mortar-seam strip down the middle of each pillar
-        # post's walkway-facing (inside) face (see the main pier loop's
-        # comment above for why this is a separate protruding decal brush).
-        north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
-        BRUSHES.append(
-            shear_box_y(
-                px - BRIDGE_PILLAR_SEAM_HW,
-                north_inside_y - BRIDGE_PILLAR_SEAM_D,
-                pdeck,
-                px + BRIDGE_PILLAR_SEAM_HW,
-                north_inside_y,
-                ppil,
-                shear_at(px - BRIDGE_PILLAR_SEAM_HW),
-                shear_at(px + BRIDGE_PILLAR_SEAM_HW),
-                Textures.CEMENT,
-            )
-        )
-        south_inside_y = by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG
-        BRUSHES.append(
-            shear_box_y(
-                px - BRIDGE_PILLAR_SEAM_HW,
-                south_inside_y,
-                pdeck,
-                px + BRIDGE_PILLAR_SEAM_HW,
-                south_inside_y + BRIDGE_PILLAR_SEAM_D,
-                ppil,
-                shear_at(px - BRIDGE_PILLAR_SEAM_HW),
-                shear_at(px + BRIDGE_PILLAR_SEAM_HW),
-                Textures.CEMENT,
-            )
-        )
-        # Matching seam on the west-facing end of each post — visible to a
-        # player walking the deck (approaching along the bridge), unlike a
-        # true north/south exterior face which only faces out over the void.
-        # Y-centred on the wall's exterior plane (by2/by1, the "aligns with
-        # the wall exteriors" position), protruding out past the post's west
-        # face (px - BRIDGE_PILLAR_HW) by BRIDGE_PILLAR_SEAM_D (see main pier
-        # loop's comment above). Runs from the deck (pdeck) up to the cap
-        # slab (ppil), continuing down through the wall's own height so it
-        # reads as one continuous seam rather than stopping abruptly at the
-        # wall top.
-        BRUSHES.append(
-            shear_box_y(
-                px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
-                by2 - BRIDGE_PILLAR_SEAM_HW,
-                pdeck,
-                px - BRIDGE_PILLAR_HW,
-                by2 + BRIDGE_PILLAR_SEAM_HW,
-                ppil,
-                shear_at(px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D),
-                shear_at(px - BRIDGE_PILLAR_HW),
-                Textures.CEMENT,
-            )
-        )
-        BRUSHES.append(
-            shear_box_y(
-                px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
-                by1 - BRIDGE_PILLAR_SEAM_HW,
-                pdeck,
-                px - BRIDGE_PILLAR_HW,
-                by1 + BRIDGE_PILLAR_SEAM_HW,
-                ppil,
-                shear_at(px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D),
-                shear_at(px - BRIDGE_PILLAR_HW),
-                Textures.CEMENT,
-            )
-        )
-        # Fill gap between pier top and deck in the overhang zone
-        BRUSHES.append(sb(by2, pier_outer_y, pier_top_z, pdeck, Textures.PILLAR))
-        BRUSHES.append(
-            sb(by1 - BRIDGE_PILLAR_OVERHANG, by1, pier_top_z, pdeck, Textures.PILLAR)
-        )
-        # Cement cap slabs
-        cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
-        north_cap_y1 = (
-            by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG - BRIDGE_PILLAR_CAP_IN_OVH
-        )
-        north_cap_y2 = by2 + BRIDGE_PILLAR_CAP_OUT_OVH
-        south_cap_y1 = by1 - BRIDGE_PILLAR_CAP_OUT_OVH
-        south_cap_y2 = (
-            by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG + BRIDGE_PILLAR_CAP_IN_OVH
-        )
-        sc1r = east_y_shift(cap_x1) - py_shift
-        sc2r = east_y_shift(cap_x2) - py_shift
-        BRUSHES.append(
-            shear_box_y(
-                cap_x1,
-                north_cap_y1,
-                ppil,
-                cap_x2,
-                north_cap_y2,
-                pcap,
-                sc1r,
-                sc2r,
-                Textures.CEMENT,
-            )
-        )
-        BRUSHES.append(
-            shear_box_y(
-                cap_x1,
-                south_cap_y1,
-                ppil,
-                cap_x2,
-                south_cap_y2,
-                pcap,
-                sc1r,
-                sc2r,
-                Textures.CEMENT,
-            )
-        )
-        # Pyramids — sheared the same as the cap slab beneath (was axis-aligned,
-        # so the diamond base didn't line up with the slab's parallelogram top).
-        BRUSHES.append(
-            shear_pyramid_y(
-                cap_x1,
-                north_cap_y1,
-                cap_x2,
-                north_cap_y2,
-                pcap,
-                pcap + BRIDGE_PILLAR_PYR_H,
-                sc1r,
-                sc2r,
-                Textures.CEMENT,
-            )
-        )
-        BRUSHES.append(
-            shear_pyramid_y(
-                cap_x1,
-                south_cap_y1,
-                cap_x2,
-                south_cap_y2,
-                pcap,
-                pcap + BRIDGE_PILLAR_PYR_H,
-                sc1r,
-                sc2r,
-                Textures.CEMENT,
-            )
-        )
-        # Torch bases (centred on shifted cap centres)
-        pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
-        for torch_center_y in [cy_n, cy_s]:
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_TORCH_POST_HW,
-                    torch_center_y - BRIDGE_TORCH_POST_HW,
-                    pyramid_apex_z,
-                    px + BRIDGE_TORCH_POST_HW,
-                    torch_center_y + BRIDGE_TORCH_POST_HW,
-                    pyramid_apex_z + BRIDGE_TORCH_POST_H,
-                    Textures.CEMENT,
-                )
-            )
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_TORCH_CUP_HW,
-                    torch_center_y - BRIDGE_TORCH_CUP_HW,
-                    pyramid_apex_z + BRIDGE_TORCH_POST_H,
-                    px + BRIDGE_TORCH_CUP_HW,
-                    torch_center_y + BRIDGE_TORCH_CUP_HW,
-                    pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H,
-                    Textures.BRICK,
-                )
-            )
-            # Flame decal + damaging trigger — see matching comment in the main
-            # pier loop above for why this lives here instead of entities.py.
-            flame_z = int(pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4)
-            ENTITIES.append(torch_flame_only(px, torch_center_y, flame_z))
-            fhb = box(
-                px - 16,
-                torch_center_y - 16,
-                flame_z,
-                px + 16,
-                torch_center_y + 16,
-                flame_z + 40,
-                Textures.SKY,
-            )
-            ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
     # ── Teleport Arches at both ends of bridge ───────────────────────────────────
     for arch_x_start, arch_center_y in [

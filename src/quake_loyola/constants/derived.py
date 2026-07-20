@@ -151,7 +151,12 @@ KNOTT_STAIRS_Y1 = KNOTT_BIY2 - 256
 # see docs/elevation_samples.csv — so it must NOT move); Pier 4 is derived
 # from PIER3_X instead of KNOTT_PIER_X (see BRIDGE_EAST_SPAN2_LEN below —
 # deliberately NOT pinned to the real Knott Hall pier position, so lengthening
-# span 2 can't disturb Pier 3/the centre span); Pier 5 = KNOTT_NE_PIER_X.
+# span 2 can't disturb Pier 3/the centre span); Pier 5 is a plain hardcoded
+# literal (like Pier 6), deliberately decoupled from KNOTT_NE_PIER_X — pinning
+# it to the KH building anchor put the pier's east face on top of the KH
+# driveway's west sidewalk (KNOTT_DRIVEWAY_WS_X1..X2 = 2486-2566). Moved west
+# to clear the sidewalk with margin; unrelated to any KH-derived constant so
+# it can be retuned independently going forward.
 # Individual names are unpacked immediately after.
 BRIDGE_ARCH_X = [
     KNOTT_PIER_X
@@ -167,7 +172,8 @@ BRIDGE_ARCH_X = [
     # pinned to KNOTT_PIER_X (the real KH west pier) so span 2 can be
     # lengthened without moving Pier 3/the centre span; the resulting gap to
     # the real building pier is absorbed by the flat Pier4-Pier5 span below.
-    KNOTT_NE_PIER_X,  # Pier 5 — east KH pier / NE pier
+    2400,  # Pier 5 — decoupled from KNOTT_NE_PIER_X (2454); clears the KH
+    # driveway west sidewalk (2486-2566) with a 41-unit margin.
     3150,  # Pier 6 — mid-span pier in extended east section (moved east, clear of
     # KH driveway roadway [2566-2822]/sidewalks [2486-2902]; sits in Ennis Rd
     # pavement between the driveway and the Ennis-east teleport arch [3440-3472])
