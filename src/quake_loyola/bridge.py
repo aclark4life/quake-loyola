@@ -356,19 +356,20 @@ def _build_all():
         (_dw_y2b, _dw_y2a, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
     )
     for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
-        BRUSHES.append(
-            box(
-                BRIDGE.x2,
-                _ys1,
-                BRIDGE_DZ1,
-                BRIDGE_EAST_PIVOT_X,
-                _ys2,
-                BRIDGE_DZ2,
-                Textures.STONE,
-                tt=_tt,  # deck walking surface — thin edge strip along each side
-                tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+            BRUSHES.append(
+                box(
+                    _seg_x1,
+                    _ys1,
+                    BRIDGE_DZ1,
+                    _seg_x2,
+                    _ys2,
+                    BRIDGE_DZ2,
+                    Textures.STONE,
+                    tt=_tt,  # deck walking surface — thin edge strip along each side
+                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                )
             )
-        )
     # Angled section: easternmost pier → 1 unit inside the east arch face.
     # Split at BRIDGE_ARCH_X[5] (new mid-span pier) to keep brush sizes manageable
     # and give qbsp extra BSP splits in the extended east section.
@@ -379,7 +380,6 @@ def _build_all():
     # ericw-tools qbsp generates draw surfaces for the outer (Y-facing) faces.
     _ws = _worldspawn_brushes
     for seg_x1, seg_x2 in [
-        (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
         (MID_PIER_X, DECK_EAST_END_X),
     ]:
         for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
@@ -485,18 +485,23 @@ def _build_all():
     ENTITIES.append(brush_ent("func_illusionary", _cross_strip_brushes))
 
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
-    # North east parapet: straight BRIDGE.x2→pier, then angled pier→world wall
-    BRUSHES.append(
-        box(
-            BRIDGE.x2,
-            BRIDGE.y2 - BRIDGE_PAR_W,
-            BRIDGE_DZ2,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y2,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            Textures.CEMENT,
+    # North east parapet: straight BRIDGE.x2→Pier5→pier6, then angled pier6→world
+    # wall. Split at PIER5_X too (not just MID_PIER_X/PIER6_X below) since Pier 5
+    # has its own flanking wall geometry at that X — an unsplit brush spanning
+    # straight through it causes the same qbsp invisible-wall mis-clip described
+    # below for Pier 6.
+    for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+        BRUSHES.append(
+            box(
+                _seg_x1,
+                BRIDGE.y2 - BRIDGE_PAR_W,
+                BRIDGE_DZ2,
+                _seg_x2,
+                BRIDGE.y2,
+                BRIDGE_DZ2 + BRIDGE.parapet_h,
+                Textures.CEMENT,
+            )
         )
-    )
     # Angled piece split at MID_PIER_X (=PIER6_X): Pier 6's own flanking wall
     # brushes (built by the general pier loop) occupy this same Y-range at
     # that X, so a single unsplit brush spanning straight through the pier
@@ -505,7 +510,6 @@ def _build_all():
     # deck bands above already split at MID_PIER_X for the same reason; this
     # matches that.
     for _seg_x1, _seg_x2 in [
-        (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
         (MID_PIER_X, PAR_EAST_END_X),
     ]:
         _ws.append(
@@ -541,7 +545,6 @@ def _build_all():
     # Angled piece split at MID_PIER_X (=PIER6_X) — same overlap reasoning as
     # the north east parapet above.
     for _seg_x1, _seg_x2 in [
-        (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
         (MID_PIER_X, PAR_EAST_END_X),
     ]:
         _ws.append(
@@ -1009,20 +1012,21 @@ def _build_all():
         # East flat section — straight BRIDGE.x2→pier, angled pier→world wall
         # Split at MID_PIER_X to keep shear brushes short and aid BSP splitting.
         tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        # North tube: straight then two angled segments
-        BRUSHES.append(
-            box(
-                BRIDGE.x2,
-                tube_ny1,
-                tube_base_z,
-                BRIDGE_EAST_PIVOT_X,
-                tube_ny2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
+        # North tube: straight (split at Pier5 too — see the parapet wall
+        # comment above for why) then angled segment(s)
+        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+            BRUSHES.append(
+                box(
+                    _seg_x1,
+                    tube_ny1,
+                    tube_base_z,
+                    _seg_x2,
+                    tube_ny2,
+                    tube_base_z + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
+                )
             )
-        )
         for seg_x1, seg_x2 in [
-            (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
             (MID_PIER_X, PAR_EAST_END_X),
         ]:
             BRUSHES.append(
@@ -1054,7 +1058,6 @@ def _build_all():
         # South tube east piece (WALK_X2→Pier5) removed — no railing on the
         # open east half of span 4.
         for seg_x1, seg_x2 in [
-            (BRIDGE_EAST_PIVOT_X, MID_PIER_X),
             (MID_PIER_X, PAR_EAST_END_X),
         ]:
             BRUSHES.append(

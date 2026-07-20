@@ -326,7 +326,7 @@ ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
 ENNIS_X2 = _EAST_FEATURES_X2_EXT - WALL_T
 BRIDGE_EAST_SHIFT_END = -(
-    (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[4]
+    (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[5]
 ) * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
 BRIDGE_SPAN_CENTRES = [
     (BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2,
@@ -393,7 +393,10 @@ KNOTT_SHAFT_Y1, KNOTT_SHAFT_Y2 = KNOTT_BIY2 - KNOTT_SHAFT_Y_OFFSET, KNOTT_BIY2
 KNOTT_STAIRS_Y2 = KNOTT_SHAFT_Y2
 KNOTT_STAIRS_MID_Y = (KNOTT_STAIRS_Y1 + KNOTT_STAIRS_Y2) // 2
 DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2
-BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[4]
+BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[5]  # pivot moved from Pier 5 to Pier 6: span 5
+# (Pier5->Pier6) now runs straight (no Y-shift), and only the tail beyond
+# Pier 6 out to the east arch is angled, with Pier 6 anchoring the bend —
+# see east_y_shift()/bridge.py's deck/parapet construction.
 
 
 # ── Function-Derived Constants ────────────────────────────────────────────────

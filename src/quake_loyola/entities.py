@@ -118,7 +118,6 @@ from .geometry import (
     arch_wall_y,
     box,
     brush_ent,
-    east_y_shift,
     ent,
     make_bush,
     make_giant_tree,
@@ -675,19 +674,17 @@ def build():
     if not ENTITIES_ENABLED_TELEPORTS:
         del ENTITIES[teleports_start:]
 
-    # Temporarily right on span 5's deck next to Pier 6, instead of the west
-    # abutment or the KH driveway, for direct on-the-spot testing of the
-    # Pier 6 / span 5 invisible-wall debugging (see bridge.py). Spawn just
-    # west of Pier 6, on the angled deck at that X's actual east_y_shift
-    # offset, facing east straight at the pier.
-    spawn_x = BRIDGE_ARCH_X[5] - 96
-    spawn_y = int(east_y_shift(spawn_x))
-    spawn_z = int(deck_top_z(spawn_x) + 24)
+    # Back at the Ennis gate, centered in the gate opening on Charles St,
+    # Back on Ennis Drive, standing on the road looking south toward Knott
+    # Hall / the bridge.
+    spawn_x = -180
+    spawn_y = 1992
+    spawn_z = 26
     ENTITIES.append(
         ent(
             "info_player_start",
             origin=f"{spawn_x} {spawn_y} {spawn_z}",
-            angle="0",
+            angle="270",
         )
     )
     # Also exposed as "dest_start" so trigger_teleports elsewhere (e.g. the
@@ -699,7 +696,7 @@ def build():
             "info_teleport_destination",
             targetname="dest_start",
             origin=f"{spawn_x} {spawn_y + 24} {spawn_z}",
-            angle="0",
+            angle="270",
         )
     )
 
