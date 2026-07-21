@@ -1505,14 +1505,8 @@ def _build_all():
 
             # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
-            # Pier 6's north fill is built separately (after rotation, as a
-            # taper matching the deck notch slope) instead of here: this
-            # box sits off to one side of the rotation pivot (at by2, far
-            # from the pivot's y=py_shift), so sweeping it through the
-            # rigid-body whole-pier rotation swings its inner edge away
-            # from the deck's actual (fixed) edge at MID_PIER_X, opening a
-            # gap/wedge there rather than closing one. See the taper piece
-            # built alongside the deck notch below.
+            # Pier 6's north fill is added AFTER rotation (see below) so it
+            # isn't swept out of alignment with the fixed deck edge.
             if px != PIER6_X:
                 BRUSHES.append(
                     box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
@@ -1660,6 +1654,14 @@ def _build_all():
                     e.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
                     for e in ENTITIES[_pier6_rot_estart:]
                 ]
+                # North fill gap — built at the unrotated coordinates then
+                # rotated together with the rest of Pier 6 so it aligns with
+                # the rotated pillar post rather than the fixed deck edge.
+                BRUSHES.append(
+                    box(
+                        x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR
+                    ).rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                )  # north
 
             # Abutment pier (westernmost): solid cement fill, with two distinct
             # openings on opposite faces —
