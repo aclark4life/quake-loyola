@@ -116,6 +116,7 @@ from .constants import (
     Textures,
     deck_bot_z,
     deck_top_z,
+    pier6_east_face_x_at_y,
 )
 from .geometry import (
     arch_fill,
@@ -130,6 +131,7 @@ from .geometry import (
     ramp_slab,
     shear_box_y,
     square_wall,
+    taper_box_x,
     taper_box_y,
     tile_face_plates,
     torch_flame_only,
@@ -361,24 +363,73 @@ def _build_all():
         (_dw_y2c, _dw_y2b, Textures.DECK_EDGE, Textures.GABLE),  # visible edge strip
         (_dw_y2b, _dw_y2a, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
     )
-    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
-        for _seg_x1, _seg_x2 in [
-            (BRIDGE.x2, PIER5_X),
-            (PIER5_X, PIER6_X - BRIDGE_PILLAR_HW),
-        ]:
-            BRUSHES.append(
-                box(
-                    _seg_x1,
-                    _ys1,
-                    BRIDGE_DZ1,
-                    _seg_x2,
-                    _ys2,
-                    BRIDGE_DZ2,
-                    Textures.STONE,
-                    tt=_tt,  # deck walking surface — thin edge strip along each side
-                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
-                )
+    # Span 5 (Pier5->Pier6): Pier 6's post is rotated PIER6_ROTATION_DEG
+    # about its own centre, so both its near (west) and far (east) faces
+    # become diagonal lines that extend further east on the north side of
+    # the deck than on the south side (see pier6_west_face_x_at_y's and
+    # pier6_east_face_x_at_y's docstrings in constants/derived.py). The
+    # wedge always runs the *entire* width of a Y-band (south edge to north
+    # edge), anchored at the old (un-rotated) cutoff as its base and
+    # reaching out to the rotated *east* (far) face at each edge — cutting
+    # all the way through the post on both the north and south sides — since
+    # that far face stays east of the old cutoff across the whole deck
+    # width, this never recedes (no walkable deck is ever removed).
+    _pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
+
+    def _pier6_west_pieces(x_start, ys1, ys2, z1, z2, tex, tt=None, tb=None):
+        """Build the piece(s) of a Y-band (ys1..ys2) running from x_start out
+        toward Pier 6's rotated post: a plain box up to the old cutoff, plus
+        a wedge spanning the band's entire width (ys1..ys2), anchored at the
+        old cutoff and running out to the rotated east (far) face at each
+        edge — cutting all the way through the post."""
+        pieces = [
+            box(x_start, ys1, z1, _pier6_old_cutoff_x, ys2, z2, tex, tt=tt, tb=tb)
+        ]
+        t1 = pier6_east_face_x_at_y(ys1)
+        t2 = pier6_east_face_x_at_y(ys2)
+        pieces.append(
+            taper_box_x(
+                ys1,
+                _pier6_old_cutoff_x,
+                t1,
+                z1,
+                ys2,
+                _pier6_old_cutoff_x,
+                t2,
+                z2,
+                tex,
+                tt=tt,
+                tb=tb,
             )
+        )
+        return pieces
+
+    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+        BRUSHES.append(
+            box(
+                BRIDGE.x2,
+                _ys1,
+                BRIDGE_DZ1,
+                PIER5_X,
+                _ys2,
+                BRIDGE_DZ2,
+                Textures.STONE,
+                tt=_tt,  # deck walking surface — thin edge strip along each side
+                tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+            )
+        )
+        BRUSHES.extend(
+            _pier6_west_pieces(
+                PIER5_X,
+                _ys1,
+                _ys2,
+                BRIDGE_DZ1,
+                BRIDGE_DZ2,
+                Textures.STONE,
+                tt=_tt,
+                tb=_tb,
+            )
+        )
     # Angled section: Pier 6 east face → 1 unit inside the east arch face.
     # The straight deck ends at Pier 6's west face (PIER6_X - BRIDGE_PILLAR_HW)
     # and the angled section resumes at its east face (PIER6_X + BRIDGE_PILLAR_HW),
@@ -509,18 +560,30 @@ def _build_all():
     # geometry there) and at PIER6_WEST_X/PIER6_EAST_X (Pier 6's rotated body
     # occupies the same Y-range — an unsplit brush spanning straight through
     # either pier causes qbsp invisible-wall mis-clips).
-    for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, PIER6_WEST_X)]:
-        BRUSHES.append(
-            box(
-                _seg_x1,
-                BRIDGE.y2 - BRIDGE_PAR_W,
-                BRIDGE_DZ2,
-                _seg_x2,
-                BRIDGE.y2,
-                BRIDGE_DZ2 + BRIDGE.parapet_h,
-                Textures.CEMENT,
-            )
+    BRUSHES.append(
+        box(
+            BRIDGE.x2,
+            BRIDGE.y2 - BRIDGE_PAR_W,
+            BRIDGE_DZ2,
+            PIER5_X,
+            BRIDGE.y2,
+            BRIDGE_DZ2 + BRIDGE.parapet_h,
+            Textures.CEMENT,
         )
+    )
+    # Span 5 (Pier5->Pier6): unchanged up to the old cutoff (matching the
+    # deck's cutoff above); a wedge beyond that follows the same rotated
+    # face out to this wall's own Y position (see _pier6_west_pieces).
+    BRUSHES.extend(
+        _pier6_west_pieces(
+            PIER5_X,
+            BRIDGE.y2 - BRIDGE_PAR_W,
+            BRIDGE.y2,
+            BRIDGE_DZ2,
+            BRIDGE_DZ2 + BRIDGE.parapet_h,
+            Textures.CEMENT,
+        )
+    )
     # Angled piece from Pier 6's east face to the world wall.
     for _seg_x1, _seg_x2 in [
         (PIER6_EAST_X, PAR_EAST_END_X),
@@ -555,15 +618,15 @@ def _build_all():
     )
     # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
     # is now fully open for steps down to the ground.
-    # Span 5 (Pier5→Pier6 west face) straight piece — mirrors the north east
-    # parapet's (PIER5_X, PIER6_WEST_X) segment.
-    BRUSHES.append(
-        box(
+    # Span 5 (Pier5→Pier6): unchanged up to the old cutoff, then a wedge
+    # following Pier 6's rotated west face — mirrors the north east
+    # parapet's treatment above (see _pier6_west_pieces).
+    BRUSHES.extend(
+        _pier6_west_pieces(
             PIER5_X,
             BRIDGE.y1,
-            BRIDGE_DZ2,
-            PIER6_WEST_X,
             BRIDGE.y1 + BRIDGE_PAR_W,
+            BRIDGE_DZ2,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             Textures.CEMENT,
         )
@@ -1036,22 +1099,33 @@ def _build_all():
                     )
                 )
         # East flat section — straight BRIDGE.x2→Pier 6 west face, angled
-        # Pier 6 east face→world wall. Split at PIER5_X and PIER6_WEST_X for
-        # consistency with deck/walls.
+        # Pier 6 east face→world wall. Split at PIER5_X and the old cutoff
+        # for consistency with deck/walls.
         tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        # North tube: straight (split at Pier5 and Pier6 west face) then angled
-        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, PIER6_WEST_X)]:
-            BRUSHES.append(
-                box(
-                    _seg_x1,
-                    tube_ny1,
-                    tube_base_z,
-                    _seg_x2,
-                    tube_ny2,
-                    tube_base_z + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
+        # North tube: straight (BRIDGE.x2->Pier5->old cutoff), then a
+        # wedge (matching the deck/wall wedge above) follows the rotated
+        # post's actual face out to this tube's own Y position, then angled.
+        BRUSHES.append(
+            box(
+                BRIDGE.x2,
+                tube_ny1,
+                tube_base_z,
+                PIER5_X,
+                tube_ny2,
+                tube_base_z + BRIDGE_TUBE_HW * 2,
+                Textures.RAIL,
             )
+        )
+        BRUSHES.extend(
+            _pier6_west_pieces(
+                PIER5_X,
+                tube_ny1,
+                tube_ny2,
+                tube_base_z,
+                tube_base_z + BRIDGE_TUBE_HW * 2,
+                Textures.RAIL,
+            )
+        )
         for seg_x1, seg_x2 in [
             (PIER6_EAST_X, PAR_EAST_END_X),
         ]:
@@ -1083,15 +1157,15 @@ def _build_all():
         )
         # South tube east piece (WALK_X2→Pier5) removed — no railing on the
         # open east half of span 4.
-        # Span 5 (Pier5→Pier6 west face) straight piece — mirrors the north
-        # tube's (PIER5_X, PIER6_WEST_X) segment.
-        BRUSHES.append(
-            box(
+        # Span 5 (Pier5→Pier6): unchanged up to the old cutoff, then a
+        # wedge following Pier 6's rotated west face — mirrors the north
+        # tube's treatment above.
+        BRUSHES.extend(
+            _pier6_west_pieces(
                 PIER5_X,
                 tube_sy1,
-                tube_base_z,
-                PIER6_WEST_X,
                 tube_sy2,
+                tube_base_z,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 Textures.RAIL,
             )

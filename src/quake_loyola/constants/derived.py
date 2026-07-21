@@ -21,6 +21,7 @@ from .bridge import (
     BRIDGE_WEST_OUTER_PIER_SPAN,
     BRIDGE_Y1,
     BRIDGE_Y2,
+    PIER6_ROTATION_DEG,
     BridgeSpec,
 )
 from .dorm import (
@@ -476,6 +477,67 @@ BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # cap flush with the pillar post below (
 # on its E/W faces; only the documented N/S overhangs (CAP_IN_OVH/CAP_OUT_OVH)
 # should apply)
 BRIDGE_BLK_PIR_M = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + 4
+
+
+def _rotate_xy(x, y, cx, cy, angle_deg):
+    """Rotate (x, y) about (cx, cy) by angle_deg (standard math convention,
+    positive = counter-clockwise looking down -Z) — mirrors Brush.rotated_z."""
+    rad = math.radians(angle_deg)
+    cos_a, sin_a = math.cos(rad), math.sin(rad)
+    dx, dy = x - cx, y - cy
+    return cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a
+
+
+# Pier 6's above-deck body (including its pillar post) is rotated
+# PIER6_ROTATION_DEG about the pier's own center (PIER6_X, 0) — see
+# bridge.py's per-pier loop. Before rotation the post's west face is the
+# vertical line X = PIER6_X - BRIDGE_PILLAR_HW; after rotation it becomes a
+# diagonal line, so "where the deck/wall/tube should end to meet the post"
+# depends on which Y (north/south position) you're asking about — there is
+# no longer a single X. pier6_west_face_x_at_y(y) gives that X for any deck
+# Y, derived by inverting the rotation for a point constrained to lie on the
+# original (local) vertical line X = PIER6_X - BRIDGE_PILLAR_HW:
+#   x' = PIER6_X + (local_x - PIER6_X) / cos(a) - tan(a) * y'
+#   with local_x - PIER6_X == -BRIDGE_PILLAR_HW, cy == 0
+# Because tan(PIER6_ROTATION_DEG) is negative, this X *increases* with Y —
+# i.e. the post's rotated west face extends further out (east) on the north
+# side of the deck than the old, un-rotated cutoff, but on the south side it
+# recedes *behind* that old cutoff. bridge.py only adds a wedge where the
+# rotated face is further out than the old cutoff (north of the crossing
+# point given by pier6_west_face_y_at_x); south of that point the deck/wall/
+# tube are left completely unchanged at the old cutoff rather than actually
+# cut back to follow the receded face — cutting them back would remove
+# walkable deck the player can already stand on, for no benefit (the post
+# is a narrow column, not a full-width platform, so nothing relies on the
+# deck stopping exactly flush with its receded corner on the south side).
+_PIER6_ROT_RAD = math.radians(PIER6_ROTATION_DEG)
+_PIER6_COS = math.cos(_PIER6_ROT_RAD)
+_PIER6_TAN = math.tan(_PIER6_ROT_RAD)
+
+
+def pier6_west_face_x_at_y(y):
+    return PIER6_X - BRIDGE_PILLAR_HW / _PIER6_COS - _PIER6_TAN * y
+
+
+def pier6_west_face_y_at_x(x):
+    """Inverse of pier6_west_face_x_at_y — the deck Y at which the rotated
+    post's west face crosses a given X. Used to find where that face
+    crosses the old, un-rotated cutoff (PIER6_X - BRIDGE_PILLAR_HW): south
+    of that Y the rotated face is behind (west of) the old cutoff, so the
+    deck/wall/tube there needs no change at all; only north of that Y does
+    the face actually extend past the old cutoff and need a wedge."""
+    return (PIER6_X - BRIDGE_PILLAR_HW / _PIER6_COS - x) / _PIER6_TAN
+
+
+def pier6_east_face_x_at_y(y):
+    """Same construction as pier6_west_face_x_at_y but for the post's far
+    (east) face — the original (local) vertical line X = PIER6_X +
+    BRIDGE_PILLAR_HW. Used to let the north-side wedge cut all the way
+    through the post to its far side, rather than stopping at the near
+    (west) face."""
+    return PIER6_X + BRIDGE_PILLAR_HW / _PIER6_COS - _PIER6_TAN * y
+
+
 DORM_X2 = DORM_PIER_X + BRIDGE_PILLAR_HW + DORM_PIER_FACE_OFFSET
 FENCE_X1 = DORM_X2 + DORM_FENCE_OFFSET
 FENCE_X2 = FENCE_X1 + 2

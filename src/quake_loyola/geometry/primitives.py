@@ -258,6 +258,23 @@ def taper_box_y(
     )
 
 
+def taper_box_x(
+    y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
+):
+    """Like taper_box_y, but with the X/Y roles swapped: the X-range at y1
+    (x1a..x2a) and at y2 (x1b..x2b) are given directly, allowing a taper
+    along Y instead of X — e.g. an east face that is a single slanted plane
+    (X varying linearly with Y) rather than a flat X=const face. Built by
+    calling taper_box_y with x/y swapped and un-swapping the result, since
+    swapping two axes is just a reflection (swap_xy fixes the resulting
+    flipped face-winding/normals)."""
+    return swap_xy(
+        taper_box_y(
+            y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=tt, tb=tb, tb_params=tb_params
+        )
+    )
+
+
 def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2
