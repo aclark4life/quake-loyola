@@ -251,16 +251,6 @@ PIER6_ROTATION_MARGIN = 150  # extra bridge-section-boundary allowance (see
 # _filter_sections()) so Pier 6's rotated footprint — which reaches further
 # in X than a straight pillar's — doesn't get clipped out of every section
 # and silently dropped from the map.
-PIER6_NOTCH_LEN = 60  # length (in X) of the triangular deck/parapet notch
-# carved into the north side of the deck around Pier 6: the deck's north
-# edge recedes from MID_PIER_X (full width) to MID_PIER_X + PIER6_NOTCH_LEN
-# (max recede), at the same angle as PIER6_ROTATION_DEG so the cut visually
-# lines up with the rotated pier. There is no "recovering" leg back to full
-# width — past Pier 6 the deck has never visibly extended further than
-# this same short stub (bounded by BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG
-# in _filter_sections' accept-range margin, which this length must stay
-# within); the rest of the nominal east_ext deck is an unsupported,
-# pier-less future stub that stays hidden. This is the deck-side half of
 # the "rotate Pier 6, cut a matching deck notch" prep for a future branch
 # span.
 

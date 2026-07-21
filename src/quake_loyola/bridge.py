@@ -13,8 +13,6 @@ knott_hall.py (building walls, floors, interior) so each module has
 a single clear responsibility.
 """
 
-import math
-
 from .constants import (
     A_SEGS,
     ARCH_RIN,
@@ -49,7 +47,6 @@ from .constants import (
     BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
-    BRIDGE_EAST_PIVOT_X,
     BRIDGE_EAST_SHIFT_END,
     BRIDGE_ENABLED_FASCIA_TEXT,
     BRIDGE_ENABLED_SPAN_CENTER,
@@ -103,25 +100,19 @@ from .constants import (
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
     FASCIA_FONT,
-    FLOOR_Z1,
     FLOOR_Z2,
     PIER2_X,
     PIER3_X,
     PIER4_X,
     PIER5_X,
-    PIER6_NOTCH_LEN,
     PIER6_ROTATION_DEG,
     PIER6_ROTATION_MARGIN,
     PIER6_X,
-    STREET_SURFACE_T,
     WALK_X1,
     WALK_X2,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
-    WORLD_Y1,
-    WORLD_Y2,
-    WORLD_Z2,
     Textures,
     deck_bot_z,
     deck_top_z,
@@ -371,7 +362,10 @@ def _build_all():
         (_dw_y2b, _dw_y2a, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
     )
     for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
-        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+        for _seg_x1, _seg_x2 in [
+            (BRIDGE.x2, PIER5_X),
+            (PIER5_X, PIER6_X - BRIDGE_PILLAR_HW),
+        ]:
             BRUSHES.append(
                 box(
                     _seg_x1,
@@ -385,73 +379,31 @@ def _build_all():
                     tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
                 )
             )
-    # Angled section: easternmost pier → 1 unit inside the east arch face.
-    # Split at BRIDGE_ARCH_X[5] (new mid-span pier) to keep brush sizes manageable
-    # and give qbsp extra BSP splits in the extended east section.
+    # Angled section: Pier 6 east face → 1 unit inside the east arch face.
+    # The straight deck ends at Pier 6's west face (PIER6_X - BRIDGE_PILLAR_HW)
+    # and the angled section resumes at its east face (PIER6_X + BRIDGE_PILLAR_HW),
+    # so the deck is truncated evenly across the pier on both sides.
     DECK_EAST_END_X = WORLD_X2_EXT - WALL_T - BRIDGE_DECK_EAST_RECESS
     PAR_EAST_END_X = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W - BRIDGE_DECK_EAST_RECESS
-    MID_PIER_X = BRIDGE_ARCH_X[5]  # x=2800 mid-span pier
+    PIER6_WEST_X = PIER6_X - BRIDGE_PILLAR_HW
+    PIER6_EAST_X = PIER6_X + BRIDGE_PILLAR_HW
     # Angled east section parapets go to worldspawn (not func_detail) to ensure
     # ericw-tools qbsp generates draw surfaces for the outer (Y-facing) faces.
     _ws = _worldspawn_brushes
 
-    # Triangular deck notch around rotated Pier 6: the deck's north edge
-    # recedes from MID_PIER_X (full width) to NOTCH_END_X (max recede), at
-    # the same angle as PIER6_ROTATION_DEG so the cut visually lines up
-    # with the rotated pier. There is no "recovering" leg back to full
-    # width — past Pier 6 the deck has never visibly extended further than
-    # this same short stub, so it just continues at the receded width.
-    # Only the "north family" band boundaries (y2c/y2b/y2a) recede; the
-    # south side (y1a/y1b/y1c) is untouched.
-    NOTCH_END_X = MID_PIER_X + PIER6_NOTCH_LEN
-    NOTCH_DROP = PIER6_NOTCH_LEN * abs(math.tan(math.radians(PIER6_ROTATION_DEG)))
-    _NORTH_YS = {_dw_y2c, _dw_y2b, _dw_y2a}
-
-    def _notch_drop(ys):
-        return NOTCH_DROP if ys in _NORTH_YS else 0.0
-
-    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
-        # Receding leg: MID_PIER_X (full width) → NOTCH_END_X (max recede).
-        # Only the bands fully within the receded north-family region
-        # (both boundaries in _NORTH_YS) are built here — the south/centre
-        # bands (which straddle or sit entirely outside the notch) are
-        # skipped in this short stub: the rotated Pier 6 body already
-        # occupies that footprint, so building them there just produced a
-        # redundant sliver of overlapping geometry (the visible wedge
-        # artifact at the pier).
-        if _ys1 not in _NORTH_YS:
-            continue
-        BRUSHES.append(
-            taper_box_y(
-                MID_PIER_X,
-                _ys1 + east_y_shift(MID_PIER_X),
-                _ys2 + east_y_shift(MID_PIER_X),
-                BRIDGE_DZ1,
-                NOTCH_END_X,
-                _ys1 + east_y_shift(NOTCH_END_X) - _notch_drop(_ys1),
-                _ys2 + east_y_shift(NOTCH_END_X) - _notch_drop(_ys2),
-                BRIDGE_DZ2,
-                Textures.STONE,
-                tt=_tt,
-                tb=_tb,
-            )
-        )
-
     for seg_x1, seg_x2 in [
-        (NOTCH_END_X, DECK_EAST_END_X),
+        (PIER6_EAST_X, DECK_EAST_END_X),
     ]:
         for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
-            # Stays at the receded (max-recede) width the whole way — no
-            # taper back to full width (see notch comment above).
             BRUSHES.append(
                 taper_box_y(
                     seg_x1,
-                    _ys1 + east_y_shift(seg_x1) - _notch_drop(_ys1),
-                    _ys2 + east_y_shift(seg_x1) - _notch_drop(_ys2),
+                    _ys1 + east_y_shift(seg_x1),
+                    _ys2 + east_y_shift(seg_x1),
                     BRIDGE_DZ1,
                     seg_x2,
-                    _ys1 + east_y_shift(seg_x2) - _notch_drop(_ys1),
-                    _ys2 + east_y_shift(seg_x2) - _notch_drop(_ys2),
+                    _ys1 + east_y_shift(seg_x2),
+                    _ys2 + east_y_shift(seg_x2),
                     BRIDGE_DZ2,
                     Textures.STONE,
                     tt=_tt,  # deck walking surface — thin edge strip along each side
@@ -460,14 +412,11 @@ def _build_all():
             )
 
     # Pier 6's north "fill gap between pier top and deck surface" skirt is
-    # intentionally omitted here (unlike every other pier): with the deck
-    # notch removed back to a single permanently-receded leg, the deck's
-    # north edge simply stays pulled back for good past MID_PIER_X, so
-    # there's open space there rather than a seam needing a filler patch.
-    # Adding a skirt/taper of any size in this region (both the constant-
-    # offset and exact-rotated-line versions were tried) only produced a
-    # visible, wrong-shaped wedge — bigger skirts made it worse, so no
-    # skirt at all is closest to correct.
+    # intentionally omitted here (unlike every other pier): the fill box
+    # sits off to one side of the rotation pivot (at by2, far from the
+    # pivot's y=py_shift), so sweeping it through the rigid-body whole-pier
+    # rotation swings its inner edge away from the deck's actual (fixed)
+    # edge, producing a visible wedge. No skirt at all is closest to correct.
 
     # Span-segment boundaries shared by the wall (iter_bridge_span_segments)
     # and the parapet decorations below, so decorative blocks always sit
@@ -555,12 +504,12 @@ def _build_all():
     ENTITIES.append(brush_ent("func_illusionary", _cross_strip_brushes))
 
     # ── Parapet walls — west flat approach removed; east flat stub only ───────────
-    # North east parapet: straight BRIDGE.x2→Pier5→pier6, then angled pier6→world
-    # wall. Split at PIER5_X too (not just MID_PIER_X/PIER6_X below) since Pier 5
-    # has its own flanking wall geometry at that X — an unsplit brush spanning
-    # straight through it causes the same qbsp invisible-wall mis-clip described
-    # below for Pier 6.
-    for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+    # North east parapet: straight BRIDGE.x2→Pier5→Pier6 west face, then angled
+    # Pier6 east face→world wall. Split at PIER5_X (Pier 5 has flanking wall
+    # geometry there) and at PIER6_WEST_X/PIER6_EAST_X (Pier 6's rotated body
+    # occupies the same Y-range — an unsplit brush spanning straight through
+    # either pier causes qbsp invisible-wall mis-clips).
+    for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, PIER6_WEST_X)]:
         BRUSHES.append(
             box(
                 _seg_x1,
@@ -572,25 +521,17 @@ def _build_all():
                 Textures.CEMENT,
             )
         )
-    # Angled piece split at MID_PIER_X (=PIER6_X): Pier 6's own flanking wall
-    # brushes (built by the general pier loop) occupy this same Y-range at
-    # that X, so a single unsplit brush spanning straight through the pier
-    # fully overlaps the pier's solid geometry there — qbsp then mis-clips
-    # portals across that overlap, producing invisible-but-solid walls. The
-    # deck bands above already split at MID_PIER_X for the same reason; this
-    # matches that. The railing is further omitted from MID_PIER_X to
-    # NOTCH_END_X to match the deck's triangular notch there (open railing
-    # gap over the receded deck edge, prep for a future branch span).
+    # Angled piece from Pier 6's east face to the world wall.
     for _seg_x1, _seg_x2 in [
-        (NOTCH_END_X, PAR_EAST_END_X),
+        (PIER6_EAST_X, PAR_EAST_END_X),
     ]:
         _ws.append(
             shear_box_y(
                 _seg_x1,
-                BRIDGE.y2 - BRIDGE_PAR_W - NOTCH_DROP,
+                BRIDGE.y2 - BRIDGE_PAR_W,
                 BRIDGE_DZ2,
                 _seg_x2,
-                BRIDGE.y2 - NOTCH_DROP,
+                BRIDGE.y2,
                 BRIDGE_DZ2 + BRIDGE.parapet_h,
                 east_y_shift(_seg_x1),
                 east_y_shift(_seg_x2),
@@ -614,24 +555,23 @@ def _build_all():
     )
     # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
     # is now fully open for steps down to the ground.
-    # Span 5 (Pier5→MID_PIER_X) straight piece — mirrors the north east
-    # parapet's (PIER5_X, BRIDGE_EAST_PIVOT_X) segment; this side was
-    # previously missing, leaving span 5's south edge with no deck wall.
+    # Span 5 (Pier5→Pier6 west face) straight piece — mirrors the north east
+    # parapet's (PIER5_X, PIER6_WEST_X) segment.
     BRUSHES.append(
         box(
             PIER5_X,
             BRIDGE.y1,
             BRIDGE_DZ2,
-            MID_PIER_X,
+            PIER6_WEST_X,
             BRIDGE.y1 + BRIDGE_PAR_W,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             Textures.CEMENT,
         )
     )
-    # Angled piece split at MID_PIER_X (=PIER6_X) — same overlap reasoning as
-    # the north east parapet above.
+    # Angled piece from Pier 6's east face — same overlap reasoning as the
+    # north east parapet above.
     for _seg_x1, _seg_x2 in [
-        (MID_PIER_X, PAR_EAST_END_X),
+        (PIER6_EAST_X, PAR_EAST_END_X),
     ]:
         _ws.append(
             shear_box_y(
@@ -1095,12 +1035,12 @@ def _build_all():
                         Textures.RAIL,
                     )
                 )
-        # East flat section — straight BRIDGE.x2→pier, angled pier→world wall
-        # Split at MID_PIER_X to keep shear brushes short and aid BSP splitting.
+        # East flat section — straight BRIDGE.x2→Pier 6 west face, angled
+        # Pier 6 east face→world wall. Split at PIER5_X and PIER6_WEST_X for
+        # consistency with deck/walls.
         tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        # North tube: straight (split at Pier5 too — see the parapet wall
-        # comment above for why) then angled segment(s)
-        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, BRIDGE_EAST_PIVOT_X)]:
+        # North tube: straight (split at Pier5 and Pier6 west face) then angled
+        for _seg_x1, _seg_x2 in [(BRIDGE.x2, PIER5_X), (PIER5_X, PIER6_WEST_X)]:
             BRUSHES.append(
                 box(
                     _seg_x1,
@@ -1113,7 +1053,7 @@ def _build_all():
                 )
             )
         for seg_x1, seg_x2 in [
-            (MID_PIER_X, PAR_EAST_END_X),
+            (PIER6_EAST_X, PAR_EAST_END_X),
         ]:
             BRUSHES.append(
                 shear_box_y(
@@ -1143,23 +1083,21 @@ def _build_all():
         )
         # South tube east piece (WALK_X2→Pier5) removed — no railing on the
         # open east half of span 4.
-        # Span 5 (Pier5→MID_PIER_X) straight piece — mirrors the north
-        # tube's (PIER5_X, BRIDGE_EAST_PIVOT_X) segment; matches the deck
-        # wall fix above so span 5's south railing isn't floating with no
-        # wall beneath it.
+        # Span 5 (Pier5→Pier6 west face) straight piece — mirrors the north
+        # tube's (PIER5_X, PIER6_WEST_X) segment.
         BRUSHES.append(
             box(
                 PIER5_X,
                 tube_sy1,
                 tube_base_z,
-                MID_PIER_X,
+                PIER6_WEST_X,
                 tube_sy2,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 Textures.RAIL,
             )
         )
         for seg_x1, seg_x2 in [
-            (MID_PIER_X, PAR_EAST_END_X),
+            (PIER6_EAST_X, PAR_EAST_END_X),
         ]:
             BRUSHES.append(
                 shear_box_y(
@@ -1198,7 +1136,7 @@ def _build_all():
             pcap = ppil + BRIDGE_PILLAR_CAP_H  # cap slab top
 
             # For piers in the angled east section, shift all Y coords to follow the span.
-            # east_y_shift returns 0 for all piers at or west of BRIDGE_EAST_PIVOT_X.
+            # east_y_shift returns 0 for all piers at or west of PIER6_X.
             py_shift = east_y_shift(px)
             by1 = BRIDGE.y1 + py_shift  # south edge of span at this pier
             by2 = BRIDGE.y2 + py_shift  # north edge of span at this pier
@@ -1870,69 +1808,9 @@ def _build_all():
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
         DETAIL_BRUSHES = []
 
-    # Add hint brushes to split the large open space around the bridge (vis optimization)
-    # This prevents "Leaf with too many portals" errors after converting bridge to detail.
-    BRUSHES.append(
-        box(
-            -STREET_SURFACE_T,
-            WORLD_Y1,
-            FLOOR_Z1,
-            STREET_SURFACE_T,
-            WORLD_Y2,
-            WORLD_Z2,
-            Textures.HINT,
-        )
-    )
-    BRUSHES.append(
-        box(
-            BRIDGE_ARCH_X[1] - STREET_SURFACE_T,
-            WORLD_Y1,
-            FLOOR_Z1,
-            BRIDGE_ARCH_X[1] + STREET_SURFACE_T,
-            WORLD_Y2,
-            WORLD_Z2,
-            Textures.HINT,
-        )
-    )
-    BRUSHES.append(
-        box(
-            BRIDGE_ARCH_X[2] - STREET_SURFACE_T,
-            WORLD_Y1,
-            FLOOR_Z1,
-            BRIDGE_ARCH_X[2] + STREET_SURFACE_T,
-            WORLD_Y2,
-            WORLD_Z2,
-            Textures.HINT,
-        )
-    )
-    # North edge hint: limited to the straight section only (x≤BRIDGE_EAST_PIVOT_X).
-    # In the angled east section the north parapet shifts northward (more negative Y), so
-    # extending this hint beyond the pivot would place it inside the sheared parapet brush,
-    # causing qbsp to cull the parapet's outer face (see-through wall bug).
-    BRUSHES.append(
-        box(
-            WORLD_X1,
-            BRIDGE.y1 - 4,
-            FLOOR_Z1,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y1,
-            WORLD_Z2,
-            Textures.HINT,
-        )
-    )
-    # South edge hint: same constraint — the south parapet shears with east_y_shift, so
-    # the hint must not extend into the angled section beyond BRIDGE_EAST_PIVOT_X.
-    BRUSHES.append(
-        box(
-            WORLD_X1,
-            BRIDGE.y2,
-            FLOOR_Z1,
-            BRIDGE_EAST_PIVOT_X,
-            BRIDGE.y2 + 4,
-            WORLD_Z2,
-            Textures.HINT,
-        )
-    )
+    # Vis-hint brushes previously placed here have been removed as they were
+    # intersecting the rotated Pier 6 body and are likely unnecessary for a
+    # map of this scale.
 
     if "abutment_teleport_brush" in locals():
         ENTITIES.append(
