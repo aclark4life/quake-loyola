@@ -479,15 +479,6 @@ BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # cap flush with the pillar post below (
 BRIDGE_BLK_PIR_M = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + 4
 
 
-def _rotate_xy(x, y, cx, cy, angle_deg):
-    """Rotate (x, y) about (cx, cy) by angle_deg (standard math convention,
-    positive = counter-clockwise looking down -Z) — mirrors Brush.rotated_z."""
-    rad = math.radians(angle_deg)
-    cos_a, sin_a = math.cos(rad), math.sin(rad)
-    dx, dy = x - cx, y - cy
-    return cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a
-
-
 # Pier 6's above-deck body (including its pillar post) is rotated
 # PIER6_ROTATION_DEG about the pier's own center (PIER6_X, 0) — see
 # bridge.py's per-pier loop. Before rotation the post's west face is the

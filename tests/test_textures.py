@@ -20,6 +20,10 @@ def test_sky_presets_use_distinct_textures():
 
 def test_textures_sky_matches_default_build_setting():
     # Textures.SKY is resolved at import time from the sky_preset build
-    # setting (default "day" — see config.BUILD_DEFAULTS).
-    assert config.get_build("sky_preset") == "day"
+    # setting (default "day" — see config.BUILD_DEFAULTS). tests/conftest.py
+    # isolates the whole test session from any local ql.toml, so this
+    # reflects the hardcoded default deterministically.
+    assert (
+        config.get_build("sky_preset") == config.BUILD_DEFAULTS["sky_preset"] == "day"
+    )
     assert Textures.SKY == SKY_PRESETS["day"]

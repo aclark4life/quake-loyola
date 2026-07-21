@@ -50,7 +50,13 @@ class Textures:
     ROOF = "roofkell1"
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
-    SKY = SKY_PRESETS[_get_build("sky_preset")]
+    SKY = SKY_PRESETS.get(_get_build("sky_preset"), None)
+    if SKY is None:
+        raise ValueError(
+            f"sky_preset {_get_build('sky_preset')!r} is not a known preset "
+            f"(known: {SKY_PRESET_NAMES}). Fix it with `ql conf set sky_preset "
+            "<name>` or `ql conf reset`."
+        )
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad

@@ -29,12 +29,28 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-# Resolved from the current working directory (not the installed package
-# location) so this works whether quake_loyola is imported via `sys.path`
-# insertion from a repo checkout (generate_map.py) or pip-installed into
-# site-packages — either way, `ql`/`generate_map.py` are meant to be run
-# from the repo root, same as `just`.
-CONFIG_PATH = Path.cwd() / "ql.toml"
+
+def _find_repo_root(start: Path) -> Path:
+    """Walk upward from `start` looking for the repo root (marked by
+    pyproject.toml or .git), so `ql`/`generate_map.py` resolve the same
+    ql.toml/tools/build paths regardless of which subdirectory they're run
+    from. Falls back to `start` itself if no marker is found (e.g. a repo
+    checkout without .git, such as an extracted tarball), preserving the
+    previous cwd-based behavior in that case."""
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").exists() or (candidate / ".git").exists():
+            return candidate
+    return start
+
+
+# Resolved by walking up from the current working directory (not the
+# installed package location) so this works whether quake_loyola is
+# imported via `sys.path` insertion from a repo checkout (generate_map.py)
+# or pip-installed into site-packages — either way, `ql`/`generate_map.py`
+# find the same ql.toml no matter which subdirectory of the repo they're
+# run from (same convention as `just`, which uses `justfile_directory()`).
+REPO_ROOT = _find_repo_root(Path.cwd())
+CONFIG_PATH = REPO_ROOT / "ql.toml"
 
 # ════════════════════════════════════════════════════════════════════════
 # Flag defaults — one entry per boolean switch, formerly hardcoded in
@@ -132,7 +148,12 @@ def _write_toml(path: Path, sections: dict[str, dict[str, Any]]) -> None:
     path.write_text("\n".join(lines).rstrip() + "\n" if lines else "")
 
 
-_raw = _read_toml(CONFIG_PATH)
+_LOAD_ERROR: Exception | None = None
+try:
+    _raw = _read_toml(CONFIG_PATH)
+except tomllib.TOMLDecodeError as exc:
+    _raw = {}
+    _LOAD_ERROR = exc
 
 
 def _validate_section(
@@ -162,18 +183,59 @@ def _validate_section(
     return data
 
 
-FLAGS: dict[str, bool] = {
-    **DEFAULTS,
-    **_validate_section("flags", _raw.get("flags", {}), DEFAULTS),
-}
-BUILD: dict[str, Any] = {
-    **BUILD_DEFAULTS,
-    **_validate_section("build", _raw.get("build", {}), BUILD_DEFAULTS),
-}
+def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
+    """A handful of extra semantic checks for [build] string settings that
+    have a small, fixed set of valid values and no dependency on the rest of
+    the package. (lighting_preset/sky_preset are validated where they're
+    consumed, in constants/lighting.py and constants/textures.py, since
+    those modules own the valid-name lists and this module cannot import
+    them back without a circular import — they both import get_build from
+    here.)
+    """
+    if "vis_mode" in data and data["vis_mode"] not in ("fast", "full"):
+        raise ValueError(
+            f"ql.toml [build] vis_mode must be 'fast' or 'full', "
+            f"got {data['vis_mode']!r}"
+        )
+    return data
+
+
+if _LOAD_ERROR is None:
+    try:
+        _flags_raw = _validate_section("flags", _raw.get("flags", {}), DEFAULTS)
+        _build_raw = _validate_build_values(
+            _validate_section("build", _raw.get("build", {}), BUILD_DEFAULTS)
+        )
+    except (TypeError, KeyError, ValueError) as exc:
+        _flags_raw, _build_raw = {}, {}
+        _LOAD_ERROR = exc
+else:
+    _flags_raw, _build_raw = {}, {}
+
+FLAGS: dict[str, bool] = {**DEFAULTS, **_flags_raw}
+BUILD: dict[str, Any] = {**BUILD_DEFAULTS, **_build_raw}
+
+
+def check_load_error() -> None:
+    """Raise a clear error if ql.toml failed to load/validate at import time.
+
+    Deliberately NOT called by ``reset()``/``CONFIG_PATH`` access, so
+    recovery commands (``ql conf reset``, ``ql conf path``) keep working
+    even when ql.toml is malformed. Called by ``get()``/``get_build()`` so
+    any command that actually needs a flag/setting value fails with one
+    clear, actionable message instead of a raw parse traceback (or, worse,
+    silently falling back to defaults without saying why).
+    """
+    if _LOAD_ERROR is not None:
+        raise RuntimeError(
+            f"{CONFIG_PATH} could not be loaded: {_LOAD_ERROR}. Fix it by "
+            "hand, or run `ql conf reset` to delete it and restore defaults."
+        ) from _LOAD_ERROR
 
 
 def get(name: str) -> bool:
     """Return the effective value of a flag (default, overridden by ql.toml)."""
+    check_load_error()
     if name not in DEFAULTS:
         raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
     return FLAGS[name]
@@ -181,6 +243,7 @@ def get(name: str) -> bool:
 
 def get_build(name: str) -> Any:
     """Return the effective value of a build-tool setting."""
+    check_load_error()
     if name not in BUILD_DEFAULTS:
         raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
     return BUILD[name]
@@ -213,6 +276,7 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
 def reset(path: Path = CONFIG_PATH) -> bool:
     """Delete ql.toml, reverting every flag/setting to its default. Returns
     True if a file was actually removed."""
+    global _LOAD_ERROR
     removed = False
     if path.exists():
         path.unlink()
@@ -225,4 +289,8 @@ def reset(path: Path = CONFIG_PATH) -> bool:
         FLAGS.update(DEFAULTS)
         BUILD.clear()
         BUILD.update(BUILD_DEFAULTS)
+        # A previously-broken ql.toml is now gone — clear the deferred load
+        # error so get()/get_build() work again without restarting the
+        # process (matters for the test suite / any long-lived caller).
+        _LOAD_ERROR = None
     return removed

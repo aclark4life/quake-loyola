@@ -136,7 +136,14 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
     ),
 }
 
-LIGHTING = LIGHTING_PRESETS[_get_build("lighting_preset")]
+_lighting_preset_setting = _get_build("lighting_preset")
+if _lighting_preset_setting not in LIGHTING_PRESETS:
+    raise ValueError(
+        f"lighting_preset {_lighting_preset_setting!r} is not a known preset "
+        f"(known: {sorted(LIGHTING_PRESETS)}). Fix it with `ql conf set "
+        "lighting_preset <name>` or `ql conf reset`."
+    )
+LIGHTING = LIGHTING_PRESETS[_lighting_preset_setting]
 
 # "default" -> use the active preset's own fog density; a named level
 # (off/low/med/high) -> that FogDensity constant; anything else -> parsed as
@@ -148,7 +155,14 @@ if _fog_density_setting == "default":
 elif _fog_density_setting in FOG_DENSITY_NAMES:
     FOG_DENSITY = FOG_DENSITY_NAMES[_fog_density_setting]
 else:
-    FOG_DENSITY = float(_fog_density_setting)
+    try:
+        FOG_DENSITY = float(_fog_density_setting)
+    except ValueError:
+        raise ValueError(
+            f"fog_density {_fog_density_setting!r} must be 'default', one "
+            f"of {sorted(FOG_DENSITY_NAMES)}, or a numeric string. Fix it "
+            "with `ql conf set fog_density <value>` or `ql conf reset`."
+        ) from None
 
 # Sorted list of valid `lighting_preset` build-setting values — used by the
 # `ql conf set lighting_preset <name>` CLI to validate input and by docs/help

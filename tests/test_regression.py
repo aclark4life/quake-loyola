@@ -4,11 +4,14 @@ import unittest
 import generate_map
 from quake_loyola import entities, knott_terrain, streets
 
-# Golden values captured from the known-good map output. Update these
-# deliberately (and review the .map diff) whenever the geometry changes.
+# Golden values captured from the known-good map output with every
+# config.py flag/build setting at its hardcoded default (a local, gitignored
+# ql.toml with overrides would otherwise change brush/entity counts and the
+# hash out from under these tests — tests/conftest.py isolates the whole
+# session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1027
 EXPECTED_ENTITIES = 111
-EXPECTED_MD5 = "7d9bffb5a97a21f769d0ed3425fe5194"
+EXPECTED_MD5 = "1d7ebf752028d418e9c0ecf94f3e047d"
 
 
 class MapRegressionTests(unittest.TestCase):

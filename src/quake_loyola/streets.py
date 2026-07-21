@@ -103,7 +103,6 @@ from .constants import (
     STREET_SURFACE_T,
     STREETS_ENABLED_DETAILS,
     WALL_T,
-    WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_TERRAIN,
     WORLD_X1,
     WORLD_X2,
@@ -1488,10 +1487,10 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # Tunnel-portal wall faces (below) show ground only when the west-campus
     # hillside/embankment geometry that they're shaped around is actually
-    # present (built by west_campus.py); with WEST_CAMPUS_ENABLED_DORMS off,
-    # those inner faces should read as sky, regardless of
-    # STREETS_ENABLED_DETAILS.
-    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_DORMS else Textures.SKY
+    # present (built by west_campus_terrain.py); with
+    # WEST_CAMPUS_ENABLED_TERRAIN off, those inner faces should read as sky,
+    # regardless of STREETS_ENABLED_DETAILS.
+    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
     BRUSHES.extend(
         box_with_round_hole(
             WORLD_X1,

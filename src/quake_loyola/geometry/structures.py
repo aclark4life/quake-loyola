@@ -709,6 +709,20 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=None):
+    # Normalize and clamp each opening to the wall's own bounds so an
+    # out-of-range opening can't leak wall geometry outside the requested
+    # slab (or silently do nothing if fully outside).
+    wx1, wx2 = min(x1, x2), max(x1, x2)
+    wz1, wz2 = min(z1, z2), max(z1, z2)
+    clamped = []
+    for o in openings:
+        ox1, ox2 = sorted((o[0], o[2]))
+        oz1, oz2 = sorted((o[1], o[3]))
+        ox1, ox2 = max(ox1, wx1), min(ox2, wx2)
+        oz1, oz2 = max(oz1, wz1), min(oz2, wz2)
+        if ox1 < ox2 and oz1 < oz2:
+            clamped.append((ox1, oz1, ox2, oz2))
+    openings = clamped
     xs = sorted({x1, x2} | {o[0] for o in openings} | {o[2] for o in openings})
     zs = sorted({z1, z2} | {o[1] for o in openings} | {o[3] for o in openings})
     brushes = []

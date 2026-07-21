@@ -16,6 +16,44 @@ from .utils import format_point, format_value
 Point = tuple[float, float, float]
 
 
+def _face_plane(f: "Face") -> tuple[Point, float]:
+    """Return (normal, d) for face f's plane, where normal . p == d for any
+    point p on the plane."""
+    v1 = (f.p2[0] - f.p1[0], f.p2[1] - f.p1[1], f.p2[2] - f.p1[2])
+    v2 = (f.p3[0] - f.p1[0], f.p3[1] - f.p1[1], f.p3[2] - f.p1[2])
+    normal = (
+        v1[1] * v2[2] - v1[2] * v2[1],
+        v1[2] * v2[0] - v1[0] * v2[2],
+        v1[0] * v2[1] - v1[1] * v2[0],
+    )
+    d = normal[0] * f.p1[0] + normal[1] * f.p1[1] + normal[2] * f.p1[2]
+    return normal, d
+
+
+def _intersect_planes(
+    p1: tuple[Point, float], p2: tuple[Point, float], p3: tuple[Point, float]
+) -> Point | None:
+    """Solve the 3x3 linear system for the point where three planes meet.
+    Returns None if the planes are parallel/degenerate (singular system)."""
+    (a1, b1, c1), d1 = p1
+    (a2, b2, c2), d2 = p2
+    (a3, b3, c3), d3 = p3
+    det = a1 * (b2 * c3 - b3 * c2) - b1 * (a2 * c3 - a3 * c2) + c1 * (a2 * b3 - a3 * b2)
+    if abs(det) < 1e-9:
+        return None
+    # Cramer's rule.
+    det_x = (
+        d1 * (b2 * c3 - b3 * c2) - b1 * (d2 * c3 - d3 * c2) + c1 * (d2 * b3 - d3 * b2)
+    )
+    det_y = (
+        a1 * (d2 * c3 - d3 * c2) - d1 * (a2 * c3 - a3 * c2) + c1 * (a2 * d3 - a3 * d2)
+    )
+    det_z = (
+        a1 * (b2 * d3 - b3 * d2) - b1 * (a2 * d3 - a3 * d2) + d1 * (a2 * b3 - a3 * b2)
+    )
+    return (det_x / det, det_y / det, det_z / det)
+
+
 @dataclass
 class Face:
     """A single brush face: three coplanar points, a texture, and alignment params."""
@@ -99,24 +137,38 @@ class Brush:
         return all(f.is_inside(p, eps) for f in self.faces)
 
     def get_bbox(self) -> tuple[Point, Point]:
-        """Return an approximate (min_point, max_point) bounding box of this
-        brush, derived from each Face's three plane-defining points.
+        """Return the exact (min_point, max_point) axis-aligned bounding box
+        of this convex brush's solid volume.
 
-        This is exact for axis-aligned box() brushes (every corner appears
-        among the collected points), but for non-box brushes — e.g. prisms
-        or arches whose faces have more vertices than the 3 used to define
-        the plane — it can under-report the true extent, since vertices not
-        chosen as plane-definition points are not considered. Treat this as
-        a fast, conservative "face-point bounds", not a precise solid bbox.
+        Computed by intersecting every combination of three face planes to
+        find candidate vertices, then keeping only those that lie on (or
+        inside) every other face's plane — i.e. the brush's true corners.
+        This correctly bounds curved/segmented brushes (arches, prisms,
+        cylinders) whose faces have more vertices than the 3 points used to
+        define each plane, unlike a bound of just the plane-defining points.
         """
         if not self.faces:
             raise ValueError("Brush.get_bbox() called on a brush with no faces")
-        pts = []
-        for f in self.faces:
-            pts.extend([f.p1, f.p2, f.p3])
-        xs = [p[0] for p in pts]
-        ys = [p[1] for p in pts]
-        zs = [p[2] for p in pts]
+        eps = 1e-4
+        planes = [_face_plane(f) for f in self.faces]
+        verts = []
+        n = len(planes)
+        for i in range(n):
+            for j in range(i + 1, n):
+                for k in range(j + 1, n):
+                    p = _intersect_planes(planes[i], planes[j], planes[k])
+                    if p is None:
+                        continue
+                    if all(f.is_inside(p, eps) for f in self.faces):
+                        verts.append(p)
+        if not verts:
+            # Degenerate brush (e.g. no three faces meet at a point within
+            # tolerance) — fall back to the plane-defining points rather
+            # than raising, so callers still get a conservative bound.
+            verts = [p for f in self.faces for p in (f.p1, f.p2, f.p3)]
+        xs = [p[0] for p in verts]
+        ys = [p[1] for p in verts]
+        zs = [p[2] for p in verts]
         return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
     def __str__(self) -> str:

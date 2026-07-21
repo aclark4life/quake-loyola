@@ -90,12 +90,18 @@ def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
 def polygon_prism(pts, z1, z2, tex):
     if len(pts) < 3:
         raise ValueError(f"polygon_prism() requires at least 3 points, got {len(pts)}")
+    if z1 == z2:
+        raise ValueError(f"polygon_prism: degenerate (zero-height) prism at z={z1}")
     # Normalize to CCW winding (positive signed area) so the resulting
     # brush is never accidentally built inside-out for clockwise input.
     signed_area2 = sum(
         pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
         for i in range(len(pts))
     )
+    if abs(signed_area2) < 1e-6:
+        raise ValueError(
+            f"polygon_prism: degenerate (zero-area/collinear) polygon {pts}"
+        )
     if signed_area2 < 0:
         pts = list(reversed(pts))
     n = len(pts)

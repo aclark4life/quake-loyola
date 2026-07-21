@@ -104,6 +104,12 @@ def make_pixel_tree(
     fin_seed=0,
     ring_segs=0,
 ):
+    if ring_segs == 1:
+        raise ValueError(
+            "make_pixel_tree: ring_segs=1 would build a single 0-360 degree "
+            "curb_seg, which is non-convex/degenerate; use ring_segs=0 (fins "
+            "only) or ring_segs>=2"
+        )
     _rng, _TEX = (
         random.Random(fin_seed),
         {"L": Textures.GROUND, "B": Textures.MULCH, "T": Textures.MULCH},

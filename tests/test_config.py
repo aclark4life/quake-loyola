@@ -11,11 +11,22 @@ def test_defaults_load_without_config_file(tmp_path):
     missing = tmp_path / "does_not_exist.toml"
     raw = config._read_toml(missing)
     assert raw == {}
+    # Also verify the actual default-merging logic that FLAGS/BUILD are
+    # built from at import time: with no ql.toml, merging {} on top of
+    # DEFAULTS/BUILD_DEFAULTS must reproduce the defaults exactly.
+    merged_flags = {**config.DEFAULTS, **raw.get("flags", {})}
+    merged_build = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
+    assert merged_flags == config.DEFAULTS
+    assert merged_build == config.BUILD_DEFAULTS
+    # And the live module-level FLAGS/BUILD (loaded once at process start,
+    # from the isolated cwd set up by tests/conftest.py) reflect this too.
+    assert config.FLAGS == config.DEFAULTS
+    assert config.BUILD == config.BUILD_DEFAULTS
 
 
 def test_set_and_get_flag_round_trips(tmp_path):
     path = tmp_path / "ql.toml"
-    assert config.get("KNOTT_ENABLED") is False  # sanity: default unaffected
+    assert config.get("KNOTT_ENABLED") == config.DEFAULTS["KNOTT_ENABLED"]  # sanity
     config.set_flag("KNOTT_ENABLED", True, path=path)
     raw = config._read_toml(path)
     assert raw["flags"]["KNOTT_ENABLED"] is True
@@ -44,7 +55,9 @@ def test_set_and_get_build_setting_round_trips(tmp_path):
 
 
 def test_sky_preset_default_is_day():
-    assert config.get_build("sky_preset") == "day"
+    assert (
+        config.get_build("sky_preset") == config.BUILD_DEFAULTS["sky_preset"] == "day"
+    )
 
 
 def test_set_and_get_sky_preset_round_trips(tmp_path):

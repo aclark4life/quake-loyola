@@ -15,9 +15,10 @@ import typer
 
 from . import config
 
-# Resolved from cwd (not the installed package location) — `ql` is meant to
-# be run from the repo root (same convention as `just`).
-REPO_ROOT = Path.cwd()
+# Resolved the same way as config.CONFIG_PATH (walks up from cwd to find
+# pyproject.toml/.git) so `ql.toml`, `.tools/`, and build/deploy paths all
+# agree with each other regardless of which subdirectory `ql` is run from.
+REPO_ROOT = config.REPO_ROOT
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 

@@ -10,6 +10,7 @@ importable once quake-loyola is pip-installed too.
 from . import (
     basement,
     bridge,
+    config,
     entities,
     knott_hall,
     knott_terrain,
@@ -90,10 +91,15 @@ def build_map_text():
 def main():
     mb = build_map()
     map_text = mb.to_map(WORLDSPAWN_FIELDS)
-    with open("loyola.map", "w") as f:
+    # Write next to ql.toml (config.REPO_ROOT) rather than the raw cwd, so
+    # `ql gen`/`ql build` produce loyola.map in the same directory that
+    # `ql build`'s qbsp/vis/light subprocess calls (cwd=REPO_ROOT) expect it
+    # in, even when invoked from a subdirectory of the repo.
+    map_path = config.REPO_ROOT / "loyola.map"
+    with open(map_path, "w") as f:
         f.write(map_text)
     print(
-        f"loyola.map written — {len(mb.brushes)} worldspawn brushes, {len(mb.entities)} entities"
+        f"{map_path} written — {len(mb.brushes)} worldspawn brushes, {len(mb.entities)} entities"
     )
 
 

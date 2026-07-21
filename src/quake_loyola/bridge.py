@@ -436,7 +436,6 @@ def _build_all():
     # so the deck is truncated evenly across the pier on both sides.
     DECK_EAST_END_X = WORLD_X2_EXT - WALL_T - BRIDGE_DECK_EAST_RECESS
     PAR_EAST_END_X = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W - BRIDGE_DECK_EAST_RECESS
-    PIER6_WEST_X = PIER6_X - BRIDGE_PILLAR_HW
     PIER6_EAST_X = PIER6_X + BRIDGE_PILLAR_HW
     # Angled east section parapets go to worldspawn (not func_detail) to ensure
     # ericw-tools qbsp generates draw surfaces for the outer (Y-facing) faces.
