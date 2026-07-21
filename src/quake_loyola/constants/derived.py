@@ -41,7 +41,6 @@ from .ennis import (
     ENNIS_GATE_PILLAR_OPENING_W,
     ENNIS_HW,
     ENNIS_PILLAR_HW,
-    ENNIS_WALL_T,
     ENNIS_WIDEN_N,
 )
 from .knott import (

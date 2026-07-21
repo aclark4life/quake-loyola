@@ -78,7 +78,10 @@ def _clamp0(zs):
     rows — using those negative values directly would push a brush's top
     below its FLOOR_Z1 bottom cap (a degenerate/inverted brush). Clamp to
     flat grade instead, matching west_campus_terrain.py's convention."""
-    return [max(0, z * _NE_HEIGHT_SCALE * taper) for z, taper in zip(zs, _NE_ROW_TAPER)]
+    return [
+        max(0, z * _NE_HEIGHT_SCALE * taper)
+        for z, taper in zip(zs, _NE_ROW_TAPER, strict=False)
+    ]
 
 
 def build():
@@ -141,7 +144,9 @@ def build():
     _NE_OVR = 8
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_ne_x, _ne_cols), zip(_ne_x[1:], _ne_cols[1:])
+        zip(_ne_x, _ne_cols, strict=False),
+        zip(_ne_x[1:], _ne_cols[1:], strict=False),
+        strict=False,
     ):
         for i in range(len(_ne_y) - 1):
             y1, y2 = _ne_y[i], _ne_y[i + 1]

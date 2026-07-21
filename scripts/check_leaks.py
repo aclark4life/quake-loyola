@@ -8,7 +8,7 @@ sys.path.insert(0, str(_root))
 sys.path.insert(0, str(_root / "src"))
 
 from generate_map import build_map
-from quake_loyola.constants import WORLD_X1, WORLD_X2, WORLD_Y1, WORLD_Y2, WORLD_Z2
+from quake_loyola.constants import WORLD_X1, WORLD_Y1, WORLD_Y2, WORLD_Z2
 
 
 def check_leaks():

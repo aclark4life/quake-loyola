@@ -4,7 +4,6 @@ from ..mapdata import Brush, Face
 from ..utils import swap_xy
 from .primitives import (
     arch_pie_seg,
-    arch_pie_seg_y,
     arch_seg,
     arch_seg_chord,
     arch_seg_y,
@@ -357,9 +356,7 @@ def arch_wall(
     return brushes
 
 
-def arch_wall_y(
-    y1, y2, x1, x2, floor_z, ceil_z, rin, rout, segs, tex, stilt_h=None, xc=0.0
-):
+def arch_wall_y(y1, y2, floor_z, rin, rout, segs, tex, stilt_h=None, xc=0.0):
     if segs <= 0:
         raise ValueError(f"arch_wall_y: segs must be > 0, got {segs}")
     stilt_h = rin if stilt_h is None else stilt_h

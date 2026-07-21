@@ -22,7 +22,7 @@ dir_offset = header_size + data_size
 with open(out_path, "wb") as pak:
     pak.write(b"PACK")
     pak.write(struct.pack("<II", dir_offset, len(files) * entry_size))
-    for name, path in files:
+    for _name, path in files:
         with open(path, "rb") as f:
             pak.write(f.read())
     offset = header_size

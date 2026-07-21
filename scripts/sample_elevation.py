@@ -319,7 +319,7 @@ def main():
             for row in csv.DictReader(f):
                 cached[row["label"]] = row
 
-    for label, x, y, note in SAMPLE_POINTS:
+    for label, x, y, _note in SAMPLE_POINTS:
         lat, lon = quake_to_latlon(x, y)
         if args.no_fetch and label in cached:
             elev_ft = float(cached[label]["elevation_ft"])

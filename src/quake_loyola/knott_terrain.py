@@ -261,7 +261,7 @@ def build():
         +352 z-units at X=900) show the ground keeps climbing toward the
         driveway rather than tapering to grade, so this strip's south edge
         must match that instead of assuming flat_z."""
-        for (gx1, _, gz1b), (gx2, _, gz2b) in zip(_sgrid, _sgrid[1:]):
+        for (gx1, _, gz1b), (gx2, _, gz2b) in zip(_sgrid, _sgrid[1:], strict=False):
             if gx1 <= x <= gx2:
                 t = (x - gx1) / (gx2 - gx1) if gx2 != gx1 else 0.0
                 return gz1b + t * (gz2b - gz1b)
@@ -312,8 +312,9 @@ def build():
     _eg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)  # flat south of Y1, same as ES sidewalk
     for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
         zip(
-            zip(_far_south_y, _far_south_z_east),
-            zip(_far_south_y[1:], _far_south_z_east[1:]),
+            zip(_far_south_y, _far_south_z_east, strict=False),
+            zip(_far_south_y[1:], _far_south_z_east[1:], strict=False),
+            strict=False,
         )
     ):
         ra1 = _sgrid_z + z1
@@ -457,7 +458,9 @@ def build():
         [_wg_flat - _sgrid_z] * 4,  # flat WS sidewalk grade, all Y
     ]
     for (gx1, gcol1), (gx2, gcol2) in zip(
-        zip(_wg2_x, _wg2_cols), zip(_wg2_x[1:], _wg2_cols[1:])
+        zip(_wg2_x, _wg2_cols, strict=False),
+        zip(_wg2_x[1:], _wg2_cols[1:], strict=False),
+        strict=False,
     ):
         for _seg_i in range(len(_far_south_y) - 1):
             y1, y2 = _far_south_y[_seg_i], _far_south_y[_seg_i + 1]
@@ -602,7 +605,7 @@ def build():
     _wg_t900 = (900 - 700) / (KNOTT.x1 - 700)
     _wgrid_z900 = [
         z700 + _wg_t900 * (z1206 - z700)
-        for z700, z1206 in zip([54, 37, 39, 31], _far_south_z_west)
+        for z700, z1206 in zip([54, 37, 39, 31], _far_south_z_west, strict=False)
     ]
     _wgrid_x = [_charles_verge_x2, 700, 900, KNOTT.x1]
     _wgrid_cols = [
@@ -622,7 +625,9 @@ def build():
     # specific Y). See _WRAMP_OVR note near the top of build() — overlap
     # non-final segments to avoid the leak.
     for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_wgrid_x, _wgrid_cols), zip(_wgrid_x[1:], _wgrid_cols[1:])
+        zip(_wgrid_x, _wgrid_cols, strict=False),
+        zip(_wgrid_x[1:], _wgrid_cols[1:], strict=False),
+        strict=False,
     ):
         for i in range(len(_far_south_y) - 1):
             y1, y2 = _far_south_y[i], _far_south_y[i + 1]
@@ -695,7 +700,7 @@ def build():
     # X=557, Y=49 rather than a build-time leak). Overlap this non-final
     # segment's north edge past KNOTT_DRIVEWAY_Y2 by _WRAMP_OVR.
     _sgrid_y2_ext = KNOTT_DRIVEWAY_Y2 + _WRAMP_OVR
-    for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(_sgrid, _sgrid[1:]):
+    for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(_sgrid, _sgrid[1:], strict=False):
         _t = (_sgrid_y2_ext - KNOTT_DRIVEWAY_Y1) / (
             KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
         )
@@ -930,7 +935,9 @@ def build():
     def _hill_z(x):
         """Absolute model Z of the real-world hill profile at X (grade +
         piecewise-linear rise above it)."""
-        for (px1, pz1), (px2, pz2) in zip(_hill_profile, _hill_profile[1:]):
+        for (px1, pz1), (px2, pz2) in zip(
+            _hill_profile, _hill_profile[1:], strict=False
+        ):
             if px1 <= x <= px2:
                 t = (x - px1) / (px2 - px1) if px2 != px1 else 0.0
                 return _flat_z + pz1 + t * (pz2 - pz1)
@@ -951,7 +958,7 @@ def build():
     # _WRAMP_OVR note there). Overlap this non-final segment's north edge
     # past Y=0 by _WRAMP_OVR too.
     _y0_ext = 0 + _WRAMP_OVR
-    for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:]):
+    for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:], strict=False):
         z1, z2 = _hill_z(px1), _hill_z(px2)
         zs1, zs2 = _south_edge_z(px1), _south_edge_z(px2)
         _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (0 - KNOTT_DRIVEWAY_Y2)

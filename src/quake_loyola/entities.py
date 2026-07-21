@@ -90,10 +90,6 @@ from .constants import (
     KNOTT_STAIRS_Y2,
     KNOTT_WEST_ROOM_CX,
     KNOTT_Z2,
-    LIGHTS_ENABLED_ABUTMENT_ARCH,
-    LIGHTS_ENABLED_DORM_INTERIOR,
-    LIGHTS_ENABLED_PENDANTS,
-    LIGHTS_ENABLED_PIER_UPLIGHTS,
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
@@ -126,7 +122,6 @@ from .geometry import (
     render_text_flat,
     render_text_flat_x,
 )
-from .west_campus_terrain import terrain_z
 
 
 def build():
@@ -524,7 +519,6 @@ def build():
 
     # Stone arch surrounds for north & south Charles Street arches
     CHARLES_ARCH_SEGS = 24  # smoother than the global A_SEGS = 16
-    charles_arch_top_z = FLOOR_Z2 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
     for arch_y1, arch_y2 in [
         (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W),
         (CHARLES_Y2 - CHARLES_ARCH_W, CHARLES_Y2),
@@ -535,10 +529,7 @@ def build():
                 arch_wall_y(
                     arch_y1,
                     arch_y2,
-                    WORLD_X1 + WALL_T,
-                    WORLD_X2 - WALL_T,
                     FLOOR_Z2,
-                    charles_arch_top_z,
                     CHARLES_ARCH_RIN,
                     CHARLES_ARCH_ROUT,
                     CHARLES_ARCH_SEGS,
@@ -659,10 +650,7 @@ def build():
     kh_stone_arch = arch_wall_y(
         kh_arch_y1,
         kh_arch_y2,
-        kh_drive_cx - KH_ARCH_ROUT,
-        kh_drive_cx + KH_ARCH_ROUT,
         KNOTT_DRIVEWAY_ZT_S,
-        kh_arch_top_z,
         KNOTT.driveway_hw,
         KH_ARCH_ROUT,
         A_SEGS,

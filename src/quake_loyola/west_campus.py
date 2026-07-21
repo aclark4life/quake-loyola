@@ -2,7 +2,6 @@ from .constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     CHARLES_Y1,
-    CHARLES_Y2,
     DORM,
     DORM_BRICK_GATE_H,
     DORM_BRICK_PILLAR_CAP_H,
@@ -107,7 +106,7 @@ def build_iron_fence(ENTITIES):
     rail_ys = sorted(
         {CHARLES_Y1, fence_y2} | {y for y in wct_y if CHARLES_Y1 < y < fence_y2}
     )
-    for ny1, ny2 in zip(rail_ys, rail_ys[1:]):
+    for ny1, ny2 in zip(rail_ys, rail_ys[1:], strict=False):
         b1, b2 = fence_base_at(ny1), fence_base_at(ny2)
         fence_brushes.append(
             ramp_slab_y(
@@ -352,7 +351,7 @@ def build_sidewalk(BRUSHES):
         brushes = []
         curb_cx = (x1 + x2) / 2
         ys = sorted({y1, y2} | {y for y in wct_y if y2 < y < y1}, reverse=True)
-        for ny1, ny2 in zip(ys, ys[1:]):
+        for ny1, ny2 in zip(ys, ys[1:], strict=False):
             b1, b2 = terrain_z(curb_cx, ny1), terrain_z(curb_cx, ny2)
             brushes.append(
                 ramp_slab_y(

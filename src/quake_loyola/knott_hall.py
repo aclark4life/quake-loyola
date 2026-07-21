@@ -1450,7 +1450,7 @@ def build():
         (KNOTT_SHAFT_Y1, KNOTT_GROUND_Z, KNOTT_SHAFT_Y2, KNOTT_Z2)
     ]  # shaft gap always open
 
-    for floor_index, fz1, _, fz_surf, _ in floor_levels():
+    for floor_index, _fz1, _, fz_surf, _ in floor_levels():
         split = KNOTT_ROOM_SPLITS[floor_index]
         sr_yc = (KNOTT_BIY1 + split) // 2  # south room Y center
         nr_yc = (split + KNOTT.wall_t + KNOTT_BIY2) // 2  # north room Y center

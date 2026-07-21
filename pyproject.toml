@@ -17,7 +17,10 @@ ql = "quake_loyola.cli:app"
 where = ["src"]
 
 [tool.ruff.lint]
-select = ["I"]
+select = ["I", "F", "B", "ARG"]
+ignore = [
+    "B008",   # typer.Argument/Option in default — idiomatic Typer pattern
+]
 
 [dependency-groups]
 dev = ["pytest>=8"]

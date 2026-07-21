@@ -159,8 +159,6 @@ def build():
     charles_arch_segs = 24  # matches CHARLES_ARCH_SEGS in entities.py
     basement_arch_y2 = WORLD_Y2 - WALL_T  # flush against the north wall
     basement_arch_y1 = basement_arch_y2 - CHARLES_ARCH_W
-    basement_arch_top_z = BASEMENT_Z1 + CHARLES_ARCH_STILT + CHARLES_ARCH_RIN
-
     basement_arch_glow = arch_fill_y(
         basement_arch_y1,
         basement_arch_y2,
@@ -177,10 +175,7 @@ def build():
     basement_arch_stone = arch_wall_y(
         basement_arch_y1,
         basement_arch_y2,
-        WORLD_X1 + WALL_T,
-        WORLD_X2_EXT - WALL_T,
         BASEMENT_Z1,
-        basement_arch_top_z,
         CHARLES_ARCH_RIN,
         CHARLES_ARCH_ROUT,
         charles_arch_segs,

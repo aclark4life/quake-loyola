@@ -135,6 +135,7 @@ _wct_raw = list(
             [-119, 85, 124, 125, 142, 143, 145, 143, 165, 149, 40, 232, 223],
             [-78, 13, 142, 147, 155, 141, 146, 150, 142, 147, 58, 233, 221],
         ],
+        strict=True,
     )
 ) + list(
     zip(
@@ -153,6 +154,7 @@ _wct_raw = list(
             # and clear the walkway.
             [-116, -36, 62, 74, 88, 101, 104, 108, 113, 108, 93, 161, 186],
         ],
+        strict=True,
     )
 )
 _wct_raw.sort(key=lambda pair: pair[0])
@@ -289,7 +291,9 @@ def build():
     _WCT_OVR = 20
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_wct_x, _wct_cols), zip(_wct_x[1:], _wct_cols[1:])
+        zip(_wct_x, _wct_cols, strict=False),
+        zip(_wct_x[1:], _wct_cols[1:], strict=False),
+        strict=False,
     ):
         for i in range(len(wct_y) - 1):
             y1, y2 = wct_y[i], wct_y[i + 1]

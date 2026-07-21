@@ -138,7 +138,6 @@ from .geometry import (
     pyramid,
     ramp_slab,
     shear_box_y,
-    shear_pyramid_y,
     square_wall,
     taper_box_y,
     tile_face_plates,
@@ -491,7 +490,7 @@ def _build_all():
         one segment instead."""
         bs = SPAN_BOUNDARIES
         cx_clamped = min(max(cx, bs[0]), bs[-1])
-        for sx1, sx2 in zip(bs, bs[1:]):
+        for sx1, sx2 in zip(bs, bs[1:], strict=False):
             if sx1 <= cx_clamped <= sx2:
                 z1, z2 = deck_top_z(sx1), deck_top_z(sx2)
                 slope = (z2 - z1) / (sx2 - sx1) if sx2 != sx1 else 0.0
@@ -506,7 +505,7 @@ def _build_all():
         # approach and the two straight approach spans are emitted as single
         # segments so their collinear boundaries don't spawn redundant coplanar
         # portals (qbsp WARNING 12 — see the east-section note below).
-        for sx1, sx2 in zip(SPAN_BOUNDARIES, SPAN_BOUNDARIES[1:]):
+        for sx1, sx2 in zip(SPAN_BOUNDARIES, SPAN_BOUNDARIES[1:], strict=False):
             db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
             pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
             pt1, pt2 = pb1 + BRIDGE.parapet_h, pb2 + BRIDGE.parapet_h
@@ -792,13 +791,13 @@ def _build_all():
                 )
                 + BRIDGE.parapet_h
             ),
-            north_brush=lambda cx, sy, bz: _block(
+            north_brush=lambda cx, sy, _bz: _block(
                 cx,
                 sy,
                 BRIDGE.y2 - BRIDGE_PAR_W + BRIDGE_BLK_INSET,
                 BRIDGE.y2 + BRIDGE_BLK_OVH - BRIDGE_BLK_INSET,
             ),
-            south_brush=lambda cx, sy, bz: _block(
+            south_brush=lambda cx, sy, _bz: _block(
                 cx,
                 sy,
                 BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
@@ -971,10 +970,10 @@ def _build_all():
             n,
             x_half_width=BRIDGE_BASE_LIGHT_HW,
             z_at_center=lambda cx: int(deck_top_z(cx)),
-            north_brush=lambda cx, sy, bz: _fixture(
+            north_brush=lambda cx, sy, _bz: _fixture(
                 cx, sy, BRIDGE.y2 - BRIDGE_PAR_W, -1
             ),
-            south_brush=lambda cx, sy, bz: _fixture(
+            south_brush=lambda cx, sy, _bz: _fixture(
                 cx, sy, BRIDGE.y1 + BRIDGE_PAR_W, +1
             ),
             center_fn=int,
