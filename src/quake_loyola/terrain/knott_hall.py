@@ -17,7 +17,7 @@ a single clear responsibility.
 
 import math
 
-from .constants import (
+from ..constants import (
     BRIDGE,
     BRIDGE_ACCESS_WALK_CENTER_X,
     BRIDGE_ACCESS_WALK_HALF_W,
@@ -74,7 +74,7 @@ from .constants import (
     WORLD_Y1,
     Textures,
 )
-from .geometry import (
+from ..geometry import (
     box,
     brush_ent,
     curb_seg,

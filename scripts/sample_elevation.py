@@ -166,7 +166,7 @@ SAMPLE_POINTS = [
 # KH driveway Y1 -> world south edge) — added to spot-check the re-derived
 # south extension / west ramp / south corner fill fills against real USGS
 # elevation, independent of the hand-picked _far_south_z_west/_east sample
-# columns already baked into knott_terrain.py.
+# columns already baked into terrain/knott_hall.py.
 _SOUTH_AUDIT_X = [
     400,
     700,
@@ -196,8 +196,8 @@ for _sy in _SOUTH_AUDIT_Y:
 # West-campus audit grid (dorm buildings north/south1/south2 + bridge west
 # approach, west_campus.py) — no terrain-fill module exists for this area
 # yet (WEST_CAMPUS_ENABLED is currently False); these samples are gathered
-# up front so a future west_campus_terrain.py can be built from real
-# elevation data from the start, the way knott_terrain.py's south extension
+# up front so a future terrain/west_campus.py can be built from real
+# elevation data from the start, the way terrain/knott_hall.py's south extension
 # was re-derived this session, instead of guessing a slope and re-deriving
 # later.
 _WCAMPUS_AUDIT_X = [BRIDGE_X1, DORM_X1, DORM_CX, DORM_X2, FENCE_X1]
@@ -217,7 +217,7 @@ for _wy in _WCAMPUS_AUDIT_Y:
             (f"wcampus_audit_x{_wx}_y{_wy}", _wx, _wy, "west campus audit grid")
         )
 
-# West-campus EXTENSION grids — the initial west_campus_terrain.py grid only
+# West-campus EXTENSION grids — the initial terrain/west_campus.py grid only
 # spanned BRIDGE_X1..FENCE_X1, leaving flat FLOOR_Z2 (the unconditional
 # streets.py world floor) on both sides — real elevation doesn't drop to 0
 # right at either edge, so that produced two new cliffs. These extend the
@@ -237,7 +237,7 @@ for _wy in _WCAMPUS_AUDIT_Y:
 # corridor anchors (imported above) mark the *documented survey* corridor
 # ends, but streets.py's actual Charles St sidewalk/curb geometry runs the
 # full world Y range (WORLD_Y1+WALL_T .. WORLD_Y2-WALL_T) — much further
-# both south and north. west_campus_terrain.py's grid stopping at
+# both south and north. terrain/west_campus.py's grid stopping at
 # CHARLES_Y1/Y2 left real cliffs at both seams. These rows extend the
 # survey out to the true world edges, reusing the same X columns as the
 # main audit/extension grids (ROAD_X1 itself is skipped — the terrain now
@@ -272,7 +272,7 @@ for _wy in _WCAMPUS_FARY:
 # unmodeled area. streets.py currently fills this whole rectangle with one
 # flat placeholder box (flush with the Charles St sidewalk height), the
 # same "placeholder until the real terrain module exists" pattern the west
-# campus verge used before west_campus_terrain.py replaced it. Bounds match
+# campus verge used before terrain/west_campus.py replaced it. Bounds match
 # that placeholder box exactly: X from the east sidewalk/curb edge out to
 # the true east world wall, Y from Ennis Road's north curb out to the true
 # north world wall (see streets.py's locally-shadowed ENNIS_X2/CHARLES_Y2 —

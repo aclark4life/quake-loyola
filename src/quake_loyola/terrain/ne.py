@@ -4,7 +4,7 @@ Road, east of Charles St. This is the last remaining unmodeled quadrant of
 the map — streets.py previously filled this whole rectangle with a single
 flat placeholder box (flush with the Charles St sidewalk height), the same
 "placeholder until the real terrain module exists" pattern west_campus.py's
-verge used before west_campus_terrain.py replaced it (see that module for
+verge used before terrain/west_campus.py replaced it (see that module for
 the precedent this one follows).
 
 USGS EPQS elevation samples (docs/elevation_samples.csv, the ne_quad_*
@@ -12,14 +12,14 @@ rows) show real ground here climbing well above grade close to Charles
 St/Ennis Road (150-240 z-units), rising further into a local hill around
 X=5000 (up to 414 z-units), then easing off toward the world's NE corner —
 and dipping below grade in the northernmost rows (clamped to 0 — see
-_clamp0 below), similar to west_campus_terrain.py's north rows. The raw
+_clamp0 below), similar to terrain/west_campus.py's north rows. The raw
 deltas between adjacent grid points produced near-vertical cliffs in-game,
 so _clamp0 applies _NE_HEIGHT_SCALE (0.5) to gentle the relief — actual
 in-map heights are half the raw USGS figures quoted above.
 
 Two edges of this quadrant border existing flush (CHARLES_WALK_H) built
 infrastructure and need a flat tie, same technique used for
-west_campus_terrain.py's Charles St sidewalk tie:
+terrain/west_campus.py's Charles St sidewalk tie:
   - West edge (X = ROAD_X2 + CHARLES_WALK_W): the Charles St east sidewalk's
     north segment runs this whole Y range at CHARLES_WALK_H — real terrain
     ties flush there instead of using real data, to avoid overlapping the
@@ -30,18 +30,18 @@ west_campus_terrain.py's Charles St sidewalk tie:
     too, for the same reason.
 Real elevation data starts one grid step in from each of those two edges,
 same "flat tie column/row, real data begins next column/row over" approach
-as west_campus_terrain.py used at its Charles St edge.
+as terrain/west_campus.py used at its Charles St edge.
 
 Built as a single 9-column x 7-row real-data grid, using the same
 overlap-safe multi-column tri_ramp_prism technique proven in
-knott_terrain.py's south-extension / west-ramp sections and
-west_campus_terrain.py (see _NE_OVR below).
+terrain/knott_hall.py's south-extension / west-ramp sections and
+terrain/west_campus.py (see _NE_OVR below).
 
 Kept independent as its own NE_ENABLED_TERRAIN flag so this terrain can be
 reviewed/compiled on its own — mirrors WEST_CAMPUS_ENABLED_TERRAIN.
 """
 
-from .constants import (
+from ..constants import (
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_HW,
@@ -58,7 +58,7 @@ from .constants import (
     WORLD_Y2,
     Textures,
 )
-from .geometry import tri_ramp_prism
+from ..geometry import tri_ramp_prism
 
 # Real USGS relief here produced near-vertical drops between adjacent grid
 # points (visible in-game as cliffs). Scale the real-elevation deltas down
@@ -77,7 +77,7 @@ def _clamp0(zs):
     """Real elevation dips below the FLOOR_Z2 baseline in the northernmost
     rows — using those negative values directly would push a brush's top
     below its FLOOR_Z1 bottom cap (a degenerate/inverted brush). Clamp to
-    flat grade instead, matching west_campus_terrain.py's convention."""
+    flat grade instead, matching terrain/west_campus.py's convention."""
     return [
         max(0, z * _NE_HEIGHT_SCALE * taper)
         for z, taper in zip(zs, _NE_ROW_TAPER, strict=False)
@@ -137,8 +137,8 @@ def build():
 
     # A chain of 3+ Y-segments sharing an exact coincident boundary plane
     # trips a qbsp portal-building bug that produces a real leak — see the
-    # matching _WRAMP_OVR/_WCT_OVR notes in knott_terrain.py /
-    # west_campus_terrain.py for the bisection that found this. Overlap
+    # matching _WRAMP_OVR/_WCT_OVR notes in terrain/knott_hall.py /
+    # terrain/west_campus.py for the bisection that found this. Overlap
     # each non-final segment's north edge by a hair, linearly extrapolating
     # that column's own slope.
     _NE_OVR = 8
@@ -155,7 +155,7 @@ def build():
             if i < len(_ne_y) - 2:
                 # Grid ascends northward (y2 > y1), so the overlap extends
                 # the segment's north edge further north (unlike
-                # west_campus_terrain.py's descending grid, which extends
+                # terrain/west_campus.py's descending grid, which extends
                 # south) — same OVR technique, opposite sign.
                 y2_ext = y2 + _NE_OVR
                 z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)

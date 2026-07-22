@@ -16,7 +16,7 @@ in a few spots north of the dorm buildings (clamped to 0 — see below).
 
 Built as a single 12-column x 13-row real-data grid, using the same
 overlap-safe multi-column tri_ramp_prism technique proven in
-knott_terrain.py's south-extension / west-ramp sections (see _WCT_OVR
+terrain/knott_hall.py's south-extension / west-ramp sections (see _WCT_OVR
 below).
 
 Kept independent of WEST_CAMPUS_ENABLED_DORMS (own WEST_CAMPUS_ENABLED_TERRAIN
@@ -25,7 +25,7 @@ dorm buildings themselves stay disabled — same reasoning as
 KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED.
 """
 
-from .constants import (
+from ..constants import (
     BRIDGE_X1,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -42,7 +42,7 @@ from .constants import (
     WORLD_Y2,
     Textures,
 )
-from .geometry import tri_ramp_prism
+from ..geometry import tri_ramp_prism
 
 
 def _clamp0(zs):
@@ -263,7 +263,7 @@ def build():
 
     # A chain of 3+ Y-segments sharing an exact coincident boundary plane
     # (this grid has 12) trips a qbsp portal-building bug that produces a
-    # real leak — see the matching _WRAMP_OVR note in knott_terrain.py for
+    # real leak — see the matching _WRAMP_OVR note in terrain/knott_hall.py for
     # the bisection that found this. Overlap each non-final segment's south
     # edge by a hair so segments no longer share an exact coincident plane.
     #

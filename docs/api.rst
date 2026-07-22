@@ -61,10 +61,10 @@ bridge
    :members:
    :undoc-members:
 
-knott_terrain
-~~~~~~~~~~~~~
+terrain.knott_hall
+~~~~~~~~~~~~~~~~~~
 
-.. automodule:: quake_loyola.knott_terrain
+.. automodule:: quake_loyola.terrain.knott_hall
    :members:
    :undoc-members:
 

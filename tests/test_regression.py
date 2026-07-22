@@ -2,7 +2,8 @@ import hashlib
 import unittest
 
 import generate_map
-from quake_loyola import entities, knott_terrain, streets
+from quake_loyola import entities, streets
+from quake_loyola.terrain import knott_hall as knott_terrain
 
 # Golden values captured from the known-good map output with every
 # config.py flag/build setting at its hardcoded default (a local, gitignored

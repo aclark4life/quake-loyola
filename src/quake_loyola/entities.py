@@ -1723,7 +1723,7 @@ def build():
     # (see bridge.py); the previous X/Y here (BRIDGE.x2..WALK_X1 midpoint,
     # Y=0) placed the monster well before the walkway even starts.
     # Gated by KNOTT_ENABLED_WALKWAY (same flag as the walkway/accessible-path
-    # geometry itself in knott_terrain.py) so it doesn't spawn floating in
+    # geometry itself in terrain/knott_hall.py) so it doesn't spawn floating in
     # empty space when that opt-in geometry is disabled.
     if KNOTT_ENABLED_WALKWAY:
         walkway_mid_x = (WALK_X1 + WALK_X2) // 2  # midpoint across the ramp

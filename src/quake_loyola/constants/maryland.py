@@ -55,7 +55,7 @@ MARYLAND_H = MARYLAND_FLOORS * MARYLAND_FLOOR_H
 # "knott_climb_4"), closest to Maryland Hall's real-world location.
 MARYLAND_GROUND_Z = 273
 
-# maryland_terrain.py — flat mound under/around the stub, sloping down to the
+# terrain/maryland.py — flat mound under/around the stub, sloping down to the
 # surrounding FLOOR_Z2 plaza on all four sides so the building doesn't float
 # on a bare cliff edge. MARGIN is the flat apron beyond the footprint before
 # the slope starts; RAMP_W is the horizontal run of that slope — sized for a
@@ -63,7 +63,7 @@ MARYLAND_GROUND_Z = 273
 # ~48.7° (291/256) wall the first pass produced. Both are rough placeholder
 # values (no real-world grading data yet), sized only to stay clear of the
 # Ennis Drive/east-campus features to the west (_EAST_FEATURES_X2=2976) and
-# Ennis Road to the north (ENNIS_Y - ENNIS_HW=753) — see maryland_terrain.py
+# Ennis Road to the north (ENNIS_Y - ENNIS_HW=753) — see terrain/maryland.py
 # for the actual geometry.
 MARYLAND_TERRAIN_MARGIN = 192
 MARYLAND_TERRAIN_RAMP_W = 768

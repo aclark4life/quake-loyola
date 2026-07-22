@@ -1425,7 +1425,7 @@ def build_ennis_entrance_features():
 
     # Straight-run extension east of the curved bulge, continuing all the way
     # to the world's east sealing wall. This corridor (immediately north of
-    # Ennis Road's curb, south of where ne_terrain.py's real elevation data
+    # Ennis Road's curb, south of where terrain/ne.py's real elevation data
     # begins) is deliberately kept flat/flush the whole way — see that
     # module's docstring: the row bordering the curb is tied to a constant
     # height, with the rising hill only starting further north — so a flat
@@ -1487,7 +1487,7 @@ def build():
     # ════════════════════════════════════════════════════════════════════════════════
     # Tunnel-portal wall faces (below) show ground only when the west-campus
     # hillside/embankment geometry that they're shaped around is actually
-    # present (built by west_campus_terrain.py); with
+    # present (built by terrain/west_campus.py); with
     # WEST_CAMPUS_ENABLED_TERRAIN off, those inner faces should read as sky,
     # regardless of STREETS_ENABLED_DETAILS.
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
@@ -1767,7 +1767,7 @@ def build():
             )
 
     # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
-    # expansion-joint gaps (same technique as knott_terrain.py's sloped slabs).
+    # expansion-joint gaps (same technique as terrain/knott_hall.py's sloped slabs).
     _SW_SLAB_LEN = 80  # matches CHARLES_WALK_W so panels are square (80×80)
     _SW_GAP = 2  # expansion-joint width
 
@@ -2774,8 +2774,8 @@ def build():
     # ground flush with the sidewalk, so the verge here should shrink back to
     # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
     # overlapping brushes.
-    #   west side  -> owned by west_campus_terrain.py (WEST_CAMPUS_ENABLED_TERRAIN)
-    #   east side  -> owned by knott_terrain.py (KNOTT_ENABLED_TERRAIN)
+    #   west side  -> owned by terrain/west_campus.py (WEST_CAMPUS_ENABLED_TERRAIN)
+    #   east side  -> owned by terrain/knott_hall.py (KNOTT_ENABLED_TERRAIN)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
         if WEST_CAMPUS_ENABLED_TERRAIN
@@ -2795,7 +2795,7 @@ def build():
         )
     )
     # East verge — south of Ennis Road.
-    # When KH terrain is enabled, knott_terrain.py owns the driveway corridor
+    # When KH terrain is enabled, terrain/knott_hall.py owns the driveway corridor
     # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2); split the verge around it so it doesn't
     # bury the road/sidewalk brushes built there.
     # The west segment's north edge is pulled back an extra CHARLES_WALK_W to
@@ -2826,8 +2826,8 @@ def build():
         )
     # NE quadrant verge — placeholder flat ground filling the whole area
     # north of Ennis and east of Charles St, flush with the sidewalk, for
-    # while ne_terrain.py's real-elevation fill is disabled. Once
-    # NE_ENABLED_TERRAIN, ne_terrain.py builds its own ground there instead
+    # while terrain/ne.py's real-elevation fill is disabled. Once
+    # NE_ENABLED_TERRAIN, terrain/ne.py builds its own ground there instead
     # — skip this box entirely to avoid overlapping brushes (same
     # placeholder-shrinks-to-nothing pattern as the west/east verges above).
     if not NE_ENABLED_TERRAIN:  # Always provide a baseline ground to prevent leaks
@@ -2912,11 +2912,11 @@ def build():
             )
         )
 
-    # Ennis driveway head — with KH terrain disabled, knott_terrain.py's
+    # Ennis driveway head — with KH terrain disabled, terrain/knott_hall.py's
     # driveway-mouth geometry occupying the corridor gap
     # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2) doesn't exist, so the verge/curb strip
     # built above stops short on both sides of the gap. This is a direct port
-    # of knott_terrain.py's own driveway-head sections (west/east sidewalks,
+    # of terrain/knott_hall.py's own driveway-head sections (west/east sidewalks,
     # road patch, and rounded junction corners) — the same geometry that
     # appears there when KH terrain is enabled — restricted to the Y range
     # north of the curb line (KNOTT_DRIVEWAY_EXT_Y2) so it doesn't overlap the
@@ -2924,10 +2924,10 @@ def build():
     if not KNOTT_ENABLED_TERRAIN:
         # Sidewalk-band gap — the unconditional Ennis south-curb SIDEWALK strip
         # above (built regardless of KNOTT_ENABLED_TERRAIN) leaves a corridor
-        # gap between KNOTT.x2 and KNOTT_DRIVEWAY_ES_X2 for knott_terrain.py to
+        # gap between KNOTT.x2 and KNOTT_DRIVEWAY_ES_X2 for terrain/knott_hall.py to
         # fill; with it disabled, that band (Y: ENNIS_SW_EDGE to
         # ENNIS_SW_EDGE+CHARLES_WALK_W) was left empty. Fill it the same way
-        # knott_terrain.py does: CEMENT sidewalk on each side, ROAD lane down
+        # terrain/knott_hall.py does: CEMENT sidewalk on each side, ROAD lane down
         # the middle.
         BRUSHES.append(
             box(

@@ -9,7 +9,7 @@ The Knott Hall building structure itself:
   • Roof
 
 Exterior approach geometry (entrance plaza, stairs, sidewalks, back road,
-lamp posts) lives in knott_terrain.py and streets.py so each module has
+lamp posts) lives in terrain/knott_hall.py and streets.py so each module has
 a single clear responsibility.
 """
 
@@ -90,12 +90,12 @@ def build():
     # The building footprint's perimeter walls run full height (FLOOR_Z1 up to
     # KNOTT_GROUND_Z) and the ground-floor slab caps them at KNOTT_GROUND_Z,
     # but nothing ever filled the gap between them and the actual sloped
-    # terrain surface knott_terrain.py builds underneath (which tops out well
+    # terrain surface terrain/knott_hall.py builds underneath (which tops out well
     # below KNOTT_GROUND_Z here) — leaving a hollow, unlit crawlspace with no
     # purpose, never meant to be seen. It's nominally sealed by the perimeter
     # walls, but the sloped terrain right at this building's edge is stitched
     # together from many separate ramp brushes converging on coincident
-    # vertices (see the knott_terrain.py notes on qbsp's hull1 clip-hull
+    # vertices (see the terrain/knott_hall.py notes on qbsp's hull1 clip-hull
     # degeneracy around KNOTT.x1) — exactly the kind of geometry that can
     # produce a stray hull1 crack a player slips through. One solid block
     # spanning the whole footprint up to the ground floor's underside removes

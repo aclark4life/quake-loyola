@@ -13,13 +13,10 @@ from . import (
     config,
     entities,
     knott_hall,
-    knott_terrain,
     maryland_hall,
-    maryland_terrain,
-    ne_terrain,
     streets,
+    terrain,
     west_campus,
-    west_campus_terrain,
 )
 from .constants import (
     BASEMENT_ENABLED_LIGHTS,
@@ -36,13 +33,13 @@ from .mapdata import MapBuilder
 MODULES = [
     streets,
     west_campus,
-    west_campus_terrain,
+    terrain.west_campus,
     bridge,
-    knott_terrain,
+    terrain.knott_hall,
     knott_hall,
-    maryland_terrain,
+    terrain.maryland,
     maryland_hall,
-    ne_terrain,
+    terrain.ne,
     basement,
     entities,
 ]

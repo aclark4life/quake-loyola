@@ -72,7 +72,7 @@ from .geometry import (
     win_frame_xwall,
     win_frame_ywall,
 )
-from .west_campus_terrain import terrain_z, wct_y
+from .terrain.west_campus import terrain_z, wct_y
 
 
 def build_iron_fence(ENTITIES):
@@ -82,12 +82,12 @@ def build_iron_fence(ENTITIES):
     fence_brushes = []
 
     # Extend the fence past CHARLES_Y2 (the documented survey corridor's
-    # north end) out to the true world north edge — west_campus_terrain.py's
+    # north end) out to the true world north edge — terrain/west_campus.py's
     # real-elevation grid (wct_y) already covers this full range, so
     # fence_base_at's terrain_z() lookup below just keeps working.
     fence_y2 = WORLD_Y2 - WALL_T
 
-    # Real terrain (west_campus_terrain.py) rises well above the flat
+    # Real terrain (terrain/west_campus.py) rises well above the flat
     # FLOOR_Z2 grade this fence used to assume north of the bridge — up to
     # ~100 units near the fence line — which buried the entire fence in the
     # hillside. Likewise, south of the bridge the fence used to assume a
@@ -306,7 +306,7 @@ def build_sidewalk(BRUSHES):
 
     Uses its own (lower) lift rather than SDORM_LIFT (the dorm floor/gate
     terrace height): real grade along this strip runs ~106-113 (see
-    west_campus_terrain.py), so a walkway-only height closer to real grade
+    terrain/west_campus.py), so a walkway-only height closer to real grade
     sits nearly flush instead of floating ~20 units above it (still floats
     ~5-10 units, but reads better than a full 20-unit gap or a too-buried
     108 lift).
@@ -317,7 +317,7 @@ def build_sidewalk(BRUSHES):
 
     Tiled into individual square concrete panels with expansion-joint gaps
     (same 80-unit-square + 2-unit-gap convention as streets.py's sidewalk
-    slabs / knott_terrain.py's sidewalk_slabs_flat) rather than one long
+    slabs / terrain/knott_hall.py's sidewalk_slabs_flat) rather than one long
     continuous slab.
 
     A standing curb runs along the east edge (facing the iron fence /

@@ -205,7 +205,7 @@ KNOTT_GROUND_Z = 221  # hill-height anchor, re-derived from real-world elevation
 # WALK_ZT2) *before* this 64->221 re-measurement; that re-measurement moved
 # WALK_ZT2 up by 157 units without a matching re-derivation of the bridge deck, so
 # WALK_ZT1 and WALK_ZT2 are no longer equal (see their definitions below). The KH
-# walkway connector (knott_terrain.py's KNOTT_ENABLED_WALKWAY-gated build, off by
+# walkway connector (terrain/knott_hall.py's KNOTT_ENABLED_WALKWAY-gated build, off by
 # default) already builds a sloped ramp_slab_y() between the two rather than
 # assuming a flat deck, so it still connects correctly — just at a steeper slope
 # than originally intended. TODO: re-derive BRIDGE_DZ2 (or a KH-approach-local
@@ -250,18 +250,18 @@ KNOTT_DRIVEWAY_EXT_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_WALK_W
 KNOTT_DRIVEWAY_JCY = ENNIS_Y - ENNIS_HW
 PIER1_X, PIER2_X, PIER3_X, PIER4_X, PIER5_X, PIER6_X = BRIDGE_ARCH_X
 # Center-span piers (2 and 3) cross a real hillside rather than flat grade —
-# west_campus_terrain.py / knott_terrain.py's real-elevation data already
+# terrain/west_campus.py / terrain/knott_hall.py's real-elevation data already
 # rises well above FLOOR_Z2 at these two piers' footprints (verified via
 # point-in-triangle sampling of each module's terrain grid at (X, Y=0)).
 # Rather than carving a notch into that hill to meet a fixed FLOOR_Z2 base
 # (which fights the real data and re-flattens a hillside that's supposed to
 # be there), each pier's own base sits at the hill's real height instead —
 # i.e. the pier stands ON TOP of the existing terrain rather than being
-# embedded in it. Pier 3 (Knott side) reuses knott_terrain.py's own
+# embedded in it. Pier 3 (Knott side) reuses terrain/knott_hall.py's own
 # "Pier 3" hill-profile anchor (525, 171) + its flat-grade baseline (8),
 # confirming this was the original terrain author's intent all along
 # ("...so the whole bridge sits on fully-risen hill"). Pier 2 (west side)
-# is interpolated from west_campus_terrain.py's real grid columns at
+# is interpolated from terrain/west_campus.py's real grid columns at
 # X=-700/-400, Y=0. Piers without an entry here keep the default FLOOR_Z2.
 BRIDGE_PIER_GROUND_Z = {
     # Base Z for each center-span pier. Must be at or below the lowest terrain
@@ -325,7 +325,7 @@ _EAST_FEATURES_X2 = 2976  # fixed anchor, independent of WORLD_X2 — pre-resize
 # WORLD_X2. Ennis Drive/east-campus features (teleport arch, gate, cement plaza)
 # stay pinned here rather than stretching out to the new, much larger WORLD_X2,
 # which now represents unmodeled real estate further east; see docs/reference.rst
-# § World scale. NOTE: bridge.py/entities.py/knott_terrain.py still reference the
+# § World scale. NOTE: bridge.py/entities.py/terrain/knott_hall.py still reference the
 # live WORLD_X2_EXT internally for these same features — to be repointed at this
 # fixed anchor when those modules are re-enabled/re-derived.
 _EAST_FEATURES_X2_EXT = _EAST_FEATURES_X2 + WORLD_EAST_BUFFER

@@ -11,7 +11,7 @@ gap with a flat apron plus a sloped skirt down to grade on two sides
 Road) and west (KH driveway) sides are left as cuts instead of ramps — see
 the in-function comments for why.
 
-Kept separate from knott_terrain.py so each hill/mound (Knott Hall's vs.
+Kept separate from terrain/knott_hall.py so each hill/mound (Knott Hall's vs.
 Maryland Hall's) can be enabled/disabled independently — both are
 provisional models pending re-derivation, and neither should force the
 other on or off.
@@ -32,7 +32,7 @@ brushes are non-solid/invisible (same technique bridge.py uses to force
 vis splits), so this leaves the ground perfectly flush and flat.
 """
 
-from .constants import (
+from ..constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     MARYLAND_ENABLED,
@@ -47,7 +47,7 @@ from .constants import (
     WORLD_Z2,
     Textures,
 )
-from .geometry import box, corner_ramp, ramp_slab, ramp_slab_y
+from ..geometry import box, corner_ramp, ramp_slab, ramp_slab_y
 
 
 def build():

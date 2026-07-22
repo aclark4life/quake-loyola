@@ -102,7 +102,7 @@ Parallel) pending future re-derivation — it is not yet filled with terrain
 or buildings.
 
 .. note::
-   ``bridge.py``, ``entities.py``, and ``knott_terrain.py`` still reference
+   ``bridge.py``, ``entities.py``, and ``terrain/knott_hall.py`` still reference
    the live ``WORLD_X2_EXT`` internally for some of the same
    Ennis/east-campus features that ``_EAST_FEATURES_X2``/``_EAST_FEATURES_X2_EXT``
    now anchor in ``constants/derived.py``. These modules are currently disabled via

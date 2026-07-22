@@ -52,7 +52,7 @@ WEST_CAMPUS_ENABLED_FENCE = _flag(
 # while the dorm buildings themselves stay off.
 WEST_CAMPUS_ENABLED_TERRAIN = _flag(
     "WEST_CAMPUS_ENABLED_TERRAIN"
-)  # west_campus_terrain.py — real-elevation
+)  # terrain/west_campus.py — real-elevation
 # ground fill under/around the dorm buildings + bridge west approach. Kept
 # independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
 # KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED) so the terrain can be reviewed on
@@ -73,14 +73,14 @@ WEST_CAMPUS_ENABLED_SIDEWALK = _flag(
 # dorm buildings themselves stay off.
 NE_ENABLED_TERRAIN = _flag(
     "NE_ENABLED_TERRAIN"
-)  # ne_terrain.py — real-elevation ground fill for the
+)  # terrain/ne.py — real-elevation ground fill for the
 # NE quadrant (north of Ennis Road, east of Charles St), replacing the flat
-# placeholder box streets.py used to build there. See ne_terrain.py's module
+# placeholder box streets.py used to build there. See terrain/ne.py's module
 # docstring for the real-elevation-derived design and the two flush ties
 # (Charles St east sidewalk to the west, Ennis Road north curb to the south).
 KNOTT_ENABLED_TERRAIN = _flag(
     "KNOTT_ENABLED_TERRAIN"
-)  # knott_terrain.py — KH surrounding terrain/embankment/driveway
+)  # terrain/knott_hall.py — KH surrounding terrain/embankment/driveway
 KNOTT_ENABLED = _flag(
     "KNOTT_ENABLED"
 )  # knott_hall.py — KH building shell (walls, windows, roof, sign)
@@ -149,7 +149,7 @@ MARYLAND_ENABLED = _flag(
 )  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
 MARYLAND_ENABLED_TERRAIN = _flag(
     "MARYLAND_ENABLED_TERRAIN"
-)  # maryland_terrain.py — ground mound under/around the Maryland Hall stub
+)  # terrain/maryland.py — ground mound under/around the Maryland Hall stub
 # Kept independent of KNOTT_ENABLED_TERRAIN so each hill/mound can be flipped
 # on and off separately while both are still placeholder/provisional models.
 

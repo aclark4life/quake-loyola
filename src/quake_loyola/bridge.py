@@ -8,7 +8,7 @@ Bridge structure spanning Charles Street between west campus and Knott Hall:
   • Teleport arches at the abutments and vis hint brushes
   • The "LOYOLA UNIVERSITY MARYLAND" parapet fascia lettering
 
-Kept separate from knott_terrain.py (Knott Hall terrain) and
+Kept separate from terrain/knott_hall.py (Knott Hall terrain) and
 knott_hall.py (building walls, floors, interior) so each module has
 a single clear responsibility.
 """

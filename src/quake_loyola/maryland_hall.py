@@ -16,7 +16,7 @@ Y-axis in particular is not independently cross-checked). Re-derive against
 ``KNOTT_GROUND_Z`` was re-derived from a rough placeholder to a measured
 value.
 
-Kept separate from knott_hall.py/knott_terrain.py/west_campus.py so each
+Kept separate from knott_hall.py/terrain/knott_hall.py/west_campus.py so each
 area module has a single clear responsibility.
 """
 

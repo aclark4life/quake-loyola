@@ -204,7 +204,7 @@ BRIDGE_CENTER_PIER_SPAN = 1300  # PIER3 (Knott side, real GPS anchor — see
 # PIER2/PIER1 automatically.
 # Playwright/Google-Maps + ref/bridge08 street-view comparison showed real piers
 # sitting closer to the curb than the original 1050, but 850 overcorrected. Terrain
-# under the new footprint (checked west_campus_terrain.terrain_z across PIER2_X +/-
+# under the new footprint (checked terrain.west_campus.terrain_z across PIER2_X +/-
 # BRIDGE_PILLAR_HW) stays well above the pier's base Z (0), so no floating-pier
 # risk from this move.
 BRIDGE_OUTER_PIER_SPAN = 721  # KNOTT_PIER_X - PIER3_X: fixes PIER3 at its real

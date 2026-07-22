@@ -1,6 +1,6 @@
 """check_terrain_cliffs — grid-scan the Knott Hall terrain for gaps/cliffs.
 
-Loads brushes from ``quake_loyola.knott_terrain.build()`` (not the full map —
+Loads brushes from ``quake_loyola.terrain.knott_hall.build()`` (not the full map —
 see caveat below), samples a grid across the Charles St -> Ennis Dr -> KH
 driveway -> south world-edge rectangle, and reports:
 
@@ -11,7 +11,7 @@ driveway -> south world-edge rectangle, and reports:
 For each brush, all face vertices are projected to XY and reduced to a
 convex hull; the brush's *last* face is evaluated as an infinite plane to
 get the height at any point inside that hull. This is valid for every
-primitive knott_terrain.py uses (box, tri_prism, tri_ramp_prism,
+primitive knott_hall.py (in terrain/) uses (box, tri_prism, tri_ramp_prism,
 ramp_slab/ramp_slab_y all emit the "top" face last) but is NOT reliable for
 arbitrary brushes elsewhere in the map (walls/buildings can have a
 near-vertical last face) — do not point this at the full map's brush list.
@@ -37,7 +37,7 @@ from quake_loyola.constants import (
     WORLD_X2_EXT,
     WORLD_Y1,
 )
-from quake_loyola.knott_terrain import build as _kt_build
+from quake_loyola.terrain.knott_hall import build as _kt_build
 
 STEP = 32  # grid resolution, in Quake units
 JUMP_THRESHOLD = 80  # unit height delta between adjacent grid cells flagged as a cliff

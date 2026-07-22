@@ -77,7 +77,7 @@ called in order by :func:`generate_map.build_map`:
      - The pedestrian bridge deck, arch ribs, pillars, railings, the
        east/west walkway approaches, and the "LOYOLA UNIVERSITY MARYLAND"
        parapet fascia lettering.
-   * - :mod:`quake_loyola.knott_terrain`
+   * - :mod:`quake_loyola.terrain.knott_hall`
      - The Knott Hall hillside terrain, driveway corridor, and retaining
        walls on the east side of Charles Street.
    * - :mod:`quake_loyola.knott_hall`
