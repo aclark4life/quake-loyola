@@ -117,6 +117,7 @@ from .constants import (
     deck_bot_z,
     deck_top_z,
     pier6_east_face_x_at_y,
+    pier6_west_face_x_at_y,
 )
 from .geometry import (
     arch_fill,
@@ -356,12 +357,64 @@ def _build_all():
     _dw_y2c = BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_DECK_EDGE_CEMENT_W
     _dw_y2b = BRIDGE.y2 - BRIDGE_PAR_W  # inner face of north parapet
     _dw_y2a = BRIDGE.y2
+    # far/margin per band: the two north-side bands (nearest BRIDGE.y2, right
+    # under/beside the north parapet) use far=False so the deck's own edge
+    # stops flush with Pier 6's post's near (visible) face instead of
+    # tunneling through to the far face and poking out past the north
+    # corner — the post's solid stone (footer below deck, pillar above)
+    # already occupies the near-to-far span, so shortening the slab here
+    # removes no reachable walking surface (players could never enter the
+    # post's own footprint anyway) while eliminating the visible corner
+    # overhang. The south-side bands and the walk centre keep far=True
+    # (unchanged; the near face recedes behind the old cutoff on the south
+    # side, so far=True is the only option that gives a valid, non-receding
+    # wedge there).
     _DECK_BANDS = (
-        (_dw_y1a, _dw_y1b, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
-        (_dw_y1b, _dw_y1c, Textures.DECK_EDGE, Textures.GABLE),  # visible edge strip
-        (_dw_y1c, _dw_y2c, Textures.FLOOR1, Textures.GABLE),  # visible walk centre
-        (_dw_y2c, _dw_y2b, Textures.DECK_EDGE, Textures.GABLE),  # visible edge strip
-        (_dw_y2b, _dw_y2a, Textures.CEMENT, Textures.CEMENT),  # hidden under parapet
+        (
+            _dw_y1a,
+            _dw_y1b,
+            Textures.CEMENT,
+            Textures.CEMENT,
+            True,
+            0,
+            0,
+        ),  # hidden under parapet (south)
+        (
+            _dw_y1b,
+            _dw_y1c,
+            Textures.DECK_EDGE,
+            Textures.GABLE,
+            True,
+            0,
+            0,
+        ),  # visible edge strip (south)
+        (
+            _dw_y1c,
+            _dw_y2c,
+            Textures.FLOOR1,
+            Textures.GABLE,
+            True,
+            0,
+            0,
+        ),  # visible walk centre
+        (
+            _dw_y2c,
+            _dw_y2b,
+            Textures.DECK_EDGE,
+            Textures.GABLE,
+            False,
+            0,
+            0,
+        ),  # visible edge strip (north) — stop flush with pillar's near face
+        (
+            _dw_y2b,
+            _dw_y2a,
+            Textures.CEMENT,
+            Textures.CEMENT,
+            False,
+            0,
+            0,
+        ),  # hidden under parapet (north) — stop flush with pillar's near face
     )
     # Span 5 (Pier5->Pier6): Pier 6's post is rotated PIER6_ROTATION_DEG
     # about its own centre, so both its near (west) and far (east) faces
@@ -370,23 +423,52 @@ def _build_all():
     # pier6_east_face_x_at_y's docstrings in constants/derived.py). The
     # wedge always runs the *entire* width of a Y-band (south edge to north
     # edge), anchored at the old (un-rotated) cutoff as its base and
-    # reaching out to the rotated *east* (far) face at each edge — cutting
-    # all the way through the post on both the north and south sides — since
-    # that far face stays east of the old cutoff across the whole deck
-    # width, this never recedes (no walkable deck is ever removed).
+    # reaching out to the rotated post's face at each edge.
     _pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
 
-    def _pier6_west_pieces(x_start, ys1, ys2, z1, z2, tex, tt=None, tb=None):
+    def _pier6_west_pieces(
+        x_start,
+        ys1,
+        ys2,
+        z1,
+        z2,
+        tex,
+        tt=None,
+        tb=None,
+        far=True,
+        margin=0,
+        margin2=None,
+    ):
         """Build the piece(s) of a Y-band (ys1..ys2) running from x_start out
         toward Pier 6's rotated post: a plain box up to the old cutoff, plus
         a wedge spanning the band's entire width (ys1..ys2), anchored at the
-        old cutoff and running out to the rotated east (far) face at each
-        edge — cutting all the way through the post."""
+        old cutoff and running out to the rotated post's face at each edge.
+
+        `far` selects which face the wedge targets: the far (east) face
+        (default) cuts all the way through the post, which is what the deck
+        wants (see the module-level comment above — a floor extending a bit
+        past the post is invisible/harmless, and this guarantees the deck
+        never recedes). Passing `far=False` targets the near (west) face
+        instead, stopping the wedge flush with the post's own visible stone
+        face rather than tunneling through and poking out its far side —
+        used for the north wall/railing, which is solid geometry that would
+        otherwise visibly float past the post's north corner.
+
+        `margin` (world units) further pulls the wedge's outer edge back
+        from the target face at ys1 (the south end of the band) by a flat
+        amount. `margin2` does the same at ys2 (the north end); if omitted
+        it defaults to `margin`, so a single flat margin still applies
+        uniformly across the band. Passing a larger `margin2` than `margin`
+        trims only the north end of the wedge (e.g. the pillar's north
+        corner) while leaving the rest of the band at full fill."""
+        if margin2 is None:
+            margin2 = margin
         pieces = [
             box(x_start, ys1, z1, _pier6_old_cutoff_x, ys2, z2, tex, tt=tt, tb=tb)
         ]
-        t1 = pier6_east_face_x_at_y(ys1)
-        t2 = pier6_east_face_x_at_y(ys2)
+        face_x_at_y = pier6_east_face_x_at_y if far else pier6_west_face_x_at_y
+        t1 = face_x_at_y(ys1) - margin
+        t2 = face_x_at_y(ys2) - margin2
         pieces.append(
             taper_box_x(
                 ys1,
@@ -404,7 +486,7 @@ def _build_all():
         )
         return pieces
 
-    for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+    for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -428,6 +510,9 @@ def _build_all():
                 Textures.STONE,
                 tt=_tt,
                 tb=_tb,
+                far=_far,
+                margin=_margin,
+                margin2=_margin2,
             )
         )
     # Angled section: Pier 6 east face → 1 unit inside the east arch face.
@@ -444,7 +529,7 @@ def _build_all():
     for seg_x1, seg_x2 in [
         (PIER6_EAST_X, DECK_EAST_END_X),
     ]:
-        for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
             BRUSHES.append(
                 taper_box_y(
                     seg_x1,
@@ -512,7 +597,7 @@ def _build_all():
 
     # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
     for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
-        for _ys1, _ys2, _tt, _tb in _DECK_BANDS:
+        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
             BRUSHES.append(
                 ramp_slab(
                     sx1,
@@ -571,8 +656,11 @@ def _build_all():
         )
     )
     # Span 5 (Pier5->Pier6): unchanged up to the old cutoff (matching the
-    # deck's cutoff above); a wedge beyond that follows the same rotated
-    # face out to this wall's own Y position (see _pier6_west_pieces).
+    # deck's cutoff above); a wedge beyond that follows the post's near
+    # (west) face out to this wall's own Y position — far=False so the wall
+    # stops flush with the post's visible stone face instead of tunneling
+    # through to its far side and poking out the north corner (see
+    # _pier6_west_pieces).
     BRUSHES.extend(
         _pier6_west_pieces(
             PIER5_X,
@@ -581,6 +669,9 @@ def _build_all():
             BRIDGE_DZ2,
             BRIDGE_DZ2 + BRIDGE.parapet_h,
             Textures.CEMENT,
+            far=False,
+            margin=0,
+            margin2=8,
         )
     )
     # Angled piece from Pier 6's east face to the world wall.
@@ -1101,9 +1192,12 @@ def _build_all():
         # Pier 6 east face→world wall. Split at PIER5_X and the old cutoff
         # for consistency with deck/walls.
         tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        # North tube: straight (BRIDGE.x2->Pier5->old cutoff), then a
-        # wedge (matching the deck/wall wedge above) follows the rotated
-        # post's actual face out to this tube's own Y position, then angled.
+        # North tube: straight (BRIDGE.x2->Pier5->old cutoff), then a wedge
+        # follows the rotated post's near (west) face out to this tube's own
+        # Y position, then angled. far=False so the tube stops flush with
+        # the post's own face instead of tunneling through to its far side
+        # and poking out the north corner (matches the north wall fix
+        # above).
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -1123,6 +1217,8 @@ def _build_all():
                 tube_base_z,
                 tube_base_z + BRIDGE_TUBE_HW * 2,
                 Textures.RAIL,
+                far=False,
+                margin=-4,
             )
         )
         for seg_x1, seg_x2 in [

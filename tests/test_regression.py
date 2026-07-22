@@ -11,7 +11,7 @@ from quake_loyola import entities, knott_terrain, streets
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1027
 EXPECTED_ENTITIES = 111
-EXPECTED_MD5 = "1d7ebf752028d418e9c0ecf94f3e047d"
+EXPECTED_MD5 = "880f9d06be9e5cc74d4d44c117077bca"
 
 
 class MapRegressionTests(unittest.TestCase):
