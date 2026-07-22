@@ -132,7 +132,16 @@ _wct_raw = list(
             [-79, 9, 83, 90, 129, 134, 172, 163, 92, 51, -74, 124, 167],
             [-66, -6, 74, 83, 106, 132, 145, 133, 89, 52, -42, 182, 215],
             [-36, 10, 123, 115, 98, 111, 122, 104, 100, 67, 2, 226, 245],
-            [-119, 85, 124, 125, 142, 143, 145, 143, 165, 149, 40, 232, 223],
+            # -2500 column: the real y=2800 (index 1) sample is an 85 spike —
+            # inconsistent with its neighbors (10 at the -3500 column's same
+            # row, 13 at the BRIDGE_X1 column's same row, and this column's
+            # own 0/-119-clamped row and 124 two rows down) — poking up as an
+            # isolated mesa in the northwest part of the grid, well above the
+            # otherwise near-flat 0-13 band across this row. Trimmed to 11
+            # (matching the -3500/BRIDGE_X1 neighbors' same-row trend) to
+            # smooth the local spike, same treatment as the FENCE_X1 y=-1068
+            # spike fix below.
+            [-119, 11, 124, 125, 142, 143, 145, 143, 165, 149, 40, 232, 223],
             [-78, 13, 142, 147, 155, 141, 146, 150, 142, 147, 58, 233, 221],
         ],
         strict=True,

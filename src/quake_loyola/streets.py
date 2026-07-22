@@ -1490,6 +1490,18 @@ def build():
     # present (built by terrain/west_campus.py); with
     # WEST_CAMPUS_ENABLED_TERRAIN off, those inner faces should read as sky,
     # regardless of STREETS_ENABLED_DETAILS.
+    #
+    # The north and south portals are NOT symmetric in the real elevation
+    # data (terrain/west_campus.py's wct grid): the south end (near
+    # WORLD_Y1, y around -6626) genuinely rises to real hillside heights
+    # (~200-245 units) that bury the south portal's ground-textured faces,
+    # but the north end (near WORLD_Y2, y around 4069) is essentially flat
+    # (~0) — there's no real hill there to hide the ground texture, so
+    # texturing the north portal as ground left a floating, wall-like patch
+    # of dirt exposed with nothing around it. Use sky unconditionally for
+    # the north portal and keep the flag-gated ground texture only for the
+    # south portal, where real terrain actually justifies it.
+    _tunnel_wall_tex_n = Textures.SKY
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
     BRUSHES.extend(
         box_with_round_hole(
@@ -1507,7 +1519,13 @@ def build():
     )  # floor — punched with the manhole opening down to the basement (see
     # basement.py, which cuts the matching hole through its own ceiling slab
     # immediately below)
-    # W wall — split by Z so only the tunnel-height portion shows ground on its inner face.
+    # W wall — split by Z purely for consistency with the tunnel-height/
+    # above-tunnel split elsewhere; the inner (east) face reads as sky the
+    # whole way up, not ground — the west-campus hillside terrain (built
+    # separately by terrain/west_campus.py) already supplies its own visible
+    # ground surface well inboard of this wall, so texturing the wall face
+    # itself as ground just left a stray strip of ground showing near the
+    # wall's base where the (lower) hillside doesn't reach flush against it.
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1517,7 +1535,6 @@ def build():
             WORLD_Y2,
             BRIDGE_DZ2,
             Textures.SKY,
-            te=_tunnel_wall_tex,  # inner east face at tunnel height → ground
         )
     )  # W wall lower (tunnel height)
     BRUSHES.append(
@@ -1584,9 +1601,9 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=_tunnel_wall_tex,  # sloped top visible at tunnel exit → ground
-            te=_tunnel_wall_tex,  # east end-cap at tunnel opening → ground
-            ts=_tunnel_wall_tex,  # inner south face = tunnel end-wall → ground
+            tt=_tunnel_wall_tex_n,  # sloped top — no real hill here, stays sky
+            te=_tunnel_wall_tex_n,  # east end-cap — no real hill here, stays sky
+            ts=_tunnel_wall_tex_n,  # inner south face — no real hill here, stays sky
         )
     )  # N wall tunnel portal (ground up to the ceiling-underside line)
     BRUSHES.append(
@@ -1600,7 +1617,7 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=_tunnel_wall_tex,  # sloped bottom face visible from tunnel → ground
+            tb=_tunnel_wall_tex_n,  # sloped bottom — no real hill here, stays sky
         )
     )  # N wall above the tunnel end-wall
     BRUSHES.append(
