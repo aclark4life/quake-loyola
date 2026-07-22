@@ -24,6 +24,7 @@ from ..constants import (
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
     BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
+    BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_SUPPORT_BEAM_H,
     BRIDGE_SUPPORT_HALF_W,
@@ -63,6 +64,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENABLED_TERRAIN,
     KNOTT_ENABLED_WALKWAY,
+    KNOTT_ENABLED_WALKWAY_BENT,
     KNOTT_GROUND_Z,
     ROAD_X2,
     WALK_X1,
@@ -89,9 +91,10 @@ def build():
     # The KH pedestrian walkway (deck-level bridge, ground-level accessible
     # path, and their support bent) is Knott Hall access infrastructure, kept
     # separate from KNOTT_ENABLED_TERRAIN (the driveway/hill terrain master
-    # switch) and gated solely by its own KNOTT_ENABLED_WALKWAY flag — which
-    # defaults to off, since it's an opt-in extra layered on top of the KH
-    # terrain rather than part of the core map.
+    # switch) and gated by its own KNOTT_ENABLED_WALKWAY /
+    # KNOTT_ENABLED_WALKWAY_BENT flags — both default to off, since they're
+    # opt-in extras layered on top of the KH terrain rather than part of the
+    # core map.
     walk_brushes, walk_entities = build_walkway()
     if not KNOTT_ENABLED_TERRAIN:
         return walk_brushes, walk_entities
@@ -1542,191 +1545,208 @@ def build_walkway():
     flags (e.g. BRIDGE_ENABLED_SPAN_KH) just because it happens to sit
     within that span's X range.
 
-    Gated solely by KNOTT_ENABLED_WALKWAY, independent of
-    KNOTT_ENABLED_TERRAIN (the separate hill/driveway terrain model).
+    The ramp/rails/tubes/accessible-walkway are gated by KNOTT_ENABLED_WALKWAY;
+    the support bent (crossbeam + 5 drop piers) has its own independent
+    KNOTT_ENABLED_WALKWAY_BENT flag so it can be built/reviewed on its own.
+    Both are independent of KNOTT_ENABLED_TERRAIN (the separate hill/driveway
+    terrain model).
     """
-    if not KNOTT_ENABLED_WALKWAY:
-        return [], []
     BRUSHES = []
     DETAIL_BRUSHES = []
 
-    # ════════════════════════════════════════════════════════════════════════════════
-    # WALKWAY — sloped bridge from south edge to building 2nd floor entrance
-    # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; ramps between WALK_ZT1 (bridge end) and
-    # WALK_ZT2 (building end) — these two are no longer equal (see the WALK_ZT1
-    # comment in constants/derived.py for why), so this is a real ramp, not flat.
-    # ════════════════════════════════════════════════════════════════════════════════
-    wk_zb1 = WALK_ZT1 - KNOTT.wall_t  # slab bottom at bridge end
-    wk_zb2 = WALK_ZT2 - KNOTT.wall_t  # slab bottom at building end
-    BRUSHES.append(
-        ramp_slab_y(
-            WALK_X1,
-            WALK_X2,
-            BRIDGE.y1,
-            KNOTT.y2,
-            wk_zb1,
-            wk_zb2,
-            WALK_ZT1,
-            WALK_ZT2,
-            Textures.CEMENT,
-            tt=Textures.FLOOR,
-        )
-    )
-    # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
-    DETAIL_BRUSHES.append(
-        ramp_slab_y(
-            WALK_X1 - BRIDGE.walk_wall,
-            WALK_X1,
-            BRIDGE.y1,
-            KNOTT.y2,
-            wk_zb1,
-            wk_zb2,
-            WALK_ZT1 + BRIDGE.parapet_h,
-            WALK_ZT2 + BRIDGE.parapet_h,
-            Textures.CEMENT,
-        )
-    )
-    DETAIL_BRUSHES.append(
-        ramp_slab_y(
-            WALK_X2,
-            WALK_X2 + BRIDGE.walk_wall,
-            BRIDGE.y1,
-            KNOTT.y2,
-            wk_zb1,
-            wk_zb2,
-            WALK_ZT1 + BRIDGE.parapet_h,
-            WALK_ZT2 + BRIDGE.parapet_h,
-            Textures.CEMENT,
-        )
-    )
-    # Handrail tubes along walkway sides, centred in the wall thickness
-    for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-        tube_base_z = WALK_ZT1 + BRIDGE.parapet_h + tube_z_offset
-        ww_cx = BRIDGE.walk_wall // 2
-        DETAIL_BRUSHES.append(
-            box(
-                WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
-                KNOTT.y2,
-                tube_base_z,
-                WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
+    if KNOTT_ENABLED_WALKWAY:
+        # ════════════════════════════════════════════════════════════════════════════════
+        # WALKWAY — sloped bridge from south edge to building 2nd floor entrance
+        # X=-64..64, Y=BRIDGE.y1..KNOTT.y2; ramps between WALK_ZT1 (bridge end) and
+        # WALK_ZT2 (building end) — these two are no longer equal (see the WALK_ZT1
+        # comment in constants/derived.py for why), so this is a real ramp, not flat.
+        # ════════════════════════════════════════════════════════════════════════════════
+        wk_zb1 = WALK_ZT1 - KNOTT.wall_t  # slab bottom at bridge end
+        wk_zb2 = WALK_ZT2 - KNOTT.wall_t  # slab bottom at building end
+        BRUSHES.append(
+            ramp_slab_y(
+                WALK_X1,
+                WALK_X2,
                 BRIDGE.y1,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
+                KNOTT.y2,
+                wk_zb1,
+                wk_zb2,
+                WALK_ZT1,
+                WALK_ZT2,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
             )
         )
+        # Side rails slope with the ramp (32-unit thick walls so tubes sit centred)
         DETAIL_BRUSHES.append(
-            box(
-                WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
-                KNOTT.y2,
-                tube_base_z,
-                WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
+            ramp_slab_y(
+                WALK_X1 - BRIDGE.walk_wall,
+                WALK_X1,
                 BRIDGE.y1,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
-        )
-
-    # ════════════════════════════════════════════════════════════════════════════════
-    # ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KNOTT_GROUND_Z),
-    # running alongside Pier 5 (west face).  Connects Knott Hall north face to the
-    # bridge south edge, then wraps east via a short E-W ramp to the back-road west
-    # sidewalk.  Provides ground-level access around Pier 5 without steps.
-    # Spans Y=KNOTT.y2..BRIDGE.y1 (KH north face → bridge south edge).
-    # ════════════════════════════════════════════════════════════════════════════════
-    east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
-    east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
-    east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
-    east_walk_y2 = (
-        BRIDGE.y2
-        + BRIDGE_PILLAR_OVERHANG
-        + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
-        + BRIDGE_ACCESS_WALK_NORTH_OFFSET
-    )  # north anchor: ramp moved 80 units north
-    terrain_z2 = int(
-        KNOTT_GROUND_Z
-        + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-        * (east_walk_y2 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-    )
-    # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KNOTT.x2
-    east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
-    east_walk_ext_y2 = east_walk_y2
-    extension_terrain_z1 = int(
-        KNOTT_GROUND_Z
-        + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-        * (east_walk_ext_y1 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-    )
-    extension_terrain_z2 = terrain_z2
-    extension_terrain_z_west = (
-        extension_terrain_z1 + extension_terrain_z2
-    ) // 2  # Z at west end (N-S path side)
-    DETAIL_BRUSHES.append(
-        ramp_slab(
-            east_walk_x2,
-            KNOTT.x2,
-            east_walk_ext_y1,
-            east_walk_ext_y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            extension_terrain_z_west,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-            tt=Textures.FLOOR,
-        )
-    )
-
-    # ════════════════════════════════════════════════════════════════════════════════
-    # WALKWAY BENT — cement cap beam + 5 drop piers under the south edge of the bridge
-    # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
-    # visible under the KH bridge approach (ref: bridge01).
-    # ════════════════════════════════════════════════════════════════════════════════
-    # Position just under the south edge of the bridge deck, shifted north
-    # so the beam sits fully under the deck (south face flush with deck edge)
-    support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HALF_W  # flush with south deck edge
-    support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
-    support_y1 = support_y_center - support_half_width
-    support_y2 = support_y_center + support_half_width
-    # Beam sits just below the walkway slab bottom
-    beam_top_z = WALK_ZT1 - KNOTT.wall_t  # bottom of walkway slab at bridge end
-    beam_height = BRIDGE_SUPPORT_BEAM_H
-    beam_bottom_z = beam_top_z - beam_height
-    # Span between the two bridge arch piers flanking the walkway (east span)
-    beam_x1 = BRIDGE_ARCH_X[3]
-    beam_x2 = BRIDGE_ARCH_X[4]
-    # Horizontal crossbeam
-    DETAIL_BRUSHES.append(
-        box(
-            beam_x1,
-            support_y1,
-            beam_bottom_z,
-            beam_x2,
-            support_y2,
-            beam_top_z,
-            Textures.CEMENT,
-        )
-    )
-    # 5 sub-piers: 3 evenly west of walkway gap, 2 evenly east — none in the gap
-    rail_x1 = WALK_X1 - BRIDGE.walk_wall  # west rail outer edge
-    rail_x2 = WALK_X2 + BRIDGE.walk_wall  # east rail outer edge
-    west_support_piers = [
-        int(beam_x1 + (rail_x1 - beam_x1) * f) for f in (0.28, 0.63, 0.93)
-    ]
-    east_support_piers = [int(rail_x2 + (beam_x2 - rail_x2) * f) for f in (0.0, 0.45)]
-    support_pier_xs = west_support_piers + east_support_piers
-    support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
-    for pier_x in support_pier_xs:
-        DETAIL_BRUSHES.append(
-            box(
-                pier_x - support_pier_half_width,
-                support_y1,
-                FLOOR_Z2,
-                pier_x + support_pier_half_width,
-                support_y2,
-                beam_bottom_z,
+                KNOTT.y2,
+                wk_zb1,
+                wk_zb2,
+                WALK_ZT1 + BRIDGE.parapet_h,
+                WALK_ZT2 + BRIDGE.parapet_h,
                 Textures.CEMENT,
             )
         )
+        DETAIL_BRUSHES.append(
+            ramp_slab_y(
+                WALK_X2,
+                WALK_X2 + BRIDGE.walk_wall,
+                BRIDGE.y1,
+                KNOTT.y2,
+                wk_zb1,
+                wk_zb2,
+                WALK_ZT1 + BRIDGE.parapet_h,
+                WALK_ZT2 + BRIDGE.parapet_h,
+                Textures.CEMENT,
+            )
+        )
+        # Handrail tubes along walkway sides, centred in the wall thickness
+        for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
+            tube_base_z = WALK_ZT1 + BRIDGE.parapet_h + tube_z_offset
+            ww_cx = BRIDGE.walk_wall // 2
+            DETAIL_BRUSHES.append(
+                box(
+                    WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
+                    KNOTT.y2,
+                    tube_base_z,
+                    WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
+                    BRIDGE.y1,
+                    tube_base_z + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
+                )
+            )
+            DETAIL_BRUSHES.append(
+                box(
+                    WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
+                    KNOTT.y2,
+                    tube_base_z,
+                    WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
+                    BRIDGE.y1,
+                    tube_base_z + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
+                )
+            )
+
+        # ════════════════════════════════════════════════════════════════════════════════
+        # ACCESSIBLE WALKWAY — N-S cement path at KH ground floor level (Z=KNOTT_GROUND_Z),
+        # running alongside Pier 5 (west face).  Connects Knott Hall north face to the
+        # bridge south edge, then wraps east via a short E-W ramp to the back-road west
+        # sidewalk.  Provides ground-level access around Pier 5 without steps.
+        # Spans Y=KNOTT.y2..BRIDGE.y1 (KH north face → bridge south edge).
+        # ════════════════════════════════════════════════════════════════════════════════
+        east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
+        east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
+        east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
+        east_walk_y2 = (
+            BRIDGE.y2
+            + BRIDGE_PILLAR_OVERHANG
+            + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
+            + BRIDGE_ACCESS_WALK_NORTH_OFFSET
+        )  # north anchor: ramp moved 80 units north
+        terrain_z2 = int(
+            KNOTT_GROUND_Z
+            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
+            * (east_walk_y2 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+        )
+        # E-W extension — slopes east from terrain level down to back road sidewalk (Z=8) at KNOTT.x2
+        east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
+        east_walk_ext_y2 = east_walk_y2
+        extension_terrain_z1 = int(
+            KNOTT_GROUND_Z
+            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
+            * (east_walk_ext_y1 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
+        )
+        extension_terrain_z2 = terrain_z2
+        extension_terrain_z_west = (
+            extension_terrain_z1 + extension_terrain_z2
+        ) // 2  # Z at west end (N-S path side)
+        DETAIL_BRUSHES.append(
+            ramp_slab(
+                east_walk_x2,
+                KNOTT.x2,
+                east_walk_ext_y1,
+                east_walk_ext_y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                extension_terrain_z_west,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+                tt=Textures.FLOOR,
+            )
+        )
+
+    if KNOTT_ENABLED_WALKWAY_BENT:
+        # ════════════════════════════════════════════════════════════════════════════════
+        # WALKWAY BENT — cement cap beam + 5 drop piers under the south edge of the bridge
+        # approach in front of Knott Hall.  Mirrors the real-life concrete support bent
+        # visible under the KH bridge approach (ref: bridge01).
+        # ════════════════════════════════════════════════════════════════════════════════
+        # This span (Pier4-Pier5, "kh_span") is one of the sections rigidly
+        # translated north/up by BRIDGE_CENTER_SPAN_OFFSET in bridge.py's
+        # _shift_center_span() — every enabled bridge section moves with the
+        # centre span so it all stays connected at shared piers. This bent is
+        # built independently here (not part of bridge.py's own brush list), so
+        # it must apply that same (dy, dz) translation itself to land under the
+        # deck's real (post-shift) position instead of ~320 units south and 96
+        # units too low, floating disconnected from the actual bridge overhead.
+        _bent_dy, _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+        # Position just under the south edge of the bridge deck, shifted north
+        # so the beam sits fully under the deck (south face flush with deck edge)
+        support_y_center = (
+            BRIDGE.y1 + BRIDGE_SUPPORT_HALF_W + _bent_dy
+        )  # flush with south deck edge
+        support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
+        support_y1 = support_y_center - support_half_width
+        support_y2 = support_y_center + support_half_width
+        # Beam sits just below the walkway slab bottom
+        beam_top_z = (
+            WALK_ZT1 - KNOTT.wall_t + _bent_dz
+        )  # bottom of walkway slab at bridge end
+        beam_height = BRIDGE_SUPPORT_BEAM_H
+        beam_bottom_z = beam_top_z - beam_height
+        # Span between the two bridge arch piers flanking the walkway (east span)
+        beam_x1 = BRIDGE_ARCH_X[3]
+        beam_x2 = BRIDGE_ARCH_X[4]
+        # Horizontal crossbeam
+        DETAIL_BRUSHES.append(
+            box(
+                beam_x1,
+                support_y1,
+                beam_bottom_z,
+                beam_x2,
+                support_y2,
+                beam_top_z,
+                Textures.CEMENT,
+            )
+        )
+        # 5 sub-piers spread evenly across the full beam span (beam_x1..beam_x2),
+        # straight through the middle including the walkway/accessible-path
+        # X range (pillars only touch the ground and support the beam above;
+        # they don't block the elevated walkway itself). Divide the full
+        # span into 6 equal segments and place a pier at each interior
+        # division point, so all 5 pillars share one constant spacing with
+        # no reserved gap.
+        step = (beam_x2 - beam_x1) / 6  # 5 interior points -> 6 equal segments
+        support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
+        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
+        for pier_x in support_pier_xs:
+            DETAIL_BRUSHES.append(
+                box(
+                    pier_x - support_pier_half_width,
+                    support_y1,
+                    FLOOR_Z2,
+                    pier_x + support_pier_half_width,
+                    support_y2,
+                    beam_bottom_z,
+                    Textures.CEMENT,
+                )
+            )
 
     ENTITIES = []
     if DETAIL_BRUSHES:

@@ -105,6 +105,11 @@ DEFAULTS: dict[str, bool] = {
     # opt-in extras layered on top of the KH terrain, not part of the core
     # map; enable explicitly with `ql conf set KNOTT_ENABLED_WALKWAY true`.
     "KNOTT_ENABLED_WALKWAY": False,  # constants/knott.py
+    # Off by default — the concrete support bent (crossbeam + 5 drop piers)
+    # under the south edge of the KH span; independent of
+    # KNOTT_ENABLED_WALKWAY so it can be enabled/reviewed on its own with
+    # `ql conf set KNOTT_ENABLED_WALKWAY_BENT true`.
+    "KNOTT_ENABLED_WALKWAY_BENT": False,  # constants/knott.py
     "BASEMENT_ENABLED": True,  # constants/derived.py
 }
 

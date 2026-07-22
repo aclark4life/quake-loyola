@@ -48,6 +48,11 @@ KNOTT_STAIRS_RAIL_T = 4
 KNOTT_STAIRS_STEP_R = KNOTT_FLOOR_H // (2 * KNOTT_STAIRS_HALF_N)
 KNOTT_STAIRS_TREAD_X = 24
 KNOTT_ENABLED_WALKWAY = _flag("KNOTT_ENABLED_WALKWAY")
+KNOTT_ENABLED_WALKWAY_BENT = _flag(
+    "KNOTT_ENABLED_WALKWAY_BENT"
+)  # concrete support bent (crossbeam + 5 drop piers) under the south edge of
+# the KH span, independent of KNOTT_ENABLED_WALKWAY (the ramp/rails/tubes/
+# accessible-walkway) so the bent can be reviewed/built on its own.
 KNOTT_WALL = 16
 KNOTT_FRONT_WINDOW_HALF_W = 48
 KNOTT_FRONT_WINDOW_MULLION_HALF_GAP = 6
