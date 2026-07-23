@@ -125,19 +125,12 @@ from .geometry import (
 
 
 def build():
+    """Build gameplay entities, lights, teleports, and movers."""
     BRUSHES = []
     ENTITIES = []
     ROAD_Z = FLOOR_Z2 + 8
 
-    # bridge.py's _shift_center_span() translates the centre span *plus every
-    # other currently-enabled section* as one rigid unit whenever
-    # BRIDGE_CENTER_SPAN_OFFSET is non-zero (see that function's docstring —
-    # every enabled section must move with the centre span to stay connected
-    # at shared piers). So any entity anywhere on the bridge deck (Pier1..
-    # Pier6, i.e. the full BRIDGE_ARCH_X span), not just the centre span
-    # itself, must follow the same Y/Z shift or it ends up floating beside/
-    # below the actual (shifted) deck. dx is currently 0, so only Y/Z need
-    # adjusting.
+    # Bridge-deck entities follow the shared center-span Y/Z offset.
     BRIDGE_X_MIN, BRIDGE_X_MAX = min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)
     CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
     CS_DY, CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
@@ -147,10 +140,7 @@ def build():
             return y + CS_DY, z + CS_DZ
         return y, z
 
-    # ── Knott Hall room goodies — 2 items per room, varied per floor ──────────────
-    knott_entity_start = len(
-        ENTITIES
-    )  # checkpoint — trimmed below if KNOTT_ENABLED_INTERIOR is False
+    knott_entity_start = len(ENTITIES)
     room_goodies = [
         "item_health",
         "weapon_supershotgun",
@@ -177,13 +167,12 @@ def build():
     for floor_index in range(KNOTT.floors):
         fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
         item_z = fz1 + KNOTT.wall_t + 24
-        light_z = fz1 + KNOTT.floor_h - 24  # near ceiling
+        light_z = fz1 + KNOTT.floor_h - 24
         split = KNOTT_ROOM_SPLITS[floor_index]
         sr_yc = (KNOTT_BIY1 + split) // 2
         nr_yc = (split + KNOTT.wall_t + KNOTT_BIY2) // 2
         for side_xc in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
             for ryc in [sr_yc, nr_yc]:
-                # If west room north items land within 64 units of stairwell south wall, push south
                 safe_ryc = ryc
                 if (
                     side_xc == KNOTT_WEST_ROOM_CX
@@ -194,7 +183,7 @@ def build():
                 ENTITIES.append(
                     ent("light", origin=f"{side_xc} {safe_ryc} {light_z}", light="250")
                 )
-                # Extra fill light at lower mid-height to reduce dark corners
+
                 ENTITIES.append(
                     ent(
                         "light",
@@ -217,24 +206,19 @@ def build():
                 )
                 gi += 1
 
-    # ── West stairwell lights — ceiling + mid-flight + low fill per lane per floor ──────────
-    west_stair_center_x = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # X centre of shaft
-    west_stair_north_y = (
-        KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_Y2
-    ) // 2  # Y centre of north lane
-    west_stair_south_y = (
-        KNOTT_STAIRS_Y1 + KNOTT_STAIRS_MID_Y
-    ) // 2  # Y centre of south lane
+    west_stair_center_x = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2
+    west_stair_north_y = (KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_Y2) // 2
+    west_stair_south_y = (KNOTT_STAIRS_Y1 + KNOTT_STAIRS_MID_Y) // 2
     for floor_index in range(KNOTT.floors):
         west_stair_light_z = (
             KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
-        )  # near ceiling
+        )
         west_stair_mid_z = (
             KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h // 2
-        )  # mid-flight
+        )
         west_stair_low_z = (
             KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h // 4
-        )  # low fill
+        )
         for lz in [west_stair_light_z, west_stair_mid_z, west_stair_low_z]:
             ENTITIES.append(
                 ent(
@@ -243,7 +227,7 @@ def build():
                     light="220",
                 )
             )
-            # South-lane near-ceiling lights sit inside the floor slab above — skip (buried in solid)
+
             if lz != west_stair_light_z:
                 ENTITIES.append(
                     ent(
@@ -253,14 +237,12 @@ def build():
                     )
                 )
 
-    # ── Central hallway lights — 5 per floor along N-S corridor ─────────────────
-    hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2  # hallway centre X
+    hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2
     hall_light_ys = [
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * i // 4
-        for i in range(1, 4)  # quarters: 25%, 50%, 75%
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * i // 4 for i in range(1, 4)
     ] + [
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) // 8,  # 12.5% (near south end)
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * 7 // 8,  # 87.5% (near north end)
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) // 8,
+        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * 7 // 8,
     ]
     for floor_index in range(KNOTT.floors):
         hall_light_z = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
@@ -273,8 +255,7 @@ def build():
                 )
             )
 
-    # ── Entrance corridor lights — one per floor in each doorway ─────────────────
-    entry_corridor_y = KNOTT.y2 - 48  # just inside north face
+    entry_corridor_y = KNOTT.y2 - 48
     for floor_index in range(KNOTT.floors):
         entry_corridor_light_z = (
             KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
@@ -287,12 +268,11 @@ def build():
             )
         )
 
-    # ── Corner cutout pocket lights — one per pocket per floor ──────────────
-    nw_cut_cx = KNOTT.x1 + INDENT  # x centre of NW pocket
-    nw_cut_cy = (KNOTT.y2 - INDENT + KNOTT.y2) // 2  # y centre of NW/NE pockets
+    nw_cut_cx = KNOTT.x1 + INDENT
+    nw_cut_cy = (KNOTT.y2 - INDENT + KNOTT.y2) // 2
     ne_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
-    sw_cut_cx = (KNOTT.x1 + KNOTT.x1 + INDENT) // 2  # x centre of SW pocket
-    sw_cut_cy = (KNOTT.y1 + KNOTT.y1 + INDENT) // 2  # y centre of SW/SE pockets
+    sw_cut_cx = (KNOTT.x1 + KNOTT.x1 + INDENT) // 2
+    sw_cut_cy = (KNOTT.y1 + KNOTT.y1 + INDENT) // 2
     se_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
     for floor_index in range(KNOTT.floors):
         cut_z = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
@@ -304,8 +284,7 @@ def build():
         ]:
             ENTITIES.append(ent("light", origin=f"{cx} {cy} {cut_z}", light="200"))
 
-    # ── East room fill — true centre of east-of-shaft space ──────────────────
-    east_fill_x = (KNOTT_SHAFT_X2 + KNOTT.x2 - KNOTT.wall_t) // 2  # ≈ 2130
+    east_fill_x = (KNOTT_SHAFT_X2 + KNOTT.x2 - KNOTT.wall_t) // 2
     for floor_index in range(KNOTT.floors):
         fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
         east_fill_z = fz1 + KNOTT.floor_h - 24
@@ -318,8 +297,7 @@ def build():
                 ent("light", origin=f"{east_fill_x} {ryc} {east_fill_z}", light="200")
             )
 
-    # ── South building-end fill — brightens the far south strip ──────────────
-    south_fill_y = KNOTT_BIY1 + 64  # just inside south interior wall
+    south_fill_y = KNOTT_BIY1 + 64
     for floor_index in range(KNOTT.floors):
         fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
         south_fill_z = fz1 + KNOTT.floor_h - 24
@@ -328,14 +306,12 @@ def build():
                 ent("light", origin=f"{xc} {south_fill_y} {south_fill_z}", light="180")
             )
 
-    # ── Knott Hall bookshelves — scattered through rooms ─────────────────────────
     for floor_index in range(KNOTT.floors):
         fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
         fz_surf = fz1 + KNOTT.wall_t
         split = KNOTT_ROOM_SPLITS[floor_index]
 
         for shelf_center_x in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
-            # South room: shelf against south wall — front faces south (-Y)
             shelf_x = shelf_center_x
             ENTITIES.append(
                 brush_ent(
@@ -364,15 +340,14 @@ def build():
     if not KNOTT_ENABLED_INTERIOR:
         del ENTITIES[knott_entity_start:]
 
-    # ── Teleports (bridge arches, Charles St arches, Ennis/KH-driveway arches) ────
     teleports_start = len(ENTITIES)
-    # Teleport destinations — west arch ↔ east arch
+
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_east",
             origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
-            angle="270",  # facing south toward the bridge
+            angle="270",
         )
     )
     ENTITIES.append(
@@ -380,11 +355,10 @@ def build():
             "info_teleport_destination",
             targetname="dest_west",
             origin=KH_ROOFTOP_ORIGIN,
-            angle="180",  # facing west, on KH rooftop
+            angle="180",
         )
     )
 
-    # West arch trigger → east destination
     west_brushes = arch_fill(
         WORLD_X1 + WALL_T,
         WORLD_X1 + WALL_T + ARCH_SLAB_W,
@@ -398,7 +372,6 @@ def build():
     ENTITIES.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
     ENTITIES.append(brush_ent("func_illusionary", west_brushes))
 
-    # West lower trigger (ground floor — simple box between posts)
     wlx1 = WORLD_X1 + WALL_T
     wlx2 = wlx1 + ARCH_SLAB_W
     west_lower = [
@@ -407,7 +380,6 @@ def build():
     ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
     ENTITIES.append(brush_ent("func_illusionary", west_lower))
 
-    # East arch trigger → west destination (shifted south to match angled span)
     east_brushes = arch_fill(
         WORLD_X2_EXT - WALL_T - ARCH_SLAB_W,
         WORLD_X2_EXT - WALL_T,
@@ -421,16 +393,15 @@ def build():
     ENTITIES.append(brush_ent("trigger_teleport", east_brushes, target="dest_west"))
     ENTITIES.append(brush_ent("func_illusionary", east_brushes))
 
-    # East lower trigger (ground floor — teleports up to bridge deck above)
     elx1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
     elx2 = WORLD_X2_EXT - WALL_T
-    east_lower_deck_x = elx1 - 64  # west of the arch, on the flat deck approach
+    east_lower_deck_x = elx1 - 64
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_east_deck",
             origin=f"{east_lower_deck_x} {int(BRIDGE_EAST_SHIFT_END)} {int(BRIDGE_DZ2 + 40)}",
-            angle="180",  # facing west, on bridge deck east end
+            angle="180",
         )
     )
     east_lower = [
@@ -447,28 +418,24 @@ def build():
     ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
     ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
-    # ── North & South Charles Street arch teleports ────────────────────────────────
-    # South arch → south dorm rooftop; North arch → north dorm rooftop
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_south_dorm_roof",
             origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-            angle="90",  # facing north, at top of A-frame ridge
+            angle="90",
         )
     )
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_dorm_roof",
-            # Offset from dest_east's ridge-centre landing spot so the two
-            # destinations (west-arch vs. north-street-arch) don't coincide.
             origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + 40)}",
-            angle="270",  # facing south, at top of A-frame ridge
+            angle="270",
         )
     )
 
-    CHARLES_ARCH_TRIG_INSET = 8  # push trigger away from world walls and road surface
+    CHARLES_ARCH_TRIG_INSET = 8
 
     for arch_y1, arch_y2, trigger_y1, trigger_y2, arch_target in [
         (
@@ -477,17 +444,15 @@ def build():
             CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
             CHARLES_Y1 + CHARLES_ARCH_W,
             "dest_south_dorm_roof",
-        ),  # south arch → south dorm rooftop
+        ),
         (
             CHARLES_Y2 - CHARLES_ARCH_W,
             CHARLES_Y2,
             CHARLES_Y2 - CHARLES_ARCH_W,
             CHARLES_Y2 - CHARLES_ARCH_TRIG_INSET,
             "dest_dorm_roof",
-        ),  # north arch → dorm rooftop
+        ),
     ]:
-        # Box trigger — covers only the walkable passage (below the arch crown)
-        # so players can stand on the stone arch ring without being teleported.
         north_south_trigger_brushes = [
             box(
                 -CHARLES_ARCH_RIN + CHARLES_ARCH_TRIG_INSET,
@@ -504,7 +469,7 @@ def build():
                 "trigger_teleport", north_south_trigger_brushes, target=arch_target
             )
         )
-        # Arch-shaped illusionary fill so the teleport glow looks like an arch
+
         north_south_glow_brushes = arch_fill_y(
             arch_y1,
             arch_y2,
@@ -517,8 +482,7 @@ def build():
         )
         ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
 
-    # Stone arch surrounds for north & south Charles Street arches
-    CHARLES_ARCH_SEGS = 24  # smoother than the global A_SEGS = 16
+    CHARLES_ARCH_SEGS = 24
     for arch_y1, arch_y2 in [
         (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W),
         (CHARLES_Y2 - CHARLES_ARCH_W, CHARLES_Y2),
@@ -539,22 +503,18 @@ def build():
             )
         )
 
-    # Both arches → top of Knott Hall rooftop.
-    # Each arch spans the road opening and glows with teleport texture.
     ENNIS_ARCH_STILT = 64
     KH_DRIVE_ARCH_STILT = 64
-    ARCH_TRIG_INSET = 8  # keep triggers off the walls/floor
+    ARCH_TRIG_INSET = 8
 
     kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
 
-    # Destinations — both land on KH rooftop, facing west, but spread apart in Y
-    # so simultaneous teleports don't stack on the same exact point.
     ENTITIES.append(
         ent(
             "info_teleport_destination",
             targetname="dest_ennis_east",
             origin=KH_ROOFTOP_ORIGIN_ENNIS_EAST,
-            angle="180",  # facing west
+            angle="180",
         )
     )
     ENTITIES.append(
@@ -562,11 +522,10 @@ def build():
             "info_teleport_destination",
             targetname="dest_kh_drive_south",
             origin=KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH,
-            angle="180",  # facing west
+            angle="180",
         )
     )
 
-    # Ennis east arch (X-aligned, at the east world wall)
     ennis_arch_x1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
     ennis_arch_x2 = WORLD_X2_EXT - WALL_T
     ennis_arch_top_z = FLOOR_Z2 + ENNIS_ARCH_STILT + ENNIS_HW
@@ -596,7 +555,6 @@ def build():
     )
     ENTITIES.append(brush_ent("func_illusionary", ennis_east_glow))
 
-    # Stone arch surround — X-aligned, freestanding at the east Ennis wall
     ENNIS_ARCH_ROUT = ENNIS_HW + 56
     ennis_stone_arch = arch_wall(
         ennis_arch_x1,
@@ -615,7 +573,6 @@ def build():
     )
     ENTITIES.append(brush_ent("func_detail", ennis_stone_arch))
 
-    # KH driveway south arch (Y-aligned, flush with the south world wall)
     kh_arch_y1 = CHARLES_Y1
     kh_arch_y2 = CHARLES_Y1 + ARCH_SLAB_W
     kh_arch_top_z = KNOTT_DRIVEWAY_ZT_S + KH_DRIVE_ARCH_STILT + KNOTT.driveway_hw
@@ -645,7 +602,6 @@ def build():
     )
     ENTITIES.append(brush_ent("func_illusionary", kh_drive_glow))
 
-    # Stone arch surround — Y-aligned, freestanding at the KH driveway south end
     KH_ARCH_ROUT = KNOTT.driveway_hw + 56
     kh_stone_arch = arch_wall_y(
         kh_arch_y1,
@@ -663,9 +619,6 @@ def build():
     if not ENTITIES_ENABLED_TELEPORTS:
         del ENTITIES[teleports_start:]
 
-    # Back at the Ennis gate, centered in the gate opening on Charles St,
-    # Back on Ennis Drive, standing on the road looking south toward Knott
-    # Hall / the bridge.
     spawn_x = -180
     spawn_y = 1992
     spawn_z = 26
@@ -676,10 +629,7 @@ def build():
             angle="270",
         )
     )
-    # Also exposed as "dest_start" so trigger_teleports elsewhere (e.g. the
-    # basement's teleport back up, basement.py) can target the spawn point.
-    # Offset slightly from the spawn origin so the two point entities don't
-    # exactly coincide (see test_no_duplicate_point_entity_origins).
+
     ENTITIES.append(
         ent(
             "info_teleport_destination",
@@ -689,22 +639,17 @@ def build():
         )
     )
 
-    knott_cy = (KNOTT.y1 + KNOTT.y2) // 2  # Knott Hall center Y = -528
-    DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2  # south building 1 center Y
-    DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2  # south building 2 center Y
+    knott_cy = (KNOTT.y1 + KNOTT.y2) // 2
+    DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
+    DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 
-    # ── Deathmatch spawns — spread across all areas ──────────────────────────
     if ENTITIES_ENABLED_DM_SPAWNS:
         for pos, angle in [
-            # Bridge deck (centre span — Y/Z shifted via _cs_offset)
             ((0, *_cs_offset(0, 0, int(deck_top_z(0) + 32))), 180),
             ((-200, *_cs_offset(-200, 0, int(deck_top_z(-200) + 32))), 90),
             ((200, *_cs_offset(200, 0, int(deck_top_z(200) + 32))), 270),
             ((-400, *_cs_offset(-400, 0, int(deck_top_z(-400) + 32))), 90),
             ((400, *_cs_offset(400, 0, int(deck_top_z(400) + 32))), 270),
-            # Walkway — centred over the ramp span (X=WALK_X1..WALK_X2, not
-            # KNOTT_CX which sits ~40 units west of the walkway) with Z
-            # interpolated between the sloped ramp's two end heights.
             *(
                 [
                     (
@@ -719,7 +664,6 @@ def build():
                 if KNOTT_ENABLED_INTERIOR
                 else []
             ),
-            # Knott Hall — ground, mid, upper floors
             *(
                 [
                     (
@@ -729,7 +673,7 @@ def build():
                             KNOTT_GROUND_Z + 40,
                         ),
                         180,
-                    ),  # entrance hallway, north
+                    ),
                     (
                         (KNOTT_CX - 100, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h + 40),
                         270,
@@ -754,26 +698,19 @@ def build():
                         (KNOTT_CX, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40),
                         180,
                     ),
-                    # Knott Hall rooftop
                     ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
                 ]
                 if KNOTT_ENABLED_INTERIOR
                 else []
             ),
-            # Charles Street
             ((0, 300, ROAD_Z + 24), 180),
             ((0, -400, ROAD_Z + 24), 0),
             ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
-            # North building interior
             ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
             ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
-            # North building roof ridge — offset from the ridge-centre teleport
-            # destination / mega-armor pickup to avoid spawn telefrags.
             ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
-            # South buildings interiors
             ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
             ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
-            # Ground east/west of bridge
             ((800, 0, ROAD_Z + 24), 270),
             ((-800, 0, ROAD_Z + 24), 90),
         ]:
@@ -785,12 +722,11 @@ def build():
                 )
             )
 
-    # ── Weapons ───────────────────────────────────────────────────────────────
     weapons_start = len(ENTITIES)
-    # Rocket launcher — bridge centre (high value, exposed position)
+
     _rl_y, _rl_z = _cs_offset(0, 0, int(deck_top_z(0) + 8))
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
-    # Rocket launcher — Knott Hall floor 3 (reward for climbing)
+
     if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
@@ -798,25 +734,20 @@ def build():
                 origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40}",
             )
         )
-    # Remaining rocket launchers
+
     span1_x = (BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2
     span4_x = (BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2
     span5_x = (BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2
     for rl_origin in [
-        f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",  # east sidewalk, south of Ennis
-        f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",  # under bridge, mid span
-        f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",  # Ennis wall midpoint
-        # Bridge deck — one per span. Each deck height is sampled at its own
-        # X via deck_top_z(x) rather than a single fixed height, since the
-        # arch curve drops the deck by 59-100 units away from centre (these
-        # spans sit well off the arch's peak).
-        f"{span1_x} 0 {int(deck_top_z(span1_x) + 8)}",  # span 1
-        f"{span4_x} 0 {int(deck_top_z(span4_x) + 8)}",  # span 4
-        f"{span5_x} 0 {int(deck_top_z(span5_x) + 8)}",  # span 5 (east angled)
+        f"{ROAD_X2 + 40} {ENNIS_Y - ENNIS_HW - 200} {ROAD_Z + 24}",
+        f"{BRIDGE_ARCH_X[2]} 0 {ROAD_Z + 24}",
+        f"{int(ENNIS_CEMENT_X1 + (ENNIS_CEMENT_X2 - ENNIS_CEMENT_X1) // 2)} {ENNIS_WALL_NY - 80} {FLOOR_Z2 + 24}",
+        f"{span1_x} 0 {int(deck_top_z(span1_x) + 8)}",
+        f"{span4_x} 0 {int(deck_top_z(span4_x) + 8)}",
+        f"{span5_x} 0 {int(deck_top_z(span5_x) + 8)}",
     ]:
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
-    # Super shotgun — spread around mid-tier locations
     if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
@@ -824,9 +755,7 @@ def build():
                 origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT.y2 - 80} {KNOTT_GROUND_Z + 40}",
             )
         )
-    ENTITIES.append(
-        ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}")
-    )  # east sidewalk
+    ENTITIES.append(ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}"))
     ENTITIES.append(
         ent(
             "weapon_supershotgun",
@@ -834,7 +763,6 @@ def build():
         )
     )
 
-    # Grenade launcher — Knott Hall floor 2, south building 2
     if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
@@ -849,7 +777,6 @@ def build():
         )
     )
 
-    # Nailgun — bridge approaches, Charles Street
     ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
     if KNOTT_ENABLED_INTERIOR:
@@ -860,42 +787,34 @@ def build():
             )
         )
 
-    # Lightning gun — high-value, contested spots
     _lg_y, _lg_z = _cs_offset(200, 0, int(deck_top_z(200) + 8))
-    ENTITIES.append(
-        ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}")
-    )  # bridge centre
+    ENTITIES.append(ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}"))
     if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "weapon_lightning",
                 origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
             )
-        )  # KH top floor
-    ENTITIES.append(
-        ent("weapon_lightning", origin=f"0 -500 {ROAD_Z + 24}")
-    )  # south Charles St
+        )
+    ENTITIES.append(ent("weapon_lightning", origin=f"0 -500 {ROAD_Z + 24}"))
 
     if not ENTITIES_ENABLED_WEAPONS:
         del ENTITIES[weapons_start:]
 
-    # ── Ogres — spread across open areas and upper floors ─────────────────────
     monsters_start = len(ENTITIES)
-    # Bridge deck
+
     _og1_y, _og1_z = _cs_offset(-300, 0, int(deck_top_z(-300) + 8))
     _og2_y, _og2_z = _cs_offset(300, 0, int(deck_top_z(300) + 8))
     ENTITIES.append(ent("monster_ogre", origin=f"-300 {_og1_y} {_og1_z}", angle="90"))
     ENTITIES.append(ent("monster_ogre", origin=f"300 {_og2_y} {_og2_z}", angle="270"))
-    # Charles Street
+
     ENTITIES.append(ent("monster_ogre", origin=f"0 200 {ROAD_Z + 24}", angle="180"))
     ENTITIES.append(ent("monster_ogre", origin=f"0 -600 {ROAD_Z + 24}", angle="0"))
-    # East sidewalk
+
     ENTITIES.append(ent("monster_ogre", origin=f"700 0 {ROAD_Z + 24}", angle="270"))
-    # West sidewalk
+
     ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
-    # Dorm rooftop (actual rooftop height via DORM_RIDGE_Z, offset in Y from
-    # dest_south_dorm_roof's teleport landing spot — this previously reused
-    # the south-dorm-1 *interior* DM spawn's origin by mistake)
+
     ENTITIES.append(
         ent(
             "monster_ogre",
@@ -903,7 +822,7 @@ def build():
             angle="90",
         )
     )
-    # Knott Hall floors
+
     if KNOTT_ENABLED_INTERIOR and KNOTT_ENABLED_MONSTERS:
         ENTITIES.append(
             ent(
@@ -919,7 +838,7 @@ def build():
                 angle="270",
             )
         )
-        # KH rooftop
+
         ENTITIES.append(
             ent(
                 "monster_ogre",
@@ -928,7 +847,6 @@ def build():
             )
         )
 
-    # ── Ammo ──────────────────────────────────────────────────────────────────
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters_start:]
     ammo_start = len(ENTITIES)
@@ -945,9 +863,7 @@ def build():
                     origin=f"{KNOTT_CX + 80} {knott_cy} {KNOTT_GROUND_Z + kf * KNOTT.floor_h + 40}",
                 )
             )
-    ENTITIES.append(
-        ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}")
-    )  # west sidewalk
+    ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))
     ENTITIES.append(
         ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
     )
@@ -957,11 +873,8 @@ def build():
     if not ENTITIES_ENABLED_AMMO:
         del ENTITIES[ammo_start:]
 
-    # ── Health & Armor ────────────────────────────────────────────────────────
     health_start = len(ENTITIES)
-    # Health — scattered throughout
-    # Offset from the bridge-centre rocket launcher (X=0) so the two
-    # pickups don't stack on the exact same origin.
+
     _hp_y, _hp_z = _cs_offset(-100, 0, int(deck_top_z(-100) + 8))
     ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
     if KNOTT_ENABLED_INTERIOR:
@@ -974,61 +887,43 @@ def build():
         ENTITIES.append(
             ent(
                 "item_health",
-                # Offset from the floor-2 grenade launcher (also at KNOTT_CX,
-                # knott_cy) so the two pickups don't stack on the exact same
-                # origin.
                 origin=f"{KNOTT_CX - 100} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
             )
         )
-    ENTITIES.append(
-        ent("item_health", origin=f"-300 400 {ROAD_Z + 24}")
-    )  # west sidewalk
-    ENTITIES.append(
-        ent("item_health", origin=f"300 -600 {ROAD_Z + 24}")
-    )  # east sidewalk
+    ENTITIES.append(ent("item_health", origin=f"-300 400 {ROAD_Z + 24}"))
+    ENTITIES.append(ent("item_health", origin=f"300 -600 {ROAD_Z + 24}"))
     ENTITIES.append(
         ent(
             "item_health",
             origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
         )
     )
-    # Armor — contested locations
+
     _arm_y, _arm_z = _cs_offset(-200, 0, int(deck_top_z(-200) + 8))
-    ENTITIES.append(
-        ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}")
-    )  # yellow armor on bridge
+    ENTITIES.append(ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}"))
     if KNOTT_ENABLED_INTERIOR:
         ENTITIES.append(
             ent(
                 "item_armor2",
                 origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
             )
-        )  # red armor top floor
+        )
     ENTITIES.append(
         ent(
             "item_armorInv",
             origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
         )
-    )  # mega armor on roof ridge (teleport reward)
+    )
 
     if not ENTITIES_ENABLED_HEALTH:
         del ENTITIES[health_start:]
 
-    # Torch lights on pillar caps are now built alongside the pier geometry in
-    # bridge.py's own BRIDGE_ENABLED_SUPPORTS loops (unconditional on any
-    # entities.py per-group flag), matching streets.py's lamp-post/
-    # entrance-torch pattern — see the comment there for why. Kept out of
-    # this module's gated groups so pier torches always render.
-
-    # Pillar base uplights — ground-level spots wash light up the pier faces
     if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             for underbridge_light_y in [BRIDGE.y2 + 30, BRIDGE.y1 - 30]:
-                # Skip abutment-pier positions buried in solid building geometry
                 if px == BRIDGE_ARCH_X[0]:
                     continue
-                # South-side uplights at the two easternmost piers (5 and 6) sit
-                # inside the angled east-span fill — skip (buried in solid)
+
                 if (
                     px in (BRIDGE_ARCH_X[4], BRIDGE_ARCH_X[-1])
                     and underbridge_light_y == BRIDGE.y1 - 30
@@ -1043,23 +938,9 @@ def build():
                     )
                 )
 
-    # Campus lamp post lights, Ennis cement wall lamppost lights, and Ennis
-    # entrance pillar torches are now all built alongside their pole/pillar
-    # geometry (in streets.py's build_ennis_entrance_features, unconditional
-    # on STREETS_ENABLED_DETAILS) so they can't drift out of sync or double
-    # up with anything in entities.py's own groups.
-
-    # Under-bridge amber pendant lights — flicker style, hang below deck.
-    # Every enabled bridge section (not just the centre span) is translated
-    # together by BRIDGE_CENTER_SPAN_OFFSET whenever it's non-zero (see
-    # bridge.py's _shift_center_span()), so pendant lights anywhere on the
-    # deck must follow via _cs_offset() or they end up floating off to the
-    # side of / detached from the actual (shifted) deck's underside.
-    # The centre span additionally gets a few extra pendants spread along
-    # its length rather than just one at centre.
     for pier_x in BRIDGE_PEND_XS:
         if CS_X1 <= pier_x <= CS_X2:
-            continue  # handled below with extra pendants + the correct Y/Z offset
+            continue
         _pend_y, _pend_z = _cs_offset(pier_x, 0, int(deck_bot_z(pier_x)) - 20)
         ENTITIES.append(
             ent(
@@ -1088,15 +969,11 @@ def build():
             )
         )
 
-    # Pier base lights — illuminate plinths and arch openings from just inside each pier
     if BRIDGE_ENABLED_PIER_BASE_LIGHTS:
         for pier_x in BRIDGE_ARCH_X:
-            # West abutment pier is embedded in solid building geometry — skip buried lights
             if pier_x == BRIDGE_ARCH_X[0]:
                 continue
-            pier_light_z = (
-                FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H + 60
-            )  # just above the plinth top, low in the arch
+            pier_light_z = FLOOR_Z2 + BRIDGE_PILLAR_BASE_RAMP_H + 60
             ENTITIES.append(
                 ent(
                     "light",
@@ -1112,9 +989,8 @@ def build():
                 )
             )
 
-    # Cement arch on east face of abutment pier (-1246) — three lights for good coverage
-    abutment_pier_x = min(BRIDGE_ARCH_X)  # = -1246
-    abutment_arch_z = FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + 60  # mid-height of arch opening
+    abutment_pier_x = min(BRIDGE_ARCH_X)
+    abutment_arch_z = FLOOR_Z2 + BRIDGE_PILLAR_BASE_H + 60
     ENTITIES.append(
         ent(
             "light",
@@ -1140,7 +1016,6 @@ def build():
         )
     )
 
-    # Light on underside of walkway slab illuminating the ramp below
     if KNOTT_ENABLED_WALKWAY:
         walk_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2
         walk_frac = (BRIDGE.y1 - walk_mid_y) / float(BRIDGE.y1 - KNOTT.y2)
@@ -1155,7 +1030,6 @@ def build():
             )
         )
 
-    # Lift (func_plat) — rides from ground floor up through roof opening to rooftop
     if KNOTT_ENABLED_INTERIOR:
         lift_travel = KNOTT_Z2 - (KNOTT_GROUND_Z + KNOTT.wall_t)
         lift_brush = [
@@ -1173,7 +1047,6 @@ def build():
             brush_ent("func_plat", lift_brush, height=str(lift_travel), speed="200")
         )
 
-    # Interior lights for all campus dorm buildings (north1, north2, 2 south)
     _dorm_north2_y2 = DORM_NORTH_Y1
     _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     bldg_light_xs = [DORM.x1 + (DORM.x2 - DORM.x1) * i // 4 for i in [1, 2, 3]]
@@ -1201,7 +1074,6 @@ def build():
                     )
                 )
 
-    # Interior lights for Knott Hall — 3×4 grid per floor
     if KNOTT_ENABLED_INTERIOR:
         for knott_floor_index in range(KNOTT.floors):
             knott_light_z = (
@@ -1221,9 +1093,8 @@ def build():
                         )
                     )
 
-    # ── Featured pixel-art tree — in front of Knott Hall ────────────────────────
     vegetation_start = len(ENTITIES)
-    # Centred on KH's Y midpoint, set just west of the KH facade.
+
     _tree_cx = KNOTT.x1 - 200
     _tree_cy = (KNOTT.y1 + KNOTT.y2) // 2
     all_tree_brushes = make_pixel_tree(
@@ -1237,27 +1108,22 @@ def build():
     )
     ENTITIES.append(brush_ent("func_detail", all_tree_brushes))
 
-    # Three lights to illuminate the pixel tree: one uplight at the base,
-    # two at mid-crown on opposite sides for even coverage.
     for _lx, _ly, _lz, _intensity in [
-        (_tree_cx, _tree_cy, FLOOR_Z2 + 24, 150),  # base uplight
-        (_tree_cx - 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown west
-        (_tree_cx + 96, _tree_cy, FLOOR_Z2 + 180, 200),  # mid-crown east
+        (_tree_cx, _tree_cy, FLOOR_Z2 + 24, 150),
+        (_tree_cx - 96, _tree_cy, FLOOR_Z2 + 180, 200),
+        (_tree_cx + 96, _tree_cy, FLOOR_Z2 + 180, 200),
     ]:
         ENTITIES.append(
             ent("light", origin=f"{_lx} {_ly} {_lz}", light=str(_intensity))
         )
 
-    # ── Giant trees along Charles Street — in front of Knott Hall only ───────────
-    # 5 trees in 2 rows: row of 2 closer to street, row of 3 closer to KH.
-    # Canopy kept below KH's roof so its top floors crest the treeline (~0.65*KNOTT_Z2).
     charles_tree_height = int(KNOTT_Z2 * 0.65)
     knott_tree_span = KNOTT.y2 - KNOTT.y1
-    charles_tree_row_near_x = ROAD_X2 + CHARLES_WALK_W + 300  # closer to Charles St
-    charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560  # closer to KH
-    # Row of 2 — near row, 2 trees at 25% and 75% of KH Y span
+    charles_tree_row_near_x = ROAD_X2 + CHARLES_WALK_W + 300
+    charles_tree_row_far_x = ROAD_X2 + CHARLES_WALK_W + 560
+
     charles_tree_row2_ys = [int(KNOTT.y1 + knott_tree_span * f) for f in (0.25, 0.75)]
-    # Row of 3 — far row; skip 50% (y=-1072) — replaced by the pixel tree
+
     charles_tree_row3_ys = [int(KNOTT.y1 + knott_tree_span * f) for f in (0.15, 0.85)]
     charles_giant_tree_brushes = []
     for tree_y in charles_tree_row2_ys:
@@ -1270,25 +1136,19 @@ def build():
         )
     ENTITIES.append(brush_ent("func_detail", charles_giant_tree_brushes))
 
-    # ── Giant trees along KH driveway east side — from the bridge south ──────────
-    # Big trees just outside the east sidewalk (KNOTT_DRIVEWAY_ES_X2), running south
-    # to the KH south face (KNOTT_DRIVEWAY_Y1).  First tree is set one spacing-step
-    # south of the bridge so its canopy clears the bridge deck.  Per-tree jitter in
-    # X/Y/height (fixed seed) keeps the row natural rather than perfectly regular.
-    # Z tracks the road slope in the KH section; flat at FLOOR_Z2 north of KH.
-    kh_tree_rng = random.Random(7)  # fixed seed for reproducible jittered layout
-    kh_drive_tree_x = KNOTT_DRIVEWAY_ES_X2 + 80  # centre clear of east sidewalk
+    kh_tree_rng = random.Random(7)
+    kh_drive_tree_x = KNOTT_DRIVEWAY_ES_X2 + 80
     kh_drive_tree_spacing = 300
-    kh_drive_tree_height = int(KNOTT_Z2 * 0.65)  # below KH roof (see charles canopy)
+    kh_drive_tree_height = int(KNOTT_Z2 * 0.65)
     kh_drive_tree_brushes = []
     kh_grid_y = BRIDGE.y1 - kh_drive_tree_spacing
     while kh_grid_y >= KNOTT_DRIVEWAY_Y1:
         tree_x = kh_drive_tree_x + kh_tree_rng.randint(-40, 40)
         tree_y = kh_grid_y + kh_tree_rng.randint(-80, 80)
         tree_h = kh_drive_tree_height + kh_tree_rng.randint(-60, 60)
-        if tree_y >= KNOTT_DRIVEWAY_Y2:  # flat extension (north of KH)
+        if tree_y >= KNOTT_DRIVEWAY_Y2:
             tree_z = FLOOR_Z2
-        else:  # sloped back-road section alongside KH
+        else:
             kh_t = (KNOTT_DRIVEWAY_Y2 - tree_y) / (
                 KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
             )
@@ -1299,13 +1159,10 @@ def build():
         kh_grid_y -= kh_drive_tree_spacing
     ENTITIES.append(brush_ent("func_detail", kh_drive_tree_brushes))
 
-    # ── Medium trees in front of the south dorm, set back from Charles Street ─────
-    # Two trees, bigger and spread wider: positioned at outer thirds of the full
-    # south-dorm Y span and pulled further back (west) from the road.
     sdorm_front_tree_height = 520
-    sdorm_front_tree_x = ROAD_X1 - 400  # further back toward the dorm
-    sdorm_front_tree_y1 = DORM_SOUTH1_Y1 + 150  # near south end of dorm span
-    sdorm_front_tree_y2 = DORM_SOUTH2_Y2 - 150  # near north end of dorm span
+    sdorm_front_tree_x = ROAD_X1 - 400
+    sdorm_front_tree_y1 = DORM_SOUTH1_Y1 + 150
+    sdorm_front_tree_y2 = DORM_SOUTH2_Y2 - 150
     sdorm_front_tree_brushes = []
     for tree_y in (sdorm_front_tree_y1, sdorm_front_tree_y2):
         sdorm_front_tree_brushes += make_giant_tree(
@@ -1313,21 +1170,16 @@ def build():
         )
     ENTITIES.append(brush_ent("func_detail", sdorm_front_tree_brushes))
 
-    # ── Giant trees covering the entire east ground (east of Charles St sidewalk) ──
-    # Scattered grid: base spacing ~350 units with per-tree random jitter up to
-    # ±120 units in X and Y so the forest looks natural, not uniform.
     east_ground_tree_height = int(KNOTT_Z2 * 0.65)
     east_ground_spacing = 350
     east_ground_jitter = 120
-    east_ground_buffer = 120  # clearance buffer from world edges / wall
+    east_ground_buffer = 120
     east_ground_x1 = ROAD_X2 + CHARLES_WALK_W + east_ground_buffer
     east_ground_x2 = WORLD_X2_EXT - WALL_T - east_ground_buffer
-    east_ground_y1 = (
-        ENNIS_WALL_NY + ENNIS_WALL_T + 200
-    )  # centered in north space (fence=1148, world=1696, mid≈1422)
+    east_ground_y1 = ENNIS_WALL_NY + ENNIS_WALL_T + 200
     east_ground_y2 = WORLD_Y2 - WALL_T - east_ground_buffer
 
-    tree_rng = random.Random(42)  # fixed seed for reproducible layout
+    tree_rng = random.Random(42)
 
     east_ground_giant_brushes = []
     grid_x = east_ground_x1
@@ -1345,34 +1197,26 @@ def build():
         grid_x += east_ground_spacing
     ENTITIES.append(brush_ent("func_detail", east_ground_giant_brushes))
 
-    # ── Giant trees east of the teleport — randomised scatter, wider coverage ────
-    # Randomly scattered across the full extended-east strip (WORLD_X2 → WORLD_X2_EXT),
-    # south of Ennis drive down to the south world wall.
-    # Rejection sampling enforces a minimum separation so trees don't overlap.
     east_side_tree_height = int(KNOTT_Z2 * 0.65)
-    east_side_foliage_hw = 160  # widest foliage half-width (make_giant_tree)
-    _ennis_south = ENNIS_Y - ENNIS_HW  # Ennis road south edge
-    _ennis_sw_edge = _ennis_south - 3 * CHARLES_WALK_W - 32  # Ennis south sidewalk edge
+    east_side_foliage_hw = 160
+    _ennis_south = ENNIS_Y - ENNIS_HW
+    _ennis_sw_edge = _ennis_south - 3 * CHARLES_WALK_W - 32
     east_tele_brushes = []
-    et_rng = random.Random(43)  # independent seed — decoupled from east_ground layout
-    et_x1 = (
-        WORLD_X2 + WALL_T + east_side_foliage_hw + 20
-    )  # foliage clears the world wall / teleport
-    et_x2 = (
-        WORLD_X2_EXT - WALL_T - east_side_foliage_hw
-    )  # keep foliage clear of east wall
+    et_rng = random.Random(43)
+    et_x1 = WORLD_X2 + WALL_T + east_side_foliage_hw + 20
+    et_x2 = WORLD_X2_EXT - WALL_T - east_side_foliage_hw
     et_y1 = WORLD_Y1 + WALL_T + 120
-    et_y2 = _ennis_sw_edge - east_side_foliage_hw  # keep foliage clear of the sidewalk
-    et_min_dist = 280  # minimum centre-to-centre spacing
+    et_y2 = _ennis_sw_edge - east_side_foliage_hw
+    et_min_dist = 280
     et_placed = []
-    for _ in range(300):  # attempt budget — stops when area is full
+    for _ in range(300):
         cx = et_rng.randint(et_x1, et_x2)
         cy = et_rng.randint(et_y1, et_y2)
         if all(
             (cx - px) ** 2 + (cy - py) ** 2 >= et_min_dist**2 for px, py in et_placed
         ):
             et_placed.append((cx, cy))
-    # Remove the trees nearest to (3349, -195) and (3215, -461)
+
     for target in ((3349, -195), (3215, -461)):
         et_placed.sort(key=lambda p, t=target: (p[0] - t[0]) ** 2 + (p[1] - t[1]) ** 2)
         et_placed = et_placed[1:]
@@ -1381,25 +1225,20 @@ def build():
     ENTITIES.append(brush_ent("func_detail", east_tele_brushes))
 
     bush_positions = [
-        # Along north face of Ennis brick wall (campus grass side, not sidewalk)
         ((ROAD_X2 + CHARLES_WALK_W + 48) + 60, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         ((ROAD_X2 + CHARLES_WALK_W + 48) + 160, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         ((ROAD_X2 + CHARLES_WALK_W + 48) + 260, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         ((ROAD_X2 + CHARLES_WALK_W + 48) + 360, ENNIS_WALL_NY + ENNIS_WALL_T + 40),
-        # Along north face of iron fence
         (int(ENNIS_GATE_X1 + 120), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_GATE_X1 + 300), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_GATE_X1 + 500), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_GATE_X1 + 700), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
-        # Along north face of cement parapet wall
         (int(ENNIS_CEMENT_X1 + 120), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_CEMENT_X1 + 320), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
         (int(ENNIS_CEMENT_X1 + 560), ENNIS_WALL_NY + ENNIS_WALL_T + 40),
-        # Along Knott Hall west face (outside building)
         (KNOTT.x1 - 48, (KNOTT.y1 + KNOTT.y2) // 2 - 200),
         (KNOTT.x1 - 48, (KNOTT.y1 + KNOTT.y2) // 2),
         (KNOTT.x1 - 48, (KNOTT.y1 + KNOTT.y2) // 2 + 200),
-        # Along west building east face (outside building)
         (DORM.x2 + 48, -200),
         (DORM.x2 + 48, 200),
         (DORM.x2 + 48, 500),
@@ -1408,10 +1247,7 @@ def build():
     for bush_x, bush_y in bush_positions:
         all_bush_brushes += make_bush(bush_x, bush_y, FLOOR_Z2)
 
-    # ── Bushes along verge in front of KH north face (south of Ennis sidewalk) ───
-    # Line of bushes just south of ENNIS_SW_EDGE, spanning the raised/sloped ground
-    # between the NW indent and the back-road corridor, skipping the entrance.
-    knott_verge_y = ENNIS_Y - ENNIS_HW - 100  # north side of Ennis south sidewalk
+    knott_verge_y = ENNIS_Y - ENNIS_HW - 100
     knott_bush_spacing = 120
     knott_bush_buffer = 60
     knott_bush_size = 40
@@ -1447,46 +1283,26 @@ def build():
     if not ENTITIES_ENABLED_VEGETATION:
         del ENTITIES[vegetation_start:]
 
-    # ── Charles Street scrolling platform — proper two-lane loop with quad damage ──
     platform_start = len(ENTITIES)
-    # Outbound: east lane north on Charles → south lane east on Ennis → east end
-    # Return:   west lane south on Charles ← north lane west on Ennis ← east end
-    # ── Charles Street platform — via back road, no Ennis lane switch ─────────────
-    # Route: Charles outbound (north) → right on Ennis → right onto back road →
-    #        south down hill → back up north → left on Ennis → Charles return (south)
-    CHARLES_PLT_W = 128  # platform width and depth
-    CHARLES_PLT_H = 12  # platform slab thickness
-    CHARLES_PLT_SPEED = 180  # units per second
 
-    # Lane centre Xs derived the same way as streets.py's road striping (an
-    # evenly-split centre divider + two lane widths), rather than a fixed
-    # fraction of ROAD_X2 alone — Charles St is asymmetric (ROAD_X1 != -ROAD_X2),
-    # so a ROAD_X2-only fraction put the return (west) lane ~300 units east of
-    # its actual lane centre.
+    CHARLES_PLT_W = 128
+    CHARLES_PLT_H = 12
+    CHARLES_PLT_SPEED = 180
+
     _road_cx = (ROAD_X1 + ROAD_X2) / 2
     _west_lane_line_x = (ROAD_X1 + _road_cx - STREET_DIV_HW) / 2
     _east_lane_line_x = (_road_cx + STREET_DIV_HW + ROAD_X2) / 2
-    CHARLES_PLT_X_OUT = int(
-        (_east_lane_line_x + ROAD_X2) / 2
-    )  # outbound Charles lane (east)
-    CHARLES_PLT_X_RET = int(
-        (ROAD_X1 + _west_lane_line_x) / 2
-    )  # return  Charles lane (west)
-    CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48  # south turnaround
-    CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16  # outbound Ennis lane (south Y≈792)
-    CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8  # return  Ennis lane  (north Y≈956)
-    CHARLES_PLT_BR_X = (
-        KNOTT_DRIVEWAY_RD_X1 + KNOTT.driveway_hw // 2
-    )  # right lane on back road (X≈2382)
+    CHARLES_PLT_X_OUT = int((_east_lane_line_x + ROAD_X2) / 2)
+    CHARLES_PLT_X_RET = int((ROAD_X1 + _west_lane_line_x) / 2)
+    CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
+    CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16
+    CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
+    CHARLES_PLT_BR_X = KNOTT_DRIVEWAY_RD_X1 + KNOTT.driveway_hw // 2
 
-    # Z origin at each road surface (platform bottom + half thickness)
-    platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2  # Charles St   (= 14)
-    platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2  # Ennis / back road flat (= 8)
-    platform_z_backroad_south = (
-        KNOTT_DRIVEWAY_ZT_S + 2 + CHARLES_PLT_H // 2
-    )  # back road south / hill top (= 72)
+    platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2
+    platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2
+    platform_z_backroad_south = KNOTT_DRIVEWAY_ZT_S + 2 + CHARLES_PLT_H // 2
 
-    # Platform brush — placed at pc1 (south end of outbound Charles lane)
     cs_platform_brush = box(
         CHARLES_PLT_X_OUT - CHARLES_PLT_W // 2,
         CHARLES_PLT_Y_S - CHARLES_PLT_W // 2,
@@ -1506,10 +1322,6 @@ def build():
         )
     )
 
-    # 9-corner loop:
-    # pc1 Charles south (out) → pc2 Ennis junction → pc3 back-road junction
-    # → pc4 top of slope → pc5 hill bottom (turn) → pc6 top of slope (return)
-    # → pc7 Ennis junction return → pc8 Charles/Ennis return → pc9 Charles south (ret) → pc1
     for path_corner_name, path_x, path_y, path_z, next_target in [
         ("cs_pc1", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc2"),
         ("cs_pc2", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
@@ -1536,7 +1348,6 @@ def build():
             )
         )
 
-    # Quad damage in the middle of the tunnel
     ENTITIES.append(
         ent(
             "item_artifact_super_damage",
@@ -1544,11 +1355,8 @@ def build():
         )
     )
 
-    # ── Rocket launchers along the platform route ─────────────────────────────────
-    rocket_hover_height = (
-        CHARLES_PLT_H + 56
-    )  # hover height above road — clear of platform top + item bbox
-    backroad_mid_y = (KNOTT_DRIVEWAY_Y1 + KNOTT_DRIVEWAY_Y2) // 2  # Y=-1072
+    rocket_hover_height = CHARLES_PLT_H + 56
+    backroad_mid_y = (KNOTT_DRIVEWAY_Y1 + KNOTT_DRIVEWAY_Y2) // 2
     backroad_mid_z = (
         FLOOR_Z2
         + 2
@@ -1557,7 +1365,6 @@ def build():
         // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
     )
     for rocket_x, rocket_y, rocket_z in [
-        # Charles outbound (south third, north third) — east sidewalk
         (
             ROAD_X2 + 40,
             CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) // 6,
@@ -1568,9 +1375,7 @@ def build():
             CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) * 2 // 6,
             ROAD_Z + rocket_hover_height,
         ),
-        # Back road going south (midpoint)
         (CHARLES_PLT_BR_X, backroad_mid_y, backroad_mid_z + rocket_hover_height),
-        # Charles return (south third, north third) — west sidewalk
         (
             ROAD_X1 - 40,
             CHARLES_Y1 + (CHARLES_Y2 - CHARLES_Y1) // 6,
@@ -1589,16 +1394,15 @@ def build():
     if not ENTITIES_ENABLED_PLATFORM:
         del ENTITIES[platform_start:]
 
-    # ── Monsters ──────────────────────────────────────────────────────────────────
     monsters2_start = len(ENTITIES)
-    # Grunts patrol Charles Street and Ennis
+
     monster_stand_z = ROAD_Z + 24
     for monster_x, monster_y, monster_angle in [
-        (ROAD_X1 + 64, -1200, 90),  # south Charles, west side heading north
-        (ROAD_X2 - 64, -800, 270),  # south Charles, east side heading south
-        (ROAD_X1 + 64, -300, 90),  # mid Charles, west side
-        (ROAD_X2 - 64, 200, 270),  # mid Charles, east side
-        (0, -1600, 90),  # far south Charles, centre
+        (ROAD_X1 + 64, -1200, 90),
+        (ROAD_X2 - 64, -800, 270),
+        (ROAD_X1 + 64, -300, 90),
+        (ROAD_X2 - 64, 200, 270),
+        (0, -1600, 90),
     ]:
         ENTITIES.append(
             ent(
@@ -1608,11 +1412,10 @@ def build():
             )
         )
 
-    # Grunts on Ennis
     for monster_x, monster_y, monster_angle in [
-        (500, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis east, south lane
-        (1200, ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - 40, 180),  # Ennis east, north lane
-        (1800, ENNIS_Y - ENNIS_HW + 40, 0),  # Ennis further east
+        (500, ENNIS_Y - ENNIS_HW + 40, 0),
+        (1200, ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - 40, 180),
+        (1800, ENNIS_Y - ENNIS_HW + 40, 0),
     ]:
         ENTITIES.append(
             ent(
@@ -1622,12 +1425,9 @@ def build():
             )
         )
 
-    # Ogres on the back road hill — like guards on the slope
     backroad_center_x = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
-    _backroad_rise = (
-        KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N
-    )  # matches the driveway's actual slope (was hardcoded 64, stale vs. the
-    # current KNOTT_GROUND_Z-derived slope)
+    _backroad_rise = KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N
+
     for ogre_y, ogre_z in [
         (
             -600,
@@ -1651,7 +1451,7 @@ def build():
             )
             + 24,
         ),
-        (KNOTT_DRIVEWAY_Y1 + 64, KNOTT_GROUND_Z + 2 + 24),  # top of hill near quad
+        (KNOTT_DRIVEWAY_Y1 + 64, KNOTT_GROUND_Z + 2 + 24),
     ]:
         ENTITIES.append(
             ent(
@@ -1662,7 +1462,6 @@ def build():
         )
 
     if KNOTT_ENABLED_MONSTERS:
-        # Knights inside KH rooms — one per floor in each room
         for fl in range(KNOTT.floors):
             fz = KNOTT_GROUND_Z + fl * KNOTT.floor_h + KNOTT.wall_t + 24
             split = KNOTT_ROOM_SPLITS[fl]
@@ -1674,7 +1473,6 @@ def build():
                         ent("monster_knight", origin=f"{rxc} {ryc} {fz}", angle="270")
                     )
 
-        # Enforcers in the hallway — one per floor
         hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2
         for fl in range(KNOTT.floors):
             fz = KNOTT_GROUND_Z + fl * KNOTT.floor_h + KNOTT.wall_t + 24
@@ -1687,7 +1485,6 @@ def build():
                 )
             )
 
-        # Knights on rooftop
         for roof_enemy_x, roof_enemy_y in [
             (KNOTT_WEST_ROOM_CX, KNOTT.y2 - 80),
             (KNOTT_EAST_ROOM_CX, KNOTT.y2 - 80),
@@ -1702,13 +1499,11 @@ def build():
                 )
             )
 
-    # ── Demon knights (monster_hell_knight) ───────────────────────────────────────
-    # Two on the bridge arch span — guard the crown and Pier 3 approach
-    deck_center_z = int(deck_top_z(0)) + 24  # standing height at arch crown
-    deck_p3_z = int(deck_top_z(525)) + 24  # standing height near Pier 3
+    deck_center_z = int(deck_top_z(0)) + 24
+    deck_p3_z = int(deck_top_z(525)) + 24
     for monster_x, monster_y, monster_z, monster_angle in [
-        (0, *_cs_offset(0, 0, deck_center_z), 180),  # arch crown, facing west
-        (525, *_cs_offset(525, 0, deck_p3_z), 0),  # Pier 3 approach, facing east
+        (0, *_cs_offset(0, 0, deck_center_z), 180),
+        (525, *_cs_offset(525, 0, deck_p3_z), 0),
     ]:
         ENTITIES.append(
             ent(
@@ -1718,16 +1513,9 @@ def build():
             )
         )
 
-    # One on the elevated walkway — guards the bridge → KH 2nd floor approach.
-    # The walkway itself spans X=WALK_X1..WALK_X2, Y=BRIDGE.y1..KNOTT.y2
-    # (see bridge.py); the previous X/Y here (BRIDGE.x2..WALK_X1 midpoint,
-    # Y=0) placed the monster well before the walkway even starts.
-    # Gated by KNOTT_ENABLED_WALKWAY (same flag as the walkway/accessible-path
-    # geometry itself in terrain/knott_hall.py) so it doesn't spawn floating in
-    # empty space when that opt-in geometry is disabled.
     if KNOTT_ENABLED_WALKWAY:
-        walkway_mid_x = (WALK_X1 + WALK_X2) // 2  # midpoint across the ramp
-        walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2  # midpoint along the ramp's slope
+        walkway_mid_x = (WALK_X1 + WALK_X2) // 2
+        walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2
         walkway_mid_z = (WALK_ZT1 + WALK_ZT2) // 2
         ENTITIES.append(
             ent(
@@ -1737,11 +1525,10 @@ def build():
             )
         )
 
-        # Two on the accessible walkway alongside Pier 5
-        accessible_walk_z = KNOTT_GROUND_Z + 24  # walkway surface + standing height
+        accessible_walk_z = KNOTT_GROUND_Z + 24
         for accessible_walk_y, accessible_walk_angle in [
-            (-128, 90),  # mid-path, facing north toward bridge
-            (180, 270),  # north end near bridge south edge, facing south
+            (-128, 90),
+            (180, 270),
         ]:
             ENTITIES.append(
                 ent(
@@ -1754,11 +1541,10 @@ def build():
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters2_start:]
 
-    # ── Single-player exit — inside north dorm 2 (southern north dorm) ──────────
     exit_start = len(ENTITIES)
-    # Loops back to this map. Portal stands inside north dorm 2.
+
     dorm_exit_xc = (DORM.x1 + DORM.x2) // 2
-    _north2_y2 = DORM_NORTH_Y1  # north face of dorm 2 = south face of dorm 1
+    _north2_y2 = DORM_NORTH_Y1
     _north2_y1 = _north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     dorm_exit_yc = (_north2_y1 + _north2_y2) // 2
     dorm_exit_hw = 64
@@ -1782,47 +1568,37 @@ def build():
             _color="0.4 0.6 1",
         )
     )
-    # Cement frame — two posts + lintel on each face of the portal (4 posts total)
-    frame_t = 16  # post/lintel thickness
-    frame_d = 12  # depth of frame slab (centred on each portal face)
+
+    frame_t = 16
+    frame_d = 12
     ex1 = dorm_exit_xc - dorm_exit_hw
     ex2 = dorm_exit_xc + dorm_exit_hw
     portal_top = dorm_exit_z0 + 112
-    # px_w=4 px_h=2 → "EXIT" is 76 units wide × 12 tall; centred on 160-wide lintel
+
     exit_px_w, exit_px_h, exit_depth = 4, 2, 2
-    # Embed each letter 1 unit into its backing surface so the letter's back face is
-    # never coplanar with the beam/lintel face (coplanar faces z-fight in qbsp, which
-    # garbles the corner letters). exit_total = visible standoff (exit_depth) + embed.
+
     exit_embed = 1
     exit_total = exit_depth + exit_embed
-    exit_text_w = (
-        4 * 5 - 1
-    ) * exit_px_w  # 76 units (4 chars × 5-col cell − trailing gap)
+    exit_text_w = (4 * 5 - 1) * exit_px_w
     exit_x0 = dorm_exit_xc - exit_text_w // 2
-    exit_z_base = (
-        portal_top + (frame_t - 6 * exit_px_h) // 2
-    )  # vertically centred in lintel
+    exit_z_base = portal_top + (frame_t - 6 * exit_px_h) // 2
     for face_yc, out_sign in [
-        (dorm_exit_yc - dorm_exit_hw, -1),  # south face — letters protrude south
-        (dorm_exit_yc + dorm_exit_hw, +1),  # north face — letters protrude north
+        (dorm_exit_yc - dorm_exit_hw, -1),
+        (dorm_exit_yc + dorm_exit_hw, +1),
     ]:
         fy1 = face_yc - frame_d // 2
         fy2 = face_yc + frame_d // 2
         for bx1, bx2, bz1, bz2 in [
-            (ex1 - frame_t, ex1, dorm_exit_z0, portal_top + frame_t),  # left post
-            (ex2, ex2 + frame_t, dorm_exit_z0, portal_top + frame_t),  # right post
-            (ex1 - frame_t, ex2 + frame_t, portal_top, portal_top + frame_t),  # lintel
+            (ex1 - frame_t, ex1, dorm_exit_z0, portal_top + frame_t),
+            (ex2, ex2 + frame_t, dorm_exit_z0, portal_top + frame_t),
+            (ex1 - frame_t, ex2 + frame_t, portal_top, portal_top + frame_t),
         ]:
             ENTITIES.append(
                 brush_ent(
                     "func_detail", box(bx1, fy1, bz1, bx2, fy2, bz2, Textures.CEMENT)
                 )
             )
-        # Pixel-font "EXIT" letters raised on the outward lintel face.
-        # Same handedness rule as the Knott Hall sign / bridge fascia:
-        #   south-facing (protrudes -Y) → normal text, mirror=False
-        #   north-facing (protrudes +Y) → reversed text, mirror=True
-        # Back face is recessed into the lintel slab (exit_embed) to avoid z-fighting.
+
         if out_sign < 0:
             letter_text, y_face, do_mirror = "EXIT", fy1 - exit_depth, False
         else:
@@ -1840,7 +1616,7 @@ def build():
         )
         if letter_brushes:
             ENTITIES.append(brush_ent("func_detail", letter_brushes))
-    # Cross beams — run in Y across the top, left and right, connecting both face frames
+
     beam_y1 = dorm_exit_yc - dorm_exit_hw - frame_d // 2
     beam_y2 = dorm_exit_yc + dorm_exit_hw + frame_d // 2
     for bx1, bx2 in [(ex1 - frame_t, ex1), (ex2, ex2 + frame_t)]:
@@ -1858,17 +1634,11 @@ def build():
                 ),
             )
         )
-    # "EXIT" letters on the west and east cross-beam faces (text advances in +Y).
-    # West face is read facing east (viewer-left = +Y) → reversed text, mirror=True.
-    # East face is read facing west (viewer-left = -Y) → normal text, mirror=False.
-    # Back face is recessed into the cross-beam (exit_embed) to avoid z-fighting.
-    # These faces use the glowing lava texture: the metal letter texture rendered
-    # dark/garbled on the dense "E" glyph here, while the fullbright lava reads
-    # cleanly and suits the teleport-portal theme.
+
     exit_y0 = dorm_exit_yc - exit_text_w // 2
     for x_face, letter_text, do_mirror in [
-        (ex1 - frame_t - exit_depth, "EXIT"[::-1], True),  # west face
-        (ex2 + frame_t - exit_embed, "EXIT", False),  # east face
+        (ex1 - frame_t - exit_depth, "EXIT"[::-1], True),
+        (ex2 + frame_t - exit_embed, "EXIT", False),
     ]:
         lb = render_text_flat_x(
             letter_text,
@@ -1890,8 +1660,8 @@ def build():
     ENTITIES.append(
         ent(
             "info_intermission",
-            origin="-361 -500 350",  # south of bridge center, slightly elevated
-            mangle="-10 75 0",  # pitch=-10 (nearly level), yaw=75 (mostly north, nudged east)
+            origin="-361 -500 350",
+            mangle="-10 75 0",
         )
     )
 

@@ -1,3 +1,5 @@
+"""Low-level convex brush constructors and clipping helpers."""
+
 import math
 
 from ..mapdata import Brush, Face
@@ -33,8 +35,7 @@ def box(
         ts = tex
     if tn is None:
         tn = tex
-    # Normalize reversed bounds (x1>x2, y1>y2, z1>z2) so a brush is never
-    # accidentally built inside-out when callers pass swapped min/max.
+    # Accept reversed min/max bounds by normalizing them before building the brush.
     if x1 > x2:
         x1, x2 = x2, x1
     if y1 > y2:
@@ -59,10 +60,7 @@ def box(
 
 
 def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
-    # Normalize reversed outer/hole bounds first — mirrors box()'s contract —
-    # so a caller passing x1>x2 (or a reversed hole) doesn't silently break
-    # the clipping logic below and produce a solid box instead of a punched
-    # one.
+    # Normalize outer and hole bounds before clipping the opening.
     if x1 > x2:
         x1, x2 = x2, x1
     if y1 > y2:
@@ -92,12 +90,10 @@ def polygon_prism(pts, z1, z2, tex):
         raise ValueError(f"polygon_prism() requires at least 3 points, got {len(pts)}")
     if z1 == z2:
         raise ValueError(f"polygon_prism: degenerate (zero-height) prism at z={z1}")
-    # Normalize reversed Z bounds so a brush is never accidentally built
-    # inside-out when callers pass swapped min/max, matching box()'s behavior.
+    # Accept reversed Z bounds by normalizing them before building the prism.
     if z1 > z2:
         z1, z2 = z2, z1
-    # Normalize to CCW winding (positive signed area) so the resulting
-    # brush is never accidentally built inside-out for clockwise input.
+    # Use counter-clockwise winding so the side faces point outward.
     signed_area2 = sum(
         pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1]
         for i in range(len(pts))
@@ -250,11 +246,11 @@ def shear_box_z(x1, y1, z1, x2, y2, z2, s1, s2, tex):
 def taper_box_y(
     x1, y1a, y2a, z1, x2, y1b, y2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
 ):
-    """Like shear_box_y, but the Y-range at x1 (y1a..y2a) and at x2
-    (y1b..y2b) are given directly instead of as a shared shift — allowing
-    an asymmetric taper (e.g. the south edge staying put while the north
-    edge recedes), producing a trapezoid footprint rather than a
-    parallelogram."""
+    """Return a trapezoidal prism whose Y span is specified independently at x1 and x2.
+
+    Unlike shear_box_y(), this accepts the south and north edges directly at each X
+    endpoint, so the footprint can taper asymmetrically.
+    """
     tt, tb = tt or tex, tb or tex
     return Brush(
         [
@@ -271,13 +267,11 @@ def taper_box_y(
 def taper_box_x(
     y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
 ):
-    """Like taper_box_y, but with the X/Y roles swapped: the X-range at y1
-    (x1a..x2a) and at y2 (x1b..x2b) are given directly, allowing a taper
-    along Y instead of X — e.g. an east face that is a single slanted plane
-    (X varying linearly with Y) rather than a flat X=const face. Built by
-    calling taper_box_y with x/y swapped and un-swapping the result, since
-    swapping two axes is just a reflection (swap_xy fixes the resulting
-    flipped face-winding/normals)."""
+    """Return taper_box_y() with the X and Y axes swapped.
+
+    The X span is specified independently at y1 and y2, which produces a prism that
+    tapers along Y instead of X.
+    """
     return swap_xy(
         taper_box_y(
             y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=tt, tb=tb, tb_params=tb_params
@@ -332,11 +326,7 @@ def ramp_slab(
 ):
     tt, tb, te, ts = tt or tex, tb or tex, te or tex, ts or tex
     if x1 > x2:
-        # Normalize so x1 < x2 (mirrors ramp_slab_y's y1/y2 normalization) —
-        # callers sometimes pass endpoints derived from constants whose
-        # relative order can flip after later widening (e.g. DORM_X1 moving
-        # west of a previously-fixed anchor), which would otherwise produce
-        # a degenerate/inverted brush.
+        # Keep the slab ordered from x1 to x2 and swap the paired Z values with it.
         x1, x2 = x2, x1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1

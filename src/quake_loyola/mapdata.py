@@ -1,9 +1,4 @@
-"""Core Quake .map data model: Face, Brush, Entity, and a MapBuilder accumulator.
-
-Geometry is represented as data (points, textures, key/values) and serialized to
-Quake MAP text via to_map().  Shape constructors live in geometry.py; content
-modules build these objects; generate_map.py assembles them through MapBuilder.
-"""
+"""Core Quake ``.map`` data structures and serialization helpers."""
 
 from __future__ import annotations
 
@@ -12,7 +7,6 @@ from dataclasses import dataclass, field
 
 from .utils import format_point, format_value
 
-# A 3-tuple of numeric coordinates (x, y, z).
 Point = tuple[float, float, float]
 
 
@@ -33,15 +27,14 @@ def _face_plane(f: "Face") -> tuple[Point, float]:
 def _intersect_planes(
     p1: tuple[Point, float], p2: tuple[Point, float], p3: tuple[Point, float]
 ) -> Point | None:
-    """Solve the 3x3 linear system for the point where three planes meet.
-    Returns None if the planes are parallel/degenerate (singular system)."""
+    """Return the intersection point of three planes, or ``None`` if singular."""
     (a1, b1, c1), d1 = p1
     (a2, b2, c2), d2 = p2
     (a3, b3, c3), d3 = p3
     det = a1 * (b2 * c3 - b3 * c2) - b1 * (a2 * c3 - a3 * c2) + c1 * (a2 * b3 - a3 * b2)
     if abs(det) < 1e-9:
         return None
-    # Cramer's rule.
+
     det_x = (
         d1 * (b2 * c3 - b3 * c2) - b1 * (d2 * c3 - d3 * c2) + c1 * (d2 * b3 - d3 * b2)
     )
@@ -76,21 +69,11 @@ class Face:
         return Face(t(self.p1), t(self.p2), t(self.p3), self.tex, self.params)
 
     def rotated_z(self, angle_deg: float, cx: float = 0.0, cy: float = 0.0) -> Face:
-        """Return a copy rotated by angle_deg (degrees, positive = counter-
-        clockwise looking down the -Z axis, i.e. standard math convention in
-        the XY plane) about the vertical axis through (cx, cy). Z is
-        unaffected.
+        """Return a copy rotated in the XY plane about ``(cx, cy)``.
 
-        Rotated coordinates are snapped to the nearest 0.1 unit. Off-grid
-        float coordinates from an arbitrary rotation angle are a known qbsp
-        fragility (WARNING 12 "New portal was clipped away in
-        CutNodePortals_r" plus outright missing/invisible polygons in-game),
-        and snapping noticeably reduces it. A full integer snap was tried
-        first but collapsed some of Pier 6's thin decorative tile-plate
-        faces (sub-1-unit thick) into degenerate zero-area planes ("Brush
-        plane with no normal"); 0.1-unit precision keeps those thin faces
-        intact while still rounding away most of the floating-point noise
-        that trips up qbsp's portal splitting."""
+        Rotated coordinates are rounded to 0.1-unit precision so thin faces
+        stay intact while qbsp-sensitive floating-point noise is reduced.
+        """
         rad = math.radians(angle_deg)
         cos_a, sin_a = math.cos(rad), math.sin(rad)
 
@@ -140,12 +123,8 @@ class Brush:
         """Return the exact (min_point, max_point) axis-aligned bounding box
         of this convex brush's solid volume.
 
-        Computed by intersecting every combination of three face planes to
-        find candidate vertices, then keeping only those that lie on (or
-        inside) every other face's plane — i.e. the brush's true corners.
-        This correctly bounds curved/segmented brushes (arches, prisms,
-        cylinders) whose faces have more vertices than the 3 points used to
-        define each plane, unlike a bound of just the plane-defining points.
+        Computed by intersecting every combination of three face planes and
+        keeping only points that lie inside the brush.
         """
         if not self.faces:
             raise ValueError("Brush.get_bbox() called on a brush with no faces")
@@ -162,9 +141,6 @@ class Brush:
                     if all(f.is_inside(p, eps) for f in self.faces):
                         verts.append(p)
         if not verts:
-            # Degenerate brush (e.g. no three faces meet at a point within
-            # tolerance) — fall back to the plane-defining points rather
-            # than raising, so callers still get a conservative bound.
             verts = [p for f in self.faces for p in (f.p1, f.p2, f.p3)]
         xs = [p[0] for p in verts]
         ys = [p[1] for p in verts]
@@ -270,9 +246,6 @@ class Entity:
             except ValueError:
                 angle_val = None
             if angle_val is not None:
-                # -1 and -2 are Quake sentinels meaning "straight up"/"straight
-                # down" rather than a yaw value — a Z-axis rotation must leave
-                # them untouched, not add angle_deg to them.
                 if angle_val not in (-1, -2):
                     fields["angle"] = format_value(angle_val + angle_deg)
         brushes = [b.rotated_z(angle_deg, cx, cy) for b in self.brushes]
@@ -283,7 +256,7 @@ class MapBuilder:
     """Accumulates world brushes and entities, then serializes a full .map document."""
 
     def __init__(self) -> None:
-        self.brushes: list[Brush] = []  # worldspawn geometry
+        self.brushes: list[Brush] = []
         self.entities: list[Entity] = []
 
     def add_brush(self, brush: Brush) -> None:

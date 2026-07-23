@@ -1,3 +1,5 @@
+"""Small shared geometry helpers."""
+
 import math
 
 from ..constants import BRIDGE_EAST_PIVOT_X, BRIDGE_EAST_SPAN_ANGLE

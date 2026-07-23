@@ -1,3 +1,5 @@
+"""Public geometry constructors and reusable building helpers."""
+
 from .entities import brush_ent, ent, torch_flame, torch_flame_only
 from .helpers import east_y_shift
 from .prefabs import (

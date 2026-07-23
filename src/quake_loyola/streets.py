@@ -131,26 +131,10 @@ from .utils import swap_xy, swap_xz
 
 
 def punch_manhole_detail(brushes):
-    """Punch the manhole opening (MANHOLE_X/Y/R) through any thin surface
-    layer detail brush (road, lane stripes, sidewalk panels, etc.) whose
-    footprint overlaps it. Several independent constructs — Charles St's
-    lane fills, Ennis Road's lanes (which physically overlap Charles St at
-    this intersection), and the dashed parking-lane stripe fills — can each
-    place a separate solid slab over the same spot, so cutting one
-    construct's brush isn't enough; sweeping every DETAIL_BRUSHES entry once
-    here catches all of them without needing a manual edit at each call
-    site. Only plain axis-aligned box slabs sitting in the thin road-surface
-    Z-band are touched; anything taller (curbs, walls, ramps) is left alone.
+    """Cut the manhole opening through overlapping thin detail slabs.
 
-    Two cases, based on how a brush's footprint relates to the circle:
-      - Entirely inside the circle (all 4 corners within radius) -> drop the
-        brush outright, nothing of it survives the hole.
-      - Any other overlap with the circle's bounding square -> run the
-        square-cut + circular-fan-fill routine (box_with_round_hole). The
-        fan-fill clamps each circle vertex into the brush's own bounds, so
-        it stays well-defined even when the brush is narrower than the
-        circle's diameter (e.g. a ~94-unit road lane against a 128-unit
-        hole) or doesn't fully contain the circle's centre.
+    Brushes fully inside the hole are dropped; overlapping box slabs are
+    rebuilt with box_with_round_hole().
     """
     out = []
     for b in brushes:
@@ -203,7 +187,7 @@ def punch_manhole_detail(brushes):
 
 
 def build_ennis_entrance_features():
-    """Return the Ennis entrance/wall details that belong with west-campus geometry."""
+    """Return the Ennis entrance pillars, walls, gates, and lamps owned by west-campus geometry."""
     brushes = []
     entities = []
 
@@ -283,14 +267,11 @@ def build_ennis_entrance_features():
                 Textures.BRICK,
             )
         )
-        # Flame + light above the brick cup, matching the Charles St lamp posts
         pillar_flame_z = pillar_apex_z + 20
         entities.extend(torch_flame(ennis_pil_cx, pillar_y, pillar_flame_z))
 
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bwex2 = ENNIS_GATE_X1
-    # Short brick wall moved north, clear of the sidewalk squares it used to
-    # run through.
     brushes.append(
         box(
             ennis_wall_x1,
@@ -302,20 +283,12 @@ def build_ennis_entrance_features():
             Textures.BUILDING,
         )
     )
-    # Iron fence on top of the short brick wall — same decorative rectangular
-    # "iron square" panel motif (outer + inner frame, mounting feet dropping
-    # onto the brick top) as the adjacent iron gate run connected at this
-    # wall's east end, just laid out along X instead of Y since this wall
-    # segment runs east/west instead of north/south.
     sw_tex = Textures.FENCE
     sw_brick_top_z = FLOOR_Z2 + ENNIS_WALL_H
     sw_panel_y1 = ENNIS_SHORT_WALL_NY - ENNIS_GATE_FENCE_BAR_T
     sw_panel_y2 = ENNIS_SHORT_WALL_NY
     sw_panel_z1 = sw_brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
     sw_panel_z_center = sw_panel_z1 + ENNIS_PANEL_OUTER_H // 2
-    # This wall segment is shorter than the main gate run, so its panels are
-    # narrower to fit three (instead of the main gate's width) in the
-    # available space, keeping the same frame thickness on each side.
     _sw_frame_t = (ENNIS_PANEL_OUTER_W - ENNIS_PANEL_INNER_W) // 2
     sw_panel_outer_w = 41
     sw_panel_inner_w = sw_panel_outer_w - 2 * _sw_frame_t
@@ -449,7 +422,6 @@ def build_ennis_entrance_features():
                 ),
             ]
         )
-        # Mounting feet dropping onto the brick top, same as the adjacent gate.
         foot_hw = ENNIS_GATE_FENCE_BAR_T // 2
         foot_x1 = x1_o + ENNIS_PANEL_MOUNT_FOOT_INSET
         foot_x2 = x2_o - ENNIS_PANEL_MOUNT_FOOT_INSET
@@ -477,8 +449,6 @@ def build_ennis_entrance_features():
         )
 
     def sw_add_connector(x1, x2):
-        # Two small decorative horizontal iron bars bridging the gap between
-        # adjacent panels, matching the adjacent gate's connector treatment.
         if x2 <= x1:
             return
         bar_t = ENNIS_GATE_FENCE_BAR_T
@@ -497,9 +467,6 @@ def build_ennis_entrance_features():
         )
 
     def sw_shear_x_brace(z1, z2, cross_hw, opening_x1, opening_x2):
-        # Diagonal iron cross-brace bar, sheared along X as a function of Z
-        # (height), flat through the panel's Y depth — same shape as the
-        # adjacent gate's arch post cross-braces, just built along the other axis.
         b = shear_box_y(
             z1,
             -cross_hw,
@@ -514,8 +481,6 @@ def build_ennis_entrance_features():
         return swap_xy(swap_xz(b))
 
     def sw_add_arch_post(center_x):
-        # U-shaped arched iron fence post bookending the panel run, matching
-        # the adjacent gate's separator posts.
         leg_t = ENNIS_GATE_PILLAR_LEG_T
         arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
         arch_rout = arch_rin + leg_t
@@ -561,8 +526,6 @@ def build_ennis_entrance_features():
                     sw_tex,
                 )
             )
-        # Decorative X cross-brace filling the opening between the legs,
-        # below the arch spring line.
         cross_hw = ENNIS_GATE_PILLAR_CROSS_T // 2
         opening_x1 = center_x - arch_rin
         opening_x2 = center_x + arch_rin
@@ -577,9 +540,6 @@ def build_ennis_entrance_features():
             ]
         )
 
-    # Leading arch post right next to the wall's own corner cap post
-    # (bw_cx/bw_cy, built further below), same offset the main gate run uses
-    # from its own corner post, then a connector into the first panel.
     sw_panel_z2_o = sw_panel_z_center + ENNIS_PANEL_OUTER_H // 2
     sw_arch_post_lead_x = (
         ennis_wall_x1 + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
@@ -590,12 +550,6 @@ def build_ennis_entrance_features():
     sw_cursor_x += ENNIS_GATE_PILLAR_GAP
     sw_add_connector(sw_gap_x1, sw_cursor_x)
 
-    # Three narrower panels in the remaining run (east of the leading arch
-    # post) to match the adjacent gate's three-square rhythm, with a
-    # connector filling every inter-panel gap. The run starts immediately
-    # after the leading post's connector (no leading margin) so the panel
-    # fence connects directly to it instead of leaving an unfenced gap; any
-    # leftover space falls at the east end instead.
     sw_panel_count = 3
     sw_run_w = (
         sw_panel_count * sw_panel_outer_w + (sw_panel_count - 1) * ENNIS_PANEL_GAP
@@ -611,23 +565,12 @@ def build_ennis_entrance_features():
                 panel_center_x - sw_panel_outer_w // 2 - ENNIS_PANEL_GAP,
                 panel_center_x - sw_panel_outer_w // 2,
             )
-    # Trailing bookend arch post closing out the east end of the run,
-    # matching the leading post at the west end (and the main gate run's own
-    # trailing bookend), with a connector tying it to the last panel.
     sw_trailing_gap_x1 = sw_run_x1 + sw_run_w
     sw_trailing_gap_x2 = sw_trailing_gap_x1 + ENNIS_GATE_PILLAR_GAP
     sw_add_connector(sw_trailing_gap_x1, sw_trailing_gap_x2)
     sw_add_arch_post(sw_trailing_gap_x2 + ENNIS_GATE_PILLAR_W // 2)
-    # Small section of iron fence bridging the short wall's east end down to
-    # the main east iron gate's baseline (east_gate_y1/y2 below), where the
-    # small brick return wall used to be. Same treatment as the connector
-    # that rejoins the shifted picket run to the brick wall further north:
-    # thick end posts at the wall and gate sides, a thin picket post
-    # centered in between, and a top rail spanning the whole gap.
     fence_bridge_x1 = bwex2 - ENNIS_WALL_T
     fence_bridge_x2 = bwex2
-    # Matches east_gate_y1/y2's formula below (not yet computed at this point
-    # in the function).
     fence_bridge_south_y2 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1 + 2
     fence_bridge_north_y1 = ENNIS_SHORT_WALL_NY
     fence_bridge_mid_y = (
@@ -679,15 +622,6 @@ def build_ennis_entrance_features():
             ),
         ]
     )
-    # Fixed dozen-panel decorative iron gate: 12 rectangular panels grouped
-    # into 6 pairs. A U-shaped iron arch post bookends the run (one at the
-    # very south start, one at the very north end) and separates every pair
-    # in between. The run starts clear of the existing brick/cement corner
-    # cap pillar at the Ennis Rd corner (bw_cx/bw_cy below) so the two don't
-    # overlap. The brick wall's north end (bw_mid_y) is sized to exactly fit
-    # this run, after which the plain picket fence continues to the world edge.
-    # The wall/run is anchored to ENNIS_SHORT_WALL_NY (not the older
-    # ENNIS_WALL_NY) so it stays extended north, flush with the corner post.
     gate_run_start_y = (
         ENNIS_SHORT_WALL_NY
         + ENNIS_WALL_T // 2
@@ -714,15 +648,9 @@ def build_ennis_entrance_features():
         )
     )
 
-    # Plain picket run sits ENNIS_GATE_FENCE_WEST_SHIFT west of where it used to
-    # butt directly against the brick wall, so a short post + cross-rail
-    # connector below rejoins the two at the south end of the run.
     gate_fence_x1 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1 - ENNIS_GATE_FENCE_WEST_SHIFT
     gate_fence_x2 = gate_fence_x1 + ENNIS_GATE_FENCE_BAR_T
     gate_fence_tex = Textures.FENCE
-    # Iron gate fence — extended to the true north world edge (WORLD_Y2, re-derived
-    # from real-world measurement) rather than stopping at the old CHARLES_Y2
-    # anchor, so Charles St stays fenced all the way to the world boundary.
     fence_end_y = WORLD_Y2 - WALL_T
     brushes.append(
         box(
@@ -760,10 +688,6 @@ def build_ennis_entrance_features():
         gate_picket_y += ENNIS_GATE_FENCE_SPACING
         gate_picket_index += 1
 
-    # Reconnect the shifted picket run to the brick wall at its south end:
-    # thick end posts at the fence and wall sides, a thin picket post
-    # centered in between, and a top rail spanning the whole gap — same
-    # treatment as a regular short fence section.
     connector_y1 = bw_mid_y
     connector_y2 = bw_mid_y + ENNIS_GATE_FENCE_POST_W
     connector_wall_x2 = ennis_wall_x1 + ENNIS_WALL_T // 2 - 1 + ENNIS_GATE_FENCE_BAR_T
@@ -819,9 +743,6 @@ def build_ennis_entrance_features():
     panel_x1 = ennis_wall_x1 - ENNIS_GATE_FENCE_BAR_T
     panel_x2 = ennis_wall_x1
     brick_top_z = FLOOR_Z2 + ENNIS_WALL_H
-    # Panels sit a little proud of the brick top, connected down to it by the
-    # mounting feet (see add_panel), matching how a real iron fence is
-    # bracketed onto a wall rather than sitting flush with it.
     panel_z1 = brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
     panel_z_center = panel_z1 + ENNIS_PANEL_OUTER_H // 2
     panel_z2_o = panel_z_center + ENNIS_PANEL_OUTER_H // 2
@@ -955,12 +876,6 @@ def build_ennis_entrance_features():
                 ),
             ]
         )
-        # Mounting feet — small iron brackets at each bottom corner, dropping
-        # from the bottom rail down onto/into the brick top so the panel
-        # reads as mounted on the wall rather than floating flush with it.
-        # Same thin bar thickness as the connector ties for a consistent look.
-        # Inset in from the corners a little so they sit under the rail
-        # rather than right at the outer edge.
         foot_hw = ENNIS_GATE_FENCE_BAR_T // 2
         foot_y1 = y1_o + ENNIS_PANEL_MOUNT_FOOT_INSET
         foot_y2 = y2_o - ENNIS_PANEL_MOUNT_FOOT_INSET
@@ -988,9 +903,6 @@ def build_ennis_entrance_features():
         )
 
     def add_arch_post(center_y):
-        # Arched iron fence post: two vertical legs topped with a rounded
-        # arch (rin/rout ring), slightly taller overall than the panels it
-        # separates, in place of a flat crossbar.
         leg_t = ENNIS_GATE_PILLAR_LEG_T
         arch_rin = ENNIS_GATE_PILLAR_OPENING_W // 2
         arch_rout = arch_rin + leg_t
@@ -1036,8 +948,6 @@ def build_ennis_entrance_features():
                     gate_fence_tex,
                 )
             )
-        # Decorative X cross-brace filling the opening between the legs,
-        # below the arch spring line.
         cross_hw = ENNIS_GATE_PILLAR_CROSS_T // 2
         opening_y1 = center_y - arch_rin
         opening_y2 = center_y + arch_rin
@@ -1069,8 +979,6 @@ def build_ennis_entrance_features():
         )
 
     def add_connector(y1, y2):
-        # Two small decorative horizontal iron bars bridging the narrow gap
-        # between adjacent panels/arch posts, matching the real fence's look.
         if y2 <= y1:
             return
         bar_t = ENNIS_GATE_FENCE_BAR_T
@@ -1101,7 +1009,6 @@ def build_ennis_entrance_features():
         )
 
     cursor_y = gate_run_start_y
-    # Leading bookend arch post, then a gap into the first panel.
     add_arch_post(cursor_y + ENNIS_GATE_PILLAR_W // 2)
     cursor_y += ENNIS_GATE_PILLAR_W
     gap_y1 = cursor_y
@@ -1115,8 +1022,6 @@ def build_ennis_entrance_features():
         add_connector(gap_y1, cursor_y)
         add_panel(cursor_y + ENNIS_PANEL_OUTER_W // 2)
         cursor_y += ENNIS_PANEL_OUTER_W
-        # An arch post follows every pair — the interior separators, and (on
-        # the last pair) the trailing bookend post that closes out the run.
         gap_y1 = cursor_y
         cursor_y += ENNIS_GATE_PILLAR_GAP
         add_connector(gap_y1, cursor_y)
@@ -1124,9 +1029,6 @@ def build_ennis_entrance_features():
         cursor_y += ENNIS_GATE_PILLAR_W
         gap_y1 = cursor_y
         cursor_y += ENNIS_GATE_PILLAR_GAP
-        # Skip the connector tie after the trailing (north) bookend post —
-        # it would otherwise reach toward the plain picket fence, which
-        # doesn't share the same decorative style.
         if pair_i < _pair_count - 1:
             add_connector(gap_y1, cursor_y)
     assert cursor_y == bw_mid_y, (cursor_y, bw_mid_y)
@@ -1221,9 +1123,6 @@ def build_ennis_entrance_features():
     cement_wall_height = ENNIS_CEMENT_WALL_H
     cement_wall_pillar_half_width = ENNIS_CEMENT_WALL_PILLAR_HW
     cement_wall_pillar_height = cement_wall_height + ENNIS_CEMENT_WALL_PILLAR_EXTRA_H
-    # Straight span connects to the east face of the west pillar and the
-    # west face of the middle pillar, rather than skewering through their
-    # centres.
     brushes.append(
         box(
             ENNIS_CEMENT_X1 + cement_wall_pillar_half_width,
@@ -1246,17 +1145,6 @@ def build_ennis_entrance_features():
             Textures.CEMENT,
         )
     )
-    # Wall extension east of the original end pillar, curving in a shallow
-    # semi-circular bulge — echoes the north curb's bump-out below it (same
-    # overall length, and the same depth-to-length ratio: half as deep as
-    # long) so the wall visually rhymes with the curve instead of running
-    # straight past it. Built the same way as the curb bulge: a chord-based
-    # polygon approximation, where each segment's boundary points sit
-    # exactly on the true elliptical curve and connect seamlessly to their
-    # neighbours. Depth is zero exactly at the drawn span's own two ends —
-    # the east face of the middle pillar and the west face of the new end
-    # pillar + cap + lamp post at ENNIS_CEMENT_X2_EXT — so the curve
-    # connects flush to both pillar faces instead of leaving a gap.
     ENNIS_CEMENT_X2_EXT = ENNIS_CEMENT_X2 + ENNIS_CURB_BULGE_LEN
     _wall_cap_z1 = FLOOR_Z2 + cement_wall_height
     _wall_cap_z2 = _wall_cap_z1 + ENNIS_CEMENT_WALL_CAP_H
@@ -1264,7 +1152,7 @@ def build_ennis_entrance_features():
     _wall_bulge_draw_x2 = ENNIS_CEMENT_X2_EXT - cement_wall_pillar_half_width
     _wall_bulge_cx = (_wall_bulge_draw_x1 + _wall_bulge_draw_x2) / 2
     _wall_bulge_half_len = (_wall_bulge_draw_x2 - _wall_bulge_draw_x1) / 2
-    _wall_bulge_depth = _wall_bulge_half_len / 2  # half as deep as long, like the curb
+    _wall_bulge_depth = _wall_bulge_half_len / 2
 
     def _wall_bulge_depth_at(bx):
         bdx = bx - _wall_bulge_cx
@@ -1284,8 +1172,6 @@ def build_ennis_entrance_features():
         _w_south2 = cement_wall_y1 - _wd2
         _w_north1 = cement_wall_y2 - _wd1
         _w_north2 = cement_wall_y2 - _wd2
-        # Wall band quad (south1, south2, north2, north1), split into 2
-        # triangles like the curb — no stair-stepping between segments.
         brushes.append(
             tri_prism(
                 _wx1,
@@ -1312,7 +1198,6 @@ def build_ennis_entrance_features():
                 Textures.CEMENT,
             )
         )
-        # Cap quad — same curve, overhanging both edges as usual.
         _c_south1 = _w_south1 - ENNIS_CEMENT_WALL_CAP_OVH
         _c_south2 = _w_south2 - ENNIS_CEMENT_WALL_CAP_OVH
         _c_north1 = _w_north1 + ENNIS_CEMENT_WALL_CAP_OVH
@@ -1387,7 +1272,6 @@ def build_ennis_entrance_features():
                     Textures.PILLAR,
                 )
             )
-            # Flame + light above the lamp post, matching the Charles St lamp posts
             cement_wall_flame_z = lamppost_base_z + ENNIS_CEMENT_WALL_LAMP_POST_H + 20
             entities.extend(torch_flame(pillar_x, pillar_center_y, cement_wall_flame_z))
             brushes.append(
@@ -1423,24 +1307,10 @@ def build_ennis_entrance_features():
     for pillar_x in (ENNIS_CEMENT_X1, ENNIS_CEMENT_X2, ENNIS_CEMENT_X2_EXT):
         _build_wall_pillar(pillar_x, with_lamp=True)
 
-    # Straight-run extension east of the curved bulge, continuing all the way
-    # to the world's east sealing wall. This corridor (immediately north of
-    # Ennis Road's curb, south of where terrain/ne.py's real elevation data
-    # begins) is deliberately kept flat/flush the whole way — see that
-    # module's docstring: the row bordering the curb is tied to a constant
-    # height, with the rising hill only starting further north — so a flat
-    # wall at cement_wall_height needs no terrain-following logic here.
-    # Pillars repeat at roughly ENNIS_CEMENT_WALL_PILLAR_SPACING, alternating
-    # every other capstone with a lamp post; the pillar at ENNIS_CEMENT_X2_EXT
-    # already has one, so the alternation continues from there (no lamp,
-    # lamp, no lamp, ...).
     _ext_run_x1 = ENNIS_CEMENT_X2_EXT
     _ext_run_x2 = WORLD_X2 - WALL_T
     _ext_run_len = _ext_run_x2 - _ext_run_x1
-    _ext_pillar_count = max(
-        1, round(_ext_run_len / ENNIS_CEMENT_WALL_PILLAR_SPACING)
-    )  # clamp to at least 1 so a short/zero-length extension can't divide by
-    # zero below
+    _ext_pillar_count = max(1, round(_ext_run_len / ENNIS_CEMENT_WALL_PILLAR_SPACING))
     _ext_pillar_spacing = _ext_run_len / _ext_pillar_count
     _ext_pillar_xs = [
         _ext_run_x1 + round(i * _ext_pillar_spacing)
@@ -1482,25 +1352,6 @@ def build():
     BRUSHES = []
     ENTITIES = []
     DETAIL_BRUSHES = []
-    # ════════════════════════════════════════════════════════════════════════════════
-    # RECTANGULAR WORLD SHELL — floor, 4 outer walls, sky ceiling
-    # ════════════════════════════════════════════════════════════════════════════════
-    # Tunnel-portal wall faces (below) show ground only when the west-campus
-    # hillside/embankment geometry that they're shaped around is actually
-    # present (built by terrain/west_campus.py); with
-    # WEST_CAMPUS_ENABLED_TERRAIN off, those inner faces should read as sky,
-    # regardless of STREETS_ENABLED_DETAILS.
-    #
-    # The north and south portals are NOT symmetric in the real elevation
-    # data (terrain/west_campus.py's wct grid): the south end (near
-    # WORLD_Y1, y around -6626) genuinely rises to real hillside heights
-    # (~200-245 units) that bury the south portal's ground-textured faces,
-    # but the north end (near WORLD_Y2, y around 4069) is essentially flat
-    # (~0) — there's no real hill there to hide the ground texture, so
-    # texturing the north portal as ground left a floating, wall-like patch
-    # of dirt exposed with nothing around it. Use sky unconditionally for
-    # the north portal and keep the flag-gated ground texture only for the
-    # south portal, where real terrain actually justifies it.
     _tunnel_wall_tex_n = Textures.SKY
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
     BRUSHES.extend(
@@ -1516,16 +1367,7 @@ def build():
             MANHOLE_R,
             Textures.GROUND,
         )
-    )  # floor — punched with the manhole opening down to the basement (see
-    # basement.py, which cuts the matching hole through its own ceiling slab
-    # immediately below)
-    # W wall — split by Z purely for consistency with the tunnel-height/
-    # above-tunnel split elsewhere; the inner (east) face reads as sky the
-    # whole way up, not ground — the west-campus hillside terrain (built
-    # separately by terrain/west_campus.py) already supplies its own visible
-    # ground surface well inboard of this wall, so texturing the wall face
-    # itself as ground just left a stray strip of ground showing near the
-    # wall's base where the (lower) hillside doesn't reach flush against it.
+    )
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1536,7 +1378,7 @@ def build():
             BRIDGE_DZ2,
             Textures.SKY,
         )
-    )  # W wall lower (tunnel height)
+    )
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1547,7 +1389,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # W wall upper (above tunnel)
+    )
     BRUSHES.append(
         box(
             WORLD_X2_EXT - WALL_T,
@@ -1558,7 +1400,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # E wall
+    )
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1569,8 +1411,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # N wall west of BRIDGE.x1 — plain seal over unmodeled real estate now that
-    # BRIDGE.x1 no longer sits at the world wall (see constants.py § BRIDGE_X1).
+    )
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1581,15 +1422,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # S wall west of BRIDGE.x1 — plain seal, see N-wall comment above.
-    # N wall — split at DORM.x1 (tunnel east boundary).  The inner (south) face is
-    # split ALONG the tunnel ceiling-underside line, which slopes from
-    # BRIDGE_DZ2-WALL_T at the world wall down to SDORM_LIFT at DORM.x1: ground on
-    # the visible tunnel end-wall below that line, sky above it (the band above is
-    # buried in the hillside slab / open sky), so no ground triangle pokes above
-    # the hill.  This line is always below the hill roofline, so it stays hidden.
-    # Shifted one wall-thickness east (WORLD_X1 → BRIDGE.x1) to align with the tunnel
-    # west edge and seal the sky leak, matching the south-wall fix.
+    )
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
@@ -1601,11 +1434,11 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=_tunnel_wall_tex_n,  # sloped top — no real hill here, stays sky
-            te=_tunnel_wall_tex_n,  # east end-cap — no real hill here, stays sky
-            ts=_tunnel_wall_tex_n,  # inner south face — no real hill here, stays sky
+            tt=_tunnel_wall_tex_n,
+            te=_tunnel_wall_tex_n,
+            ts=_tunnel_wall_tex_n,
         )
-    )  # N wall tunnel portal (ground up to the ceiling-underside line)
+    )
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
@@ -1617,9 +1450,9 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=_tunnel_wall_tex_n,  # sloped bottom — no real hill here, stays sky
+            tb=_tunnel_wall_tex_n,
         )
-    )  # N wall above the tunnel end-wall
+    )
     BRUSHES.append(
         box(
             DORM.x1,
@@ -1630,14 +1463,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # N wall east of tunnel
-    # S wall — lower ramp mirrors the north-wall tunnel-portal pair: ground from
-    # FLOOR_Z1 up to the sloped hillside underside (BRIDGE_DZ2-WALL_T west,
-    # SDORM_LIFT east), sealing the tunnel mouth and showing the hillside slope face.
-    # Shifted one wall-thickness east of the world wall (WORLD_X1 → BRIDGE.x1) so the
-    # slope's high end (BRIDGE_DZ2-WALL_T) lands at the tunnel's west edge (BRIDGE.x1)
-    # instead of behind the wall — otherwise the slope sat below the ceiling at the
-    # tunnel mouth and left a sliver of sky visible inside the tunnel.
+    )
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
@@ -1649,10 +1475,10 @@ def build():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=_tunnel_wall_tex,  # sloped top face — hillside slope visible at tunnel mouth
-            ts=_tunnel_wall_tex,  # ±Y gable ends — tunnel end-wall ground texture
+            tt=_tunnel_wall_tex,
+            ts=_tunnel_wall_tex,
         )
-    )  # S wall tunnel portal lower (sloped ground up to hillside underside)
+    )
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
@@ -1664,9 +1490,9 @@ def build():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=_tunnel_wall_tex,  # sloped bottom face visible from tunnel → ground
+            tb=_tunnel_wall_tex,
         )
-    )  # S wall above the tunnel end-wall (sky, up to the world ceiling)
+    )
     BRUSHES.append(
         box(
             DORM.x1,
@@ -1677,7 +1503,7 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # S wall east of tunnel
+    )
     BRUSHES.append(
         box(
             WORLD_X1,
@@ -1688,23 +1514,17 @@ def build():
             WORLD_Z2,
             Textures.SKY,
         )
-    )  # sky
+    )
     if not STREETS_ENABLED_DETAILS:
         return BRUSHES, ENTITIES
-    # ── Non-sealing street furniture, markings, and decorative ground geometry ──
-    # These are moved to DETAIL_BRUSHES to speed up vis and reduce portal fragmentation.
     _world_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
 
-    # ════════════════════════════════════════════════════════════════════════════════
-    # CHARLES STREET — road surface, sidewalks, centre stripe
-    # Road runs N-S (full Y); road channel E-W = ROAD_X1..ROAD_X2
-    # ════════════════════════════════════════════════════════════════════════════════
     CHARLES_Y1 = WORLD_Y1 + WALL_T
     CHARLES_Y2 = WORLD_Y2 - WALL_T
 
     def ranges_excluding(v1, v2, ex1, ex2):
-        """Split [v1, v2) into the pieces remaining after excluding [ex1, ex2)."""
+        """Return the subranges of [v1, v2) that lie outside [ex1, ex2)."""
         ranges = []
         if ex1 > v1:
             ranges.append((v1, min(ex1, v2)))
@@ -1712,65 +1532,34 @@ def build():
             ranges.append((max(ex2, v1), v2))
         return ranges
 
-    # ── Charles St pedestrian crossing band — on the SE corner of the
-    # Charles/Ennis intersection, the corner closest to the pedestrian bridge.
-    # Carved out of the road surface and lane-marking brushes below (see
-    # ranges_excluding() calls) so the crosswalk stripes sit flush with the
-    # road, matching the centerline/parking-lane stripes.
     CHARLES_CROSSING_Y2 = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
     CHARLES_CROSSING_Y1 = CHARLES_CROSSING_Y2 - CROSSWALK_LEN
-    # Midpoint of the crossing — the west sidewalk north of the bridge gives
-    # way to curb-and-ground up to this point (see "West sidewalk" below).
     CHARLES_CROSSING_MID = (CHARLES_CROSSING_Y1 + CHARLES_CROSSING_Y2) / 2
 
-    # ── Ennis Road (E-W, parallel to bridge, north side) ──
-    # Runs from Charles Street west edge (ROAD_X1) east to the world wall, dead-ending there.
-    # Half as wide as Charles Street (512/2=256 total → HW=128), north of bridge.
-    ENNIS_X1 = ROAD_X1  # start at west edge of Charles St to form T-junction
-    ENNIS_X2 = WORLD_X2_EXT - WALL_T  # dead-end at east world wall
-    # Back road corridor X extents — defined here for road/curb brush splits below
+    ENNIS_X1 = ROAD_X1
+    ENNIS_X2 = WORLD_X2_EXT - WALL_T
 
-    # ── Ennis Road pedestrian crossing band — at the entrance from the
-    # Charles St east sidewalk, lined up with the sidewalk's own width
-    # (ROAD_X2..ROAD_X2+CHARLES_WALK_W). Carved out of the road/curb/centerline
-    # brushes below so the crosswalk stripes sit flush with the road.
     ENNIS_CROSSING_X1 = ROAD_X2
     ENNIS_CROSSING_X2 = ROAD_X2 + CHARLES_WALK_W
 
-    # Charles St curb-to-curb models 2 travel lanes (one each direction),
-    # divided by a centre double-yellow (no-passing) line and a single solid
-    # white line on each side marking the outer edge of each travel lane —
-    # see docs/reference.rst "Charles St width validation". Road surface
-    # split into 4 equal-width slabs, leaving narrow slots for the centre
-    # divider and the two lane-line stripes, so all lanes come out an equal
-    # width, evenly spaced across the road rather than a fixed lane width.
-    # ROAD_CX is the midpoint of the curb-to-curb width (not a fixed X=0) so
-    # the centre divider/lanes stay correctly centred automatically even when
-    # ROAD_X1/ROAD_X2 aren't mirror images of each other (e.g. after widening
-    # Charles St to only one side).
     ROAD_CX = (ROAD_X1 + ROAD_X2) / 2
     WEST_LANE_LINE_X = (ROAD_X1 + ROAD_CX - STREET_DIV_HW) / 2
     EAST_LANE_LINE_X = (ROAD_CX + STREET_DIV_HW + ROAD_X2) / 2
     for lane_x1, lane_x2 in (
-        (ROAD_X1, WEST_LANE_LINE_X - STREET_DIV_LINE_HW),  # west outer lane
+        (ROAD_X1, WEST_LANE_LINE_X - STREET_DIV_LINE_HW),
         (
             WEST_LANE_LINE_X + STREET_DIV_LINE_HW,
             ROAD_CX - STREET_DIV_HW,
-        ),  # west inner lane
+        ),
         (
             ROAD_CX + STREET_DIV_HW,
             EAST_LANE_LINE_X - STREET_DIV_LINE_HW,
-        ),  # east inner lane
-        (EAST_LANE_LINE_X + STREET_DIV_LINE_HW, ROAD_X2),  # east outer lane
+        ),
+        (EAST_LANE_LINE_X + STREET_DIV_LINE_HW, ROAD_X2),
     ):
         for lane_y1, lane_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
-            # The manhole opening (MANHOLE_X/Y/R) falls in the east outer
-            # lane — the hole through this slab (and any other overlapping
-            # decorative layer at this intersection) is punched generically
-            # further down (see punch_manhole_detail sweep over
-            # DETAIL_BRUSHES), so just build the plain slab here.
             BRUSHES.append(
                 box(
                     lane_x1,
@@ -1783,10 +1572,8 @@ def build():
                 )
             )
 
-    # ── Sidewalk slab helpers — tile sidewalks into concrete panels with
-    # expansion-joint gaps (same technique as terrain/knott_hall.py's sloped slabs).
-    _SW_SLAB_LEN = 80  # matches CHARLES_WALK_W so panels are square (80×80)
-    _SW_GAP = 2  # expansion-joint width
+    _SW_SLAB_LEN = 80
+    _SW_GAP = 2
 
     def sw_slabs_y(
         brushes,
@@ -1800,22 +1587,14 @@ def build():
         tt_params="0 0 0 1 1",
         tile_overrides=None,
     ):
-        """Tile a flat N-S sidewalk strip (y1..y2) as individual panels.
+        """Tile a north-south sidewalk strip into panels.
 
-        `tile_overrides`, if given, is a list of (y_start, tex) pairs — any
-        panel whose starting Y matches one gets that texture instead of the
-        default `tex`, for one-off accent squares without disturbing the
-        rest of the strip's tiling.
-
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE), mulch
-        (Textures.MULCH), or ground (Textures.GROUND) panels are merged
-        into a single continuous slab, closing the expansion-joint gaps
-        between them — those materials are meant to read as one seamless
-        surface, unlike the jointed cement squares.
+        `tile_overrides` swaps textures for specific panel starts, and seamless
+        textures are merged into continuous runs.
         """
         _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH, Textures.GROUND)
         step = _SW_SLAB_LEN + _SW_GAP
-        segments = []  # [seg_y1, seg_y2, tex] — merged run bounds
+        segments = []
         y = y1
         while y < y2:
             sy2 = min(y + _SW_SLAB_LEN, y2)
@@ -1857,40 +1636,20 @@ def build():
         tex_from_x=None,
         tex_ranges=None,
     ):
-        """Tile a flat E-W sidewalk strip (x1..x2) as individual panels.
+        """Tile an east-west sidewalk strip into panels.
 
-        `tex_from_x`, if given, is an (x_threshold, tex) pair — any panel
-        starting at or east of `x_threshold` uses that texture instead of
-        the default `tex`.
-
-        `tex_ranges`, if given, is a list of (range_x1, range_x2, tex) or
-        (range_x1, range_x2, tex, tt_params) entries — any panel overlapping
-        [range_x1, range_x2) uses that texture (and tt_params, if given, in
-        place of the call's default) for the overlapping portion (splitting
-        the panel at the range boundary if it only partially overlaps),
-        instead of the default `tex`/`tt_params`. Takes priority over
-        `tex_from_x`. A 5th element, `y_north_inset`, shaves that many units
-        off the north (y2) edge of the range and fills the sliver with the
-        call's default `tex`/`tt_params` instead — useful for pulling a
-        patch's north edge back a bit without affecting its x extent.
-
-        Consecutive stn_f14_wht1 (Textures.WHITE_STONE), mulch
-        (Textures.MULCH), or ground (Textures.GROUND) panels are merged
-        into a single continuous slab, closing the expansion-joint gaps
-        between them — those materials are meant to read as one seamless
-        surface, unlike the jointed cement squares.
+        `tex_from_x` and `tex_ranges` override textures by position, and
+        seamless textures are merged into continuous runs.
         """
         _seamless_tex = (Textures.WHITE_STONE, Textures.MULCH, Textures.GROUND)
         step = _SW_SLAB_LEN + _SW_GAP
-        segments = []  # [seg_x1, seg_x2, tex, tt_params, y_north_inset]
+        segments = []
         x = x1
         while x < x2:
             sx2 = min(x + _SW_SLAB_LEN, x2)
             panel_tex = tex
             if tex_from_x is not None and x >= tex_from_x[0]:
                 panel_tex = tex_from_x[1]
-            # Sub-panels for this grid slab, split at any tex_ranges boundary
-            # that falls strictly inside it.
             pieces = [[x, sx2, panel_tex, tt_params, None]]
             if tex_ranges:
                 for rspec in tex_ranges:
@@ -1936,7 +1695,7 @@ def build():
                 )
             )
             if y_north_inset:
-                brushes.append(  # north filler sliver — default sidewalk
+                brushes.append(
                     box(
                         seg_x1,
                         seg_y2,
@@ -1949,14 +1708,6 @@ def build():
                     )
                 )
 
-    # West sidewalk — resumes north of the crossing midpoint (curb-and-ground
-    # takes over from the bridge's north side up to that point, below).
-    # The first two panels (a curb-cut) sit flush with the street surface
-    # height instead of the full curb height, so pedestrians stepping off
-    # the crosswalk aren't met with a curb lip. The next panel is a ramp,
-    # sloping the top face from the flush height back up to the full curb
-    # height, so the transition back to the normal sidewalk is gradual
-    # rather than an abrupt step.
     CHARLES_CURB_CUT_LEN = 2 * (_SW_SLAB_LEN + _SW_GAP)
     CHARLES_CURB_CUT_Y2 = CHARLES_CROSSING_MID + CHARLES_CURB_CUT_LEN
     CHARLES_CURB_RAMP_Y2 = CHARLES_CURB_CUT_Y2 + _SW_SLAB_LEN
@@ -1983,12 +1734,6 @@ def build():
             Textures.SIDEWALK,
         )
     )
-    # West curb wall (north of the ramp) — like the Ennis Road curbs, this
-    # stretch of sidewalk relies solely on the height difference against the
-    # adjacent road slab, which doesn't reliably render as a visible step.
-    # Add an explicit standing curb wall along the road-facing (east) edge,
-    # separated from the sidewalk squares by a low flush gap so the curb
-    # reads as its own distinct piece rather than the sidewalk's own edge.
     _CHARLES_CURB_CAP_D = 8
     _CHARLES_CURB_GAP = 2
     sw_slabs_y(
@@ -2001,7 +1746,7 @@ def build():
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
     )
-    BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+    BRUSHES.append(
         box(
             ROAD_X1 - _CHARLES_CURB_CAP_D - _CHARLES_CURB_GAP,
             CHARLES_CURB_RAMP_Y2 + _SW_GAP,
@@ -2023,12 +1768,6 @@ def build():
             Textures.SIDEWALK,
         )
     )
-    # South east-west curb cap — the south edge of the curb-cut (where it
-    # meets the full-height curb south of the crossing, at
-    # CHARLES_CROSSING_MID) needs its own explicit wall face. The two
-    # brushes touch there but don't reliably render a step on their own, so
-    # add a dedicated curb slab spanning the full sidewalk width, standing
-    # from the flush height up to the full curb height.
     BRUSHES.append(
         box(
             ROAD_X1 - CHARLES_WALK_W,
@@ -2040,13 +1779,6 @@ def build():
             Textures.SIDEWALK,
         )
     )
-    # West retaining wall — along the outer (west) edge of the curb-cut and
-    # ramp above, since that whole strip dips below the usual curb height.
-    # Without this, the drop-off there would be an open-sided ledge instead
-    # of a proper curb. Constant-height wall alongside the flush curb-cut,
-    # then tapers down (following the ramp's rising top face) to a small
-    # residual reveal by the time the ramp meets full curb height, matching
-    # the sidewalk's own texture/style.
     _RW_X2 = ROAD_X1 - CHARLES_WALK_W
     _RW_X1 = _RW_X2 - STREET_CHARLES_CURB_W
     BRUSHES.append(
@@ -2073,10 +1805,6 @@ def build():
             Textures.SIDEWALK,
         )
     )
-    # West curb — from Charles St south edge up to the crossing midpoint
-    # (covers the south section below the bridge and, per the same
-    # curb-and-ground treatment, the stretch from the bridge's north side
-    # up to the middle of the pedestrian crossing)
     BRUSHES.append(
         box(
             ROAD_X1 - STREET_CHARLES_CURB_W,
@@ -2088,8 +1816,6 @@ def build():
             Textures.SIDEWALK,
         )
     )
-    # Raised ground west of curb — rock/ground texture, flush with sidewalk,
-    # same south-edge-to-crossing-midpoint extent as the curb above
     BRUSHES.append(
         box(
             ROAD_X1 - CHARLES_WALK_W,
@@ -2101,16 +1827,11 @@ def build():
             Textures.GROUND,
         )
     )
-    # East sidewalk — split into two segments, trimmed CHARLES_WALK_W short of each corner.
-    # Curb wall sits along the road-facing (west) edge, separated from the
-    # sidewalk squares by a low flush gap (same treatment as the west
-    # sidewalk and Ennis Road curbs above).
     for _seg_y1, _seg_y2, _seg_overrides in (
         (
             CHARLES_Y1,
             ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
-            [(508, Textures.WHITE_STONE)],  # accent square next to the Ennis
-            # south-curb white-stone/cement pair built above
+            [(508, Textures.WHITE_STONE)],
         ),
         (ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W, CHARLES_Y2, None),
     ):
@@ -2125,7 +1846,7 @@ def build():
             Textures.SIDEWALK,
             tile_overrides=_seg_overrides,
         )
-        BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+        BRUSHES.append(
             box(
                 ROAD_X2 + _CHARLES_CURB_CAP_D,
                 _seg_y1,
@@ -2148,20 +1869,8 @@ def build():
             )
         )
 
-    # ── Ennis Road brushes ──
-    # Road surface — split around centre divider slot and south curb strip (Y=776–784)
-    # Ennis runs E-W (perpendicular to Charles), so its road texture is
-    # rotated 90° from Charles St's orientation to keep the tech-panel grain
-    # running the right way.
     ENNIS_ROAD_TT_PARAMS = "0 0 90 1 1"
-    # The north curb was pushed out by ENNIS_WIDEN_N (south curb unchanged),
-    # so the true curb-to-curb midpoint is ENNIS_Y + ENNIS_WIDEN_N / 2, not
-    # ENNIS_Y itself. Centre the divider slot there (and shrink the south
-    # lane / grow the north lane to match) so the centerline sits in the
-    # middle of the road instead of biased toward the south curb, with the
-    # lane road surfaces staying flush against the divider (no gap).
     _ennis_center_y = ENNIS_Y + ENNIS_WIDEN_N / 2 + ENNIS_DIVIDER_EXTRA_N
-    # West section (near Charles St, no curb strip here)
     for wx1, wx2 in ranges_excluding(
         ENNIS_X1, ROAD_X2 + CHARLES_WALK_W, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
     ):
@@ -2177,7 +1886,6 @@ def build():
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
-    # Main east sections — full south extent to road edge
     for road_x1, road_x2 in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
         (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
@@ -2194,7 +1902,6 @@ def build():
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
-    # Corridor gap section (back road entrance, no curb strip)
     BRUSHES.append(
         box(
             KNOTT_DRIVEWAY_CORRIDOR_X1,
@@ -2222,15 +1929,8 @@ def build():
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
-    # North curb — offset east by CHARLES_WALK_W to cut corner square.
-    # Curb wall sits along the road-facing (south) edge, separated from the
-    # sidewalk squares by a low flush gap (matches Charles St's treatment).
-    _ENNIS_CURB_CAP_D = 8  # depth of the curb wall itself
-    _ENNIS_CURB_GAP = 2  # width of the flush gap between curb and sidewalk
-    # Corner brick/cement wall pillar (bw_cx/bw_cy in build_ennis_entrance_
-    # features()) sits at the west end of this sidewalk run — recompute its
-    # X center here so the white-stone patch below can extend a bit past
-    # its west face, leaving plain cement sidewalk only further west.
+    _ENNIS_CURB_CAP_D = 8
+    _ENNIS_CURB_GAP = 2
     _ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     _bw_cx = _ennis_wall_x1 + ENNIS_WALL_T // 2
     sw_slabs_x(
@@ -2243,15 +1943,6 @@ def build():
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK,
         tt_params=ENNIS_ROAD_TT_PARAMS,
-        # White stone (stn_f14_wht1) from just west of the corner brick/
-        # cement wall pillar's west face (bw_cx, at the NW corner of the
-        # Charles/Ennis intersection) east to the north Ennis entrance
-        # pillar, matching the white-stone accent squares on the south
-        # side of Ennis. West of that, plain cement sidewalk remains. East
-        # of the north pillar, mulch runs to where the main iron gate
-        # ends, fronting the fence/gate; beyond that, the remaining cement
-        # sidewalk becomes grass (Textures.GROUND) the rest of the way to
-        # ENNIS_X2.
         tex_ranges=[
             (
                 _bw_cx - ENNIS_WALL_PILLAR_HW + 4,
@@ -2263,13 +1954,10 @@ def build():
             (ENNIS_GATE_X2, ENNIS_X2, Textures.GROUND),
         ],
     )
-    # North curb bulge extents (defined here so the flush-gap strip below
-    # can be skipped across the bulge — its cement wouldn't make sense
-    # cutting across the grass island).
     _CURB_BULGE_X1 = ENNIS_CEMENT_X2
     _CURB_BULGE_LEN = ENNIS_CURB_BULGE_LEN
     _CURB_BULGE_X2 = _CURB_BULGE_X1 + _CURB_BULGE_LEN
-    BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+    BRUSHES.append(
         box(
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
@@ -2281,7 +1969,7 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    BRUSHES.append(  # flush gap resumes east of the bulge
+    BRUSHES.append(
         box(
             _CURB_BULGE_X2,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D,
@@ -2293,27 +1981,14 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    # North curb bulge — a rounded bump-out starting at the east-most
-    # cement-wall lamp post (ENNIS_CEMENT_X2) and running east about two
-    # car-lengths, then tapering back to the regular straight curb. Built
-    # like the Charles/Ennis driveway-corner curb (curb_seg/tri_prism): a
-    # chord-based polygon approximation, where each segment's boundary
-    # points sit exactly on the true elliptical curve (half as deep into
-    # the road as it is long) and connect directly to their neighbours —
-    # not axis-aligned stepped boxes, which look chunky/stair-stepped by
-    # comparison. The curb itself stays a constant _ENNIS_CURB_CAP_D thick
-    # (like the rest of the curb) rather than becoming a solid mass — the
-    # island enclosed by the curve, north of the curb wall (including the
-    # flush-gap strip, since that's grass too here, not sidewalk) is filled
-    # with ground/grass instead of cement.
     _CURB_BULGE_HALF_LEN = _CURB_BULGE_LEN / 2
-    _CURB_BULGE_DEPTH = _CURB_BULGE_HALF_LEN / 2  # half as deep as it is long
+    _CURB_BULGE_DEPTH = _CURB_BULGE_HALF_LEN / 2
     _CURB_BULGE_CX = (_CURB_BULGE_X1 + _CURB_BULGE_X2) / 2
     _CURB_BULGE_SEGMENTS = 24
     _CURB_BULGE_FAR_Y = (
         ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP
     )
-    BRUSHES.append(  # north curb — straight run west of the bulge
+    BRUSHES.append(
         box(
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
@@ -2342,9 +2017,6 @@ def build():
         _inner1_y = _outer1_y + _ENNIS_CURB_CAP_D
         _inner2_y = _outer2_y + _ENNIS_CURB_CAP_D
         _z1, _z2 = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
-        # Curb quad (outer1, outer2, inner2, inner1), split into 2 triangles
-        # — chord endpoints sit exactly on the arc, so adjacent segments
-        # connect seamlessly with no stair-step.
         BRUSHES.append(
             tri_prism(
                 _bx1,
@@ -2372,9 +2044,6 @@ def build():
             )
         )
         if _bd1 > 0 or _bd2 > 0:
-            # Grass island quad (inner1, inner2, far2, far1), same 2-triangle
-            # split, filling from the curb's inner edge back to the flush
-            # line north of it.
             BRUSHES.append(
                 tri_prism(
                     _bx1,
@@ -2401,7 +2070,7 @@ def build():
                     Textures.GROUND,
                 )
             )
-    BRUSHES.append(  # north curb — straight run east of the bulge
+    BRUSHES.append(
         box(
             _CURB_BULGE_X2,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
@@ -2413,24 +2082,12 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    # South curb — split into two segments with a gap for the back road entrance.
-    # Curb wall sits along the road-facing (north) edge of each segment,
-    # with the same flush gap treatment as the north curb above.
-    # West segment's sidewalk depth is doubled (ref/gmaps-charles-ennis-satellite.png
-    # shows a noticeably wider paved apron here, at the SE corner of the
-    # Charles/Ennis intersection nearest the pedestrian bridge/Parkhurst
-    # Dining) — only its south (far-from-road) edge moves; the north edge
-    # stays flush against the existing curb/gap geometry below.
-    # West segment's first (westmost) panel is split into two accent pieces
-    # instead of the plain sidewalk tiling below: a white-stone strip on its
-    # south side, and a square cement panel on the north side (flush against
-    # the curb gap).
     _west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
     _west_sw_d = CHARLES_WALK_W * 2 + 56
     _west_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - _west_sw_d
     _west_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP
     _west_north_y1 = _west_y2 - _SW_SLAB_LEN
-    BRUSHES.append(  # south piece — white-stone accent slab
+    BRUSHES.append(
         box(
             _west_curb_x1,
             _west_y1,
@@ -2442,7 +2099,7 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    BRUSHES.append(  # north piece — square cement sidewalk panel
+    BRUSHES.append(
         box(
             _west_curb_x1,
             _west_north_y1,
@@ -2461,21 +2118,14 @@ def build():
             CHARLES_WALK_W * 2 + 56,
             _west_curb_x1 + _SW_SLAB_LEN + _SW_GAP,
             (_west_curb_x1 + _SW_SLAB_LEN + _SW_GAP, Textures.WHITE_STONE),
-        ),  # west segment — remaining panels (first panel built above); curb
-        # wall/gap still span the full curb_x1..curb_x2 width; panels from
-        # x=418 (the tile containing 470,631) and east are white-stone.
-        # Extended east to KNOTT_DRIVEWAY_WS_X1 (rather than stopping at the
-        # KH building's raw east wall, KNOTT.x2) so the sidewalk keeps
-        # covering the ground under the widened KH span all the way to
-        # where the shifted driveway's own sidewalk picks up — see
-        # KNOTT_DRIVEWAY_X_SHIFT.
+        ),
         (
             KNOTT_DRIVEWAY_ES_X2,
             ENNIS_X2,
             CHARLES_WALK_W,
             KNOTT_DRIVEWAY_ES_X2,
             None,
-        ),  # east segment
+        ),
     ):
         sw_slabs_x(
             BRUSHES,
@@ -2489,7 +2139,7 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
             tex_from_x=_tex_from_x,
         )
-        BRUSHES.append(  # flush gap between the sidewalk squares and the curb
+        BRUSHES.append(
             box(
                 curb_x1,
                 ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D - _ENNIS_CURB_GAP,
@@ -2501,7 +2151,7 @@ def build():
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
-        BRUSHES.append(  # sidewalk is south of the road
+        BRUSHES.append(
             box(
                 curb_x1,
                 ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D,
@@ -2514,18 +2164,8 @@ def build():
             )
         )
 
-    # ── Lane markings — dashed sfloor3_2 flush inserts in carved road slots ──────
     dash_brushes = []
-    # Charles Street centre line — solid double-yellow (two stripes with a gap),
-    # not dashed: real N Charles St has a no-passing double-yellow stripe here
-    # (see docs/reference.rst "Charles St width validation"). Textures.CENTERLINE
-    # is a placeholder stand-in until a dedicated yellow line texture is sourced.
-    # The bridge deck overhead is an overpass with piers landing well outside
-    # the road, so nothing in the road is ever obstructed — stripe the whole
-    # length regardless of the bridge's span flags. Centred on ROAD_CX (the midpoint of
-    # ROAD_X1/ROAD_X2) rather than a fixed X=0, so the stripe stays centred in
-    # the roadway even when ROAD_X1/ROAD_X2 aren't mirror images of each other.
-    _centerline_gap_hw = 2  # half-width of the gap between the two lines
+    _centerline_gap_hw = 2
     for line_x1, line_x2 in (
         (ROAD_CX - STREET_DIV_HW, ROAD_CX - _centerline_gap_hw),
         (ROAD_CX + _centerline_gap_hw, ROAD_CX + STREET_DIV_HW),
@@ -2558,20 +2198,9 @@ def build():
                 Textures.ROAD,
             )
         )
-    # Charles Street lane-divider stripes — single solid white line on each
-    # side, at the midpoint of each half-section (from the centre divider's
-    # edge to the curb), so the two travel lanes on each side of the centre
-    # come out equal width, evenly spaced across the road.
     for lane_line_x in (WEST_LANE_LINE_X, EAST_LANE_LINE_X):
-        # Quake tiles top-face textures by absolute world X (u = X + offset_x).
-        # The two stripes sit at different world X (not necessarily mirror
-        # images of each other), so without a compensating offset they'd
-        # sample different parts of the texture. Shift each stripe's offset so
-        # it always samples as if it were at WEST_LANE_LINE_X's position.
         tex_offset_x = WEST_LANE_LINE_X - lane_line_x
         divider_tt_params = f"{tex_offset_x} 0 0 1 1"
-        # Skip/clip the portion (if any) inside the Charles St crossing
-        # band — the crosswalk stripes below take over that stretch.
         for seg_y1, seg_y2 in ranges_excluding(
             CHARLES_Y1, CHARLES_Y2, CHARLES_CROSSING_Y1, CHARLES_CROSSING_Y2
         ):
@@ -2587,11 +2216,6 @@ def build():
                     tt_params=divider_tt_params,
                 )
             )
-    # Charles St pedestrian crossing — thick white zebra stripes filling the
-    # CHARLES_CROSSING_Y1..Y2 band carved out of the road/lane markings above;
-    # gaps between stripes are filled with plain road so no void is left.
-    # On the SE corner of the Charles/Ennis intersection, adjacent to (nearest)
-    # the pedestrian bridge.
     _cx = ROAD_X1
     _stripe_on = True
     while _cx < ROAD_X2:
@@ -2611,16 +2235,8 @@ def build():
         )
         _cx = next_cx
         _stripe_on = not _stripe_on
-    # Ennis Road — solid single yellow centerline (replaces the old dashed
-    # divider strip). The line starts at the Ennis entrance pillars (it
-    # previously ran all the way to Charles St, which put it too far out
-    # into the intersection); west of the pillars the carved slot is filled
-    # with plain Textures.ROAD instead.
     _ennis_line_hw = STREET_DIV_LINE_HW
-    _ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW  # pillar centerline
-    # _ennis_center_y (the true curb-to-curb midpoint, defined above where
-    # the base road slabs are built) is reused here so the divider slot,
-    # centerline stripe, and the road slabs it sits flush against all agree.
+    _ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
     for gx1, gx2 in ranges_excluding(
         ROAD_X2, _ennis_line_x1, ENNIS_CROSSING_X1, ENNIS_CROSSING_X2
     ):
@@ -2671,11 +2287,6 @@ def build():
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
-    # Ennis Road pedestrian crossing — thick white zebra stripes filling the
-    # ENNIS_CROSSING_X1..X2 band carved out of the road/curb/centerline
-    # brushes above; gaps between stripes are filled with plain road (rotated
-    # to match Ennis's grain) so no void is left. At the Ennis entrance,
-    # lined up with the Charles St east sidewalk.
     _ey = ENNIS_Y - ENNIS_HW
     _ennis_crossing_y2 = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N
     _stripe_on = True
@@ -2701,10 +2312,6 @@ def build():
     if dash_brushes:
         ENTITIES.append(brush_ent("func_detail", punch_manhole_detail(dash_brushes)))
 
-    # ── Rounded intersection corners (Charles & Ennis) ───────────────────────────
-    # Arc center at the OUTER (far) corner so the curve faces outward toward the road.
-    # Each corner: road box fills the cut square, cement arc fans sit on top.
-    # SE corner: far corner is at SE of cut square
     cx_se = ROAD_X2 + CHARLES_CRN_R
     cy_se = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
     BRUSHES.append(
@@ -2718,7 +2325,6 @@ def build():
             Textures.ROAD,
         )
     )
-    # Arc sweeps CCW from 90° (north) to 180° (west)
     for corner_index in range(CHARLES_CRN_SEGS):
         angle_start = math.radians(90 + corner_index * 90 / CHARLES_CRN_SEGS)
         angle_end = math.radians(90 + (corner_index + 1) * 90 / CHARLES_CRN_SEGS)
@@ -2744,7 +2350,6 @@ def build():
             )
         )
 
-    # NE corner: far corner is at NE of cut square
     cx_ne = ROAD_X2 + CHARLES_CRN_R
     cy_ne = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_CRN_R
     BRUSHES.append(
@@ -2758,7 +2363,6 @@ def build():
             Textures.ROAD,
         )
     )
-    # Arc sweeps CCW from 180° (west) to 270° (south)
     for corner_index in range(CHARLES_CRN_SEGS):
         angle_start = math.radians(180 + corner_index * 90 / CHARLES_CRN_SEGS)
         angle_end = math.radians(180 + (corner_index + 1) * 90 / CHARLES_CRN_SEGS)
@@ -2784,27 +2388,12 @@ def build():
             )
         )
 
-    # ── Sidewalk verges — flat ground raised flush with sidewalk height ─────────
-    # (previously sloped ramps down to ground level, then a flat raised strip only
-    # CHARLES_RAMP_W wide; with west campus/knott terrain still disabled, that
-    # left a hard 8-unit cliff a short distance beyond the sidewalk where the
-    # base world floor (FLOOR_Z2) took over.)
-    #
-    # The verge is a *placeholder* fill: it only needs to reach all the way out
-    # to the world walls while the module that owns the real terrain on that
-    # side is disabled. Once that module is re-enabled it will build its own
-    # ground flush with the sidewalk, so the verge here should shrink back to
-    # its original narrow strip (CHARLES_RAMP_W) to leave room for it and avoid
-    # overlapping brushes.
-    #   west side  -> owned by terrain/west_campus.py (WEST_CAMPUS_ENABLED_TERRAIN)
-    #   east side  -> owned by terrain/knott_hall.py (KNOTT_ENABLED_TERRAIN)
     _west_verge_x1 = (
         ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
         if WEST_CAMPUS_ENABLED_TERRAIN
         else WORLD_X1 + WALL_T
     )
     _east_verge_x2 = WORLD_X2_EXT - WALL_T
-    # West verge — full N-S extent along west sidewalk edge
     BRUSHES.append(
         box(
             _west_verge_x1,
@@ -2816,12 +2405,6 @@ def build():
             Textures.GROUND,
         )
     )
-    # East verge — south of Ennis Road.
-    # When KH terrain is enabled, terrain/knott_hall.py owns the driveway corridor
-    # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2); split the verge around it so it doesn't
-    # bury the road/sidewalk brushes built there.
-    # The west segment's north edge is pulled back an extra CHARLES_WALK_W to
-    # match the doubled-depth sidewalk built above it (SE Charles/Ennis corner).
     _west_verge_y2 = ENNIS_SW_EDGE - CHARLES_WALK_W
     _east_verge_segs = (
         [
@@ -2846,13 +2429,7 @@ def build():
                 Textures.GROUND,
             )
         )
-    # NE quadrant verge — placeholder flat ground filling the whole area
-    # north of Ennis and east of Charles St, flush with the sidewalk, for
-    # while terrain/ne.py's real-elevation fill is disabled. Once
-    # NE_ENABLED_TERRAIN, terrain/ne.py builds its own ground there instead
-    # — skip this box entirely to avoid overlapping brushes (same
-    # placeholder-shrinks-to-nothing pattern as the west/east verges above).
-    if not NE_ENABLED_TERRAIN:  # Always provide a baseline ground to prevent leaks
+    if not NE_ENABLED_TERRAIN:
         BRUSHES.append(
             box(
                 ROAD_X2 + CHARLES_WALK_W,
@@ -2864,15 +2441,7 @@ def build():
                 Textures.GROUND,
             )
         )
-    # (Ramp zone south of Ennis sidewalk covered by world floor — no fill needed)
 
-    # Verge fill — ground between road south edge and sidewalk inner edge, flush with sidewalk
-    # Split around back road corridor gap (KNOTT_DRIVEWAY_CORRIDOR_X1..KNOTT_DRIVEWAY_CORRIDOR_X2)
-    # SE corner (east of back road) uses gravel3c (mulch bed)
-    # A single cement patch is cut into the SW corner of the ground verge
-    # (west segment only), roughly centred on (377, 724) in X and spanning
-    # the full verge depth in Y (no leftover ground sliver to the north),
-    # replacing the ground there.
     _VERGE_CEMENT_X1 = ROAD_X2 + CHARLES_WALK_W
     _VERGE_CEMENT_X2 = _VERGE_CEMENT_X1 + _SW_SLAB_LEN
     for vx1, vx2, vtex in [
@@ -2882,7 +2451,7 @@ def build():
         vy1 = ENNIS_SW_EDGE + CHARLES_WALK_W
         vy2 = ENNIS_Y - ENNIS_HW - ENNIS_CURB_W
         if vtex is Textures.GROUND:
-            BRUSHES.append(  # cement patch carved out of the SW corner
+            BRUSHES.append(
                 box(
                     _VERGE_CEMENT_X1,
                     vy1,
@@ -2893,7 +2462,7 @@ def build():
                     Textures.CEMENT,
                 )
             )
-            BRUSHES.append(  # remainder east of the patch, full verge height
+            BRUSHES.append(
                 box(
                     _VERGE_CEMENT_X2,
                     vy1,
@@ -2917,7 +2486,6 @@ def build():
                 )
             )
 
-    # Cement curb strip — last 8 units of verge at road edge, flush with verge surface
     for vx1, vx2 in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
         (KNOTT_DRIVEWAY_CORRIDOR_X2, ENNIS_X2),
@@ -2934,23 +2502,7 @@ def build():
             )
         )
 
-    # Ennis driveway head — with KH terrain disabled, terrain/knott_hall.py's
-    # driveway-mouth geometry occupying the corridor gap
-    # (KNOTT_DRIVEWAY_CORRIDOR_X1..X2) doesn't exist, so the verge/curb strip
-    # built above stops short on both sides of the gap. This is a direct port
-    # of terrain/knott_hall.py's own driveway-head sections (west/east sidewalks,
-    # road patch, and rounded junction corners) — the same geometry that
-    # appears there when KH terrain is enabled — restricted to the Y range
-    # north of the curb line (KNOTT_DRIVEWAY_EXT_Y2) so it doesn't overlap the
-    # verge/ground fills above, which already cover everything south of it.
     if not KNOTT_ENABLED_TERRAIN:
-        # Sidewalk-band gap — the unconditional Ennis south-curb SIDEWALK strip
-        # above (built regardless of KNOTT_ENABLED_TERRAIN) leaves a corridor
-        # gap between KNOTT.x2 and KNOTT_DRIVEWAY_ES_X2 for terrain/knott_hall.py to
-        # fill; with it disabled, that band (Y: ENNIS_SW_EDGE to
-        # ENNIS_SW_EDGE+CHARLES_WALK_W) was left empty. Fill it the same way
-        # terrain/knott_hall.py does: CEMENT sidewalk on each side, ROAD lane down
-        # the middle.
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_WS_X1,
@@ -2984,7 +2536,6 @@ def build():
                 Textures.CEMENT,
             )
         )
-        # West sidewalk — ground from the curb line up to the NW junction corner
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_WS_X1,
@@ -2996,7 +2547,6 @@ def build():
                 Textures.GROUND,
             )
         )
-        # Cement curb strip along the road edge of the ground section
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
@@ -3008,7 +2558,6 @@ def build():
                 Textures.CEMENT,
             )
         )
-        # East sidewalk — mulch from the curb line up to the south junction corner
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
@@ -3020,7 +2569,6 @@ def build():
                 Textures.MULCH,
             )
         )
-        # Cement curb strip on the road-facing (west) edge of the mulch section
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_ES_X1,
@@ -3032,11 +2580,6 @@ def build():
                 Textures.CEMENT,
             )
         )
-        # Road patch filling the driveway lane from the sidewalks' start (curb
-        # line at Ennis's south sidewalk) up to Ennis road — flush with the
-        # road (not raised). Previously only covered the curb-line-to-road
-        # segment (KNOTT_DRIVEWAY_EXT_Y2 north), leaving the lane unpaved
-        # between the two sidewalks for the stretch south of that.
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_RD_X1,
@@ -3048,11 +2591,6 @@ def build():
                 Textures.ROAD,
             )
         )
-        # ── Rounded corners where the driveway meets Ennis south (inside the
-        # junction) — centers at the back-road-facing (south) corners so the
-        # curved face points toward the driveway, matching the Charles/Ennis
-        # corner style.
-        # West junction corner: arc sweeps 0°→90°
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_WS_X1,
@@ -3097,7 +2635,6 @@ def build():
                     Textures.CEMENT,
                 )
             )
-        # East junction corner: arc sweeps 90°→180°
         BRUSHES.append(
             box(
                 KNOTT_DRIVEWAY_ES_X1,
@@ -3144,26 +2681,11 @@ def build():
     BRUSHES.extend(ennis_brushes)
     ENTITIES.extend(ennis_entities)
 
-    # ── West-side hill/terrace terrain — REMOVED, pending re-derivation ─────────
-    # Previously built a sloped embankment under the (currently disabled) dorm
-    # buildings plus a raised south-dorm terrace/frontage hill down to Charles St.
-    # Both were flat-plateau/simple-ramp models not yet validated against the
-    # real-world topology check (docs/reference.rst, "Topology check" section).
-    # The base world floor (built above, unconditionally) is already flat at
-    # FLOOR_Z2, so removing this section leaves flat ground here with no leak.
-    #
-    # TODO: rebuild this terrain in real-world-derived sections/quadrants rather
-    # than one continuous hill model, once the new elevation data is ready.
     BRUSHES = _world_brushes
 
-    # ── Campus lamp posts (brush geometry) — along Charles Street (N-S) ──────────
-    # X/Y/H imported from constants.py — must match entities.py's flame placement
-    # (previously duplicated here with stale hardcoded X values that had drifted
-    # out of sync with the flame positions, leaving flames floating with no pole).
     for lamp_x in CHARLES_LAMP_POST_XS:
         for lamp_y in CHARLES_LAMP_POST_YS:
             pole_top_z = FLOOR_Z2 + CHARLES_LAMP_POST_H
-            # Narrow shaft
             DETAIL_BRUSHES.append(
                 box(
                     lamp_x - 2,
@@ -3175,7 +2697,6 @@ def build():
                     Textures.PILLAR,
                 )
             )
-            # Torch top — narrow post + brick cup (matches bridge pillar torches)
             DETAIL_BRUSHES.append(
                 box(
                     lamp_x - 3,
@@ -3198,43 +2719,36 @@ def build():
                     Textures.BRICK,
                 )
             )
-            # Flame + light above the brick cup, matching bridge pillar torches
             flame_z = pole_top_z + 20
             ENTITIES.extend(torch_flame(lamp_x, lamp_y, flame_z))
 
     if DETAIL_BRUSHES:
         DETAIL_BRUSHES = punch_manhole_detail(DETAIL_BRUSHES)
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
-    # ── Final safety seal — giant hollow box around the entire map coordinate space ──
-    # This ensures the map is sealed even if internal terrain or building geometry
-    # has tiny gaps or degenerate portals that confuse qbsp.
-    # seal_z1 is pinned below BASEMENT_FLOOR_Z1 (rather than FLOOR_Z1) so this
-    # seal's floor sits below basement.py's sub-basement level instead of
-    # floating as a stray sky slab inside its open void.
     seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
     seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256
     seal_z1, seal_z2 = BASEMENT_FLOOR_Z1 - 256, WORLD_Z2 + 512
-    ST = 64  # seal thickness
+    ST = 64
     BRUSHES.extend(
         [
             box(
                 seal_x1, seal_y1, seal_z1, seal_x2, seal_y2, seal_z1 + ST, Textures.SKY
-            ),  # floor
+            ),
             box(
                 seal_x1, seal_y1, seal_z2 - ST, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),  # ceiling
+            ),
             box(
                 seal_x1, seal_y1, seal_z1, seal_x1 + ST, seal_y2, seal_z2, Textures.SKY
-            ),  # west wall
+            ),
             box(
                 seal_x2 - ST, seal_y1, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),  # east wall
+            ),
             box(
                 seal_x1, seal_y1, seal_z1, seal_x2, seal_y1 + ST, seal_z2, Textures.SKY
-            ),  # south wall
+            ),
             box(
                 seal_x1, seal_y2 - ST, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),  # north wall
+            ),
         ]
     )
 

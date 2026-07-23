@@ -6,15 +6,9 @@ from ..config import get as _flag
 from .world import INDENT
 
 KNOTT_DRIVEWAY_HW = 128
-KNOTT_ENABLED_EXTERIOR = _flag(
-    "KNOTT_ENABLED_EXTERIOR"
-)  # KH exterior (walls, windows, roof, sign)
-KNOTT_ENABLED_INTERIOR = _flag(
-    "KNOTT_ENABLED_INTERIOR"
-)  # temporarily disabled — KH interior (floor slabs, stairs, hallway walls, partitions)
-KNOTT_ENABLED_MONSTERS = _flag(
-    "KNOTT_ENABLED_MONSTERS"
-)  # temporarily disabled — KH monsters (ogres + knights inside/on KH)
+KNOTT_ENABLED_EXTERIOR = _flag("KNOTT_ENABLED_EXTERIOR")  # Exterior shell.
+KNOTT_ENABLED_INTERIOR = _flag("KNOTT_ENABLED_INTERIOR")  # Interior shell.
+KNOTT_ENABLED_MONSTERS = _flag("KNOTT_ENABLED_MONSTERS")  # Knott Hall monsters.
 KNOTT_FLOORS = 5
 KNOTT_FLOOR_H = 192
 KNOTT_MULLION_PROUD = 12
@@ -22,9 +16,7 @@ KNOTT_MULLION_W = 12
 KNOTT_BUILDING_W = 1280
 KNOTT_WEST_TO_ORIG_CX = (
     (KNOTT_BUILDING_W + INDENT) // 2 + 64
-)  # entrance + center window + bridge landing anchored on the true facade center;
-# +64 shifts them east to match the curtain-wall position in the reference photos (ref/bridge01);
-# capped so the accessible-entrance ramp still meets the fixed accessible path pad (X=2152)
+)  # Entrance, center window, and bridge landing center offset from the west facade.
 KNOTT_WEST_TO_PIER_X = 40
 KNOTT_ROOM_SPLITS = [-1072, -950, -1200, -850, -1300]
 KNOTT_SHELF_D = 16
@@ -50,17 +42,11 @@ KNOTT_STAIRS_TREAD_X = 24
 KNOTT_ENABLED_WALKWAY = _flag("KNOTT_ENABLED_WALKWAY")
 KNOTT_ENABLED_WALKWAY_BENT = _flag(
     "KNOTT_ENABLED_WALKWAY_BENT"
-)  # concrete support bent (crossbeam + 5 drop piers) under the south edge of
-# the KH span, independent of KNOTT_ENABLED_WALKWAY (the ramp/rails/tubes/
-# accessible-walkway) so the bent can be reviewed/built on its own.
+)  # Support bent beneath the south edge of the walkway span.
 KNOTT_WALL_T = 16
 KNOTT_FRONT_WINDOW_HALF_W = 48
 KNOTT_FRONT_WINDOW_MULLION_HALF_GAP = 6
-KNOTT_Y1, KNOTT_Y2 = -1888, -233  # KNOTT_Y2 shifts KH 23 units closer to the bridge,
-# undoing the incidental walkway-span stretch introduced when BRIDGE_Y1 narrowed the
-# deck (-136 -> -113, see commit 87a86f6); restores the walkway gap
-# (KNOTT_Y2 - BRIDGE_Y1) to ~120 units, matching the near-flush bridge/KH landing
-# seen in ref/gmaps-kh-streetview-east.png.
+KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
 
 
 @dataclass

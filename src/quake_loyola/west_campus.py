@@ -77,32 +77,15 @@ from .terrain.west_campus import terrain_z, wct_y
 
 
 def build_iron_fence(ENTITIES):
-    """Iron fence along east face of west buildings — extracted so it can be
-    shown along Charles St even when WEST_CAMPUS_ENABLED_DORMS (dorm buildings)
-    is off, gated independently by WEST_CAMPUS_ENABLED_FENCE."""
+    """Build the east-side iron fence for the west-campus frontage."""
     fence_brushes = []
 
-    # Extend the fence past CHARLES_Y2 (the documented survey corridor's
-    # north end) out to the true world north edge — terrain/west_campus.py's
-    # real-elevation grid (wct_y) already covers this full range, so
-    # fence_base_at's terrain_z() lookup below just keeps working.
     fence_y2 = WORLD_Y2 - WALL_T
 
-    # Real terrain (terrain/west_campus.py) rises well above the flat
-    # FLOOR_Z2 grade this fence used to assume north of the bridge — up to
-    # ~100 units near the fence line — which buried the entire fence in the
-    # hillside. Likewise, south of the bridge the fence used to assume a
-    # flat FLOOR_Z2+SDORM_LIFT terrace (matching the still-disabled south
-    # dorm's floor pad) which diverges from the real hillside by up to ~20
-    # units there too — floating or burying the fence depending on Y. Follow
-    # the real terrain height the entire length of the fence instead.
     def fence_base_at(y):
-        """Iron-fence base Z: follows the real hillside terrain at the
-        fence's own X (FENCE_X1) along its whole length."""
+        """Return the fence base height from the hillside terrain."""
         return terrain_z(FENCE_X1, y)
 
-    # Top rail — chained ramps over the terrain's real slope (not flat —
-    # see fence_base_at) so the rail tracks the picket tops the whole way.
     rail_lo, rail_hi = FENCE_H - 28, FENCE_H - 26
     rail_ys = sorted(
         {CHARLES_Y1, fence_y2} | {y for y in wct_y if CHARLES_Y1 < y < fence_y2}
@@ -122,8 +105,7 @@ def build_iron_fence(ENTITIES):
                 Textures.FENCE,
             )
         )
-    # Pickets — thin (2 wide) with thick posts (8 wide) every 10th; base follows
-    # the terrace/decline so each picket meets the ground.
+
     picket_y = CHARLES_Y1
     picket_index = 0
     while picket_y + 2 <= fence_y2:
@@ -143,8 +125,6 @@ def build_iron_fence(ENTITIES):
         picket_y += FENCE_SPACING
         picket_index += 1
 
-    # Brick pillar capping the south (CHARLES_Y1) end of the fence — a squared
-    # gatepost-style terminus, taller than the pickets with a projecting cap.
     pillar_hw = 24
     pillar_cx = (FENCE_X1 + FENCE_X2) // 2
     pillar_y1 = CHARLES_Y1 - pillar_hw
@@ -181,36 +161,21 @@ def build_iron_fence(ENTITIES):
 
 
 def build_brick_wall(BRUSHES, ENTITIES):
-    """Brick wall with gate, pillars, and iron fence south of bridge Pier 1
-    (DORM_PIER_X), running from dorm 2's north face up to the pier. Extracted
-    so it can be shown even when WEST_CAMPUS_ENABLED_DORMS (dorm buildings)
-    is off, gated independently by WEST_CAMPUS_ENABLED_WALL."""
-    # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
-    # Door is centered 160 units north of dorm 2; pillars and iron fence are detail
-    # (fence itself is built by build_iron_fence, called at the top of build()).
-    wall_hw = DORM_BRICK_WALL_HW  # half-thickness (thinner than pier)
-    # Pier 1 (west_approach) is rigidly shifted north/up along with the
-    # center span in bridge.py's _shift_center_span() (see
-    # BRIDGE_CENTER_SPAN_OFFSET). The whole wall assembly (door, pillars,
-    # fence) is shifted north by the same amount so it keeps its original
-    # length but still ends right at the pier's true (shifted) location,
-    # rather than stretching a single segment into an overly long run.
+    """Build the west brick wall, gate, pillars, and pier-side fence run."""
+
+    wall_hw = DORM_BRICK_WALL_HW
+
     wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
-    # Pier 1 is also shifted up (BRIDGE_CENTER_SPAN_OFFSET[2]) along with the
-    # rest of the bridge in _shift_center_span(), so every wall/gate/pillar/
-    # fence height that's pegged to the bridge deck (BRIDGE_DZ2) must rise by
-    # the same amount to stay attached to the pier instead of ending up
-    # BRIDGE_CENTER_SPAN_OFFSET[2] units below it.
+
     wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
     bridge_top_z = BRIDGE_DZ2 + wall_shift_z
-    wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y  # no longer at dorm 2's face
+    wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + wall_shift_y
     wall_end_y = DORM_WALL_S_Y2 + wall_shift_y
-    # Gate opening now sits on the raised terrace (its sill is buried in the pad);
-    # the wall top stays at the bridge deck so the wall just reads as shorter.
+
     gate_base = FLOOR_Z2 + SDORM_LIFT
     gate_top = gate_base + DORM_BRICK_GATE_H
-    # Brick wall body (worldspawn — seals the level)
+
     BRUSHES.append(
         box(
             DORM_PIER_X - wall_hw,
@@ -244,9 +209,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
             Textures.BUILDING,
         )
     )
-    # Brick pillars + iron fence — each piece is its own func_detail entity so
-    # it can be selected/repositioned independently in a map editor, rather
-    # than all bundled into one shared entity.
+
     pillar_w = DORM_BRICK_PILLAR_W
     pillar_proud = DORM_BRICK_PILLAR_PROUD
     pillar_h = bridge_top_z + DORM_BRICK_PILLAR_H_OFFSET
@@ -272,8 +235,6 @@ def build_brick_wall(BRUSHES, ENTITIES):
             + pillar_w,
         ),
     ]:
-        # Base extends to grade so the pillar still meets the ground where the
-        # wall→fence strip declines north of the south pillar.
         pillar_brushes = [
             box(px1, py1, FLOOR_Z2, px2, py2, pillar_h, Textures.BUILDING),
             box(
@@ -289,12 +250,12 @@ def build_brick_wall(BRUSHES, ENTITIES):
         ENTITIES.append(brush_ent("func_detail", pillar_brushes))
     fence_brushes = iron_fence(
         [
-            (wall_start_y, s_door_y - DORM_DOOR_W // 2),  # south of door
+            (wall_start_y, s_door_y - DORM_DOOR_W // 2),
             (
                 s_door_y - DORM_DOOR_W // 2,
                 s_door_y + DORM_DOOR_W // 2,
-            ),  # over lintel
-            (s_door_y + DORM_DOOR_W // 2, wall_end_y),  # north of door to pier
+            ),
+            (s_door_y + DORM_DOOR_W // 2, wall_end_y),
         ],
         DORM_PIER_X - 1,
         DORM_PIER_X + 1,
@@ -306,35 +267,11 @@ def build_brick_wall(BRUSHES, ENTITIES):
 
 
 def build_sidewalk(BRUSHES):
-    """Flush stone walkway inlaid into the terrace in front of the dorms
-    (top level with the surrounding ground), with a spur running north to
-    the brick-wall door. Extracted so it can be shown even when
-    WEST_CAMPUS_ENABLED_DORMS (dorm buildings) is off, gated independently
-    by WEST_CAMPUS_ENABLED_SIDEWALK.
+    """Build the dorm-front terrace walk and its north spur.
 
-    Uses its own (lower) lift rather than SDORM_LIFT (the dorm floor/gate
-    terrace height): real grade along this strip runs ~106-113 (see
-    terrain/west_campus.py), so a walkway-only height closer to real grade
-    sits nearly flush instead of floating ~20 units above it (still floats
-    ~5-10 units, but reads better than a full 20-unit gap or a too-buried
-    108 lift).
-
-    The frontage runs all the way south to CHARLES_Y1, matching the south
-    end of the iron fence (build_iron_fence's pillar/fence run), rather
-    than stopping at the dorm buildings' own south face.
-
-    Tiled into individual square concrete panels with expansion-joint gaps
-    (same 80-unit-square + 2-unit-gap convention as streets.py's sidewalk
-    slabs / terrain/knott_hall.py's sidewalk_slabs_flat) rather than one long
-    continuous slab.
-
-    A standing curb runs along the east edge (facing the iron fence /
-    Charles St), separated from the sidewalk squares by an open gap
-    (_CURB_GAP) so it reads as its own distinct piece rather than the
-    sidewalk's own edge. The curb's
-    base follows the real hillside (terrain_z, chained at the wct_y grid
-    breakpoints like build_iron_fence's top rail) since the ground here
-    isn't flat, rising up to the sidewalk's own flat walk_lift height."""
+    The walkway is tiled into square panels, extends south to CHARLES_Y1,
+    and uses a terrain-following curb along its east edge.
+    """
     walk_lift = SDORM_LIFT - 10
     _SW_SLAB_LEN = 80
     _SW_GAP = 2
@@ -342,7 +279,7 @@ def build_sidewalk(BRUSHES):
     _CURB_GAP = 2
 
     def slabs_y(x1, x2, y1, y2):
-        """Tile a flat N-S run (y1 > y2, north to south) into square panels."""
+        """Tile a flat north-south run into square panels."""
         brushes = []
         step = _SW_SLAB_LEN + _SW_GAP
         y = y1
@@ -355,7 +292,7 @@ def build_sidewalk(BRUSHES):
         return brushes
 
     def curb_y(x1, x2, y1, y2):
-        """Terrain-following standing curb along a N-S run (y1 > y2)."""
+        """Build a terrain-following curb along a north-south run."""
         brushes = []
         curb_cx = (x1 + x2) / 2
         ys = sorted({y1, y2} | {y for y in wct_y if y2 < y < y1}, reverse=True)
@@ -377,14 +314,13 @@ def build_sidewalk(BRUSHES):
         return brushes
 
     walk = []
-    # Frontage parallel to the dorm east face — south end matches the
-    # fence's own south end (CHARLES_Y1) rather than the dorm footprint.
+
     walk.extend(
         slabs_y(
             DORM_FRONT_WALKWAY_X1, DORM_FRONT_WALKWAY_X2, DORM_SOUTH2_Y2, CHARLES_Y1
         )
     )
-    # Spur north from the dorm corner to the brick-wall door (east side of wall)
+
     walk.extend(
         slabs_y(
             DORM_FRONT_WALKWAY_SPUR_X1,
@@ -393,8 +329,7 @@ def build_sidewalk(BRUSHES):
             DORM_SOUTH2_Y2,
         )
     )
-    # East curb, separated from the sidewalk squares by an actual open gap
-    # (_CURB_GAP) rather than a flush filler, so it reads as a distinct piece.
+
     curb_x1 = DORM_FRONT_WALKWAY_X2 + _CURB_GAP
     curb_x2 = curb_x1 + _CURB_W
     walk.extend(curb_y(curb_x1, curb_x2, DORM_FRONT_WALKWAY_SPUR_Y2, CHARLES_Y1))
@@ -405,11 +340,6 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    # The fence/wall/sidewalk position themselves against the real hillside
-    # via terrain.west_campus.terrain_z(), which stays computable even when
-    # WEST_CAMPUS_ENABLED_TERRAIN is off — but with no terrain fill emitted,
-    # they'd float over (or bury into) a bare cliff with nothing beneath
-    # them. Fail loudly here rather than silently generating that geometry.
     if (
         WEST_CAMPUS_ENABLED_FENCE
         or WEST_CAMPUS_ENABLED_WALL
@@ -433,15 +363,12 @@ def build():
 
     if not WEST_CAMPUS_ENABLED_DORMS:
         return BRUSHES, ENTITIES
-    # ── North building — hollow shell with windows, entrance, and gable roof ───────
-    TUNN_H = DORM_INNER_DOOR_H  # interior height (= 128), matches door opening
 
-    DORM_CX = (DORM.x1 + DORM.x2) // 2  # building X center
-    DORM_NORTH_CY = (
-        DORM_NORTH_Y1 + DORM_NORTH_Y2
-    ) // 2  # building Y center (gable ridge line)
+    TUNN_H = DORM_INNER_DOOR_H
 
-    # Interior doorway opening (X-normal walls) shared by adjacent buildings
+    DORM_CX = (DORM.x1 + DORM.x2) // 2
+    DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2
+
     dorm_door_open = (
         DORM_CX - DORM_INNER_DOOR_HW,
         FLOOR_Z2,
@@ -449,20 +376,17 @@ def build():
         FLOOR_Z2 + DORM_INNER_DOOR_H,
     )
 
-    # Window X centers on south/north face: 2 left + 2 right of the entrance gap
     dorm_wx = [DORM.x1 + (DORM_CX - DORM_ENT_HW - DORM.x1) * k // 3 for k in [1, 2]] + [
         (DORM_CX + DORM_ENT_HW) + (DORM.x2 - DORM_CX - DORM_ENT_HW) * k // 3
         for k in [1, 2]
     ]
-    # Window Y centers on east/west face: 3 evenly spaced
+
     dorm_wy = [
         DORM_NORTH_Y1 + (DORM_NORTH_Y2 - DORM_NORTH_Y1) * k // 4 for k in [1, 2, 3]
     ]
 
-    dorm_wz_lo = (
-        DORM.floor_h - DORM_WIN_HH * 2
-    ) // 2  # window sill offset within a floor
-    dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2  # window head offset within a floor
+    dorm_wz_lo = (DORM.floor_h - DORM_WIN_HH * 2) // 2
+    dorm_wz_hi = dorm_wz_lo + DORM_WIN_HH * 2
 
     def dorm_window_z(fl):
         base_z = FLOOR_Z2 + fl * DORM.floor_h
@@ -490,30 +414,28 @@ def build():
         return openings
 
     def nb_wins_yz(wy_list):
-        """Window openings (all floors) for Y-facing wall (east/west)."""
+        """Return single-window openings for a Y-facing wall."""
         return dorm_window_openings(wy_list)
 
     def nb_wins_yz_west(wy_list):
-        """West-face window openings — floors 0 and 1 are buried by the hillside
-        (terrain reaches z=177 at the building west face), so only floor 2+ is shown."""
+        """Return west-face openings for the exposed upper floors."""
         return dorm_window_openings(wy_list, start_floor=2)
 
     def nb_wins_yz_double(wy_list):
-        """Double window openings for Y-facing wall — two full-single-sized panes per floor."""
+        """Return paired window openings for a Y-facing wall."""
         return dorm_window_openings(wy_list, double=True)
 
     def nb_wins_xz_upper(wx_list, x_clear=None):
-        """X-facing wall windows from floor 1 up — floor 0 is buried by the
-        gap embankment on the NB2 south face and NB1 north face.
-        x_clear: windows with wx < x_clear also skip floor 1 (terrain still
-        overlaps the floor-1 sill at the far-west window position)."""
+        """Return north/south wall openings from floor 1 up.
+
+        Openings west of x_clear start at floor 2 instead.
+        """
         return dorm_window_openings(
             wx_list,
             start_floor=1,
             include_window=lambda wx, fl: x_clear is None or wx >= x_clear or fl >= 2,
         )
 
-    # South wall (faces NB2) — door only, no windows on interior walls
     north_bldg_detail = []
     north_bldg_detail.extend(
         layered_wall(
@@ -527,7 +449,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # North wall — windows (floors 0 and wx<-1652 floor 1 buried by gap embankment; center floor 1+)
+
     north_bldg_detail.extend(
         layered_wall(
             DORM.x1,
@@ -549,10 +471,9 @@ def build():
             Textures.BUILDING,
         )
     )
-    # East wall — windows only (no entrance)
-    # Explicit even-spaced positions within NB1 (G≈65): sets 4(D), 5(S).
-    nb1_e_double_wy = DORM_NORTH_Y1 + 157  # set 4 double
-    nb1_e_single_wy = DORM_NORTH_Y1 + 334  # set 5 single
+
+    nb1_e_double_wy = DORM_NORTH_Y1 + 157
+    nb1_e_single_wy = DORM_NORTH_Y1 + 334
     dorm_e_openings = nb_wins_yz_double([nb1_e_double_wy]) + nb_wins_yz(
         [nb1_e_single_wy]
     )
@@ -568,8 +489,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # West wall — windows (floor 2 only; floors 0–1 are buried by the hillside)
-    # + ground-floor tunnel door opening
+
     north_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM.wall_t,
@@ -590,7 +510,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # Ceiling slab
+
     north_bldg_detail.append(
         box(
             DORM.x1,
@@ -603,10 +523,6 @@ def build():
         )
     )
 
-    # ── Decorative wood trim (window frames only — no entrance arches) ───────────────
-
-    # Door frame removed — south wall between NB1 and NB2 is gone.
-    # Window frames — north face (floors 0 and wx<-1652 floor 1 buried by gap embankment)
     for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
         north_bldg_detail += win_frame_xwall(
             xl,
@@ -619,7 +535,7 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Center window frames — north face, 2nd and 3rd floor
+
     for _, zb, zt in dorm_window_levels(1):
         north_bldg_detail += win_frame_xwall(
             DORM_CX - DORM_WIN_HW,
@@ -633,7 +549,7 @@ def build():
             margin=DORM_WIN_MARGIN,
             crossbar=True,
         )
-    # Door frame — ground-floor center doorway to building 2 (south face, interior wall)
+
     north_bldg_detail += win_frame_xwall(
         DORM_CX - DORM_INNER_DOOR_HW,
         DORM_CX + DORM_INNER_DOOR_HW,
@@ -648,7 +564,7 @@ def build():
         crossbar=False,
         bottom=False,
     )
-    # Window frames — east face (set4 double, set5 single) — evenly spaced
+
     for yl, zb, yr, zt in nb_wins_yz_double([nb1_e_double_wy]):
         north_bldg_detail += win_frame_ywall(
             yl,
@@ -673,7 +589,7 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
+
     for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy):
         north_bldg_detail += win_frame_ywall(
             yl,
@@ -686,7 +602,7 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Door frame — west face tunnel entrance
+
     north_bldg_detail += win_frame_ywall(
         DORM_NORTH_CY - DORM_INNER_DOOR_HW,
         DORM_NORTH_CY + DORM_INNER_DOOR_HW,
@@ -702,14 +618,12 @@ def build():
         bottom=False,
     )
 
-    DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t  # top of ceiling slab = eave level
-    DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H  # ridge apex
-    # Recess the roof-slab gable ends inward so the slats fill the gap with their
-    # outer face flush with the wall below; grooves between planks reveal the
-    # recessed slab behind them (relief) without protruding past the wall.
-    DORM_NB_SY1 = DORM_NORTH_Y1  # south end abuts building 2 — full slab, no recess
+    DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t
+    DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H
+
+    DORM_NB_SY1 = DORM_NORTH_Y1
     DORM_NB_SY2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
-    # West slope: flat bottom at eave_z, top slopes up to ridge
+
     north_bldg_detail.append(
         ramp_slab(
             DORM.x1,
@@ -724,10 +638,7 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # East slope: top at ridge, slopes down to eave at DORM.x2.
-    # Extend to DORM_NORTH_Y2 (not DORM_NB_SY2) so the east cap covers the full
-    # gable depth — gable slats bevel inward above eave_z, leaving a gap at
-    # x=DORM.x2 in the 6-unit recess; the extended slab closes that gap.
+
     north_bldg_detail.append(
         ramp_slab(
             DORM_CX,
@@ -742,8 +653,7 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # Horizontal wood slats over the exposed north gable end only (the south end
-    # abuts north building 2, so no gable there).
+
     north_bldg_detail += gable_slats(
         DORM.x1,
         DORM.x2,
@@ -752,14 +662,13 @@ def build():
         DORM_RIDGE_Z,
         DORM_SLAB_T,
         DORM_NORTH_Y2,
-        -DORM_GABLE_DEPTH,  # -Y → into building
+        -DORM_GABLE_DEPTH,
         Textures.GABLE,
         n=8,
         gap=4,
     )
     ENTITIES.append(brush_ent("func_detail", north_bldg_detail))
 
-    # Interior floor — flat ground surface inside the building (covers the hill void)
     BRUSHES.append(
         box(
             DORM.x1 + DORM.wall_t,
@@ -773,13 +682,12 @@ def build():
         )
     )
 
-    # ── North building 2 — adjacent south of building 1, no doors ───────────────────
-    DORM_NORTH2_Y2 = DORM_NORTH_Y1  # north face touches south face of bldg 1
-    DORM_NORTH2_Y1 = DORM_NORTH2_Y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)  # same depth
+    DORM_NORTH2_Y2 = DORM_NORTH_Y1
+    DORM_NORTH2_Y1 = DORM_NORTH2_Y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     dorm_wy2 = [
         DORM_NORTH2_Y1 + (DORM_NORTH2_Y2 - DORM_NORTH2_Y1) * k // 4 for k in [1, 2, 3]
     ]
-    # Center openings (floor 1+ only) for X-facing walls of building 2
+
     nb2_cx_opens = [
         (
             DORM_CX - DORM_WIN_HW,
@@ -790,7 +698,7 @@ def build():
         for _, zb, zt in dorm_window_levels(1)
     ]
     north2_bldg_detail = []
-    # South wall — floors 0 and wx<-1652 floor 1 buried by gap embankment
+
     north2_bldg_detail.extend(
         layered_wall(
             DORM.x1,
@@ -803,7 +711,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # North wall (faces NB1) — door only, no windows on interior walls
+
     north2_bldg_detail.extend(
         layered_wall(
             DORM.x1,
@@ -816,11 +724,10 @@ def build():
             Textures.BUILDING,
         )
     )
-    # East wall — windows only (no entrance, no arch)
-    # Explicit even-spaced positions within NB2 (G≈30): sets 1(S), 2(S), 3(D).
-    nb2_e_wy_s1 = DORM_NORTH2_Y1 + 82  # set 1 single
-    nb2_e_wy_s2 = DORM_NORTH2_Y1 + 184  # set 2 single
-    nb2_e_double_wy = DORM_NORTH2_Y1 + 326  # set 3 double
+
+    nb2_e_wy_s1 = DORM_NORTH2_Y1 + 82
+    nb2_e_wy_s2 = DORM_NORTH2_Y1 + 184
+    nb2_e_double_wy = DORM_NORTH2_Y1 + 326
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM.wall_t,
@@ -834,7 +741,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # West wall — windows only (floor 2 only; floors 0–1 buried by hillside)
+
     north2_bldg_detail.extend(
         layered_wall_y(
             DORM_NORTH2_Y1 + DORM.wall_t,
@@ -847,7 +754,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # Ceiling slab
+
     north2_bldg_detail.append(
         box(
             DORM.x1,
@@ -859,7 +766,7 @@ def build():
             Textures.BUILDING,
         )
     )
-    # Window frames — south face (floors 0 and wx<-1652 floor 1 buried by gap embankment)
+
     for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
         north2_bldg_detail += win_frame_xwall(
             xl,
@@ -884,7 +791,7 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Window frames — east face (set1+2 single; set3 double) — evenly spaced
+
     for yl, zb, yr, zt in nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2]):
         north2_bldg_detail += win_frame_ywall(
             yl,
@@ -909,7 +816,7 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Door frame — ground-floor center doorway to building 1 (north face, interior wall)
+
     north2_bldg_detail += win_frame_xwall(
         DORM_CX - DORM_INNER_DOOR_HW,
         DORM_CX + DORM_INNER_DOOR_HW,
@@ -924,7 +831,7 @@ def build():
         crossbar=False,
         bottom=False,
     )
-    # Window frames — west face (floor 2 only; floors 0–1 buried by hillside)
+
     for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy2):
         north2_bldg_detail += win_frame_ywall(
             yl,
@@ -937,13 +844,13 @@ def build():
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    # Roof — same gable profile as building 1
+
     NB2_EAVE_Z = FLOOR_Z2 + DORM_H + DORM.wall_t
     NB2_RIDGE_Z = NB2_EAVE_Z + DORM_ROOF_H
     NB2_SLAB_T = DORM_SLAB_T
     NB2_GABLE_DEPTH = DORM_GABLE_DEPTH
     NB2_SY1 = DORM_NORTH2_Y1 + NB2_GABLE_DEPTH
-    NB2_SY2 = DORM_NORTH2_Y2  # north end abuts building 1 — full slab, no recess
+    NB2_SY2 = DORM_NORTH2_Y2
     north2_bldg_detail.append(
         ramp_slab(
             DORM.x1,
@@ -972,7 +879,7 @@ def build():
             ts=Textures.GABLE,
         )
     )
-    # Slats on the exposed south gable end only (the north end abuts building 1).
+
     north2_bldg_detail += gable_slats(
         DORM.x1,
         DORM.x2,
@@ -987,7 +894,7 @@ def build():
         gap=4,
     )
     ENTITIES.append(brush_ent("func_detail", north2_bldg_detail))
-    # Interior floor
+
     BRUSHES.append(
         box(
             DORM.x1 + DORM.wall_t,
@@ -1000,10 +907,6 @@ def build():
             tt=Textures.ROAD,
         )
     )
-
-    # ── Two south buildings — exact copies of north building, stacked N-S ──────────
-    # Same X footprint (DORM.x1..DORM.x2), entrance on east face (faces Charles Street).
-    # Moved to func_detail to reduce portal complexity in the open campus area.
 
     def make_south_bldg(
         by1,
@@ -1020,17 +923,11 @@ def build():
         west_door=True,
         stairwell=False,
     ):
-        """Build the south abutment building geometry (walls, roof, windows, entrance)
-        between Y positions by1 (south) and by2 (north).
-        slat_lo/slat_hi add gable wood slats on the by1/-Y and by2/+Y ends.
-        entrance adds the east-face entrance arch/door (windows only when False).
-        chimney cuts a passable shaft through the east roof slope and ceiling and adds
-        a hollow brick stack above the roof (the player can drop into the interior).
-        door_lo/door_hi add a ground-floor center doorway on the by1/-Y or by2/+Y wall.
-        north_pier_x/north_pier_hw: X position and half-width of an external wall that
-        blocks windows on the north face (by2); overlapping openings are omitted.
-        north_min_floor: lowest floor shown on the north (by2) face; floors below this
-        are omitted (used when the embankment in the gap partially buries floor 0)."""
+        """Build one south dorm shell between by1 and by2.
+
+        The flags control gable slats, the east entrance, optional end doors,
+        the chimney shaft, and north-face window exclusions.
+        """
         bx1, bx2 = DORM.x1, DORM.x2
         cx = (bx1 + bx2) // 2
         ent_hw, ent_h = 48, DORM_ENT_H
@@ -1046,12 +943,11 @@ def build():
             return dorm_window_openings(wy_list)
 
         def wyz_west():
-            """West-face windows: floor 0 is buried by the hillside after terrace lift."""
+            """Return west-face openings above the hillside."""
             return dorm_window_openings(wy_list, start_floor=1)
 
         def wxz_north():
-            """North-face (by2) windows: floors below north_min_floor are omitted,
-            and any opening that overlaps north_pier_x ± north_pier_hw is filtered."""
+            """Return north-face openings filtered by floor and pier overlap."""
             wins = dorm_window_openings(wx_list, start_floor=north_min_floor)
             if north_pier_x is not None:
                 wins = [
@@ -1063,10 +959,8 @@ def build():
             return wins
 
         brushes = []
-        # Interior floor — carved around the stairwell void when stairwell=True
+
         if stairwell:
-            # Floor frame: south strip, north strip, and an east strip; the void
-            # itself (west edge to SDORM_STAIR_X2, SDORM_STAIR_Y1..Y2) is left open.
             brushes += [
                 box(
                     bx1 + DORM.wall_t,
@@ -1099,8 +993,7 @@ def build():
                     tt=Textures.ROAD,
                 ),
             ]
-            # Descending steps: lowest at the west (door) end at the tunnel floor
-            # (FLOOR_Z2 - SDORM_LIFT in local coords), rising to the dorm floor.
+
             for i in range(SDORM_STAIR_N):
                 brushes.append(
                     box(
@@ -1126,7 +1019,7 @@ def build():
                     tt=Textures.ROAD,
                 )
             )
-        # Center window openings on 2nd and 3rd floor (no entrance on these faces)
+
         mid_wxz = [
             (
                 cx - DORM_WIN_HW,
@@ -1189,7 +1082,6 @@ def build():
         )
         east_openings = wyz()
         if entrance:
-            # Solid wall above the door — drop the center-column windows, keep entrance only
             east_openings = [
                 o for o in east_openings if o[2] <= cy - ent_hw or o[0] >= cy + ent_hw
             ] + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
@@ -1205,17 +1097,17 @@ def build():
                 Textures.BUILDING,
             )
         )
-        # Chimney shaft footprint straddling the roof ridge (only when chimney=True)
+
         chim_x1 = chim_x2 = chim_y1 = chim_y2 = None
         if chimney:
-            chw = 32  # half-width of the 64-unit square shaft (player hull fits)
-            ccy = cy + 64  # a little north of the building centre
+            chw = 32
+            ccy = cy + 64
             chim_x1, chim_x2 = (
                 cx + 80,
                 cx + 80 + chw * 2,
-            )  # well east of ridge to avoid BSP slope issues
+            )
             chim_y1, chim_y2 = ccy - chw, ccy + chw
-        # Ceiling slab — split around the shaft when a chimney is present
+
         if chimney:
             _cz1, _cz2 = FLOOR_Z2 + DORM_H, FLOOR_Z2 + DORM_H + DORM.wall_t
             brushes += [
@@ -1241,21 +1133,19 @@ def build():
             FLOOR_Z2 + DORM_H + DORM.wall_t + DORM_ROOF_H,
             16,
         )
-        depth = 6  # slat recess depth; outer face flush with wall
-        # Recess the slab gable end only where slats are added (abutting ends stay full)
+        depth = 6
+
         sy1 = by1 + depth if slat_lo else by1
         sy2 = by2 - depth if slat_hi else by2
         if chimney:
-            # Both slopes split around the shaft so it passes through the ridge
 
             def _etop(x):
                 return int(
                     ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx)
                 )
 
-            # No deck — chimney is well east of the ridge so slopes meet cleanly.
             brushes += [
-                ramp_slab(  # west slope — full span, chimney is east of ridge
+                ramp_slab(
                     bx1,
                     cx,
                     sy1,
@@ -1267,7 +1157,7 @@ def build():
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # east slope, south of chimney bay
+                ramp_slab(
                     cx,
                     bx2,
                     sy1,
@@ -1279,7 +1169,7 @@ def build():
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # east slope, north of chimney bay
+                ramp_slab(
                     cx,
                     bx2,
                     chim_y2,
@@ -1291,7 +1181,7 @@ def build():
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # east slope, chimney bay, west of shaft
+                ramp_slab(
                     cx,
                     chim_x1,
                     chim_y1,
@@ -1303,7 +1193,7 @@ def build():
                     Textures.ROOF,
                     ts=Textures.GABLE,
                 ),
-                ramp_slab(  # east slope, chimney bay, east of shaft
+                ramp_slab(
                     chim_x2,
                     bx2,
                     chim_y1,
@@ -1316,8 +1206,7 @@ def build():
                     ts=Textures.GABLE,
                 ),
             ]
-            # Hollow brick stack rising above the ridge, open at the top
-            # Keep height ≤ 36 so a player on the ridge can jump over the walls
+
             chim_wall, chim_top = 12, ridge_z + 32
             brushes += [
                 box(
@@ -1328,7 +1217,7 @@ def build():
                     chim_y1,
                     chim_top,
                     Textures.BUILDING,
-                ),  # south
+                ),
                 box(
                     chim_x1 - chim_wall,
                     chim_y2,
@@ -1337,7 +1226,7 @@ def build():
                     chim_y2 + chim_wall,
                     chim_top,
                     Textures.BUILDING,
-                ),  # north
+                ),
                 box(
                     chim_x1 - chim_wall,
                     chim_y1,
@@ -1346,7 +1235,7 @@ def build():
                     chim_y2,
                     chim_top,
                     Textures.BUILDING,
-                ),  # west
+                ),
                 box(
                     chim_x2,
                     chim_y1,
@@ -1355,7 +1244,7 @@ def build():
                     chim_y2,
                     chim_top,
                     Textures.BUILDING,
-                ),  # east
+                ),
             ]
         else:
             brushes.append(
@@ -1415,9 +1304,6 @@ def build():
                 gap=4,
             )
 
-        # ── Decorative wood trim (entrance arch + window frames) ─────────────────────
-
-        # East-face entrance arch (faces Charles Street)
         if entrance:
             brushes += entrance_arch_ywall(
                 cy,
@@ -1432,14 +1318,14 @@ def build():
                 lintel_h=16,
                 arch_h=60,
             )
-            # Transom over the door: top + bottom crossbeams plus 4 mullions forming square panes
+
             grille_d, beam_h, mull_w, trans_h = 8, 6, 6, 26
-            # Centre the grille within the pillar depth (bx2 .. bx2+pillar_d)
+
             _pillar_d = 12
             gx1 = bx2 + _pillar_d // 2 - grille_d // 2
             gx2 = bx2 + _pillar_d // 2 + grille_d // 2
-            trans_t = FLOOR_Z2 + ent_h  # top of the door opening
-            trans_b = trans_t - trans_h  # crossbeam line below the transom
+            trans_t = FLOOR_Z2 + ent_h
+            trans_b = trans_t - trans_h
             brushes.append(
                 box(
                     gx1,
@@ -1450,7 +1336,7 @@ def build():
                     trans_b,
                     Textures.GABLE,
                 )
-            )  # bottom crossbeam dividing door from transom panes
+            )
             brushes.append(
                 box(
                     gx1,
@@ -1461,7 +1347,7 @@ def build():
                     trans_t,
                     Textures.GABLE,
                 )
-            )  # top crossbeam at the top of the transom panes
+            )
             for k in range(5):
                 mx = cy - ent_hw + (2 * ent_hw) * k // 4
                 brushes.append(
@@ -1474,9 +1360,8 @@ def build():
                         trans_t,
                         Textures.GABLE,
                     )
-                )  # transom mullion
-            # Frame recessed into the door opening (jambs + head lining the reveal,
-            # like the window frames) using the same gable wood as the arch/pillars.
+                )
+
             brushes += win_frame_ywall(
                 cy - ent_hw,
                 cy + ent_hw,
@@ -1490,7 +1375,7 @@ def build():
                 crossbar=False,
                 bottom=False,
             )
-        # Window frames — south face (door wall has no windows)
+
         if not door_lo:
             for xl, zb, xr, zt in wxz():
                 brushes += win_frame_xwall(
@@ -1516,7 +1401,7 @@ def build():
                     fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
-        # Window frames — north face (door wall has no windows)
+
         if not door_hi:
             for xl, zb, xr, zt in wxz_north():
                 brushes += win_frame_xwall(
@@ -1542,7 +1427,7 @@ def build():
                     fd=DORM.wall_t,
                     margin=DORM_WIN_MARGIN,
                 )
-        # Window frames — west face (floor 0 buried by hillside after terrace lift)
+
         for yl, zb, yr, zt in wyz_west():
             brushes += win_frame_ywall(
                 yl,
@@ -1555,8 +1440,7 @@ def build():
                 fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
             )
-        # Window frames — east face (skip ground-floor window overlapping the entrance
-        # opening when an entrance is present)
+
         for yl, zb, yr, zt in wyz():
             if entrance and not (yr <= cy - ent_hw or yl >= cy + ent_hw):
                 continue
@@ -1571,7 +1455,7 @@ def build():
                 fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
             )
-        # Door frames — ground-floor center doorways to adjacent south buildings
+
         if door_hi:
             brushes += win_frame_xwall(
                 cx - DORM_INNER_DOOR_HW,
@@ -1581,7 +1465,7 @@ def build():
                 by2,
                 -1,
                 Textures.GABLE,
-                fw=8,  # thick frame bars
+                fw=8,
                 fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
                 crossbar=False,
@@ -1596,7 +1480,7 @@ def build():
                 by1,
                 +1,
                 Textures.GABLE,
-                fw=8,  # thick frame bars
+                fw=8,
                 fd=DORM.wall_t,
                 margin=DORM_WIN_MARGIN,
                 crossbar=False,
@@ -1640,7 +1524,6 @@ def build():
         )
     )
 
-    # ── Threshold floors across the inter-building doorways (fill the wall seam) ──
     for seam_y, seam_lift in ((DORM_NORTH_Y1, 0), (DORM_SOUTH1_Y2, SDORM_LIFT)):
         BRUSHES.append(
             box(
@@ -1654,8 +1537,5 @@ def build():
                 tt=Textures.ROAD,
             )
         )
-
-    # ── Flush stone walkway: built by build_sidewalk(), gated by
-    #    WEST_CAMPUS_ENABLED_SIDEWALK near the top of build(). ──────────────
 
     return BRUSHES, ENTITIES

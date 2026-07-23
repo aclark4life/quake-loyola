@@ -1,4 +1,4 @@
-"""Charles St / road / crosswalk constants (streets.py)."""
+"""Charles Street, Ennis Road, and crosswalk constants."""
 
 CHARLES_ARCH_RIN = 256
 CHARLES_ARCH_ROUT = 312
@@ -21,24 +21,10 @@ STREET_DIV_HW = (
 STREET_ENNIS_DIV_HW = 16
 STREET_SURFACE_T = 2
 ROAD_X1, ROAD_X2 = -606, 256
-# ROAD_X1 shifted a further 200 units west (was -406, before that -306, -256)
-# to widen Charles St to the west, in step with the matching +200 bump to
-# BRIDGE_CENTER_PIER_SPAN (constants/bridge.py) — the two move together so
-# the Pier2-to-curb setback stays the same while the bridge's compressed
-# centre span gets more room and everything already positioned relative to
-# the west bridge pier group
-# (DORM_PIER_X and its dependents) follows automatically.
-# Charles St curb-to-curb width models 1 travel lane + 1 parking lane each side
-# (see docs/reference.rst "Charles St width validation" + satellite re-check):
-# parking lane nearest each curb, travel lane between it and the centerline.
-# The parking/travel split (CHARLES_PARKING_LINE_X, streets.py) is derived
-# from ROAD_X2/STREET_DIV_HW directly rather than a fixed lane width, so the
-# two lanes come out equal width.
-STREET_DIV_LINE_HW = 2  # half-width of each parking-lane stripe (dashed, white)
+# Charles St carries a travel lane and a parking lane on each side.
+STREET_DIV_LINE_HW = 2  # Half-width of each parking-lane stripe.
 
-# ── Pedestrian crosswalks — thick white zebra stripes, flush with the road
-# surface (carved out of the road/lane-marking brushes, same technique as the
-# centerline and parking-lane stripes). See streets.py "PEDESTRIAN CROSSWALKS".
-CROSSWALK_LEN = 80  # depth of the crossing along the direction of travel
-CROSSWALK_STRIPE_W = 32  # width of each white stripe, across the crossing
-CROSSWALK_GAP_W = 32  # gap between stripes (shows the road texture below)
+# Crosswalk stripe geometry.
+CROSSWALK_LEN = 80  # Depth along the direction of travel.
+CROSSWALK_STRIPE_W = 32  # Stripe width across the crossing.
+CROSSWALK_GAP_W = 32  # Gap width between stripes.

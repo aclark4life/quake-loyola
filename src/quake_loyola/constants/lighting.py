@@ -1,16 +1,7 @@
-"""Time-of-day lighting/fog presets for worldspawn (LightingPreset, FogDensity).
+"""Lighting and fog presets for worldspawn.
 
-The active preset is chosen via the ``lighting_preset`` build setting (see
-``config.BUILD_DEFAULTS``) — override it with
-``ql conf set lighting_preset <name>`` (one of the keys in
-``LIGHTING_PRESETS``, e.g. ``dawn``, ``midday``, ``golden_hour``, ``dusk``,
-``overcast``, ``night``, ``bright``, ``afternoon``) or by editing ql.toml.
-
-The fog *density* (independent of the preset's fog color) is controlled by
-the ``fog_density`` build setting — ``"default"`` (use the preset's own
-density), one of the named :class:`FogDensity` levels (``off``, ``low``,
-``med``, ``high``), or a numeric string for a custom density. Set via
-``ql conf set fog_density <value>``.
+``lighting_preset`` selects a preset from ``LIGHTING_PRESETS``.
+``fog_density`` uses the preset density, a named level, or a numeric override.
 """
 
 from dataclasses import dataclass
@@ -30,11 +21,7 @@ class LightingPreset:
     fog: str  # "density r g b"
 
     def to_worldspawn(self) -> dict:
-        # NOTE: ericw-tools' light reads "_minlight" (not "ambient") for the
-        # global fill light, and "_sunlight_mangle" as "yaw pitch roll" (not
-        # "_sunlight_dir" as "pitch yaw") for the sun direction. Both of the old
-        # key names were silently ignored by light, so ambient fill was always 0
-        # and the sun always defaulted to straight down regardless of preset.
+        # ericw-tools expects "_minlight" and "_sunlight_mangle" ("yaw pitch roll").
         pitch, yaw = self.sunlight_dir.split()
         mangle = f"{yaw} {pitch} 0"
         return {
@@ -54,8 +41,7 @@ class FogDensity:
     HIGH = 0.10
 
 
-# Named `fog_density` build-setting values that map to a FogDensity level —
-# used by both the CLI (validation) and the lookup below.
+# Build-setting names for fog density.
 FOG_DENSITY_NAMES: dict[str, float] = {
     "off": FogDensity.OFF,
     "low": FogDensity.LOW,
@@ -145,10 +131,7 @@ if _lighting_preset_setting not in LIGHTING_PRESETS:
     )
 LIGHTING = LIGHTING_PRESETS[_lighting_preset_setting]
 
-# "default" -> use the active preset's own fog density; a named level
-# (off/low/med/high) -> that FogDensity constant; anything else -> parsed as
-# a custom float. See config.BUILD_DEFAULTS["fog_density"] / cli.py for the
-# validation that keeps this branch limited to those three shapes.
+# "default" uses the preset density; other values are named levels or numeric strings.
 _fog_density_setting = _get_build("fog_density")
 if _fog_density_setting == "default":
     FOG_DENSITY: float | None = None
@@ -164,7 +147,5 @@ else:
             "with `ql conf set fog_density <value>` or `ql conf reset`."
         ) from None
 
-# Sorted list of valid `lighting_preset` build-setting values — used by the
-# `ql conf set lighting_preset <name>` CLI to validate input and by docs/help
-# text without needing to import the full LIGHTING_PRESETS dict.
+# Sorted valid ``lighting_preset`` names for CLI validation and help text.
 LIGHTING_PRESET_NAMES: list[str] = sorted(LIGHTING_PRESETS)

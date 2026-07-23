@@ -1,8 +1,6 @@
-"""Pixel-font bitmaps used for rendering flat text geometry (e.g. bridge fascia)."""
+"""Pixel-font bitmaps for flat text geometry such as bridge fascia lettering."""
 
-# Pixel-font bitmaps for fascia lettering. Each entry is a list of rows (top→bottom),
-# where each row is a 4-bit Python integer: 1 = draw a block, 0 = empty space.
-# The geometry modules read these values and emit Quake brush boxes for each set bit.
+# Rows run top-to-bottom; each integer is a 4-bit bitmap.
 FASCIA_FONT = {
     "A": [0b0110, 0b1001, 0b1111, 0b1001, 0b1001, 0b0000],
     "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1110, 0b0000],

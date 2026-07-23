@@ -1,3 +1,5 @@
+"""Helpers for point entities and brush entities."""
+
 from ..mapdata import Brush, Entity
 
 

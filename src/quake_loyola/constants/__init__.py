@@ -1,42 +1,34 @@
-"""Shared numeric constants, the ``Textures`` table, and bridge-deck helpers.
+"""Shared constants re-exported by :mod:`quake_loyola.constants`.
 
-Naming conventions
-==================
-
-Identifiers are built from an **area prefix** + **feature** + **dimension/axis
-suffix**. Once the vocabulary below is known, most names are self-describing
-(e.g. ``BRIDGE_PILLAR_CAP_OVH`` = bridge pillar cap overhang).
+Names use an area prefix plus a feature or dimension suffix.
 
 Area prefixes
     ``BRIDGE_``, ``KNOTT_``, ``ENNIS_``, ``DORM_``, ``CHARLES_``, ``STREET_``,
-    ``ROAD_``, ``WORLD_``, ``ARCH_`` — which part of the map the value belongs to.
+    ``ROAD_``, ``WORLD_``, ``ARCH_``.
 
 Axis & position suffixes
-    - ``X1``/``X2``, ``Y1``/``Y2``, ``Z1``/``Z2`` — min/max extent of a box along
-      that axis (``1`` = lower coordinate, ``2`` = higher).
-    - ``DZ1``/``DZ2`` — bridge deck Z bottom / top.
-    - ``ZB``/``ZT`` — Z bottom / Z top of a feature.
-    - ``CX``/``CY`` — centre X / centre Y of a feature.
-    - ``XS``/``YS`` — a *list* (plural) of X or Y positions.
-    - ``N``/``S``/``E`` — compass direction (Quake: +Y = north, −Y = south,
-      +X = east); combined forms like ``NY`` mean "north-edge Y".
+    - ``X1``/``X2``, ``Y1``/``Y2``, ``Z1``/``Z2`` — lower/higher extent.
+    - ``DZ1``/``DZ2`` — bridge deck Z bottom/top.
+    - ``ZB``/``ZT`` — feature Z bottom/top.
+    - ``CX``/``CY`` — centre coordinate.
+    - ``XS``/``YS`` — lists of coordinates.
+    - ``N``/``S``/``E`` — compass direction; Quake uses +X east and +Y north.
 
 Dimension suffixes
-    - ``H`` height, ``HH`` half-height.
-    - ``W`` width, ``HW`` half-width.
-    - ``T`` thickness, ``R`` radius, ``D`` depth.
-    - ``OVH`` overhang, ``EXTRA`` extra length/padding, ``PROUD`` how far a
-      feature protrudes from its face.
+    - ``H``/``HH`` — height/half-height.
+    - ``W``/``HW`` — width/half-width.
+    - ``T`` — thickness.
+    - ``R`` — radius.
+    - ``D`` — depth.
+    - ``OVH`` — overhang.
+    - ``PROUD`` — protrusion.
 
 Feature abbreviations
-    - ``PILLAR`` pillar, ``BLK`` block, ``SQ`` square, ``PYR`` pyramid.
-    - ``ENT`` entrance, ``WIN`` window, ``DIV`` road divider, ``PLT`` platform,
-      ``BR`` back road.
-    - ``DRIVEWAY_WS``/``_RD``/``_ES`` — west-side / road / east-side sections of
-      the Knott driveway (ordered west→east).
-    - ``BIY`` Knott building-interior Y (inner wall face).
-    - ``ORIG`` original (pre-extension) reference, e.g. ``KNOTT_ORIG_CX``.
-    - ``KH`` Knott Hall (e.g. the ``FLOOR_KH`` texture).
+    - ``PILLAR``, ``BLK``, ``SQ``, ``PYR``, ``ENT``, ``WIN``, ``DIV``, ``PLT``, ``BR``.
+    - ``DRIVEWAY_WS``/``_RD``/``_ES`` — west-side / road / east-side driveway sections.
+    - ``BIY`` — Knott interior-wall Y.
+    - ``ORIG`` — original reference position.
+    - ``KH`` — Knott Hall.
 """
 
 from .bridge import (

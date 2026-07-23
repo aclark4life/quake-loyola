@@ -1,9 +1,4 @@
-"""``ql`` — Typer CLI for configuring and running quake-loyola's build.
-
-Installed via ``pip install -e .`` (see the ``[project.scripts]`` entry
-point in ``pyproject.toml``), which puts the ``ql`` command on your PATH.
-Run it from the repo root (same convention as ``just``).
-"""
+"""Typer CLI for viewing config, generating maps, and running builds."""
 
 from __future__ import annotations
 
@@ -15,9 +10,6 @@ import typer
 
 from . import config
 
-# Resolved the same way as config.CONFIG_PATH (walks up from cwd to find
-# pyproject.toml/.git) so `ql.toml`, `.tools/`, and build/deploy paths all
-# agree with each other regardless of which subdirectory `ql` is run from.
 REPO_ROOT = config.REPO_ROOT
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
@@ -109,8 +101,8 @@ def config_get(name: str) -> None:
 def _validate_one(name: str, value: str) -> tuple[str, str, object]:
     """Validate a single NAME/value pair without persisting it.
 
-    Returns (kind, key, parsed_value) where kind is "flag" or "build".
-    Raises typer.BadParameter / typer.Exit on invalid input.
+    Return ``(kind, key, parsed_value)`` where ``kind`` is ``"flag"`` or
+    ``"build"``.
     """
     name_u = name.upper()
     if name_u in config.DEFAULTS:
@@ -171,12 +163,12 @@ def config_set(
 
     Examples:
         ql conf set KNOTT_ENABLED true
-        ql conf set west_campus_enabled_dorms true   # names are case-insensitive
+        ql conf set west_campus_enabled_dorms true
         ql conf set vis_mode full
         ql conf set light_extra true
         ql conf set lighting_preset dusk
-        ql conf set fog_density high           # or "default"/"off"/"low"/"med"/"high"/a float
-        ql conf set sky_preset night           # or "day"
+        ql conf set fog_density high
+        ql conf set sky_preset night
 
     Multiple settings at once (NAME=VALUE form, space-separated):
         ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
@@ -194,9 +186,6 @@ def config_set(
             name, _, value = arg.partition("=")
             pairs.append((name, value))
 
-    # Validate every pair before persisting any of them, so a bad later pair
-    # doesn't leave the file partially updated from earlier pairs in the
-    # same command.
     validated = [_validate_one(name, value) for name, value in pairs]
     try:
         for kind, key, parsed in validated:
@@ -249,10 +238,7 @@ def build(
         help="Copy the compiled .bsp/.lit into the Quake maps directory afterwards.",
     ),
 ) -> None:
-    """Generate + compile the map, honoring [build] settings from ql.toml
-    (vis_mode: fast/full, light_extra: bool) — same tool pipeline as
-    `just compile`/`just compile-fast`, but configurable without editing the
-    justfile."""
+    """Generate and compile the map using the current ``[build]`` settings."""
     generate()
 
     tools_bin_candidates = sorted(REPO_ROOT.glob(".tools/ericw-tools-*/bin"))
@@ -262,7 +248,7 @@ def build(
             err=True,
         )
         raise typer.Exit(code=1)
-    tools_bin = tools_bin_candidates[-1]  # highest-sorting (newest) version wins
+    tools_bin = tools_bin_candidates[-1]
 
     try:
         vis_mode = config.get_build("vis_mode")
@@ -291,7 +277,6 @@ def build(
             shutil.copy(REPO_ROOT / "loyola.lit", maps_dir)
             typer.echo(f"Deployed to {maps_dir}")
     except RuntimeError as exc:
-        # config.get_build() failure (malformed ql.toml).
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
     except subprocess.CalledProcessError as exc:

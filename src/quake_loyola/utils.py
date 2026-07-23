@@ -1,8 +1,4 @@
-"""Small, general-purpose helpers shared across the package.
-
-Pure formatting helpers (format_value, format_point) and generic geometric
-transforms (swap_xy, swap_xz) used by the shape constructors in geometry.py.
-"""
+"""Shared formatting and coordinate-swap helpers."""
 
 
 def format_value(v):
@@ -19,13 +15,10 @@ def format_point(x, y, z):
 def swap_xy(src):
     """Return a new Brush with X and Y coordinates swapped on every face.
 
-    Swapping two coordinates is a reflection, which flips the handedness of the
-    coordinate system and reverses each face's outward normal.  To compensate,
-    p2 and p3 are also swapped so that the winding order — and therefore the
-    outward normal direction — is preserved.
+    Swapping two coordinates reflects the brush, so the face winding is also
+    swapped to preserve outward normals.
     """
-    # Imported here to avoid a circular import: mapdata imports format_point
-    # from this module at load time.
+
     from .mapdata import Brush, Face
 
     def swap(p):
@@ -36,7 +29,7 @@ def swap_xy(src):
         [
             Face(
                 swap(face.p1),
-                swap(face.p3),  # p3 before p2 cancels the reflection flip
+                swap(face.p3),
                 swap(face.p2),
                 face.tex,
                 face.params,
@@ -49,8 +42,7 @@ def swap_xy(src):
 def swap_xz(src):
     """Return a new Brush with X and Z coordinates swapped on every face.
 
-    Same reflection-parity fix as ``swap_xy``, but swapping X and Z instead of
-    X and Y (leaving Y unchanged).
+    Same winding correction as ``swap_xy``, but swapping X and Z.
     """
     from .mapdata import Brush, Face
 

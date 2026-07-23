@@ -1,4 +1,4 @@
-"""Generic literal constants shared across map areas (no single area owner)."""
+"""Shared world-scale and cross-area geometry constants."""
 
 ARCH_RIN = 96
 ARCH_ROUT = 136

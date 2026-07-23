@@ -1,3 +1,5 @@
+"""Reusable prefab builders for vegetation, signage, and fence details."""
+
 import math
 import random
 

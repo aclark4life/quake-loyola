@@ -1,157 +1,84 @@
-"""Master module-enable switches and other on/off feature flags.
+"""Boolean feature flags loaded from :mod:`quake_loyola.config`.
 
-Every value below is now sourced from :mod:`quake_loyola.config` (defaults
-hardcoded there, optionally overridden by ``ql.toml`` at the repo root — see
-that module's docstring, or run ``ql conf show``). The comments here
-describe what each flag does; the *value* itself lives in
-``config.DEFAULTS`` and is only overridden when the user sets it via
-``ql conf set <NAME> <value>``.
+Defaults live in ``config.DEFAULTS`` and can be overridden in ``ql.toml`` or
+via ``ql conf``.
 """
 
 from ..config import get as _flag
 
-# ════════════════════════════════════════════════════════════════════════════════
-# MASTER MODULE SWITCHES — flip a flag to True (via `ql conf set NAME true`,
-# or by editing ql.toml) to re-enable that module's geometry. KNOTT_ENABLED
-# and MARYLAND_ENABLED are the only true "module master" switches and
-# default to False, so Knott Hall and Maryland Hall are off by default; but
-# the default build is NOT just the bare world-shell rectangle — the bridge
-# (BRIDGE_ENABLED_SPAN_*), streets.py details (STREETS_ENABLED_DETAILS),
-# west campus fence/terrain/wall/sidewalk (WEST_CAMPUS_ENABLED_*), NE
-# terrain (NE_ENABLED_TERRAIN), and the basement (BASEMENT_ENABLED) all
-# default to True as well, since each uses its own independent per-section
-# flag rather than being nested under an overall master. See
-# config.DEFAULTS for the authoritative default of every flag.
-# ════════════════════════════════════════════════════════════════════════════════
+# Module and section flags.
 BRIDGE_ENABLED_SPAN_WEST_APPROACH = _flag(
     "BRIDGE_ENABLED_SPAN_WEST_APPROACH"
-)  # bridge.py span: Pier 1 (west abutment) .. Pier 2
+)  # bridge.py span: Pier 1 to Pier 2
 BRIDGE_ENABLED_SPAN_CENTER = _flag(
     "BRIDGE_ENABLED_SPAN_CENTER"
-)  # bridge.py span: Pier 2 .. Pier 3 (curved arch span over Charles St)
+)  # bridge.py span: Pier 2 to Pier 3
 BRIDGE_ENABLED_SPAN_EAST_APPROACH = _flag(
     "BRIDGE_ENABLED_SPAN_EAST_APPROACH"
-)  # bridge.py span: Pier 3 .. Pier 4 (west KH pier)
+)  # bridge.py span: Pier 3 to Pier 4
 BRIDGE_ENABLED_SPAN_KH = _flag(
     "BRIDGE_ENABLED_SPAN_KH"
-)  # bridge.py span: Pier 4 .. Pier 5 (east KH pier / NE pier)
+)  # bridge.py span: Pier 4 to Pier 5
 BRIDGE_ENABLED_SPAN_EAST_EXT = _flag(
     "BRIDGE_ENABLED_SPAN_EAST_EXT"
-)  # bridge.py span: Pier 5 .. Pier 6 (extended east section to Ennis Rd)
+)  # bridge.py span: Pier 5 to Pier 6
 STREETS_ENABLED_DETAILS = _flag(
     "STREETS_ENABLED_DETAILS"
-)  # streets.py content other than the world-shell rectangle (roads, sidewalks, curbs, lamps, trees, driveways, Ennis entrance features)
+)  # Roads, sidewalks, curbs, lamps, trees, driveways, and Ennis entrance features.
 WEST_CAMPUS_ENABLED_DORMS = _flag(
     "WEST_CAMPUS_ENABLED_DORMS"
-)  # west_campus.py — dorm buildings and grounds
-WEST_CAMPUS_ENABLED_FENCE = _flag(
-    "WEST_CAMPUS_ENABLED_FENCE"
-)  # west_campus.py — iron fence along the east
-# face of the (currently disabled) west-campus buildings. Kept independent of
-# WEST_CAMPUS_ENABLED_DORMS so the fence can be shown along Charles St even
-# while the dorm buildings themselves stay off.
+)  # Dorm buildings and grounds.
+WEST_CAMPUS_ENABLED_FENCE = _flag("WEST_CAMPUS_ENABLED_FENCE")  # Charles St iron fence.
 WEST_CAMPUS_ENABLED_TERRAIN = _flag(
     "WEST_CAMPUS_ENABLED_TERRAIN"
-)  # terrain/west_campus.py — real-elevation
-# ground fill under/around the dorm buildings + bridge west approach. Kept
-# independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
-# KNOTT_ENABLED_TERRAIN vs KNOTT_ENABLED) so the terrain can be reviewed on
-# its own even while the buildings themselves stay off.
+)  # West-campus terrain fill.
 WEST_CAMPUS_ENABLED_WALL = _flag(
     "WEST_CAMPUS_ENABLED_WALL"
-)  # west_campus.py — brick wall with gate, pillars,
-# and iron fence south of bridge Pier 1 (DORM_PIER_X), running from the north
-# face of dorm 2 up to the pier. Kept independent of WEST_CAMPUS_ENABLED_DORMS
-# so the wall reads as a bridge-approach feature even while the dorm
-# buildings themselves stay off.
+)  # Brick wall, gate, pillars, and fence south of Pier 1.
 WEST_CAMPUS_ENABLED_SIDEWALK = _flag(
     "WEST_CAMPUS_ENABLED_SIDEWALK"
-)  # west_campus.py — flush stone walkway
-# in front of the dorms, with a spur running north to the brick-wall door.
-# Kept independent of WEST_CAMPUS_ENABLED_DORMS (same reasoning as
-# WEST_CAMPUS_ENABLED_WALL) so the walkway/spur can be shown even while the
-# dorm buildings themselves stay off.
-NE_ENABLED_TERRAIN = _flag(
-    "NE_ENABLED_TERRAIN"
-)  # terrain/ne.py — real-elevation ground fill for the
-# NE quadrant (north of Ennis Road, east of Charles St), replacing the flat
-# placeholder box streets.py used to build there. See terrain/ne.py's module
-# docstring for the real-elevation-derived design and the two flush ties
-# (Charles St east sidewalk to the west, Ennis Road north curb to the south).
+)  # Front walkway and wall-door spur.
+NE_ENABLED_TERRAIN = _flag("NE_ENABLED_TERRAIN")  # North-east quadrant terrain fill.
 KNOTT_ENABLED_TERRAIN = _flag(
     "KNOTT_ENABLED_TERRAIN"
-)  # terrain/knott_hall.py — KH surrounding terrain/embankment/driveway
-KNOTT_ENABLED = _flag(
-    "KNOTT_ENABLED"
-)  # knott_hall.py — KH building shell (walls, windows, roof, sign)
-# Per-group entity flags (entities.py — items, monsters, decorative lights,
-# extra spawns; a single info_player_start is always kept unconditionally so
-# the map stays loadable). Each group is toggled independently — there is no
-# single "ENTITIES_ENABLED" master; see also KNOTT_ENABLED_MONSTERS /
-# KNOTT_ENABLED_WALKWAY, which independently gate their own KH-interior
-# subsets nested inside some of these same sections.
-ENTITIES_ENABLED_TELEPORTS = _flag(
-    "ENTITIES_ENABLED_TELEPORTS"
-)  # bridge west/east arch + Charles St arches + Ennis/KH-driveway arch teleports
-ENTITIES_ENABLED_DM_SPAWNS = _flag(
-    "ENTITIES_ENABLED_DM_SPAWNS"
-)  # info_player_deathmatch spawns
+)  # Knott terrain, embankment, and driveway.
+KNOTT_ENABLED = _flag("KNOTT_ENABLED")  # Knott Hall shell.
+
+# Entity groups.
+ENTITIES_ENABLED_TELEPORTS = _flag("ENTITIES_ENABLED_TELEPORTS")  # Teleports.
+ENTITIES_ENABLED_DM_SPAWNS = _flag("ENTITIES_ENABLED_DM_SPAWNS")  # Deathmatch spawns.
 ENTITIES_ENABLED_WEAPONS = _flag("ENTITIES_ENABLED_WEAPONS")  # weapon_* pickups
 ENTITIES_ENABLED_AMMO = _flag("ENTITIES_ENABLED_AMMO")  # item_rockets/shells/spikes
 ENTITIES_ENABLED_HEALTH = _flag("ENTITIES_ENABLED_HEALTH")  # item_health/armor pickups
-ENTITIES_ENABLED_MONSTERS = _flag(
-    "ENTITIES_ENABLED_MONSTERS"
-)  # non-KH-interior monsters (ogres, grunts, demon knights); KH-interior
-# monsters remain separately gated by KNOTT_ENABLED_MONSTERS
-ENTITIES_ENABLED_VEGETATION = _flag(
-    "ENTITIES_ENABLED_VEGETATION"
-)  # decorative trees/bushes
+ENTITIES_ENABLED_MONSTERS = _flag("ENTITIES_ENABLED_MONSTERS")  # Non-Knott monsters.
+ENTITIES_ENABLED_VEGETATION = _flag("ENTITIES_ENABLED_VEGETATION")  # Trees and bushes.
 ENTITIES_ENABLED_PLATFORM = _flag(
     "ENTITIES_ENABLED_PLATFORM"
-)  # Charles St scrolling platform loop + its rocket launchers
-ENTITIES_ENABLED_EXIT = _flag(
-    "ENTITIES_ENABLED_EXIT"
-)  # single-player trigger_changelevel exit portal
-LIGHTS_ENABLED_TORCHES = _flag(
-    "LIGHTS_ENABLED_TORCHES"
-)  # light "group" flag: torch/flame fixtures only
+)  # Charles St platform loop and its rocket launchers.
+ENTITIES_ENABLED_EXIT = _flag("ENTITIES_ENABLED_EXIT")  # Single-player exit portal.
+
+# Light groups.
+LIGHTS_ENABLED_TORCHES = _flag("LIGHTS_ENABLED_TORCHES")  # Torch and flame fixtures.
 LIGHTS_ENABLED_DECK_WALL = _flag(
     "LIGHTS_ENABLED_DECK_WALL"
-)  # light "group" flag: bridge.py parapet-block base wall lights only — on by
-# default since they're a small, low-impact decorative detail meant to
-# always show.
+)  # Bridge parapet wall lights.
 LIGHTS_ENABLED_PENDANTS = _flag(
     "LIGHTS_ENABLED_PENDANTS"
-)  # light "group" flag: entities.py under-bridge amber pendant lights
+)  # Under-bridge pendant lights.
 LIGHTS_ENABLED_PIER_UPLIGHTS = _flag(
     "LIGHTS_ENABLED_PIER_UPLIGHTS"
-)  # light "group" flag: entities.py ground-level pier base uplights
+)  # Pier base uplights.
 LIGHTS_ENABLED_ABUTMENT_ARCH = _flag(
     "LIGHTS_ENABLED_ABUTMENT_ARCH"
-)  # light "group" flag: entities.py west abutment pier cement-arch lights
+)  # West abutment cement-arch lights.
 LIGHTS_ENABLED_DORM_INTERIOR = _flag(
     "LIGHTS_ENABLED_DORM_INTERIOR"
-)  # light "group" flag: entities.py campus dorm building interior lights
-BASEMENT_ENABLED_LIGHTS = _flag(
-    "BASEMENT_ENABLED_LIGHTS"
-)  # light "group" flag: basement.py fixtures only —
-# on by default (unlike LIGHTS_ENABLED_TORCHES's pattern above, kept True since
-# the basement is otherwise a fully unlit sky-textured void with no ambient
-# light source, and would render as solid black without at least a few
-# lights placed inside it).
-# See generate_map.py filter — every fixture above carries an internal
-# "_light_group" field (via the LIGHT_GROUP_FLAGS dict in mapgen.py) so
-# each type of light can be toggled independently; a "light"-classname
-# entity with no group tag always passes through unfiltered (relying
-# entirely on whatever section-level flag already wraps it, if any).
-MARYLAND_ENABLED = _flag(
-    "MARYLAND_ENABLED"
-)  # maryland_hall.py — placeholder Maryland Hall massing block, east of Ennis Parallel
+)  # Dorm interior lights.
+BASEMENT_ENABLED_LIGHTS = _flag("BASEMENT_ENABLED_LIGHTS")  # Basement fixtures.
+MARYLAND_ENABLED = _flag("MARYLAND_ENABLED")  # Maryland Hall massing block.
 MARYLAND_ENABLED_TERRAIN = _flag(
     "MARYLAND_ENABLED_TERRAIN"
-)  # terrain/maryland.py — ground mound under/around the Maryland Hall stub
-# Kept independent of KNOTT_ENABLED_TERRAIN so each hill/mound can be flipped
-# on and off separately while both are still placeholder/provisional models.
+)  # Maryland Hall terrain mound.
 
 BRIDGE_ENABLED_FASCIA_TEXT = _flag("BRIDGE_ENABLED_FASCIA_TEXT")
 

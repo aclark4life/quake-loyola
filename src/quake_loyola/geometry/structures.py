@@ -1,3 +1,5 @@
+"""Higher-level wall, arch, tiling, and window geometry builders."""
+
 import math
 
 from ..mapdata import Brush, Face
@@ -14,10 +16,7 @@ from .primitives import (
 
 
 def tile_grid_origins(width, height, tile=34, gap=3):
-    # A face smaller than a single tile can't fit any tile without spilling
-    # outside the requested bounds — return no tiles rather than forcing one
-    # (which would previously yield a negative origin and an out-of-bounds
-    # brush from tile_face_plates()).
+    # A face smaller than one tile produces no tile brushes.
     if width < tile or height < tile:
         return []
     pitch = tile + gap
@@ -158,11 +157,7 @@ def square_wall(
             box(x1, yc - open_hw, ceil_z - lintel_h, x2, yc + open_hw, ceil_z, tex)
         )
     if base_ramp is not None:
-        # Mirrors arch_wall's base_ramp handling: a stone plinth ramping in Z
-        # from x1 to x2 (east-west slant), with a matching cement cap ramping
-        # on top of it — both scoped to the opening width (+ base_cap_ovh for
-        # the cap), not the pier's full face width, matching the flat-base
-        # behaviour below.
+        # Build the base and optional cap as ramps spanning the opening width.
         zt1, zt2 = base_ramp
         brushes.append(
             ramp_slab(
@@ -714,9 +709,7 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=None):
-    # Normalize and clamp each opening to the wall's own bounds so an
-    # out-of-range opening can't leak wall geometry outside the requested
-    # slab (or silently do nothing if fully outside).
+    # Clamp each opening to the wall bounds before subdividing the slab.
     wx1, wx2 = min(x1, x2), max(x1, x2)
     wz1, wz2 = min(z1, z2), max(z1, z2)
     clamped = []

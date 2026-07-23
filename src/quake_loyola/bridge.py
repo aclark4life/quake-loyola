@@ -1,16 +1,7 @@
-"""
-bridge — pedestrian bridge over Charles Street.
+"""Build the pedestrian bridge over Charles Street.
 
-Bridge structure spanning Charles Street between west campus and Knott Hall:
-  • Arched deck slab and span segments following the deck_top_z curve
-  • Parapet walls with decorative blocks and raised squares
-  • Arch ribs/voussoirs, pillars, piers, and support beams
-  • Teleport arches at the abutments and vis hint brushes
-  • The "LOYOLA UNIVERSITY MARYLAND" parapet fascia lettering
-
-Kept separate from terrain/knott_hall.py (Knott Hall terrain) and
-knott_hall.py (building walls, floors, interior) so each module has
-a single clear responsibility.
+This module generates the bridge deck, parapets, piers, archwork,
+abutment teleports, and fascia lettering between west campus and Knott Hall.
 """
 
 from .constants import (
@@ -140,8 +131,7 @@ from .geometry import (
 
 
 def _section_x_ranges():
-    """Return the {section_name: (x1, x2)} pier-to-pier boundaries used to
-    attribute geometry to a bridge section (see _filter_sections)."""
+    """Return the pier-to-pier X span for each bridge section."""
     return {
         "west_approach": (BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1]),
         "center_span": (BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]),
@@ -151,11 +141,6 @@ def _section_x_ranges():
     }
 
 
-# West-to-east chain order, matching _section_x_ranges' pier-to-pier layout.
-# Used to resolve which of two adjacent sections owns their shared boundary
-# pier (see _boundary_owner/_section_accept_ranges) so every pier is built by
-# exactly one section — never duplicated, never dropped — however the
-# individual section flags are combined.
 _SECTION_ORDER = [
     "west_approach",
     "center_span",
@@ -166,14 +151,11 @@ _SECTION_ORDER = [
 
 
 def _boundary_owner(left_name, right_name, enabled_names):
-    """Return which of two adjacent sections sharing an internal boundary
-    pier should build it. center_span is always preferred (it's the anchor
-    every other section connects to); for boundaries not touching
-    center_span, the section closer to center_span (the left one, since our
-    chain only extends outward to the east past center_span) is preferred.
-    Falls back to whichever of the two IS enabled if the preferred owner
-    isn't, so a shared pier is never silently dropped just because its
-    usual owner is currently disabled."""
+    """Return which adjacent section owns a shared boundary pier.
+
+    center_span takes priority; other boundaries prefer the section nearer
+    center_span, with a fallback to whichever candidate is enabled.
+    """
     if right_name == "center_span":
         preferred, fallback = right_name, left_name
     elif left_name == "center_span":
@@ -184,30 +166,22 @@ def _boundary_owner(left_name, right_name, enabled_names):
 
 
 def _section_accept_ranges(enabled_names, margin):
-    """Return {section_name: (x1, x2)} acceptance windows, one per section in
-    _SECTION_ORDER, each extended by `margin` only on the sides where that
-    section owns the bounding pier (per _boundary_owner) and pulled back by
-    `margin` on sides owned by a neighbor. This makes the windows an exact,
-    non-overlapping partition of the bridge's X extent — every pier
-    (including internal boundary piers shared between two sections) is
-    claimed by exactly one currently-enabled section, so filtering never
-    duplicates or drops pier geometry, whichever sections are enabled."""
+    """Return per-section X acceptance windows for the enabled bridge sections.
+
+    Each boundary pier belongs to exactly one enabled section, so the windows
+    partition the bridge without duplicating or dropping pier geometry.
+    """
     section_piers = _section_x_ranges()
     ranges = {}
     for idx, name in enumerate(_SECTION_ORDER):
         px1, px2 = section_piers[name]
         if idx == 0:
-            ax1 = px1 - margin  # outer terminus (Pier 1) — always owned
+            ax1 = px1 - margin
         else:
             owner = _boundary_owner(_SECTION_ORDER[idx - 1], name, enabled_names)
-            # Owned: extend outward by margin to capture the full pier
-            # brush width. Not owned: use the raw pier X (no pull-back) —
-            # this still excludes the neighbor's pier brush (which extends
-            # margin past px1 into *this* section) while leaving the full
-            # deck/parapet run, which starts exactly at px1, untouched.
             ax1 = px1 - margin if owner == name else px1
         if idx == len(_SECTION_ORDER) - 1:
-            ax2 = px2 + margin  # outer terminus (last pier) — always owned
+            ax2 = px2 + margin
         else:
             owner = _boundary_owner(name, _SECTION_ORDER[idx + 1], enabled_names)
             ax2 = px2 + margin if owner == name else px2
@@ -216,42 +190,20 @@ def _section_accept_ranges(enabled_names, margin):
 
 
 def _filter_sections(brushes, entities, enabled_names, extract_names=None):
-    """Keep only geometry overlapping one of the named sections' pier-to-pier
-    spans (each with a small margin to include the bounding piers — see
-    _section_accept_ranges). Catches brushes already wrapped in func_detail
-    entities (the bridge superstructure) as well as worldspawn brushes (e.g.
-    hint brushes, which are dropped entirely — they're only useful when the
-    full bridge exists).
+    """Return only the geometry assigned to the selected bridge sections.
 
-    `enabled_names` is the full set of currently-enabled sections, used to
-    resolve shared-boundary-pier ownership consistently even when only one
-    section's geometry is being extracted (see `extract_names`).
-    `extract_names`, if given, restricts the returned geometry to this
-    subset of `enabled_names` — e.g. _shift_center_span() extracts one
-    section at a time (to translate it independently) while still passing
-    the full enabled_names so ownership resolves the same way it would for
-    a single combined call. Defaults to `enabled_names` (i.e. return
-    everything enabled).
+    `enabled_names` defines shared-pier ownership for the full enabled set.
+    `extract_names`, when provided, limits the returned subset while keeping
+    that ownership unchanged.
     """
     if extract_names is None:
         extract_names = enabled_names
-    # Extra allowance beyond the normal pillar footprint: Pier 6's below/
-    # above-deck assembly is rotated PIER6_ROTATION_DEG about its own
-    # center (see the per-pier loop), which pushes some of its brushes'
-    # X-extent well past a straight pillar's — without this, full-
-    # containment below would silently drop those brushes/entities out of
-    # every section (they'd fit in none), which read as missing/invisible
-    # geometry in-game. Piers are spaced hundreds of units apart, so this
-    # extra margin is always far short of encroaching on a neighbor.
     margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG + PIER6_ROTATION_MARGIN
     accept_ranges = _section_accept_ranges(enabled_names, margin)
     enabled_spans = [accept_ranges[name] for name in extract_names]
 
     def _in_any_span(b):
         xs = [p[0] for f in b.faces for p in (f.p1, f.p2, f.p3)]
-        # Full containment (not just partial overlap) — otherwise long
-        # adjacent-span deck/parapet segments that merely touch a pier
-        # boundary (e.g. x=[-1246,-525]) would incorrectly pass.
         bx1, bx2 = min(xs), max(xs)
         return any(bx1 >= sx1 and bx2 <= sx2 for sx1, sx2 in enabled_spans)
 
@@ -262,20 +214,12 @@ def _filter_sections(brushes, entities, enabled_names, extract_names=None):
     new_entities = []
     for entdict in entities:
         if entdict.brushes:
-            # Brush entity (func_detail, trigger_teleport, func_illusionary,
-            # etc.) — keep only brushes overlapping an enabled span; drop
-            # the whole entity if nothing survives (e.g. the west-abutment
-            # teleport arch's trigger/illusionary brushes, which sit at
-            # x≈-1265..-1281, well outside any enabled span).
             kept = [b for b in entdict.brushes if _in_any_span(b)]
             if kept:
                 new_entities.append(
                     brush_ent(entdict.classname, kept, **entdict.fields)
                 )
         else:
-            # Point entity — keep only if its origin falls within an
-            # enabled span (e.g. drop info_teleport_destination at the
-            # west abutment when that section isn't enabled).
             origin = entdict.fields.get("origin")
             if origin is not None:
                 ox = float(origin.split()[0])
@@ -286,41 +230,17 @@ def _filter_sections(brushes, entities, enabled_names, extract_names=None):
 
 
 def _build_all():
-    """Generate every bridge section's geometry, unfiltered. Callers (build(),
-    build_center_span()) slice this down to whichever section(s) they want via
-    _filter_sections()."""
+    """Generate the full bridge geometry before section filtering."""
     BRUSHES = []
     ENTITIES = []
-    # Bridge superstructure (parapets, railings, arch voussoirs, teleport arches) is
-    # collected into a func_detail entity below instead of worldspawn.  None of it
-    # seals the level (the world shell does), so keeping it out of the BSP avoids the
-    # extra portals that make full vis slow.  Appends below are temporarily redirected
-    # to DETAIL_BRUSHES, then worldspawn routing is restored after the teleport arches.
     DETAIL_BRUSHES = []
     _worldspawn_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
 
-    # ── Deck-bottom cross strips — one under each parapet block ───────────────────
-    # A separate thin, non-solid func_illusionary decal per block position: same
-    # GABLE (wood) texture as the longitudinal underside strip, rotated 90° so
-    # its grain runs perpendicular to the bridge's length, hung
-    # BRIDGE_DECK_CROSS_STRIP_DROP units below the structural deck-bottom face
-    # so it reads as flush from the ground without z-fighting against the
-    # structural slab. Built this way (a separate overlay, not by splitting the
-    # structural deck slab in X) because splitting previously-unified flat deck
-    # spans caused qbsp "WARNING 12: New portal was clipped away" and actual
-    # missing polygons in-game — see the note by iter_bridge_span_segments()
-    # below on why those spans are kept as single unsplit segments.
-    # Positions are computed here (independent of the actual block-placement
-    # closures defined later) purely from each span's block-count/margin.
-    BRIDGE_BLK_PIR_M = (
-        BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
-    )  # clearance from pier centre to block centre
+    BRIDGE_BLK_PIR_M = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
 
     def _parapet_block_centers(x_start, x_end, n, west_margin=None, east_margin=None):
-        """Same spacing formula add_parapet_blocks uses for its north-side
-        blocks (west_margin/east_margin default to the pier-clearance margin,
-        BRIDGE_BLK_PIR_M, same as add_repeated_parapet_decorations below)."""
+        """Return parapet-block centers using add_parapet_blocks() spacing."""
         mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
         mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
         x0 = x_start + mx0
@@ -340,35 +260,12 @@ def _build_all():
         )
     )
 
-    # ── Bridge deck slab — the walkable surface across the whole span ─────────────
-    # Straight section: arch terminus → easternmost pier
-    # Split across Y into cement-margin / wood / cement-margin strips so a
-    # small strip of cement remains visible on each side of the wood-textured
-    # underside instead of the whole underside being wood.
-    # The parapet walls sit ON TOP of the deck slab, spanning BRIDGE_PAR_W in
-    # from each outer edge — so a texture split at the raw edge (BRIDGE.y1/y2)
-    # is entirely hidden beneath the parapet's footprint and never visible to
-    # a player. The visible edge-accent strip is placed just inside the
-    # parapet's inner face instead, where the walkable surface actually
-    # begins.
     _dw_y1a = BRIDGE.y1
-    _dw_y1b = BRIDGE.y1 + BRIDGE_PAR_W  # inner face of south parapet
-    _dw_y1c = _dw_y1b + BRIDGE_DECK_EDGE_CEMENT_W  # inner edge of visible strip
+    _dw_y1b = BRIDGE.y1 + BRIDGE_PAR_W
+    _dw_y1c = _dw_y1b + BRIDGE_DECK_EDGE_CEMENT_W
     _dw_y2c = BRIDGE.y2 - BRIDGE_PAR_W - BRIDGE_DECK_EDGE_CEMENT_W
-    _dw_y2b = BRIDGE.y2 - BRIDGE_PAR_W  # inner face of north parapet
+    _dw_y2b = BRIDGE.y2 - BRIDGE_PAR_W
     _dw_y2a = BRIDGE.y2
-    # far/margin per band: the two north-side bands (nearest BRIDGE.y2, right
-    # under/beside the north parapet) use far=False so the deck's own edge
-    # stops flush with Pier 6's post's near (visible) face instead of
-    # tunneling through to the far face and poking out past the north
-    # corner — the post's solid stone (footer below deck, pillar above)
-    # already occupies the near-to-far span, so shortening the slab here
-    # removes no reachable walking surface (players could never enter the
-    # post's own footprint anyway) while eliminating the visible corner
-    # overhang. The south-side bands and the walk centre keep far=True
-    # (unchanged; the near face recedes behind the old cutoff on the south
-    # side, so far=True is the only option that gives a valid, non-receding
-    # wedge there).
     _DECK_BANDS = (
         (
             _dw_y1a,
@@ -378,7 +275,7 @@ def _build_all():
             True,
             0,
             0,
-        ),  # hidden under parapet (south)
+        ),
         (
             _dw_y1b,
             _dw_y1c,
@@ -387,7 +284,7 @@ def _build_all():
             True,
             0,
             0,
-        ),  # visible edge strip (south)
+        ),
         (
             _dw_y1c,
             _dw_y2c,
@@ -396,7 +293,7 @@ def _build_all():
             True,
             0,
             0,
-        ),  # visible walk centre
+        ),
         (
             _dw_y2c,
             _dw_y2b,
@@ -405,7 +302,7 @@ def _build_all():
             False,
             0,
             0,
-        ),  # visible edge strip (north) — stop flush with pillar's near face
+        ),
         (
             _dw_y2b,
             _dw_y2a,
@@ -414,16 +311,8 @@ def _build_all():
             False,
             0,
             0,
-        ),  # hidden under parapet (north) — stop flush with pillar's near face
+        ),
     )
-    # Span 5 (Pier5->Pier6): Pier 6's post is rotated PIER6_ROTATION_DEG
-    # about its own centre, so both its near (west) and far (east) faces
-    # become diagonal lines that extend further east on the north side of
-    # the deck than on the south side (see pier6_west_face_x_at_y's and
-    # pier6_east_face_x_at_y's docstrings in constants/derived.py). The
-    # wedge always runs the *entire* width of a Y-band (south edge to north
-    # edge), anchored at the old (un-rotated) cutoff as its base and
-    # reaching out to the rotated post's face at each edge.
     _pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
 
     def _pier6_west_pieces(
@@ -439,28 +328,12 @@ def _build_all():
         margin=0,
         margin2=None,
     ):
-        """Build the piece(s) of a Y-band (ys1..ys2) running from x_start out
-        toward Pier 6's rotated post: a plain box up to the old cutoff, plus
-        a wedge spanning the band's entire width (ys1..ys2), anchored at the
-        old cutoff and running out to the rotated post's face at each edge.
+        """Return a box-plus-wedge run from x_start to Pier 6 across one Y band.
 
-        `far` selects which face the wedge targets: the far (east) face
-        (default) cuts all the way through the post, which is what the deck
-        wants (see the module-level comment above — a floor extending a bit
-        past the post is invisible/harmless, and this guarantees the deck
-        never recedes). Passing `far=False` targets the near (west) face
-        instead, stopping the wedge flush with the post's own visible stone
-        face rather than tunneling through and poking out its far side —
-        used for the north wall/railing, which is solid geometry that would
-        otherwise visibly float past the post's north corner.
-
-        `margin` (world units) further pulls the wedge's outer edge back
-        from the target face at ys1 (the south end of the band) by a flat
-        amount. `margin2` does the same at ys2 (the north end); if omitted
-        it defaults to `margin`, so a single flat margin still applies
-        uniformly across the band. Passing a larger `margin2` than `margin`
-        trims only the north end of the wedge (e.g. the pillar's north
-        corner) while leaving the rest of the band at full fill."""
+        `far` selects the rotated east or west face to follow. `margin` and
+        `margin2` pull the wedge back from that target face at the band
+        endpoints.
+        """
         if margin2 is None:
             margin2 = margin
         pieces = [
@@ -496,8 +369,8 @@ def _build_all():
                 _ys2,
                 BRIDGE_DZ2,
                 Textures.STONE,
-                tt=_tt,  # deck walking surface — thin edge strip along each side
-                tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                tt=_tt,
+                tb=_tb,
             )
         )
         BRUSHES.extend(
@@ -515,15 +388,9 @@ def _build_all():
                 margin2=_margin2,
             )
         )
-    # Angled section: Pier 6 east face → 1 unit inside the east arch face.
-    # The straight deck ends at Pier 6's west face (PIER6_X - BRIDGE_PILLAR_HW)
-    # and the angled section resumes at its east face (PIER6_X + BRIDGE_PILLAR_HW),
-    # so the deck is truncated evenly across the pier on both sides.
     DECK_EAST_END_X = WORLD_X2_EXT - WALL_T - BRIDGE_DECK_EAST_RECESS
     PAR_EAST_END_X = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W - BRIDGE_DECK_EAST_RECESS
     PIER6_EAST_X = PIER6_X + BRIDGE_PILLAR_HW
-    # Angled east section parapets go to worldspawn (not func_detail) to ensure
-    # ericw-tools qbsp generates draw surfaces for the outer (Y-facing) faces.
     _ws = _worldspawn_brushes
 
     for seg_x1, seg_x2 in [
@@ -541,21 +408,11 @@ def _build_all():
                     _ys2 + east_y_shift(seg_x2),
                     BRIDGE_DZ2,
                     Textures.STONE,
-                    tt=_tt,  # deck walking surface — thin edge strip along each side
-                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                    tt=_tt,
+                    tb=_tb,
                 )
             )
 
-    # Pier 6's north "fill gap between pier top and deck surface" skirt is
-    # intentionally omitted here (unlike every other pier): the fill box
-    # sits off to one side of the rotation pivot (at by2, far from the
-    # pivot's y=py_shift), so sweeping it through the rigid-body whole-pier
-    # rotation swings its inner edge away from the deck's actual (fixed)
-    # edge, producing a visible wedge. No skirt at all is closest to correct.
-
-    # Span-segment boundaries shared by the wall (iter_bridge_span_segments)
-    # and the parapet decorations below, so decorative blocks always sit
-    # exactly parallel to whichever single wall segment they rest on.
     _p1, _p2, _p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
     _n_center = max(1, round((_p3 - _p2) / BRIDGE_SEG_W))
     _step = (_p3 - _p2) / _n_center
@@ -564,14 +421,7 @@ def _build_all():
     SPAN_BOUNDARIES += [_p3, BRIDGE.x2]
 
     def wall_tilt_z(cx, half_width):
-        """Z at cx-half_width and cx+half_width, extrapolated from the slope
-        of the SINGLE wall segment containing cx (not sampled independently
-        at each edge). Near a segment boundary (e.g. the shallow crest of the
-        centre span), a block wide enough to straddle two segments would
-        otherwise average in the far segment's different slope and end up
-        visibly tilted at an angle that doesn't match the segment it's
-        actually resting on — this keeps the block exactly parallel to that
-        one segment instead."""
+        """Return the left and right top Z values using the local segment's slope."""
         bs = SPAN_BOUNDARIES
         cx_clamped = min(max(cx, bs[0]), bs[-1])
         for sx1, sx2 in zip(bs, bs[1:], strict=False):
@@ -581,21 +431,16 @@ def _build_all():
                 t = (cx_clamped - sx1) / (sx2 - sx1) if sx2 != sx1 else 0.0
                 zc = z1 + (z2 - z1) * t
                 return zc - slope * half_width, zc + slope * half_width
-        zc = deck_top_z(cx_clamped)  # unreachable fallback
+        zc = deck_top_z(cx_clamped)
         return zc, zc
 
     def iter_bridge_span_segments():
-        # Only the curved centre span (PIER2..PIER3) is faceted; the flat west
-        # approach and the two straight approach spans are emitted as single
-        # segments so their collinear boundaries don't spawn redundant coplanar
-        # portals (qbsp WARNING 12 — see the east-section note below).
         for sx1, sx2 in zip(SPAN_BOUNDARIES, SPAN_BOUNDARIES[1:], strict=False):
             db1, db2 = deck_bot_z(sx1), deck_bot_z(sx2)
             pb1, pb2 = deck_top_z(sx1), deck_top_z(sx2)
             pt1, pt2 = pb1 + BRIDGE.parapet_h, pb2 + BRIDGE.parapet_h
             yield sx1, sx2, db1, db2, pb1, pb2, pt1, pt2
 
-    # Bridge span deck segments (arched profile following deck_top_z / deck_bot_z)
     for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
         for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
             BRUSHES.append(
@@ -609,27 +454,11 @@ def _build_all():
                     pb1,
                     pb2,
                     Textures.STONE,
-                    tt=_tt,  # deck walking surface — thin edge strip along each side
-                    tb=_tb,  # deck underside — wood (GABLE) with a cement edge margin
+                    tt=_tt,
+                    tb=_tb,
                 )
             )
 
-    # Cross-strip decals (see note above): one func_illusionary brush per
-    # CROSS_STRIP_X position, spanning the same Y-extent as the longitudinal
-    # wood band (_dw_y1b.._dw_y2b — stopping short of the parapet-hidden
-    # edges, same as the rest of the underside), embedded
-    # BRIDGE_DECK_CROSS_STRIP_DROP units up into the structural deck bottom
-    # at that X so its visible (bottom) face touches the deck flush with no
-    # air gap, while still avoiding an exactly-coplanar top face (and the
-    # z-fighting that would cause against the structural slab). An earlier
-    # version hung the strip BELOW the deck bottom instead of embedding it,
-    # which read as visibly floating/detached from the deck.
-    # Built as a ramp_slab (sloped, not a flat box) following deck_bot_z at
-    # both the west and east edges of the strip — on the raked approach
-    # spans (west of Pier2, east of Pier3) the deck bottom drops ~5-6 units
-    # across the strip's own 64-unit width, so a flat box floated visibly
-    # off the surface at one edge and clipped through it at the other; a
-    # sloped strip stays flush with the structural slab along its full width.
     _cross_strip_brushes = []
     for _cx in CROSS_STRIP_X:
         _strip_x1 = _cx - BRIDGE_DECK_CROSS_STRIP_HW
@@ -652,12 +481,6 @@ def _build_all():
         )
     ENTITIES.append(brush_ent("func_illusionary", _cross_strip_brushes))
 
-    # ── Parapet walls — west flat approach removed; east flat stub only ───────────
-    # North east parapet: straight BRIDGE.x2→Pier5→Pier6 west face, then angled
-    # Pier6 east face→world wall. Split at PIER5_X (Pier 5 has flanking wall
-    # geometry there) and at PIER6_WEST_X/PIER6_EAST_X (Pier 6's rotated body
-    # occupies the same Y-range — an unsplit brush spanning straight through
-    # either pier causes qbsp invisible-wall mis-clips).
     BRUSHES.append(
         box(
             BRIDGE.x2,
@@ -669,12 +492,6 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    # Span 5 (Pier5->Pier6): unchanged up to the old cutoff (matching the
-    # deck's cutoff above); a wedge beyond that follows the post's near
-    # (west) face out to this wall's own Y position — far=False so the wall
-    # stops flush with the post's visible stone face instead of tunneling
-    # through to its far side and poking out the north corner (see
-    # _pier6_west_pieces).
     BRUSHES.extend(
         _pier6_west_pieces(
             PIER5_X,
@@ -688,7 +505,6 @@ def _build_all():
             margin2=8,
         )
     )
-    # Angled piece from Pier 6's east face to the world wall.
     for _seg_x1, _seg_x2 in [
         (PIER6_EAST_X, PAR_EAST_END_X),
     ]:
@@ -705,9 +521,6 @@ def _build_all():
                 Textures.CEMENT,
             )
         )
-    # South east — gaps at WALK_X1..WALK_X2 and east_walk_x1..east_walk_x2 for walkway/accessible-walkway connections
-    # West piece — wall stays attached to Pier 4, extending east to the
-    # midpoint; opening continues from the midpoint to WALK_X1 for steps.
     _span4_west_mid = (BRIDGE.x2 + WALK_X1) / 2
     BRUSHES.append(
         box(
@@ -720,11 +533,6 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    # East piece (WALK_X2→Pier5) removed — south wall of span 4's east half
-    # is now fully open for steps down to the ground.
-    # Span 5 (Pier5→Pier6): unchanged up to the old cutoff, then a wedge
-    # following Pier 6's rotated west face — mirrors the north east
-    # parapet's treatment above (see _pier6_west_pieces).
     BRUSHES.extend(
         _pier6_west_pieces(
             PIER5_X,
@@ -735,8 +543,6 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    # Angled piece from Pier 6's east face — same overlap reasoning as the
-    # north east parapet above.
     for _seg_x1, _seg_x2 in [
         (PIER6_EAST_X, PAR_EAST_END_X),
     ]:
@@ -755,7 +561,6 @@ def _build_all():
         )
 
     for sx1, sx2, _, _, pb1, pb2, pt1, pt2 in iter_bridge_span_segments():
-        # North parapet
         BRUSHES.append(
             ramp_slab(
                 sx1,
@@ -769,7 +574,6 @@ def _build_all():
                 Textures.CEMENT,
             )
         )
-        # South parapet — omit any segment that overlaps the walkway gap (X=WALK_X1..WALK_X2)
         if not (sx1 < WALK_X2 and sx2 > WALK_X1):
             BRUSHES.append(
                 ramp_slab(
@@ -784,10 +588,6 @@ def _build_all():
                     Textures.CEMENT,
                 )
             )
-
-    # ── Parapet cement blocks (decorative posts atop parapet walls) ───────────────
-    # BRIDGE_BLK_PIR_M already computed above (deck-bottom cross-strip section)
-    # using this same formula.
 
     def add_repeated_parapet_decorations(
         x_start,
@@ -805,7 +605,7 @@ def _build_all():
         east_margin_n=None,
         y_shift_fn=None,
     ):
-        """Place repeated decorations along the north/south parapets of a span."""
+        """Place repeated north- and south-parapet decorations across a span."""
         n_s = n if n_south is None else n_south
         mx0 = west_margin if west_margin is not None else BRIDGE_BLK_PIR_M
         mx1 = east_margin if east_margin is not None else BRIDGE_BLK_PIR_M
@@ -840,21 +640,10 @@ def _build_all():
         east_margin_n=None,
         y_shift_fn=None,
     ):
-        """Add evenly-spaced cement blocks atop N and S parapets in a bridge span."""
+        """Add evenly spaced parapet blocks across a bridge span."""
 
         def _block(cx, sy, y1_val, y2_val):
-            """Tilted block following the arch — ramp_slab when sloped, box when flat.
-            Uses wall_tilt_z (the containing wall segment's own slope,
-            extrapolated from the block's centre) instead of independently
-            sampling deck_top_z at the block's own edges, so the block is
-            always exactly parallel to the wall segment it rests on.
-            Genuinely near-flat slopes (< 1 unit of total rise across the
-            block) are snapped flat rather than rounded independently at
-            each edge — independently rounding two close-but-different
-            floats can otherwise manufacture a full 1-unit apparent tilt
-            out of a true sub-unit slope (e.g. near the shallow crest of
-            the centre span), which is exactly what reads as the block
-            being tilted at the wrong angle relative to the wall."""
+            """Return a parapet block aligned with the local deck slope."""
             zb1_raw, zb2_raw = wall_tilt_z(cx, BRIDGE_BLK_HW)
             if abs(zb2_raw - zb1_raw) < 1.0:
                 zb1 = zb2 = round((zb1_raw + zb2_raw) / 2 + BRIDGE.parapet_h)
@@ -917,16 +706,6 @@ def _build_all():
             y_shift_fn=y_shift_fn,
         )
 
-    # Western span (BRIDGE.x1 → BRIDGE_ARCH_X[0]): no blocks — open span
-    # Span 2 (BRIDGE_ARCH_X[0] → BRIDGE_ARCH_X[1]): eastern span 1, 3 blocks.
-    # Margin set to 0 (rather than the default fixed BRIDGE_BLK_PIR_M pier
-    # clearance margin) so the n+1 gaps — pier-to-block AND block-to-block —
-    # come out perfectly even, dividing the full pier-to-pier span equally.
-    # The default clearance margin instead reserved extra pier-side space,
-    # making the pier-to-block gaps visibly larger than the inter-block gaps
-    # once this span was independently lengthened (BRIDGE_WEST_OUTER_PIER_SPAN).
-    # Safe as long as the resulting gap exceeds the minimum pier clearance
-    # (BRIDGE_BLK_PIR_M); true here (span/(n+1) = 230 >> ~73-unit clearance).
     _span1_n = 3
     _span1_gap = (BRIDGE_ARCH_X[1] - BRIDGE_ARCH_X[0]) / (_span1_n + 1)
     assert _span1_gap >= BRIDGE_BLK_PIR_M, (
@@ -941,14 +720,7 @@ def _build_all():
         west_margin=0,
         east_margin=0,
     )
-    # Middle span (BRIDGE_ARCH_X[1] → BRIDGE_ARCH_X[2]): 4 blocks — corrected
-    # after re-checking ref/bridge08.png; the earlier 5th block (assumed to sit
-    # in a foliage-obscured gap) was a miscount.
     add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
-    # Eastern span 2 (BRIDGE_ARCH_X[2] → BRIDGE_ARCH_X[3]): 3 blocks. Same
-    # even-margin treatment as span 1 above — margin=0 so pier-to-block and
-    # block-to-block gaps come out equal now that this span
-    # (BRIDGE_OUTER_PIER_SPAN) was lengthened to match the west span.
     _span3_n = 3
     _span3_gap = (BRIDGE_ARCH_X[3] - BRIDGE_ARCH_X[2]) / (_span3_n + 1)
     assert _span3_gap >= BRIDGE_BLK_PIR_M, (
@@ -963,11 +735,6 @@ def _build_all():
         west_margin=0,
         east_margin=0,
     )
-    # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north
-    # blocks; east sub-span open (matches ref). Same even-margin treatment as
-    # spans 1/3 above — margin=0 so pier-to-block and block-to-block gaps
-    # come out equal (this span grew via KNOTT_DRIVEWAY_X_SHIFT, so a fixed
-    # asymmetric margin would leave visibly uneven end gaps).
     _kh_span_n = 3
     _kh_span_gap = (BRIDGE_ARCH_X[4] - BRIDGE.x2) / (_kh_span_n + 1)
     assert _kh_span_gap >= BRIDGE_BLK_PIR_M, (
@@ -985,7 +752,6 @@ def _build_all():
         y_shift_fn=east_y_shift,
     )
 
-    # ── Decorative squares on parapet outer faces (one per block position) ────────
     def add_parapet_squares(
         x_start,
         x_end,
@@ -996,7 +762,7 @@ def _build_all():
         east_margin_n=None,
         y_shift_fn=None,
     ):
-        """Add raised decorative squares on parapet outer faces, same positions as blocks."""
+        """Add raised parapet-face squares at the block positions."""
         add_repeated_parapet_decorations(
             x_start,
             x_end,
@@ -1039,7 +805,6 @@ def _build_all():
             y_shift_fn=y_shift_fn,
         )
 
-    # ── Base lights on parapet inner faces (one per block position) ──────────────
     def add_parapet_base_lights(
         x_start,
         x_end,
@@ -1050,18 +815,10 @@ def _build_all():
         east_margin_n=None,
         y_shift_fn=None,
     ):
-        """Add a small wall-light fixture + light entity at the base of each
-        parapet-block wall segment, on the INSIDE (walkway-facing) face, right
-        above the deck floor — same X positions as the blocks above, using
-        wall_tilt_z (not deck_top_z + parapet_h) so the fixture sits flush
-        with the wall's own base rather than at block height."""
+        """Add parapet base lights at the decoration positions."""
 
         def _fixture(cx, sy, y_wall, y_dir):
             zb1_raw, zb2_raw = wall_tilt_z(cx, BRIDGE_BASE_LIGHT_HW)
-            # Round each edge independently (rather than forcing a flat
-            # average) so the fixture picks up even a slight tilt from the
-            # curved centre span — it should rotate with the wall it's
-            # mounted on, not just sit dead level everywhere.
             zb1 = round(zb1_raw) + BRIDGE_BASE_LIGHT_Z_LIFT
             zb2 = round(zb2_raw) + BRIDGE_BASE_LIGHT_Z_LIFT
             y1v = y_wall + sy
@@ -1078,9 +835,6 @@ def _build_all():
                     _light_group="deck_wall",
                 )
             )
-            # Fixture geometry (brush) is dropped for now — only the light
-            # entity itself is kept — per explicit request to pause the
-            # visible fixture while iterating on texture/placement later.
             return None
 
         add_repeated_parapet_decorations(
@@ -1152,9 +906,6 @@ def _build_all():
         n_south=0,
         y_shift_fn=east_y_shift,
     )
-    # South east of walkway: corner blocks only at each side of the opening
-    # East end cap: one corner block at the end of the kept west wall
-    # segment (midpoint, X≈1666), capping the opening's west edge.
     cx_wall_end = _span4_west_mid - BRIDGE_BLK_HW
     BRUSHES.append(
         box(
@@ -1167,10 +918,7 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    # East opening (midpoint→Pier5) has no corner block — wall/blocks removed
-    # there for the steps down to the ground.
 
-    # ── Parapet handrail tubes (two 4×4 rods stacked, through parapet blocks/pillars) ─
     tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
     tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
     tube_sy1 = BRIDGE.y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
@@ -1216,16 +964,7 @@ def _build_all():
                         Textures.RAIL,
                     )
                 )
-        # East flat section — straight BRIDGE.x2→Pier 6 west face, angled
-        # Pier 6 east face→world wall. Split at PIER5_X and the old cutoff
-        # for consistency with deck/walls.
         tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        # North tube: straight (BRIDGE.x2->Pier5->old cutoff), then a wedge
-        # follows the rotated post's near (west) face out to this tube's own
-        # Y position, then angled. far=False so the tube stops flush with
-        # the post's own face instead of tunneling through to its far side
-        # and poking out the north corner (matches the north wall fix
-        # above).
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -1265,8 +1004,6 @@ def _build_all():
                     Textures.RAIL,
                 )
             )
-        # South tube west piece — matches the wall: stays attached to Pier 4,
-        # extending east only to the midpoint.
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -1278,11 +1015,6 @@ def _build_all():
                 Textures.RAIL,
             )
         )
-        # South tube east piece (WALK_X2→Pier5) removed — no railing on the
-        # open east half of span 4.
-        # Span 5 (Pier5→Pier6): unchanged up to the old cutoff, then a
-        # wedge following Pier 6's rotated west face — mirrors the north
-        # tube's treatment above.
         BRUSHES.extend(
             _pier6_west_pieces(
                 PIER5_X,
@@ -1310,13 +1042,6 @@ def _build_all():
                 )
             )
 
-    # ── Pillar posts (stone piers with arches) ───────────────────────────────────
-    # Each pillar position now features a narrow arched pier supporting the deck.
-    # Arch openings span most of the bridge N-S width (BRIDGE.y2=113, bridge=226 units)
-    # rin = half-width of clear opening; rout = outer radius of arch ring
-    # Pier 5's arch crown is nudged slightly lower than a full-height arch would
-    # otherwise land, so the opening doesn't feel like it's floating right up
-    # against the deck underside.
     PIER5_LINTEL_GAP = 24
     if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
@@ -1327,40 +1052,22 @@ def _build_all():
                 continue
             _pier6_rot_bstart = len(BRUSHES) if px == PIER6_X else None
             _pier6_rot_estart = len(ENTITIES) if px == PIER6_X else None
-            pdeck = deck_top_z(px)  # deck surface at this X
-            ppar = pdeck + BRIDGE.parapet_h  # parapet top
-            ppil = ppar + BRIDGE_PILLAR_EXTRA  # pillar post top
-            pcap = ppil + BRIDGE_PILLAR_CAP_H  # cap slab top
+            pdeck = deck_top_z(px)
+            ppar = pdeck + BRIDGE.parapet_h
+            ppil = ppar + BRIDGE_PILLAR_EXTRA
+            pcap = ppil + BRIDGE_PILLAR_CAP_H
 
-            # For piers in the angled east section, shift all Y coords to follow the span.
-            # east_y_shift returns 0 for all piers at or west of PIER6_X.
             py_shift = east_y_shift(px)
-            by1 = BRIDGE.y1 + py_shift  # south edge of span at this pier
-            by2 = BRIDGE.y2 + py_shift  # north edge of span at this pier
+            by1 = BRIDGE.y1 + py_shift
+            by2 = BRIDGE.y2 + py_shift
 
-            cy_n = by2 - BRIDGE_PAR_W // 2  # north cap centre Y
-            cy_s = by1 + BRIDGE_PAR_W // 2  # south cap centre Y
+            cy_n = by2 - BRIDGE_PAR_W // 2
+            cy_s = by1 + BRIDGE_PAR_W // 2
 
-            # Width of the pier in X (matches pillar post width)
             x1, x2 = px - BRIDGE_PILLAR_HW, px + BRIDGE_PILLAR_HW
 
-            # Ceiling Z — use the higher of the two pier face deck-bottoms so stone
-            # is flush with the bridge underside across the full pier X extent.
             pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
 
-            # Ground level this specific pier's base sits on. Center-span piers
-            # (2 and 3) cross a real hillside — see BRIDGE_PIER_GROUND_Z's
-            # docstring in constants.py — so their base plinth is normally raised
-            # to sit ON TOP of the existing (unmodified) real-elevation terrain
-            # there instead of at the flat FLOOR_Z2 baseline used by every other
-            # pier. However, once BRIDGE_CENTER_SPAN_OFFSET relocates the whole
-            # center span away from that hillside (making it a standalone
-            # structure, no longer physically resting on the real terrain), the
-            # BRIDGE_PIER_GROUND_Z values are stale for the new location — using
-            # them here left the base plinth/cap sitting below the actual ground
-            # at the new (offset) position, appearing to sink underground on the
-            # west pier. Fall back to the flat FLOOR_Z2 baseline in that case,
-            # same as every non-center-span pier.
             if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
                 0.0,
                 0.0,
@@ -1370,71 +1077,40 @@ def _build_all():
             else:
                 pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
 
-            # Arch opening varies by pillar type. The westernmost abutment,
-            # Pier 5, and Pier 6 use the wider outer radii; interior piers use
-            # the inner radii.
             if px in (min(BRIDGE_ARCH_X), BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
                 a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
             else:
                 a_rout, a_rin = BRIDGE_PILLAR_INNER_R
             a_stilt = pier_ceiling_z - a_rout - pier_floor_z
             if a_stilt < 0:
-                # Arch would overshoot the bridge bottom; cap rout so the crown
-                # lands exactly at ceil_z (bridge deck underside).
                 a_rout = pier_ceiling_z - pier_floor_z
                 a_stilt = 0
 
-            # Pin outer pier wall to exactly match the pillar tops above deck.
-            # Cap a_rout so the arch ring never extends past by2 + BRIDGE_PILLAR_OVERHANG;
-            # if rout was trimmed, recompute stilt so the arch crown still meets the deck.
             max_outer_radius = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
             if a_rout > max_outer_radius:
                 a_rout = max_outer_radius
                 a_stilt = pier_ceiling_z - a_rout - pier_floor_z
-            # Extend the straight rectangular sides (not the round arch ring) out to
-            # max_outer_radius when rout falls short of it, so the below-deck pier
-            # wall is flush with the pillar tops above deck instead of being
-            # recessed behind them.
             arch_overhang = max(0, max_outer_radius - a_rout)
 
-            # Pier 5's arch crown otherwise lands right at the deck underside.
-            # Shrink the stilt height slightly (lowering the whole arch, crown
-            # included) so the opening sits a bit lower and doesn't look like
-            # it's floating right up against the deck.
             pier5_lintel_gap = PIER5_LINTEL_GAP if px == PIER5_X else 0
             a_stilt = max(0, a_stilt - pier5_lintel_gap)
 
-            # Ramped plinth: outer piers ramp up on their outward face so players
-            # can run up from outside. East piers: high east side; west piers: high west side.
-            # No pier sits at x=0, so every pier gets a ramped plinth. The west
-            # abutment (min(BRIDGE_ARCH_X)) is a solid dead-end (no walkable
-            # archway) that hosts two recessed openings (west teleport, east
-            # cement) instead — it gets the SAME kind of ramp, just taller
-            # (BRIDGE_ABUTMENT_RAMP_HIGH_H/LOW_H) so both openings' floors can
-            # sit on top of it, flush with the pier's true west/east faces
-            # (not inset) and with the cap clearly visible along the whole span.
             if px == min(BRIDGE_ARCH_X):
                 base_ramp = (
                     pier_floor_z + BRIDGE_ABUTMENT_RAMP_HIGH_H,
                     pier_floor_z + BRIDGE_ABUTMENT_RAMP_LOW_H,
                 )
             elif px > 0:
-                # East of road — ramp slopes up toward east (low at x1, high at x2)
                 base_ramp = (
                     pier_floor_z + BRIDGE_PILLAR_BASE_H,
                     pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
                 )
             else:
-                # West of road — ramp slopes up toward west (high at x1, low at x2)
                 base_ramp = (
                     pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
                     pier_floor_z + BRIDGE_PILLAR_BASE_H,
                 )
 
-            # Add pier structure — the new mid-span pier (max(BRIDGE_ARCH_X)) gets a
-            # square opening; every other pier, including Pier 5, gets a rounded
-            # arch. The west abutment (min(BRIDGE_ARCH_X)) has a solid cement fill
-            # instead of an open archway, so it gets no cement opening lining.
             pier_recess = (
                 None
                 if px == min(BRIDGE_ARCH_X)
@@ -1445,7 +1121,6 @@ def _build_all():
                 )
             )
             if px == max(BRIDGE_ARCH_X):
-                # Overhang must reach by2+BRIDGE_PILLAR_OVERHANG to match pillar tops above deck
                 sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
                 BRUSHES.extend(
                     square_wall(
@@ -1505,35 +1180,6 @@ def _build_all():
                 0.0,
                 0.0,
             ):
-                # The centre span (and, since every other currently-enabled
-                # section now rides along with it as one rigid assembly —
-                # see _shift_center_span — every pier from Pier 4 through
-                # Pier 6 too) has been shifted away from the real-elevation
-                # terrain BRIDGE_PIER_GROUND_Z was sampled against (see
-                # BRIDGE_CENTER_SPAN_OFFSET). Rather than lowering pier_floor_z
-                # itself (which would drag the visible base plinth/cap down
-                # with it), extend a solid pillar stem below the existing base
-                # — sized to exactly reach true (unshifted) ground once the
-                # post-build Z shift is applied — so the visible cap/base stays
-                # exactly where it was and the portion below the arch opening
-                # visibly plants the pier on the ground instead of floating.
-                # When the span is only shifted a small amount, fall back to
-                # the minimum buried-embed depth so the stem still reaches
-                # well into the ground. Span the full outer footprint
-                # (±max_outer_radius, which the arch ring/overhang always
-                # reaches — see above — and can exceed by1/by2) so the north
-                # and south flared edges of the base are covered too. Pier 6's
-                # square_wall, unlike arch_wall, never flares past by1/by2 (its
-                # solid outer walls stop exactly there), so the wider
-                # max_outer_radius allowance would only make the footer stick
-                # out past the pier's own walls — narrow it to by1/by2 there
-                # so the buried stem doesn't read as an oversized flared slab
-                # under an otherwise slender pier.
-                #
-                # UPDATE: narrowing Pier 6's footer to by1/by2 made it read as
-                # too narrow next to Piers 2-5 (which all use the wider
-                # max_outer_radius footprint below the arch opening) — use the
-                # same footprint as every other pier for visual consistency.
                 footer_y1 = min(by1, -max_outer_radius)
                 footer_y2 = max(by2, max_outer_radius)
                 footer_depth = max(
@@ -1551,26 +1197,12 @@ def _build_all():
                     )
                 )
 
-            # ── Decorative square cement plates on the pier's east/west faces ──
-            # Applied to the flat end-faces (x=x1 west, x=x2 east) of every pier,
-            # including the west abutment (min(BRIDGE_ARCH_X)) — even though its
-            # opening is filled with cement + a teleport arch rather than being a
-            # walkable passage, it still has the same rounded stone arch face as
-            # the other round piers and should carry the same plate ring.
-            # Rounded-arch piers get a curved ring of plates tracing the arch
-            # curve (voussoir style, radius mid-way between rin/rout); square-
-            # opening piers get a straight row across the flat lintel area
-            # above the opening instead (they have no curve to trace).
             is_square_pier = px == max(BRIDGE_ARCH_X)
             for face_x, protrude in (
-                (x1, -BRIDGE_PIER_PLATE_D),  # west face
-                (x2, BRIDGE_PIER_PLATE_D),  # east face
+                (x1, -BRIDGE_PIER_PLATE_D),
+                (x2, BRIDGE_PIER_PLATE_D),
             ):
                 if is_square_pier:
-                    # Inset one tile+gap pitch from each end so the row reads
-                    # as one tile narrower on each side than the full pier
-                    # width (the base cap below is the one meant to reach the
-                    # full width — see base_cap_y1/y2 above).
                     _tile_pitch = BRIDGE_PIER_PLATE_SIZE + BRIDGE_PIER_PLATE_GAP
                     BRUSHES.extend(
                         tile_face_plates(
@@ -1578,14 +1210,8 @@ def _build_all():
                             protrude,
                             by1 + _tile_pitch,
                             by2 - _tile_pitch,
-                            pier_ceiling_z
-                            - BRIDGE_SQ_LINTEL_H,  # bottom of tiled band, flush
-                            # with the bottom of square_wall's full lintel
-                            pier_ceiling_z
-                            - BRIDGE_SQ_LINTEL_STONE_H,  # top of tiled band —
-                            # leaves a plain stone course above (part of the
-                            # same solid lintel brush) instead of tiling all
-                            # the way up to the ceiling/deck underside
+                            pier_ceiling_z - BRIDGE_SQ_LINTEL_H,
+                            pier_ceiling_z - BRIDGE_SQ_LINTEL_STONE_H,
                             Textures.CEMENT,
                             tile=BRIDGE_PIER_PLATE_SIZE,
                             gap=BRIDGE_PIER_PLATE_GAP,
@@ -1605,11 +1231,7 @@ def _build_all():
                         )
                     )
 
-            # Pillar tops (above deck, extend BRIDGE_PILLAR_OVERHANG past bridge edges and inward)
-            pier_outer_y = (
-                by2 + BRIDGE_PILLAR_OVERHANG
-            )  # always overhang past bridge edge
-            # North pillar top
+            pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
             BRUSHES.append(
                 box(
                     px - BRIDGE_PILLAR_HW,
@@ -1622,7 +1244,6 @@ def _build_all():
                 )
             )
 
-            # South pillar top
             BRUSHES.append(
                 box(
                     px - BRIDGE_PILLAR_HW,
@@ -1635,13 +1256,6 @@ def _build_all():
                 )
             )
 
-            # Thin cement mortar-seam strip down the middle of each pillar
-            # post's walkway-facing (inside) face — as if the stone posts
-            # were assembled from two halves around a cement core, only
-            # visible from the walkway. A separate protruding decal brush
-            # (not a split of the post's own single brush) to avoid the
-            # qbsp portal-clipping bug documented above the deck-bottom
-            # cross-strip code.
             north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
             BRUSHES.append(
                 box(
@@ -1667,16 +1281,6 @@ def _build_all():
                 )
             )
 
-            # Matching seam on the west-facing end of each post — visible to
-            # a player walking the deck (approaching along the bridge), unlike
-            # a true north/south exterior face which only faces out over the
-            # void. Y-centred on the wall's exterior plane (by2/by1, the
-            # "aligns with the wall exteriors" position), protruding out
-            # past the post's west face (px - BRIDGE_PILLAR_HW) by
-            # BRIDGE_PILLAR_SEAM_D. Runs the full post height, from the deck
-            # up to the cap slab (pdeck to ppil), continuing down through the
-            # wall's own height so it reads as one continuous seam rather
-            # than stopping abruptly at the wall top.
             BRUSHES.append(
                 box(
                     px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
@@ -1700,14 +1304,11 @@ def _build_all():
                 )
             )
 
-            # Fill gap between pier top and deck surface in the overhang zone
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
-            # Pier 6's north fill is added AFTER rotation (see below) so it
-            # isn't swept out of alignment with the fixed deck edge.
             if px != PIER6_X:
                 BRUSHES.append(
                     box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
-                )  # north
+                )
             BRUSHES.append(
                 box(
                     x1,
@@ -1718,23 +1319,17 @@ def _build_all():
                     pdeck,
                     Textures.PILLAR,
                 )
-            )  # south
+            )
 
-            # Cement cap slab + pyramid on top of each stone pillar post
             cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
             north_cap_y1 = (
                 by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG - BRIDGE_PILLAR_CAP_IN_OVH
-            )  # inward past pillar post
-            north_cap_y2 = (
-                by2 + BRIDGE_PILLAR_CAP_OUT_OVH
-            )  # outward (north/road-facing) edge
-            south_cap_y1 = (
-                by1 - BRIDGE_PILLAR_CAP_OUT_OVH
-            )  # outward (south/road-facing) edge
+            )
+            north_cap_y2 = by2 + BRIDGE_PILLAR_CAP_OUT_OVH
+            south_cap_y1 = by1 - BRIDGE_PILLAR_CAP_OUT_OVH
             south_cap_y2 = (
                 by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG + BRIDGE_PILLAR_CAP_IN_OVH
-            )  # inward past pillar post
-            # Cap slabs (flat cement base)
+            )
             BRUSHES.append(
                 box(
                     cap_x1,
@@ -1757,7 +1352,6 @@ def _build_all():
                     Textures.CEMENT,
                 )
             )
-            # Pyramids on top of cap slabs
             BRUSHES.append(
                 pyramid(
                     cap_x1,
@@ -1780,13 +1374,9 @@ def _build_all():
                     Textures.CEMENT,
                 )
             )
-            # Torch bases above pyramid apex — narrow post + wide cup.
-            # Piers 2/3/5 (PIER2_X/PIER3_X/PIER5_X) skip these: they don't
-            # exist in real life, unlike the other piers' torches.
             pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
             torch_ys = [] if px in (PIER2_X, PIER3_X, PIER5_X) else [cy_n, cy_s]
             for torch_center_y in torch_ys:
-                # Narrow stone post (6x6) rising from pyramid tip
                 BRUSHES.append(
                     box(
                         px - BRIDGE_TORCH_POST_HW,
@@ -1798,7 +1388,6 @@ def _build_all():
                         Textures.CEMENT,
                     )
                 )
-                # Wider brick cup/bracket at top holds the flame
                 BRUSHES.append(
                     box(
                         px - BRIDGE_TORCH_CUP_HW,
@@ -1810,11 +1399,6 @@ def _build_all():
                         Textures.BRICK,
                     )
                 )
-                # Flame decal + damaging trigger — built here (unconditional on
-                # bridge.py's own BRIDGE_ENABLED_SUPPORTS, not any entities.py
-                # per-group flag) so pier torches always render, matching
-                # streets.py's own lamp-post/entrance-torch pattern of keeping
-                # decorative lights alongside the geometry they sit on.
                 flame_z = int(
                     pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4
                 )
@@ -1831,18 +1415,6 @@ def _build_all():
                 ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
             if _pier6_rot_bstart is not None:
-                # Rotate Pier 6's entire assembly — below-deck walls/footer/
-                # lintel/base, and the above-deck pillar posts, mortar seams,
-                # pyramid caps, and torches built for this same px above —
-                # together as one rigid unit about the pier's own center.
-                # Earlier this only rotated the below-deck body, leaving the
-                # above-deck pillar posts (and the torches mounted on them)
-                # in their old straight positions; that mismatch at the
-                # deck-level seam was producing overlapping/mis-clipped
-                # brushes there (reported as "invisible brushes" in-game).
-                # Rotating everything together removes that seam entirely.
-                # This is prep for a future new bridge span branching south
-                # at ~PIER6_ROTATION_DEG from here.
                 BRUSHES[_pier6_rot_bstart:] = [
                     b.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
                     for b in BRUSHES[_pier6_rot_bstart:]
@@ -1851,31 +1423,12 @@ def _build_all():
                     e.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
                     for e in ENTITIES[_pier6_rot_estart:]
                 ]
-                # North fill gap — built at the unrotated coordinates then
-                # rotated together with the rest of Pier 6 so it aligns with
-                # the rotated pillar post rather than the fixed deck edge.
                 BRUSHES.append(
                     box(
                         x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR
                     ).rotated_z(PIER6_ROTATION_DEG, px, py_shift)
-                )  # north
+                )
 
-            # Abutment pier (westernmost): solid cement fill, with two distinct
-            # openings on opposite faces —
-            #  * WEST face: a hidden arch-shaped teleport (never actually seen —
-            #    it faces away from the bridge into unreachable terrain) that
-            #    whisks the player up onto the deck.
-            #  * EAST face: a purely decorative, solid cement "opening" (no
-            #    teleport) facing into the walkable west-approach span — this
-            #    is the feature players actually walk past and see.
-            # Both openings sit on top of the shared stone base + cement cap
-            # ramp (built generically for every pier, above, via base_ramp/
-            # base_cap_h — tallest at the west face, descending toward the
-            # east) so the stone is flush with the pier's true faces (not
-            # inset) and the cap is visible along the whole span, starting
-            # at the west face. pier_floor_z tracks the real hillside grade
-            # here (see BRIDGE_PIER_GROUND_Z), so neither opening extends
-            # below grade.
             if px == min(BRIDGE_ARCH_X):
                 ramp_top_west_z = (
                     pier_floor_z
@@ -1887,8 +1440,6 @@ def _build_all():
                     + BRIDGE_ABUTMENT_RAMP_LOW_H
                     + BRIDGE_ABUTMENT_RAMP_CAP_H
                 )
-                # Cement fill leaves room on both faces for their respective
-                # recessed openings, starting above the shared ramp/cap.
                 BRUSHES.append(
                     box(
                         x1 + BRIDGE_PIER_FILL_OFFSET,
@@ -1901,9 +1452,6 @@ def _build_all():
                     )
                 )
 
-                # -- West face: hidden teleport arch (flush, no player-visible
-                # framing needed since this face is never seen), floor raised
-                # to sit on top of the ramp/cap's tall west end. --
                 teleport_floor_z = ramp_top_west_z
                 teleport_stilt_height = (
                     pier_top_z
@@ -1921,15 +1469,8 @@ def _build_all():
                     Textures.TELEPORT,
                     stilt_h=teleport_stilt_height,
                 )
-                abutment_teleport_dest_z = (
-                    int(pdeck) + BRIDGE_TELEPORT_DEST_Z
-                )  # spawn height above deck
+                abutment_teleport_dest_z = int(pdeck) + BRIDGE_TELEPORT_DEST_Z
 
-                # -- East face: decorative cement "opening" — inset from the
-                # pier face (not flush) so a stone rim shows around it, sized
-                # down from the pier's own arch opening so it reads as a
-                # modest doorway, floor raised to sit on top of the ramp/
-                # cap's lower east end.
                 cem_rin = BRIDGE_ABUTMENT_CEMENT_RIN
                 cem_floor_z = ramp_top_east_z
                 cem_stilt_h = max(0, BRIDGE_ABUTMENT_CEMENT_MAX_H - cem_rin)
@@ -1948,18 +1489,16 @@ def _build_all():
                     )
                 )
 
-    # ── Teleport Arches at both ends of bridge ───────────────────────────────────
     for arch_x_start, arch_center_y in [
-        (WORLD_X1 + WALL_T, 0.0),  # west arch — centred at y=0
+        (WORLD_X1 + WALL_T, 0.0),
         (
             WORLD_X2_EXT - WALL_T - ARCH_SLAB_W,
             BRIDGE_EAST_SHIFT_END,
-        ),  # east arch — shifted south with span
+        ),
     ]:
         arch_x1, arch_x2 = arch_x_start, arch_x_start + ARCH_SLAB_W
-        arch_spring_z = BRIDGE_DZ2 + ARCH_STILT_H  # Z where arch curve begins
-        arch_post_width = ARCH_ROUT - ARCH_RIN  # post thickness in Y
-        # South post (extends to ground floor, with overhang)
+        arch_spring_z = BRIDGE_DZ2 + ARCH_STILT_H
+        arch_post_width = ARCH_ROUT - ARCH_RIN
         BRUSHES.append(
             box(
                 arch_x1,
@@ -1971,7 +1510,6 @@ def _build_all():
                 Textures.PILLAR,
             )
         )
-        # North post (extends to ground floor, with overhang)
         BRUSHES.append(
             box(
                 arch_x1,
@@ -1983,7 +1521,6 @@ def _build_all():
                 Textures.PILLAR,
             )
         )
-        # Arch ring segments (rounded top, with overhang)
         arch_segment_angle = 180.0 / A_SEGS
         for i in range(A_SEGS):
             BRUSHES.append(
@@ -2000,16 +1537,10 @@ def _build_all():
                 )
             )
 
-    # Restore worldspawn routing and emit the bridge superstructure as one func_detail
-    # entity — excluded from BSP/vis portal generation, but still solid and rendered.
     BRUSHES = _worldspawn_brushes
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
         DETAIL_BRUSHES = []
-
-    # Vis-hint brushes previously placed here have been removed as they were
-    # intersecting the rotated Pier 6 body and are likely unnecessary for a
-    # map of this scale.
 
     if "abutment_teleport_brush" in locals():
         ENTITIES.append(
@@ -2027,41 +1558,27 @@ def _build_all():
         )
         ENTITIES.append(brush_ent("func_illusionary", abutment_teleport_brush))
 
-    # ── "LOYOLA UNIVERSITY MARYLAND" bridge fascia lettering ─────────────────────
-    # Fascia panel follows the arch: one box per character hanging from deck_bot_z(x)
-    # First letter of each word (L, U, M) stays at full pixel size; the rest shrink slightly.
     _cols = 4
-    _small_px = BRIDGE_FASCIA_PX_W - 1  # one unit smaller than full size
+    _small_px = BRIDGE_FASCIA_PX_W - 1
     _n = len(BRIDGE_FASCIA_TEXT)
-    # Word-initial positions in the forward text (L=0, U=7, M=18)
     _capital_pos = {
         i
         for i, ch in enumerate(BRIDGE_FASCIA_TEXT)
         if ch != " " and (i == 0 or BRIDGE_FASCIA_TEXT[i - 1] == " ")
     }
-    # Mirror positions for the reversed text used on the north face
     _capital_pos_rev = {_n - 1 - i for i in _capital_pos}
 
     def _char_pw(i):
         return BRIDGE_FASCIA_PX_W if i in _capital_pos else _small_px
 
     total_w = sum((_cols + 1) * _char_pw(i) for i in range(_n)) - _char_pw(_n - 1)
-    _fascia_cx = (PIER2_X + PIER3_X) // 2  # centre span midpoint — was hardcoded to 0
-    # (Charles St centreline), which matched when PIER2/PIER3 were symmetric around
-    # X=0. BRIDGE_CENTER_PIER_SPAN tightening only moved PIER2 (west), leaving the
-    # span asymmetric (midpoint now 50, not 0), so the text needs to re-centre on
-    # the actual span rather than the road.
+    _fascia_cx = (PIER2_X + PIER3_X) // 2
     text_x0 = _fascia_cx - total_w // 2
-
-    # No separate background fascia boxes — parapet wall face is the backdrop
 
     def render_text_fascia(
         text, x0, y_face, px_w, px_h, depth, tex, mirror=False, cap_pos=None
     ):
-        """Render text as pixel-font raised boxes on a fascia face.
-        Each character's Z is computed from deck_top_z(x) so letters follow the arch curve.
-        cap_pos: set of character indices that render at full px size (others shrink by 1).
-        mirror=True flips each glyph horizontally (needed for north-facing surface)."""
+        """Return raised pixel-font brushes for text on a fascia face."""
         cols = 4
         rows = 6
         small_pw = px_w - 1
@@ -2079,7 +1596,6 @@ def _build_all():
             bitmap = FASCIA_FONT.get(ch, FASCIA_FONT[" "])
             x_mid = cx + (cols * cpw) / 2
             z_top_cap = int(deck_top_z(x_mid)) + BRIDGE.parapet_h - 14
-            # Bottom-align smaller glyphs with capitals
             z_top = z_top_cap - rows * (px_h - cph)
 
             for row_i, row_bits in enumerate(bitmap):
@@ -2130,8 +1646,6 @@ def _build_all():
 
 
 def build():
-    # Per-section enable flags — each covers one span between adjacent piers.
-    # There is no overall master; each span is toggled independently.
     sections_enabled = {
         "west_approach": BRIDGE_ENABLED_SPAN_WEST_APPROACH,
         "center_span": BRIDGE_ENABLED_SPAN_CENTER,
@@ -2153,21 +1667,10 @@ def build():
 
 
 def _shift_center_span(brushes, entities, enabled_names, offset):
-    """Translate the centre span plus every other currently-enabled section
-    within a build() result by `offset`, as one rigid unit (piers included).
-    The whole bridge is one continuous chain of pier-to-pier sections, so
-    once the centre span moves, every enabled section on either side of it
-    must move with it to stay connected at their shared piers — otherwise
-    whichever section is left behind ends up detached from (and, since the
-    offset here is +Y/+Z, visibly south of and below) the pier it's
-    supposed to meet.
+    """Translate the center span and any other enabled sections by one offset.
 
-    _filter_sections()/_section_accept_ranges() now partition the bridge's
-    piers exclusively — each internal boundary pier is claimed by exactly
-    one currently-enabled section — so extracting each section's geometry
-    one at a time via `extract_names` (while still passing the *full*
-    enabled_names for consistent ownership resolution) can no longer double
-    -count a shared pier; no manual de-dup step is needed.
+    Shared piers stay connected because every enabled section moves as the
+    same rigid assembly.
     """
     dx, dy, dz = offset
     other_names = [n for n in enabled_names if n != "center_span"]
@@ -2190,13 +1693,10 @@ def _shift_center_span(brushes, entities, enabled_names, offset):
 
 
 def build_center_span(offset=(0.0, 0.0, 0.0)):
-    """Return just the centre span's geometry — the curved arch over Charles
-    St between the PIER2/PIER3 abutments (±525) — independent of the rest of
-    the bridge. Pass an (dx, dy, dz) offset to translate the whole span,
-    useful for experimenting with its position without touching the approach
-    spans, piers, or terrain around it. Not wired into generate_map.py's
-    MODULES list; call directly (e.g. from a script or test) when you want to
-    build/inspect it on its own.
+    """Return the center-span geometry, optionally translated by `offset`.
+
+    This helper is separate from generate_map.py's module list and is meant
+    for direct inspection or tests.
     """
     BRUSHES, ENTITIES = _build_all()
     BRUSHES, ENTITIES = _filter_sections(BRUSHES, ENTITIES, ["center_span"])
