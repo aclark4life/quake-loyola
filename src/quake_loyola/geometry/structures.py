@@ -359,6 +359,11 @@ def arch_wall(
 def arch_wall_y(y1, y2, floor_z, rin, rout, segs, tex, stilt_h=None, xc=0.0):
     if segs <= 0:
         raise ValueError(f"arch_wall_y: segs must be > 0, got {segs}")
+    if y1 >= y2:
+        raise ValueError(
+            f"arch_wall_y: requires y1 < y2, got y1={y1}, y2={y2}; "
+            "reversed bounds would silently invert the arch segments"
+        )
     stilt_h = rin if stilt_h is None else stilt_h
     sprz, seg = floor_z + stilt_h, 180.0 / segs
     brushes = [

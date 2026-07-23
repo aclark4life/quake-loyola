@@ -45,59 +45,65 @@ def _parse_bool(value: str) -> bool:
 @config_app.command("show")
 def config_show() -> None:
     """List every flag and build setting, its effective value, and its default."""
-    exists = config.CONFIG_PATH.exists()
-    typer.echo(
-        f"Config file: {config.CONFIG_PATH}"
-        + ("" if exists else " (not created yet — showing defaults)")
-    )
-    typer.echo("\n[flags]")
-    for name in sorted(config.DEFAULTS):
-        value = config.get(name)
-        default = config.DEFAULTS[name]
-        marker = "*" if value != default else " "
-        typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
-    typer.echo("\n[build]")
-    for name in sorted(config.BUILD_DEFAULTS):
-        value = config.get_build(name)
-        default = config.BUILD_DEFAULTS[name]
-        marker = "*" if value != default else " "
-        options = ""
-        if name == "vis_mode":
-            options = ", options: fast, full"
-        elif name == "lighting_preset":
-            from .constants.lighting import LIGHTING_PRESET_NAMES
-
-            options = f", options: {', '.join(LIGHTING_PRESET_NAMES)}"
-        elif name == "fog_density":
-            from .constants.lighting import FOG_DENSITY_NAMES
-
-            options = (
-                f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
-            )
-        elif name == "sky_preset":
-            from .constants.textures import SKY_PRESET_NAMES
-
-            options = f", options: {', '.join(SKY_PRESET_NAMES)}"
+    try:
+        exists = config.CONFIG_PATH.exists()
         typer.echo(
-            f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
+            f"Config file: {config.CONFIG_PATH}"
+            + ("" if exists else " (not created yet — showing defaults)")
         )
-    typer.echo("\n(* = overridden from its default via ql.toml)")
+        typer.echo("\n[flags]")
+        for name in sorted(config.DEFAULTS):
+            value = config.get(name)
+            default = config.DEFAULTS[name]
+            marker = "*" if value != default else " "
+            typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
+        typer.echo("\n[build]")
+        for name in sorted(config.BUILD_DEFAULTS):
+            value = config.get_build(name)
+            default = config.BUILD_DEFAULTS[name]
+            marker = "*" if value != default else " "
+            options = ""
+            if name == "vis_mode":
+                options = ", options: fast, full"
+            elif name == "lighting_preset":
+                from .constants.lighting import LIGHTING_PRESET_NAMES
+
+                options = f", options: {', '.join(LIGHTING_PRESET_NAMES)}"
+            elif name == "fog_density":
+                from .constants.lighting import FOG_DENSITY_NAMES
+
+                options = f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
+            elif name == "sky_preset":
+                from .constants.textures import SKY_PRESET_NAMES
+
+                options = f", options: {', '.join(SKY_PRESET_NAMES)}"
+            typer.echo(
+                f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
+            )
+        typer.echo("\n(* = overridden from its default via ql.toml)")
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
 
 @config_app.command("get")
 def config_get(name: str) -> None:
     """Print the effective value of a single flag or build setting."""
     name_u = name.upper()
-    if name_u in config.DEFAULTS:
-        typer.echo(str(config.get(name_u)))
-    elif name in config.BUILD_DEFAULTS:
-        typer.echo(str(config.get_build(name)))
-    else:
-        typer.echo(
-            f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
+    try:
+        if name_u in config.DEFAULTS:
+            typer.echo(str(config.get(name_u)))
+        elif name in config.BUILD_DEFAULTS:
+            typer.echo(str(config.get_build(name)))
+        else:
+            typer.echo(
+                f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
 
 def _validate_one(name: str, value: str) -> tuple[str, str, object]:
@@ -192,12 +198,16 @@ def config_set(
     # doesn't leave the file partially updated from earlier pairs in the
     # same command.
     validated = [_validate_one(name, value) for name, value in pairs]
-    for kind, key, parsed in validated:
-        if kind == "flag":
-            config.set_flag(key, parsed)
-        else:
-            config.set_build(key, parsed)
-        typer.echo(f"{key} = {parsed}")
+    try:
+        for kind, key, parsed in validated:
+            if kind == "flag":
+                config.set_flag(key, parsed)
+            else:
+                config.set_build(key, parsed)
+            typer.echo(f"{key} = {parsed}")
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
 
 @config_app.command("reset")
@@ -252,30 +262,46 @@ def build(
             err=True,
         )
         raise typer.Exit(code=1)
-    tools_bin = tools_bin_candidates[0]
+    tools_bin = tools_bin_candidates[-1]  # highest-sorting (newest) version wins
 
-    vis_mode = config.get_build("vis_mode")
-    light_extra = config.get_build("light_extra")
+    try:
+        vis_mode = config.get_build("vis_mode")
+        light_extra = config.get_build("light_extra")
 
-    subprocess.run([str(tools_bin / "qbsp"), "loyola.map"], cwd=REPO_ROOT, check=True)
+        subprocess.run(
+            [str(tools_bin / "qbsp"), "loyola.map"], cwd=REPO_ROOT, check=True
+        )
 
-    vis_cmd = [str(tools_bin / "vis")]
-    if vis_mode == "fast":
-        vis_cmd.append("-fast")
-    vis_cmd.append("loyola.bsp")
-    subprocess.run(vis_cmd, cwd=REPO_ROOT, check=True)
+        vis_cmd = [str(tools_bin / "vis")]
+        if vis_mode == "fast":
+            vis_cmd.append("-fast")
+        vis_cmd.append("loyola.bsp")
+        subprocess.run(vis_cmd, cwd=REPO_ROOT, check=True)
 
-    light_cmd = [str(tools_bin / "light")]
-    if light_extra:
-        light_cmd.append("-extra")
-    light_cmd.append("loyola.bsp")
-    subprocess.run(light_cmd, cwd=REPO_ROOT, check=True)
+        light_cmd = [str(tools_bin / "light")]
+        if light_extra:
+            light_cmd.append("-extra")
+        light_cmd.append("loyola.bsp")
+        subprocess.run(light_cmd, cwd=REPO_ROOT, check=True)
 
-    if deploy:
-        maps_dir = Path("/Applications/id1/maps")
-        maps_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy(REPO_ROOT / "loyola.bsp", maps_dir)
-        shutil.copy(REPO_ROOT / "loyola.lit", maps_dir)
-        typer.echo(f"Deployed to {maps_dir}")
+        if deploy:
+            maps_dir = Path("/Applications/id1/maps")
+            maps_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy(REPO_ROOT / "loyola.bsp", maps_dir)
+            shutil.copy(REPO_ROOT / "loyola.lit", maps_dir)
+            typer.echo(f"Deployed to {maps_dir}")
+    except RuntimeError as exc:
+        # config.get_build() failure (malformed ql.toml).
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    except subprocess.CalledProcessError as exc:
+        typer.echo(
+            f"{exc.cmd[0]} exited with code {exc.returncode} — see output above.",
+            err=True,
+        )
+        raise typer.Exit(code=exc.returncode or 1) from exc
+    except OSError as exc:
+        typer.echo(f"Build/deploy failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
     typer.echo("Build complete.")

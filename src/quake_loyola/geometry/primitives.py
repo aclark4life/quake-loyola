@@ -92,6 +92,10 @@ def polygon_prism(pts, z1, z2, tex):
         raise ValueError(f"polygon_prism() requires at least 3 points, got {len(pts)}")
     if z1 == z2:
         raise ValueError(f"polygon_prism: degenerate (zero-height) prism at z={z1}")
+    # Normalize reversed Z bounds so a brush is never accidentally built
+    # inside-out when callers pass swapped min/max, matching box()'s behavior.
+    if z1 > z2:
+        z1, z2 = z2, z1
     # Normalize to CCW winding (positive signed area) so the resulting
     # brush is never accidentally built inside-out for clockwise input.
     signed_area2 = sum(
@@ -412,6 +416,22 @@ def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
+    if z1 >= z2:
+        raise ValueError(
+            f"tri_prism: z1 must be < z2 (got z1={z1}, z2={z2}); "
+            "swap z1/z2 rather than relying on silent inversion"
+        )
+    signed_area2 = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay)
+    if abs(signed_area2) < 1e-6:
+        raise ValueError(
+            f"tri_prism: degenerate (zero-area/collinear) triangle "
+            f"({ax}, {ay}), ({bx}, {by}), ({cx}, {cy})"
+        )
+    if signed_area2 < 0:
+        raise ValueError(
+            f"tri_prism: (a, b, c) must be wound counter-clockwise, got "
+            f"clockwise winding for ({ax}, {ay}), ({bx}, {by}), ({cx}, {cy})"
+        )
     return Brush(
         [
             Face((ax, ay, z2), (bx, by, z2), (ax, ay, z1), tex),
@@ -425,6 +445,21 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
 
 def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
     tt = tt or tex
+    signed_area2 = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay)
+    if abs(signed_area2) < 1e-6:
+        raise ValueError(
+            f"tri_ramp_prism: degenerate (zero-area/collinear) triangle "
+            f"({ax}, {ay}), ({bx}, {by}), ({cx}, {cy})"
+        )
+    if signed_area2 < 0:
+        raise ValueError(
+            f"tri_ramp_prism: (a, b, c) must be wound counter-clockwise, got "
+            f"clockwise winding for ({ax}, {ay}), ({bx}, {by}), ({cx}, {cy})"
+        )
+    if zbot > min(za, zb, zc):
+        raise ValueError(
+            f"tri_ramp_prism: zbot ({zbot}) must be <= za/zb/zc ({za}, {zb}, {zc})"
+        )
     return Brush(
         [
             Face((ax, ay, za), (bx, by, zb), (ax, ay, zbot), tex),
@@ -437,6 +472,17 @@ def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
 
 
 def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    if not (0 <= rin < rout):
+        raise ValueError(
+            f"arch_seg: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
+        )
+    if angle_start_deg >= angle_end_deg:
+        raise ValueError(
+            f"arch_seg: requires angle_start_deg < angle_end_deg, got "
+            f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if xb == xf:
+        raise ValueError(f"arch_seg: degenerate (zero-depth) segment at x={xb}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -457,6 +503,17 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
 
 
 def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    if not (0 <= rin < rout):
+        raise ValueError(
+            f"arch_seg_chord: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
+        )
+    if angle_start_deg >= angle_end_deg:
+        raise ValueError(
+            f"arch_seg_chord: requires angle_start_deg < angle_end_deg, got "
+            f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if xb == xf:
+        raise ValueError(f"arch_seg_chord: degenerate (zero-depth) segment at x={xb}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
@@ -477,6 +534,17 @@ def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, te
 
 
 def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
+    if not (0 <= rin < rout):
+        raise ValueError(
+            f"curb_seg: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
+        )
+    if angle_start_deg >= angle_end_deg:
+        raise ValueError(
+            f"curb_seg: requires angle_start_deg < angle_end_deg, got "
+            f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if z1 == z2:
+        raise ValueError(f"curb_seg: degenerate (zero-height) segment at z={z1}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -497,6 +565,15 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
 
 
 def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
+    if rad <= 0:
+        raise ValueError(f"arch_pie_seg: requires rad > 0, got rad={rad}")
+    if angle_start_deg >= angle_end_deg:
+        raise ValueError(
+            f"arch_pie_seg: requires angle_start_deg < angle_end_deg, got "
+            f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if xb == xf:
+        raise ValueError(f"arch_pie_seg: degenerate (zero-depth) segment at x={xb}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)

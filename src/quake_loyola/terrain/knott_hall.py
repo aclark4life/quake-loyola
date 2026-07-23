@@ -20,14 +20,14 @@ import math
 from ..constants import (
     BRIDGE,
     BRIDGE_ACCESS_WALK_CENTER_X,
-    BRIDGE_ACCESS_WALK_HALF_W,
+    BRIDGE_ACCESS_WALK_HW,
     BRIDGE_ACCESS_WALK_NORTH_OFFSET,
     BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_SUPPORT_BEAM_H,
-    BRIDGE_SUPPORT_HALF_W,
+    BRIDGE_SUPPORT_HW,
     BRIDGE_SUPPORT_PIER_HALF_W,
     BRIDGE_TUBE_GAP,
     BRIDGE_TUBE_HW,
@@ -1723,7 +1723,7 @@ def build_walkway():
         # Spans Y=KNOTT.y2..BRIDGE.y1 (KH north face → bridge south edge).
         # ════════════════════════════════════════════════════════════════════════════════
         east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
-        east_walk_half_width = BRIDGE_ACCESS_WALK_HALF_W
+        east_walk_half_width = BRIDGE_ACCESS_WALK_HW
         east_walk_x2 = east_walk_center_x + east_walk_half_width  # 2152
         east_walk_y2 = (
             BRIDGE.y2
@@ -1783,9 +1783,9 @@ def build_walkway():
         # Position just under the south edge of the bridge deck, shifted north
         # so the beam sits fully under the deck (south face flush with deck edge)
         support_y_center = (
-            BRIDGE.y1 + BRIDGE_SUPPORT_HALF_W + _bent_dy
+            BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy
         )  # flush with south deck edge
-        support_half_width = BRIDGE_SUPPORT_HALF_W  # half-depth of beam/piers (N-S)
+        support_half_width = BRIDGE_SUPPORT_HW  # half-depth of beam/piers (N-S)
         support_y1 = support_y_center - support_half_width
         support_y2 = support_y_center + support_half_width
         # Beam sits just below the walkway slab bottom

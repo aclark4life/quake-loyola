@@ -34,7 +34,7 @@ from .constants import (
     KNOTT_SHAFT_Y1,
     KNOTT_SHAFT_Y2,
     KNOTT_SIDE_WINDOW_DIV_W,
-    KNOTT_SIDE_WINDOW_HALF_W,
+    KNOTT_SIDE_WINDOW_HW,
     KNOTT_SIDE_WINDOW_INNER_LEFT,
     KNOTT_SIDE_WINDOW_INNER_RIGHT,
     KNOTT_SIDE_WINDOW_PROTRUSION,
@@ -44,7 +44,7 @@ from .constants import (
     KNOTT_SIGN_PX_W,
     KNOTT_SIGN_TEXT,
     KNOTT_SIGN_Z_OFFSET,
-    KNOTT_STAIRS_HALF_N,
+    KNOTT_STAIRS_HN,
     KNOTT_STAIRS_MID_Y,
     KNOTT_STAIRS_POST_W,
     KNOTT_STAIRS_RAIL_H,
@@ -640,7 +640,7 @@ def build():
 
     # East wall — three 120-unit wide floor-to-ceiling windows, matching west side
     # Shared window layout variables (used for both east and west walls)
-    ww_half = KNOTT_SIDE_WINDOW_HALF_W
+    ww_half = KNOTT_SIDE_WINDOW_HW
     ww_wall_y1, ww_wall_y2 = KNOTT.y1, KNOTT.y2 - INDENT
     ww_quarter = (ww_wall_y2 - ww_wall_y1) // 4
     ww_c1 = ww_wall_y1 + ww_quarter
@@ -1263,14 +1263,12 @@ def build():
     PLAT_H = 8  # platform slab thickness
     stair_cx = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2  # shaft X centre
     stair_x1 = (
-        stair_cx - KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_TREAD_X // 2
+        stair_cx - KNOTT_STAIRS_HN * KNOTT_STAIRS_TREAD_X // 2
     )  # west edge of stairs
-    stair_x2 = (
-        stair_x1 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_TREAD_X
-    )  # east edge of stairs
+    stair_x2 = stair_x1 + KNOTT_STAIRS_HN * KNOTT_STAIRS_TREAD_X  # east edge of stairs
     for _, _, _, floor_z0, _ in floor_levels():
         half_flight_z = (
-            floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
+            floor_z0 + KNOTT_STAIRS_HN * KNOTT_STAIRS_STEP_R
         )  # half-floor Z (floor_z0 + 80)
         top_flight_z = floor_z0 + KNOTT.floor_h  # next floor surface Z (= exit level)
 
@@ -1300,7 +1298,7 @@ def build():
         )
 
         # North lane: individual treads ascending westward (stair_x2 → stair_x1).
-        for tread_index in range(KNOTT_STAIRS_HALF_N):
+        for tread_index in range(KNOTT_STAIRS_HN):
             step_x_east = stair_x2 - tread_index * KNOTT_STAIRS_TREAD_X
             step_x_west = stair_x2 - (tread_index + 1) * KNOTT_STAIRS_TREAD_X
             step_z1 = floor_z0 + tread_index * KNOTT_STAIRS_STEP_R
@@ -1331,7 +1329,7 @@ def build():
         )
 
         # South lane: individual treads ascending eastward (stair_x1 → stair_x2).
-        for tread_index in range(KNOTT_STAIRS_HALF_N):
+        for tread_index in range(KNOTT_STAIRS_HN):
             step_x_west = stair_x1 + tread_index * KNOTT_STAIRS_TREAD_X
             step_x_east = step_x_west + KNOTT_STAIRS_TREAD_X
             step_z1 = half_flight_z + tread_index * KNOTT_STAIRS_STEP_R
@@ -1353,7 +1351,7 @@ def build():
     # Posts sit OUTSIDE the stair band (on the entrance area and west platform) so
     # they never land on a tread.  Cross rail spans the full stair band between them.
     for _, _, _, floor_z0, _ in floor_levels():
-        half_flight_z = floor_z0 + KNOTT_STAIRS_HALF_N * KNOTT_STAIRS_STEP_R
+        half_flight_z = floor_z0 + KNOTT_STAIRS_HN * KNOTT_STAIRS_STEP_R
         top_flight_z = floor_z0 + KNOTT.floor_h  # next floor surface Z (= exit level)
 
         # ── North lane — south face (KNOTT_STAIRS_MID_Y) ────────────────────────────────

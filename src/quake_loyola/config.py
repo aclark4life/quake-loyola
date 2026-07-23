@@ -255,6 +255,7 @@ def get_build(name: str) -> Any:
 
 
 def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
+    check_load_error()
     if name not in DEFAULTS:
         raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
     raw = _read_toml(path)
@@ -267,6 +268,7 @@ def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
 
 
 def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
+    check_load_error()
     if name not in BUILD_DEFAULTS:
         raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
     raw = _read_toml(path)

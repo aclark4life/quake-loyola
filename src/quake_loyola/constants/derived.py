@@ -25,7 +25,7 @@ from .bridge import (
     BridgeSpec,
 )
 from .dorm import (
-    DORM_BRICK_WALL_HALF_W,
+    DORM_BRICK_WALL_HW,
     DORM_DEPTH,
     DORM_DOOR_OFF,
     DORM_DOOR_W,
@@ -33,7 +33,7 @@ from .dorm import (
     DORM_FLOORS,
     DORM_FRONT_WALKWAY_FENCE_OFFSET,
     DORM_FRONT_WALKWAY_W,
-    DORM_WALL,
+    DORM_WALL_T,
     DormSpec,
 )
 from .ennis import (
@@ -49,7 +49,7 @@ from .knott import (
     KNOTT_DRIVEWAY_HW,
     KNOTT_FLOOR_H,
     KNOTT_FLOORS,
-    KNOTT_WALL,
+    KNOTT_WALL_T,
     KNOTT_WEST_TO_ORIG_CX,
     KNOTT_WEST_TO_PIER_X,
     KNOTT_Y1,
@@ -125,7 +125,7 @@ KNOTT_ENT_X1, KNOTT_ENT_X2 = (
 )
 KNOTT_STAIRS_X2 = KNOTT_ENT_X1 - KNOTT_STAIR_LANDING_GAP
 
-KNOTT_STAIRS_X1 = KNOTT_X1 + KNOTT_WALL + 2 * INDENT
+KNOTT_STAIRS_X1 = KNOTT_X1 + KNOTT_WALL_T + 2 * INDENT
 KNOTT_WEST_ROOM_CX = (KNOTT_X1 + KNOTT_ENT_X1) // 2
 KNOTT_X2 = KNOTT_X1 + KNOTT_BUILDING_W
 KNOTT_NE_PIER_X = KNOTT_X2 - KNOTT_EAST_PIER_FACE_OFFSET
@@ -154,8 +154,8 @@ KNOTT_DRIVEWAY_ES_X2 = KNOTT_DRIVEWAY_RD_X2 + KNOTT_DRIVEWAY_CURB_WALK_W
 KNOTT_DRIVEWAY_JCX_E = KNOTT_DRIVEWAY_ES_X2
 KNOTT_CX = (KNOTT_X1 + KNOTT_X2) // 2
 KNOTT_EAST_ROOM_CX = (KNOTT_ENT_X2 + KNOTT_X2) // 2
-KNOTT_BIY1 = KNOTT_Y1 + KNOTT_WALL
-KNOTT_BIY2 = KNOTT_Y2 - KNOTT_WALL
+KNOTT_BIY1 = KNOTT_Y1 + KNOTT_WALL_T
+KNOTT_BIY2 = KNOTT_Y2 - KNOTT_WALL_T
 KNOTT_DRIVEWAY_Y1 = KNOTT_Y1
 KNOTT_DRIVEWAY_Y2 = KNOTT_Y2
 KNOTT_DRIVEWAY_EXT_Y1 = KNOTT_DRIVEWAY_Y2
@@ -299,7 +299,7 @@ DORM_FLOOR_H = (
 DORM_ROOF_H = 192  # roof ridge rise above eave (independent of floor height)
 DORM_H = DORM_FLOORS * DORM_FLOOR_H
 DORM_PIER_X = min(BRIDGE_ARCH_X)
-DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL
+DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL_T
 DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H
 DORM_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PILLAR_OVERHANG)
 CHARLES_PLT_X_OUT = ROAD_X2 // 4
@@ -309,7 +309,18 @@ ROAD_Z = FLOOR_Z2 + 8
 
 WALK_X1 = KNOTT_ORIG_CX - KNOTT_ENT_HALF_W
 WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
-WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL
+# KH 2nd-floor walkway landing height. NOTE: no longer equal to WALK_ZT1 (the
+# bridge deck height at the same X) — see the KNOTT_GROUND_Z comment above for
+# how the 64->221 hill re-measurement moved this up by 157 units without a
+# matching re-derivation of BRIDGE_DZ2. This is deliberately NOT "fixed" here:
+# re-deriving BRIDGE_DZ2 to close the gap cascades into arch/pier tuning that
+# needs an in-game walkthrough to validate, and the (off-by-default,
+# KNOTT_ENABLED_WALKWAY-gated) walkway connector in terrain/knott_hall.py
+# already bridges the current 157-unit gap via a sloped ramp_slab_y(), so the
+# connector works correctly today — just at a steeper grade than originally
+# intended. TODO: re-derive BRIDGE_DZ2 (or a KH-approach-local rise) for a
+# gentler slope; deferred pending that playtest.
+WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL_T
 WALL_T = 16
 WIN_HALF = 24
 WORLD_X1 = (
@@ -349,7 +360,14 @@ ENNIS_CEMENT_X2 = (
 )  # aligned with east teleport centre, plus ENNIS_CEMENT_EAST_SHIFT
 ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
-ENNIS_X2 = _EAST_FEATURES_X2_EXT - WALL_T
+# NOTE: no module-level ENNIS_X2 here — the actual (current) east end of
+# Ennis Road is `WORLD_X2_EXT - WALL_T`, computed as a local inside
+# streets.py's build() (it dead-ends at the true east world wall, not this
+# module's pre-resize _EAST_FEATURES_X2_EXT anchor). A stale
+# `ENNIS_X2 = _EAST_FEATURES_X2_EXT - WALL_T` constant used to live here,
+# unused by any importer, and disagreed with streets.py's real value by
+# several thousand units — removed rather than fixed, since nothing
+# referenced it.
 BRIDGE_EAST_SHIFT_END = -(
     (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[5]
 ) * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
@@ -480,6 +498,9 @@ def ft_to_units(feet, inches=0):
 
 
 BRIDGE_DECK_Z = deck_top_z(0) + 8
+# Bridge deck height at the KH approach (KNOTT_ORIG_CX) — see WALK_ZT2's
+# comment: this no longer equals WALK_ZT2 by 157 units (deliberately
+# deferred, not a bug to silently "fix" without an in-game walkthrough).
 WALK_ZT1 = int(deck_top_z(KNOTT_ORIG_CX))
 BRIDGE_PAR_W = ft_to_units(2, 6)
 BRIDGE_PILLAR_HW = ft_to_units(2, 5.5) + 8  # +8 units per user request to make the
@@ -560,7 +581,7 @@ KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH = "2149 -312 904"
 KNOTT = KnottSpec(
     floors=KNOTT_FLOORS,
     floor_h=KNOTT_FLOOR_H,
-    wall_t=KNOTT_WALL,
+    wall_t=KNOTT_WALL_T,
     x1=KNOTT_X1,
     x2=KNOTT_X2,
     y1=KNOTT_Y1,
@@ -579,7 +600,7 @@ BRIDGE = BridgeSpec(
 DORM = DormSpec(
     floor_h=DORM_FLOOR_H,
     floors=DORM_FLOORS,
-    wall_t=DORM_WALL,
+    wall_t=DORM_WALL_T,
     depth=DORM_DEPTH,
     x1=DORM_X1,
     x2=DORM_X2,
@@ -611,9 +632,7 @@ DORM_FRONT_WALKWAY_X2 = FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET  # outer (eas
 DORM_FRONT_WALKWAY_X1 = (
     DORM_FRONT_WALKWAY_X2 - DORM_FRONT_WALKWAY_W
 )  # inner (west) edge
-DORM_FRONT_WALKWAY_SPUR_X1 = (
-    DORM_PIER_X + DORM_BRICK_WALL_HALF_W
-)  # spur west = wall E face
+DORM_FRONT_WALKWAY_SPUR_X1 = DORM_PIER_X + DORM_BRICK_WALL_HW  # spur west = wall E face
 DORM_FRONT_WALKWAY_SPUR_Y2 = (
     DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + BRIDGE_CENTER_SPAN_OFFSET[1]
 )  # spur runs north to the brick-wall door's north jamb (shifted with the wall

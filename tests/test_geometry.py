@@ -3,15 +3,21 @@ import unittest
 from quake_loyola.geometry import (
     arch_seg,
     box,
+    box_with_round_hole,
     brush_ent,
     corner_ramp,
     ent,
     gable_slats,
     iron_fence,
     layered_wall,
+    make_pixel_tree,
     make_tree,
     octagon_column,
+    polygon_prism,
+    radial_fan_fills,
     ramp_slab_y,
+    render_text_flat,
+    render_text_flat_x,
     square_wall,
     tri_prism,
 )
@@ -134,6 +140,82 @@ class GuardClauseTests(unittest.TestCase):
         # hanging or dividing by zero deep inside edge_x().
         with self.assertRaises(ValueError):
             gable_slats(0, 100, 50, 0, 16, 16, 0, 8, "t")
+
+
+class RoundHoleAndRadialFanTests(unittest.TestCase):
+    def test_box_with_round_hole_returns_brushes_around_circle(self):
+        pieces = box_with_round_hole(-64, -64, 0, 64, 64, 64, 0, 0, 16, "t", n=16)
+        self.assertTrue(len(pieces) > 0)
+        self.assertTrue(all(isinstance(b, Brush) for b in pieces))
+
+    def test_radial_fan_fills_covers_corner_gaps(self):
+        fills = radial_fan_fills(0, 0, 16, -64, -64, 64, 64, 0, 64, "t", n=16)
+        self.assertTrue(len(fills) > 0)
+        self.assertTrue(all(isinstance(b, Brush) for b in fills))
+
+    def test_radial_fan_fills_rejects_too_few_segments(self):
+        with self.assertRaises(ValueError):
+            radial_fan_fills(0, 0, 16, -64, -64, 64, 64, 0, 64, "t", n=2)
+
+
+class TextRenderingTests(unittest.TestCase):
+    def test_render_text_flat_x_returns_brushes_for_nonblank_text(self):
+        brushes = render_text_flat_x("A", 0, 0, 0, 4, 4, 2, "t")
+        self.assertTrue(len(brushes) > 0)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_render_text_flat_returns_brushes_for_nonblank_text(self):
+        brushes = render_text_flat("A", 0, 0, 0, 4, 4, 2, "t")
+        self.assertTrue(len(brushes) > 0)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_render_text_flat_blank_space_returns_no_brushes(self):
+        self.assertEqual(render_text_flat(" ", 0, 0, 0, 4, 4, 2, "t"), [])
+
+
+class PixelTreeTests(unittest.TestCase):
+    def test_make_pixel_tree_returns_brushes(self):
+        brushes = make_pixel_tree(0, 0, 0)
+        self.assertTrue(len(brushes) > 0)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_make_pixel_tree_rejects_ring_segs_of_one(self):
+        with self.assertRaises(ValueError):
+            make_pixel_tree(0, 0, 0, ring_segs=1)
+
+
+class PolygonPrismNormalizationTests(unittest.TestCase):
+    def test_polygon_prism_normalizes_reversed_z_bounds(self):
+        pts = [(0, 0), (10, 0), (10, 10), (0, 10)]
+        a = polygon_prism(pts, 0, 20, "t")
+        b = polygon_prism(pts, 20, 0, "t")
+        self.assertEqual(len(a.faces), len(b.faces))
+
+    def test_polygon_prism_rejects_degenerate_polygon(self):
+        with self.assertRaises(ValueError):
+            polygon_prism([(0, 0), (1, 0), (2, 0)], 0, 10, "t")
+
+    def test_polygon_prism_rejects_zero_height(self):
+        with self.assertRaises(ValueError):
+            polygon_prism([(0, 0), (1, 0), (1, 1)], 5, 5, "t")
+
+
+class PrimitiveValidationTests(unittest.TestCase):
+    def test_tri_prism_rejects_clockwise_winding(self):
+        with self.assertRaises(ValueError):
+            tri_prism(0, 0, 0, 10, 10, 0, 0, 20, "t")
+
+    def test_tri_prism_rejects_reversed_z(self):
+        with self.assertRaises(ValueError):
+            tri_prism(0, 0, 10, 0, 0, 10, 20, 0, "t")
+
+    def test_arch_seg_rejects_reversed_radii(self):
+        with self.assertRaises(ValueError):
+            arch_seg(0, 10, 0, 0, 32, 16, 0, 45, "t")
+
+    def test_arch_seg_rejects_reversed_angles(self):
+        with self.assertRaises(ValueError):
+            arch_seg(0, 10, 0, 0, 16, 32, 45, 0, "t")
 
 
 if __name__ == "__main__":

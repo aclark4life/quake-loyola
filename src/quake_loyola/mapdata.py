@@ -258,17 +258,23 @@ class Entity:
             rad = math.radians(angle_deg)
             cos_a, sin_a = math.cos(rad), math.sin(rad)
             x, y = ox - cx, oy - cy
-            nx = cx + x * cos_a - y * sin_a
-            ny = cy + x * sin_a + y * cos_a
+            nx = round(cx + x * cos_a - y * sin_a, 1)
+            ny = round(cy + x * sin_a + y * cos_a, 1)
             fields["origin"] = (
                 f"{format_value(nx)} {format_value(ny)} {format_value(oz)}"
             )
         angle = fields.get("angle")
         if angle is not None:
             try:
-                fields["angle"] = format_value(float(angle) + angle_deg)
+                angle_val = float(angle)
             except ValueError:
-                pass
+                angle_val = None
+            if angle_val is not None:
+                # -1 and -2 are Quake sentinels meaning "straight up"/"straight
+                # down" rather than a yaw value — a Z-axis rotation must leave
+                # them untouched, not add angle_deg to them.
+                if angle_val not in (-1, -2):
+                    fields["angle"] = format_value(angle_val + angle_deg)
         brushes = [b.rotated_z(angle_deg, cx, cy) for b in self.brushes]
         return Entity(self.classname, fields, brushes)
 

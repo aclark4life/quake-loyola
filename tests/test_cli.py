@@ -62,3 +62,82 @@ def test_conf_set_sky_preset_rejects_invalid_value(tmp_path):
     assert "sky_preset must be one of" in result.stdout + result.stderr
     # Nothing should have been persisted for an invalid value.
     assert not (tmp_path / "ql.toml").exists()
+
+
+def test_conf_get_vis_mode_default(tmp_path):
+    result = run_ql("conf", "get", "vis_mode", cwd=tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.strip() == "fast"
+
+
+def test_conf_set_vis_mode_full_round_trips(tmp_path):
+    set_result = run_ql("conf", "set", "vis_mode", "full", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "vis_mode = full" in set_result.stdout
+
+    get_result = run_ql("conf", "get", "vis_mode", cwd=tmp_path)
+    assert get_result.returncode == 0
+    assert get_result.stdout.strip() == "full"
+
+
+def test_conf_set_vis_mode_rejects_invalid_value(tmp_path):
+    result = run_ql("conf", "set", "vis_mode", "ultra", cwd=tmp_path)
+    assert result.returncode != 0
+    assert "vis_mode must be" in result.stdout + result.stderr
+    assert not (tmp_path / "ql.toml").exists()
+
+
+def test_conf_get_lighting_preset_default(tmp_path):
+    result = run_ql("conf", "get", "lighting_preset", cwd=tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.strip() == "bright"
+
+
+def test_conf_set_lighting_preset_dusk_round_trips(tmp_path):
+    set_result = run_ql("conf", "set", "lighting_preset", "dusk", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "lighting_preset = dusk" in set_result.stdout
+
+    get_result = run_ql("conf", "get", "lighting_preset", cwd=tmp_path)
+    assert get_result.returncode == 0
+    assert get_result.stdout.strip() == "dusk"
+
+
+def test_conf_set_lighting_preset_rejects_invalid_value(tmp_path):
+    result = run_ql("conf", "set", "lighting_preset", "midnight_sun", cwd=tmp_path)
+    assert result.returncode != 0
+    assert "lighting_preset must be one of" in result.stdout + result.stderr
+    assert not (tmp_path / "ql.toml").exists()
+
+
+def test_conf_get_fog_density_default(tmp_path):
+    result = run_ql("conf", "get", "fog_density", cwd=tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.strip() == "low"
+
+
+def test_conf_set_fog_density_named_round_trips(tmp_path):
+    set_result = run_ql("conf", "set", "fog_density", "high", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "fog_density = high" in set_result.stdout
+
+    get_result = run_ql("conf", "get", "fog_density", cwd=tmp_path)
+    assert get_result.returncode == 0
+    assert get_result.stdout.strip() == "high"
+
+
+def test_conf_set_fog_density_custom_float_round_trips(tmp_path):
+    set_result = run_ql("conf", "set", "fog_density", "0.05", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "fog_density = 0.05" in set_result.stdout
+
+    get_result = run_ql("conf", "get", "fog_density", cwd=tmp_path)
+    assert get_result.returncode == 0
+    assert get_result.stdout.strip() == "0.05"
+
+
+def test_conf_set_fog_density_rejects_invalid_value(tmp_path):
+    result = run_ql("conf", "set", "fog_density", "extreme", cwd=tmp_path)
+    assert result.returncode != 0
+    assert "fog_density must be" in result.stdout + result.stderr
+    assert not (tmp_path / "ql.toml").exists()

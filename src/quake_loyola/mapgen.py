@@ -68,7 +68,15 @@ def build_map():
             group = e.fields.pop("_light_group", None)
             if not e.classname.startswith("light"):
                 kept.append(e)
-            elif group is None or LIGHT_GROUP_FLAGS.get(group):
+                continue
+            if group is not None and group not in LIGHT_GROUP_FLAGS:
+                raise ValueError(
+                    f"Unknown _light_group {group!r} (from {mod.__name__}) — "
+                    f"not one of {sorted(LIGHT_GROUP_FLAGS)}. Add it to "
+                    "LIGHT_GROUP_FLAGS in mapgen.py or fix the typo, rather "
+                    "than letting the fixture silently disappear."
+                )
+            if group is None or LIGHT_GROUP_FLAGS.get(group):
                 # Ungrouped "light" entities have no flag of their own, so
                 # they pass through unfiltered, relying entirely on whatever
                 # section-level flag (if any) already wraps them in their

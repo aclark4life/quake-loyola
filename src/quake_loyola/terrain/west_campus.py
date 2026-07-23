@@ -96,11 +96,12 @@ _wct_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
 # as-surveyed data for gameplay" tradeoff already used for ROAD_X1/
 # BRIDGE_CENTER_PIER_SPAN above.
 _WCT_TAPER_FRACS = (0.2, 0.4, 0.6, 0.8)
-assert FENCE_X1 < _wct_sidewalk_x, (
-    "west_campus_terrain X grid must stay in strict west-to-east order; "
-    "FENCE_X1 has drifted past the sidewalk tie — re-derive the terrain "
-    "grid before widening further."
-)
+if not FENCE_X1 < _wct_sidewalk_x:
+    raise ValueError(
+        "west_campus_terrain X grid must stay in strict west-to-east order; "
+        "FENCE_X1 has drifted past the sidewalk tie — re-derive the terrain "
+        "grid before widening further."
+    )
 
 
 def _wct_taper_x(frac):
@@ -168,12 +169,13 @@ _wct_raw = list(
 )
 _wct_raw.sort(key=lambda pair: pair[0])
 _wct_raw_x = [x for x, _ in _wct_raw]
-assert len(_wct_raw_x) == len(set(_wct_raw_x)) and _wct_raw_x == sorted(_wct_raw_x), (
-    "west_campus_terrain surveyed X columns collided or failed to sort "
-    "strictly ascending — two grid columns landed on the same X (or the "
-    "sort itself is broken); re-derive the terrain grid before widening "
-    "further."
-)
+if not (len(_wct_raw_x) == len(set(_wct_raw_x)) and _wct_raw_x == sorted(_wct_raw_x)):
+    raise ValueError(
+        "west_campus_terrain surveyed X columns collided or failed to sort "
+        "strictly ascending — two grid columns landed on the same X (or the "
+        "sort itself is broken); re-derive the terrain grid before widening "
+        "further."
+    )
 _wct_x = _wct_raw_x + [_wct_taper_x(f) for f in _WCT_TAPER_FRACS] + [_wct_sidewalk_x]
 
 # Y grid: full world Y range, north to south. streets.py's Charles St

@@ -12,7 +12,7 @@ BRIDGE_ARCH_RISE = 100  # deck rise over Charles St (X=0), restored per user
 # removed the visible parabolic curve/crest across the centre span. Back to a
 # ~6.6 ft crest at X=0 above the BRIDGE_ARCH_PIER_RISE=82 level at the piers.
 BRIDGE_ACCESS_WALK_CENTER_X = 2120
-BRIDGE_ACCESS_WALK_HALF_W = 32
+BRIDGE_ACCESS_WALK_HW = 32
 BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
 BRIDGE_ACCESS_WALK_PIER_CLEARANCE = 96
 BRIDGE_BLK_H = 36
@@ -141,7 +141,7 @@ BRIDGE_SQ_D = 1
 BRIDGE_SQ_HH = 6
 BRIDGE_SQ_HW = 8
 BRIDGE_SUPPORT_BEAM_H = 60  # ~1.5x the support pillars' original width (40)
-BRIDGE_SUPPORT_HALF_W = 16
+BRIDGE_SUPPORT_HW = 16
 BRIDGE_SUPPORT_PIER_HALF_W = 25  # 1.25x the original 20
 BRIDGE_TELEPORT_ARCH_X1_OFFSET = 2  # inset from the pier's west face — small, this
 # recess is a hidden/secret teleport, not a player-visible feature.

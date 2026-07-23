@@ -2,8 +2,10 @@ import hashlib
 import unittest
 
 import generate_map
-from quake_loyola import entities, streets
+from quake_loyola import entities, mapgen, maryland_hall, streets
+from quake_loyola.mapdata import Entity
 from quake_loyola.terrain import knott_hall as knott_terrain
+from quake_loyola.terrain import maryland as maryland_terrain
 
 # Golden values captured from the known-good map output with every
 # config.py flag/build setting at its hardcoded default (a local, gitignored
@@ -12,7 +14,7 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1031
 EXPECTED_ENTITIES = 111
-EXPECTED_MD5 = "b68635bc5228c764728be9e744eed39a"
+EXPECTED_MD5 = "cc9467a453c9e2ec5d30d6a6512a1604"
 
 
 class MapRegressionTests(unittest.TestCase):
@@ -51,11 +53,16 @@ class EntitiesBuildTests(unittest.TestCase):
     )
 
     def setUp(self):
-        names = (*self._ENTITY_GROUP_FLAGS, "KNOTT_ENABLED_INTERIOR")
+        names = (
+            *self._ENTITY_GROUP_FLAGS,
+            "KNOTT_ENABLED_INTERIOR",
+            "KNOTT_ENABLED_MONSTERS",
+        )
         self._saved = {name: getattr(entities, name) for name in names}
         for name in self._ENTITY_GROUP_FLAGS:
             setattr(entities, name, True)
         entities.KNOTT_ENABLED_INTERIOR = True
+        entities.KNOTT_ENABLED_MONSTERS = True
 
     def tearDown(self):
         for name, value in self._saved.items():
@@ -76,6 +83,15 @@ class EntitiesBuildTests(unittest.TestCase):
         self.assertTrue(lights, "expected at least one light entity")
         for e in lights:
             self.assertGreater(float(e.fields["light"]), 0)
+
+    def test_knott_monsters_placed_when_enabled(self):
+        # KNOTT_ENABLED_MONSTERS (with KNOTT_ENABLED_INTERIOR) gates KH
+        # ogre/knight placement — exercise that branch explicitly rather
+        # than relying on it being incidentally covered by other flags.
+        _, ents = entities.build()
+        monster_classes = {"monster_ogre", "monster_knight"}
+        monsters = [e for e in ents if e.classname in monster_classes]
+        self.assertTrue(monsters, "expected at least one KH monster entity")
 
     def test_no_duplicate_point_entity_origins(self):
         # Spawn points must not coincide with each other or with a teleport
@@ -157,6 +173,108 @@ class KnottTerrainToggleTests(unittest.TestCase):
             "disabling KH terrain should still leave the street/world-shell "
             "geometry intact",
         )
+
+
+class MarylandBuildTests(unittest.TestCase):
+    """MARYLAND_ENABLED/MARYLAND_ENABLED_TERRAIN both default to False, so
+    maryland_hall.py and terrain/maryland.py's real logic never runs in the
+    default-config regression tests above. Force them on here so both
+    branches actually get exercised."""
+
+    def setUp(self):
+        self._saved = {
+            (maryland_hall, "MARYLAND_ENABLED"): maryland_hall.MARYLAND_ENABLED,
+            (
+                maryland_terrain,
+                "MARYLAND_ENABLED",
+            ): maryland_terrain.MARYLAND_ENABLED,
+            (
+                maryland_terrain,
+                "MARYLAND_ENABLED_TERRAIN",
+            ): maryland_terrain.MARYLAND_ENABLED_TERRAIN,
+        }
+
+    def tearDown(self):
+        for (module, name), value in self._saved.items():
+            setattr(module, name, value)
+
+    def test_maryland_hall_builds_brushes_when_enabled(self):
+        maryland_hall.MARYLAND_ENABLED = True
+        brushes, _ = maryland_hall.build()
+        self.assertTrue(brushes, "expected Maryland Hall to build brushes")
+
+    def test_maryland_hall_builds_nothing_when_disabled(self):
+        maryland_hall.MARYLAND_ENABLED = False
+        brushes, ents = maryland_hall.build()
+        self.assertEqual((brushes, ents), ([], []))
+
+    def test_maryland_terrain_builds_when_terrain_flag_only(self):
+        maryland_terrain.MARYLAND_ENABLED = False
+        maryland_terrain.MARYLAND_ENABLED_TERRAIN = True
+        brushes, _ = maryland_terrain.build()
+        self.assertTrue(
+            brushes, "expected Maryland terrain mound with MARYLAND_ENABLED_TERRAIN"
+        )
+
+    def test_maryland_terrain_builds_nothing_when_both_disabled(self):
+        maryland_terrain.MARYLAND_ENABLED = False
+        maryland_terrain.MARYLAND_ENABLED_TERRAIN = False
+        brushes, ents = maryland_terrain.build()
+        # Both disabled still returns a ring of invisible HINT brushes (to
+        # force a BSP/portal split so the world floor doesn't exceed qbsp's
+        # face-edge limit there) — not truly empty, but no entities and no
+        # visible (non-HINT) geometry.
+        self.assertEqual(ents, [])
+        self.assertTrue(
+            all(f.tex == "hint" for b in brushes for f in b.faces),
+            "expected only HINT brushes when both Maryland flags are off",
+        )
+
+
+class LightGroupFilteringTests(unittest.TestCase):
+    """mapgen.build_map()'s per-module light "_light_group" filtering
+    (LIGHT_GROUP_FLAGS) is otherwise only covered incidentally through the
+    full default build — exercise it directly against a fake module so the
+    keep/drop/unknown-group branches are all checked explicitly."""
+
+    class _FakeModule:
+        @staticmethod
+        def build():
+            return [], [
+                Entity("light", {"_light_group": "torch", "light": "200"}),
+                Entity("light", {"_light_group": "pendant", "light": "200"}),
+                Entity("light", {"light": "200"}),  # ungrouped, passes through
+                Entity("info_player_start", {"origin": "0 0 0"}),
+            ]
+
+    def setUp(self):
+        self._saved_modules = mapgen.MODULES
+        self._saved_torch = mapgen.LIGHT_GROUP_FLAGS["torch"]
+        self._saved_pendant = mapgen.LIGHT_GROUP_FLAGS["pendant"]
+        mapgen.MODULES = [self._FakeModule]
+
+    def tearDown(self):
+        mapgen.MODULES = self._saved_modules
+        mapgen.LIGHT_GROUP_FLAGS["torch"] = self._saved_torch
+        mapgen.LIGHT_GROUP_FLAGS["pendant"] = self._saved_pendant
+
+    def test_disabled_group_is_dropped_enabled_group_kept(self):
+        mapgen.LIGHT_GROUP_FLAGS["torch"] = True
+        mapgen.LIGHT_GROUP_FLAGS["pendant"] = False
+        mb = mapgen.build_map()
+        origins = [e.classname for e in mb.entities]
+        self.assertEqual(origins.count("light"), 2)  # torch + ungrouped kept
+        self.assertIn("info_player_start", origins)
+
+    def test_unknown_light_group_raises(self):
+        class _BadModule:
+            @staticmethod
+            def build():
+                return [], [Entity("light", {"_light_group": "not_a_real_group"})]
+
+        mapgen.MODULES = [_BadModule]
+        with self.assertRaises(ValueError):
+            mapgen.build_map()
 
 
 if __name__ == "__main__":

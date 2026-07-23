@@ -11,7 +11,7 @@ from .constants import (
     DORM_BRICK_PILLAR_PROUD,
     DORM_BRICK_PILLAR_SEPARATION,
     DORM_BRICK_PILLAR_W,
-    DORM_BRICK_WALL_HALF_W,
+    DORM_BRICK_WALL_HW,
     DORM_DOOR_OFF,
     DORM_DOOR_W,
     DORM_ENT_H,
@@ -55,6 +55,7 @@ from .constants import (
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_FENCE,
     WEST_CAMPUS_ENABLED_SIDEWALK,
+    WEST_CAMPUS_ENABLED_TERRAIN,
     WEST_CAMPUS_ENABLED_WALL,
     WORLD_Y2,
     Textures,
@@ -187,7 +188,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
     # ── West brick wall — runs from dorm 2 north face to bridge pier, with door ──
     # Door is centered 160 units north of dorm 2; pillars and iron fence are detail
     # (fence itself is built by build_iron_fence, called at the top of build()).
-    wall_hw = DORM_BRICK_WALL_HALF_W  # half-thickness (thinner than pier)
+    wall_hw = DORM_BRICK_WALL_HW  # half-thickness (thinner than pier)
     # Pier 1 (west_approach) is rigidly shifted north/up along with the
     # center span in bridge.py's _shift_center_span() (see
     # BRIDGE_CENTER_SPAN_OFFSET). The whole wall assembly (door, pillars,
@@ -195,6 +196,13 @@ def build_brick_wall(BRUSHES, ENTITIES):
     # length but still ends right at the pier's true (shifted) location,
     # rather than stretching a single segment into an overly long run.
     wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
+    # Pier 1 is also shifted up (BRIDGE_CENTER_SPAN_OFFSET[2]) along with the
+    # rest of the bridge in _shift_center_span(), so every wall/gate/pillar/
+    # fence height that's pegged to the bridge deck (BRIDGE_DZ2) must rise by
+    # the same amount to stay attached to the pier instead of ending up
+    # BRIDGE_CENTER_SPAN_OFFSET[2] units below it.
+    wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
+    bridge_top_z = BRIDGE_DZ2 + wall_shift_z
     wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y  # no longer at dorm 2's face
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + wall_shift_y
     wall_end_y = DORM_WALL_S_Y2 + wall_shift_y
@@ -210,7 +218,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
             FLOOR_Z2,
             DORM_PIER_X + wall_hw,
             s_door_y - DORM_DOOR_W // 2,
-            BRIDGE_DZ2,
+            bridge_top_z,
             Textures.BUILDING,
         )
     )
@@ -221,7 +229,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
             FLOOR_Z2,
             DORM_PIER_X + wall_hw,
             wall_end_y,
-            BRIDGE_DZ2,
+            bridge_top_z,
             Textures.BUILDING,
         )
     )
@@ -232,7 +240,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
             gate_top,
             DORM_PIER_X + wall_hw,
             s_door_y + DORM_DOOR_W // 2,
-            BRIDGE_DZ2,
+            bridge_top_z,
             Textures.BUILDING,
         )
     )
@@ -241,7 +249,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
     # than all bundled into one shared entity.
     pillar_w = DORM_BRICK_PILLAR_W
     pillar_proud = DORM_BRICK_PILLAR_PROUD
-    pillar_h = BRIDGE_DZ2 + DORM_BRICK_PILLAR_H_OFFSET
+    pillar_h = bridge_top_z + DORM_BRICK_PILLAR_H_OFFSET
     px1 = DORM_PIER_X - wall_hw - pillar_proud
     px2 = DORM_PIER_X + wall_hw + pillar_proud
     cap_h = DORM_BRICK_PILLAR_CAP_H
@@ -291,7 +299,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
         DORM_PIER_X - 1,
         DORM_PIER_X + 1,
         Textures.FENCE,
-        BRIDGE_DZ2,
+        bridge_top_z,
     )
     if fence_brushes:
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
@@ -396,6 +404,23 @@ def build_sidewalk(BRUSHES):
 def build():
     BRUSHES = []
     ENTITIES = []
+
+    # The fence/wall/sidewalk position themselves against the real hillside
+    # via terrain.west_campus.terrain_z(), which stays computable even when
+    # WEST_CAMPUS_ENABLED_TERRAIN is off — but with no terrain fill emitted,
+    # they'd float over (or bury into) a bare cliff with nothing beneath
+    # them. Fail loudly here rather than silently generating that geometry.
+    if (
+        WEST_CAMPUS_ENABLED_FENCE
+        or WEST_CAMPUS_ENABLED_WALL
+        or WEST_CAMPUS_ENABLED_SIDEWALK
+    ) and not WEST_CAMPUS_ENABLED_TERRAIN:
+        raise ValueError(
+            "west_campus.build(): WEST_CAMPUS_ENABLED_FENCE/WALL/SIDEWALK "
+            "follow the real hillside terrain and require "
+            "WEST_CAMPUS_ENABLED_TERRAIN to also be on — enable it (or "
+            "disable the fence/wall/sidewalk) via `ql conf set`."
+        )
 
     if WEST_CAMPUS_ENABLED_FENCE:
         build_iron_fence(ENTITIES)

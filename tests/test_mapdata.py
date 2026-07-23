@@ -42,6 +42,36 @@ class FaceTests(unittest.TestCase):
         self.assertEqual(f.tex, "t")
         self.assertEqual(f.params, "p")
 
+    def test_rotated_z_90_degrees_about_origin(self):
+        # (1, 0, 5) rotated 90 degrees CCW about the Z axis through the
+        # origin -> (0, 1, 5); Z is unaffected.
+        f = Face((1, 0, 5), (2, 0, 5), (1, 1, 5), "t").rotated_z(90)
+        self.assertEqual(f.p1, (0, 1, 5))
+        self.assertEqual(f.p2, (0, 2, 5))
+        self.assertEqual(f.p3, (-1, 1, 5))
+
+    def test_rotated_z_snaps_to_tenth_unit(self):
+        # A 30-degree rotation produces irrational coordinates; rotated_z
+        # must snap them to the documented 0.1-unit grid rather than leaving
+        # raw floating-point noise (see rotated_z's docstring).
+        f = Face((10, 0, 0), (0, 0, 0), (0, 0, 1), "t").rotated_z(30)
+        for coord in (f.p1[0], f.p1[1]):
+            self.assertEqual(coord, round(coord, 1))
+
+    def test_rotated_z_about_nonzero_center(self):
+        f = Face((10, 10, 0), (11, 10, 0), (10, 11, 0), "t").rotated_z(
+            180, cx=10, cy=10
+        )
+        self.assertEqual(f.p1, (10, 10, 0))
+        self.assertEqual(f.p2, (9, 10, 0))
+        self.assertEqual(f.p3, (10, 9, 0))
+
+    def test_is_inside_true_for_point_on_solid_side(self):
+        # Face with normal pointing toward +X; (1, 0, 0) is on the solid side.
+        f = Face((0, 0, 0), (0, 1, 0), (0, 0, 1), "t")
+        self.assertTrue(f.is_inside((1, 0, 0)))
+        self.assertFalse(f.is_inside((-1, 0, 0)))
+
 
 class BrushTests(unittest.TestCase):
     def _brush(self):
@@ -70,6 +100,37 @@ class BrushTests(unittest.TestCase):
         self.assertEqual(moved.faces[0].p1, (0, 0, 5))
         self.assertEqual(b.faces[0].p1, (0, 0, 0))  # original untouched
 
+    def _unit_cube(self):
+        from quake_loyola.geometry import box
+
+        return box(0, 0, 0, 10, 10, 10, "t")
+
+    def test_contains_true_for_interior_point(self):
+        self.assertTrue(self._unit_cube().contains((5, 5, 5)))
+
+    def test_contains_false_for_exterior_point(self):
+        self.assertFalse(self._unit_cube().contains((50, 50, 50)))
+
+    def test_contains_raises_on_empty_brush(self):
+        with self.assertRaises(ValueError):
+            Brush([]).contains((0, 0, 0))
+
+    def test_get_bbox_matches_box_extents(self):
+        lo, hi = self._unit_cube().get_bbox()
+        for a, b in zip(lo, (0, 0, 0), strict=True):
+            self.assertAlmostEqual(a, b)
+        for a, b in zip(hi, (10, 10, 10), strict=True):
+            self.assertAlmostEqual(a, b)
+
+    def test_get_bbox_raises_on_empty_brush(self):
+        with self.assertRaises(ValueError):
+            Brush([]).get_bbox()
+
+    def test_rotated_z_delegates_to_faces(self):
+        b = self._unit_cube().rotated_z(90)
+        self.assertEqual(len(b.faces), 6)
+        self.assertIsInstance(b, Brush)
+
 
 class EntityTests(unittest.TestCase):
     def test_point_entity_field_order(self):
@@ -94,6 +155,42 @@ class EntityTests(unittest.TestCase):
         a.brushes.append(object())
         self.assertEqual(b.fields, {})
         self.assertEqual(b.brushes, [])
+
+    def test_to_map_rejects_quote_in_field_value(self):
+        e = Entity("light", {"targetname": 'bad"value'})
+        with self.assertRaises(ValueError):
+            e.to_map()
+
+    def test_to_map_rejects_newline_in_field_value(self):
+        e = Entity("light", {"targetname": "bad\nvalue"})
+        with self.assertRaises(ValueError):
+            e.to_map()
+
+    def test_translated_shifts_origin_field(self):
+        e = Entity("light", {"origin": "1 2 3"}).translated(10, 20, 30)
+        self.assertEqual(e.fields["origin"], "11 22 33")
+
+    def test_translated_rejects_malformed_origin(self):
+        with self.assertRaises(ValueError):
+            Entity("light", {"origin": "1 2"}).translated(1, 1, 1)
+
+    def test_rotated_z_rotates_origin_and_angle(self):
+        e = Entity("info_player_start", {"origin": "1 0 5", "angle": "0"}).rotated_z(90)
+        self.assertEqual(e.fields["origin"], "0 1 5")
+        self.assertEqual(e.fields["angle"], "90")
+
+    def test_rotated_z_preserves_up_down_angle_sentinels(self):
+        # Quake's angle=-1/-2 mean "straight up"/"straight down", not a yaw
+        # value — a Z-axis rotation must leave them untouched.
+        up = Entity("light", {"origin": "0 0 0", "angle": "-1"}).rotated_z(45)
+        down = Entity("light", {"origin": "0 0 0", "angle": "-2"}).rotated_z(45)
+        self.assertEqual(up.fields["angle"], "-1")
+        self.assertEqual(down.fields["angle"], "-2")
+
+    def test_rotated_z_rotates_brushes(self):
+        brush = Brush([Face((1, 0, 0), (2, 0, 0), (1, 1, 0), "t")])
+        e = Entity("func_detail", {}, [brush]).rotated_z(90)
+        self.assertEqual(e.brushes[0].faces[0].p1, (0, 1, 0))
 
 
 class MapBuilderTests(unittest.TestCase):
