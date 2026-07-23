@@ -1747,6 +1747,20 @@ def build_walkway():
                     Textures.CEMENT,
                 )
             )
+        # Ground-level tie beam from the last (easternmost) pillar to Pier 5,
+        # closing the gap between the bent's final drop pier and the bridge
+        # arch pier it abuts. Same height as the top crossbeam.
+        DETAIL_BRUSHES.append(
+            box(
+                support_pier_xs[-1],
+                support_y1,
+                FLOOR_Z2,
+                beam_x2,
+                support_y2,
+                FLOOR_Z2 + beam_height,
+                Textures.CEMENT,
+            )
+        )
 
     ENTITIES = []
     if DETAIL_BRUSHES:

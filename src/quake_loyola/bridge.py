@@ -336,7 +336,7 @@ def _build_all():
             BRIDGE_ARCH_X[2], BRIDGE_ARCH_X[3], 3, west_margin=0, east_margin=0
         )
         + _parapet_block_centers(
-            BRIDGE.x2, BRIDGE_ARCH_X[4], 3, west_margin=BRIDGE_BLK_HW + 8
+            BRIDGE.x2, BRIDGE_ARCH_X[4], 3, west_margin=0, east_margin=0
         )
     )
 
@@ -949,12 +949,24 @@ def _build_all():
         west_margin=0,
         east_margin=0,
     )
-    # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north blocks; east sub-span open (matches ref)
+    # East flat span: west sub-span (BRIDGE.x2→BRIDGE_ARCH_X[4]) gets 3 north
+    # blocks; east sub-span open (matches ref). Same even-margin treatment as
+    # spans 1/3 above — margin=0 so pier-to-block and block-to-block gaps
+    # come out equal (this span grew via KNOTT_DRIVEWAY_X_SHIFT, so a fixed
+    # asymmetric margin would leave visibly uneven end gaps).
+    _kh_span_n = 3
+    _kh_span_gap = (BRIDGE_ARCH_X[4] - BRIDGE.x2) / (_kh_span_n + 1)
+    assert _kh_span_gap >= BRIDGE_BLK_PIR_M, (
+        f"KH span parapet-block gap ({_kh_span_gap:.1f}) is tighter than the "
+        f"minimum pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or "
+        "shorten the even-margin spacing before it can safely use margin=0."
+    )
     add_parapet_blocks(
         BRIDGE.x2,
         BRIDGE_ARCH_X[4],
-        3,
-        west_margin=BRIDGE_BLK_HW + 8,
+        _kh_span_n,
+        west_margin=0,
+        east_margin=0,
         n_south=0,
         y_shift_fn=east_y_shift,
     )
@@ -1095,8 +1107,9 @@ def _build_all():
     add_parapet_base_lights(
         BRIDGE.x2,
         BRIDGE_ARCH_X[4],
-        3,
-        west_margin=BRIDGE_BLK_HW + 8,
+        _kh_span_n,
+        west_margin=0,
+        east_margin=0,
         n_south=0,
         y_shift_fn=east_y_shift,
     )
@@ -1119,8 +1132,9 @@ def _build_all():
     add_parapet_squares(
         BRIDGE.x2,
         BRIDGE_ARCH_X[4],
-        3,
-        west_margin=BRIDGE_BLK_HW + 8,
+        _kh_span_n,
+        west_margin=0,
+        east_margin=0,
         n_south=0,
         y_shift_fn=east_y_shift,
     )

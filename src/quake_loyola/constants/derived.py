@@ -129,13 +129,23 @@ KNOTT_STAIRS_X1 = KNOTT_X1 + KNOTT_WALL + 2 * INDENT
 KNOTT_WEST_ROOM_CX = (KNOTT_X1 + KNOTT_ENT_X1) // 2
 KNOTT_X2 = KNOTT_X1 + KNOTT_BUILDING_W
 KNOTT_NE_PIER_X = KNOTT_X2 - KNOTT_EAST_PIER_FACE_OFFSET
-KNOTT_DRIVEWAY_CORRIDOR_X1 = KNOTT_X2
+# Shifts the driveway (and, further below, Piers 5/6) east of the building's
+# raw east wall (KNOTT_X2), independent of the building itself, to widen the
+# Pier4-Pier5 span. Since KNOTT is currently disabled, the resulting gap
+# between the (unbuilt) building east wall and the driveway's west sidewalk
+# isn't visually relevant right now.
+KNOTT_DRIVEWAY_X_SHIFT = 300
+KNOTT_DRIVEWAY_CORRIDOR_X1 = KNOTT_X2 + KNOTT_DRIVEWAY_X_SHIFT
 KNOTT_DRIVEWAY_CORRIDOR_X2 = (
-    KNOTT_X2 + CHARLES_WALK_W + 2 * KNOTT_DRIVEWAY_HW + CHARLES_WALK_W
+    KNOTT_X2
+    + KNOTT_DRIVEWAY_X_SHIFT
+    + CHARLES_WALK_W
+    + 2 * KNOTT_DRIVEWAY_HW
+    + CHARLES_WALK_W
 )
-KNOTT_DRIVEWAY_WS_X1 = KNOTT_X2
+KNOTT_DRIVEWAY_WS_X1 = KNOTT_X2 + KNOTT_DRIVEWAY_X_SHIFT
 KNOTT_DRIVEWAY_JCX_X1 = KNOTT_DRIVEWAY_WS_X1
-KNOTT_DRIVEWAY_WS_X2 = KNOTT_X2 + KNOTT_DRIVEWAY_CURB_WALK_W
+KNOTT_DRIVEWAY_WS_X2 = KNOTT_X2 + KNOTT_DRIVEWAY_X_SHIFT + KNOTT_DRIVEWAY_CURB_WALK_W
 KNOTT_DRIVEWAY_RD_X1 = KNOTT_DRIVEWAY_WS_X2
 CHARLES_PLT_BR_X = KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_HW // 2
 KNOTT_DRIVEWAY_RD_X2 = KNOTT_DRIVEWAY_RD_X1 + 2 * KNOTT_DRIVEWAY_HW
@@ -177,11 +187,14 @@ BRIDGE_ARCH_X = [
     # pinned to KNOTT_PIER_X (the real KH west pier) so span 2 can be
     # lengthened without moving Pier 3/the centre span; the resulting gap to
     # the real building pier is absorbed by the flat Pier4-Pier5 span below.
-    2400,  # Pier 5 — decoupled from KNOTT_NE_PIER_X (2454); clears the KH
-    # driveway west sidewalk (2486-2566) with a 41-unit margin.
-    3150,  # Pier 6 — mid-span pier in extended east section (moved east, clear of
-    # KH driveway roadway [2566-2822]/sidewalks [2486-2902]; sits in Ennis Rd
-    # pavement between the driveway and the Ennis-east teleport arch [3440-3472])
+    2400 + KNOTT_DRIVEWAY_X_SHIFT,  # Pier 5 — decoupled from KNOTT_NE_PIER_X
+    # (2454); shifted east along with the driveway (KNOTT_DRIVEWAY_X_SHIFT)
+    # to widen the Pier4-Pier5 span while keeping the same clearance from
+    # the driveway's west sidewalk.
+    3150 + KNOTT_DRIVEWAY_X_SHIFT,  # Pier 6 — mid-span pier in extended east
+    # section, shifted east along with Pier 5/the driveway so it stays clear
+    # of the KH driveway roadway/sidewalks and between the driveway and the
+    # Ennis-east teleport arch.
 ]
 CHARLES_LAMP_POST_XS = [
     KNOTT_NE_PIER_X - CHARLES_LAMP_POST_EAST_SETBACK,

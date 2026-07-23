@@ -136,9 +136,9 @@ BRIDGE_SEG_SPAN_W = 32
 BRIDGE_SQ_D = 1
 BRIDGE_SQ_HH = 6
 BRIDGE_SQ_HW = 8
-BRIDGE_SUPPORT_BEAM_H = 60  # 1.5x the support pillars' width (2*PIER_HALF_W=40)
+BRIDGE_SUPPORT_BEAM_H = 60  # ~1.5x the support pillars' original width (40)
 BRIDGE_SUPPORT_HALF_W = 16
-BRIDGE_SUPPORT_PIER_HALF_W = 20
+BRIDGE_SUPPORT_PIER_HALF_W = 25  # 1.25x the original 20
 BRIDGE_TELEPORT_ARCH_X1_OFFSET = 2  # inset from the pier's west face — small, this
 # recess is a hidden/secret teleport, not a player-visible feature.
 BRIDGE_TELEPORT_ARCH_X2_OFFSET = 18  # 16-unit slab thickness
