@@ -12,7 +12,7 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1027
 EXPECTED_ENTITIES = 111
-EXPECTED_MD5 = "46fbc463bb4fc32307190ec9bcebdf91"
+EXPECTED_MD5 = "23e2818b2b9bb56bb1d5a32ad08b5e6d"
 
 
 class MapRegressionTests(unittest.TestCase):

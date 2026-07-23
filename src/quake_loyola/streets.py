@@ -2457,13 +2457,18 @@ def build():
     for curb_x1, curb_x2, _sw_d, _tile_x1, _tex_from_x in (
         (
             _west_curb_x1,
-            KNOTT.x2,
+            KNOTT_DRIVEWAY_WS_X1,
             CHARLES_WALK_W * 2 + 56,
             _west_curb_x1 + _SW_SLAB_LEN + _SW_GAP,
             (_west_curb_x1 + _SW_SLAB_LEN + _SW_GAP, Textures.WHITE_STONE),
         ),  # west segment — remaining panels (first panel built above); curb
         # wall/gap still span the full curb_x1..curb_x2 width; panels from
-        # x=418 (the tile containing 470,631) and east are white-stone
+        # x=418 (the tile containing 470,631) and east are white-stone.
+        # Extended east to KNOTT_DRIVEWAY_WS_X1 (rather than stopping at the
+        # KH building's raw east wall, KNOTT.x2) so the sidewalk keeps
+        # covering the ground under the widened KH span all the way to
+        # where the shifted driveway's own sidewalk picks up — see
+        # KNOTT_DRIVEWAY_X_SHIFT.
         (
             KNOTT_DRIVEWAY_ES_X2,
             ENNIS_X2,
