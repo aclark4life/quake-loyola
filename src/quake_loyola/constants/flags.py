@@ -43,6 +43,9 @@ KNOTT_ENABLED_TERRAIN = _flag(
     "KNOTT_ENABLED_TERRAIN"
 )  # Knott terrain, embankment, and driveway.
 KNOTT_ENABLED = _flag("KNOTT_ENABLED")  # Knott Hall shell.
+KNOTT_ENABLED_NEW = _flag(
+    "KNOTT_ENABLED_NEW"
+)  # Prototype Knott Hall shell (walls + roof, no floors) sized against real terrain.
 
 # Entity groups.
 ENTITIES_ENABLED_TELEPORTS = _flag("ENTITIES_ENABLED_TELEPORTS")  # Teleports.

@@ -1087,7 +1087,7 @@ def build():
     return BRUSHES + walk_brushes, walk_entities
 
 
-def _kh_hill_ground_z(x, y):
+def kh_hill_ground_z(x, y):
     """Return the modeled Knott hillside ground height at ``(x, y)``."""
     _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
     _flat_z = FLOOR_Z2 + CHARLES_WALK_H
@@ -1286,7 +1286,7 @@ def build_walkway():
 
         support_y_center = (support_y1 + support_y2) / 2.0
         for pier_x in support_pier_xs:
-            pier_ground_z = _kh_hill_ground_z(pier_x, support_y_center)
+            pier_ground_z = kh_hill_ground_z(pier_x, support_y_center)
             DETAIL_BRUSHES.append(
                 box(
                     pier_x - support_pier_half_width,
@@ -1300,8 +1300,8 @@ def build_walkway():
             )
 
         _tie_x1 = support_pier_xs[-1]
-        _tie_z1 = _kh_hill_ground_z(_tie_x1, support_y_center)
-        _tie_z2 = _kh_hill_ground_z(beam_x2, support_y_center)
+        _tie_z1 = kh_hill_ground_z(_tie_x1, support_y_center)
+        _tie_z2 = kh_hill_ground_z(beam_x2, support_y_center)
         DETAIL_BRUSHES.append(
             ramp_slab(
                 _tie_x1,
