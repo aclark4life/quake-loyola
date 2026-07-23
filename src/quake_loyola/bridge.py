@@ -617,21 +617,35 @@ def _build_all():
     # Cross-strip decals (see note above): one func_illusionary brush per
     # CROSS_STRIP_X position, spanning the same Y-extent as the longitudinal
     # wood band (_dw_y1b.._dw_y2b — stopping short of the parapet-hidden
-    # edges, same as the rest of the underside), hung BRIDGE_DECK_CROSS_STRIP_DROP
-    # units below the structural deck bottom at that X so it reads as flush without
-    # being exactly coplanar with (and z-fighting against) the structural slab.
+    # edges, same as the rest of the underside), embedded
+    # BRIDGE_DECK_CROSS_STRIP_DROP units up into the structural deck bottom
+    # at that X so its visible (bottom) face touches the deck flush with no
+    # air gap, while still avoiding an exactly-coplanar top face (and the
+    # z-fighting that would cause against the structural slab). An earlier
+    # version hung the strip BELOW the deck bottom instead of embedding it,
+    # which read as visibly floating/detached from the deck.
+    # Built as a ramp_slab (sloped, not a flat box) following deck_bot_z at
+    # both the west and east edges of the strip — on the raked approach
+    # spans (west of Pier2, east of Pier3) the deck bottom drops ~5-6 units
+    # across the strip's own 64-unit width, so a flat box floated visibly
+    # off the surface at one edge and clipped through it at the other; a
+    # sloped strip stays flush with the structural slab along its full width.
     _cross_strip_brushes = []
     for _cx in CROSS_STRIP_X:
-        _strip_z2 = deck_bot_z(_cx) - BRIDGE_DECK_CROSS_STRIP_DROP
-        _strip_z1 = _strip_z2 - BRIDGE_DECK_CROSS_STRIP_H
+        _strip_x1 = _cx - BRIDGE_DECK_CROSS_STRIP_HW
+        _strip_x2 = _cx + BRIDGE_DECK_CROSS_STRIP_HW
+        _strip_zt1 = deck_bot_z(_strip_x1) + BRIDGE_DECK_CROSS_STRIP_DROP
+        _strip_zt2 = deck_bot_z(_strip_x2) + BRIDGE_DECK_CROSS_STRIP_DROP
         _cross_strip_brushes.append(
-            box(
-                _cx - BRIDGE_DECK_CROSS_STRIP_HW,
+            ramp_slab(
+                _strip_x1,
+                _strip_x2,
                 _dw_y1b,
-                _strip_z1,
-                _cx + BRIDGE_DECK_CROSS_STRIP_HW,
                 _dw_y2b,
-                _strip_z2,
+                _strip_zt1 - BRIDGE_DECK_CROSS_STRIP_H,
+                _strip_zt2 - BRIDGE_DECK_CROSS_STRIP_H,
+                _strip_zt1,
+                _strip_zt2,
                 Textures.GABLE,
                 tb_params="0 0 90 1 1",
             )
