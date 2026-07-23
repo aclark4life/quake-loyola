@@ -905,6 +905,12 @@ def build():
         (700, 67),
         (900, 78),  # crest — real elevation levels off from here on
         (KNOTT.x1, 78),  # X=1206, Knott Hall west edge
+        # Hold the crest flat through span 4/kh_span (Pier4-Pier5) instead
+        # of starting the taper right at KNOTT.x1 — per explicit request to
+        # extend span 3's (Pier3-Pier4) terrain height east across span 4,
+        # rather than following the real Y=0 survey's own decline there (no
+        # real data exists past X=1206 anyway; see note below).
+        (BRIDGE_ARCH_X[4], 78),  # Pier 5 — span 4's east end
         # Taper down to flat sidewalk grade by KNOTT_DRIVEWAY_WS_X1 instead
         # of holding flat — the WS/RD/ES driveway junction north of Y2 (see
         # "West sidewalk — cement..." etc. below) is a paved, flat corridor
@@ -928,10 +934,30 @@ def build():
         # ends, matching the flat plateau behind it and the flat sidewalk
         # ahead of it) spreads the grade change out gradually instead of
         # concentrating it at one seam.
-        (1206 + 0.2 * 1280, 78 * (1 - (3 * 0.2**2 - 2 * 0.2**3))),
-        (1206 + 0.4 * 1280, 78 * (1 - (3 * 0.4**2 - 2 * 0.4**3))),
-        (1206 + 0.6 * 1280, 78 * (1 - (3 * 0.6**2 - 2 * 0.6**3))),
-        (1206 + 0.8 * 1280, 78 * (1 - (3 * 0.8**2 - 2 * 0.8**3))),
+        #
+        # This S-curve now runs from Pier 5 to KNOTT_DRIVEWAY_WS_X1 (a
+        # short ~86-unit run) instead of from KNOTT.x1 (a ~1280-unit run) —
+        # a much steeper drop than before, but it's tucked right against
+        # Pier 5's own abutment/driveway-corridor edge, reading as an
+        # engineered slope down to the paved corridor rather than an open
+        # hillside, which real cut-and-fill road/bridge approaches usually
+        # have anyway.
+        (
+            BRIDGE_ARCH_X[4] + 0.2 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.2**2 - 2 * 0.2**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.4 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.4**2 - 2 * 0.4**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.6 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.6**2 - 2 * 0.6**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.8 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.8**2 - 2 * 0.8**3)),
+        ),
         (KNOTT_DRIVEWAY_WS_X1, 0),
     ]
 
@@ -1535,6 +1561,64 @@ def build():
     return BRUSHES + walk_brushes, walk_entities
 
 
+def _kh_hill_ground_z(x, y):
+    """Real-elevation KH hill ground height at (x, y).
+
+    Standalone re-derivation of the hill-profile / Y-taper model built by
+    the "Terrain south of Ennis, east of Charles verge, west of the
+    driveway" section of build() above (same _hill_profile breakpoints,
+    same Y=0..ENNIS_SW_EDGE taper down to flat grade) — build_walkway()
+    needs this so the support bent's piers/tie-beam can rest directly on
+    the actual (already-sloped) hill surface instead of assuming flat
+    grade and inventing a competing/overlapping mound of their own.
+    """
+    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
+    _flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    _hill_profile = [
+        (_charles_verge_x2, 0),
+        (_charles_verge_x2 + 80, 30),
+        (525, 42),
+        (700, 67),
+        (900, 78),
+        (KNOTT.x1, 78),
+        (BRIDGE_ARCH_X[4], 78),
+        (
+            BRIDGE_ARCH_X[4] + 0.2 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.2**2 - 2 * 0.2**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.4 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.4**2 - 2 * 0.4**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.6 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.6**2 - 2 * 0.6**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.8 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.8**2 - 2 * 0.8**3)),
+        ),
+        (KNOTT_DRIVEWAY_WS_X1, 0),
+    ]
+
+    def _hill_z(px):
+        for (px1, pz1), (px2, pz2) in zip(
+            _hill_profile, _hill_profile[1:], strict=False
+        ):
+            if px1 <= px <= px2:
+                t = (px - px1) / (px2 - px1) if px2 != px1 else 0.0
+                return _flat_z + pz1 + t * (pz2 - pz1)
+        return _flat_z + _hill_profile[-1][1]
+
+    hz = _hill_z(x)
+    if y <= 0:
+        return hz
+    if y >= ENNIS_SW_EDGE:
+        return _flat_z
+    t = y / ENNIS_SW_EDGE
+    return hz + (_flat_z - hz) * t
+
+
 def build_walkway():
     """KH pedestrian walkway — the path connecting the bridge span to Knott
     Hall, its ground-level accessible route around Pier 5, and the concrete
@@ -1735,12 +1819,21 @@ def build_walkway():
         step = (beam_x2 - beam_x1) / 6  # 5 interior points -> 6 equal segments
         support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
         support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
+        # Ground under the bent now follows the real hill terrain, which
+        # itself holds span 3's (Pier3-Pier4) crest height flat across span
+        # 4/kh_span (Pier4-Pier5) instead of declining early — see the
+        # _hill_profile extension in build() above. Rest each pier directly
+        # on that (now-extended) real surface at its own (x, y) — same
+        # technique as real bridge bents on sloped ground, where drop-pier
+        # lengths vary to keep the cap beam level.
+        support_y_center = (support_y1 + support_y2) / 2.0
         for pier_x in support_pier_xs:
+            pier_ground_z = _kh_hill_ground_z(pier_x, support_y_center)
             DETAIL_BRUSHES.append(
                 box(
                     pier_x - support_pier_half_width,
                     support_y1,
-                    FLOOR_Z2,
+                    pier_ground_z,
                     pier_x + support_pier_half_width,
                     support_y2,
                     beam_bottom_z,
@@ -1749,15 +1842,23 @@ def build_walkway():
             )
         # Ground-level tie beam from the last (easternmost) pillar to Pier 5,
         # closing the gap between the bent's final drop pier and the bridge
-        # arch pier it abuts. Same height as the top crossbeam.
+        # arch pier it abuts. Same height as the top crossbeam. Its bottom
+        # follows the real hill's slope between the two endpoints (a ramp,
+        # not a flat box) so it sits flush on the ground the whole way
+        # instead of floating or burying one end.
+        _tie_x1 = support_pier_xs[-1]
+        _tie_z1 = _kh_hill_ground_z(_tie_x1, support_y_center)
+        _tie_z2 = _kh_hill_ground_z(beam_x2, support_y_center)
         DETAIL_BRUSHES.append(
-            box(
-                support_pier_xs[-1],
-                support_y1,
-                FLOOR_Z2,
+            ramp_slab(
+                _tie_x1,
                 beam_x2,
+                support_y1,
                 support_y2,
-                FLOOR_Z2 + beam_height,
+                _tie_z1,
+                _tie_z2,
+                _tie_z1 + beam_height,
+                _tie_z2 + beam_height,
                 Textures.CEMENT,
             )
         )

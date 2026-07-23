@@ -10,9 +10,9 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # ql.toml with overrides would otherwise change brush/entity counts and the
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
-EXPECTED_BRUSHES = 1027
+EXPECTED_BRUSHES = 1031
 EXPECTED_ENTITIES = 111
-EXPECTED_MD5 = "23e2818b2b9bb56bb1d5a32ad08b5e6d"
+EXPECTED_MD5 = "eab46c3154a79bdcff6341a3284f4f19"
 
 
 class MapRegressionTests(unittest.TestCase):
