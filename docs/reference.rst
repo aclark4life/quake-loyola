@@ -105,11 +105,10 @@ or buildings.
    ``bridge.py``, ``entities.py``, and ``terrain/knott_hall.py`` still reference
    the live ``WORLD_X2_EXT`` internally for some of the same
    Ennis/east-campus features that ``_EAST_FEATURES_X2``/``_EAST_FEATURES_X2_EXT``
-   now anchor in ``constants/derived.py``. These modules are currently disabled via
-   their master switches; when they're re-enabled, they should be repointed
-   at the new fixed anchors so behavior matches the disabled-state geometry
-   exactly, or explicitly re-derived if the intent is for them to reach the
-   new world boundary.
+   now anchor in ``constants/derived.py``, so their geometry tracks the live
+   world boundary rather than the fixed anchors used elsewhere for the same
+   features. Repointing them at the fixed anchors (or explicitly re-deriving
+   the fixed anchors to match) would make the two approaches consistent.
 
 World size validation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -259,22 +258,20 @@ approximation is refined):
   before committing to a grade model; the current 6 points are a coarse
   first pass.
 
-**Action items for future terrain/building re-derivation** (not yet
-implemented — ``WEST_CAMPUS_ENABLED``, ``KNOTT_ENABLED_TERRAIN``,
-``KNOTT_ENABLED`` remain disabled):
+**Current status:** ``KNOTT_GROUND_Z`` is **221 units** (14.6 ft), matching
+the re-measured rise at Knott Hall's west edge, and
+``quake_loyola.terrain.knott_hall`` models the continued eastward climb
+toward Ennis Parallel from real elevation samples rather than a flat
+plateau. ``WEST_CAMPUS_ENABLED_TERRAIN`` and ``KNOTT_ENABLED_TERRAIN``
+default to enabled; ``KNOTT_ENABLED`` (the Knott Hall building shell
+itself) defaults to disabled pending further interior work.
 
-- Raise ``KNOTT_GROUND_Z`` from 64 to **221 units** (``ft_to_units(14.6)``)
-  to match the re-measured rise at Knott Hall's west edge.
-- Model the continued eastward climb toward Ennis Parallel — from the
-  re-measured data, roughly a further **+70 units** (262 -> ~291) over the
-  Knott Hall east edge -> Ennis Parallel span — rather than a single flat
-  plateau.
-- Consider giving Charles St (and the bridge/floor it connects to) an
-  overall north-south grade rather than a flat ``ROAD_Z``, if map fidelity
-  warrants it — a substantial change affecting many downstream Z constants.
-  Re-sample with more points along the centerline first; the current
-  re-measurement doesn't yet support picking a specific grade value with
-  confidence.
+**Open item:** Charles St still uses a single flat ``ROAD_Z``
+(``FLOOR_Z2 + 8``) rather than the ~10 ft north-south grade measured along
+the corridor — giving the road (and the bridge/floor it connects to) an
+overall slope would be a substantial change affecting many downstream Z
+constants, and would benefit from a denser re-sample along the centerline
+first.
 
 Terminology
 -----------
@@ -307,7 +304,7 @@ lives in the module docstring of :mod:`quake_loyola.constants`.
    * - ``XS``/``YS``
      - A *list* (plural) of X or Y positions.
    * - ``N``/``S``/``E`` (e.g. ``NY``)
-     - Compass direction (Quake: −Y = north, +Y = south, +X = east);
+     - Compass direction (Quake: +Y = north, −Y = south, +X = east);
        ``NY`` = north-edge Y.
    * - ``H`` / ``HH``
      - Height / half-height.

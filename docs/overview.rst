@@ -53,7 +53,7 @@ Every numeric dimension lives in :mod:`quake_loyola.constants`.  Key groups:
   ``DORM_SOUTH1_*``, floor heights, embankment slopes.
 * **Roads / streets** — ``ROAD_X1/X2``, ``FLOOR_Z1/Z2``.
 * :class:`~quake_loyola.constants.Textures` — a namespace of texture name
-  strings used throughout (``GROUND``, ``WALL``, ``BRICK``, etc.).
+  strings used throughout (``GROUND``, ``BRICK``, ``STONE``, etc.).
 
 Module responsibilities
 -----------------------

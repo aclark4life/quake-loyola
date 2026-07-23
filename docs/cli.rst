@@ -57,7 +57,7 @@ either the legacy ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
 .. code-block:: bash
 
    ql conf set KNOTT_ENABLED true          # flip a module/light flag on or off
-   ql conf set bridge_enabled true         # names are case-insensitive
+   ql conf set knott_enabled true          # names are case-insensitive
    ql conf set vis_mode full               # "fast" (default) or "full" vis pass
    ql conf set light_extra true            # light -extra (2x2 supersampling)
    ql conf set lighting_preset dusk        # dawn/midday/golden_hour/dusk/overcast/night/bright/afternoon
@@ -66,11 +66,6 @@ either the legacy ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
 
    # Set several settings in one command:
    ql conf set vis_mode=full lighting_preset=dusk fog_density=high
-
-``BRIDGE_ENABLED`` and ``WEST_CAMPUS_ENABLED`` are convenience master
-switches — setting either ``true`` forces every one of their
-``<AREA>_ENABLED_<section>`` sub-flags on too, overriding individual
-settings.
 
 ``ql conf reset``
 ~~~~~~~~~~~~~~~~~
