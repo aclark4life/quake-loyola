@@ -10,6 +10,7 @@ and removed.
 """
 
 from .constants import (
+    BRIDGE_PILLAR_HW,
     KNOTT_ENABLED_NEW,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
@@ -17,10 +18,10 @@ from .constants import (
     KNOTT_SIGN_PX_W,
     KNOTT_SIGN_TEXT,
     KNOTT_SIGN_Z_OFFSET,
-    KNOTT_X1,
-    KNOTT_X2,
     KNOTT_Y1,
     KNOTT_Y2,
+    PIER4_X,
+    PIER5_X,
     Textures,
 )
 from .geometry import box, render_text_flat
@@ -29,21 +30,27 @@ from .terrain.knott_hall import kh_hill_ground_z
 WALL_T = 16
 ROOF_T = 16
 BUILDING_H = 1344  # Was 1152 (previously bumped from 960); a little taller again.
+CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
+CORNER_CUT_W_NE = 128  # East notch inset from X2.
+CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
 
-# Adjustments layered on top of the shared KNOTT_X1/X2/Y1/Y2 footprint so this
-# prototype can be nudged independently without disturbing the constants the
-# rest of the map (bridge alignment, driveway, etc.) still relies on.
-WIDEN_EAST = 100  # A little wider east/west, added on the east side only.
-NARROW_WEST = 100  # A little less wide, trimmed from the west side.
-SHIFT_EAST = 150  # A little further east (+X).
 SHIFT_NORTH = 150  # A little further north (+Y).
 
-# East edge stays anchored at KNOTT_X2 + SHIFT_EAST + WIDEN_EAST; only the
-# west edge moves (east, i.e. narrower) to trim width off that side.
-X2 = KNOTT_X2 + SHIFT_EAST + WIDEN_EAST
-X1 = KNOTT_X1 + SHIFT_EAST + NARROW_WEST
+# Widened to align the east/west walls with the outer pier faces of the
+# Pier 4-Pier 5 bridge span facing Knott Hall (BRIDGE_ENABLED_SPAN_KH).
+X1 = PIER4_X - BRIDGE_PILLAR_HW  # West wall flush with Pier 4's west face.
+X2 = PIER5_X + BRIDGE_PILLAR_HW  # East wall flush with Pier 5's east face.
 Y1 = KNOTT_Y1 + SHIFT_NORTH
 Y2 = KNOTT_Y2 + SHIFT_NORTH
+
+# The north edge steps in at both the NW and NE corners: the footprint is
+# the union of a full-width lower rectangle (up to NOTCH_Y) and a narrower
+# upper rectangle (NOTCH_Y to Y2, inset by CORNER_CUT_W_NW/NE on each side)
+# rather than one plain rectangle. Both corners cut the same depth south
+# (NOTCH_Y), but the west corner insets further east than the east corner.
+NOTCH_Y = Y2 - CORNER_CUT_DEPTH
+NORTH_X1 = X1 + CORNER_CUT_W_NW
+NORTH_X2 = X2 - CORNER_CUT_W_NE
 
 # The real terrain hillside is flat under the whole footprint (see
 # terrain/knott_hall.py's kh_hill_ground_z), so any corner gives the ground Z.
@@ -60,10 +67,10 @@ def build():
     roof_z2 = roof_z1 + ROOF_T
 
     brushes = [
-        # West wall
-        box(X1, Y1, z1, X1 + WALL_T, Y2, z2, Textures.BRICK_KH),
-        # East wall
-        box(X2 - WALL_T, Y1, z1, X2, Y2, z2, Textures.BRICK_KH),
+        # West wall (lower rectangle only — stops at the NW notch)
+        box(X1, Y1, z1, X1 + WALL_T, NOTCH_Y, z2, Textures.BRICK_KH),
+        # East wall (lower rectangle only — stops at the NE notch)
+        box(X2 - WALL_T, Y1, z1, X2, NOTCH_Y, z2, Textures.BRICK_KH),
         # South wall (between the two side walls)
         box(
             X1 + WALL_T,
@@ -74,29 +81,55 @@ def build():
             z2,
             Textures.BRICK_KH,
         ),
-        # North wall (between the two side walls)
+        # NW notch ledge (faces the cut-away square, north-facing)
         box(
             X1 + WALL_T,
-            Y2 - WALL_T,
+            NOTCH_Y - WALL_T,
+            z1,
+            NORTH_X1,
+            NOTCH_Y,
+            z2,
+            Textures.BRICK_KH,
+        ),
+        # NE notch ledge (faces the cut-away square, north-facing)
+        box(
+            NORTH_X2,
+            NOTCH_Y - WALL_T,
             z1,
             X2 - WALL_T,
+            NOTCH_Y,
+            z2,
+            Textures.BRICK_KH,
+        ),
+        # Upper rectangle west wall (inward face of the NW notch)
+        box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.BRICK_KH),
+        # Upper rectangle east wall (inward face of the NE notch)
+        box(NORTH_X2 - WALL_T, NOTCH_Y, z1, NORTH_X2, Y2, z2, Textures.BRICK_KH),
+        # North wall (upper rectangle, between the two notches)
+        box(
+            NORTH_X1 + WALL_T,
+            Y2 - WALL_T,
+            z1,
+            NORTH_X2 - WALL_T,
             Y2,
             z2,
             Textures.BRICK_KH,
         ),
-        # Roof, spanning the full footprint
-        box(X1, Y1, roof_z1, X2, Y2, roof_z2, Textures.CEMENT),
+        # Roof, lower rectangle
+        box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
+        # Roof, upper (notched) rectangle
+        box(NORTH_X1, NOTCH_Y, roof_z1, NORTH_X2, Y2, roof_z2, Textures.CEMENT),
     ]
 
     # Fascia sign on the north (bridge-facing) wall, mirroring the old KH
     # module's sign but re-centered/re-leveled for this shell's footprint
     # and height (no floors to anchor to here, so it's centered vertically).
-    # Positioned toward the east end, stopping just short of the east wall.
+    # Kept snug against the east edge of the (now-narrower) north wall.
     SIGN_EAST_MARGIN = 32
     sign_char_w = (4 + 1) * KNOTT_SIGN_PX_W
     sign_total_w = len(KNOTT_SIGN_TEXT) * sign_char_w - KNOTT_SIGN_PX_W
     sign_half_w = sign_total_w // 2 + KNOTT_SIGN_PADDING
-    sign_cx = X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
+    sign_cx = NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
     sign_z1 = z1 + BUILDING_H // 2 - KNOTT_SIGN_H // 2 + KNOTT_SIGN_Z_OFFSET
     sign_z2 = sign_z1 + KNOTT_SIGN_H
     brushes.append(
