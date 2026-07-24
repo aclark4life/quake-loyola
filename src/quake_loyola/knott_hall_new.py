@@ -126,12 +126,22 @@ def build():
     # and height (no floors to anchor to here, so it's centered vertically).
     # Kept snug against the east edge of the (now-narrower) north wall.
     SIGN_EAST_MARGIN = 32
-    sign_char_w = (4 + 1) * KNOTT_SIGN_PX_W
-    sign_total_w = len(KNOTT_SIGN_TEXT) * sign_char_w - KNOTT_SIGN_PX_W
-    sign_half_w = sign_total_w // 2 + KNOTT_SIGN_PADDING
+    PANEL_SCALE = 0.7  # shrink the sign backing panel a little further
+    LETTER_SCALE = 0.7  # shrink the lettering more, leaving side padding
+    SIDE_PADDING = 24  # extra fixed gap between the glyphs and panel edge
+    sign_px_w = int(KNOTT_SIGN_PX_W * LETTER_SCALE)
+    sign_px_h = int(KNOTT_SIGN_PX_H * LETTER_SCALE)
+    sign_h = int(KNOTT_SIGN_H * PANEL_SCALE)
+    sign_padding = int(KNOTT_SIGN_PADDING * PANEL_SCALE)
+    sign_char_w = (4 + 1) * sign_px_w
+    sign_total_w = len(KNOTT_SIGN_TEXT) * sign_char_w - sign_px_w
+    # Panel is sized off the glyph width plus a fixed side gap (rather than
+    # a second scale factor) so it always leaves visible padding, regardless
+    # of how the letter pixel sizes happen to round.
+    sign_half_w = sign_total_w // 2 + sign_padding + SIDE_PADDING
     sign_cx = NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
-    sign_z1 = z1 + BUILDING_H // 2 - KNOTT_SIGN_H // 2 + KNOTT_SIGN_Z_OFFSET
-    sign_z2 = sign_z1 + KNOTT_SIGN_H
+    sign_z1 = z1 + BUILDING_H // 2 - sign_h // 2 + KNOTT_SIGN_Z_OFFSET
+    sign_z2 = sign_z1 + sign_h
     brushes.append(
         box(
             sign_cx - sign_half_w,
@@ -148,9 +158,9 @@ def build():
             KNOTT_SIGN_TEXT[::-1],
             x0=sign_cx - sign_total_w // 2,
             y_face=Y2 + 6,
-            z_base=sign_z1 + (KNOTT_SIGN_H - 6 * KNOTT_SIGN_PX_H) // 2,
-            px_w=KNOTT_SIGN_PX_W,
-            px_h=KNOTT_SIGN_PX_H,
+            z_base=sign_z1 + (sign_h - 6 * sign_px_h) // 2,
+            px_w=sign_px_w,
+            px_h=sign_px_h,
             depth=2,
             tex=Textures.RAIL,
             mirror=True,
