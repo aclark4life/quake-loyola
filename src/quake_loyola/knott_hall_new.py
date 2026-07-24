@@ -34,7 +34,7 @@ CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from X2.
 CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
 
-SHIFT_NORTH = 150  # A little further north (+Y).
+SHIFT_NORTH = 220  # Moved a little closer to the bridge deck (+Y).
 
 # Widened to align the east/west walls with the outer pier faces of the
 # Pier 4-Pier 5 bridge span facing Knott Hall (BRIDGE_ENABLED_SPAN_KH).
@@ -140,7 +140,8 @@ def build():
     # of how the letter pixel sizes happen to round.
     sign_half_w = sign_total_w // 2 + sign_padding + SIDE_PADDING
     sign_cx = NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
-    sign_z1 = z1 + BUILDING_H // 2 - sign_h // 2 + KNOTT_SIGN_Z_OFFSET
+    SIGN_Z_ADJUST = -96  # Lower the sign a little from its default offset.
+    sign_z1 = z1 + BUILDING_H // 2 - sign_h // 2 + KNOTT_SIGN_Z_OFFSET + SIGN_Z_ADJUST
     sign_z2 = sign_z1 + sign_h
     brushes.append(
         box(
