@@ -6,6 +6,8 @@
 
 from dataclasses import dataclass
 
+from ..build_presets import FOG_DENSITY_NAMES as _FOG_DENSITY_NAME_TUPLE
+from ..build_presets import LIGHTING_PRESET_NAMES as _LIGHTING_PRESET_NAME_TUPLE
 from ..config import get_build as _get_build
 
 
@@ -122,13 +124,18 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
     ),
 }
 
+# ``config.py`` validates ``lighting_preset``/``fog_density`` against
+# ``build_presets`` before this module is ever imported, so these are
+# internal-consistency checks (a mismatch here is a bug in this file, not a
+# user error) rather than user-facing validation.
+assert sorted(LIGHTING_PRESETS) == sorted(_LIGHTING_PRESET_NAME_TUPLE), (
+    "LIGHTING_PRESETS keys drifted from build_presets.LIGHTING_PRESET_NAMES"
+)
+assert sorted(FOG_DENSITY_NAMES) == sorted(_FOG_DENSITY_NAME_TUPLE), (
+    "FOG_DENSITY_NAMES keys drifted from build_presets.FOG_DENSITY_NAMES"
+)
+
 _lighting_preset_setting = _get_build("lighting_preset")
-if _lighting_preset_setting not in LIGHTING_PRESETS:
-    raise ValueError(
-        f"lighting_preset {_lighting_preset_setting!r} is not a known preset "
-        f"(known: {sorted(LIGHTING_PRESETS)}). Fix it with `ql conf set "
-        "lighting_preset <name>` or `ql conf reset`."
-    )
 LIGHTING = LIGHTING_PRESETS[_lighting_preset_setting]
 
 # "default" uses the preset density; other values are named levels or numeric strings.
@@ -138,14 +145,7 @@ if _fog_density_setting == "default":
 elif _fog_density_setting in FOG_DENSITY_NAMES:
     FOG_DENSITY = FOG_DENSITY_NAMES[_fog_density_setting]
 else:
-    try:
-        FOG_DENSITY = float(_fog_density_setting)
-    except ValueError:
-        raise ValueError(
-            f"fog_density {_fog_density_setting!r} must be 'default', one "
-            f"of {sorted(FOG_DENSITY_NAMES)}, or a numeric string. Fix it "
-            "with `ql conf set fog_density <value>` or `ql conf reset`."
-        ) from None
+    FOG_DENSITY = float(_fog_density_setting)
 
 # Sorted valid ``lighting_preset`` names for CLI validation and help text.
 LIGHTING_PRESET_NAMES: list[str] = sorted(LIGHTING_PRESETS)

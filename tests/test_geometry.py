@@ -1,12 +1,17 @@
 import unittest
 
 from quake_loyola.geometry import (
+    arch_plate_ring,
     arch_seg,
+    arch_wall,
+    arch_wall_y,
     box,
     box_with_round_hole,
     brush_ent,
     corner_ramp,
     ent,
+    entrance_arch_xwall,
+    entrance_arch_ywall,
     gable_slats,
     iron_fence,
     layered_wall,
@@ -19,7 +24,10 @@ from quake_loyola.geometry import (
     render_text_flat,
     render_text_flat_x,
     square_wall,
+    tile_face_plates,
     tri_prism,
+    win_frame_xwall,
+    win_frame_ywall,
 )
 from quake_loyola.mapdata import Brush, Entity
 
@@ -216,6 +224,129 @@ class PrimitiveValidationTests(unittest.TestCase):
     def test_arch_seg_rejects_reversed_angles(self):
         with self.assertRaises(ValueError):
             arch_seg(0, 10, 0, 0, 16, 32, 45, 0, "t")
+
+
+class TileAndArchPlateRingTests(unittest.TestCase):
+    def test_tile_face_plates_covers_face_with_tile_sized_boxes(self):
+        brushes = tile_face_plates(0, 8, 0, 100, 0, 100, "t", tile=34, gap=3)
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertEqual(len(b.faces), 6)
+
+    def test_tile_face_plates_too_small_face_returns_no_brushes(self):
+        # Smaller than one tile on either axis produces no tile brushes.
+        self.assertEqual(tile_face_plates(0, 8, 0, 10, 0, 10, "t"), [])
+
+    def test_tile_face_plates_rejects_zero_thickness(self):
+        with self.assertRaises(ValueError):
+            tile_face_plates(0, 0, 0, 100, 0, 100, "t")
+
+    def test_tile_face_plates_negative_thickness_normalizes_x_range(self):
+        brushes = tile_face_plates(50, -8, 0, 100, 0, 100, "t")
+        self.assertTrue(brushes)
+
+    def test_arch_plate_ring_returns_chord_segments(self):
+        brushes = arch_plate_ring(0, 8, 0, 0, 64, "t", tile=34, gap=3)
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertEqual(len(b.faces), 6)
+
+
+class ArchWallTests(unittest.TestCase):
+    def test_arch_wall_returns_brushes_with_side_walls_and_arch_segments(self):
+        brushes = arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 4, "t")
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertGreaterEqual(len(b.faces), 5)
+
+    def test_arch_wall_rejects_non_positive_segs(self):
+        with self.assertRaises(ValueError):
+            arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 0, "t")
+
+    def test_arch_wall_freestanding_omits_ceiling_slab(self):
+        framed = arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 4, "t")
+        freestanding = arch_wall(
+            0, 16, -100, 100, 0, 128, 32, 48, 4, "t", freestanding=True
+        )
+        # The freestanding variant skips the box spanning the arch opening up
+        # to the ceiling, so it produces fewer brushes than the framed wall.
+        self.assertLess(len(freestanding), len(framed))
+
+    def test_arch_wall_with_base_h_adds_base_brush(self):
+        without_base = arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 4, "t")
+        with_base = arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 4, "t", base_h=8)
+        self.assertEqual(len(with_base), len(without_base) + 1)
+
+    def test_arch_wall_y_returns_side_walls_and_arch_segments(self):
+        brushes = arch_wall_y(-100, 100, 0, 32, 48, 4, "t")
+        self.assertTrue(brushes)
+
+    def test_arch_wall_y_rejects_non_positive_segs(self):
+        with self.assertRaises(ValueError):
+            arch_wall_y(-100, 100, 0, 32, 48, 0, "t")
+
+    def test_arch_wall_y_rejects_reversed_bounds(self):
+        with self.assertRaises(ValueError):
+            arch_wall_y(100, -100, 0, 32, 48, 4, "t")
+
+
+class EntranceArchTests(unittest.TestCase):
+    def test_entrance_arch_xwall_returns_brushes(self):
+        brushes = entrance_arch_xwall(0, 0, 32, 96, 0, 1, "t")
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertIsInstance(b, Brush)
+
+    def test_entrance_arch_ywall_returns_brushes(self):
+        brushes = entrance_arch_ywall(0, 0, 32, 96, 0, 1, "t")
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertIsInstance(b, Brush)
+
+    def test_entrance_arch_xwall_and_ywall_produce_same_brush_count(self):
+        # The y-wall variant mirrors the x-wall geometry across axes, so both
+        # should emit the same number of brushes for equivalent parameters.
+        xwall = entrance_arch_xwall(0, 0, 32, 96, 0, 1, "t")
+        ywall = entrance_arch_ywall(0, 0, 32, 96, 0, 1, "t")
+        self.assertEqual(len(xwall), len(ywall))
+
+
+class WinFrameTests(unittest.TestCase):
+    def test_win_frame_xwall_returns_brushes(self):
+        brushes = win_frame_xwall(0, 64, 0, 64, 0, 1, "t", fd=16)
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertIsInstance(b, Brush)
+
+    def test_win_frame_ywall_returns_brushes(self):
+        brushes = win_frame_ywall(0, 64, 0, 64, 0, 1, "t", fd=16)
+        self.assertTrue(brushes)
+        for b in brushes:
+            self.assertIsInstance(b, Brush)
+
+    def test_win_frame_xwall_without_crossbar_or_bottom_omits_bars(self):
+        full = win_frame_xwall(0, 64, 0, 64, 0, 1, "t", fd=16)
+        minimal = win_frame_xwall(
+            0, 64, 0, 64, 0, 1, "t", fd=16, crossbar=False, bottom=False
+        )
+        self.assertLess(len(minimal), len(full))
+
+    def test_win_frame_xwall_small_opening_omits_inner_muntins(self):
+        # An opening too small for the inner muntin bars should still return
+        # the outer frame without raising.
+        brushes = win_frame_xwall(0, 20, 0, 20, 0, 1, "t", fd=16)
+        self.assertTrue(brushes)
+
+    def test_win_frame_xwall_rejects_fd_not_exceeding_2x_inner_recess(self):
+        # Defaults (fd=4, inner_recess=2) collapse the inner muntin depth to
+        # zero, which used to raise an opaque "degenerate brush" ValueError
+        # deep inside box() instead of a clear, actionable message.
+        with self.assertRaises(ValueError):
+            win_frame_xwall(0, 64, 0, 64, 0, 1, "t")
+
+    def test_win_frame_ywall_rejects_fd_not_exceeding_2x_inner_recess(self):
+        with self.assertRaises(ValueError):
+            win_frame_ywall(0, 64, 0, 64, 0, 1, "t")
 
 
 if __name__ == "__main__":

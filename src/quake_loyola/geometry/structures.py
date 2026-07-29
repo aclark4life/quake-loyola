@@ -603,6 +603,12 @@ def win_frame_xwall(
 ):
     if ifw is None:
         ifw = max(fw - 1, 2)
+    if fd <= 2 * inner_recess:
+        raise ValueError(
+            f"win_frame_xwall: fd ({fd}) must be greater than "
+            f"2 * inner_recess ({2 * inner_recess}), or the inner muntin "
+            "depth collapses to zero or negative"
+        )
     ya, yb = sorted((face_y, face_y + out_sign * fd))
     jya, jyb = sorted(
         (face_y + out_sign * inner_recess, face_y + out_sign * (fd - inner_recess))
@@ -655,6 +661,12 @@ def win_frame_ywall(
 ):
     if ifw is None:
         ifw = max(fw - 1, 2)
+    if fd <= 2 * inner_recess:
+        raise ValueError(
+            f"win_frame_ywall: fd ({fd}) must be greater than "
+            f"2 * inner_recess ({2 * inner_recess}), or the inner muntin "
+            "depth collapses to zero or negative"
+        )
     xa, xb = sorted((face_x, face_x + out_sign * fd))
     jxa, jxb = sorted(
         (face_x + out_sign * inner_recess, face_x + out_sign * (fd - inner_recess))

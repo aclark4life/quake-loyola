@@ -1,4 +1,17 @@
-"""Load and persist build flags and CLI build settings from ``ql.toml``."""
+"""Load and persist build flags and CLI build settings from ``ql.toml``.
+
+Note on staleness: ``ql.toml`` is read once, at import time, into
+``FLAGS``/``BUILD`` below. Downstream modules (e.g. ``constants.flags``,
+``constants.lighting``) resolve their own module-level constants from those
+dicts at *their* import time too, and are not re-evaluated afterwards.
+``set_flag()``/``set_build()`` keep ``FLAGS``/``BUILD`` themselves in sync
+for any code that calls ``config.get()``/``config.get_build()`` directly,
+but they do **not** retroactively update already-imported constants. This
+is safe for the ``ql`` CLI, where each invocation is a fresh process (see
+``cli.py``), but callers embedding this package as a library and mutating
+config programmatically mid-process should re-import the affected modules
+(or spawn a subprocess) rather than expect in-place updates.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +19,14 @@ import json
 import tomllib
 from pathlib import Path
 from typing import Any
+
+from .build_presets import (
+    FOG_DENSITY_NAMES,
+    LIGHTING_PRESET_NAMES,
+    SKY_PRESET_NAMES,
+    VIS_MODES,
+    is_valid_fog_density,
+)
 
 
 def _find_repo_root(start: Path) -> Path:
@@ -138,11 +159,36 @@ def _validate_section(
 
 
 def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
-    """Validate build-setting values that this module can check directly."""
-    if "vis_mode" in data and data["vis_mode"] not in ("fast", "full"):
+    """Validate every build-setting value up front, at ``ql.toml`` load time.
+
+    This is the single place all ``[build]`` values are checked, so a bad
+    value always surfaces consistently as a ``RuntimeError`` from
+    :func:`check_load_error` rather than as an uncaught ``ValueError`` from
+    whichever ``constants`` submodule happens to read it first.
+    """
+    if "vis_mode" in data and data["vis_mode"] not in VIS_MODES:
         raise ValueError(
-            f"ql.toml [build] vis_mode must be 'fast' or 'full', "
+            f"ql.toml [build] vis_mode must be one of {VIS_MODES}, "
             f"got {data['vis_mode']!r}"
+        )
+    if (
+        "lighting_preset" in data
+        and data["lighting_preset"] not in LIGHTING_PRESET_NAMES
+    ):
+        raise ValueError(
+            f"ql.toml [build] lighting_preset must be one of "
+            f"{LIGHTING_PRESET_NAMES}, got {data['lighting_preset']!r}"
+        )
+    if "sky_preset" in data and data["sky_preset"] not in SKY_PRESET_NAMES:
+        raise ValueError(
+            f"ql.toml [build] sky_preset must be one of {SKY_PRESET_NAMES}, "
+            f"got {data['sky_preset']!r}"
+        )
+    if "fog_density" in data and not is_valid_fog_density(str(data["fog_density"])):
+        raise ValueError(
+            f"ql.toml [build] fog_density must be 'default', one of "
+            f"{FOG_DENSITY_NAMES}, or a numeric string, got "
+            f"{data['fog_density']!r}"
         )
     return data
 

@@ -3,6 +3,7 @@
 ``sky_preset`` selects the world sky texture from ``SKY_PRESETS``.
 """
 
+from ..build_presets import SKY_PRESET_NAMES as _SKY_PRESET_NAME_TUPLE
 from ..config import get_build as _get_build
 
 # Build-setting values for ``sky_preset``.
@@ -13,6 +14,13 @@ SKY_PRESETS: dict[str, str] = {
 
 # Sorted valid ``sky_preset`` names for CLI validation and help text.
 SKY_PRESET_NAMES: list[str] = sorted(SKY_PRESETS)
+
+# ``config.py`` validates ``sky_preset`` against ``build_presets`` before this
+# module is ever imported, so this is an internal-consistency check (a
+# mismatch here is a bug in this file) rather than user-facing validation.
+assert SKY_PRESET_NAMES == sorted(_SKY_PRESET_NAME_TUPLE), (
+    "SKY_PRESETS keys drifted from build_presets.SKY_PRESET_NAMES"
+)
 
 
 class Textures:
@@ -39,13 +47,7 @@ class Textures:
     ROOF = "roofkell1"
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
-    SKY = SKY_PRESETS.get(_get_build("sky_preset"), None)
-    if SKY is None:
-        raise ValueError(
-            f"sky_preset {_get_build('sky_preset')!r} is not a known preset "
-            f"(known: {SKY_PRESET_NAMES}). Fix it with `ql conf set sky_preset "
-            "<name>` or `ql conf reset`."
-        )
+    SKY = SKY_PRESETS[_get_build("sky_preset")]
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad

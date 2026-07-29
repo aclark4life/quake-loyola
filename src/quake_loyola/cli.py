@@ -9,6 +9,7 @@ from pathlib import Path
 import typer
 
 from . import config
+from .build_presets import FOG_DENSITY_NAMES, LIGHTING_PRESET_NAMES, SKY_PRESET_NAMES
 
 REPO_ROOT = config.REPO_ROOT
 
@@ -58,16 +59,10 @@ def config_show() -> None:
             if name == "vis_mode":
                 options = ", options: fast, full"
             elif name == "lighting_preset":
-                from .constants.lighting import LIGHTING_PRESET_NAMES
-
                 options = f", options: {', '.join(LIGHTING_PRESET_NAMES)}"
             elif name == "fog_density":
-                from .constants.lighting import FOG_DENSITY_NAMES
-
                 options = f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
             elif name == "sky_preset":
-                from .constants.textures import SKY_PRESET_NAMES
-
                 options = f", options: {', '.join(SKY_PRESET_NAMES)}"
             typer.echo(
                 f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
@@ -113,16 +108,12 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
                 raise typer.BadParameter("vis_mode must be 'fast' or 'full'")
             parsed_build: object = value
         elif name == "lighting_preset":
-            from .constants.lighting import LIGHTING_PRESET_NAMES
-
             if value not in LIGHTING_PRESET_NAMES:
                 raise typer.BadParameter(
                     f"lighting_preset must be one of {LIGHTING_PRESET_NAMES}"
                 )
             parsed_build = value
         elif name == "fog_density":
-            from .constants.lighting import FOG_DENSITY_NAMES
-
             if value != "default" and value not in FOG_DENSITY_NAMES:
                 try:
                     float(value)
@@ -133,8 +124,6 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
                     ) from None
             parsed_build = value
         elif name == "sky_preset":
-            from .constants.textures import SKY_PRESET_NAMES
-
             if value not in SKY_PRESET_NAMES:
                 raise typer.BadParameter(
                     f"sky_preset must be one of {SKY_PRESET_NAMES}"
@@ -226,9 +215,13 @@ def config_path() -> None:
 @app.command("gen")
 def generate() -> None:
     """Write loyola.map from the current config-driven flag settings."""
-    from .mapgen import main as _generate_main
+    try:
+        from .mapgen import main as _generate_main
 
-    _generate_main()
+        _generate_main()
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
 
 @app.command()
@@ -239,7 +232,11 @@ def build(
     ),
 ) -> None:
     """Generate and compile the map using the current ``[build]`` settings."""
-    generate()
+    try:
+        generate()
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
 
     tools_bin_candidates = sorted(REPO_ROOT.glob(".tools/ericw-tools-*/bin"))
     if not tools_bin_candidates:

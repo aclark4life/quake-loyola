@@ -141,3 +141,49 @@ def test_conf_set_fog_density_rejects_invalid_value(tmp_path):
     assert result.returncode != 0
     assert "fog_density must be" in result.stdout + result.stderr
     assert not (tmp_path / "ql.toml").exists()
+
+
+def test_gen_with_malformed_toml_fails_cleanly(tmp_path):
+    # A hand-edited ql.toml with an invalid build value should surface a
+    # single actionable RuntimeError message on `ql gen`, not a raw traceback
+    # from whichever `constants` submodule happens to read it first.
+    (tmp_path / "ql.toml").write_text('[build]\nlighting_preset = "midnight"\n')
+    result = run_ql("gen", cwd=tmp_path)
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    assert "could not be loaded" in result.stderr
+    assert "lighting_preset" in result.stderr
+
+
+def test_build_with_malformed_toml_fails_cleanly(tmp_path):
+    (tmp_path / "ql.toml").write_text('[build]\nsky_preset = "midnight"\n')
+    result = run_ql("build", cwd=tmp_path)
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    assert "could not be loaded" in result.stderr
+
+
+def test_build_without_ericw_tools_fails_cleanly(tmp_path):
+    # No .tools/ericw-tools-*/bin under an isolated cwd — `ql build` should
+    # generate the map, then fail with a clear, actionable message instead
+    # of a stack trace when it can't find the compiler toolchain.
+    result = run_ql("build", cwd=tmp_path)
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    assert "ericw-tools not found" in result.stdout + result.stderr
+    # `ql gen` (called internally by `build`) should still have run and
+    # written loyola.map before the toolchain check failed.
+    assert (tmp_path / "loyola.map").exists()
+
+
+def test_conf_get_unknown_setting_fails_cleanly(tmp_path):
+    result = run_ql("conf", "get", "not_a_real_setting", cwd=tmp_path)
+    assert result.returncode != 0
+    assert "Unknown setting" in result.stdout + result.stderr
+
+
+def test_conf_set_unknown_setting_fails_cleanly(tmp_path):
+    result = run_ql("conf", "set", "not_a_real_setting", "true", cwd=tmp_path)
+    assert result.returncode != 0
+    assert "Unknown setting" in result.stdout + result.stderr
+    assert not (tmp_path / "ql.toml").exists()
