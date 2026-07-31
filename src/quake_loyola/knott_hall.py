@@ -12,7 +12,7 @@ added back here.
 
 from .constants import (
     BRIDGE_PILLAR_HW,
-    KNOTT_ENABLED_NEW,
+    KNOTT_ENABLED,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -59,7 +59,7 @@ GROUND_Z = kh_hill_ground_z(X1, Y1)
 
 
 def build():
-    if not KNOTT_ENABLED_NEW:
+    if not KNOTT_ENABLED:
         return [], []
 
     z1 = GROUND_Z

@@ -1,6 +1,7 @@
 from .constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
+    BRIDGE_ENABLED_SPAN_CENTER,
     CHARLES_Y1,
     DORM,
     DORM_BRICK_GATE_H,
@@ -165,9 +166,12 @@ def build_brick_wall(BRUSHES, ENTITIES):
 
     wall_hw = DORM_BRICK_WALL_HW
 
-    wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
-
-    wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
+    if BRIDGE_ENABLED_SPAN_CENTER:
+        wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
+        wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
+    else:
+        wall_shift_y = 0
+        wall_shift_z = 0
     bridge_top_z = BRIDGE_DZ2 + wall_shift_z
     wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + wall_shift_y
@@ -644,7 +648,7 @@ def build():
             DORM_CX,
             DORM.x2,
             DORM_NB_SY1,
-            DORM_NORTH_Y2,
+            DORM_NB_SY2,
             DORM_EAVE_Z,
             DORM_EAVE_Z,
             DORM_RIDGE_Z,

@@ -262,9 +262,9 @@ approximation is refined):
 the re-measured rise at Knott Hall's west edge, and
 ``quake_loyola.terrain.knott_hall`` models the continued eastward climb
 toward Ennis Parallel from real elevation samples rather than a flat
-plateau. ``WEST_CAMPUS_ENABLED_TERRAIN`` and ``KNOTT_ENABLED_TERRAIN``
-default to enabled; ``KNOTT_ENABLED`` (the Knott Hall building shell
-itself) defaults to disabled pending further interior work.
+plateau. ``WEST_CAMPUS_ENABLED_TERRAIN``, ``KNOTT_ENABLED_TERRAIN``, and
+``KNOTT_ENABLED`` (the Knott Hall building shell itself) all default
+to enabled.
 
 **Open item:** Charles St still uses a single flat ``ROAD_Z``
 (``FLOOR_Z2 + 8``) rather than the ~10 ft north-south grade measured along

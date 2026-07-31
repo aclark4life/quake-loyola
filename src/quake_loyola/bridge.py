@@ -176,12 +176,18 @@ def _section_accept_ranges(enabled_names, margin):
     for idx, name in enumerate(_SECTION_ORDER):
         px1, px2 = section_piers[name]
         if idx == 0:
-            ax1 = px1 - margin
+            # Extend all the way to the world edge so the west
+            # abutment/teleport geometry (built out at WORLD_X1, far beyond
+            # the first pier's pillar-overhang margin) isn't dropped when
+            # section filtering is active.
+            ax1 = WORLD_X1
         else:
             owner = _boundary_owner(_SECTION_ORDER[idx - 1], name, enabled_names)
             ax1 = px1 - margin if owner == name else px1
         if idx == len(_SECTION_ORDER) - 1:
-            ax2 = px2 + margin
+            # Symmetric with the west edge above: reach WORLD_X2_EXT so the
+            # east abutment/teleport geometry isn't dropped either.
+            ax2 = WORLD_X2_EXT
         else:
             owner = _boundary_owner(name, _SECTION_ORDER[idx + 1], enabled_names)
             ax2 = px2 + margin if owner == name else px2

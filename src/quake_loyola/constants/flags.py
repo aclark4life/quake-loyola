@@ -42,9 +42,8 @@ NE_ENABLED_TERRAIN = _flag("NE_ENABLED_TERRAIN")  # North-east quadrant terrain 
 KNOTT_ENABLED_TERRAIN = _flag(
     "KNOTT_ENABLED_TERRAIN"
 )  # Knott terrain, embankment, and driveway.
-KNOTT_ENABLED = _flag("KNOTT_ENABLED")  # Knott Hall shell.
-KNOTT_ENABLED_NEW = _flag(
-    "KNOTT_ENABLED_NEW"
+KNOTT_ENABLED = _flag(
+    "KNOTT_ENABLED"
 )  # Prototype Knott Hall shell (walls + roof, no floors) sized against real terrain.
 
 # Entity groups.

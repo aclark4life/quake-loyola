@@ -515,7 +515,8 @@ def build():
         del ENTITIES[monsters_start:]
     ammo_start = len(ENTITIES)
     for ax in BRIDGE_ARCH_X:
-        ENTITIES.append(ent("item_rockets", origin=f"{ax} 0 {int(deck_top_z(ax) + 8)}"))
+        _ir_y, _ir_z = _cs_offset(ax, 0, int(deck_top_z(ax) + 8))
+        ENTITIES.append(ent("item_rockets", origin=f"{ax} {_ir_y} {_ir_z}"))
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
