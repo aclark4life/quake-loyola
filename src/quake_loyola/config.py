@@ -21,10 +21,8 @@ from pathlib import Path
 from typing import Any
 
 from .build_presets import (
+    BUILD_ENUM_SETTINGS,
     FOG_DENSITY_NAMES,
-    LIGHTING_PRESET_NAMES,
-    SKY_PRESET_NAMES,
-    VIS_MODES,
     is_valid_fog_density,
 )
 
@@ -100,6 +98,22 @@ def _read_toml(path: Path) -> dict[str, Any]:
         return tomllib.load(f)
 
 
+def _read_toml_safe(path: Path) -> dict[str, Any]:
+    """Read ``path`` as TOML, converting a parse failure to ``RuntimeError``.
+
+    Callers that mutate an existing ``ql.toml`` (``set_flag``/``set_build``)
+    must not let a raw ``tomllib.TOMLDecodeError`` escape from a malformed
+    file — every other config-loading failure in this module surfaces as
+    ``RuntimeError`` (see ``check_load_error``), so this keeps that contract
+    consistent for callers (e.g. ``ql conf set``) that only catch
+    ``RuntimeError``.
+    """
+    try:
+        return _read_toml(path)
+    except tomllib.TOMLDecodeError as exc:
+        raise RuntimeError(f"{path} could not be parsed: {exc}") from exc
+
+
 def _toml_scalar(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
@@ -163,29 +177,22 @@ def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
     :func:`check_load_error` rather than as an uncaught ``ValueError`` from
     whichever ``constants`` submodule happens to read it first.
     """
-    if "vis_mode" in data and data["vis_mode"] not in VIS_MODES:
-        raise ValueError(
-            f"ql.toml [build] vis_mode must be one of {VIS_MODES}, "
-            f"got {data['vis_mode']!r}"
-        )
-    if (
-        "lighting_preset" in data
-        and data["lighting_preset"] not in LIGHTING_PRESET_NAMES
-    ):
-        raise ValueError(
-            f"ql.toml [build] lighting_preset must be one of "
-            f"{LIGHTING_PRESET_NAMES}, got {data['lighting_preset']!r}"
-        )
-    if "sky_preset" in data and data["sky_preset"] not in SKY_PRESET_NAMES:
-        raise ValueError(
-            f"ql.toml [build] sky_preset must be one of {SKY_PRESET_NAMES}, "
-            f"got {data['sky_preset']!r}"
-        )
+    for setting, allowed in BUILD_ENUM_SETTINGS.items():
+        if setting in data and data[setting] not in allowed:
+            raise ValueError(
+                f"ql.toml [build] {setting} must be one of {allowed}, "
+                f"got {data[setting]!r}"
+            )
     if "fog_density" in data and not is_valid_fog_density(str(data["fog_density"])):
         raise ValueError(
             f"ql.toml [build] fog_density must be 'default', one of "
             f"{FOG_DENSITY_NAMES}, or a numeric string, got "
             f"{data['fog_density']!r}"
+        )
+    if "light_extra" in data and not isinstance(data["light_extra"], bool):
+        raise TypeError(
+            f"ql.toml [build] light_extra must be a bool, "
+            f"got {type(data['light_extra']).__name__}"
         )
     return data
 
@@ -235,9 +242,10 @@ def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
     check_load_error()
     if name not in DEFAULTS:
         raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
-    raw = _read_toml(path)
+    raw = _read_toml_safe(path)
     flags = dict(raw.get("flags", {}))
     flags[name] = value
+    _validate_section("flags", flags, DEFAULTS)
     raw["flags"] = flags
     _write_toml(path, raw)
     if path == CONFIG_PATH:
@@ -248,9 +256,10 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     check_load_error()
     if name not in BUILD_DEFAULTS:
         raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
-    raw = _read_toml(path)
+    raw = _read_toml_safe(path)
     build = dict(raw.get("build", {}))
     build[name] = value
+    _validate_build_values(build)
     raw["build"] = build
     _write_toml(path, raw)
     if path == CONFIG_PATH:

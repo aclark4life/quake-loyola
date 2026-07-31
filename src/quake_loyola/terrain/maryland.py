@@ -1,14 +1,14 @@
 """Placeholder terrain support for the Maryland Hall massing block.
 
 The module builds a flat pad and simple south/east slopes around Maryland
-Hall. When both Maryland Hall and its terrain are disabled, it emits only
-HINT brushes around the footprint.
+Hall. When its terrain is disabled, it emits only HINT brushes around the
+footprint (regardless of whether the Maryland Hall building itself is
+enabled).
 """
 
 from ..constants import (
     FLOOR_Z1,
     FLOOR_Z2,
-    MARYLAND_ENABLED,
     MARYLAND_ENABLED_TERRAIN,
     MARYLAND_GROUND_Z,
     MARYLAND_TERRAIN_MARGIN,
@@ -25,7 +25,7 @@ from ..geometry import box, corner_ramp, ramp_slab, ramp_slab_y
 
 def build():
     """Build the Maryland Hall terrain brushes."""
-    if not MARYLAND_ENABLED_TERRAIN and not MARYLAND_ENABLED:
+    if not MARYLAND_ENABLED_TERRAIN:
         pad_x1 = MARYLAND_X1
         pad_x2 = MARYLAND_X2 + MARYLAND_TERRAIN_MARGIN
         pad_y1 = MARYLAND_Y1 - MARYLAND_TERRAIN_MARGIN

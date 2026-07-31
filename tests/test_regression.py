@@ -13,8 +13,8 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1188
-EXPECTED_ENTITIES = 104
-EXPECTED_MD5 = "13e6a111faa9f04740d18a148ed0c182"
+EXPECTED_ENTITIES = 106
+EXPECTED_MD5 = "a4bd1afc76c91bb5fdc598041b290004"
 
 
 class MapRegressionTests(unittest.TestCase):
@@ -173,15 +173,16 @@ class MarylandBuildTests(unittest.TestCase):
     """MARYLAND_ENABLED/MARYLAND_ENABLED_TERRAIN both default to False, so
     maryland_hall.py and terrain/maryland.py's real logic never runs in the
     default-config regression tests above. Force them on here so both
-    branches actually get exercised."""
+    branches actually get exercised.
+
+    terrain/maryland.py's own build() only reads MARYLAND_ENABLED_TERRAIN —
+    it is independent of maryland_hall.MARYLAND_ENABLED (the building flag),
+    so terrain output must be identical whether the building is on or off.
+    """
 
     def setUp(self):
         self._saved = {
             (maryland_hall, "MARYLAND_ENABLED"): maryland_hall.MARYLAND_ENABLED,
-            (
-                maryland_terrain,
-                "MARYLAND_ENABLED",
-            ): maryland_terrain.MARYLAND_ENABLED,
             (
                 maryland_terrain,
                 "MARYLAND_ENABLED_TERRAIN",
@@ -203,26 +204,31 @@ class MarylandBuildTests(unittest.TestCase):
         self.assertEqual((brushes, ents), ([], []))
 
     def test_maryland_terrain_builds_when_terrain_flag_only(self):
-        maryland_terrain.MARYLAND_ENABLED = False
+        maryland_hall.MARYLAND_ENABLED = False
         maryland_terrain.MARYLAND_ENABLED_TERRAIN = True
         brushes, _ = maryland_terrain.build()
         self.assertTrue(
             brushes, "expected Maryland terrain mound with MARYLAND_ENABLED_TERRAIN"
         )
 
-    def test_maryland_terrain_builds_nothing_when_both_disabled(self):
-        maryland_terrain.MARYLAND_ENABLED = False
+    def test_maryland_terrain_builds_nothing_when_terrain_disabled(self):
+        # Regression: terrain must stay HINT-only whenever
+        # MARYLAND_ENABLED_TERRAIN is off, even if the building itself is
+        # enabled — the terrain flag must not be silently overridden.
         maryland_terrain.MARYLAND_ENABLED_TERRAIN = False
-        brushes, ents = maryland_terrain.build()
-        # Both disabled still returns a ring of invisible HINT brushes (to
-        # force a BSP/portal split so the world floor doesn't exceed qbsp's
-        # face-edge limit there) — not truly empty, but no entities and no
-        # visible (non-HINT) geometry.
-        self.assertEqual(ents, [])
-        self.assertTrue(
-            all(f.tex == "hint" for b in brushes for f in b.faces),
-            "expected only HINT brushes when both Maryland flags are off",
-        )
+        for building_enabled in (False, True):
+            with self.subTest(building_enabled=building_enabled):
+                maryland_hall.MARYLAND_ENABLED = building_enabled
+                brushes, ents = maryland_terrain.build()
+                # Still returns a ring of invisible HINT brushes (to force a
+                # BSP/portal split so the world floor doesn't exceed qbsp's
+                # face-edge limit there) — not truly empty, but no entities
+                # and no visible (non-HINT) geometry.
+                self.assertEqual(ents, [])
+                self.assertTrue(
+                    all(f.tex == "hint" for b in brushes for f in b.faces),
+                    "expected only HINT brushes when MARYLAND_ENABLED_TERRAIN is off",
+                )
 
 
 class LightGroupFilteringTests(unittest.TestCase):

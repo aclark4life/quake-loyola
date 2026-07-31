@@ -115,7 +115,7 @@ def _wct_taper(frac):
 _wct_cols += [_wct_taper(f) for f in _WCT_TAPER_FRACS] + [_wct_flat_walk]
 
 
-def terrain_z(x, y):
+def _terrain_z(x, y):
     """Return the interpolated terrain height at ``(x, y)`` within this grid."""
     x = min(max(x, _wct_x[0]), _wct_x[-1])
     y = max(min(y, wct_y[0]), wct_y[-1])

@@ -198,7 +198,7 @@ def punch_manhole_detail(brushes):
     return out
 
 
-def build_ennis_entrance_features():
+def _build_ennis_entrance_features():
     """Return the Ennis entrance pillars, walls, gates, and lamps owned by west-campus geometry."""
     brushes = []
     entities = []
@@ -680,12 +680,14 @@ def build_ennis_entrance_features():
     )
     gate_picket_y = bw_mid_y
     gate_picket_index = 0
-    while gate_picket_y + 2 <= fence_end_y:
+    while True:
         gate_picket_width = (
             ENNIS_GATE_FENCE_POST_W
             if gate_picket_index % 10 == 0
             else ENNIS_GATE_FENCE_BAR_T
         )
+        if gate_picket_y + gate_picket_width > fence_end_y:
+            break
         brushes.append(
             box(
                 gate_fence_x1,
@@ -1110,12 +1112,14 @@ def build_ennis_entrance_features():
     ]
     east_gate_picket_x = ENNIS_GATE_X1
     east_gate_picket_index = 0
-    while east_gate_picket_x + 2 <= ENNIS_GATE_X2:
+    while True:
         east_gate_picket_width = (
             ENNIS_GATE_FENCE_POST_W
             if east_gate_picket_index % 10 == 0
             else ENNIS_GATE_FENCE_BAR_T
         )
+        if east_gate_picket_x + east_gate_picket_width > ENNIS_GATE_X2:
+            break
         east_gate_brushes.append(
             box(
                 east_gate_picket_x,
@@ -2719,7 +2723,7 @@ def build():
                 )
             )
 
-    ennis_brushes, ennis_entities = build_ennis_entrance_features()
+    ennis_brushes, ennis_entities = _build_ennis_entrance_features()
     BRUSHES.extend(ennis_brushes)
     ENTITIES.extend(ennis_entities)
 

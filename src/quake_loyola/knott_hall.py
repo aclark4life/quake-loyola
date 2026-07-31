@@ -26,7 +26,7 @@ from .constants import (
     Textures,
 )
 from .geometry import box, fascia_sign
-from .terrain.knott_hall import kh_hill_ground_z
+from .terrain.knott_hall import _kh_hill_ground_z
 
 WALL_T = 16
 ROOF_T = 16
@@ -54,8 +54,8 @@ NORTH_X1 = X1 + CORNER_CUT_W_NW
 NORTH_X2 = X2 - CORNER_CUT_W_NE
 
 # The real terrain hillside is flat under the whole footprint (see
-# terrain/knott_hall.py's kh_hill_ground_z), so any corner gives the ground Z.
-GROUND_Z = kh_hill_ground_z(X1, Y1)
+# terrain/knott_hall.py's _kh_hill_ground_z), so any corner gives the ground Z.
+GROUND_Z = _kh_hill_ground_z(X1, Y1)
 
 
 def build():

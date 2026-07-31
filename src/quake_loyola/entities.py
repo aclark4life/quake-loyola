@@ -102,23 +102,22 @@ from .geometry import (
     render_text_flat_x,
 )
 
+ROAD_Z = FLOOR_Z2 + 8
+_BRIDGE_X_MIN, _BRIDGE_X_MAX = min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)
+CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
+_CS_DY, _CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
+DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 
-def build():
-    """Build gameplay entities, lights, teleports, and movers."""
-    BRUSHES = []
-    ENTITIES = []
-    ROAD_Z = FLOOR_Z2 + 8
 
-    # Bridge-deck entities follow the shared center-span Y/Z offset.
-    BRIDGE_X_MIN, BRIDGE_X_MAX = min(BRIDGE_ARCH_X), max(BRIDGE_ARCH_X)
-    CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
-    CS_DY, CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+def _cs_offset(x, y, z):
+    """Apply the bridge center-span Y/Z offset to points within the arch span."""
+    if _BRIDGE_X_MIN <= x <= _BRIDGE_X_MAX:
+        return y + _CS_DY, z + _CS_DZ
+    return y, z
 
-    def _cs_offset(x, y, z):
-        if BRIDGE_X_MIN <= x <= BRIDGE_X_MAX:
-            return y + CS_DY, z + CS_DZ
-        return y, z
 
+def _build_teleports(ENTITIES):
     teleports_start = len(ENTITIES)
 
     ENTITIES.append(
@@ -398,6 +397,8 @@ def build():
     if not ENTITIES_ENABLED_TELEPORTS:
         del ENTITIES[teleports_start:]
 
+
+def _build_player_start(ENTITIES):
     spawn_x = -180
     spawn_y = 1992
     spawn_z = 26
@@ -418,9 +419,8 @@ def build():
         )
     )
 
-    DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
-    DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 
+def _build_dm_spawns(ENTITIES):
     if ENTITIES_ENABLED_DM_SPAWNS:
         for pos, angle in [
             ((0, *_cs_offset(0, 0, int(deck_top_z(0) + 32))), 180),
@@ -447,6 +447,8 @@ def build():
                 )
             )
 
+
+def _build_weapons(ENTITIES):
     weapons_start = len(ENTITIES)
 
     _rl_y, _rl_z = _cs_offset(0, 0, int(deck_top_z(0) + 8))
@@ -490,6 +492,8 @@ def build():
     if not ENTITIES_ENABLED_WEAPONS:
         del ENTITIES[weapons_start:]
 
+
+def _build_monsters(ENTITIES):
     monsters_start = len(ENTITIES)
 
     _og1_y, _og1_z = _cs_offset(-300, 0, int(deck_top_z(-300) + 8))
@@ -514,6 +518,9 @@ def build():
 
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters_start:]
+
+
+def _build_ammo(ENTITIES):
     ammo_start = len(ENTITIES)
     for ax in BRIDGE_ARCH_X:
         _ir_y, _ir_z = _cs_offset(ax, 0, int(deck_top_z(ax) + 8))
@@ -531,6 +538,8 @@ def build():
     if not ENTITIES_ENABLED_AMMO:
         del ENTITIES[ammo_start:]
 
+
+def _build_health(ENTITIES):
     health_start = len(ENTITIES)
 
     _hp_y, _hp_z = _cs_offset(-100, 0, int(deck_top_z(-100) + 8))
@@ -556,6 +565,8 @@ def build():
     if not ENTITIES_ENABLED_HEALTH:
         del ENTITIES[health_start:]
 
+
+def _build_lights(ENTITIES):
     if BRIDGE_ENABLED_SUPPORTS:
         for px in BRIDGE_ARCH_X:
             for underbridge_light_y in [BRIDGE.y2 + 30, BRIDGE.y1 - 30]:
@@ -696,6 +707,8 @@ def build():
                     )
                 )
 
+
+def _build_vegetation(ENTITIES):
     vegetation_start = len(ENTITIES)
 
     _tree_cx = KNOTT.x1 - 200
@@ -886,6 +899,8 @@ def build():
     if not ENTITIES_ENABLED_VEGETATION:
         del ENTITIES[vegetation_start:]
 
+
+def _build_platform(ENTITIES):
     platform_start = len(ENTITIES)
 
     CHARLES_PLT_W = 128
@@ -992,6 +1007,8 @@ def build():
     if not ENTITIES_ENABLED_PLATFORM:
         del ENTITIES[platform_start:]
 
+
+def _build_monsters2(ENTITIES):
     monsters2_start = len(ENTITIES)
 
     monster_stand_z = ROAD_Z + 24
@@ -1101,6 +1118,8 @@ def build():
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters2_start:]
 
+
+def _build_exit(ENTITIES):
     exit_start = len(ENTITIES)
 
     dorm_exit_xc = (DORM.x1 + DORM.x2) // 2
@@ -1217,6 +1236,8 @@ def build():
     if not ENTITIES_ENABLED_EXIT:
         del ENTITIES[exit_start:]
 
+
+def _build_intermission(ENTITIES):
     ENTITIES.append(
         ent(
             "info_intermission",
@@ -1224,5 +1245,25 @@ def build():
             mangle="-10 75 0",
         )
     )
+
+
+def build():
+    """Build gameplay entities, lights, teleports, and movers."""
+    BRUSHES = []
+    ENTITIES = []
+
+    _build_teleports(ENTITIES)
+    _build_player_start(ENTITIES)
+    _build_dm_spawns(ENTITIES)
+    _build_weapons(ENTITIES)
+    _build_monsters(ENTITIES)
+    _build_ammo(ENTITIES)
+    _build_health(ENTITIES)
+    _build_lights(ENTITIES)
+    _build_vegetation(ENTITIES)
+    _build_platform(ENTITIES)
+    _build_monsters2(ENTITIES)
+    _build_exit(ENTITIES)
+    _build_intermission(ENTITIES)
 
     return BRUSHES, ENTITIES

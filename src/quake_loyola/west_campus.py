@@ -74,10 +74,10 @@ from .geometry import (
     win_frame_xwall,
     win_frame_ywall,
 )
-from .terrain.west_campus import terrain_z, wct_y
+from .terrain.west_campus import _terrain_z, wct_y
 
 
-def build_iron_fence(ENTITIES):
+def _build_iron_fence(ENTITIES):
     """Build the east-side iron fence for the west-campus frontage."""
     fence_brushes = []
 
@@ -85,7 +85,7 @@ def build_iron_fence(ENTITIES):
 
     def fence_base_at(y):
         """Return the fence base height from the hillside terrain."""
-        return terrain_z(FENCE_X1, y)
+        return _terrain_z(FENCE_X1, y)
 
     rail_lo, rail_hi = FENCE_H - 28, FENCE_H - 26
     rail_ys = sorted(
@@ -109,8 +109,10 @@ def build_iron_fence(ENTITIES):
 
     picket_y = CHARLES_Y1
     picket_index = 0
-    while picket_y + 2 <= fence_y2:
+    while True:
         picket_width = 8 if picket_index % 10 == 0 else 2
+        if picket_y + picket_width > fence_y2:
+            break
         fence_base = fence_base_at(picket_y)
         fence_brushes.append(
             box(
@@ -161,7 +163,7 @@ def build_iron_fence(ENTITIES):
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
 
-def build_brick_wall(BRUSHES, ENTITIES):
+def _build_brick_wall(BRUSHES, ENTITIES):
     """Build the west brick wall, gate, pillars, and pier-side fence run."""
 
     wall_hw = DORM_BRICK_WALL_HW
@@ -270,7 +272,7 @@ def build_brick_wall(BRUSHES, ENTITIES):
         ENTITIES.append(brush_ent("func_detail", fence_brushes))
 
 
-def build_sidewalk(BRUSHES):
+def _build_sidewalk(BRUSHES):
     """Build the dorm-front terrace walk and its north spur.
 
     The walkway is tiled into square panels, extends south to CHARLES_Y1,
@@ -301,7 +303,7 @@ def build_sidewalk(BRUSHES):
         curb_cx = (x1 + x2) / 2
         ys = sorted({y1, y2} | {y for y in wct_y if y2 < y < y1}, reverse=True)
         for ny1, ny2 in zip(ys, ys[1:], strict=False):
-            b1, b2 = terrain_z(curb_cx, ny1), terrain_z(curb_cx, ny2)
+            b1, b2 = _terrain_z(curb_cx, ny1), _terrain_z(curb_cx, ny2)
             brushes.append(
                 ramp_slab_y(
                     x1,
@@ -357,13 +359,13 @@ def build():
         )
 
     if WEST_CAMPUS_ENABLED_FENCE:
-        build_iron_fence(ENTITIES)
+        _build_iron_fence(ENTITIES)
 
     if WEST_CAMPUS_ENABLED_WALL:
-        build_brick_wall(BRUSHES, ENTITIES)
+        _build_brick_wall(BRUSHES, ENTITIES)
 
     if WEST_CAMPUS_ENABLED_SIDEWALK:
-        build_sidewalk(BRUSHES)
+        _build_sidewalk(BRUSHES)
 
     if not WEST_CAMPUS_ENABLED_DORMS:
         return BRUSHES, ENTITIES

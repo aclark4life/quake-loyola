@@ -9,7 +9,13 @@ from pathlib import Path
 import typer
 
 from . import config
-from .build_presets import FOG_DENSITY_NAMES, LIGHTING_PRESET_NAMES, SKY_PRESET_NAMES
+from .build_presets import (
+    BUILD_ENUM_SETTINGS,
+    FOG_DENSITY_NAMES,
+    LIGHTING_PRESET_NAMES,
+    SKY_PRESET_NAMES,
+    is_valid_fog_density,
+)
 
 REPO_ROOT = config.REPO_ROOT
 
@@ -103,30 +109,17 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
     if name_u in config.DEFAULTS:
         return "flag", name_u, _parse_bool(value)
     elif name in config.BUILD_DEFAULTS:
-        if name == "vis_mode":
-            if value not in ("fast", "full"):
-                raise typer.BadParameter("vis_mode must be 'fast' or 'full'")
+        if name in BUILD_ENUM_SETTINGS:
+            allowed = BUILD_ENUM_SETTINGS[name]
+            if value not in allowed:
+                raise typer.BadParameter(f"{name} must be one of {allowed}")
             parsed_build: object = value
-        elif name == "lighting_preset":
-            if value not in LIGHTING_PRESET_NAMES:
-                raise typer.BadParameter(
-                    f"lighting_preset must be one of {LIGHTING_PRESET_NAMES}"
-                )
-            parsed_build = value
         elif name == "fog_density":
-            if value != "default" and value not in FOG_DENSITY_NAMES:
-                try:
-                    float(value)
-                except ValueError:
-                    raise typer.BadParameter(
-                        "fog_density must be 'default', one of "
-                        f"{sorted(FOG_DENSITY_NAMES)}, or a numeric string"
-                    ) from None
-            parsed_build = value
-        elif name == "sky_preset":
-            if value not in SKY_PRESET_NAMES:
+            if not is_valid_fog_density(value):
                 raise typer.BadParameter(
-                    f"sky_preset must be one of {SKY_PRESET_NAMES}"
+                    "fog_density must be 'default', one of "
+                    f"{sorted(FOG_DENSITY_NAMES)}, or a finite, non-negative "
+                    "numeric string"
                 )
             parsed_build = value
         else:

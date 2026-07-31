@@ -89,13 +89,7 @@ class Face:
 
     def is_inside(self, p: Point, eps: float = 1e-4) -> bool:
         """Return True if point p is on the solid (positive) side of this face's plane."""
-        v1 = (self.p2[0] - self.p1[0], self.p2[1] - self.p1[1], self.p2[2] - self.p1[2])
-        v2 = (self.p3[0] - self.p1[0], self.p3[1] - self.p1[1], self.p3[2] - self.p1[2])
-        normal = (
-            v1[1] * v2[2] - v1[2] * v2[1],
-            v1[2] * v2[0] - v1[0] * v2[2],
-            v1[0] * v2[1] - v1[1] * v2[0],
-        )
+        normal, _d = _face_plane(self)
         dot = (
             normal[0] * (p[0] - self.p1[0])
             + normal[1] * (p[1] - self.p1[1])

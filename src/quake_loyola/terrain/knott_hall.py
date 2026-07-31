@@ -55,7 +55,6 @@ from ..constants import (
     KNOTT_ENABLED_TERRAIN,
     KNOTT_ENABLED_WALKWAY,
     KNOTT_ENABLED_WALKWAY_BENT,
-    KNOTT_GROUND_Z,
     ROAD_X2,
     WALK_X1,
     WALK_X2,
@@ -80,7 +79,7 @@ from ..geometry import (
 def build():
     """Build Knott Hall terrain plus any enabled walkway geometry."""
 
-    walk_brushes, walk_entities = build_walkway()
+    walk_brushes, walk_entities = _build_walkway()
     if not KNOTT_ENABLED_TERRAIN:
         return walk_brushes, walk_entities
     BRUSHES = []
@@ -884,8 +883,8 @@ def build():
             )
         )
 
-    _peak_out_x, _peak_out_y = KNOTT_DRIVEWAY_JCX_X1, _west_ext_y2 + _r_outer
-    _peak_in_x, _peak_in_y = KNOTT_DRIVEWAY_JCX_X1, _west_ext_y2 + _r_inner
+    _peak_out_y = _west_ext_y2 + _r_outer
+    _peak_in_y = _west_ext_y2 + _r_inner
     _base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_outer
     _base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_inner
     _flat_x1 = KNOTT_DRIVEWAY_JCX_X1 - KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
@@ -1087,7 +1086,7 @@ def build():
     return BRUSHES + walk_brushes, walk_entities
 
 
-def kh_hill_ground_z(x, y):
+def _kh_hill_ground_z(x, y):
     """Return the modeled Knott hillside ground height at ``(x, y)``."""
     _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
     _flat_z = FLOOR_Z2 + CHARLES_WALK_H
@@ -1136,7 +1135,7 @@ def kh_hill_ground_z(x, y):
     return hz + (_flat_z - hz) * t
 
 
-def build_walkway():
+def _build_walkway():
     """Build the Knott walkway, accessible path, and optional support bent."""
     BRUSHES = []
     DETAIL_BRUSHES = []
@@ -1221,21 +1220,11 @@ def build_walkway():
             + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
             + BRIDGE_ACCESS_WALK_NORTH_OFFSET
         )
-        terrain_z2 = int(
-            KNOTT_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_y2 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        )
+        terrain_z2 = int(_kh_hill_ground_z(east_walk_x2, east_walk_y2))
 
         east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
         east_walk_ext_y2 = east_walk_y2
-        extension_terrain_z1 = int(
-            KNOTT_GROUND_Z
-            + (FLOOR_Z2 + CHARLES_WALK_H - KNOTT_GROUND_Z)
-            * (east_walk_ext_y1 - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-            / (ENNIS_SW_EDGE - (KNOTT.y2 + BRIDGE_ACCESS_WALK_PIER_CLEARANCE))
-        )
+        extension_terrain_z1 = int(_kh_hill_ground_z(east_walk_x2, east_walk_ext_y1))
         extension_terrain_z2 = terrain_z2
         extension_terrain_z_west = (extension_terrain_z1 + extension_terrain_z2) // 2
         DETAIL_BRUSHES.append(
@@ -1286,7 +1275,7 @@ def build_walkway():
 
         support_y_center = (support_y1 + support_y2) / 2.0
         for pier_x in support_pier_xs:
-            pier_ground_z = kh_hill_ground_z(pier_x, support_y_center)
+            pier_ground_z = _kh_hill_ground_z(pier_x, support_y_center)
             DETAIL_BRUSHES.append(
                 box(
                     pier_x - support_pier_half_width,
@@ -1300,8 +1289,8 @@ def build_walkway():
             )
 
         _tie_x1 = support_pier_xs[-1]
-        _tie_z1 = kh_hill_ground_z(_tie_x1, support_y_center)
-        _tie_z2 = kh_hill_ground_z(beam_x2, support_y_center)
+        _tie_z1 = _kh_hill_ground_z(_tie_x1, support_y_center)
+        _tie_z2 = _kh_hill_ground_z(beam_x2, support_y_center)
         DETAIL_BRUSHES.append(
             ramp_slab(
                 _tie_x1,
