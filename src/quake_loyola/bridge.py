@@ -90,6 +90,7 @@ from .constants import (
     BRIDGE_TUBE_GAP,
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
+    ENTITIES_ENABLED_TELEPORTS,
     FASCIA_FONT,
     FLOOR_Z2,
     PIER2_X,
@@ -1562,7 +1563,7 @@ def _build_all():
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
         DETAIL_BRUSHES = []
 
-    if "abutment_teleport_brush" in locals():
+    if ENTITIES_ENABLED_TELEPORTS and "abutment_teleport_brush" in locals():
         ENTITIES.append(
             ent(
                 "info_teleport_destination",

@@ -13,8 +13,8 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1188
-EXPECTED_ENTITIES = 106
-EXPECTED_MD5 = "a4bd1afc76c91bb5fdc598041b290004"
+EXPECTED_ENTITIES = 103
+EXPECTED_MD5 = "c4d4fae27110cd79e2324b2bfa195599"
 
 
 class MapRegressionTests(unittest.TestCase):
