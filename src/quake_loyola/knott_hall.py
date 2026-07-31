@@ -26,7 +26,6 @@ from .constants import (
     Textures,
 )
 from .geometry import box, fascia_sign
-from .terrain.knott_hall import _kh_hill_ground_z
 
 WALL_T = 16
 ROOF_T = 16
@@ -53,12 +52,15 @@ NOTCH_Y = Y2 - CORNER_CUT_DEPTH
 NORTH_X1 = X1 + CORNER_CUT_W_NW
 NORTH_X2 = X2 - CORNER_CUT_W_NE
 
-# The real terrain hillside actually slopes down from west to east under
-# the footprint (see terrain/knott_hall.py's _kh_hill_ground_z) — it is not
-# flat. Walls must reach the *lowest* ground point along their run, not
-# just the west corner's height, or the low (east) end floats above a gap.
-_GROUND_SAMPLE_STEP = 8
-GROUND_Z = min(_kh_hill_ground_z(x, Y1) for x in range(X1, X2 + 1, _GROUND_SAMPLE_STEP))
+# The real terrain hillside slopes down noticeably (and non-linearly near
+# the southeast corner) under the footprint — the _kh_hill_ground_z helper
+# is only an approximation of the actual generated terrain mesh and
+# underestimates how low it dips in places (real mesh reaches ~z10 near
+# the SE corner vs. the helper's ~z44). Rather than chase the exact real
+# minimum, walls extend down to WORLD_FLOOR_Z (-16), the base terrain fill
+# level used everywhere else in the map, guaranteeing no gap regardless of
+# local terrain undulation.
+GROUND_Z = -16
 
 
 def build():
