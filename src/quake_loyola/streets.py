@@ -1783,8 +1783,8 @@ def build():
             FLOOR_Z2,
             ROAD_X1 - _CHARLES_CURB_CAP_D,
             CHARLES_Y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.SIDEWALK,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
         )
     )
     BRUSHES.append(
@@ -1883,8 +1883,8 @@ def build():
                 FLOOR_Z2,
                 ROAD_X2 + _CHARLES_CURB_CAP_D + _CHARLES_CURB_GAP,
                 _seg_y2,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.SIDEWALK,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.SIDEWALK_JOINT,
             )
         )
         BRUSHES.append(
@@ -1994,8 +1994,8 @@ def build():
             FLOOR_Z2,
             _CURB_BULGE_X1,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.SIDEWALK,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
@@ -2006,8 +2006,8 @@ def build():
             FLOOR_Z2,
             ENNIS_X2,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + _ENNIS_CURB_CAP_D + _ENNIS_CURB_GAP,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            Textures.SIDEWALK,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
             tt_params=ENNIS_ROAD_TT_PARAMS,
         )
     )
@@ -2176,8 +2176,8 @@ def build():
                 FLOOR_Z2,
                 curb_x2,
                 ENNIS_SW_EDGE + CHARLES_WALK_W - _ENNIS_CURB_CAP_D,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.SIDEWALK,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.SIDEWALK_JOINT,
                 tt_params=ENNIS_ROAD_TT_PARAMS,
             )
         )
