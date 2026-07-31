@@ -33,7 +33,7 @@ class Textures:
     PARKING_STRIPE = "win_fbblu_01"  # Reads as a light parking-stripe texture in-game.
     ENNIS_PILLAR = "stn_f14_wht1"  # from makkon_stone.wad
     FLOOR = "sfloor3_2"
-    FLOOR1 = "floor01_5lrg"  # from ad.wad; bridge deck walking surface
+    FLOOR1 = "TF_Floor5_03"  # from mg1.wad; bridge deck walking surface
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
     GROUND = "ground1_1"
     HINT = "hint"
