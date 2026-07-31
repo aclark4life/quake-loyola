@@ -1,0 +1,12 @@
+[flags]
+BRIDGE_ENABLED_SPAN_EAST_EXT = false
+KNOTT_ENABLED = true
+KNOTT_ENABLED_TERRAIN = true
+KNOTT_ENABLED_WALKWAY = false
+KNOTT_ENABLED_WALKWAY_BENT = true
+
+[build]
+fog_density = "off"
+lighting_preset = "dusk"
+sky_preset = "night"
+vis_mode = "full"
