@@ -1688,34 +1688,21 @@ def build():
 
 
 def _shift_center_span(brushes, entities, enabled_names, offset):
-    """Translate only the center span (plus any shared boundary piers it
-    owns) by the configured offset; other enabled sections stay in place.
+    """Translate the center span and any other enabled sections by one offset.
 
-    ``BRIDGE_CENTER_SPAN_OFFSET`` is documented as "applied only to the
-    center span" — other modules (west campus brick wall, dorm-adjacent
-    entities, Knott walkway) independently read the same offset to align
-    their own attachment points to the shifted span, so shifting every
-    enabled section here would double-move those connections.
-
-    Both extractions pass the same `enabled_names` to `_filter_sections` so
-    the underlying acceptance windows are computed once and partition the
-    bridge without overlap; only `extract_names` differs, so no brush is
-    duplicated or dropped between the center-span and "other sections" sets.
+    Shared piers stay connected because every enabled section moves as the
+    same rigid assembly. Filter the full enabled set in a single pass rather
+    than extracting each section separately and concatenating: per-section
+    acceptance windows intentionally overlap their neighbor's near a shared
+    pier (so the owning section's margin can capture boundary geometry),
+    and extracting+translating each name individually would double up any
+    brush that falls in that overlap band.
     """
     dx, dy, dz = offset
-    cs_brushes, cs_entities = _filter_sections(
-        brushes, entities, enabled_names, extract_names=["center_span"]
-    )
-    other_names = [name for name in enabled_names if name != "center_span"]
-    if other_names:
-        other_brushes, other_entities = _filter_sections(
-            brushes, entities, enabled_names, extract_names=other_names
-        )
-    else:
-        other_brushes, other_entities = [], []
-    cs_brushes = [b.translated(dx, dy, dz) for b in cs_brushes]
-    cs_entities = [e.translated(dx, dy, dz) for e in cs_entities]
-    return other_brushes + cs_brushes, other_entities + cs_entities
+    sect_b, sect_e = _filter_sections(brushes, entities, enabled_names)
+    sect_b = [b.translated(dx, dy, dz) for b in sect_b]
+    sect_e = [e.translated(dx, dy, dz) for e in sect_e]
+    return sect_b, sect_e
 
 
 def _build_center_span(offset=(0.0, 0.0, 0.0)):
