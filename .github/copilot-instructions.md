@@ -89,7 +89,7 @@ needed to flip a module on/off — use `ql conf set <NAME> true|false`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `generate_map.py` calls every module's `build()` and merges results.
 - **Texture names** — defined in `src/quake_loyola/constants/textures.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
 - **No side effects in modules** — area modules must not write files or print output; all I/O lives in `generate_map.py`.
-- **WADs** — `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, `makkon_stone.wad`, and `mg1.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
+- **WADs** — `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, `makkon_stone.wad`, `mg1.wad`, and `id1.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
 
 ## Dependencies
 

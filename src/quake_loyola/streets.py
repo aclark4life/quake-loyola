@@ -1622,6 +1622,21 @@ def build():
                     tt_params=tt_params,
                 )
             )
+        for (_, prev_end, _), (next_start, _, _) in zip(
+            segments, segments[1:], strict=False
+        ):
+            if next_start > prev_end:
+                brushes.append(
+                    box(
+                        x1,
+                        prev_end,
+                        z_base,
+                        x2,
+                        next_start,
+                        z_top,
+                        Textures.SIDEWALK_JOINT,
+                    )
+                )
 
     def sw_slabs_x(
         brushes,
@@ -1705,6 +1720,21 @@ def build():
                         z_top,
                         tex,
                         tt_params=tt_params,
+                    )
+                )
+        for (_, prev_end, _, _, _), (next_start, _, _, _, _) in zip(
+            segments, segments[1:], strict=False
+        ):
+            if next_start > prev_end:
+                brushes.append(
+                    box(
+                        prev_end,
+                        y1,
+                        z_base,
+                        next_start,
+                        y2,
+                        z_top,
+                        Textures.SIDEWALK_JOINT,
                     )
                 )
 

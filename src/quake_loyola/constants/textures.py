@@ -48,6 +48,7 @@ class Textures:
     ROOF = "roofkell1"
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
+    SIDEWALK_JOINT = "wstone1_2"  # from id1.wad; expansion-joint filler between slabs
     SKY = SKY_PRESETS[_get_build("sky_preset")]
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
