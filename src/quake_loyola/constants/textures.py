@@ -53,3 +53,4 @@ class Textures:
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad
+    WINDOW_KH = "{win01_1brk1b"  # from ad.wad; masked (alpha) window pane texture

@@ -111,6 +111,7 @@ def _wall_with_opening(
     offset=0,
     mullions=0,
     mullion_tex=None,
+    fill_tex=None,
 ):
     """A thin wall (in Y) split around a centered opening above bridge level.
 
@@ -120,7 +121,9 @@ def _wall_with_opening(
     opening. ``mullions`` triangular vertical dividers (pointy end facing
     outward past the wall's outer face, textured with ``mullion_tex``,
     defaulting to ``tex``) are placed across the opening's width — 2 sit at
-    its edges, 3 add one more centered between them.
+    its edges, 3 add one more centered between them. If ``fill_tex`` is
+    given, a thin masked (window-pane) brush fills the opening instead of
+    leaving it fully open.
     """
     cx = (x1 + x2) / 2 + offset
     ox1, ox2 = cx - open_w / 2, cx + open_w / 2
@@ -131,6 +134,8 @@ def _wall_with_opening(
         boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
     if ox2 < x2:
         boxes.append(box(ox2, y1, bottom_z, x2, y2, z2, tex))
+    if fill_tex is not None:
+        boxes.append(box(ox1, y1, bottom_z, ox2, y2, z2, fill_tex))
     if mullions > 0:
         m_tex = mullion_tex if mullion_tex is not None else tex
         if mullions == 2:
@@ -184,6 +189,7 @@ def build():
             Textures.PIER_STONE,
             mullions=WEST_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
+            fill_tex=Textures.WINDOW_KH,
         ),
         # NE notch ledge (faces the cut-away square, north-facing) — has the
         # (narrower) east front opening above bridge-deck height.
@@ -199,6 +205,7 @@ def build():
             Textures.PIER_STONE,
             mullions=EAST_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
+            fill_tex=Textures.WINDOW_KH,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
         box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
@@ -220,6 +227,7 @@ def build():
             offset=CENTER_OPENING_OFFSET,
             mullions=CENTER_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
+            fill_tex=Textures.WINDOW_KH,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
