@@ -75,7 +75,7 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 ## Configuring the build
 
 Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and vis/light
-quality settings are controlled via `ql.toml` (repo root, gitignored) and the
+quality settings are controlled via `ql.toml` (repo root, tracked in git) and the
 `ql conf` CLI — see the module docstring of `src/quake_loyola/config.py`
 and the README's "Configuring the build" section. `generate_map.py` picks up
 `ql.toml` automatically through `constants/flags.py` (and a few flags in

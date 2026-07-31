@@ -41,8 +41,8 @@ are downloaded from Quaketastic automatically by `just setup`.
 
 Which modules get built (bridge, Knott Hall, terrain, lights, etc.) and a
 couple of compile-time settings (vis/light quality) are controlled by the
-`ql` CLI, backed by a `ql.toml` file at the repo root (gitignored — it's a
-per-user override layer on top of the hardcoded defaults in
+`ql` CLI, backed by a `ql.toml` file at the repo root (tracked in git — it's
+the current build's override layer on top of the hardcoded defaults in
 `src/quake_loyola/config.py`). Install it as a console-script:
 
 ```bash
