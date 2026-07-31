@@ -29,6 +29,7 @@ ENNIS_PANEL_INNER_H = 12
 ENNIS_PANEL_INNER_W = 28
 ENNIS_PANEL_OUTER_H = 28
 ENNIS_PANEL_OUTER_W = 48
+ENNIS_SW_PANEL_OUTER_W = 41  # Narrower outer width for the short-wall panel.
 ENNIS_PANEL_MOUNT_FOOT_DROP = 6  # Bracket drop onto the brick top.
 ENNIS_PANEL_MOUNT_FOOT_INSET = 6  # Foot inset from the corners.
 ENNIS_HW = 160

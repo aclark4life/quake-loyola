@@ -63,6 +63,7 @@ from .constants import (
     ENNIS_PILLAR_X1,
     ENNIS_SHORT_WALL_NY,
     ENNIS_SW_EDGE,
+    ENNIS_SW_PANEL_OUTER_W,
     ENNIS_WALL_H,
     ENNIS_WALL_NY,
     ENNIS_WALL_PILLAR_H,
@@ -302,7 +303,7 @@ def _build_ennis_entrance_features():
     sw_panel_z1 = sw_brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
     sw_panel_z_center = sw_panel_z1 + ENNIS_PANEL_OUTER_H // 2
     _sw_frame_t = (ENNIS_PANEL_OUTER_W - ENNIS_PANEL_INNER_W) // 2
-    sw_panel_outer_w = 41
+    sw_panel_outer_w = ENNIS_SW_PANEL_OUTER_W
     sw_panel_inner_w = sw_panel_outer_w - 2 * _sw_frame_t
 
     def sw_add_panel(center_x):

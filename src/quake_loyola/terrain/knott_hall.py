@@ -84,24 +84,6 @@ def build():
         return walk_brushes, walk_entities
     BRUSHES = []
 
-    def road_section(brushes, x1, x2, top_z_s, top_z_n, surface_tex):
-        """Add one sloped road slab textured on top with ``surface_tex``."""
-
-        brushes.append(
-            ramp_slab_y(
-                x1,
-                x2,
-                KNOTT_DRIVEWAY_Y1,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                top_z_s,
-                top_z_n,
-                Textures.GROUND,
-                tt=surface_tex,
-            )
-        )
-
     def sidewalk_slabs_sloped(brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex):
         """Add one full-depth sloped sidewalk slab."""
         brushes.append(
@@ -123,13 +105,21 @@ def build():
         """Add one full-depth flat sidewalk slab."""
         brushes.append(box(x1, y1, z_base, x2, y2, z_top, surface_tex))
 
-    road_section(
-        BRUSHES,
-        KNOTT_DRIVEWAY_RD_X1,
-        KNOTT_DRIVEWAY_RD_X2,
-        KNOTT_DRIVEWAY_ZT_S + 2,
-        KNOTT_DRIVEWAY_ZT_N + 2,
-        Textures.ROAD,
+    # Single call site — inlined rather than wrapped, since a one-off helper
+    # added indirection without any reuse.
+    BRUSHES.append(
+        ramp_slab_y(
+            KNOTT_DRIVEWAY_RD_X1,
+            KNOTT_DRIVEWAY_RD_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            KNOTT_DRIVEWAY_ZT_S + 2,
+            KNOTT_DRIVEWAY_ZT_N + 2,
+            Textures.GROUND,
+            tt=Textures.ROAD,
+        )
     )
 
     sidewalk_slabs_sloped(

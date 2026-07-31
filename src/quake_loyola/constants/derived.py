@@ -227,7 +227,7 @@ BRIDGE_SPAN_CENTRES = [
     (BRIDGE_ARCH_X[4] + BRIDGE_ARCH_X[5]) // 2,
     (BRIDGE_ARCH_X[5] + _EAST_FEATURES_X2_EXT - WALL_T) // 2,
 ]
-BRIDGE_PEND_XS = BRIDGE_SPAN_CENTRES
+BRIDGE_PEND_XS = tuple(BRIDGE_SPAN_CENTRES)  # Independent copy, not an alias.
 WORLD_Y1, WORLD_Y2 = (
     -6642,  # South world bound.
     4085,

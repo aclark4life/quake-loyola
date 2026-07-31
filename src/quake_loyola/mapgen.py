@@ -1,5 +1,7 @@
 """Assemble area modules into the final ``loyola.map`` document."""
 
+from dataclasses import replace
+
 from . import (
     basement,
     bridge,
@@ -56,7 +58,10 @@ def build_map():
         brushes, ents = mod.build()
         kept = []
         for e in ents:
-            group = e.fields.pop("_light_group", None)
+            # Read (without mutating) so repeated build_map() calls on the
+            # same entity objects stay idempotent; strip the internal key
+            # only from the copy we actually keep.
+            group = e.fields.get("_light_group")
             if not e.classname.startswith("light"):
                 kept.append(e)
                 continue
@@ -68,6 +73,13 @@ def build_map():
                     "than letting the fixture silently disappear."
                 )
             if group is None or LIGHT_GROUP_FLAGS.get(group):
+                if "_light_group" in e.fields:
+                    e = replace(
+                        e,
+                        fields={
+                            k: v for k, v in e.fields.items() if k != "_light_group"
+                        },
+                    )
                 kept.append(e)
         mb.add_brushes(brushes)
         mb.add_entities(kept)

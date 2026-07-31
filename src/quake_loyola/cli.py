@@ -83,11 +83,12 @@ def config_show() -> None:
 def config_get(name: str) -> None:
     """Print the effective value of a single flag or build setting."""
     name_u = name.upper()
+    name_l = name.lower()
     try:
         if name_u in config.DEFAULTS:
             typer.echo(str(config.get(name_u)))
-        elif name in config.BUILD_DEFAULTS:
-            typer.echo(str(config.get_build(name)))
+        elif name_l in config.BUILD_DEFAULTS:
+            typer.echo(str(config.get_build(name_l)))
         else:
             typer.echo(
                 f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
@@ -106,15 +107,16 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
     ``"build"``.
     """
     name_u = name.upper()
+    name_l = name.lower()
     if name_u in config.DEFAULTS:
         return "flag", name_u, _parse_bool(value)
-    elif name in config.BUILD_DEFAULTS:
-        if name in BUILD_ENUM_SETTINGS:
-            allowed = BUILD_ENUM_SETTINGS[name]
+    elif name_l in config.BUILD_DEFAULTS:
+        if name_l in BUILD_ENUM_SETTINGS:
+            allowed = BUILD_ENUM_SETTINGS[name_l]
             if value not in allowed:
-                raise typer.BadParameter(f"{name} must be one of {allowed}")
+                raise typer.BadParameter(f"{name_l} must be one of {allowed}")
             parsed_build: object = value
-        elif name == "fog_density":
+        elif name_l == "fog_density":
             if not is_valid_fog_density(value):
                 raise typer.BadParameter(
                     "fog_density must be 'default', one of "
@@ -124,7 +126,7 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
             parsed_build = value
         else:
             parsed_build = _parse_bool(value)
-        return "build", name, parsed_build
+        return "build", name_l, parsed_build
     else:
         typer.echo(
             f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
