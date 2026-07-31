@@ -29,7 +29,7 @@ from .geometry import box, fascia_sign
 
 WALL_T = 16
 ROOF_T = 16
-BUILDING_H = 1344  # Was 1152 (previously bumped from 960); a little taller again.
+BUILDING_H = 1536  # Was 1344 (previously bumped from 1152/960); taller again.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from X2.
 CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
@@ -146,7 +146,7 @@ def build():
     # of how the letter pixel sizes happen to round.
     sign_half_w = sign_total_w // 2 + sign_padding
     sign_cx = NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
-    SIGN_Z_ADJUST = -96  # Lower the sign a little from its default offset.
+    SIGN_Z_ADJUST = 32  # Lower the sign a little from its default offset.
     sign_z_center = z1 + BUILDING_H // 2 + KNOTT_SIGN_Z_OFFSET + SIGN_Z_ADJUST
     brushes.extend(
         fascia_sign(

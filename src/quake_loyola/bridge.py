@@ -6,10 +6,7 @@ abutment teleports, and fascia lettering between west campus and Knott Hall.
 
 from .constants import (
     A_SEGS,
-    ARCH_RIN,
-    ARCH_ROUT,
     ARCH_SLAB_W,
-    ARCH_STILT_H,
     BRIDGE,
     BRIDGE_ABUTMENT_CEMENT_MAX_H,
     BRIDGE_ABUTMENT_CEMENT_RIN,
@@ -38,7 +35,6 @@ from .constants import (
     BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
-    BRIDGE_EAST_SHIFT_END,
     BRIDGE_ENABLED_FASCIA_TEXT,
     BRIDGE_ENABLED_SPAN_CENTER,
     BRIDGE_ENABLED_SPAN_EAST_APPROACH,
@@ -114,7 +110,6 @@ from .constants import (
 from .geometry import (
     arch_fill,
     arch_plate_ring,
-    arch_seg,
     arch_wall,
     box,
     brush_ent,
@@ -1509,54 +1504,6 @@ def _build_all():
                         stilt_h=cem_stilt_h,
                     )
                 )
-
-    for arch_x_start, arch_center_y in [
-        (WORLD_X1 + WALL_T, 0.0),
-        (
-            WORLD_X2_EXT - WALL_T - ARCH_SLAB_W,
-            BRIDGE_EAST_SHIFT_END,
-        ),
-    ]:
-        arch_x1, arch_x2 = arch_x_start, arch_x_start + ARCH_SLAB_W
-        arch_spring_z = BRIDGE_DZ2 + ARCH_STILT_H
-        arch_post_width = ARCH_ROUT - ARCH_RIN
-        BRUSHES.append(
-            box(
-                arch_x1,
-                BRIDGE.y1 - BRIDGE_PILLAR_OVERHANG + arch_center_y,
-                FLOOR_Z2,
-                arch_x2,
-                BRIDGE.y1 + arch_post_width + arch_center_y,
-                arch_spring_z,
-                Textures.PILLAR,
-            )
-        )
-        BRUSHES.append(
-            box(
-                arch_x1,
-                BRIDGE.y2 - arch_post_width + arch_center_y,
-                FLOOR_Z2,
-                arch_x2,
-                BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + arch_center_y,
-                arch_spring_z,
-                Textures.PILLAR,
-            )
-        )
-        arch_segment_angle = 180.0 / A_SEGS
-        for i in range(A_SEGS):
-            BRUSHES.append(
-                arch_seg(
-                    arch_x1,
-                    arch_x2,
-                    arch_center_y,
-                    float(arch_spring_z),
-                    ARCH_RIN,
-                    ARCH_ROUT + BRIDGE_PILLAR_OVERHANG,
-                    i * arch_segment_angle,
-                    (i + 1) * arch_segment_angle,
-                    Textures.PILLAR,
-                )
-            )
 
     BRUSHES = _worldspawn_brushes
     if DETAIL_BRUSHES:
