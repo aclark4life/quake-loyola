@@ -26,7 +26,7 @@ from .constants import (
     PIER5_X,
     Textures,
 )
-from .geometry import box, fascia_sign
+from .geometry import box, fascia_sign, polygon_prism
 
 WALL_T = 16
 ROOF_T = 16
@@ -74,15 +74,53 @@ CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
 EAST_OPENING_W = 56
+MULLION_W = 12  # Vertical divider (base) thickness, matching historical KH mullions.
+MULLION_PROUD = 8  # How far the mullion's pointed edge projects past the wall.
+# Divider counts per opening, east to west. 2 dividers sit at the opening's
+# edges; 3 dividers add one more centered between them.
+EAST_OPENING_MULLIONS = 2
+CENTER_OPENING_MULLIONS = 3
+WEST_OPENING_MULLIONS = 3
 
 
-def _wall_with_opening(x1, y1, x2, y2, z1, z2, open_w, bottom_z, tex, offset=0):
+def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
+    """A triangular (in cross-section) vertical mullion.
+
+    Its flat base runs along the wall's inner face (``y1``); it tapers to a
+    point projecting ``MULLION_PROUD`` past the wall's outer face (``y2``),
+    pointy end facing outward.
+    """
+    pts = [
+        (mx, y1),
+        (mx + MULLION_W, y1),
+        (mx + MULLION_W / 2, y2 + MULLION_PROUD),
+    ]
+    return polygon_prism(pts, bottom_z, top_z, tex)
+
+
+def _wall_with_opening(
+    x1,
+    y1,
+    x2,
+    y2,
+    z1,
+    z2,
+    open_w,
+    bottom_z,
+    tex,
+    offset=0,
+    mullions=0,
+    mullion_tex=None,
+):
     """A thin wall (in Y) split around a centered opening above bridge level.
 
     The wall is solid from ``z1`` up to ``bottom_z`` (bridge-deck height);
     above that, an opening spans ``open_w`` in X, centered on the wall (plus
     ``offset``), up to ``z2``, with solid wall on either side of the
-    opening.
+    opening. ``mullions`` triangular vertical dividers (pointy end facing
+    outward past the wall's outer face, textured with ``mullion_tex``,
+    defaulting to ``tex``) are placed across the opening's width — 2 sit at
+    its edges, 3 add one more centered between them.
     """
     cx = (x1 + x2) / 2 + offset
     ox1, ox2 = cx - open_w / 2, cx + open_w / 2
@@ -93,6 +131,18 @@ def _wall_with_opening(x1, y1, x2, y2, z1, z2, open_w, bottom_z, tex, offset=0):
         boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
     if ox2 < x2:
         boxes.append(box(ox2, y1, bottom_z, x2, y2, z2, tex))
+    if mullions > 0:
+        m_tex = mullion_tex if mullion_tex is not None else tex
+        if mullions == 2:
+            positions = [ox1, ox2]
+        elif mullions == 3:
+            positions = [ox1, (ox1 + ox2) / 2, ox2]
+        else:
+            gap = open_w / (mullions - 1)
+            positions = [ox1 + i * gap for i in range(mullions)]
+        for mx in positions:
+            mx -= MULLION_W / 2
+            boxes.append(_mullion_prism(mx, y1, y2, bottom_z, z2, m_tex))
     return boxes
 
 
@@ -132,6 +182,8 @@ def build():
             WEST_OPENING_W,
             OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
+            mullions=WEST_OPENING_MULLIONS,
+            mullion_tex=Textures.CEMENT,
         ),
         # NE notch ledge (faces the cut-away square, north-facing) — has the
         # (narrower) east front opening above bridge-deck height.
@@ -145,6 +197,8 @@ def build():
             EAST_OPENING_W,
             OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
+            mullions=EAST_OPENING_MULLIONS,
+            mullion_tex=Textures.CEMENT,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
         box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
@@ -164,6 +218,8 @@ def build():
             OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
             offset=CENTER_OPENING_OFFSET,
+            mullions=CENTER_OPENING_MULLIONS,
+            mullion_tex=Textures.CEMENT,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
