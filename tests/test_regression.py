@@ -2,7 +2,7 @@ import hashlib
 import unittest
 
 import generate_map
-from quake_loyola import entities, mapgen, maryland_hall, streets
+from quake_loyola import entities, mapgen, maryland_hall, streets, west_campus
 from quake_loyola.mapdata import Entity
 from quake_loyola.terrain import knott_hall as knott_terrain
 from quake_loyola.terrain import maryland as maryland_terrain
@@ -229,6 +229,94 @@ class MarylandBuildTests(unittest.TestCase):
                     all(f.tex == "hint" for b in brushes for f in b.faces),
                     "expected only HINT brushes when MARYLAND_ENABLED_TERRAIN is off",
                 )
+
+
+class WestCampusDormsBuildTests(unittest.TestCase):
+    """WEST_CAMPUS_ENABLED_DORMS defaults to False, so west_campus.py's
+    dorm-shell/walkway geometry (~1200 lines of build()) never runs in the
+    default-config regression tests above. Force it on here so that branch
+    actually gets exercised, and confirm the fence/wall/sidewalk-without-
+    terrain guard still raises."""
+
+    def setUp(self):
+        self._saved = {
+            name: getattr(west_campus, name)
+            for name in (
+                "WEST_CAMPUS_ENABLED_DORMS",
+                "WEST_CAMPUS_ENABLED_FENCE",
+                "WEST_CAMPUS_ENABLED_WALL",
+                "WEST_CAMPUS_ENABLED_SIDEWALK",
+                "WEST_CAMPUS_ENABLED_TERRAIN",
+            )
+        }
+
+    def tearDown(self):
+        for name, value in self._saved.items():
+            setattr(west_campus, name, value)
+
+    def test_dorms_disabled_builds_nothing_dorm_specific(self):
+        west_campus.WEST_CAMPUS_ENABLED_DORMS = False
+        brushes, _ = west_campus.build()
+        self.assertTrue(brushes, "expected non-dorm west-campus geometry")
+
+    def test_dorms_enabled_adds_brushes_and_entities(self):
+        west_campus.WEST_CAMPUS_ENABLED_DORMS = False
+        without_dorms = len(west_campus.build()[0])
+        west_campus.WEST_CAMPUS_ENABLED_DORMS = True
+        brushes, ents = west_campus.build()
+        self.assertGreater(
+            len(brushes),
+            without_dorms,
+            "enabling WEST_CAMPUS_ENABLED_DORMS should add dorm-shell brushes",
+        )
+        self.assertTrue(ents, "expected dorm-related entities (func_detail etc.)")
+
+    def test_fence_without_terrain_raises(self):
+        west_campus.WEST_CAMPUS_ENABLED_TERRAIN = False
+        west_campus.WEST_CAMPUS_ENABLED_FENCE = True
+        west_campus.WEST_CAMPUS_ENABLED_WALL = False
+        west_campus.WEST_CAMPUS_ENABLED_SIDEWALK = False
+        with self.assertRaises(ValueError):
+            west_campus.build()
+
+
+class KnottWalkwayBuildTests(unittest.TestCase):
+    """KNOTT_ENABLED_WALKWAY/KNOTT_ENABLED_WALKWAY_BENT both default to
+    False, so terrain/knott_hall.py's walkway/support-bent geometry never
+    runs in the default-config regression tests above."""
+
+    def setUp(self):
+        self._saved = {
+            name: getattr(knott_terrain, name)
+            for name in ("KNOTT_ENABLED_WALKWAY", "KNOTT_ENABLED_WALKWAY_BENT")
+        }
+
+    def tearDown(self):
+        for name, value in self._saved.items():
+            setattr(knott_terrain, name, value)
+
+    def test_walkway_disabled_builds_no_detail_entities(self):
+        knott_terrain.KNOTT_ENABLED_WALKWAY = False
+        knott_terrain.KNOTT_ENABLED_WALKWAY_BENT = False
+        brushes, ents = knott_terrain.build()
+        self.assertTrue(brushes, "expected base terrain brushes regardless")
+        self.assertNotIn(
+            "func_detail",
+            [e.classname for e in ents],
+            "no walkway func_detail expected with both flags off",
+        )
+
+    def test_walkway_enabled_adds_func_detail_entity(self):
+        knott_terrain.KNOTT_ENABLED_WALKWAY = True
+        knott_terrain.KNOTT_ENABLED_WALKWAY_BENT = False
+        _, ents = knott_terrain.build()
+        self.assertIn("func_detail", [e.classname for e in ents])
+
+    def test_walkway_bent_enabled_adds_func_detail_entity(self):
+        knott_terrain.KNOTT_ENABLED_WALKWAY = False
+        knott_terrain.KNOTT_ENABLED_WALKWAY_BENT = True
+        _, ents = knott_terrain.build()
+        self.assertIn("func_detail", [e.classname for e in ents])
 
 
 class LightGroupFilteringTests(unittest.TestCase):
