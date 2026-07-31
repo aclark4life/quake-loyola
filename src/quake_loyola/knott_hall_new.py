@@ -68,9 +68,9 @@ def build():
 
     brushes = [
         # West wall (lower rectangle only — stops at the NW notch)
-        box(X1, Y1, z1, X1 + WALL_T, NOTCH_Y, z2, Textures.BRICK_KH),
+        box(X1, Y1, z1, X1 + WALL_T, NOTCH_Y, z2, Textures.PIER_STONE),
         # East wall (lower rectangle only — stops at the NE notch)
-        box(X2 - WALL_T, Y1, z1, X2, NOTCH_Y, z2, Textures.BRICK_KH),
+        box(X2 - WALL_T, Y1, z1, X2, NOTCH_Y, z2, Textures.PIER_STONE),
         # South wall (between the two side walls)
         box(
             X1 + WALL_T,
@@ -79,7 +79,7 @@ def build():
             X2 - WALL_T,
             Y1 + WALL_T,
             z2,
-            Textures.BRICK_KH,
+            Textures.PIER_STONE,
         ),
         # NW notch ledge (faces the cut-away square, north-facing)
         box(
@@ -89,7 +89,7 @@ def build():
             NORTH_X1,
             NOTCH_Y,
             z2,
-            Textures.BRICK_KH,
+            Textures.PIER_STONE,
         ),
         # NE notch ledge (faces the cut-away square, north-facing)
         box(
@@ -99,12 +99,12 @@ def build():
             X2 - WALL_T,
             NOTCH_Y,
             z2,
-            Textures.BRICK_KH,
+            Textures.PIER_STONE,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
-        box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.BRICK_KH),
+        box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
         # Upper rectangle east wall (inward face of the NE notch)
-        box(NORTH_X2 - WALL_T, NOTCH_Y, z1, NORTH_X2, Y2, z2, Textures.BRICK_KH),
+        box(NORTH_X2 - WALL_T, NOTCH_Y, z1, NORTH_X2, Y2, z2, Textures.PIER_STONE),
         # North wall (upper rectangle, between the two notches)
         box(
             NORTH_X1 + WALL_T,
@@ -113,7 +113,7 @@ def build():
             NORTH_X2 - WALL_T,
             Y2,
             z2,
-            Textures.BRICK_KH,
+            Textures.PIER_STONE,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),

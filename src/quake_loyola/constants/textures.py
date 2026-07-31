@@ -35,12 +35,13 @@ class Textures:
     FLOOR = "sfloor3_2"
     FLOOR1 = "floor01_5lrg"  # from ad.wad; bridge deck walking surface
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
-    FLOOR_KH = "sfloor3_2"
     GROUND = "ground1_1"
     HINT = "hint"
     MULCH = "grave13c"
     LAVA = "*lava1"
     PILLAR = "city6_8"
+    PIER_STONE = "TF_Stone4"  # from mg1.wad; shared by bridge piers and KH walls
+    FLOOR_KH = "sfloor3_2"
     RAIL = "metal5_4"
     ROAD = "thantech10_9"
     GABLE = "woodc1_cwht01"

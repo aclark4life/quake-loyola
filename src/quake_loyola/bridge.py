@@ -1131,7 +1131,7 @@ def _build_all():
                         pier_floor_z,
                         pier_ceiling_z,
                         a_rin,
-                        Textures.PILLAR,
+                        Textures.PIER_STONE,
                         overhang=sq_overhang,
                         base_ramp=base_ramp,
                         yc=py_shift,
@@ -1154,7 +1154,7 @@ def _build_all():
                         a_rin,
                         a_rout,
                         A_SEGS,
-                        Textures.PILLAR,
+                        Textures.PIER_STONE,
                         stilt_h=a_stilt,
                         overhang=arch_overhang,
                         base_h=BRIDGE_PILLAR_BASE_H,
@@ -1193,7 +1193,7 @@ def _build_all():
                         x2,
                         footer_y2,
                         pier_floor_z,
-                        Textures.PILLAR,
+                        Textures.PIER_STONE,
                     )
                 )
 
@@ -1240,7 +1240,7 @@ def _build_all():
                     px + BRIDGE_PILLAR_HW,
                     pier_outer_y,
                     ppil,
-                    Textures.PILLAR,
+                    Textures.PIER_STONE,
                 )
             )
 
@@ -1252,7 +1252,7 @@ def _build_all():
                     px + BRIDGE_PILLAR_HW,
                     by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
                     ppil,
-                    Textures.PILLAR,
+                    Textures.PIER_STONE,
                 )
             )
 
@@ -1307,7 +1307,15 @@ def _build_all():
             pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
             if px != PIER6_X:
                 BRUSHES.append(
-                    box(x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR)
+                    box(
+                        x1,
+                        by2,
+                        pier_top_z,
+                        x2,
+                        pier_outer_y,
+                        pdeck,
+                        Textures.PIER_STONE,
+                    )
                 )
             BRUSHES.append(
                 box(
@@ -1317,7 +1325,7 @@ def _build_all():
                     x2,
                     by1,
                     pdeck,
-                    Textures.PILLAR,
+                    Textures.PIER_STONE,
                 )
             )
 
@@ -1425,7 +1433,13 @@ def _build_all():
                 ]
                 BRUSHES.append(
                     box(
-                        x1, by2, pier_top_z, x2, pier_outer_y, pdeck, Textures.PILLAR
+                        x1,
+                        by2,
+                        pier_top_z,
+                        x2,
+                        pier_outer_y,
+                        pdeck,
+                        Textures.PIER_STONE,
                     ).rotated_z(PIER6_ROTATION_DEG, px, py_shift)
                 )
 
