@@ -53,9 +53,12 @@ NOTCH_Y = Y2 - CORNER_CUT_DEPTH
 NORTH_X1 = X1 + CORNER_CUT_W_NW
 NORTH_X2 = X2 - CORNER_CUT_W_NE
 
-# The real terrain hillside is flat under the whole footprint (see
-# terrain/knott_hall.py's _kh_hill_ground_z), so any corner gives the ground Z.
-GROUND_Z = _kh_hill_ground_z(X1, Y1)
+# The real terrain hillside actually slopes down from west to east under
+# the footprint (see terrain/knott_hall.py's _kh_hill_ground_z) — it is not
+# flat. Walls must reach the *lowest* ground point along their run, not
+# just the west corner's height, or the low (east) end floats above a gap.
+_GROUND_SAMPLE_STEP = 8
+GROUND_Z = min(_kh_hill_ground_z(x, Y1) for x in range(X1, X2 + 1, _GROUND_SAMPLE_STEP))
 
 
 def build():

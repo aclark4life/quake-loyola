@@ -14,7 +14,7 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1188
 EXPECTED_ENTITIES = 101
-EXPECTED_MD5 = "575cd243195ac6df63ee8282d4298031"
+EXPECTED_MD5 = "d2b98fd916d6a98ae619294db828671f"
 
 
 class MapRegressionTests(unittest.TestCase):
