@@ -13,7 +13,7 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/geometry/` | Low-level brush / face construction helpers (package: primitives, structures, prefabs, entities, helpers) |
 | `src/quake_loyola/constants/` | Shared numeric constants and texture names (package: flags, world, textures, lighting, fonts, trees, ennis, bridge, streets, dorm, knott, maryland, derived) |
 | `src/quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
-| `src/quake_loyola/knott_hall.py` | Knott Hall facade, windows, mullions |
+| `src/quake_loyola/knott_hall.py` | Knott Hall shell (walls, roof, fascia sign) |
 | `src/quake_loyola/streets.py` | Charles Street and surrounding road geometry |
 | `src/quake_loyola/west_campus.py` | West-campus buildings and terrain |
 | `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `maryland`, `ne`, `west_campus`) |

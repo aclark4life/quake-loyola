@@ -3,6 +3,9 @@
 from .entities import brush_ent, ent, torch_flame, torch_flame_only
 from .helpers import east_y_shift
 from .prefabs import (
+    corner_window,
+    elevator_shaft,
+    fascia_sign,
     iron_fence,
     make_bush,
     make_giant_tree,
@@ -11,6 +14,7 @@ from .prefabs import (
     octagon_column,
     render_text_flat,
     render_text_flat_x,
+    stairwell,
 )
 from .primitives import (
     arch_pie_seg,
@@ -73,11 +77,14 @@ __all__ = [
     "brush_ent",
     "clip_poly_to_rect",
     "corner_ramp",
+    "corner_window",
     "curb_seg",
     "east_y_shift",
+    "elevator_shaft",
     "ent",
     "entrance_arch_xwall",
     "entrance_arch_ywall",
+    "fascia_sign",
     "gable_slats",
     "iron_fence",
     "layered_wall",
@@ -99,6 +106,7 @@ __all__ = [
     "shear_pyramid_y",
     "slab_chamfered_y",
     "square_wall",
+    "stairwell",
     "taper_box_x",
     "taper_box_y",
     "tile_face_plates",

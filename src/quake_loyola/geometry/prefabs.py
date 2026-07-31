@@ -5,7 +5,8 @@ import random
 
 from ..constants import FASCIA_FONT, TREE_PROFILES, Textures
 from ..mapdata import Brush, Face
-from .primitives import arch_seg, box, curb_seg, pyramid
+from .primitives import arch_seg, box, curb_seg, pyramid, ramp_slab
+from .structures import layered_wall_y
 
 
 def make_tree(cx, cy, base_z):
@@ -327,4 +328,286 @@ def iron_fence(
                     )
                 )
             circle_cy += spacing
+    return brushes
+
+
+def stairwell(
+    x1,
+    x2,
+    y1,
+    y2,
+    mid_y,
+    floor_surfaces,
+    floor_h,
+    *,
+    hn,
+    tread_x,
+    step_r,
+    post_w,
+    rail_h,
+    rail_t,
+    tex,
+    rail_tex,
+    plat_h=8,
+):
+    """A switchback stair (two half-flights per floor meeting at a mid
+    landing) connecting each ``floor_surfaces[i]`` to ``floor_surfaces[i] +
+    floor_h``, plus landing platforms and guardrails.
+
+    ``x1``/``x2`` bound the stair run across the direction of travel,
+    ``y1``/``y2``/``mid_y`` split the run into the "up" half (``y1`` to
+    ``mid_y``) and "down" half (``mid_y`` to ``y2``) of the switchback,
+    ``hn`` is the number of treads per half-flight, ``tread_x`` the tread
+    depth, and ``step_r`` the per-tread rise. Extracted from the original
+    ``knott_hall.py`` prototype's interior stair for reuse.
+    """
+    brushes = []
+    stair_cx = (x1 + x2) // 2
+    stair_x1 = stair_cx - hn * tread_x // 2
+    stair_x2 = stair_x1 + hn * tread_x
+
+    for floor_z0 in floor_surfaces:
+        half_flight_z = floor_z0 + hn * step_r
+        top_flight_z = floor_z0 + floor_h
+
+        # Landing platforms at the bottom and top of the run.
+        brushes.append(box(stair_x2, mid_y, floor_z0 - plat_h, x2, y2, floor_z0, tex))
+        brushes.append(
+            box(stair_x2, y1, top_flight_z - plat_h, x2, mid_y, top_flight_z, tex)
+        )
+
+        # Ascending half-flight (east side, treads climb west to east).
+        for tread_index in range(hn):
+            step_x_east = stair_x2 - tread_index * tread_x
+            step_x_west = stair_x2 - (tread_index + 1) * tread_x
+            step_z1 = floor_z0 + tread_index * step_r
+            brushes.append(
+                box(
+                    step_x_west,
+                    mid_y,
+                    step_z1,
+                    step_x_east,
+                    y2,
+                    step_z1 + step_r,
+                    tex,
+                    tt=tex,
+                )
+            )
+
+        # Mid landing.
+        brushes.append(
+            box(x1, y1, half_flight_z - plat_h, stair_x1, y2, half_flight_z, tex)
+        )
+
+        # Descending half-flight (west side).
+        for tread_index in range(hn):
+            step_x_west = stair_x1 + tread_index * tread_x
+            step_x_east = step_x_west + tread_x
+            step_z1 = half_flight_z + tread_index * step_r
+            brushes.append(
+                box(
+                    step_x_west,
+                    y1,
+                    step_z1,
+                    step_x_east,
+                    mid_y,
+                    step_z1 + step_r,
+                    tex,
+                    tt=tex,
+                )
+            )
+
+        # Guardrails along both flights.
+        brushes.append(
+            box(
+                stair_x2,
+                mid_y,
+                floor_z0,
+                stair_x2 + post_w,
+                mid_y + post_w,
+                floor_z0 + rail_h,
+                rail_tex,
+            )
+        )
+        brushes.append(
+            box(
+                stair_x1 - post_w,
+                mid_y,
+                half_flight_z,
+                stair_x1,
+                mid_y + post_w,
+                half_flight_z + rail_h,
+                rail_tex,
+            )
+        )
+        brushes.append(
+            ramp_slab(
+                stair_x1,
+                stair_x2,
+                mid_y,
+                mid_y + rail_t,
+                half_flight_z + rail_h - rail_t,
+                floor_z0 + rail_h - rail_t,
+                half_flight_z + rail_h,
+                floor_z0 + rail_h,
+                rail_tex,
+            )
+        )
+        brushes.append(
+            box(
+                stair_x1 - post_w,
+                mid_y - post_w,
+                half_flight_z,
+                stair_x1,
+                mid_y,
+                half_flight_z + rail_h,
+                rail_tex,
+            )
+        )
+        brushes.append(
+            box(
+                stair_x2,
+                mid_y - post_w,
+                top_flight_z,
+                stair_x2 + post_w,
+                mid_y,
+                top_flight_z + rail_h,
+                rail_tex,
+            )
+        )
+        brushes.append(
+            ramp_slab(
+                stair_x1,
+                stair_x2,
+                mid_y - rail_t,
+                mid_y,
+                half_flight_z + rail_h - rail_t,
+                top_flight_z + rail_h - rail_t,
+                half_flight_z + rail_h,
+                top_flight_z + rail_h,
+                rail_tex,
+            )
+        )
+
+    return brushes
+
+
+def elevator_shaft(x1, x2, y1, y2, ground_z, top_z, door_openings, wall_t, tex):
+    """A rectangular shaft (e.g. an elevator core) with solid walls on
+    three sides and per-floor door openings on the west (``x1``) face.
+
+    ``door_openings`` is a list of ``(y1, z1, y2, z2)`` tuples in the
+    ``layered_wall_y`` opening format — typically one tuple per floor.
+    Extracted from the original ``knott_hall.py`` prototype's elevator
+    shaft for reuse.
+    """
+    brushes = [
+        # South cap, full width.
+        box(x1, y1 - wall_t, ground_z, x2, y1, top_z, tex),
+    ]
+    brushes.extend(
+        layered_wall_y(y1, x1 - wall_t, ground_z, y2, x1, top_z, door_openings, tex)
+    )
+    brushes.append(box(x2, y1, ground_z, x2 + wall_t, y2, top_z, tex))
+    return brushes
+
+
+def corner_window(
+    win_cx,
+    wall_y1,
+    wall_y2,
+    ground_z,
+    top_z,
+    floor_h,
+    floor_count,
+    win_half,
+    mullion_w,
+    mullion_proud,
+    tex,
+    rail_tex,
+):
+    """A vertical mullioned window: a single center mullion plus per-floor
+    horizontal transom bars, matching the corner-window pattern repeated on
+    both sides of the original ``knott_hall.py`` prototype's south facade.
+
+    The window opening itself is expected to already be cut into the
+    surrounding wall (e.g. via ``layered_wall``); this only adds the
+    mullion divider and transom/sill bars in front of the opening.
+    """
+    proud_y2 = wall_y2 + mullion_proud
+    brushes = []
+    for mx in (win_cx - win_half - mullion_w, win_cx + win_half):
+        brushes.append(
+            box(mx, wall_y1, ground_z + floor_h, mx + mullion_w, proud_y2, top_z, tex)
+        )
+    for floor_index in range(floor_count):
+        fz1 = ground_z + floor_index * floor_h
+        fz_mid = fz1 + floor_h // 2
+        if floor_index > 0:
+            brushes.append(
+                box(
+                    win_cx - win_half,
+                    wall_y1,
+                    fz_mid,
+                    win_cx + win_half,
+                    proud_y2,
+                    fz_mid + 4,
+                    rail_tex,
+                )
+            )
+        brushes.append(
+            box(
+                win_cx - win_half,
+                wall_y1,
+                fz1 - 4,
+                win_cx + win_half,
+                proud_y2,
+                fz1,
+                rail_tex,
+            )
+        )
+    return brushes
+
+
+def fascia_sign(
+    text,
+    cx,
+    y_face,
+    z_center,
+    *,
+    panel_h,
+    panel_padding,
+    px_w,
+    px_h,
+    panel_tex,
+    text_tex,
+):
+    """A backlit-style fascia sign: a backing panel plus mirrored, flush-
+    mounted pixel-font lettering, horizontally centered on ``cx`` and
+    vertically centered on ``z_center``.
+
+    Used for Knott Hall's north-facing building sign; factored out so both
+    the shell and any future detail passes can share one implementation.
+    Callers resolve ``cx`` themselves (e.g. anchored off a wall edge with
+    their own margins) before calling this.
+    """
+    char_w = (4 + 1) * px_w
+    total_w = len(text) * char_w - px_w
+    half_w = total_w // 2 + panel_padding
+    z1 = z_center - panel_h // 2
+    z2 = z1 + panel_h
+    brushes = [box(cx - half_w, y_face, z1, cx + half_w, y_face + 6, z2, panel_tex)]
+    brushes.extend(
+        render_text_flat(
+            text[::-1],
+            x0=cx - total_w // 2,
+            y_face=y_face + 6,
+            z_base=z1 + (panel_h - 6 * px_h) // 2,
+            px_w=px_w,
+            px_h=px_h,
+            depth=2,
+            tex=text_tex,
+            mirror=True,
+        )
+    )
     return brushes

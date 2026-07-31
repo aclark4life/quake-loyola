@@ -9,9 +9,12 @@ from quake_loyola.geometry import (
     box_with_round_hole,
     brush_ent,
     corner_ramp,
+    corner_window,
+    elevator_shaft,
     ent,
     entrance_arch_xwall,
     entrance_arch_ywall,
+    fascia_sign,
     gable_slats,
     iron_fence,
     layered_wall,
@@ -24,6 +27,7 @@ from quake_loyola.geometry import (
     render_text_flat,
     render_text_flat_x,
     square_wall,
+    stairwell,
     tile_face_plates,
     tri_prism,
     win_frame_xwall,
@@ -347,6 +351,125 @@ class WinFrameTests(unittest.TestCase):
     def test_win_frame_ywall_rejects_fd_not_exceeding_2x_inner_recess(self):
         with self.assertRaises(ValueError):
             win_frame_ywall(0, 64, 0, 64, 0, 1, "t")
+
+
+class StairwellTests(unittest.TestCase):
+    def test_stairwell_returns_brushes_per_floor(self):
+        brushes = stairwell(
+            0,
+            256,
+            0,
+            256,
+            128,
+            [0, 256, 512],
+            256,
+            hn=6,
+            tread_x=32,
+            step_r=16,
+            post_w=8,
+            rail_h=64,
+            rail_t=4,
+            tex="t",
+            rail_tex="r",
+        )
+        self.assertTrue(brushes)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_stairwell_brush_count_scales_with_floor_count(self):
+        one_floor = stairwell(
+            0,
+            256,
+            0,
+            256,
+            128,
+            [0],
+            256,
+            hn=6,
+            tread_x=32,
+            step_r=16,
+            post_w=8,
+            rail_h=64,
+            rail_t=4,
+            tex="t",
+            rail_tex="r",
+        )
+        two_floors = stairwell(
+            0,
+            256,
+            0,
+            256,
+            128,
+            [0, 256],
+            256,
+            hn=6,
+            tread_x=32,
+            step_r=16,
+            post_w=8,
+            rail_h=64,
+            rail_t=4,
+            tex="t",
+            rail_tex="r",
+        )
+        self.assertEqual(len(two_floors), 2 * len(one_floor))
+
+
+class ElevatorShaftTests(unittest.TestCase):
+    def test_elevator_shaft_returns_brushes_with_door_openings(self):
+        brushes = elevator_shaft(
+            0,
+            96,
+            0,
+            192,
+            0,
+            768,
+            [(16, 0, 176, 128), (16, 256, 176, 384)],
+            16,
+            "t",
+        )
+        self.assertTrue(brushes)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+
+class CornerWindowTests(unittest.TestCase):
+    def test_corner_window_returns_mullion_and_transom_brushes(self):
+        brushes = corner_window(
+            64,
+            0,
+            8,
+            0,
+            800,
+            256,
+            3,
+            40,
+            8,
+            4,
+            "t",
+            "r",
+        )
+        self.assertTrue(brushes)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+        # Two mullion posts plus a transom/sill pair per floor.
+        self.assertEqual(len(brushes), 2 + 3 * 2 - 1)
+
+
+class FasciaSignTests(unittest.TestCase):
+    def test_fascia_sign_returns_panel_and_lettering(self):
+        brushes = fascia_sign(
+            "KNOTT HALL",
+            100,
+            200,
+            400,
+            panel_h=128,
+            panel_padding=16,
+            px_w=8,
+            px_h=8,
+            panel_tex="t",
+            text_tex="r",
+        )
+        self.assertTrue(brushes)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+        # A backing panel plus at least one glyph brush.
+        self.assertGreater(len(brushes), 1)
 
 
 if __name__ == "__main__":
