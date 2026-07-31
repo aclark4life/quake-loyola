@@ -11,6 +11,7 @@ added back here.
 """
 
 from .constants import (
+    BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
     KNOTT_ENABLED,
     KNOTT_SIGN_H,
@@ -62,6 +63,38 @@ NORTH_X2 = X2 - CORNER_CUT_W_NE
 # local terrain undulation.
 GROUND_Z = -16
 
+# Front openings (all start at bridge-deck height and run up to the roof;
+# below bridge-deck height the wall is solid): a center opening on the
+# north wall, and matching openings on the south-facing notch-ledge walls
+# (the walls that bound the NW/NE corner cuts from the south) flanking it.
+# The center and west openings share the same size; the east one is
+# narrower.
+OPENING_BOTTOM_Z = BRIDGE_DZ2  # Openings start at bridge-deck level.
+CENTER_OPENING_W = 140
+CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
+WEST_OPENING_W = 96
+EAST_OPENING_W = 56
+
+
+def _wall_with_opening(x1, y1, x2, y2, z1, z2, open_w, bottom_z, tex, offset=0):
+    """A thin wall (in Y) split around a centered opening above bridge level.
+
+    The wall is solid from ``z1`` up to ``bottom_z`` (bridge-deck height);
+    above that, an opening spans ``open_w`` in X, centered on the wall (plus
+    ``offset``), up to ``z2``, with solid wall on either side of the
+    opening.
+    """
+    cx = (x1 + x2) / 2 + offset
+    ox1, ox2 = cx - open_w / 2, cx + open_w / 2
+    boxes = []
+    if bottom_z > z1:
+        boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
+    if x1 < ox1:
+        boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
+    if ox2 < x2:
+        boxes.append(box(ox2, y1, bottom_z, x2, y2, z2, tex))
+    return boxes
+
 
 def build():
     if not KNOTT_ENABLED:
@@ -87,39 +120,50 @@ def build():
             z2,
             Textures.PIER_STONE,
         ),
-        # NW notch ledge (faces the cut-away square, north-facing)
-        box(
+        # NW notch ledge (faces the cut-away square, north-facing) — has the
+        # west front opening above bridge-deck height.
+        *_wall_with_opening(
             X1 + WALL_T,
             NOTCH_Y - WALL_T,
-            z1,
             NORTH_X1,
             NOTCH_Y,
+            z1,
             z2,
+            WEST_OPENING_W,
+            OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
         ),
-        # NE notch ledge (faces the cut-away square, north-facing)
-        box(
+        # NE notch ledge (faces the cut-away square, north-facing) — has the
+        # (narrower) east front opening above bridge-deck height.
+        *_wall_with_opening(
             NORTH_X2,
             NOTCH_Y - WALL_T,
-            z1,
             X2 - WALL_T,
             NOTCH_Y,
+            z1,
             z2,
+            EAST_OPENING_W,
+            OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
         box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
         # Upper rectangle east wall (inward face of the NE notch)
         box(NORTH_X2 - WALL_T, NOTCH_Y, z1, NORTH_X2, Y2, z2, Textures.PIER_STONE),
-        # North wall (upper rectangle, between the two notches)
-        box(
+        # North wall (upper rectangle, between the two notches) — has the
+        # center front opening above bridge-deck height, same size as the
+        # west opening.
+        *_wall_with_opening(
             NORTH_X1 + WALL_T,
             Y2 - WALL_T,
-            z1,
             NORTH_X2 - WALL_T,
             Y2,
+            z1,
             z2,
+            CENTER_OPENING_W,
+            OPENING_BOTTOM_Z,
             Textures.PIER_STONE,
+            offset=CENTER_OPENING_OFFSET,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
