@@ -51,13 +51,10 @@ from .constants import (
     ENTITIES_ENABLED_VEGETATION,
     ENTITIES_ENABLED_WEAPONS,
     FLOOR_Z2,
-    INDENT,
     KH_ROOFTOP_ORIGIN,
     KH_ROOFTOP_ORIGIN_ENNIS_EAST,
     KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH,
     KNOTT,
-    KNOTT_BIY1,
-    KNOTT_BIY2,
     KNOTT_CX,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_ES_X2,
@@ -67,28 +64,9 @@ from .constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
-    KNOTT_EAST_ROOM_CX,
-    KNOTT_ENABLED_INTERIOR,
-    KNOTT_ENABLED_MONSTERS,
     KNOTT_ENABLED_WALKWAY,
-    KNOTT_ENT_X1,
-    KNOTT_ENT_X2,
     KNOTT_GROUND_Z,
     KNOTT_ORIG_CX,
-    KNOTT_ROOM_SPLITS,
-    KNOTT_SHAFT_X1,
-    KNOTT_SHAFT_X2,
-    KNOTT_SHAFT_Y1,
-    KNOTT_SHAFT_Y2,
-    KNOTT_SHELF_D,
-    KNOTT_SHELF_H,
-    KNOTT_SHELF_W,
-    KNOTT_STAIRS_MID_Y,
-    KNOTT_STAIRS_X1,
-    KNOTT_STAIRS_X2,
-    KNOTT_STAIRS_Y1,
-    KNOTT_STAIRS_Y2,
-    KNOTT_WEST_ROOM_CX,
     KNOTT_Z2,
     ROAD_X1,
     ROAD_X2,
@@ -139,206 +117,6 @@ def build():
         if BRIDGE_X_MIN <= x <= BRIDGE_X_MAX:
             return y + CS_DY, z + CS_DZ
         return y, z
-
-    knott_entity_start = len(ENTITIES)
-    room_goodies = [
-        "item_health",
-        "weapon_supershotgun",
-        "item_shells",
-        "item_rockets",
-        "weapon_nailgun",
-        "item_spikes",
-        "weapon_grenadelauncher",
-        "item_health",
-        "item_shells",
-        "item_rockets",
-        "item_health",
-        "weapon_supershotgun",
-        "item_spikes",
-        "item_shells",
-        "weapon_nailgun",
-        "item_rockets",
-        "item_health",
-        "weapon_grenadelauncher",
-        "item_shells",
-        "item_spikes",
-    ]
-    gi = 0
-    for floor_index in range(KNOTT.floors):
-        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
-        item_z = fz1 + KNOTT.wall_t + 24
-        light_z = fz1 + KNOTT.floor_h - 24
-        split = KNOTT_ROOM_SPLITS[floor_index]
-        sr_yc = (KNOTT_BIY1 + split) // 2
-        nr_yc = (split + KNOTT.wall_t + KNOTT_BIY2) // 2
-        for side_xc in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
-            for ryc in [sr_yc, nr_yc]:
-                safe_ryc = ryc
-                if (
-                    side_xc == KNOTT_WEST_ROOM_CX
-                    and ryc == nr_yc
-                    and nr_yc > KNOTT_STAIRS_Y1 - 64
-                ):
-                    safe_ryc = KNOTT_STAIRS_Y1 - 80
-                ENTITIES.append(
-                    ent("light", origin=f"{side_xc} {safe_ryc} {light_z}", light="250")
-                )
-
-                ENTITIES.append(
-                    ent(
-                        "light",
-                        origin=f"{side_xc} {safe_ryc} {fz1 + KNOTT.floor_h // 2}",
-                        light="150",
-                    )
-                )
-                ENTITIES.append(
-                    ent(
-                        room_goodies[gi % len(room_goodies)],
-                        origin=f"{side_xc - 40} {safe_ryc} {item_z}",
-                    )
-                )
-                gi += 1
-                ENTITIES.append(
-                    ent(
-                        room_goodies[gi % len(room_goodies)],
-                        origin=f"{side_xc + 40} {safe_ryc} {item_z}",
-                    )
-                )
-                gi += 1
-
-    west_stair_center_x = (KNOTT_STAIRS_X1 + KNOTT_STAIRS_X2) // 2
-    west_stair_north_y = (KNOTT_STAIRS_MID_Y + KNOTT_STAIRS_Y2) // 2
-    west_stair_south_y = (KNOTT_STAIRS_Y1 + KNOTT_STAIRS_MID_Y) // 2
-    for floor_index in range(KNOTT.floors):
-        west_stair_light_z = (
-            KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
-        )
-        west_stair_mid_z = (
-            KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h // 2
-        )
-        west_stair_low_z = (
-            KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h // 4
-        )
-        for lz in [west_stair_light_z, west_stair_mid_z, west_stair_low_z]:
-            ENTITIES.append(
-                ent(
-                    "light",
-                    origin=f"{west_stair_center_x} {west_stair_north_y} {lz}",
-                    light="220",
-                )
-            )
-
-            if lz != west_stair_light_z:
-                ENTITIES.append(
-                    ent(
-                        "light",
-                        origin=f"{west_stair_center_x} {west_stair_south_y} {lz}",
-                        light="220",
-                    )
-                )
-
-    hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2
-    hall_light_ys = [
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * i // 4 for i in range(1, 4)
-    ] + [
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) // 8,
-        KNOTT_BIY1 + (KNOTT_BIY2 - KNOTT_BIY1) * 7 // 8,
-    ]
-    for floor_index in range(KNOTT.floors):
-        hall_light_z = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
-        for hall_y in hall_light_ys:
-            ENTITIES.append(
-                ent(
-                    "light",
-                    origin=f"{hall_center_x} {hall_y} {hall_light_z}",
-                    light="200",
-                )
-            )
-
-    entry_corridor_y = KNOTT.y2 - 48
-    for floor_index in range(KNOTT.floors):
-        entry_corridor_light_z = (
-            KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
-        )
-        ENTITIES.append(
-            ent(
-                "light",
-                origin=f"{hall_center_x} {entry_corridor_y} {entry_corridor_light_z}",
-                light="220",
-            )
-        )
-
-    nw_cut_cx = KNOTT.x1 + INDENT
-    nw_cut_cy = (KNOTT.y2 - INDENT + KNOTT.y2) // 2
-    ne_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
-    sw_cut_cx = (KNOTT.x1 + KNOTT.x1 + INDENT) // 2
-    sw_cut_cy = (KNOTT.y1 + KNOTT.y1 + INDENT) // 2
-    se_cut_cx = (KNOTT.x2 - INDENT + KNOTT.x2) // 2
-    for floor_index in range(KNOTT.floors):
-        cut_z = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h + KNOTT.floor_h - 24
-        for cx, cy in [
-            (nw_cut_cx, nw_cut_cy),
-            (ne_cut_cx, nw_cut_cy),
-            (sw_cut_cx, sw_cut_cy),
-            (se_cut_cx, sw_cut_cy),
-        ]:
-            ENTITIES.append(ent("light", origin=f"{cx} {cy} {cut_z}", light="200"))
-
-    east_fill_x = (KNOTT_SHAFT_X2 + KNOTT.x2 - KNOTT.wall_t) // 2
-    for floor_index in range(KNOTT.floors):
-        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
-        east_fill_z = fz1 + KNOTT.floor_h - 24
-        split = KNOTT_ROOM_SPLITS[floor_index]
-        for ryc in [
-            (KNOTT_BIY1 + split) // 2,
-            (split + KNOTT.wall_t + KNOTT_BIY2) // 2,
-        ]:
-            ENTITIES.append(
-                ent("light", origin=f"{east_fill_x} {ryc} {east_fill_z}", light="200")
-            )
-
-    south_fill_y = KNOTT_BIY1 + 64
-    for floor_index in range(KNOTT.floors):
-        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
-        south_fill_z = fz1 + KNOTT.floor_h - 24
-        for xc in [KNOTT_WEST_ROOM_CX, hall_center_x, KNOTT_EAST_ROOM_CX]:
-            ENTITIES.append(
-                ent("light", origin=f"{xc} {south_fill_y} {south_fill_z}", light="180")
-            )
-
-    for floor_index in range(KNOTT.floors):
-        fz1 = KNOTT_GROUND_Z + floor_index * KNOTT.floor_h
-        fz_surf = fz1 + KNOTT.wall_t
-        split = KNOTT_ROOM_SPLITS[floor_index]
-
-        for shelf_center_x in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
-            shelf_x = shelf_center_x
-            ENTITIES.append(
-                brush_ent(
-                    "func_detail",
-                    [
-                        box(
-                            shelf_x - KNOTT_SHELF_W // 2,
-                            KNOTT_BIY1,
-                            fz_surf,
-                            shelf_x + KNOTT_SHELF_W // 2,
-                            KNOTT_BIY1 + KNOTT_SHELF_D,
-                            fz_surf + KNOTT_SHELF_H,
-                            Textures.SHELF,
-                        )
-                    ],
-                )
-            )
-            ENTITIES.append(
-                ent(
-                    "light",
-                    origin=f"{shelf_x} {KNOTT_BIY1 + 32} {fz_surf + KNOTT_SHELF_H + 24}",
-                    light="180",
-                )
-            )
-
-    if not KNOTT_ENABLED_INTERIOR:
-        del ENTITIES[knott_entity_start:]
 
     teleports_start = len(ENTITIES)
 
@@ -639,7 +417,6 @@ def build():
         )
     )
 
-    knott_cy = (KNOTT.y1 + KNOTT.y2) // 2
     DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
     DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 
@@ -650,59 +427,6 @@ def build():
             ((200, *_cs_offset(200, 0, int(deck_top_z(200) + 32))), 270),
             ((-400, *_cs_offset(-400, 0, int(deck_top_z(-400) + 32))), 90),
             ((400, *_cs_offset(400, 0, int(deck_top_z(400) + 32))), 270),
-            *(
-                [
-                    (
-                        (
-                            (WALK_X1 + WALK_X2) // 2,
-                            (BRIDGE.y1 + KNOTT.y2) // 2,
-                            int((WALK_ZT1 + WALK_ZT2) // 2 + 32),
-                        ),
-                        180,
-                    )
-                ]
-                if KNOTT_ENABLED_INTERIOR
-                else []
-            ),
-            *(
-                [
-                    (
-                        (
-                            (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2,
-                            KNOTT.y2 - 80,
-                            KNOTT_GROUND_Z + 40,
-                        ),
-                        180,
-                    ),
-                    (
-                        (KNOTT_CX - 100, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h + 40),
-                        270,
-                    ),
-                    (
-                        (
-                            KNOTT_CX + 100,
-                            knott_cy,
-                            KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40,
-                        ),
-                        90,
-                    ),
-                    (
-                        (
-                            KNOTT_CX,
-                            KNOTT.y1 + 100,
-                            KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40,
-                        ),
-                        0,
-                    ),
-                    (
-                        (KNOTT_CX, knott_cy, KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40),
-                        180,
-                    ),
-                    ((KNOTT_CX, knott_cy, KNOTT_Z2 + 40), 180),
-                ]
-                if KNOTT_ENABLED_INTERIOR
-                else []
-            ),
             ((0, 300, ROAD_Z + 24), 180),
             ((0, -400, ROAD_Z + 24), 0),
             ((0, DORM_SOUTH1_CY, ROAD_Z + 24), 270),
@@ -727,14 +451,6 @@ def build():
     _rl_y, _rl_z = _cs_offset(0, 0, int(deck_top_z(0) + 8))
     ENTITIES.append(ent("weapon_rocketlauncher", origin=f"0 {_rl_y} {_rl_z}"))
 
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "weapon_rocketlauncher",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40}",
-            )
-        )
-
     span1_x = (BRIDGE.x1 + BRIDGE_ARCH_X[0]) // 2
     span4_x = (BRIDGE_ARCH_X[2] + BRIDGE.x2) // 2
     span5_x = (BRIDGE.x2 + BRIDGE_ARCH_X[4]) // 2
@@ -748,13 +464,6 @@ def build():
     ]:
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "weapon_supershotgun",
-                origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT.y2 - 80} {KNOTT_GROUND_Z + 40}",
-            )
-        )
     ENTITIES.append(ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}"))
     ENTITIES.append(
         ent(
@@ -763,13 +472,6 @@ def build():
         )
     )
 
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "weapon_grenadelauncher",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
-            )
-        )
     ENTITIES.append(
         ent(
             "weapon_grenadelauncher",
@@ -779,23 +481,9 @@ def build():
 
     ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "weapon_nailgun",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h + 40}",
-            )
-        )
 
     _lg_y, _lg_z = _cs_offset(200, 0, int(deck_top_z(200) + 8))
     ENTITIES.append(ent("weapon_lightning", origin=f"200 {_lg_y} {_lg_z}"))
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "weapon_lightning",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
-            )
-        )
     ENTITIES.append(ent("weapon_lightning", origin=f"0 -500 {ROAD_Z + 24}"))
 
     if not ENTITIES_ENABLED_WEAPONS:
@@ -823,30 +511,6 @@ def build():
         )
     )
 
-    if KNOTT_ENABLED_INTERIOR and KNOTT_ENABLED_MONSTERS:
-        ENTITIES.append(
-            ent(
-                "monster_ogre",
-                origin=f"{KNOTT_WEST_ROOM_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
-                angle="90",
-            )
-        )
-        ENTITIES.append(
-            ent(
-                "monster_ogre",
-                origin=f"{KNOTT_EAST_ROOM_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 3 + 40}",
-                angle="270",
-            )
-        )
-
-        ENTITIES.append(
-            ent(
-                "monster_ogre",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_Z2 + 40}",
-                angle="180",
-            )
-        )
-
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters_start:]
     ammo_start = len(ENTITIES)
@@ -855,14 +519,6 @@ def build():
     for rx in [400, 800]:
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
-    if KNOTT_ENABLED_INTERIOR:
-        for kf in range(1, KNOTT.floors):
-            ENTITIES.append(
-                ent(
-                    "item_rockets",
-                    origin=f"{KNOTT_CX + 80} {knott_cy} {KNOTT_GROUND_Z + kf * KNOTT.floor_h + 40}",
-                )
-            )
     ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))
     ENTITIES.append(
         ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
@@ -877,19 +533,6 @@ def build():
 
     _hp_y, _hp_z = _cs_offset(-100, 0, int(deck_top_z(-100) + 8))
     ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "item_health",
-                origin=f"{KNOTT_EAST_ROOM_CX} {KNOTT.y2 - 64} {KNOTT_GROUND_Z + 40}",
-            )
-        )
-        ENTITIES.append(
-            ent(
-                "item_health",
-                origin=f"{KNOTT_CX - 100} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 2 + 40}",
-            )
-        )
     ENTITIES.append(ent("item_health", origin=f"-300 400 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_health", origin=f"300 -600 {ROAD_Z + 24}"))
     ENTITIES.append(
@@ -901,13 +544,6 @@ def build():
 
     _arm_y, _arm_z = _cs_offset(-200, 0, int(deck_top_z(-200) + 8))
     ENTITIES.append(ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}"))
-    if KNOTT_ENABLED_INTERIOR:
-        ENTITIES.append(
-            ent(
-                "item_armor2",
-                origin=f"{KNOTT_CX} {knott_cy} {KNOTT_GROUND_Z + KNOTT.floor_h * 4 + 40}",
-            )
-        )
     ENTITIES.append(
         ent(
             "item_armorInv",
@@ -1030,23 +666,6 @@ def build():
             )
         )
 
-    if KNOTT_ENABLED_INTERIOR:
-        lift_travel = KNOTT_Z2 - (KNOTT_GROUND_Z + KNOTT.wall_t)
-        lift_brush = [
-            box(
-                KNOTT_SHAFT_X1 + 2,
-                KNOTT_SHAFT_Y1 + 2,
-                KNOTT_Z2 - 8,
-                KNOTT_SHAFT_X2 - 2,
-                KNOTT_SHAFT_Y2 - 2,
-                KNOTT_Z2,
-                Textures.FLOOR_KH,
-            )
-        ]
-        ENTITIES.append(
-            brush_ent("func_plat", lift_brush, height=str(lift_travel), speed="200")
-        )
-
     _dorm_north2_y2 = DORM_NORTH_Y1
     _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     bldg_light_xs = [DORM.x1 + (DORM.x2 - DORM.x1) * i // 4 for i in [1, 2, 3]]
@@ -1073,25 +692,6 @@ def build():
                         _light_group="dorm_interior",
                     )
                 )
-
-    if KNOTT_ENABLED_INTERIOR:
-        for knott_floor_index in range(KNOTT.floors):
-            knott_light_z = (
-                KNOTT_GROUND_Z + knott_floor_index * KNOTT.floor_h + KNOTT.floor_h // 2
-            )
-            for knott_x_index in [1, 2, 3]:
-                knott_light_x = KNOTT.x1 + (KNOTT.x2 - KNOTT.x1) * knott_x_index // 4
-                for knott_y_index in [1, 2, 3, 4]:
-                    knott_light_y = (
-                        KNOTT.y1 + (KNOTT.y2 - KNOTT.y1) * knott_y_index // 5
-                    )
-                    ENTITIES.append(
-                        ent(
-                            "light",
-                            origin=f"{knott_light_x} {knott_light_y} {knott_light_z}",
-                            light="150",
-                        )
-                    )
 
     vegetation_start = len(ENTITIES)
 
@@ -1460,44 +1060,6 @@ def build():
                 angle="90",
             )
         )
-
-    if KNOTT_ENABLED_MONSTERS:
-        for fl in range(KNOTT.floors):
-            fz = KNOTT_GROUND_Z + fl * KNOTT.floor_h + KNOTT.wall_t + 24
-            split = KNOTT_ROOM_SPLITS[fl]
-            sr_yc = (KNOTT_BIY1 + split) // 2
-            nr_yc = (split + KNOTT.wall_t + KNOTT_BIY2) // 2
-            for rxc in [KNOTT_WEST_ROOM_CX, KNOTT_EAST_ROOM_CX]:
-                for ryc in [sr_yc, nr_yc]:
-                    ENTITIES.append(
-                        ent("monster_knight", origin=f"{rxc} {ryc} {fz}", angle="270")
-                    )
-
-        hall_center_x = (KNOTT_ENT_X1 + KNOTT_ENT_X2) // 2
-        for fl in range(KNOTT.floors):
-            fz = KNOTT_GROUND_Z + fl * KNOTT.floor_h + KNOTT.wall_t + 24
-            hall_yc = (KNOTT_BIY1 + KNOTT_BIY2) // 2
-            ENTITIES.append(
-                ent(
-                    "monster_knight",
-                    origin=f"{hall_center_x} {hall_yc} {fz}",
-                    angle="180",
-                )
-            )
-
-        for roof_enemy_x, roof_enemy_y in [
-            (KNOTT_WEST_ROOM_CX, KNOTT.y2 - 80),
-            (KNOTT_EAST_ROOM_CX, KNOTT.y2 - 80),
-            (KNOTT_CX, KNOTT.y1 + 80),
-            (KNOTT_WEST_ROOM_CX, KNOTT.y1 + 80),
-        ]:
-            ENTITIES.append(
-                ent(
-                    "monster_knight",
-                    origin=f"{roof_enemy_x} {roof_enemy_y} {KNOTT_Z2 + 24}",
-                    angle="180",
-                )
-            )
 
     deck_center_z = int(deck_top_z(0)) + 24
     deck_p3_z = int(deck_top_z(525)) + 24

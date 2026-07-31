@@ -53,16 +53,10 @@ class EntitiesBuildTests(unittest.TestCase):
     )
 
     def setUp(self):
-        names = (
-            *self._ENTITY_GROUP_FLAGS,
-            "KNOTT_ENABLED_INTERIOR",
-            "KNOTT_ENABLED_MONSTERS",
-        )
+        names = self._ENTITY_GROUP_FLAGS
         self._saved = {name: getattr(entities, name) for name in names}
         for name in self._ENTITY_GROUP_FLAGS:
             setattr(entities, name, True)
-        entities.KNOTT_ENABLED_INTERIOR = True
-        entities.KNOTT_ENABLED_MONSTERS = True
 
     def tearDown(self):
         for name, value in self._saved.items():
@@ -85,13 +79,13 @@ class EntitiesBuildTests(unittest.TestCase):
             self.assertGreater(float(e.fields["light"]), 0)
 
     def test_knott_monsters_placed_when_enabled(self):
-        # KNOTT_ENABLED_MONSTERS (with KNOTT_ENABLED_INTERIOR) gates KH
-        # ogre/knight placement — exercise that branch explicitly rather
-        # than relying on it being incidentally covered by other flags.
+        # ENTITIES_ENABLED_MONSTERS gates ogre/knight placement — exercise
+        # that branch explicitly rather than relying on it being
+        # incidentally covered by other flags.
         _, ents = entities.build()
         monster_classes = {"monster_ogre", "monster_knight"}
         monsters = [e for e in ents if e.classname in monster_classes]
-        self.assertTrue(monsters, "expected at least one KH monster entity")
+        self.assertTrue(monsters, "expected at least one monster entity")
 
     def test_no_duplicate_point_entity_origins(self):
         # Spawn points must not coincide with each other or with a teleport
