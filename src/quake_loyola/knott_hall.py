@@ -30,7 +30,8 @@ from .geometry import box, fascia_sign, polygon_prism
 
 WALL_T = 16
 ROOF_T = 16
-BUILDING_H = 1536  # Was 1344 (previously bumped from 1152/960); taller again.
+BUILDING_H = 1640  # Was 1536; bumped by one beam segment (104 units) to
+# accommodate moving the front openings' bottom-most segment to the top.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from X2.
 CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
@@ -69,7 +70,9 @@ GROUND_Z = -16
 # (the walls that bound the NW/NE corner cuts from the south) flanking it.
 # The center and west openings share the same size; the east one is
 # narrower.
-OPENING_BOTTOM_Z = BRIDGE_DZ2  # Openings start at bridge-deck level.
+OPENING_BOTTOM_Z = BRIDGE_DZ2 + 104  # Bumped up one beam segment (104 units)
+# so the former bottom-most opening segment is now the top-most segment
+# instead (paired with the BUILDING_H increase below).
 CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
