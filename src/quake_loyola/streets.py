@@ -134,9 +134,22 @@ def punch_manhole_detail(brushes):
     """Cut the manhole opening through overlapping thin detail slabs.
 
     Brushes fully inside the hole are dropped; overlapping box slabs are
-    rebuilt with box_with_round_hole().
+    rebuilt with box_with_round_hole(). Two independently-generated road
+    slabs (e.g. Charles St. and Ennis Rd.) can physically overlap in this
+    thin surface layer near the intersection, so each may be individually
+    diced against the same manhole circle — de-duplicate the resulting
+    brushes so identical wedges aren't emitted twice.
     """
     out = []
+    seen = set()
+
+    def _emit(brush):
+        key = brush.to_map()
+        if key in seen:
+            return
+        seen.add(key)
+        out.append(brush)
+
     for b in brushes:
         pts = [p for f in b.faces for p in (f.p1, f.p2, f.p3)]
         xs = [p[0] for p in pts]
@@ -147,7 +160,7 @@ def punch_manhole_detail(brushes):
         z1, z2 = min(zs), max(zs)
         is_thin_surface_layer = z1 >= FLOOR_Z2 - 1 and z2 <= FLOOR_Z2 + 20
         if not is_thin_surface_layer:
-            out.append(b)
+            _emit(b)
             continue
 
         def _dist(px, py):
@@ -166,23 +179,22 @@ def punch_manhole_detail(brushes):
         elif overlaps_circle_bbox and len(b.faces) == 6:
             tex = b.faces[0].tex
             tt_params = b.faces[-1].params
-            out.extend(
-                box_with_round_hole(
-                    x1,
-                    y1,
-                    z1,
-                    x2,
-                    y2,
-                    z2,
-                    MANHOLE_X,
-                    MANHOLE_Y,
-                    MANHOLE_R,
-                    tex,
-                    tt_params=tt_params,
-                )
-            )
+            for wedge in box_with_round_hole(
+                x1,
+                y1,
+                z1,
+                x2,
+                y2,
+                z2,
+                MANHOLE_X,
+                MANHOLE_Y,
+                MANHOLE_R,
+                tex,
+                tt_params=tt_params,
+            ):
+                _emit(wedge)
         else:
-            out.append(b)
+            _emit(b)
     return out
 
 

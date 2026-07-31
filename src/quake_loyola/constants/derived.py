@@ -64,6 +64,7 @@ from .streets import (
     CHARLES_WALK_W,
     ROAD_X1,
     ROAD_X2,
+    STREET_DIV_HW,
 )
 from .textures import Textures
 from .world import ARCH_SLAB_W, FLOOR_Z2, SCALE, WORLD_EAST_BUFFER
@@ -185,8 +186,13 @@ DORM_PIER_X = min(BRIDGE_ARCH_X)
 DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL_T
 DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H
 DORM_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PILLAR_OVERHANG)
-CHARLES_PLT_X_OUT = ROAD_X2 // 4
-CHARLES_PLT_X_RET = -(ROAD_X2 * 3 // 4)
+# Lane-centered outbound/return platform X positions (matches the east/west
+# lane-line midpoints used elsewhere for Charles St. lane geometry).
+_ROAD_CX = (ROAD_X1 + ROAD_X2) / 2
+_WEST_LANE_LINE_X = (ROAD_X1 + _ROAD_CX - STREET_DIV_HW) / 2
+_EAST_LANE_LINE_X = (_ROAD_CX + STREET_DIV_HW + ROAD_X2) / 2
+CHARLES_PLT_X_OUT = int((_EAST_LANE_LINE_X + ROAD_X2) / 2)
+CHARLES_PLT_X_RET = int((ROAD_X1 + _WEST_LANE_LINE_X) / 2)
 ENNIS_X1 = ROAD_X1
 ROAD_Z = FLOOR_Z2 + 8
 

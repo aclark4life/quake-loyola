@@ -1690,26 +1690,18 @@ def _shift_center_span(brushes, entities, enabled_names, offset):
     """Translate the center span and any other enabled sections by one offset.
 
     Shared piers stay connected because every enabled section moves as the
-    same rigid assembly.
+    same rigid assembly. Filter the full enabled set in a single pass rather
+    than extracting each section separately and concatenating: per-section
+    acceptance windows intentionally overlap their neighbor's near a shared
+    pier (so the owning section's margin can capture boundary geometry),
+    and extracting+translating each name individually would double up any
+    brush that falls in that overlap band.
     """
     dx, dy, dz = offset
-    other_names = [n for n in enabled_names if n != "center_span"]
-    result_b, result_e = [], []
-    for name in other_names:
-        sect_b, sect_e = _filter_sections(
-            brushes, entities, enabled_names, extract_names=[name]
-        )
-        sect_b = [b.translated(dx, dy, dz) for b in sect_b]
-        sect_e = [e.translated(dx, dy, dz) for e in sect_e]
-        result_b.extend(sect_b)
-        result_e.extend(sect_e)
-
-    span_b, span_e = _filter_sections(
-        brushes, entities, enabled_names, extract_names=["center_span"]
-    )
-    span_b = [b.translated(dx, dy, dz) for b in span_b]
-    span_e = [e.translated(dx, dy, dz) for e in span_e]
-    return result_b + span_b, result_e + span_e
+    sect_b, sect_e = _filter_sections(brushes, entities, enabled_names)
+    sect_b = [b.translated(dx, dy, dz) for b in sect_b]
+    sect_e = [e.translated(dx, dy, dz) for e in sect_e]
+    return sect_b, sect_e
 
 
 def build_center_span(offset=(0.0, 0.0, 0.0)):

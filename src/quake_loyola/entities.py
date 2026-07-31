@@ -20,6 +20,8 @@ from .constants import (
     CHARLES_ARCH_ROUT,
     CHARLES_ARCH_STILT,
     CHARLES_ARCH_W,
+    CHARLES_PLT_X_OUT,
+    CHARLES_PLT_X_RET,
     CHARLES_WALK_W,
     CHARLES_Y1,
     CHARLES_Y2,
@@ -71,7 +73,6 @@ from .constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
-    STREET_DIV_HW,
     WALK_X1,
     WALK_X2,
     WALK_ZT1,
@@ -566,10 +567,11 @@ def build():
                     and underbridge_light_y == BRIDGE.y1 - 30
                 ):
                     continue
+                _ul_y, _ul_z = _cs_offset(px, underbridge_light_y, 16)
                 ENTITIES.append(
                     ent(
                         "light",
-                        origin=f"{px} {underbridge_light_y} 16",
+                        origin=f"{px} {_ul_y} {_ul_z}",
                         light="200",
                         _light_group="pier_uplight",
                     )
@@ -890,11 +892,6 @@ def build():
     CHARLES_PLT_H = 12
     CHARLES_PLT_SPEED = 180
 
-    _road_cx = (ROAD_X1 + ROAD_X2) / 2
-    _west_lane_line_x = (ROAD_X1 + _road_cx - STREET_DIV_HW) / 2
-    _east_lane_line_x = (_road_cx + STREET_DIV_HW + ROAD_X2) / 2
-    CHARLES_PLT_X_OUT = int((_east_lane_line_x + ROAD_X2) / 2)
-    CHARLES_PLT_X_RET = int((ROAD_X1 + _west_lane_line_x) / 2)
     CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
     CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16
     CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
