@@ -74,13 +74,28 @@ CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
 EAST_OPENING_W = 56
-MULLION_W = 12  # Vertical divider (base) thickness, matching historical KH mullions.
-MULLION_PROUD = 8  # How far the mullion's pointed edge projects past the wall.
+MULLION_W = 22  # Vertical divider (base) thickness, bumped up from the
+# historical KH value (12) for better visibility.
+MULLION_PROUD = 12  # How far the mullion's pointed edge projects past the wall.
 # Divider counts per opening, east to west. 2 dividers sit at the opening's
 # edges; 3 dividers add one more centered between them.
 EAST_OPENING_MULLIONS = 2
 CENTER_OPENING_MULLIONS = 3
 WEST_OPENING_MULLIONS = 3
+
+# Horizontal cross beams, same texture as the mullions but thinner (BEAM_H)
+# and flat (not triangular), protruding only slightly (BEAM_PROUD). No floor
+# plan exists yet, so beam
+# heights are derived from an assumed 4 floors above bridge-deck level: one
+# beam at each of the 3 floor lines, plus 2 more evenly spaced between each
+# pair of floor lines (and below/above the end floor lines), i.e. the
+# opening height is divided into NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR equal
+# segments and a beam sits at every interior division line.
+NUM_FLOORS = 4
+BEAM_SEGMENTS_PER_FLOOR = 3  # 1 floor line + 2 in-between beams per floor.
+BEAM_H = 2  # Beam thickness (much thinner than the mullions).
+BEAM_PROUD = 4  # Protrusion past the wall's outer face so beams render
+# distinctly instead of z-fighting with the coplanar window-fill brush.
 
 
 def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
@@ -98,6 +113,11 @@ def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
     return polygon_prism(pts, bottom_z, top_z, tex)
 
 
+def _cross_beam(x1, x2, y1, y2, bz, tex):
+    """A horizontal cross beam, protruding a small amount past the wall face."""
+    return box(x1, y1, bz - BEAM_H / 2, x2, y2 + BEAM_PROUD, bz + BEAM_H / 2, tex)
+
+
 def _wall_with_opening(
     x1,
     y1,
@@ -112,6 +132,8 @@ def _wall_with_opening(
     mullions=0,
     mullion_tex=None,
     fill_tex=None,
+    beams=False,
+    beam_tex=None,
 ):
     """A thin wall (in Y) split around a centered opening above bridge level.
 
@@ -123,7 +145,12 @@ def _wall_with_opening(
     defaulting to ``tex``) are placed across the opening's width — 2 sit at
     its edges, 3 add one more centered between them. If ``fill_tex`` is
     given, a thin masked (window-pane) brush fills the opening instead of
-    leaving it fully open.
+    leaving it fully open. If ``beams`` is True, thin horizontal cross beams
+    (``BEAM_H`` thick, protruding ``BEAM_PROUD`` past the wall face,
+    textured with ``beam_tex``, defaulting to ``mullion_tex``/``tex``) are
+    placed at each interior division line of
+    ``NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR`` equal segments spanning the
+    opening's height.
     """
     cx = (x1 + x2) / 2 + offset
     ox1, ox2 = cx - open_w / 2, cx + open_w / 2
@@ -148,6 +175,13 @@ def _wall_with_opening(
         for mx in positions:
             mx -= MULLION_W / 2
             boxes.append(_mullion_prism(mx, y1, y2, bottom_z, z2, m_tex))
+    if beams:
+        b_tex = beam_tex if beam_tex is not None else (mullion_tex or tex)
+        segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
+        seg_h = (z2 - bottom_z) / segments
+        for i in range(1, segments):
+            bz = bottom_z + i * seg_h
+            boxes.append(_cross_beam(ox1, ox2, y1, y2, bz, b_tex))
     return boxes
 
 
@@ -190,6 +224,8 @@ def build():
             mullions=WEST_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
+            beams=True,
+            beam_tex=Textures.CEMENT,
         ),
         # NE notch ledge (faces the cut-away square, north-facing) — has the
         # (narrower) east front opening above bridge-deck height.
@@ -206,6 +242,8 @@ def build():
             mullions=EAST_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
+            beams=True,
+            beam_tex=Textures.CEMENT,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
         box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
@@ -228,6 +266,8 @@ def build():
             mullions=CENTER_OPENING_MULLIONS,
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
+            beams=True,
+            beam_tex=Textures.CEMENT,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
