@@ -46,7 +46,7 @@ class Textures:
     ROAD = "thantech10_9"
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"
-    ROOF_KH = "stn_f09_blk1"  # from makkon_stone.wad; KH roof deck
+    ROOF_KH = "gn_grey2"  # from alkaline.wad; KH roof deck
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
     SIDEWALK_JOINT = FENCE  # same texture as the iron fence; expansion-joint filler
