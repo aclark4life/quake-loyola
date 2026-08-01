@@ -421,7 +421,7 @@ def build():
             NORTH_X1,
             NOTCH_Y - WALL_T,
             roof_z2,
-            Textures.CEMENT,
+            Textures.ROOF_KH,
         ),
         box(
             NORTH_X1,
@@ -430,7 +430,7 @@ def build():
             NORTH_X2,
             NOTCH_Y,
             roof_z2,
-            Textures.CEMENT,
+            Textures.ROOF_KH,
         ),
         box(
             NORTH_X2,
@@ -439,7 +439,7 @@ def build():
             X2 - WALL_T,
             NOTCH_Y - WALL_T,
             roof_z2,
-            Textures.CEMENT,
+            Textures.ROOF_KH,
         ),
         # Roof, upper (notched) rectangle — inset behind the parapet ring.
         box(
@@ -449,7 +449,7 @@ def build():
             NORTH_X2 - WALL_T,
             Y2 - WALL_T,
             roof_z2,
-            Textures.CEMENT,
+            Textures.ROOF_KH,
         ),
     ]
 
