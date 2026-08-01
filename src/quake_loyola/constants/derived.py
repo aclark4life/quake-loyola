@@ -243,7 +243,8 @@ DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
 DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2
 DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH
 DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
-WORLD_Z2 = max(640, KNOTT_Z2 + 512)
+WORLD_Z2 = max(640, KNOTT_Z2 + 768)  # Bumped headroom (was +512, then +640)
+# so players can stand/jump on top of KH without hitting the sky ceiling.
 
 # Sub-basement shell.
 BASEMENT_ENABLED = _flag("BASEMENT_ENABLED")

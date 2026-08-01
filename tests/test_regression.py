@@ -12,9 +12,9 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # ql.toml with overrides would otherwise change brush/entity counts and the
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
-EXPECTED_BRUSHES = 1238
-EXPECTED_ENTITIES = 101
-EXPECTED_MD5 = "8432ee11b16e6ef00c77f976161ea1d8"
+EXPECTED_BRUSHES = 1246
+EXPECTED_ENTITIES = 102
+EXPECTED_MD5 = "dcae0ed7c9817dbbbc0208642d8c5de4"
 
 
 class MapRegressionTests(unittest.TestCase):

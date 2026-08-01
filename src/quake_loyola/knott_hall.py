@@ -26,7 +26,7 @@ from .constants import (
     PIER5_X,
     Textures,
 )
-from .geometry import box, fascia_sign, polygon_prism
+from .geometry import box, brush_ent, fascia_sign, polygon_prism
 
 WALL_T = 16
 ROOF_T = 16
@@ -37,12 +37,25 @@ CORNER_CUT_W_NE = 128  # East notch inset from X2.
 CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
 
 SHIFT_NORTH = 220  # Moved a little closer to the bridge deck (+Y).
+SOUTH_EXTEND = 160  # Extra length added to the south end (-Y) to fit 3
+# groups of 6 side windows (with 5 mullions each) plus 2 inter-group gaps.
+
+# Side-wall window layout (east/west walls, full bridge-deck-to-roof
+# height, same style as the front openings): 3 groups of 6 windows per
+# side, each group split by 5 mullions, with a ~4-window-wide gap between
+# groups and a margin at each end.
+SIDE_WIN_W = 48  # Width of each individual window pane.
+SIDE_WIN_GROUPS = 3
+SIDE_WINS_PER_GROUP = 6
+SIDE_GROUP_GAP_WINS = 4  # Gap between groups, in window-widths.
+SIDE_WIN_MARGIN = 32  # Margin from each end of the wall to the first/last
+# window group.
 
 # Widened to align the east/west walls with the outer pier faces of the
 # Pier 4-Pier 5 bridge span facing Knott Hall (BRIDGE_ENABLED_SPAN_KH).
 X1 = PIER4_X - BRIDGE_PILLAR_HW  # West wall flush with Pier 4's west face.
 X2 = PIER5_X + BRIDGE_PILLAR_HW  # East wall flush with Pier 5's east face.
-Y1 = KNOTT_Y1 + SHIFT_NORTH
+Y1 = KNOTT_Y1 + SHIFT_NORTH - SOUTH_EXTEND
 Y2 = KNOTT_Y2 + SHIFT_NORTH
 
 # The north edge steps in at both the NW and NE corners: the footprint is
@@ -119,6 +132,85 @@ def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
 def _cross_beam(x1, x2, y1, y2, bz, tex):
     """A horizontal cross beam, protruding a small amount past the wall face."""
     return box(x1, y1, bz - BEAM_H / 2, x2, y2 + BEAM_PROUD, bz + BEAM_H / 2, tex)
+
+
+def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
+    """Windows (with mullions/beams) set into an east/west side wall.
+
+    The wall runs from ``wy1`` to ``wy2`` in Y; ``x1``/``x2`` are the wall's
+    X bounds and ``outer_x`` is whichever of them faces outward (used for
+    the mullions' pointy tip and the beams' protrusion, mirroring
+    ``_wall_with_opening``'s treatment of ``y2``). ``SIDE_WIN_GROUPS``
+    groups of ``SIDE_WINS_PER_GROUP`` windows each (``SIDE_WIN_W`` wide,
+    split by mullions at every internal division and gap of
+    ``SIDE_GROUP_GAP_WINS`` window-widths between groups) run the full
+    height from ``bottom_z`` to ``z2``, with solid wall on either side and
+    below ``bottom_z``.
+
+    Returns ``(structural, detail)`` — the plain wall boxes (kept as
+    worldspawn) and the window/mullion/beam brushes (returned separately so
+    the caller can wrap them in a ``func_detail`` entity; the sheer number
+    of thin overlapping brushes across a long wall span otherwise blows up
+    vis portal counts).
+    """
+    inner_x = x1 if outer_x == x2 else x2
+    group_w = SIDE_WINS_PER_GROUP * SIDE_WIN_W
+    gap_w = SIDE_GROUP_GAP_WINS * SIDE_WIN_W
+    total_w = (
+        2 * SIDE_WIN_MARGIN + SIDE_WIN_GROUPS * group_w + (SIDE_WIN_GROUPS - 1) * gap_w
+    )
+    wall_len = wy2 - wy1
+    # Center the whole window band on the wall, absorbing any slack evenly.
+    start_y = wy1 + (wall_len - total_w) / 2 + SIDE_WIN_MARGIN
+
+    structural = []
+    detail = []
+    if bottom_z > z1:
+        structural.append(box(x1, wy1, z1, x2, wy2, bottom_z, tex))
+    y = start_y
+    prev_end = wy1
+    for _g in range(SIDE_WIN_GROUPS):
+        g_y1, g_y2 = y, y + group_w
+        # Solid wall from the previous group's end (or wall start) up to
+        # this group's start.
+        if g_y1 > prev_end:
+            structural.append(box(x1, prev_end, bottom_z, x2, g_y1, z2, tex))
+        # Windows within the group, separated by mullions.
+        for i in range(SIDE_WINS_PER_GROUP):
+            wy_a = g_y1 + i * SIDE_WIN_W
+            wy_b = wy_a + SIDE_WIN_W
+            detail.append(box(x1, wy_a, bottom_z, x2, wy_b, z2, Textures.WINDOW_KH))
+        for i in range(SIDE_WINS_PER_GROUP + 1):
+            my = g_y1 + i * SIDE_WIN_W - MULLION_W / 2
+            outer_pt_x = outer_x + MULLION_PROUD * (1 if outer_x > inner_x else -1)
+            pts = [
+                (inner_x, my),
+                (inner_x, my + MULLION_W),
+                (outer_pt_x, my + MULLION_W / 2),
+            ]
+            detail.append(polygon_prism(pts, bottom_z, z2, Textures.CEMENT))
+        segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
+        seg_h = (z2 - bottom_z) / segments
+        beam_outer = outer_x + BEAM_PROUD * (1 if outer_x > inner_x else -1)
+        bx1, bx2 = (inner_x, beam_outer) if outer_x > inner_x else (beam_outer, inner_x)
+        for i in range(1, segments):
+            bz = bottom_z + i * seg_h
+            detail.append(
+                box(
+                    bx1,
+                    g_y1,
+                    bz - BEAM_H / 2,
+                    bx2,
+                    g_y2,
+                    bz + BEAM_H / 2,
+                    Textures.CEMENT,
+                )
+            )
+        prev_end = g_y2
+        y = g_y2 + gap_w
+    if prev_end < wy2:
+        structural.append(box(x1, prev_end, bottom_z, x2, wy2, z2, tex))
+    return structural, detail
 
 
 def _wall_with_opening(
@@ -206,11 +298,36 @@ def build():
     roof_z1 = z2
     roof_z2 = roof_z1 + ROOF_T
 
+    west_struct, west_detail = _side_windows(
+        X1,
+        X1 + WALL_T,
+        Y1,
+        NOTCH_Y,
+        z1,
+        z2,
+        OPENING_BOTTOM_Z,
+        Textures.PIER_STONE,
+        outer_x=X1,
+    )
+    east_struct, east_detail = _side_windows(
+        X2 - WALL_T,
+        X2,
+        Y1,
+        NOTCH_Y,
+        z1,
+        z2,
+        OPENING_BOTTOM_Z,
+        Textures.PIER_STONE,
+        outer_x=X2,
+    )
+
     brushes = [
-        # West wall (lower rectangle only — stops at the NW notch)
-        box(X1, Y1, z1, X1 + WALL_T, NOTCH_Y, z2, Textures.PIER_STONE),
-        # East wall (lower rectangle only — stops at the NE notch)
-        box(X2 - WALL_T, Y1, z1, X2, NOTCH_Y, z2, Textures.PIER_STONE),
+        # West wall (lower rectangle only — stops at the NW notch) — has
+        # 3 groups of side windows.
+        *west_struct,
+        # East wall (lower rectangle only — stops at the NE notch) — has
+        # 3 groups of side windows.
+        *east_struct,
         # South wall (between the two side walls)
         box(
             X1 + WALL_T,
@@ -324,4 +441,6 @@ def build():
         )
     )
 
-    return brushes, []
+    entities = [brush_ent("func_detail", west_detail + east_detail)]
+
+    return brushes, entities
