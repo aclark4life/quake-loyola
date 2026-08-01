@@ -30,10 +30,11 @@ from .geometry import box, brush_ent, fascia_sign, polygon_prism
 
 WALL_T = 16
 ROOF_T = 16
-PARAPET_H = 32  # Raised lip around the roof edge, per satellite reference —
-# the roof deck itself sits recessed below this rim.
-ROOF_RECESS = 24  # How far below the wall top (pre-parapet) the roof deck
-# surface sits, so the parapet lip reads as standing proud of the roof.
+PARAPET_H = 24  # Raised lip around the roof edge, per satellite reference —
+# the roof deck itself sits at the wall top (z2), with the parapet
+# standing PARAPET_H above it, so the rim reads as proud of the roof
+# without dipping the roof deck down into the window tops (which also
+# stop at z2).
 BUILDING_H = 1640  # Was 1536; bumped by one beam segment (104 units) to
 # accommodate moving the front openings' bottom-most segment to the top.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
@@ -300,7 +301,7 @@ def build():
     z1 = GROUND_Z
     z2 = z1 + BUILDING_H
     parapet_z2 = z2 + PARAPET_H
-    roof_z1 = z2 - ROOF_RECESS
+    roof_z1 = z2
     roof_z2 = roof_z1 + ROOF_T
 
     west_struct, west_detail = _side_windows(
@@ -404,19 +405,61 @@ def build():
             beam_tex=Textures.CEMENT,
             entrance=True,
         ),
-        # Roof, lower rectangle — recessed below the parapet lip.
-        box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
-        # Roof, upper (notched) rectangle — recessed below the parapet lip.
-        box(NORTH_X1, NOTCH_Y, roof_z1, NORTH_X2, Y2, roof_z2, Textures.CEMENT),
+        # Roof, lower rectangle — inset behind the parapet ring (WALL_T) so
+        # its side faces don't sit flush/coplanar with the exterior wall
+        # faces, which caused z-fighting/texture bleed-through between the
+        # stone wall and cement roof textures. Split into 3 spans along the
+        # north edge: the two outer spans (under the NW/NE notch-ledge
+        # walls) are additionally inset by WALL_T on the north side so they
+        # don't sit flush against those walls' inward faces; the middle
+        # span (open transition into the upper rectangle) can run flush to
+        # NOTCH_Y since there's no wall face there.
+        box(
+            X1 + WALL_T,
+            Y1 + WALL_T,
+            roof_z1,
+            NORTH_X1,
+            NOTCH_Y - WALL_T,
+            roof_z2,
+            Textures.CEMENT,
+        ),
+        box(
+            NORTH_X1,
+            Y1 + WALL_T,
+            roof_z1,
+            NORTH_X2,
+            NOTCH_Y,
+            roof_z2,
+            Textures.CEMENT,
+        ),
+        box(
+            NORTH_X2,
+            Y1 + WALL_T,
+            roof_z1,
+            X2 - WALL_T,
+            NOTCH_Y - WALL_T,
+            roof_z2,
+            Textures.CEMENT,
+        ),
+        # Roof, upper (notched) rectangle — inset behind the parapet ring.
+        box(
+            NORTH_X1 + WALL_T,
+            NOTCH_Y,
+            roof_z1,
+            NORTH_X2 - WALL_T,
+            Y2 - WALL_T,
+            roof_z2,
+            Textures.CEMENT,
+        ),
     ]
 
     # Parapet lip: a raised rim tracing the same wall footprint, standing
-    # PARAPET_H above the wall top with the roof deck recessed ROOF_RECESS
-    # below it — matches the satellite reference showing a lip around the
-    # roof edge with the roof set slightly below it. Wrapped in func_detail
-    # (like the side-window detail) since it's a thin non-structural rim
-    # that doesn't need to affect vis/portal generation, and keeps qbsp's
-    # edge count for the standard BSP format in range.
+    # PARAPET_H above the wall top/roof deck — matches the satellite
+    # reference showing a lip around the roof edge with the roof set
+    # slightly below it. Wrapped in func_detail (like the side-window
+    # detail) since it's a thin non-structural rim that doesn't need to
+    # affect vis/portal generation, and keeps qbsp's edge count for the
+    # standard BSP format in range.
     parapet_detail = [
         box(X1, Y1, z2, X1 + WALL_T, NOTCH_Y, parapet_z2, Textures.PIER_STONE),
         box(X2 - WALL_T, Y1, z2, X2, NOTCH_Y, parapet_z2, Textures.PIER_STONE),
