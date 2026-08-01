@@ -137,6 +137,7 @@ def _wall_with_opening(
     fill_tex=None,
     beams=False,
     beam_tex=None,
+    entrance=False,
 ):
     """A thin wall (in Y) split around a centered opening above bridge level.
 
@@ -153,10 +154,15 @@ def _wall_with_opening(
     textured with ``beam_tex``, defaulting to ``mullion_tex``/``tex``) are
     placed at each interior division line of
     ``NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR`` equal segments spanning the
-    opening's height.
+    opening's height. If ``entrance`` is True, the lowest segment is left
+    fully open (no window fill, and any center — i.e. non-edge — mullion
+    stops above it) to serve as a ground-level doorway.
     """
     cx = (x1 + x2) / 2 + offset
     ox1, ox2 = cx - open_w / 2, cx + open_w / 2
+    segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
+    seg_h = (z2 - bottom_z) / segments
+    entrance_top = bottom_z + seg_h if entrance else bottom_z
     boxes = []
     if bottom_z > z1:
         boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
@@ -165,7 +171,10 @@ def _wall_with_opening(
     if ox2 < x2:
         boxes.append(box(ox2, y1, bottom_z, x2, y2, z2, tex))
     if fill_tex is not None:
-        boxes.append(box(ox1, y1, bottom_z, ox2, y2, z2, fill_tex))
+        if entrance_top > bottom_z:
+            boxes.append(box(ox1, y1, entrance_top, ox2, y2, z2, fill_tex))
+        else:
+            boxes.append(box(ox1, y1, bottom_z, ox2, y2, z2, fill_tex))
     if mullions > 0:
         m_tex = mullion_tex if mullion_tex is not None else tex
         if mullions == 2:
@@ -175,13 +184,13 @@ def _wall_with_opening(
         else:
             gap = open_w / (mullions - 1)
             positions = [ox1 + i * gap for i in range(mullions)]
+        edges = {ox1, ox2}
         for mx in positions:
+            m_bottom = bottom_z if mx in edges else entrance_top
             mx -= MULLION_W / 2
-            boxes.append(_mullion_prism(mx, y1, y2, bottom_z, z2, m_tex))
+            boxes.append(_mullion_prism(mx, y1, y2, m_bottom, z2, m_tex))
     if beams:
         b_tex = beam_tex if beam_tex is not None else (mullion_tex or tex)
-        segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
-        seg_h = (z2 - bottom_z) / segments
         for i in range(1, segments):
             bz = bottom_z + i * seg_h
             boxes.append(_cross_beam(ox1, ox2, y1, y2, bz, b_tex))
@@ -271,6 +280,7 @@ def build():
             fill_tex=Textures.WINDOW_KH,
             beams=True,
             beam_tex=Textures.CEMENT,
+            entrance=True,
         ),
         # Roof, lower rectangle
         box(X1, Y1, roof_z1, X2, NOTCH_Y, roof_z2, Textures.CEMENT),
