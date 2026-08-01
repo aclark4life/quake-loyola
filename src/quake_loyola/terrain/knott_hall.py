@@ -533,6 +533,14 @@ def build():
 
     _west_x_ovr = 0
     _east_x_ovr = 2
+    # The Y span (KNOTT_DRIVEWAY_Y1..Y2) is ~1655 units; the surface is a
+    # ruled (bilinear) slope that's linear in Y between the south (Y1) and
+    # north (Y2) x-profiles, so it can be exactly subdivided into narrower
+    # Y-strips without approximation error. A single full-span brush here
+    # previously produced fall-through gaps in the compiled BSP collision
+    # hull (qbsp clipnode precision issues on very large shallow slopes) —
+    # see the west-side terrain fall-through investigation.
+    _WRAMP_Y_SEGS = 8
     for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
         real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1
         _is_first = wx1 == KNOTT.x1
@@ -542,36 +550,45 @@ def build():
         z1b = _sidewalk_h(KNOTT_DRIVEWAY_Y1) if real_edge else _south_edge_real(wx2)
         z2a = _sgrid[-1][2] if _is_first else _south_edge_z(wx1)
         z2b = _sidewalk_h(KNOTT_DRIVEWAY_Y2) if real_edge else _south_edge_z(wx2)
-        BRUSHES.append(
-            tri_ramp_prism(
-                wx1n,
-                KNOTT_DRIVEWAY_Y1,
-                wx2n,
-                KNOTT_DRIVEWAY_Y1,
-                wx2n,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                z1a,
-                z1b,
-                z2b,
-                Textures.GROUND,
+        for _seg_i in range(_WRAMP_Y_SEGS):
+            _t0 = _seg_i / _WRAMP_Y_SEGS
+            _t1 = (_seg_i + 1) / _WRAMP_Y_SEGS
+            _y0 = KNOTT_DRIVEWAY_Y1 + _t0 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
+            _y1 = KNOTT_DRIVEWAY_Y1 + _t1 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
+            _za0 = z1a + _t0 * (z2a - z1a)
+            _za1 = z1a + _t1 * (z2a - z1a)
+            _zb0 = z1b + _t0 * (z2b - z1b)
+            _zb1 = z1b + _t1 * (z2b - z1b)
+            BRUSHES.append(
+                tri_ramp_prism(
+                    wx1n,
+                    _y0,
+                    wx2n,
+                    _y0,
+                    wx2n,
+                    _y1,
+                    FLOOR_Z1,
+                    _za0,
+                    _zb0,
+                    _zb1,
+                    Textures.GROUND,
+                )
             )
-        )
-        BRUSHES.append(
-            tri_ramp_prism(
-                wx1n,
-                KNOTT_DRIVEWAY_Y1,
-                wx2n,
-                KNOTT_DRIVEWAY_Y2,
-                wx1n,
-                KNOTT_DRIVEWAY_Y2,
-                FLOOR_Z1,
-                z1a,
-                z2b,
-                z2a,
-                Textures.GROUND,
+            BRUSHES.append(
+                tri_ramp_prism(
+                    wx1n,
+                    _y0,
+                    wx2n,
+                    _y1,
+                    wx1n,
+                    _y1,
+                    FLOOR_Z1,
+                    _za0,
+                    _zb1,
+                    _za1,
+                    Textures.GROUND,
+                )
             )
-        )
 
     _flat_z = FLOOR_Z2 + CHARLES_WALK_H
 
