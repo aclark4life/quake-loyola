@@ -35,8 +35,10 @@ PARAPET_H = 24  # Raised lip around the roof edge, per satellite reference —
 # standing PARAPET_H above it, so the rim reads as proud of the roof
 # without dipping the roof deck down into the window tops (which also
 # stop at z2).
-BUILDING_H = 1640  # Was 1536; bumped by one beam segment (104 units) to
-# accommodate moving the front openings' bottom-most segment to the top.
+BUILDING_H = 1523  # Was 1640; net effect of two window panes removed (2 x
+# 78 units) plus half a pane (39 units, EXTRA_BASE_H below) added back so
+# the ground-floor door/entrance is 1.5 panes tall instead of 1, with every
+# other window pane on every wall staying exactly 78 tall/unchanged.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from X2.
 CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
@@ -108,15 +110,31 @@ WEST_OPENING_MULLIONS = 3
 # and flat (not triangular), protruding only slightly (BEAM_PROUD). No floor
 # plan exists yet, so beam
 # heights are derived from an assumed 4 floors above bridge-deck level: one
-# beam at each of the 3 floor lines, plus 2 more evenly spaced between each
+# beam at each of the 3 floor lines, plus 3 more evenly spaced between each
 # pair of floor lines (and below/above the end floor lines), i.e. the
 # opening height is divided into NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR equal
-# segments and a beam sits at every interior division line.
+# segments and a beam sits at every interior division line. Segments per
+# floor bumped from 3 to 4 (seg_h ~78, down from ~104) so each window pane
+# reads closer to square (matching the ~48-70-wide panes) without going as
+# far as the ~52-tall panes from a 6-segment split, which looked too dense.
 NUM_FLOORS = 4
-BEAM_SEGMENTS_PER_FLOOR = 3  # 1 floor line + 2 in-between beams per floor.
+BEAM_SEGMENTS_PER_FLOOR = 4  # 1 floor line + 3 in-between beams per floor.
+# Two panes shorter than NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR (16 -> 14):
+# the building's height (BUILDING_H above) is reduced by exactly two panes'
+# worth, so the window/beam layout must divide the (now shorter) opening
+# into two fewer equal segments to keep each pane's height (and therefore
+# its near-square proportions) the same as before.
+WINDOW_SEGMENTS = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR - 2
 BEAM_H = 2  # Beam thickness (much thinner than the mullions).
 BEAM_PROUD = 4  # Protrusion past the wall's outer face so beams render
 # distinctly instead of z-fighting with the coplanar window-fill brush.
+# Half of the nominal ~78 pane height. On every wall, this band (right
+# above OPENING_BOTTOM_Z, below the WINDOW_SEGMENTS-tall regular window
+# grid) is normally solid — except on the entrance wall, where it's opened
+# up as part of the door instead, making the ground-floor door/entrance
+# 1.5 panes tall while every other pane stays exactly one nominal pane
+# (78) tall.
+EXTRA_BASE_H = 39
 
 
 def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
@@ -148,9 +166,10 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
     ``_wall_with_opening``'s treatment of ``y2``). ``SIDE_WIN_GROUPS``
     groups of ``SIDE_WINS_PER_GROUP`` windows each (``SIDE_WIN_W`` wide,
     split by mullions at every internal division and gap of
-    ``SIDE_GROUP_GAP_WINS`` window-widths between groups) run the full
-    height from ``bottom_z`` to ``z2``, with solid wall on either side and
-    below ``bottom_z``.
+    ``SIDE_GROUP_GAP_WINS`` window-widths between groups) run from
+    ``bottom_z + EXTRA_BASE_H`` to ``z2`` (side walls have no
+    entrance/door, so ``EXTRA_BASE_H`` is always a solid band here — see
+    ``_wall_with_opening``), with solid wall on either side and below it.
 
     Returns ``(structural, detail)`` — the plain wall boxes (kept as
     worldspawn) and the window/mullion/beam brushes (returned separately so
@@ -158,6 +177,7 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
     of thin overlapping brushes across a long wall span otherwise blows up
     vis portal counts).
     """
+    win_bottom = bottom_z + EXTRA_BASE_H
     inner_x = x1 if outer_x == x2 else x2
     group_w = SIDE_WINS_PER_GROUP * SIDE_WIN_W
     gap_w = SIDE_GROUP_GAP_WINS * SIDE_WIN_W
@@ -172,6 +192,8 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
     detail = []
     if bottom_z > z1:
         structural.append(box(x1, wy1, z1, x2, wy2, bottom_z, tex))
+    if win_bottom > bottom_z:
+        structural.append(box(x1, wy1, bottom_z, x2, wy2, win_bottom, tex))
     y = start_y
     prev_end = wy1
     for _g in range(SIDE_WIN_GROUPS):
@@ -179,12 +201,12 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
         # Solid wall from the previous group's end (or wall start) up to
         # this group's start.
         if g_y1 > prev_end:
-            structural.append(box(x1, prev_end, bottom_z, x2, g_y1, z2, tex))
+            structural.append(box(x1, prev_end, win_bottom, x2, g_y1, z2, tex))
         # Windows within the group, separated by mullions.
         for i in range(SIDE_WINS_PER_GROUP):
             wy_a = g_y1 + i * SIDE_WIN_W
             wy_b = wy_a + SIDE_WIN_W
-            detail.append(box(x1, wy_a, bottom_z, x2, wy_b, z2, Textures.WINDOW_KH))
+            detail.append(box(x1, wy_a, win_bottom, x2, wy_b, z2, Textures.WINDOW_KH))
         for i in range(SIDE_WINS_PER_GROUP + 1):
             my = g_y1 + i * SIDE_WIN_W - MULLION_W / 2
             outer_pt_x = outer_x + MULLION_PROUD * (1 if outer_x > inner_x else -1)
@@ -193,13 +215,13 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
                 (inner_x, my + MULLION_W),
                 (outer_pt_x, my + MULLION_W / 2),
             ]
-            detail.append(polygon_prism(pts, bottom_z, z2, Textures.CEMENT))
-        segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
-        seg_h = (z2 - bottom_z) / segments
+            detail.append(polygon_prism(pts, win_bottom, z2, Textures.CEMENT))
+        segments = WINDOW_SEGMENTS
+        seg_h = (z2 - win_bottom) / segments
         beam_outer = outer_x + BEAM_PROUD * (1 if outer_x > inner_x else -1)
         bx1, bx2 = (inner_x, beam_outer) if outer_x > inner_x else (beam_outer, inner_x)
         for i in range(1, segments):
-            bz = bottom_z + i * seg_h
+            bz = win_bottom + i * seg_h
             detail.append(
                 box(
                     bx1,
@@ -214,7 +236,7 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
         prev_end = g_y2
         y = g_y2 + gap_w
     if prev_end < wy2:
-        structural.append(box(x1, prev_end, bottom_z, x2, wy2, z2, tex))
+        structural.append(box(x1, prev_end, win_bottom, x2, wy2, z2, tex))
     return structural, detail
 
 
@@ -241,7 +263,11 @@ def _wall_with_opening(
     The wall is solid from ``z1`` up to ``bottom_z`` (bridge-deck height);
     above that, an opening spans ``open_w`` in X, centered on the wall (plus
     ``offset``), up to ``z2``, with solid wall on either side of the
-    opening. ``mullions`` triangular vertical dividers (pointy end facing
+    opening. From ``bottom_z`` to ``bottom_z + EXTRA_BASE_H``, the opening
+    itself is solid too — except when ``entrance`` is True, where it's
+    opened up as part of the ground-level doorway instead, making the door
+    1.5 panes tall while every other pane stays exactly one nominal pane
+    tall. ``mullions`` triangular vertical dividers (pointy end facing
     outward past the wall's outer face, textured with ``mullion_tex``,
     defaulting to ``tex``) are placed across the opening's width — 2 sit at
     its edges, 3 add one more centered between them. If ``fill_tex`` is
@@ -250,16 +276,18 @@ def _wall_with_opening(
     (``BEAM_H`` thick, protruding ``BEAM_PROUD`` past the wall face,
     textured with ``beam_tex``, defaulting to ``mullion_tex``/``tex``) are
     placed at each interior division line of
-    ``NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR`` equal segments spanning the
-    opening's height. If ``entrance`` is True, the lowest segment is left
-    fully open (no window fill, and any center — i.e. non-edge — mullion
-    stops above it) to serve as a ground-level doorway.
+    ``WINDOW_SEGMENTS`` equal segments spanning from
+    ``bottom_z + EXTRA_BASE_H`` to the opening's height. If ``entrance`` is
+    True, the lowest segment (plus the ``EXTRA_BASE_H`` band below it) is
+    left fully open (no window fill, and any center — i.e. non-edge —
+    mullion stops above it) to serve as a ground-level doorway.
     """
+    win_bottom = bottom_z + EXTRA_BASE_H
     cx = (x1 + x2) / 2 + offset
     ox1, ox2 = cx - open_w / 2, cx + open_w / 2
-    segments = NUM_FLOORS * BEAM_SEGMENTS_PER_FLOOR
-    seg_h = (z2 - bottom_z) / segments
-    entrance_top = bottom_z + seg_h if entrance else bottom_z
+    segments = WINDOW_SEGMENTS
+    seg_h = (z2 - win_bottom) / segments
+    entrance_top = win_bottom + seg_h if entrance else win_bottom
     boxes = []
     if bottom_z > z1:
         boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
@@ -267,6 +295,8 @@ def _wall_with_opening(
         boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
     if ox2 < x2:
         boxes.append(box(ox2, y1, bottom_z, x2, y2, z2, tex))
+    if not entrance and win_bottom > bottom_z:
+        boxes.append(box(ox1, y1, bottom_z, ox2, y2, win_bottom, tex))
     if fill_tex is not None:
         if entrance_top > bottom_z:
             boxes.append(box(ox1, y1, entrance_top, ox2, y2, z2, fill_tex))
@@ -289,7 +319,7 @@ def _wall_with_opening(
     if beams:
         b_tex = beam_tex if beam_tex is not None else (mullion_tex or tex)
         for i in range(1, segments):
-            bz = bottom_z + i * seg_h
+            bz = win_bottom + i * seg_h
             boxes.append(_cross_beam(ox1, ox2, y1, y2, bz, b_tex))
     return boxes
 
