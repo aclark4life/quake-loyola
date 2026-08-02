@@ -411,7 +411,7 @@ _fog = (
 
 
 WORLDSPAWN_FIELDS = {
-    "wad": "quake101.wad;ad.wad;makkon_building.wad;ikwhite.wad;makkon_stone.wad;mg1.wad;alkaline.wad",
+    "wad": "quake101.wad;ad.wad;makkon_building.wad;ikwhite.wad;makkon_stone.wad;mg1.wad;alkaline.wad;makkon_nature.wad",
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
     "dmflags": "128",
