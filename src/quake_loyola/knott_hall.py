@@ -360,7 +360,7 @@ def build():
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
             beams=True,
-            beam_tex=Textures.CEMENT,
+            beam_tex=Textures.FENCE,
         ),
         # NE notch ledge (faces the cut-away square, north-facing) — has the
         # (narrower) east front opening above bridge-deck height.
@@ -378,7 +378,7 @@ def build():
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
             beams=True,
-            beam_tex=Textures.CEMENT,
+            beam_tex=Textures.FENCE,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
         box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
@@ -402,7 +402,7 @@ def build():
             mullion_tex=Textures.CEMENT,
             fill_tex=Textures.WINDOW_KH,
             beams=True,
-            beam_tex=Textures.CEMENT,
+            beam_tex=Textures.FENCE,
             entrance=True,
         ),
         # Roof, lower rectangle — inset behind the parapet ring (WALL_T) so
