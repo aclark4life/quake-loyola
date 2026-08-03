@@ -14,10 +14,10 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/constants/` | Shared numeric constants and texture names (package: flags, world, textures, lighting, fonts, trees, ennis, bridge, streets, dorm, knott, maryland, derived) |
 | `src/quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
 | `src/quake_loyola/knott_hall.py` | Knott Hall shell (walls, roof, fascia sign) |
-| `src/quake_loyola/streets.py` | Charles Street and surrounding road geometry |
+| `src/quake_loyola/streets/` | Charles Street and surrounding road geometry (package: `shell`, `ennis`, `details`) |
 | `src/quake_loyola/west_campus.py` | West-campus buildings and terrain |
 | `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `maryland`, `ne`, `west_campus`) |
-| `src/quake_loyola/entities.py` | Player spawns, items, lights |
+| `src/quake_loyola/entities/` | Player spawns, items, lights (package: `spawns`, `pickups`, `monsters`, `vegetation`, `lights`, `exit`, `platform`, `_common`) |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
 | `ql` | Typer CLI entry point — `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
