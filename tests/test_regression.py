@@ -108,27 +108,32 @@ class EntitiesBuildTests(unittest.TestCase):
     checked.
     """
 
+    # Each flag is monkeypatched on the submodule that actually references
+    # it in its own module globals — ``entities`` is now a thin package that
+    # dispatches to per-concern submodules (spawns/pickups/monsters/etc.),
+    # so setting the attribute on ``entities`` itself would have no effect.
     _ENTITY_GROUP_FLAGS = (
-        "ENTITIES_ENABLED_TELEPORTS",
-        "ENTITIES_ENABLED_DM_SPAWNS",
-        "ENTITIES_ENABLED_WEAPONS",
-        "ENTITIES_ENABLED_AMMO",
-        "ENTITIES_ENABLED_HEALTH",
-        "ENTITIES_ENABLED_MONSTERS",
-        "ENTITIES_ENABLED_VEGETATION",
-        "ENTITIES_ENABLED_PLATFORM",
-        "ENTITIES_ENABLED_EXIT",
+        (entities.spawns, "ENTITIES_ENABLED_TELEPORTS"),
+        (entities.spawns, "ENTITIES_ENABLED_DM_SPAWNS"),
+        (entities.pickups, "ENTITIES_ENABLED_WEAPONS"),
+        (entities.pickups, "ENTITIES_ENABLED_AMMO"),
+        (entities.pickups, "ENTITIES_ENABLED_HEALTH"),
+        (entities.monsters, "ENTITIES_ENABLED_MONSTERS"),
+        (entities.vegetation, "ENTITIES_ENABLED_VEGETATION"),
+        (entities.platform, "ENTITIES_ENABLED_PLATFORM"),
+        (entities.exit, "ENTITIES_ENABLED_EXIT"),
     )
 
     def setUp(self):
-        names = self._ENTITY_GROUP_FLAGS
-        self._saved = {name: getattr(entities, name) for name in names}
-        for name in self._ENTITY_GROUP_FLAGS:
-            setattr(entities, name, True)
+        self._saved = {
+            (mod, name): getattr(mod, name) for mod, name in self._ENTITY_GROUP_FLAGS
+        }
+        for mod, name in self._ENTITY_GROUP_FLAGS:
+            setattr(mod, name, True)
 
     def tearDown(self):
-        for name, value in self._saved.items():
-            setattr(entities, name, value)
+        for (mod, name), value in self._saved.items():
+            setattr(mod, name, value)
 
     def test_spawns_have_origin_and_angle(self):
         _, ents = entities.build()
@@ -202,7 +207,10 @@ class KnottTerrainToggleTests(unittest.TestCase):
                 knott_terrain,
                 "KNOTT_ENABLED_TERRAIN",
             ): knott_terrain.KNOTT_ENABLED_TERRAIN,
-            (streets, "KNOTT_ENABLED_TERRAIN"): streets.KNOTT_ENABLED_TERRAIN,
+            (
+                streets.details,
+                "KNOTT_ENABLED_TERRAIN",
+            ): streets.details.KNOTT_ENABLED_TERRAIN,
         }
 
     def tearDown(self):
@@ -211,7 +219,7 @@ class KnottTerrainToggleTests(unittest.TestCase):
 
     def _build_with_flag(self, enabled):
         knott_terrain.KNOTT_ENABLED_TERRAIN = enabled
-        streets.KNOTT_ENABLED_TERRAIN = enabled
+        streets.details.KNOTT_ENABLED_TERRAIN = enabled
         return generate_map.build_map()
 
     def test_enabled_and_disabled_both_build_cleanly(self):
