@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -219,6 +220,26 @@ def generate() -> None:
         raise typer.Exit(code=1) from exc
 
 
+_ERICW_TOOLS_VERSION_RE = re.compile(
+    r"ericw-tools-v(\d+)\.(\d+)\.(\d+)(?:-(\d+)-g[0-9a-f]+)?"
+)
+
+
+def _ericw_tools_version(path: Path) -> tuple[int, int, int, int]:
+    """Sort key for a ``.tools/ericw-tools-*`` directory by release version.
+
+    Parses ``vMAJOR.MINOR.PATCH`` (and an optional ``-N-gHASH`` dev-build
+    commit count) out of the directory name so the newest install is picked
+    even when installs aren't in lexicographic order (e.g. v0.9.0 vs
+    v0.18.1). Unparseable names sort lowest.
+    """
+    match = _ERICW_TOOLS_VERSION_RE.search(path.parent.name)
+    if not match:
+        return (0, 0, 0, 0)
+    major, minor, patch, commits = match.groups()
+    return (int(major), int(minor), int(patch), int(commits or 0))
+
+
 @app.command()
 def build(
     deploy: bool = typer.Option(
@@ -227,20 +248,16 @@ def build(
     ),
 ) -> None:
     """Generate and compile the map using the current ``[build]`` settings."""
-    try:
-        generate()
-    except RuntimeError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=1) from exc
+    generate()
 
-    tools_bin_candidates = sorted(REPO_ROOT.glob(".tools/ericw-tools-*/bin"))
+    tools_bin_candidates = list(REPO_ROOT.glob(".tools/ericw-tools-*/bin"))
     if not tools_bin_candidates:
         typer.echo(
             "ericw-tools not found under .tools/ — run `just install-tools` first.",
             err=True,
         )
         raise typer.Exit(code=1)
-    tools_bin = tools_bin_candidates[-1]
+    tools_bin = max(tools_bin_candidates, key=_ericw_tools_version)
 
     try:
         vis_mode = config.get_build("vis_mode")

@@ -13,6 +13,7 @@ leak state into other tests (e.g. the golden-hash regression suite, which
 assumes hardcoded defaults)."""
 
 import unittest
+from unittest import mock
 
 import typer
 from typer.testing import CliRunner
@@ -201,6 +202,107 @@ class CliRunnerBuildCommandTests(unittest.TestCase):
         # `generate()` (called internally by `build`) should still have run
         # and written loyola.map before the toolchain check failed.
         self.assertTrue(self.map_path.exists())
+
+
+class EricwToolsVersionSortTests(unittest.TestCase):
+    """`_ericw_tools_version` must parse vMAJOR.MINOR.PATCH (and an optional
+    -N-gHASH dev-build suffix) out of a `.tools/ericw-tools-*/bin` path so
+    the newest install is picked even when installs aren't in lexicographic
+    order (e.g. v0.9.0 should sort below v0.18.1, not above it)."""
+
+    def _bin_path(self, dirname: str):
+        return config.REPO_ROOT / ".tools" / dirname / "bin"
+
+    def test_parses_plain_release_version(self):
+        version = cli._ericw_tools_version(self._bin_path("ericw-tools-v0.18.1-Darwin"))
+        self.assertEqual(version, (0, 18, 1, 0))
+
+    def test_parses_dev_build_commit_count(self):
+        version = cli._ericw_tools_version(
+            self._bin_path("ericw-tools-v0.18.1-32-g6660c5f-Darwin")
+        )
+        self.assertEqual(version, (0, 18, 1, 32))
+
+    def test_unparseable_name_sorts_lowest(self):
+        version = cli._ericw_tools_version(self._bin_path("ericw-tools-mystery"))
+        self.assertEqual(version, (0, 0, 0, 0))
+
+    def test_newer_minor_version_outranks_lexicographically_larger_string(self):
+        # "v0.9.0" > "v0.18.1" lexicographically, but 0.18.1 is the newer
+        # release — max() by _ericw_tools_version must pick v0.18.1.
+        candidates = [
+            self._bin_path("ericw-tools-v0.9.0-Darwin"),
+            self._bin_path("ericw-tools-v0.18.1-Darwin"),
+        ]
+        newest = max(candidates, key=cli._ericw_tools_version)
+        self.assertEqual(newest, self._bin_path("ericw-tools-v0.18.1-Darwin"))
+
+
+class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
+    """`ql build`'s qbsp -> vis -> light -> deploy pipeline, with
+    subprocess.run and shutil.copy mocked out so no real toolchain or
+    Quake install is required."""
+
+    def setUp(self):
+        self.runner = CliRunner()
+        self.map_path = config.REPO_ROOT / "loyola.map"
+        self.tools_dir = (
+            config.REPO_ROOT / ".tools" / "ericw-tools-v0.18.1-Darwin" / "bin"
+        )
+        self.tools_dir.mkdir(parents=True, exist_ok=True)
+        for tool in ("qbsp", "vis", "light"):
+            (self.tools_dir / tool).touch()
+
+    def tearDown(self):
+        if self.map_path.exists():
+            self.map_path.unlink()
+        tools_root = config.REPO_ROOT / ".tools"
+        if tools_root.exists():
+            import shutil as _shutil
+
+            _shutil.rmtree(tools_root)
+
+    @mock.patch("quake_loyola.cli.shutil.copy")
+    @mock.patch("quake_loyola.cli.subprocess.run")
+    def test_build_runs_qbsp_vis_light_in_order_and_deploys(self, mock_run, mock_copy):
+        mock_run.return_value = mock.Mock(returncode=0)
+        # `build`'s deploy step copies loyola.bsp/.lit; create stand-ins so
+        # shutil.copy (mocked) has something plausible to "copy".
+        (config.REPO_ROOT / "loyola.bsp").touch()
+        (config.REPO_ROOT / "loyola.lit").touch()
+        try:
+            result = self.runner.invoke(cli.app, ["build"])
+        finally:
+            (config.REPO_ROOT / "loyola.bsp").unlink(missing_ok=True)
+            (config.REPO_ROOT / "loyola.lit").unlink(missing_ok=True)
+
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertEqual(mock_run.call_count, 3)
+        qbsp_cmd, vis_cmd, light_cmd = (c.args[0] for c in mock_run.call_args_list)
+        self.assertEqual(qbsp_cmd[0], str(self.tools_dir / "qbsp"))
+        self.assertEqual(vis_cmd[0], str(self.tools_dir / "vis"))
+        self.assertEqual(light_cmd[0], str(self.tools_dir / "light"))
+        self.assertEqual(mock_copy.call_count, 2)
+        self.assertIn("Build complete.", result.output)
+
+    @mock.patch("quake_loyola.cli.shutil.copy")
+    @mock.patch("quake_loyola.cli.subprocess.run")
+    def test_build_no_deploy_skips_copy(self, mock_run, mock_copy):
+        mock_run.return_value = mock.Mock(returncode=0)
+        result = self.runner.invoke(cli.app, ["build", "--no-deploy"])
+        self.assertEqual(result.exit_code, 0, result.output)
+        mock_copy.assert_not_called()
+
+    @mock.patch("quake_loyola.cli.subprocess.run")
+    def test_build_reports_subprocess_failure(self, mock_run):
+        import subprocess
+
+        mock_run.side_effect = subprocess.CalledProcessError(
+            1, [str(self.tools_dir / "qbsp")]
+        )
+        result = self.runner.invoke(cli.app, ["build"])
+        self.assertNotEqual(result.exit_code, 0)
+        self.assertIn("exited with code", result.output)
 
 
 if __name__ == "__main__":

@@ -1650,18 +1650,3 @@ def _shift_center_span(brushes, entities, enabled_names, offset):
     sect_b = [b.translated(dx, dy, dz) for b in sect_b]
     sect_e = [e.translated(dx, dy, dz) for e in sect_e]
     return sect_b, sect_e
-
-
-def _build_center_span(offset=(0.0, 0.0, 0.0)):
-    """Return the center-span geometry, optionally translated by `offset`.
-
-    This helper is separate from generate_map.py's module list and is meant
-    for direct inspection or tests.
-    """
-    BRUSHES, ENTITIES = _build_all()
-    BRUSHES, ENTITIES = _filter_sections(BRUSHES, ENTITIES, ["center_span"])
-    dx, dy, dz = offset
-    if (dx, dy, dz) != (0.0, 0.0, 0.0):
-        BRUSHES = [b.translated(dx, dy, dz) for b in BRUSHES]
-        ENTITIES = [e.translated(dx, dy, dz) for e in ENTITIES]
-    return BRUSHES, ENTITIES
