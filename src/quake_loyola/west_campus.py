@@ -1,9 +1,37 @@
-from .constants import (
-    BRIDGE_CENTER_SPAN_OFFSET,
+from .constants import FLOOR_Z1, WORLD_Y2
+from .constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
+from .constants.derived import (
     BRIDGE_DZ2,
-    BRIDGE_ENABLED_SPAN_CENTER,
     CHARLES_Y1,
     DORM,
+    DORM_FRONT_WALKWAY_SPUR_X1,
+    DORM_FRONT_WALKWAY_SPUR_Y2,
+    DORM_FRONT_WALKWAY_X1,
+    DORM_FRONT_WALKWAY_X2,
+    DORM_H,
+    DORM_NORTH_Y1,
+    DORM_NORTH_Y2,
+    DORM_PIER_X,
+    DORM_ROOF_H,
+    DORM_SOUTH1_Y1,
+    DORM_SOUTH1_Y2,
+    DORM_SOUTH2_Y1,
+    DORM_SOUTH2_Y2,
+    DORM_WALL_S_Y2,
+    FENCE_X1,
+    FENCE_X2,
+    FLOOR_Z2,
+    SDORM_LIFT,
+    SDORM_STAIR_N,
+    SDORM_STAIR_RISE,
+    SDORM_STAIR_RUN,
+    SDORM_STAIR_X1,
+    SDORM_STAIR_X2,
+    SDORM_STAIR_Y1,
+    SDORM_STAIR_Y2,
+    WALL_T,
+)
+from .constants.dorm import (
     DORM_BRICK_GATE_H,
     DORM_BRICK_PILLAR_CAP_H,
     DORM_BRICK_PILLAR_CAP_OVH,
@@ -17,50 +45,24 @@ from .constants import (
     DORM_DOOR_W,
     DORM_ENT_H,
     DORM_ENT_HW,
-    DORM_FRONT_WALKWAY_SPUR_X1,
-    DORM_FRONT_WALKWAY_SPUR_Y2,
-    DORM_FRONT_WALKWAY_X1,
-    DORM_FRONT_WALKWAY_X2,
     DORM_GABLE_DEPTH,
-    DORM_H,
     DORM_INNER_DOOR_H,
     DORM_INNER_DOOR_HW,
-    DORM_NORTH_Y1,
-    DORM_NORTH_Y2,
-    DORM_PIER_X,
-    DORM_ROOF_H,
     DORM_SLAB_T,
-    DORM_SOUTH1_Y1,
-    DORM_SOUTH1_Y2,
-    DORM_SOUTH2_Y1,
-    DORM_SOUTH2_Y2,
-    DORM_WALL_S_Y2,
     DORM_WIN_HH,
     DORM_WIN_HW,
     DORM_WIN_MARGIN,
-    FENCE_H,
-    FENCE_SPACING,
-    FENCE_X1,
-    FENCE_X2,
-    FLOOR_Z1,
-    FLOOR_Z2,
-    SDORM_LIFT,
-    SDORM_STAIR_N,
-    SDORM_STAIR_RISE,
-    SDORM_STAIR_RUN,
-    SDORM_STAIR_X1,
-    SDORM_STAIR_X2,
-    SDORM_STAIR_Y1,
-    SDORM_STAIR_Y2,
-    WALL_T,
+)
+from .constants.flags import (
+    BRIDGE_ENABLED_SPAN_CENTER,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_FENCE,
     WEST_CAMPUS_ENABLED_SIDEWALK,
     WEST_CAMPUS_ENABLED_TERRAIN,
     WEST_CAMPUS_ENABLED_WALL,
-    WORLD_Y2,
-    Textures,
 )
+from .constants.textures import Textures
+from .constants.world import FENCE_H, FENCE_SPACING
 from .geometry import (
     box,
     brush_ent,
@@ -342,34 +344,11 @@ def _build_sidewalk(BRUSHES):
     BRUSHES.extend(walk)
 
 
-def build():
+def _build_dorms():
+    """Build the west-campus dorm shells and their detail entities."""
+
     BRUSHES = []
     ENTITIES = []
-
-    if (
-        WEST_CAMPUS_ENABLED_FENCE
-        or WEST_CAMPUS_ENABLED_WALL
-        or WEST_CAMPUS_ENABLED_SIDEWALK
-    ) and not WEST_CAMPUS_ENABLED_TERRAIN:
-        raise ValueError(
-            "west_campus.build(): WEST_CAMPUS_ENABLED_FENCE/WALL/SIDEWALK "
-            "follow the real hillside terrain and require "
-            "WEST_CAMPUS_ENABLED_TERRAIN to also be on — enable it (or "
-            "disable the fence/wall/sidewalk) via `ql conf set`."
-        )
-
-    if WEST_CAMPUS_ENABLED_FENCE:
-        _build_iron_fence(ENTITIES)
-
-    if WEST_CAMPUS_ENABLED_WALL:
-        _build_brick_wall(BRUSHES, ENTITIES)
-
-    if WEST_CAMPUS_ENABLED_SIDEWALK:
-        _build_sidewalk(BRUSHES)
-
-    if not WEST_CAMPUS_ENABLED_DORMS:
-        return BRUSHES, ENTITIES
-
     TUNN_H = DORM_INNER_DOOR_H
 
     DORM_CX = (DORM.x1 + DORM.x2) // 2
@@ -1544,4 +1523,44 @@ def build():
             )
         )
 
+    return BRUSHES, ENTITIES
+
+
+def build():
+    """Build west-campus buildings and terrain.
+
+    Returns:
+        tuple[list, list]: ``(brushes, entities)`` for the west-campus area,
+        gated by the relevant ``WEST_CAMPUS_ENABLED_*`` config flags.
+    """
+    BRUSHES = []
+    ENTITIES = []
+
+    if (
+        WEST_CAMPUS_ENABLED_FENCE
+        or WEST_CAMPUS_ENABLED_WALL
+        or WEST_CAMPUS_ENABLED_SIDEWALK
+    ) and not WEST_CAMPUS_ENABLED_TERRAIN:
+        raise ValueError(
+            "west_campus.build(): WEST_CAMPUS_ENABLED_FENCE/WALL/SIDEWALK "
+            "follow the real hillside terrain and require "
+            "WEST_CAMPUS_ENABLED_TERRAIN to also be on — enable it (or "
+            "disable the fence/wall/sidewalk) via `ql conf set`."
+        )
+
+    if WEST_CAMPUS_ENABLED_FENCE:
+        _build_iron_fence(ENTITIES)
+
+    if WEST_CAMPUS_ENABLED_WALL:
+        _build_brick_wall(BRUSHES, ENTITIES)
+
+    if WEST_CAMPUS_ENABLED_SIDEWALK:
+        _build_sidewalk(BRUSHES)
+
+    if not WEST_CAMPUS_ENABLED_DORMS:
+        return BRUSHES, ENTITIES
+
+    dorm_brushes, dorm_entities = _build_dorms()
+    BRUSHES.extend(dorm_brushes)
+    ENTITIES.extend(dorm_entities)
     return BRUSHES, ENTITIES

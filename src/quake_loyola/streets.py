@@ -1,21 +1,56 @@
 import math
 
-from .constants import (
+from .constants.bridge import (
+    BRIDGE_DZ2,
+)
+from .constants.derived import (
     BASEMENT_FLOOR_Z1,
     BRIDGE,
-    BRIDGE_DZ2,
     CHARLES_CRN_R,
-    CHARLES_CRN_SEGS,
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
     CHARLES_LAMP_POST_YS,
-    CHARLES_RAMP_W,
-    CHARLES_WALK_H,
-    CHARLES_WALK_W,
-    CROSSWALK_GAP_W,
-    CROSSWALK_LEN,
-    CROSSWALK_STRIPE_W,
     DORM,
+    ENNIS_CEMENT_X1,
+    ENNIS_CEMENT_X2,
+    ENNIS_GATE_PILLAR_W,
+    ENNIS_GATE_X1,
+    ENNIS_GATE_X2,
+    ENNIS_PILLAR_NORTH_Y,
+    ENNIS_PILLAR_SOUTH_Y,
+    ENNIS_PILLAR_X1,
+    ENNIS_SHORT_WALL_NY,
+    ENNIS_SW_EDGE,
+    ENNIS_WALL_NY,
+    ENNIS_Y,
+    KNOTT,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
+    KNOTT_DRIVEWAY_CURB_CRN_R,
+    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
+    KNOTT_DRIVEWAY_ES_X1,
+    KNOTT_DRIVEWAY_ES_X2,
+    KNOTT_DRIVEWAY_EXT_Y2,
+    KNOTT_DRIVEWAY_JCX_E,
+    KNOTT_DRIVEWAY_JCX_X1,
+    KNOTT_DRIVEWAY_JCY,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
+    KNOTT_DRIVEWAY_WS_X1,
+    KNOTT_DRIVEWAY_WS_X2,
+    MANHOLE_R,
+    MANHOLE_X,
+    MANHOLE_Y,
+    SDORM_LIFT,
+    WALL_T,
+    WORLD_X1,
+    WORLD_X2,
+    WORLD_X2_EXT,
+    WORLD_Y1,
+    WORLD_Y2,
+    WORLD_Z2,
+)
+from .constants.ennis import (
     ENNIS_CEMENT_WALL_CAP_H,
     ENNIS_CEMENT_WALL_CAP_OVH,
     ENNIS_CEMENT_WALL_H,
@@ -23,8 +58,6 @@ from .constants import (
     ENNIS_CEMENT_WALL_PILLAR_EXTRA_H,
     ENNIS_CEMENT_WALL_PILLAR_HW,
     ENNIS_CEMENT_WALL_PILLAR_SPACING,
-    ENNIS_CEMENT_X1,
-    ENNIS_CEMENT_X2,
     ENNIS_CURB_BULGE_LEN,
     ENNIS_CURB_W,
     ENNIS_DIVIDER_EXTRA_N,
@@ -41,9 +74,6 @@ from .constants import (
     ENNIS_GATE_PILLAR_GAP,
     ENNIS_GATE_PILLAR_LEG_T,
     ENNIS_GATE_PILLAR_OPENING_W,
-    ENNIS_GATE_PILLAR_W,
-    ENNIS_GATE_X1,
-    ENNIS_GATE_X2,
     ENNIS_HW,
     ENNIS_PANEL_GAP,
     ENNIS_PANEL_INNER_H,
@@ -57,61 +87,41 @@ from .constants import (
     ENNIS_PILLAR_CAP_H,
     ENNIS_PILLAR_CAP_OVH,
     ENNIS_PILLAR_HW,
-    ENNIS_PILLAR_NORTH_Y,
     ENNIS_PILLAR_POST_H,
-    ENNIS_PILLAR_SOUTH_Y,
-    ENNIS_PILLAR_X1,
-    ENNIS_SHORT_WALL_NY,
-    ENNIS_SW_EDGE,
     ENNIS_SW_PANEL_OUTER_W,
     ENNIS_WALL_H,
-    ENNIS_WALL_NY,
     ENNIS_WALL_PILLAR_H,
     ENNIS_WALL_PILLAR_HW,
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
-    ENNIS_Y,
-    FLOOR_Z1,
-    FLOOR_Z2,
-    KNOTT,
-    KNOTT_DRIVEWAY_CORRIDOR_X1,
-    KNOTT_DRIVEWAY_CORRIDOR_X2,
-    KNOTT_DRIVEWAY_CURB_CRN_R,
-    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
-    KNOTT_DRIVEWAY_ES_X1,
-    KNOTT_DRIVEWAY_ES_X2,
-    KNOTT_DRIVEWAY_EXT_Y2,
-    KNOTT_DRIVEWAY_JCX_E,
-    KNOTT_DRIVEWAY_JCX_X1,
-    KNOTT_DRIVEWAY_JCY,
-    KNOTT_DRIVEWAY_RD_X1,
-    KNOTT_DRIVEWAY_RD_X2,
-    KNOTT_DRIVEWAY_WS_X1,
-    KNOTT_DRIVEWAY_WS_X2,
+)
+from .constants.flags import (
     KNOTT_ENABLED_TERRAIN,
-    MANHOLE_R,
-    MANHOLE_X,
-    MANHOLE_Y,
     NE_ENABLED_TERRAIN,
+    STREETS_ENABLED_DETAILS,
+    WEST_CAMPUS_ENABLED_TERRAIN,
+)
+from .constants.streets import (
+    CHARLES_CRN_SEGS,
+    CHARLES_RAMP_W,
+    CHARLES_WALK_H,
+    CHARLES_WALK_W,
+    CROSSWALK_GAP_W,
+    CROSSWALK_LEN,
+    CROSSWALK_STRIPE_W,
     ROAD_X1,
     ROAD_X2,
-    SDORM_LIFT,
     STREET_CHARLES_CURB_W,
     STREET_DIV_HW,
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
-    STREETS_ENABLED_DETAILS,
-    WALL_T,
-    WEST_CAMPUS_ENABLED_TERRAIN,
-    WORLD_X1,
-    WORLD_X2,
-    WORLD_X2_EXT,
-    WORLD_Y1,
-    WORLD_Y2,
-    WORLD_Z2,
-    Textures,
+)
+from .constants.textures import Textures
+from .constants.world import (
+    FLOOR_Z1,
+    FLOOR_Z2,
 )
 from .geometry import (
     arch_seg,
@@ -1365,10 +1375,11 @@ def _build_ennis_entrance_features():
     return brushes, entities
 
 
-def build():
+def _build_street_world_shell():
+    """Build the base Charles Street tunnel shell and manhole cutout."""
+
     BRUSHES = []
     ENTITIES = []
-    DETAIL_BRUSHES = []
     _tunnel_wall_tex_n = Textures.SKY
     _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
     BRUSHES.extend(
@@ -1532,8 +1543,13 @@ def build():
             Textures.SKY,
         )
     )
-    if not STREETS_ENABLED_DETAILS:
-        return BRUSHES, ENTITIES
+    return BRUSHES, ENTITIES
+
+
+def _build_street_details(BRUSHES, ENTITIES):
+    """Build the detailed roadway, sidewalks, markings, and street fixtures."""
+
+    DETAIL_BRUSHES = []
     _world_brushes = BRUSHES
     BRUSHES = DETAIL_BRUSHES
 
@@ -2800,3 +2816,16 @@ def build():
     )
 
     return BRUSHES, ENTITIES
+
+
+def build():
+    """Build Charles Street and surrounding road geometry.
+
+    Returns:
+        tuple[list, list]: ``(brushes, entities)`` for the street network,
+        including the roadway, sidewalks, tunnel, and related detail brushes.
+    """
+    BRUSHES, ENTITIES = _build_street_world_shell()
+    if not STREETS_ENABLED_DETAILS:
+        return BRUSHES, ENTITIES
+    return _build_street_details(BRUSHES, ENTITIES)

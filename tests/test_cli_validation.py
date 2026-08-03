@@ -280,10 +280,57 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
         self.assertEqual(mock_run.call_count, 3)
         qbsp_cmd, vis_cmd, light_cmd = (c.args[0] for c in mock_run.call_args_list)
         self.assertEqual(qbsp_cmd[0], str(self.tools_dir / "qbsp"))
+        # qbsp must run with -bsp2, matching justfile's compile/compile-fast
+        # recipes — without it, `ql build` compiles to a different BSP
+        # format than `just compile`/`just compile-fast` produce.
+        self.assertIn("-bsp2", qbsp_cmd)
         self.assertEqual(vis_cmd[0], str(self.tools_dir / "vis"))
         self.assertEqual(light_cmd[0], str(self.tools_dir / "light"))
         self.assertEqual(mock_copy.call_count, 2)
         self.assertIn("Build complete.", result.output)
+
+    @mock.patch("quake_loyola.cli.shutil.copy")
+    @mock.patch("quake_loyola.cli.subprocess.run")
+    def test_build_passes_vis_fast_and_light_extra_from_build_settings(
+        self, mock_run, _mock_copy
+    ):
+        mock_run.return_value = mock.Mock(returncode=0)
+        config.set_build("vis_mode", "fast")
+        config.set_build("light_extra", True)
+        (config.REPO_ROOT / "loyola.bsp").touch()
+        (config.REPO_ROOT / "loyola.lit").touch()
+        try:
+            result = self.runner.invoke(cli.app, ["build"])
+        finally:
+            (config.REPO_ROOT / "loyola.bsp").unlink(missing_ok=True)
+            (config.REPO_ROOT / "loyola.lit").unlink(missing_ok=True)
+            config.reset()
+
+        self.assertEqual(result.exit_code, 0, result.output)
+        _, vis_cmd, light_cmd = (c.args[0] for c in mock_run.call_args_list)
+        self.assertIn("-fast", vis_cmd)
+        self.assertIn("-extra", light_cmd)
+
+    @mock.patch("quake_loyola.cli.shutil.copy")
+    @mock.patch("quake_loyola.cli.subprocess.run")
+    def test_build_omits_vis_fast_and_light_extra_when_disabled(
+        self, mock_run, _mock_copy
+    ):
+        mock_run.return_value = mock.Mock(returncode=0)
+        config.set_build("vis_mode", "full")
+        (config.REPO_ROOT / "loyola.bsp").touch()
+        (config.REPO_ROOT / "loyola.lit").touch()
+        try:
+            result = self.runner.invoke(cli.app, ["build"])
+        finally:
+            (config.REPO_ROOT / "loyola.bsp").unlink(missing_ok=True)
+            (config.REPO_ROOT / "loyola.lit").unlink(missing_ok=True)
+            config.reset()
+
+        self.assertEqual(result.exit_code, 0, result.output)
+        _, vis_cmd, light_cmd = (c.args[0] for c in mock_run.call_args_list)
+        self.assertNotIn("-fast", vis_cmd)
+        self.assertNotIn("-extra", light_cmd)
 
     @mock.patch("quake_loyola.cli.shutil.copy")
     @mock.patch("quake_loyola.cli.subprocess.run")

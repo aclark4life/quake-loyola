@@ -76,12 +76,9 @@ from ..geometry import (
 )
 
 
-def build():
-    """Build Knott Hall terrain plus any enabled walkway geometry."""
+def _build_knott_terrain():
+    """Build the Knott driveway slopes, hillside fills, and curb returns."""
 
-    walk_brushes, walk_entities = _build_walkway()
-    if not KNOTT_ENABLED_TERRAIN:
-        return walk_brushes, walk_entities
     BRUSHES = []
 
     def sidewalk_slabs_sloped(brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex):
@@ -1090,7 +1087,17 @@ def build():
         )
     )
 
-    return BRUSHES + walk_brushes, walk_entities
+    return BRUSHES
+
+
+def build():
+    """Build Knott Hall terrain plus any enabled walkway geometry."""
+
+    walk_brushes, walk_entities = _build_walkway()
+    if not KNOTT_ENABLED_TERRAIN:
+        return walk_brushes, walk_entities
+    terrain_brushes = _build_knott_terrain()
+    return terrain_brushes + walk_brushes, walk_entities
 
 
 def _kh_hill_ground_z(x, y):

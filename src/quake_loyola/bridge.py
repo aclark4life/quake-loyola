@@ -4,10 +4,7 @@ This module generates the bridge deck, parapets, piers, archwork,
 abutment teleports, and fascia lettering between west campus and Knott Hall.
 """
 
-from .constants import (
-    A_SEGS,
-    ARCH_SLAB_W,
-    BRIDGE,
+from .constants.bridge import (
     BRIDGE_ABUTMENT_CEMENT_MAX_H,
     BRIDGE_ABUTMENT_CEMENT_RIN,
     BRIDGE_ABUTMENT_CEMENT_X1_OFFSET,
@@ -15,7 +12,6 @@ from .constants import (
     BRIDGE_ABUTMENT_RAMP_CAP_H,
     BRIDGE_ABUTMENT_RAMP_HIGH_H,
     BRIDGE_ABUTMENT_RAMP_LOW_H,
-    BRIDGE_ARCH_X,
     BRIDGE_BASE_LIGHT_BRIGHTNESS,
     BRIDGE_BASE_LIGHT_D,
     BRIDGE_BASE_LIGHT_H,
@@ -35,19 +31,10 @@ from .constants import (
     BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
-    BRIDGE_ENABLED_FASCIA_TEXT,
-    BRIDGE_ENABLED_SPAN_CENTER,
-    BRIDGE_ENABLED_SPAN_EAST_APPROACH,
-    BRIDGE_ENABLED_SPAN_EAST_EXT,
-    BRIDGE_ENABLED_SPAN_KH,
-    BRIDGE_ENABLED_SPAN_WEST_APPROACH,
-    BRIDGE_ENABLED_SUPPORTS,
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
-    BRIDGE_PAR_W,
     BRIDGE_PIER_FILL_OFFSET,
-    BRIDGE_PIER_GROUND_Z,
     BRIDGE_PIER_LINING_MARGIN,
     BRIDGE_PIER_LINING_THICK,
     BRIDGE_PIER_PLATE_D,
@@ -61,15 +48,12 @@ from .constants import (
     BRIDGE_PILLAR_CAP_IN_OVH,
     BRIDGE_PILLAR_CAP_OUT_OVH,
     BRIDGE_PILLAR_EXTRA,
-    BRIDGE_PILLAR_HW,
     BRIDGE_PILLAR_INNER_R,
     BRIDGE_PILLAR_OUTER_R,
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_PILLAR_PYR_H,
-    BRIDGE_PILLAR_PYR_W,
     BRIDGE_PILLAR_SEAM_D,
     BRIDGE_PILLAR_SEAM_HW,
-    BRIDGE_SEG_W,
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
     BRIDGE_SQ_HW,
@@ -86,26 +70,48 @@ from .constants import (
     BRIDGE_TUBE_GAP,
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
-    ENTITIES_ENABLED_TELEPORTS,
-    FASCIA_FONT,
-    FLOOR_Z2,
+    PIER6_ROTATION_DEG,
+    PIER6_ROTATION_MARGIN,
+)
+from .constants.derived import (
+    BRIDGE,
+    BRIDGE_ARCH_X,
+    BRIDGE_PAR_W,
+    BRIDGE_PIER_GROUND_Z,
+    BRIDGE_PILLAR_HW,
+    BRIDGE_PILLAR_PYR_W,
+    BRIDGE_SEG_W,
     PIER2_X,
     PIER3_X,
     PIER4_X,
     PIER5_X,
-    PIER6_ROTATION_DEG,
-    PIER6_ROTATION_MARGIN,
     PIER6_X,
     WALK_X1,
     WALK_X2,
     WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
-    Textures,
     deck_bot_z,
     deck_top_z,
     pier6_east_face_x_at_y,
     pier6_west_face_x_at_y,
+)
+from .constants.flags import (
+    BRIDGE_ENABLED_FASCIA_TEXT,
+    BRIDGE_ENABLED_SPAN_CENTER,
+    BRIDGE_ENABLED_SPAN_EAST_APPROACH,
+    BRIDGE_ENABLED_SPAN_EAST_EXT,
+    BRIDGE_ENABLED_SPAN_KH,
+    BRIDGE_ENABLED_SPAN_WEST_APPROACH,
+    BRIDGE_ENABLED_SUPPORTS,
+    ENTITIES_ENABLED_TELEPORTS,
+)
+from .constants.fonts import FASCIA_FONT
+from .constants.textures import Textures
+from .constants.world import (
+    A_SEGS,
+    ARCH_SLAB_W,
+    FLOOR_Z2,
 )
 from .geometry import (
     arch_fill,
@@ -859,106 +865,97 @@ def _build_all():
             y_shift_fn=y_shift_fn,
         )
 
-    add_parapet_base_lights(
-        BRIDGE_ARCH_X[0],
-        BRIDGE_ARCH_X[1],
-        _span1_n,
-        west_margin=0,
-        east_margin=0,
-    )
-    add_parapet_base_lights(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
-    add_parapet_base_lights(
-        BRIDGE_ARCH_X[2],
-        BRIDGE_ARCH_X[3],
-        _span3_n,
-        west_margin=0,
-        east_margin=0,
-    )
-    add_parapet_base_lights(
-        BRIDGE.x2,
-        BRIDGE_ARCH_X[4],
-        _kh_span_n,
-        west_margin=0,
-        east_margin=0,
-        n_south=0,
-        y_shift_fn=east_y_shift,
-    )
+    teleport_state = {}
 
-    add_parapet_squares(
-        BRIDGE_ARCH_X[0],
-        BRIDGE_ARCH_X[1],
-        _span1_n,
-        west_margin=0,
-        east_margin=0,
-    )
-    add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
-    add_parapet_squares(
-        BRIDGE_ARCH_X[2],
-        BRIDGE_ARCH_X[3],
-        _span3_n,
-        west_margin=0,
-        east_margin=0,
-    )
-    add_parapet_squares(
-        BRIDGE.x2,
-        BRIDGE_ARCH_X[4],
-        _kh_span_n,
-        west_margin=0,
-        east_margin=0,
-        n_south=0,
-        y_shift_fn=east_y_shift,
-    )
-    cx_wall_end = _span4_west_mid - BRIDGE_BLK_HW
-    BRUSHES.append(
-        box(
-            cx_wall_end - BRIDGE_BLK_HW,
-            BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            cx_wall_end + BRIDGE_BLK_HW,
-            BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
-            Textures.CEMENT,
+    def _build_superstructure():
+        """Build the bridge deck, parapets, and railing tubes."""
+
+        add_parapet_base_lights(
+            BRIDGE_ARCH_X[0],
+            BRIDGE_ARCH_X[1],
+            _span1_n,
+            west_margin=0,
+            east_margin=0,
         )
-    )
+        add_parapet_base_lights(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+        add_parapet_base_lights(
+            BRIDGE_ARCH_X[2],
+            BRIDGE_ARCH_X[3],
+            _span3_n,
+            west_margin=0,
+            east_margin=0,
+        )
+        add_parapet_base_lights(
+            BRIDGE.x2,
+            BRIDGE_ARCH_X[4],
+            _kh_span_n,
+            west_margin=0,
+            east_margin=0,
+            n_south=0,
+            y_shift_fn=east_y_shift,
+        )
 
-    tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
-    tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
-    tube_sy1 = BRIDGE.y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
-    tube_sy2 = tube_sy1 + BRIDGE_TUBE_HW * 2
-
-    for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-        for (
-            span_x1,
-            span_x2,
-            _,
-            _,
-            _,
-            _,
-            tube_z1,
-            tube_z2,
-        ) in iter_bridge_span_segments():
-            tube_z1 += tube_z_offset
-            tube_z2 += tube_z_offset
-            BRUSHES.append(
-                ramp_slab(
-                    span_x1,
-                    span_x2,
-                    tube_ny1,
-                    tube_ny2,
-                    tube_z1,
-                    tube_z2,
-                    tube_z1 + BRIDGE_TUBE_HW * 2,
-                    tube_z2 + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
+        add_parapet_squares(
+            BRIDGE_ARCH_X[0],
+            BRIDGE_ARCH_X[1],
+            _span1_n,
+            west_margin=0,
+            east_margin=0,
+        )
+        add_parapet_squares(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
+        add_parapet_squares(
+            BRIDGE_ARCH_X[2],
+            BRIDGE_ARCH_X[3],
+            _span3_n,
+            west_margin=0,
+            east_margin=0,
+        )
+        add_parapet_squares(
+            BRIDGE.x2,
+            BRIDGE_ARCH_X[4],
+            _kh_span_n,
+            west_margin=0,
+            east_margin=0,
+            n_south=0,
+            y_shift_fn=east_y_shift,
+        )
+        cx_wall_end = _span4_west_mid - BRIDGE_BLK_HW
+        BRUSHES.append(
+            box(
+                cx_wall_end - BRIDGE_BLK_HW,
+                BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
+                BRIDGE_DZ2 + BRIDGE.parapet_h,
+                cx_wall_end + BRIDGE_BLK_HW,
+                BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
+                BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
+                Textures.CEMENT,
             )
-            if not (span_x1 < WALK_X2 and span_x2 > WALK_X1):
+        )
+
+        tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
+        tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
+        tube_sy1 = BRIDGE.y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
+        tube_sy2 = tube_sy1 + BRIDGE_TUBE_HW * 2
+
+        for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
+            for (
+                span_x1,
+                span_x2,
+                _,
+                _,
+                _,
+                _,
+                tube_z1,
+                tube_z2,
+            ) in iter_bridge_span_segments():
+                tube_z1 += tube_z_offset
+                tube_z2 += tube_z_offset
                 BRUSHES.append(
                     ramp_slab(
                         span_x1,
                         span_x2,
-                        tube_sy1,
-                        tube_sy2,
+                        tube_ny1,
+                        tube_ny2,
                         tube_z1,
                         tube_z2,
                         tube_z1 + BRIDGE_TUBE_HW * 2,
@@ -966,565 +963,591 @@ def _build_all():
                         Textures.RAIL,
                     )
                 )
-        tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        BRUSHES.append(
-            box(
-                BRIDGE.x2,
-                tube_ny1,
-                tube_base_z,
-                PIER5_X,
-                tube_ny2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
-        )
-        BRUSHES.extend(
-            _pier6_west_pieces(
-                PIER5_X,
-                tube_ny1,
-                tube_ny2,
-                tube_base_z,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-                far=False,
-                margin=-4,
-            )
-        )
-        for seg_x1, seg_x2 in [
-            (PIER6_EAST_X, PAR_EAST_END_X),
-        ]:
+                if not (span_x1 < WALK_X2 and span_x2 > WALK_X1):
+                    BRUSHES.append(
+                        ramp_slab(
+                            span_x1,
+                            span_x2,
+                            tube_sy1,
+                            tube_sy2,
+                            tube_z1,
+                            tube_z2,
+                            tube_z1 + BRIDGE_TUBE_HW * 2,
+                            tube_z2 + BRIDGE_TUBE_HW * 2,
+                            Textures.RAIL,
+                        )
+                    )
+            tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
             BRUSHES.append(
-                shear_box_y(
-                    seg_x1,
+                box(
+                    BRIDGE.x2,
                     tube_ny1,
                     tube_base_z,
-                    seg_x2,
+                    PIER5_X,
                     tube_ny2,
                     tube_base_z + BRIDGE_TUBE_HW * 2,
-                    east_y_shift(seg_x1),
-                    east_y_shift(seg_x2),
                     Textures.RAIL,
                 )
             )
-        BRUSHES.append(
-            box(
-                BRIDGE.x2,
-                tube_sy1,
-                tube_base_z,
-                _span4_west_mid,
-                tube_sy2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
+            BRUSHES.extend(
+                _pier6_west_pieces(
+                    PIER5_X,
+                    tube_ny1,
+                    tube_ny2,
+                    tube_base_z,
+                    tube_base_z + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
+                    far=False,
+                    margin=-4,
+                )
             )
-        )
-        BRUSHES.extend(
-            _pier6_west_pieces(
-                PIER5_X,
-                tube_sy1,
-                tube_sy2,
-                tube_base_z,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
-        )
-        for seg_x1, seg_x2 in [
-            (PIER6_EAST_X, PAR_EAST_END_X),
-        ]:
+            for seg_x1, seg_x2 in [
+                (PIER6_EAST_X, PAR_EAST_END_X),
+            ]:
+                BRUSHES.append(
+                    shear_box_y(
+                        seg_x1,
+                        tube_ny1,
+                        tube_base_z,
+                        seg_x2,
+                        tube_ny2,
+                        tube_base_z + BRIDGE_TUBE_HW * 2,
+                        east_y_shift(seg_x1),
+                        east_y_shift(seg_x2),
+                        Textures.RAIL,
+                    )
+                )
             BRUSHES.append(
-                shear_box_y(
-                    seg_x1,
+                box(
+                    BRIDGE.x2,
                     tube_sy1,
                     tube_base_z,
-                    seg_x2,
+                    _span4_west_mid,
                     tube_sy2,
                     tube_base_z + BRIDGE_TUBE_HW * 2,
-                    east_y_shift(seg_x1),
-                    east_y_shift(seg_x2),
                     Textures.RAIL,
                 )
             )
-
-    PIER5_LINTEL_GAP = 24
-    if BRIDGE_ENABLED_SUPPORTS:
-        for px in BRIDGE_ARCH_X:
-            if (
-                BRIDGE_ENABLED_SUPPORTS is not True
-                and px not in BRIDGE_ENABLED_SUPPORTS
-            ):
-                continue
-            _pier6_rot_bstart = len(BRUSHES) if px == PIER6_X else None
-            _pier6_rot_estart = len(ENTITIES) if px == PIER6_X else None
-            pdeck = deck_top_z(px)
-            ppar = pdeck + BRIDGE.parapet_h
-            ppil = ppar + BRIDGE_PILLAR_EXTRA
-            pcap = ppil + BRIDGE_PILLAR_CAP_H
-
-            py_shift = east_y_shift(px)
-            by1 = BRIDGE.y1 + py_shift
-            by2 = BRIDGE.y2 + py_shift
-
-            cy_n = by2 - BRIDGE_PAR_W // 2
-            cy_s = by1 + BRIDGE_PAR_W // 2
-
-            x1, x2 = px - BRIDGE_PILLAR_HW, px + BRIDGE_PILLAR_HW
-
-            pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
-
-            if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
-                0.0,
-                0.0,
-                0.0,
-            ):
-                pier_floor_z = FLOOR_Z2
-            else:
-                pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
-
-            if px in (min(BRIDGE_ARCH_X), BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
-                a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
-            else:
-                a_rout, a_rin = BRIDGE_PILLAR_INNER_R
-            a_stilt = pier_ceiling_z - a_rout - pier_floor_z
-            if a_stilt < 0:
-                a_rout = pier_ceiling_z - pier_floor_z
-                a_stilt = 0
-
-            max_outer_radius = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
-            if a_rout > max_outer_radius:
-                a_rout = max_outer_radius
-                a_stilt = pier_ceiling_z - a_rout - pier_floor_z
-            arch_overhang = max(0, max_outer_radius - a_rout)
-
-            pier5_lintel_gap = PIER5_LINTEL_GAP if px == PIER5_X else 0
-            a_stilt = max(0, a_stilt - pier5_lintel_gap)
-
-            if px == min(BRIDGE_ARCH_X):
-                base_ramp = (
-                    pier_floor_z + BRIDGE_ABUTMENT_RAMP_HIGH_H,
-                    pier_floor_z + BRIDGE_ABUTMENT_RAMP_LOW_H,
-                )
-            elif px > 0:
-                base_ramp = (
-                    pier_floor_z + BRIDGE_PILLAR_BASE_H,
-                    pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
-                )
-            else:
-                base_ramp = (
-                    pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
-                    pier_floor_z + BRIDGE_PILLAR_BASE_H,
-                )
-
-            pier_recess = (
-                None
-                if px == min(BRIDGE_ARCH_X)
-                else (
-                    BRIDGE_PIER_LINING_MARGIN,
-                    BRIDGE_PIER_LINING_THICK,
-                    Textures.CEMENT,
+            BRUSHES.extend(
+                _pier6_west_pieces(
+                    PIER5_X,
+                    tube_sy1,
+                    tube_sy2,
+                    tube_base_z,
+                    tube_base_z + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
                 )
             )
-            if px == max(BRIDGE_ARCH_X):
-                sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
-                BRUSHES.extend(
-                    square_wall(
-                        x1,
-                        x2,
-                        by1,
-                        by2,
-                        pier_floor_z,
-                        pier_ceiling_z,
-                        a_rin,
-                        Textures.PIER_STONE,
-                        overhang=sq_overhang,
-                        base_ramp=base_ramp,
-                        yc=py_shift,
-                        base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
-                        base_cap_tex=Textures.CEMENT,
-                        base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
-                        recess=pier_recess,
-                        lintel_h=BRIDGE_SQ_LINTEL_H,
-                    )
-                )
-            else:
-                BRUSHES.extend(
-                    arch_wall(
-                        x1,
-                        x2,
-                        by1,
-                        by2,
-                        pier_floor_z,
-                        pier_ceiling_z,
-                        a_rin,
-                        a_rout,
-                        A_SEGS,
-                        Textures.PIER_STONE,
-                        stilt_h=a_stilt,
-                        overhang=arch_overhang,
-                        base_h=BRIDGE_PILLAR_BASE_H,
-                        base_ramp=base_ramp,
-                        yc=py_shift,
-                        base_cap_h=BRIDGE_ABUTMENT_RAMP_CAP_H
-                        if px == min(BRIDGE_ARCH_X)
-                        else BRIDGE_PILLAR_BASE_CAP_H,
-                        base_cap_tex=Textures.CEMENT,
-                        base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
-                        recess=pier_recess,
-                    )
-                )
-
-            if px in (
-                PIER2_X,
-                PIER3_X,
-                PIER4_X,
-                PIER5_X,
-                PIER6_X,
-            ) and BRIDGE_CENTER_SPAN_OFFSET != (
-                0.0,
-                0.0,
-                0.0,
-            ):
-                footer_y1 = min(by1, -max_outer_radius)
-                footer_y2 = max(by2, max_outer_radius)
-                footer_depth = max(
-                    BRIDGE_CENTER_SPAN_PIER_EMBED, BRIDGE_CENTER_SPAN_OFFSET[2]
-                )
+            for seg_x1, seg_x2 in [
+                (PIER6_EAST_X, PAR_EAST_END_X),
+            ]:
                 BRUSHES.append(
-                    box(
-                        x1,
-                        footer_y1,
-                        pier_floor_z - footer_depth,
-                        x2,
-                        footer_y2,
-                        pier_floor_z,
-                        Textures.PIER_STONE,
+                    shear_box_y(
+                        seg_x1,
+                        tube_sy1,
+                        tube_base_z,
+                        seg_x2,
+                        tube_sy2,
+                        tube_base_z + BRIDGE_TUBE_HW * 2,
+                        east_y_shift(seg_x1),
+                        east_y_shift(seg_x2),
+                        Textures.RAIL,
                     )
                 )
 
-            is_square_pier = px == max(BRIDGE_ARCH_X)
-            for face_x, protrude in (
-                (x1, -BRIDGE_PIER_PLATE_D),
-                (x2, BRIDGE_PIER_PLATE_D),
-            ):
-                if is_square_pier:
-                    _tile_pitch = BRIDGE_PIER_PLATE_SIZE + BRIDGE_PIER_PLATE_GAP
+    def _build_supports():
+        """Build the bridge piers, abutments, torches, and teleport fill."""
+
+        PIER5_LINTEL_GAP = 24
+        if BRIDGE_ENABLED_SUPPORTS:
+            for px in BRIDGE_ARCH_X:
+                if (
+                    BRIDGE_ENABLED_SUPPORTS is not True
+                    and px not in BRIDGE_ENABLED_SUPPORTS
+                ):
+                    continue
+                _pier6_rot_bstart = len(BRUSHES) if px == PIER6_X else None
+                _pier6_rot_estart = len(ENTITIES) if px == PIER6_X else None
+                pdeck = deck_top_z(px)
+                ppar = pdeck + BRIDGE.parapet_h
+                ppil = ppar + BRIDGE_PILLAR_EXTRA
+                pcap = ppil + BRIDGE_PILLAR_CAP_H
+
+                py_shift = east_y_shift(px)
+                by1 = BRIDGE.y1 + py_shift
+                by2 = BRIDGE.y2 + py_shift
+
+                cy_n = by2 - BRIDGE_PAR_W // 2
+                cy_s = by1 + BRIDGE_PAR_W // 2
+
+                x1, x2 = px - BRIDGE_PILLAR_HW, px + BRIDGE_PILLAR_HW
+
+                pier_ceiling_z = max(int(deck_bot_z(x1)), int(deck_bot_z(x2)))
+
+                if px in (PIER2_X, PIER3_X) and BRIDGE_CENTER_SPAN_OFFSET != (
+                    0.0,
+                    0.0,
+                    0.0,
+                ):
+                    pier_floor_z = FLOOR_Z2
+                else:
+                    pier_floor_z = BRIDGE_PIER_GROUND_Z.get(px, FLOOR_Z2)
+
+                if px in (min(BRIDGE_ARCH_X), BRIDGE_ARCH_X[4], max(BRIDGE_ARCH_X)):
+                    a_rout, a_rin = BRIDGE_PILLAR_OUTER_R
+                else:
+                    a_rout, a_rin = BRIDGE_PILLAR_INNER_R
+                a_stilt = pier_ceiling_z - a_rout - pier_floor_z
+                if a_stilt < 0:
+                    a_rout = pier_ceiling_z - pier_floor_z
+                    a_stilt = 0
+
+                max_outer_radius = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG
+                if a_rout > max_outer_radius:
+                    a_rout = max_outer_radius
+                    a_stilt = pier_ceiling_z - a_rout - pier_floor_z
+                arch_overhang = max(0, max_outer_radius - a_rout)
+
+                pier5_lintel_gap = PIER5_LINTEL_GAP if px == PIER5_X else 0
+                a_stilt = max(0, a_stilt - pier5_lintel_gap)
+
+                if px == min(BRIDGE_ARCH_X):
+                    base_ramp = (
+                        pier_floor_z + BRIDGE_ABUTMENT_RAMP_HIGH_H,
+                        pier_floor_z + BRIDGE_ABUTMENT_RAMP_LOW_H,
+                    )
+                elif px > 0:
+                    base_ramp = (
+                        pier_floor_z + BRIDGE_PILLAR_BASE_H,
+                        pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
+                    )
+                else:
+                    base_ramp = (
+                        pier_floor_z + BRIDGE_PILLAR_BASE_RAMP_H,
+                        pier_floor_z + BRIDGE_PILLAR_BASE_H,
+                    )
+
+                pier_recess = (
+                    None
+                    if px == min(BRIDGE_ARCH_X)
+                    else (
+                        BRIDGE_PIER_LINING_MARGIN,
+                        BRIDGE_PIER_LINING_THICK,
+                        Textures.CEMENT,
+                    )
+                )
+                if px == max(BRIDGE_ARCH_X):
+                    sq_overhang = BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG - a_rin
                     BRUSHES.extend(
-                        tile_face_plates(
-                            face_x,
-                            protrude,
-                            by1 + _tile_pitch,
-                            by2 - _tile_pitch,
-                            pier_ceiling_z - BRIDGE_SQ_LINTEL_H,
-                            pier_ceiling_z - BRIDGE_SQ_LINTEL_STONE_H,
-                            Textures.CEMENT,
-                            tile=BRIDGE_PIER_PLATE_SIZE,
-                            gap=BRIDGE_PIER_PLATE_GAP,
+                        square_wall(
+                            x1,
+                            x2,
+                            by1,
+                            by2,
+                            pier_floor_z,
+                            pier_ceiling_z,
+                            a_rin,
+                            Textures.PIER_STONE,
+                            overhang=sq_overhang,
+                            base_ramp=base_ramp,
+                            yc=py_shift,
+                            base_cap_h=BRIDGE_PILLAR_BASE_CAP_H,
+                            base_cap_tex=Textures.CEMENT,
+                            base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
+                            recess=pier_recess,
+                            lintel_h=BRIDGE_SQ_LINTEL_H,
                         )
                     )
                 else:
                     BRUSHES.extend(
-                        arch_plate_ring(
-                            face_x,
-                            protrude,
-                            0.0,
-                            pier_floor_z + a_stilt,
-                            a_rin + 2,
-                            Textures.CEMENT,
-                            tile=BRIDGE_PIER_PLATE_SIZE,
-                            gap=BRIDGE_PIER_PLATE_GAP,
+                        arch_wall(
+                            x1,
+                            x2,
+                            by1,
+                            by2,
+                            pier_floor_z,
+                            pier_ceiling_z,
+                            a_rin,
+                            a_rout,
+                            A_SEGS,
+                            Textures.PIER_STONE,
+                            stilt_h=a_stilt,
+                            overhang=arch_overhang,
+                            base_h=BRIDGE_PILLAR_BASE_H,
+                            base_ramp=base_ramp,
+                            yc=py_shift,
+                            base_cap_h=BRIDGE_ABUTMENT_RAMP_CAP_H
+                            if px == min(BRIDGE_ARCH_X)
+                            else BRIDGE_PILLAR_BASE_CAP_H,
+                            base_cap_tex=Textures.CEMENT,
+                            base_cap_ovh=BRIDGE_PILLAR_BASE_CAP_OVH,
+                            recess=pier_recess,
                         )
                     )
 
-            pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_HW,
-                    by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
-                    pdeck,
-                    px + BRIDGE_PILLAR_HW,
-                    pier_outer_y,
-                    ppil,
-                    Textures.PIER_STONE,
-                )
-            )
-
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_HW,
-                    by1 - BRIDGE_PILLAR_OVERHANG,
-                    pdeck,
-                    px + BRIDGE_PILLAR_HW,
-                    by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
-                    ppil,
-                    Textures.PIER_STONE,
-                )
-            )
-
-            north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_SEAM_HW,
-                    north_inside_y - BRIDGE_PILLAR_SEAM_D,
-                    pdeck,
-                    px + BRIDGE_PILLAR_SEAM_HW,
-                    north_inside_y,
-                    ppil,
-                    Textures.CEMENT,
-                )
-            )
-            south_inside_y = by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_SEAM_HW,
-                    south_inside_y,
-                    pdeck,
-                    px + BRIDGE_PILLAR_SEAM_HW,
-                    south_inside_y + BRIDGE_PILLAR_SEAM_D,
-                    ppil,
-                    Textures.CEMENT,
-                )
-            )
-
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
-                    by2 - BRIDGE_PILLAR_SEAM_HW,
-                    pdeck,
-                    px - BRIDGE_PILLAR_HW,
-                    by2 + BRIDGE_PILLAR_SEAM_HW,
-                    ppil,
-                    Textures.CEMENT,
-                )
-            )
-            BRUSHES.append(
-                box(
-                    px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
-                    by1 - BRIDGE_PILLAR_SEAM_HW,
-                    pdeck,
-                    px - BRIDGE_PILLAR_HW,
-                    by1 + BRIDGE_PILLAR_SEAM_HW,
-                    ppil,
-                    Textures.CEMENT,
-                )
-            )
-
-            pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
-            if px != PIER6_X:
-                BRUSHES.append(
-                    box(
-                        x1,
-                        by2,
-                        pier_top_z,
-                        x2,
-                        pier_outer_y,
-                        pdeck,
-                        Textures.PIER_STONE,
-                    )
-                )
-            BRUSHES.append(
-                box(
-                    x1,
-                    by1 - BRIDGE_PILLAR_OVERHANG,
-                    pier_top_z,
-                    x2,
-                    by1,
-                    pdeck,
-                    Textures.PIER_STONE,
-                )
-            )
-
-            cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
-            north_cap_y1 = (
-                by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG - BRIDGE_PILLAR_CAP_IN_OVH
-            )
-            north_cap_y2 = by2 + BRIDGE_PILLAR_CAP_OUT_OVH
-            south_cap_y1 = by1 - BRIDGE_PILLAR_CAP_OUT_OVH
-            south_cap_y2 = (
-                by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG + BRIDGE_PILLAR_CAP_IN_OVH
-            )
-            BRUSHES.append(
-                box(
-                    cap_x1,
-                    north_cap_y1,
-                    ppil,
-                    cap_x2,
-                    north_cap_y2,
-                    pcap,
-                    Textures.CEMENT,
-                )
-            )
-            BRUSHES.append(
-                box(
-                    cap_x1,
-                    south_cap_y1,
-                    ppil,
-                    cap_x2,
-                    south_cap_y2,
-                    pcap,
-                    Textures.CEMENT,
-                )
-            )
-            BRUSHES.append(
-                pyramid(
-                    cap_x1,
-                    north_cap_y1,
-                    pcap,
-                    cap_x2,
-                    north_cap_y2,
-                    pcap + BRIDGE_PILLAR_PYR_H,
-                    Textures.CEMENT,
-                )
-            )
-            BRUSHES.append(
-                pyramid(
-                    cap_x1,
-                    south_cap_y1,
-                    pcap,
-                    cap_x2,
-                    south_cap_y2,
-                    pcap + BRIDGE_PILLAR_PYR_H,
-                    Textures.CEMENT,
-                )
-            )
-            pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
-            torch_ys = [] if px in (PIER2_X, PIER3_X, PIER5_X) else [cy_n, cy_s]
-            for torch_center_y in torch_ys:
-                BRUSHES.append(
-                    box(
-                        px - BRIDGE_TORCH_POST_HW,
-                        torch_center_y - BRIDGE_TORCH_POST_HW,
-                        pyramid_apex_z,
-                        px + BRIDGE_TORCH_POST_HW,
-                        torch_center_y + BRIDGE_TORCH_POST_HW,
-                        pyramid_apex_z + BRIDGE_TORCH_POST_H,
-                        Textures.CEMENT,
-                    )
-                )
-                BRUSHES.append(
-                    box(
-                        px - BRIDGE_TORCH_CUP_HW,
-                        torch_center_y - BRIDGE_TORCH_CUP_HW,
-                        pyramid_apex_z + BRIDGE_TORCH_POST_H,
-                        px + BRIDGE_TORCH_CUP_HW,
-                        torch_center_y + BRIDGE_TORCH_CUP_HW,
-                        pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H,
-                        Textures.BRICK,
-                    )
-                )
-                flame_z = int(
-                    pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4
-                )
-                ENTITIES.append(torch_flame_only(px, torch_center_y, flame_z))
-                fhb = box(
-                    px - 16,
-                    torch_center_y - 16,
-                    flame_z,
-                    px + 16,
-                    torch_center_y + 16,
-                    flame_z + 40,
-                    Textures.SKY,
-                )
-                ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
-
-            if _pier6_rot_bstart is not None:
-                BRUSHES[_pier6_rot_bstart:] = [
-                    b.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
-                    for b in BRUSHES[_pier6_rot_bstart:]
-                ]
-                ENTITIES[_pier6_rot_estart:] = [
-                    e.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
-                    for e in ENTITIES[_pier6_rot_estart:]
-                ]
-                BRUSHES.append(
-                    box(
-                        x1,
-                        by2,
-                        pier_top_z,
-                        x2,
-                        pier_outer_y,
-                        pdeck,
-                        Textures.PIER_STONE,
-                    ).rotated_z(PIER6_ROTATION_DEG, px, py_shift)
-                )
-
-            if px == min(BRIDGE_ARCH_X):
-                ramp_top_west_z = (
-                    pier_floor_z
-                    + BRIDGE_ABUTMENT_RAMP_HIGH_H
-                    + BRIDGE_ABUTMENT_RAMP_CAP_H
-                )
-                ramp_top_east_z = (
-                    pier_floor_z
-                    + BRIDGE_ABUTMENT_RAMP_LOW_H
-                    + BRIDGE_ABUTMENT_RAMP_CAP_H
-                )
-                BRUSHES.append(
-                    box(
-                        x1 + BRIDGE_PIER_FILL_OFFSET,
-                        -a_rin,
-                        ramp_top_east_z,
-                        x2 - BRIDGE_PIER_FILL_OFFSET,
-                        a_rin,
-                        int(pdeck) - BRIDGE_PIER_FILL_OFFSET,
-                        Textures.CEMENT,
-                    )
-                )
-
-                teleport_floor_z = ramp_top_west_z
-                teleport_stilt_height = (
-                    pier_top_z
-                    - teleport_floor_z
-                    - a_rin
-                    - BRIDGE_TELEPORT_ARCH_CLEARANCE
-                )
-                abutment_teleport_brush = arch_fill(
-                    x1 + BRIDGE_TELEPORT_ARCH_X1_OFFSET,
-                    x1 + BRIDGE_TELEPORT_ARCH_X2_OFFSET,
+                if px in (
+                    PIER2_X,
+                    PIER3_X,
+                    PIER4_X,
+                    PIER5_X,
+                    PIER6_X,
+                ) and BRIDGE_CENTER_SPAN_OFFSET != (
                     0.0,
-                    teleport_floor_z,
-                    a_rin,
-                    A_SEGS,
-                    Textures.TELEPORT,
-                    stilt_h=teleport_stilt_height,
-                )
-                abutment_teleport_dest_z = int(pdeck) + BRIDGE_TELEPORT_DEST_Z
+                    0.0,
+                    0.0,
+                ):
+                    footer_y1 = min(by1, -max_outer_radius)
+                    footer_y2 = max(by2, max_outer_radius)
+                    footer_depth = max(
+                        BRIDGE_CENTER_SPAN_PIER_EMBED, BRIDGE_CENTER_SPAN_OFFSET[2]
+                    )
+                    BRUSHES.append(
+                        box(
+                            x1,
+                            footer_y1,
+                            pier_floor_z - footer_depth,
+                            x2,
+                            footer_y2,
+                            pier_floor_z,
+                            Textures.PIER_STONE,
+                        )
+                    )
 
-                cem_rin = BRIDGE_ABUTMENT_CEMENT_RIN
-                cem_floor_z = ramp_top_east_z
-                cem_stilt_h = max(0, BRIDGE_ABUTMENT_CEMENT_MAX_H - cem_rin)
-                cem_x1 = x2 - BRIDGE_ABUTMENT_CEMENT_X1_OFFSET
-                cem_x2 = x2 - BRIDGE_ABUTMENT_CEMENT_X2_OFFSET
-                BRUSHES.extend(
-                    arch_fill(
-                        cem_x1,
-                        cem_x2,
-                        0.0,
-                        cem_floor_z,
-                        cem_rin,
-                        A_SEGS,
-                        Textures.CEMENT,
-                        stilt_h=cem_stilt_h,
+                is_square_pier = px == max(BRIDGE_ARCH_X)
+                for face_x, protrude in (
+                    (x1, -BRIDGE_PIER_PLATE_D),
+                    (x2, BRIDGE_PIER_PLATE_D),
+                ):
+                    if is_square_pier:
+                        _tile_pitch = BRIDGE_PIER_PLATE_SIZE + BRIDGE_PIER_PLATE_GAP
+                        BRUSHES.extend(
+                            tile_face_plates(
+                                face_x,
+                                protrude,
+                                by1 + _tile_pitch,
+                                by2 - _tile_pitch,
+                                pier_ceiling_z - BRIDGE_SQ_LINTEL_H,
+                                pier_ceiling_z - BRIDGE_SQ_LINTEL_STONE_H,
+                                Textures.CEMENT,
+                                tile=BRIDGE_PIER_PLATE_SIZE,
+                                gap=BRIDGE_PIER_PLATE_GAP,
+                            )
+                        )
+                    else:
+                        BRUSHES.extend(
+                            arch_plate_ring(
+                                face_x,
+                                protrude,
+                                0.0,
+                                pier_floor_z + a_stilt,
+                                a_rin + 2,
+                                Textures.CEMENT,
+                                tile=BRIDGE_PIER_PLATE_SIZE,
+                                gap=BRIDGE_PIER_PLATE_GAP,
+                            )
+                        )
+
+                pier_outer_y = by2 + BRIDGE_PILLAR_OVERHANG
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_HW,
+                        by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG,
+                        pdeck,
+                        px + BRIDGE_PILLAR_HW,
+                        pier_outer_y,
+                        ppil,
+                        Textures.PIER_STONE,
                     )
                 )
+
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_HW,
+                        by1 - BRIDGE_PILLAR_OVERHANG,
+                        pdeck,
+                        px + BRIDGE_PILLAR_HW,
+                        by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG,
+                        ppil,
+                        Textures.PIER_STONE,
+                    )
+                )
+
+                north_inside_y = by2 - BRIDGE_PAR_W - BRIDGE_PILLAR_OVERHANG
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_SEAM_HW,
+                        north_inside_y - BRIDGE_PILLAR_SEAM_D,
+                        pdeck,
+                        px + BRIDGE_PILLAR_SEAM_HW,
+                        north_inside_y,
+                        ppil,
+                        Textures.CEMENT,
+                    )
+                )
+                south_inside_y = by1 + BRIDGE_PAR_W + BRIDGE_PILLAR_OVERHANG
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_SEAM_HW,
+                        south_inside_y,
+                        pdeck,
+                        px + BRIDGE_PILLAR_SEAM_HW,
+                        south_inside_y + BRIDGE_PILLAR_SEAM_D,
+                        ppil,
+                        Textures.CEMENT,
+                    )
+                )
+
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                        by2 - BRIDGE_PILLAR_SEAM_HW,
+                        pdeck,
+                        px - BRIDGE_PILLAR_HW,
+                        by2 + BRIDGE_PILLAR_SEAM_HW,
+                        ppil,
+                        Textures.CEMENT,
+                    )
+                )
+                BRUSHES.append(
+                    box(
+                        px - BRIDGE_PILLAR_HW - BRIDGE_PILLAR_SEAM_D,
+                        by1 - BRIDGE_PILLAR_SEAM_HW,
+                        pdeck,
+                        px - BRIDGE_PILLAR_HW,
+                        by1 + BRIDGE_PILLAR_SEAM_HW,
+                        ppil,
+                        Textures.CEMENT,
+                    )
+                )
+
+                pier_top_z = int(pdeck) - BRIDGE_PIER_FILL_OFFSET
+                if px != PIER6_X:
+                    BRUSHES.append(
+                        box(
+                            x1,
+                            by2,
+                            pier_top_z,
+                            x2,
+                            pier_outer_y,
+                            pdeck,
+                            Textures.PIER_STONE,
+                        )
+                    )
+                BRUSHES.append(
+                    box(
+                        x1,
+                        by1 - BRIDGE_PILLAR_OVERHANG,
+                        pier_top_z,
+                        x2,
+                        by1,
+                        pdeck,
+                        Textures.PIER_STONE,
+                    )
+                )
+
+                cap_x1, cap_x2 = px - BRIDGE_PILLAR_PYR_W, px + BRIDGE_PILLAR_PYR_W
+                north_cap_y1 = (
+                    by2
+                    - BRIDGE_PAR_W
+                    - BRIDGE_PILLAR_OVERHANG
+                    - BRIDGE_PILLAR_CAP_IN_OVH
+                )
+                north_cap_y2 = by2 + BRIDGE_PILLAR_CAP_OUT_OVH
+                south_cap_y1 = by1 - BRIDGE_PILLAR_CAP_OUT_OVH
+                south_cap_y2 = (
+                    by1
+                    + BRIDGE_PAR_W
+                    + BRIDGE_PILLAR_OVERHANG
+                    + BRIDGE_PILLAR_CAP_IN_OVH
+                )
+                BRUSHES.append(
+                    box(
+                        cap_x1,
+                        north_cap_y1,
+                        ppil,
+                        cap_x2,
+                        north_cap_y2,
+                        pcap,
+                        Textures.CEMENT,
+                    )
+                )
+                BRUSHES.append(
+                    box(
+                        cap_x1,
+                        south_cap_y1,
+                        ppil,
+                        cap_x2,
+                        south_cap_y2,
+                        pcap,
+                        Textures.CEMENT,
+                    )
+                )
+                BRUSHES.append(
+                    pyramid(
+                        cap_x1,
+                        north_cap_y1,
+                        pcap,
+                        cap_x2,
+                        north_cap_y2,
+                        pcap + BRIDGE_PILLAR_PYR_H,
+                        Textures.CEMENT,
+                    )
+                )
+                BRUSHES.append(
+                    pyramid(
+                        cap_x1,
+                        south_cap_y1,
+                        pcap,
+                        cap_x2,
+                        south_cap_y2,
+                        pcap + BRIDGE_PILLAR_PYR_H,
+                        Textures.CEMENT,
+                    )
+                )
+                pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
+                torch_ys = [] if px in (PIER2_X, PIER3_X, PIER5_X) else [cy_n, cy_s]
+                for torch_center_y in torch_ys:
+                    BRUSHES.append(
+                        box(
+                            px - BRIDGE_TORCH_POST_HW,
+                            torch_center_y - BRIDGE_TORCH_POST_HW,
+                            pyramid_apex_z,
+                            px + BRIDGE_TORCH_POST_HW,
+                            torch_center_y + BRIDGE_TORCH_POST_HW,
+                            pyramid_apex_z + BRIDGE_TORCH_POST_H,
+                            Textures.CEMENT,
+                        )
+                    )
+                    BRUSHES.append(
+                        box(
+                            px - BRIDGE_TORCH_CUP_HW,
+                            torch_center_y - BRIDGE_TORCH_CUP_HW,
+                            pyramid_apex_z + BRIDGE_TORCH_POST_H,
+                            px + BRIDGE_TORCH_CUP_HW,
+                            torch_center_y + BRIDGE_TORCH_CUP_HW,
+                            pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H,
+                            Textures.BRICK,
+                        )
+                    )
+                    flame_z = int(
+                        pyramid_apex_z + BRIDGE_TORCH_POST_H + BRIDGE_TORCH_CUP_H + 4
+                    )
+                    ENTITIES.append(torch_flame_only(px, torch_center_y, flame_z))
+                    fhb = box(
+                        px - 16,
+                        torch_center_y - 16,
+                        flame_z,
+                        px + 16,
+                        torch_center_y + 16,
+                        flame_z + 40,
+                        Textures.SKY,
+                    )
+                    ENTITIES.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
+
+                if _pier6_rot_bstart is not None:
+                    BRUSHES[_pier6_rot_bstart:] = [
+                        b.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                        for b in BRUSHES[_pier6_rot_bstart:]
+                    ]
+                    ENTITIES[_pier6_rot_estart:] = [
+                        e.rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                        for e in ENTITIES[_pier6_rot_estart:]
+                    ]
+                    BRUSHES.append(
+                        box(
+                            x1,
+                            by2,
+                            pier_top_z,
+                            x2,
+                            pier_outer_y,
+                            pdeck,
+                            Textures.PIER_STONE,
+                        ).rotated_z(PIER6_ROTATION_DEG, px, py_shift)
+                    )
+
+                if px == min(BRIDGE_ARCH_X):
+                    ramp_top_west_z = (
+                        pier_floor_z
+                        + BRIDGE_ABUTMENT_RAMP_HIGH_H
+                        + BRIDGE_ABUTMENT_RAMP_CAP_H
+                    )
+                    ramp_top_east_z = (
+                        pier_floor_z
+                        + BRIDGE_ABUTMENT_RAMP_LOW_H
+                        + BRIDGE_ABUTMENT_RAMP_CAP_H
+                    )
+                    BRUSHES.append(
+                        box(
+                            x1 + BRIDGE_PIER_FILL_OFFSET,
+                            -a_rin,
+                            ramp_top_east_z,
+                            x2 - BRIDGE_PIER_FILL_OFFSET,
+                            a_rin,
+                            int(pdeck) - BRIDGE_PIER_FILL_OFFSET,
+                            Textures.CEMENT,
+                        )
+                    )
+
+                    teleport_floor_z = ramp_top_west_z
+                    teleport_stilt_height = (
+                        pier_top_z
+                        - teleport_floor_z
+                        - a_rin
+                        - BRIDGE_TELEPORT_ARCH_CLEARANCE
+                    )
+                    teleport_state["brush"] = arch_fill(
+                        x1 + BRIDGE_TELEPORT_ARCH_X1_OFFSET,
+                        x1 + BRIDGE_TELEPORT_ARCH_X2_OFFSET,
+                        0.0,
+                        teleport_floor_z,
+                        a_rin,
+                        A_SEGS,
+                        Textures.TELEPORT,
+                        stilt_h=teleport_stilt_height,
+                    )
+                    teleport_state["dest_z"] = int(pdeck) + BRIDGE_TELEPORT_DEST_Z
+
+                    cem_rin = BRIDGE_ABUTMENT_CEMENT_RIN
+                    cem_floor_z = ramp_top_east_z
+                    cem_stilt_h = max(0, BRIDGE_ABUTMENT_CEMENT_MAX_H - cem_rin)
+                    cem_x1 = x2 - BRIDGE_ABUTMENT_CEMENT_X1_OFFSET
+                    cem_x2 = x2 - BRIDGE_ABUTMENT_CEMENT_X2_OFFSET
+                    BRUSHES.extend(
+                        arch_fill(
+                            cem_x1,
+                            cem_x2,
+                            0.0,
+                            cem_floor_z,
+                            cem_rin,
+                            A_SEGS,
+                            Textures.CEMENT,
+                            stilt_h=cem_stilt_h,
+                        )
+                    )
+
+    _build_superstructure()
+    _build_supports()
 
     BRUSHES = _worldspawn_brushes
     if DETAIL_BRUSHES:
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
         DETAIL_BRUSHES = []
 
-    if ENTITIES_ENABLED_TELEPORTS and "abutment_teleport_brush" in locals():
+    if ENTITIES_ENABLED_TELEPORTS and teleport_state:
         ENTITIES.append(
             ent(
                 "info_teleport_destination",
                 targetname="dest_abutment_deck",
-                origin=f"{min(BRIDGE_ARCH_X)} 0 {abutment_teleport_dest_z}",
+                origin=f"{min(BRIDGE_ARCH_X)} 0 {teleport_state['dest_z']}",
                 angle="0",
             )
         )
         ENTITIES.append(
             brush_ent(
-                "trigger_teleport", abutment_teleport_brush, target="dest_abutment_deck"
+                "trigger_teleport", teleport_state["brush"], target="dest_abutment_deck"
             )
         )
-        ENTITIES.append(brush_ent("func_illusionary", abutment_teleport_brush))
+        ENTITIES.append(brush_ent("func_illusionary", teleport_state["brush"]))
 
     _cols = 4
     _small_px = BRIDGE_FASCIA_PX_W - 1
@@ -1614,6 +1637,15 @@ def _build_all():
 
 
 def build():
+    """Build the pedestrian bridge: deck, arch spans, piers, and parapets.
+
+    Individual spans (west approach, center, east approach) are toggled via
+    the ``BRIDGE_ENABLED_SPAN_*`` config flags.
+
+    Returns:
+        tuple[list, list]: ``(brushes, entities)`` for the enabled bridge
+        sections.
+    """
     sections_enabled = {
         "west_approach": BRIDGE_ENABLED_SPAN_WEST_APPROACH,
         "center_span": BRIDGE_ENABLED_SPAN_CENTER,

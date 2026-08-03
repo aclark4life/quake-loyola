@@ -264,7 +264,7 @@ def build(
         light_extra = config.get_build("light_extra")
 
         subprocess.run(
-            [str(tools_bin / "qbsp"), "loyola.map"], cwd=REPO_ROOT, check=True
+            [str(tools_bin / "qbsp"), "-bsp2", "loyola.map"], cwd=REPO_ROOT, check=True
         )
 
         vis_cmd = [str(tools_bin / "vis")]

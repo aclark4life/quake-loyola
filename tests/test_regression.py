@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections import Counter
 from pathlib import Path
 
 import generate_map
@@ -21,12 +22,36 @@ EXPECTED_BRUSHES = 1286
 EXPECTED_ENTITIES = 102
 EXPECTED_MD5 = "40808ee88d59f16b13238186e45f49e2"
 
+# Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
+# EXPECTED_MD5 above. A plain count/hash mismatch only says "something
+# changed" with no clue what; breaking it down by classname pinpoints which
+# entity type moved, without needing a full checked-in golden .map file.
+# Keep in sync with the totals above (and re-derive by hand, the same way,
+# if you intentionally change entity output — this has no independent
+# oracle either).
+EXPECTED_ENTITY_CLASSNAME_COUNTS = {
+    "func_detail": 11,
+    "func_illusionary": 2,
+    "info_intermission": 1,
+    "info_player_start": 1,
+    "info_teleport_destination": 1,
+    "light": 63,
+    "light_flame_large_yellow": 16,
+    "trigger_hurt": 6,
+    "trigger_teleport": 1,
+}
+
 
 class MapRegressionTests(unittest.TestCase):
     def test_brush_and_entity_counts(self):
         mb = generate_map.build_map()
         self.assertEqual(len(mb.brushes), EXPECTED_BRUSHES)
         self.assertEqual(len(mb.entities), EXPECTED_ENTITIES)
+
+    def test_entity_classname_counts_match_golden_breakdown(self):
+        mb = generate_map.build_map()
+        counts = dict(Counter(e.classname for e in mb.entities))
+        self.assertEqual(counts, EXPECTED_ENTITY_CLASSNAME_COUNTS)
 
     def test_map_text_matches_golden_hash(self):
         text = generate_map.build_map_text()

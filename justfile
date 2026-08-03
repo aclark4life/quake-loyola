@@ -60,8 +60,7 @@ venv:
     set -euo pipefail
     if [ ! -d .venv ]; then python3 -m venv .venv; fi
     .venv/bin/pip install -q --upgrade pip
-    .venv/bin/pip install -q -e . --group dev
-    .venv/bin/pip install -q sphinx furo
+    .venv/bin/pip install -q -e . --group dev --group docs
 
 # Run the Python unit + regression test suite with pytest
 test: venv
@@ -116,7 +115,7 @@ clean:
     rm -f progs.dat
     rm -f test.bsp
     rm -f test_*.json
-    rm -f *.log *.prt *.pts *.wad
+    rm -f *.log *.prt *.pts
     find . -name "__pycache__" -type d -exec rm -rf {} +
 
 # Run Quake
