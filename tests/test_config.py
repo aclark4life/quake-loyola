@@ -141,6 +141,25 @@ def test_write_toml_all_empty_writes_empty_file(tmp_path):
     assert path.read_text() == ""
 
 
+def test_write_toml_rejects_non_table_top_level_value(tmp_path):
+    """A stray non-table top-level key (e.g. a scalar the user hand-added
+    outside [flags]/[build]) must surface as a clean RuntimeError rather
+    than an unhandled TypeError from iterating a non-dict value."""
+    path = tmp_path / "ql.toml"
+    with pytest.raises(RuntimeError, match="isn't a table"):
+        config._write_toml(path, {"extra_scalar": 5, "flags": {"KNOTT_ENABLED": True}})
+
+
+def test_set_flag_rejects_config_with_non_table_top_level_key(tmp_path):
+    """set_flag must not let an unrelated non-table key in an existing
+    ql.toml crash with a raw TypeError; it should raise RuntimeError so
+    `ql conf set` (which only catches RuntimeError) reports it cleanly."""
+    path = tmp_path / "ql.toml"
+    path.write_text("extra_scalar = 5\n\n[flags]\nKNOTT_ENABLED = true\n")
+    with pytest.raises(RuntimeError, match="isn't a table"):
+        config.set_flag("KNOTT_ENABLED", False, path=path)
+
+
 def test_validate_section_rejects_non_table():
     with pytest.raises(TypeError, match="must be a table"):
         config._validate_section("flags", "not a dict", config.DEFAULTS)

@@ -125,6 +125,12 @@ def _toml_scalar(value: Any) -> str:
 def _write_toml(path: Path, sections: dict[str, dict[str, Any]]) -> None:
     lines: list[str] = []
     for section, kv in sections.items():
+        if not isinstance(kv, dict):
+            raise RuntimeError(
+                f"{path} has a top-level key {section!r} that isn't a table "
+                f"(got {type(kv).__name__}); fix it by hand, or run "
+                "`ql conf reset` to delete it and restore defaults."
+            )
         if not kv:
             continue
         lines.append(f"[{section}]")

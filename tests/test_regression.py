@@ -1,5 +1,10 @@
 import hashlib
+import os
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 import generate_map
 from quake_loyola import entities, mapgen, maryland_hall, streets, west_campus
@@ -28,8 +33,46 @@ class MapRegressionTests(unittest.TestCase):
         digest = hashlib.md5(text.encode(), usedforsecurity=False).hexdigest()
         self.assertEqual(digest, EXPECTED_MD5)
 
-    def test_build_is_deterministic(self):
-        self.assertEqual(generate_map.build_map_text(), generate_map.build_map_text())
+    def test_build_is_deterministic_across_processes(self):
+        """Calling build_map_text() twice in the same process (the previous
+        version of this test) can never actually catch non-determinism:
+        any change to the function makes both sides identical regardless of
+        whether the output is order-dependent. Instead, run the build in two
+        fresh subprocesses with different PYTHONHASHSEED values (which
+        perturbs set/frozenset iteration order, a common source of
+        accidental non-determinism) and assert the resulting .map text
+        hashes match — this actually exercises cross-run determinism rather
+        than comparing a function to itself.
+        """
+        repo_root = Path(__file__).resolve().parent.parent
+        script = (
+            "import hashlib; "
+            "import generate_map; "
+            "print(hashlib.md5("
+            "generate_map.build_map_text().encode(), usedforsecurity=False"
+            ").hexdigest())"
+        )
+        digests = set()
+        for seed in ("0", "1"):
+            with tempfile.TemporaryDirectory() as tmp_cwd:
+                result = subprocess.run(
+                    [sys.executable, "-c", script],
+                    cwd=tmp_cwd,
+                    env={
+                        **os.environ,
+                        "PYTHONHASHSEED": seed,
+                        "PYTHONPATH": os.pathsep.join(
+                            [str(repo_root), str(repo_root / "src")]
+                        ),
+                    },
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                digests.add(result.stdout.strip())
+        self.assertEqual(
+            len(digests), 1, f"non-deterministic output across hash seeds: {digests}"
+        )
 
 
 class EntitiesBuildTests(unittest.TestCase):
