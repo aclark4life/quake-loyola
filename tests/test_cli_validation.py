@@ -262,9 +262,12 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
 
             _shutil.rmtree(tools_root)
 
+    @mock.patch("quake_loyola.cli.Path.mkdir")
     @mock.patch("quake_loyola.cli.shutil.copy")
     @mock.patch("quake_loyola.cli.subprocess.run")
-    def test_build_runs_qbsp_vis_light_in_order_and_deploys(self, mock_run, mock_copy):
+    def test_build_runs_qbsp_vis_light_in_order_and_deploys(
+        self, mock_run, mock_copy, _mock_mkdir
+    ):
         mock_run.return_value = mock.Mock(returncode=0)
         # `build`'s deploy step copies loyola.bsp/.lit; create stand-ins so
         # shutil.copy (mocked) has something plausible to "copy".
@@ -289,10 +292,11 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
         self.assertEqual(mock_copy.call_count, 2)
         self.assertIn("Build complete.", result.output)
 
+    @mock.patch("quake_loyola.cli.Path.mkdir")
     @mock.patch("quake_loyola.cli.shutil.copy")
     @mock.patch("quake_loyola.cli.subprocess.run")
     def test_build_passes_vis_fast_and_light_extra_from_build_settings(
-        self, mock_run, _mock_copy
+        self, mock_run, _mock_copy, _mock_mkdir
     ):
         mock_run.return_value = mock.Mock(returncode=0)
         config.set_build("vis_mode", "fast")
@@ -311,10 +315,11 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
         self.assertIn("-fast", vis_cmd)
         self.assertIn("-extra", light_cmd)
 
+    @mock.patch("quake_loyola.cli.Path.mkdir")
     @mock.patch("quake_loyola.cli.shutil.copy")
     @mock.patch("quake_loyola.cli.subprocess.run")
     def test_build_omits_vis_fast_and_light_extra_when_disabled(
-        self, mock_run, _mock_copy
+        self, mock_run, _mock_copy, _mock_mkdir
     ):
         mock_run.return_value = mock.Mock(returncode=0)
         config.set_build("vis_mode", "full")
