@@ -396,6 +396,21 @@ def _build_all():
                 margin2=_margin2,
             )
         )
+    # Extend the deck's south (Knott Hall-facing) edge a bit further south
+    # in the Pier4-Pier5 span, so the bridge span reads as reaching closer
+    # toward Knott Hall instead of stopping abruptly at BRIDGE.y1.
+    BRIDGE_SOUTH_EXTENSION = 184
+    BRUSHES.append(
+        box(
+            BRIDGE.x2,
+            BRIDGE.y1 - BRIDGE_SOUTH_EXTENSION,
+            BRIDGE_DZ1,
+            PIER5_X,
+            BRIDGE.y1,
+            BRIDGE_DZ2,
+            Textures.CEMENT,
+        )
+    )
     DECK_EAST_END_X = WORLD_X2_EXT - WALL_T - BRIDGE_DECK_EAST_RECESS
     PAR_EAST_END_X = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W - BRIDGE_DECK_EAST_RECESS
     PIER6_EAST_X = PIER6_X + BRIDGE_PILLAR_HW
