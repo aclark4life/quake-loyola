@@ -1271,9 +1271,27 @@ def _build_walkway():
         beam_x1 = BRIDGE_ARCH_X[3]
         beam_x2 = BRIDGE_ARCH_X[4]
 
+        step = (beam_x2 - beam_x1) / 6
+        support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
+        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
+
+        # Pull the east-most support pillar in closer to the actual bridge
+        # pier at beam_x2, instead of leaving it a full even-spacing step
+        # (~209 units) away.
+        support_pier_xs[-1] = int(beam_x2 - 140)
+        # Nudge the 2nd-most east pillar east a bit too, off its even
+        # spacing, to open the gap toward its western neighbor.
+        support_pier_xs[-2] = int(support_pier_xs[-2] + 60)
+
+        # The beam itself stops short of the Pier 4 wall (beam_x1) and
+        # instead starts flush with the first drop pier's west face,
+        # leaving the west end open to match the real building (no beam
+        # spans the gap before the first support pillar).
+        beam_start_x = support_pier_xs[0] - support_pier_half_width
+
         DETAIL_BRUSHES.append(
             box(
-                beam_x1,
+                beam_start_x,
                 support_y1,
                 beam_bottom_z,
                 beam_x2,
@@ -1282,10 +1300,6 @@ def _build_walkway():
                 Textures.CEMENT,
             )
         )
-
-        step = (beam_x2 - beam_x1) / 6
-        support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
-        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
 
         support_y_center = (support_y1 + support_y2) / 2.0
         for pier_x in support_pier_xs:
