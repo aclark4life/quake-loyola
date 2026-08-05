@@ -244,7 +244,19 @@ def shear_box_z(x1, y1, z1, x2, y2, z2, s1, s2, tex):
 
 
 def taper_box_y(
-    x1, y1a, y2a, z1, x2, y1b, y2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
+    x1,
+    y1a,
+    y2a,
+    z1,
+    x2,
+    y1b,
+    y2b,
+    z2,
+    tex,
+    tt=None,
+    tb=None,
+    tt_params="0 0 0 1 1",
+    tb_params="0 0 0 1 1",
 ):
     """Return a trapezoidal prism whose Y span is specified independently at x1 and x2.
 
@@ -259,13 +271,25 @@ def taper_box_y(
             Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),
             Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),
             Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb, tb_params),
-            Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt),
+            Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt, tt_params),
         ]
     )
 
 
 def taper_box_x(
-    y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
+    y1,
+    x1a,
+    x2a,
+    z1,
+    y2,
+    x1b,
+    x2b,
+    z2,
+    tex,
+    tt=None,
+    tb=None,
+    tt_params="0 0 0 1 1",
+    tb_params="0 0 0 1 1",
 ):
     """Return taper_box_y() with the X and Y axes swapped.
 
@@ -274,7 +298,19 @@ def taper_box_x(
     """
     return swap_xy(
         taper_box_y(
-            y1, x1a, x2a, z1, y2, x1b, x2b, z2, tex, tt=tt, tb=tb, tb_params=tb_params
+            y1,
+            x1a,
+            x2a,
+            z1,
+            y2,
+            x1b,
+            x2b,
+            z2,
+            tex,
+            tt=tt,
+            tb=tb,
+            tt_params=tt_params,
+            tb_params=tb_params,
         )
     )
 
@@ -322,6 +358,7 @@ def ramp_slab(
     tb=None,
     te=None,
     ts=None,
+    tt_params="0 0 0 1 1",
     tb_params="0 0 0 1 1",
 ):
     tt, tb, te, ts = tt or tex, tb or tex, te or tex, ts or tex
@@ -348,20 +385,48 @@ def ramp_slab(
         Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), ts),
         Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), ts),
         Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb, tb_params),
-        Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt),
+        Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt, tt_params),
     ]
     return Brush(faces)
 
 
 def ramp_slab_y(
-    x1, x2, y1, y2, zb1, zb2, zt1, zt2, tex, tt=None, tb=None, te=None, ts=None
+    x1,
+    x2,
+    y1,
+    y2,
+    zb1,
+    zb2,
+    zt1,
+    zt2,
+    tex,
+    tt=None,
+    tb=None,
+    te=None,
+    ts=None,
+    tt_params="0 0 0 1 1",
 ):
     if y1 > y2:
         y1, y2 = y2, y1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
     return swap_xy(
-        ramp_slab(y1, y2, x1, x2, zb1, zb2, zt1, zt2, tex, tt=tt, tb=tb, te=te, ts=ts)
+        ramp_slab(
+            y1,
+            y2,
+            x1,
+            x2,
+            zb1,
+            zb2,
+            zt1,
+            zt2,
+            tex,
+            tt=tt,
+            tb=tb,
+            te=te,
+            ts=ts,
+            tt_params=tt_params,
+        )
     )
 
 

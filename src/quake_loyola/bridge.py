@@ -283,6 +283,7 @@ def _build_all():
             True,
             0,
             0,
+            "0 0 0 1 1",
         ),
         (
             _dw_y1b,
@@ -292,6 +293,7 @@ def _build_all():
             True,
             0,
             0,
+            "0 0 0 1 1",
         ),
         (
             _dw_y1c,
@@ -301,6 +303,7 @@ def _build_all():
             True,
             0,
             0,
+            "0 0 45 1 1",
         ),
         (
             _dw_y2c,
@@ -310,6 +313,7 @@ def _build_all():
             False,
             0,
             0,
+            "0 0 0 1 1",
         ),
         (
             _dw_y2b,
@@ -319,6 +323,7 @@ def _build_all():
             False,
             0,
             0,
+            "0 0 0 1 1",
         ),
     )
     _pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
@@ -335,6 +340,7 @@ def _build_all():
         far=True,
         margin=0,
         margin2=None,
+        tt_params="0 0 0 1 1",
     ):
         """Return a box-plus-wedge run from x_start to Pier 6 across one Y band.
 
@@ -345,7 +351,18 @@ def _build_all():
         if margin2 is None:
             margin2 = margin
         pieces = [
-            box(x_start, ys1, z1, _pier6_old_cutoff_x, ys2, z2, tex, tt=tt, tb=tb)
+            box(
+                x_start,
+                ys1,
+                z1,
+                _pier6_old_cutoff_x,
+                ys2,
+                z2,
+                tex,
+                tt=tt,
+                tb=tb,
+                tt_params=tt_params,
+            )
         ]
         face_x_at_y = pier6_east_face_x_at_y if far else pier6_west_face_x_at_y
         t1 = face_x_at_y(ys1) - margin
@@ -363,11 +380,12 @@ def _build_all():
                 tex,
                 tt=tt,
                 tb=tb,
+                tt_params=tt_params,
             )
         )
         return pieces
 
-    for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
+    for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2, _tt_params in _DECK_BANDS:
         BRUSHES.append(
             box(
                 BRIDGE.x2,
@@ -379,6 +397,7 @@ def _build_all():
                 Textures.STONE,
                 tt=_tt,
                 tb=_tb,
+                tt_params=_tt_params,
             )
         )
         BRUSHES.extend(
@@ -394,6 +413,7 @@ def _build_all():
                 far=_far,
                 margin=_margin,
                 margin2=_margin2,
+                tt_params=_tt_params,
             )
         )
     # Extend the deck's south (Knott Hall-facing) edge a bit further south
@@ -419,7 +439,7 @@ def _build_all():
     for seg_x1, seg_x2 in [
         (PIER6_EAST_X, DECK_EAST_END_X),
     ]:
-        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
+        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2, _tt_params in _DECK_BANDS:
             BRUSHES.append(
                 taper_box_y(
                     seg_x1,
@@ -433,6 +453,7 @@ def _build_all():
                     Textures.STONE,
                     tt=_tt,
                     tb=_tb,
+                    tt_params=_tt_params,
                 )
             )
 
@@ -465,7 +486,7 @@ def _build_all():
             yield sx1, sx2, db1, db2, pb1, pb2, pt1, pt2
 
     for sx1, sx2, db1, db2, pb1, pb2, _, _ in iter_bridge_span_segments():
-        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2 in _DECK_BANDS:
+        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2, _tt_params in _DECK_BANDS:
             BRUSHES.append(
                 ramp_slab(
                     sx1,
@@ -479,6 +500,7 @@ def _build_all():
                     Textures.STONE,
                     tt=_tt,
                     tb=_tb,
+                    tt_params=_tt_params,
                 )
             )
 
