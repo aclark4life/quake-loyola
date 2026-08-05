@@ -76,6 +76,47 @@ from ..geometry import (
 )
 
 
+def _kh_hill_profile():
+    """Return the sampled Knott hillside X/Z profile used by terrain helpers."""
+    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
+    return [
+        (_charles_verge_x2, 0),
+        (_charles_verge_x2 + 80, 30),
+        (525, 42),
+        (700, 67),
+        (900, 78),
+        (KNOTT.x1, 78),
+        (BRIDGE_ARCH_X[4], 78),
+        (
+            BRIDGE_ARCH_X[4] + 0.2 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.2**2 - 2 * 0.2**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.4 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.4**2 - 2 * 0.4**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.6 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.6**2 - 2 * 0.6**3)),
+        ),
+        (
+            BRIDGE_ARCH_X[4] + 0.8 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
+            78 * (1 - (3 * 0.8**2 - 2 * 0.8**3)),
+        ),
+        (KNOTT_DRIVEWAY_WS_X1, 0),
+    ]
+
+
+def _kh_hill_profile_z(x, hill_profile):
+    """Return the absolute model Z of the sampled Knott hillside profile."""
+    _flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    for (px1, pz1), (px2, pz2) in zip(hill_profile, hill_profile[1:], strict=False):
+        if px1 <= x <= px2:
+            t = (x - px1) / (px2 - px1) if px2 != px1 else 0.0
+            return _flat_z + pz1 + t * (pz2 - pz1)
+    return _flat_z + hill_profile[-1][1]
+
+
 def _build_knott_terrain():
     """Build the Knott driveway slopes, hillside fills, and curb returns."""
 
@@ -101,45 +142,6 @@ def _build_knott_terrain():
     def sidewalk_slabs_flat(brushes, x1, x2, y1, y2, z_base, z_top, surface_tex):
         """Add one full-depth flat sidewalk slab."""
         brushes.append(box(x1, y1, z_base, x2, y2, z_top, surface_tex))
-
-    # Single call site — inlined rather than wrapped, since a one-off helper
-    # added indirection without any reuse.
-    BRUSHES.append(
-        ramp_slab_y(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ZT_S + 2,
-            KNOTT_DRIVEWAY_ZT_N + 2,
-            Textures.GROUND,
-            tt=Textures.ROAD,
-        )
-    )
-
-    sidewalk_slabs_sloped(
-        BRUSHES,
-        KNOTT_DRIVEWAY_WS_X1,
-        KNOTT_DRIVEWAY_WS_X2,
-        KNOTT_DRIVEWAY_Y1,
-        KNOTT_DRIVEWAY_Y2,
-        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-
-    sidewalk_slabs_sloped(
-        BRUSHES,
-        KNOTT_DRIVEWAY_ES_X1,
-        KNOTT_DRIVEWAY_ES_X2,
-        KNOTT_DRIVEWAY_Y1,
-        KNOTT_DRIVEWAY_Y2,
-        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
 
     _sgrid_z = FLOOR_Z2 + CHARLES_WALK_H
     _south_edge_x0, _south_edge_z0 = KNOTT.x1, 66
@@ -193,49 +195,135 @@ def _build_knott_terrain():
         zn = KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H
         return zs + t * (zn - zs)
 
-    _eg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
-    for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
-        zip(
-            zip(_far_south_y, _far_south_z_east, strict=False),
-            zip(_far_south_y[1:], _far_south_z_east[1:], strict=False),
-            strict=False,
+    def _append_driveway_slabs():
+        BRUSHES.append(
+            ramp_slab_y(
+                KNOTT_DRIVEWAY_RD_X1,
+                KNOTT_DRIVEWAY_RD_X2,
+                KNOTT_DRIVEWAY_Y1,
+                KNOTT_DRIVEWAY_Y2,
+                FLOOR_Z1,
+                FLOOR_Z1,
+                KNOTT_DRIVEWAY_ZT_S + 2,
+                KNOTT_DRIVEWAY_ZT_N + 2,
+                Textures.GROUND,
+                tt=Textures.ROAD,
+            )
         )
-    ):
-        ra1 = _sgrid_z + z1
-        ra2 = _sgrid_z + z2
+        sidewalk_slabs_sloped(
+            BRUSHES,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_WS_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+        sidewalk_slabs_sloped(
+            BRUSHES,
+            KNOTT_DRIVEWAY_ES_X1,
+            KNOTT_DRIVEWAY_ES_X2,
+            KNOTT_DRIVEWAY_Y1,
+            KNOTT_DRIVEWAY_Y2,
+            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
 
-        if _seg_i < len(_far_south_y) - 2:
-            y2_ext = y2 - _WRAMP_OVR
-            ra2 = ra1 + (ra2 - ra1) * (y2_ext - y1) / (y2 - y1)
-            y2 = y2_ext
+    def _append_east_far_south_fill():
+        _eg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
+        for _seg_i, ((y1, z1), (y2, z2)) in enumerate(
+            zip(
+                zip(_far_south_y, _far_south_z_east, strict=False),
+                zip(_far_south_y[1:], _far_south_z_east[1:], strict=False),
+                strict=False,
+            )
+        ):
+            ra1 = _sgrid_z + z1
+            ra2 = _sgrid_z + z2
 
+            if _seg_i < len(_far_south_y) - 2:
+                y2_ext = y2 - _WRAMP_OVR
+                ra2 = ra1 + (ra2 - ra1) * (y2_ext - y1) / (y2 - y1)
+                y2 = y2_ext
+
+            BRUSHES.append(
+                tri_ramp_prism(
+                    KNOTT_DRIVEWAY_ES_X2,
+                    y1,
+                    _es_taper_x,
+                    y2,
+                    _es_taper_x,
+                    y1,
+                    FLOOR_Z1,
+                    _eg_flat,
+                    ra2,
+                    ra1,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    KNOTT_DRIVEWAY_ES_X2,
+                    y1,
+                    KNOTT_DRIVEWAY_ES_X2,
+                    y2,
+                    _es_taper_x,
+                    y2,
+                    FLOOR_Z1,
+                    _eg_flat,
+                    _eg_flat,
+                    ra2,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                ramp_slab_y(
+                    _es_taper_x,
+                    WORLD_X2_EXT - WALL_T,
+                    y1,
+                    y2,
+                    FLOOR_Z1,
+                    FLOOR_Z1,
+                    ra1,
+                    ra2,
+                    Textures.GROUND,
+                    tt=Textures.GROUND,
+                )
+            )
+
+        _mr_z1s = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
+        _mr_z2s = _sidewalk_h(KNOTT_DRIVEWAY_Y2)
+        _mr_z1r = _sgrid_z + _far_south_z_east[0]
+        _mr_z2r = KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H
         BRUSHES.append(
             tri_ramp_prism(
                 KNOTT_DRIVEWAY_ES_X2,
-                y1,
+                KNOTT_DRIVEWAY_Y1,
                 _es_taper_x,
-                y2,
+                KNOTT_DRIVEWAY_Y1,
                 _es_taper_x,
-                y1,
+                KNOTT_DRIVEWAY_Y2,
                 FLOOR_Z1,
-                _eg_flat,
-                ra2,
-                ra1,
+                _mr_z1s,
+                _mr_z1r,
+                _mr_z2r,
                 Textures.GROUND,
             )
         )
         BRUSHES.append(
             tri_ramp_prism(
                 KNOTT_DRIVEWAY_ES_X2,
-                y1,
-                KNOTT_DRIVEWAY_ES_X2,
-                y2,
+                KNOTT_DRIVEWAY_Y1,
                 _es_taper_x,
-                y2,
+                KNOTT_DRIVEWAY_Y2,
+                KNOTT_DRIVEWAY_ES_X2,
+                KNOTT_DRIVEWAY_Y2,
                 FLOOR_Z1,
-                _eg_flat,
-                _eg_flat,
-                ra2,
+                _mr_z1s,
+                _mr_z2r,
+                _mr_z2s,
                 Textures.GROUND,
             )
         )
@@ -243,114 +331,211 @@ def _build_knott_terrain():
             ramp_slab_y(
                 _es_taper_x,
                 WORLD_X2_EXT - WALL_T,
-                y1,
-                y2,
+                KNOTT_DRIVEWAY_Y1,
+                KNOTT_DRIVEWAY_Y2,
                 FLOOR_Z1,
                 FLOOR_Z1,
-                ra1,
-                ra2,
+                _sgrid_z + _far_south_z_east[0],
+                KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
                 Textures.GROUND,
                 tt=Textures.GROUND,
             )
         )
 
-    _mr_z1s = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
-    _mr_z2s = _sidewalk_h(KNOTT_DRIVEWAY_Y2)
-    _mr_z1r = _sgrid_z + _far_south_z_east[0]
-    _mr_z2r = KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H
-    BRUSHES.append(
-        tri_ramp_prism(
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            _es_taper_x,
-            KNOTT_DRIVEWAY_Y1,
-            _es_taper_x,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            _mr_z1s,
-            _mr_z1r,
-            _mr_z2r,
-            Textures.GROUND,
-        )
-    )
-    BRUSHES.append(
-        tri_ramp_prism(
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            _es_taper_x,
-            KNOTT_DRIVEWAY_Y2,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            _mr_z1s,
-            _mr_z2r,
-            _mr_z2s,
-            Textures.GROUND,
-        )
-    )
-    BRUSHES.append(
-        ramp_slab_y(
-            _es_taper_x,
-            WORLD_X2_EXT - WALL_T,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_Y2,
-            FLOOR_Z1,
-            FLOOR_Z1,
-            _sgrid_z + _far_south_z_east[0],
-            KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
-            Textures.GROUND,
-            tt=Textures.GROUND,
-        )
-    )
+    def _append_west_far_south_fill():
+        _wg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
+        _wg2_x = [KNOTT.x1, 1650, 2100, KNOTT_DRIVEWAY_WS_X1]
+        _wg2_cols = [
+            _far_south_z_west,
+            [61, 48, 49, 32],
+            [77, 51, 49, 32],
+            [_wg_flat - _sgrid_z] * 4,
+        ]
+        for (gx1, gcol1), (gx2, gcol2) in zip(
+            zip(_wg2_x, _wg2_cols, strict=False),
+            zip(_wg2_x[1:], _wg2_cols[1:], strict=False),
+            strict=False,
+        ):
+            for _seg_i in range(len(_far_south_y) - 1):
+                y1, y2 = _far_south_y[_seg_i], _far_south_y[_seg_i + 1]
+                gz1a = _sgrid_z + gcol1[_seg_i]
+                gz1b = _sgrid_z + gcol1[_seg_i + 1]
+                gz2a = _sgrid_z + gcol2[_seg_i]
+                gz2b = _sgrid_z + gcol2[_seg_i + 1]
 
-    _wg_flat = _sidewalk_h(KNOTT_DRIVEWAY_Y1)
-    _wg2_x = [KNOTT.x1, 1650, 2100, KNOTT_DRIVEWAY_WS_X1]
-    _wg2_cols = [
-        _far_south_z_west,
-        [61, 48, 49, 32],
-        [77, 51, 49, 32],
-        [_wg_flat - _sgrid_z] * 4,
-    ]
-    for (gx1, gcol1), (gx2, gcol2) in zip(
-        zip(_wg2_x, _wg2_cols, strict=False),
-        zip(_wg2_x[1:], _wg2_cols[1:], strict=False),
-        strict=False,
-    ):
-        for _seg_i in range(len(_far_south_y) - 1):
-            y1, y2 = _far_south_y[_seg_i], _far_south_y[_seg_i + 1]
-            gz1a = _sgrid_z + gcol1[_seg_i]
-            gz1b = _sgrid_z + gcol1[_seg_i + 1]
-            gz2a = _sgrid_z + gcol2[_seg_i]
-            gz2b = _sgrid_z + gcol2[_seg_i + 1]
+                if gx1 == KNOTT.x1 and _seg_i == 0:
+                    BRUSHES.append(
+                        tri_ramp_prism(
+                            gx1,
+                            y1,
+                            gx1,
+                            y2,
+                            gx2,
+                            y1,
+                            FLOOR_Z1,
+                            gz1a,
+                            gz1b,
+                            gz2a,
+                            Textures.GROUND,
+                        )
+                    )
+                    BRUSHES.append(
+                        tri_ramp_prism(
+                            gx2,
+                            y1,
+                            gx1,
+                            y2,
+                            gx2,
+                            y2,
+                            FLOOR_Z1,
+                            gz2a,
+                            gz1b,
+                            gz2b,
+                            Textures.GROUND,
+                        )
+                    )
+                else:
+                    BRUSHES.append(
+                        tri_ramp_prism(
+                            gx1,
+                            y1,
+                            gx2,
+                            y2,
+                            gx2,
+                            y1,
+                            FLOOR_Z1,
+                            gz1a,
+                            gz2b,
+                            gz2a,
+                            Textures.GROUND,
+                        )
+                    )
+                    BRUSHES.append(
+                        tri_ramp_prism(
+                            gx1,
+                            y1,
+                            gx1,
+                            y2,
+                            gx2,
+                            y2,
+                            FLOOR_Z1,
+                            gz1a,
+                            gz1b,
+                            gz2b,
+                            Textures.GROUND,
+                        )
+                    )
 
-            if gx1 == KNOTT.x1 and _seg_i == 0:
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                WORLD_Y1 + WALL_T,
+                FLOOR_Z1,
+                KNOTT_DRIVEWAY_ES_X2,
+                KNOTT_DRIVEWAY_Y1,
+                KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+
+    def _append_west_grid_transitions():
+        _wg_t900 = (900 - 700) / (KNOTT.x1 - 700)
+        _wgrid_z900 = [
+            z700 + _wg_t900 * (z1206 - z700)
+            for z700, z1206 in zip([54, 37, 39, 31], _far_south_z_west, strict=False)
+        ]
+        _wgrid_x = [_charles_verge_x2, 700, 900, KNOTT.x1]
+        _wgrid_cols = [
+            [0, 0, 0, 0],
+            [108, 74, 79, 62],
+            _wgrid_z900,
+            _far_south_z_west,
+        ]
+
+        for (wx1, wcol1), (wx2, wcol2) in zip(
+            zip(_wgrid_x, _wgrid_cols, strict=False),
+            zip(_wgrid_x[1:], _wgrid_cols[1:], strict=False),
+            strict=False,
+        ):
+            for i in range(len(_far_south_y) - 1):
+                y1, y2 = _far_south_y[i], _far_south_y[i + 1]
+                z1a, z1b = wcol1[i], wcol1[i + 1]
+                z2a, z2b = wcol2[i], wcol2[i + 1]
+                if i < len(_far_south_y) - 2:
+                    y2_ext = y2 - _WRAMP_OVR
+                    z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)
+                    z2b = z2a + (z2b - z2a) * (y2_ext - y1) / (y2 - y1)
+                    y2 = y2_ext
+
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        wx1,
+                        y1,
+                        wx2,
+                        y2,
+                        wx2,
+                        y1,
+                        FLOOR_Z1,
+                        _sgrid_z + z1a,
+                        _sgrid_z + z2b,
+                        _sgrid_z + z2a,
+                        Textures.GROUND,
+                    )
+                )
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        wx1,
+                        y1,
+                        wx1,
+                        y2,
+                        wx2,
+                        y2,
+                        FLOOR_Z1,
+                        _sgrid_z + z1a,
+                        _sgrid_z + z1b,
+                        _sgrid_z + z2b,
+                        Textures.GROUND,
+                    )
+                )
+
+        _sgrid_y2_ext = KNOTT_DRIVEWAY_Y2 + _WRAMP_OVR
+        for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(
+            _sgrid, _sgrid[1:], strict=False
+        ):
+            _t = (_sgrid_y2_ext - KNOTT_DRIVEWAY_Y1) / (
+                KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
+            )
+            gz1b_ext = gz1a + (gz1b - gz1a) * _t
+            gz2b_ext = gz2a + (gz2b - gz2a) * _t
+
+            if gx2 == KNOTT.x1:
                 BRUSHES.append(
                     tri_ramp_prism(
                         gx1,
-                        y1,
-                        gx1,
-                        y2,
+                        KNOTT_DRIVEWAY_Y1,
                         gx2,
-                        y1,
+                        KNOTT_DRIVEWAY_Y1,
+                        gx1,
+                        _sgrid_y2_ext,
                         FLOOR_Z1,
                         gz1a,
-                        gz1b,
                         gz2a,
+                        gz1b_ext,
                         Textures.GROUND,
                     )
                 )
                 BRUSHES.append(
                     tri_ramp_prism(
                         gx2,
-                        y1,
-                        gx1,
-                        y2,
+                        KNOTT_DRIVEWAY_Y1,
                         gx2,
-                        y2,
+                        _sgrid_y2_ext,
+                        gx1,
+                        _sgrid_y2_ext,
                         FLOOR_Z1,
                         gz2a,
-                        gz1b,
-                        gz2b,
+                        gz2b_ext,
+                        gz1b_ext,
                         Textures.GROUND,
                     )
                 )
@@ -358,734 +543,563 @@ def _build_knott_terrain():
                 BRUSHES.append(
                     tri_ramp_prism(
                         gx1,
-                        y1,
+                        KNOTT_DRIVEWAY_Y1,
                         gx2,
-                        y2,
+                        KNOTT_DRIVEWAY_Y1,
                         gx2,
-                        y1,
+                        _sgrid_y2_ext,
                         FLOOR_Z1,
                         gz1a,
-                        gz2b,
                         gz2a,
+                        gz2b_ext,
                         Textures.GROUND,
                     )
                 )
                 BRUSHES.append(
                     tri_ramp_prism(
                         gx1,
-                        y1,
-                        gx1,
-                        y2,
+                        KNOTT_DRIVEWAY_Y1,
                         gx2,
-                        y2,
+                        _sgrid_y2_ext,
+                        gx1,
+                        _sgrid_y2_ext,
                         FLOOR_Z1,
                         gz1a,
-                        gz1b,
-                        gz2b,
+                        gz2b_ext,
+                        gz1b_ext,
                         Textures.GROUND,
                     )
                 )
 
-    BRUSHES.append(
-        box(
+    def _append_west_driveway_ramp():
+        _west_x_ovr = 0
+        _east_x_ovr = 2
+        # The Y span (KNOTT_DRIVEWAY_Y1..Y2) is ~1655 units; the surface is a
+        # ruled (bilinear) slope that's linear in Y between the south (Y1) and
+        # north (Y2) x-profiles, so it can be exactly subdivided into narrower
+        # Y-strips without approximation error. A single full-span brush here
+        # previously produced fall-through gaps in the compiled BSP collision
+        # hull (qbsp clipnode precision issues on very large shallow slopes) —
+        # see the west-side terrain fall-through investigation.
+        _WRAMP_Y_SEGS = 8
+        for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
+            real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1
+            _is_first = wx1 == KNOTT.x1
+            wx1n = wx1 - _west_x_ovr if _is_first else wx1
+            wx2n = wx2 + _east_x_ovr if real_edge else wx2
+            z1a = _south_edge_real(wx1n)
+            z1b = _sidewalk_h(KNOTT_DRIVEWAY_Y1) if real_edge else _south_edge_real(wx2)
+            z2a = _sgrid[-1][2] if _is_first else _south_edge_z(wx1)
+            z2b = _sidewalk_h(KNOTT_DRIVEWAY_Y2) if real_edge else _south_edge_z(wx2)
+            for _seg_i in range(_WRAMP_Y_SEGS):
+                _t0 = _seg_i / _WRAMP_Y_SEGS
+                _t1 = (_seg_i + 1) / _WRAMP_Y_SEGS
+                _y0 = KNOTT_DRIVEWAY_Y1 + _t0 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
+                _y1 = KNOTT_DRIVEWAY_Y1 + _t1 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
+                _za0 = z1a + _t0 * (z2a - z1a)
+                _za1 = z1a + _t1 * (z2a - z1a)
+                _zb0 = z1b + _t0 * (z2b - z1b)
+                _zb1 = z1b + _t1 * (z2b - z1b)
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        wx1n,
+                        _y0,
+                        wx2n,
+                        _y0,
+                        wx2n,
+                        _y1,
+                        FLOOR_Z1,
+                        _za0,
+                        _zb0,
+                        _zb1,
+                        Textures.GROUND,
+                    )
+                )
+                BRUSHES.append(
+                    tri_ramp_prism(
+                        wx1n,
+                        _y0,
+                        wx2n,
+                        _y1,
+                        wx1n,
+                        _y1,
+                        FLOOR_Z1,
+                        _za0,
+                        _zb1,
+                        _za1,
+                        Textures.GROUND,
+                    )
+                )
+
+    def _append_hillside_profile_fill():
+        _flat_z = FLOOR_Z2 + CHARLES_WALK_H
+        _hill_profile = _kh_hill_profile()
+        _y0_ext = 0 + _WRAMP_OVR
+
+        for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:], strict=False):
+            z1 = _kh_hill_profile_z(px1, _hill_profile)
+            z2 = _kh_hill_profile_z(px2, _hill_profile)
+            zs1, zs2 = _south_edge_z(px1), _south_edge_z(px2)
+            _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (0 - KNOTT_DRIVEWAY_Y2)
+            z1_ext = zs1 + (z1 - zs1) * _t0
+            z2_ext = zs2 + (z2 - zs2) * _t0
+            BRUSHES.append(
+                tri_ramp_prism(
+                    px1,
+                    KNOTT_DRIVEWAY_Y2,
+                    px2,
+                    KNOTT_DRIVEWAY_Y2,
+                    px2,
+                    _y0_ext,
+                    FLOOR_Z1,
+                    zs1,
+                    zs2,
+                    z2_ext,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    px1,
+                    KNOTT_DRIVEWAY_Y2,
+                    px2,
+                    _y0_ext,
+                    px1,
+                    _y0_ext,
+                    FLOOR_Z1,
+                    zs1,
+                    z2_ext,
+                    z1_ext,
+                    Textures.GROUND,
+                )
+            )
+
+            _nx_ovr = 2 if px1 != _hill_profile[0][0] else 0
+            px1n = px1 - _nx_ovr
+            z1n = _kh_hill_profile_z(px1n, _hill_profile) if _nx_ovr else z1
+            BRUSHES.append(
+                tri_ramp_prism(
+                    px1n,
+                    0,
+                    px2,
+                    0,
+                    px1n,
+                    ENNIS_SW_EDGE,
+                    FLOOR_Z1,
+                    z1n,
+                    z2,
+                    _flat_z,
+                    Textures.GROUND,
+                )
+            )
+            BRUSHES.append(
+                tri_ramp_prism(
+                    px2,
+                    0,
+                    px2,
+                    ENNIS_SW_EDGE,
+                    px1n,
+                    ENNIS_SW_EDGE,
+                    FLOOR_Z1,
+                    z2,
+                    _flat_z,
+                    _flat_z,
+                    Textures.GROUND,
+                )
+            )
+
+    def _append_driveway_extension():
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_RD_X1,
+                KNOTT_DRIVEWAY_EXT_Y1,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X2,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        sidewalk_slabs_flat(
+            BRUSHES,
             KNOTT_DRIVEWAY_WS_X1,
-            WORLD_Y1 + WALL_T,
-            FLOOR_Z1,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_Y1,
-            KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-
-    _wg_t900 = (900 - 700) / (KNOTT.x1 - 700)
-    _wgrid_z900 = [
-        z700 + _wg_t900 * (z1206 - z700)
-        for z700, z1206 in zip([54, 37, 39, 31], _far_south_z_west, strict=False)
-    ]
-    _wgrid_x = [_charles_verge_x2, 700, 900, KNOTT.x1]
-    _wgrid_cols = [
-        [0, 0, 0, 0],
-        [108, 74, 79, 62],
-        _wgrid_z900,
-        _far_south_z_west,
-    ]
-
-    for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_wgrid_x, _wgrid_cols, strict=False),
-        zip(_wgrid_x[1:], _wgrid_cols[1:], strict=False),
-        strict=False,
-    ):
-        for i in range(len(_far_south_y) - 1):
-            y1, y2 = _far_south_y[i], _far_south_y[i + 1]
-            z1a, z1b = wcol1[i], wcol1[i + 1]
-            z2a, z2b = wcol2[i], wcol2[i + 1]
-            if i < len(_far_south_y) - 2:
-                y2_ext = y2 - _WRAMP_OVR
-                z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)
-                z2b = z2a + (z2b - z2a) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
-
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y1,
-                    wx2,
-                    y2,
-                    wx2,
-                    y1,
-                    FLOOR_Z1,
-                    _sgrid_z + z1a,
-                    _sgrid_z + z2b,
-                    _sgrid_z + z2a,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y1,
-                    wx1,
-                    y2,
-                    wx2,
-                    y2,
-                    FLOOR_Z1,
-                    _sgrid_z + z1a,
-                    _sgrid_z + z1b,
-                    _sgrid_z + z2b,
-                    Textures.GROUND,
-                )
-            )
-
-    _sgrid_y2_ext = KNOTT_DRIVEWAY_Y2 + _WRAMP_OVR
-    for (gx1, gz1a, gz1b), (gx2, gz2a, gz2b) in zip(_sgrid, _sgrid[1:], strict=False):
-        _t = (_sgrid_y2_ext - KNOTT_DRIVEWAY_Y1) / (
-            KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
-        )
-        gz1b_ext = gz1a + (gz1b - gz1a) * _t
-        gz2b_ext = gz2a + (gz2b - gz2a) * _t
-
-        if gx2 == KNOTT.x1:
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx1,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx2,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx1,
-                    _sgrid_y2_ext,
-                    FLOOR_Z1,
-                    gz1a,
-                    gz2a,
-                    gz1b_ext,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx2,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx2,
-                    _sgrid_y2_ext,
-                    gx1,
-                    _sgrid_y2_ext,
-                    FLOOR_Z1,
-                    gz2a,
-                    gz2b_ext,
-                    gz1b_ext,
-                    Textures.GROUND,
-                )
-            )
-        else:
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx1,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx2,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx2,
-                    _sgrid_y2_ext,
-                    FLOOR_Z1,
-                    gz1a,
-                    gz2a,
-                    gz2b_ext,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    gx1,
-                    KNOTT_DRIVEWAY_Y1,
-                    gx2,
-                    _sgrid_y2_ext,
-                    gx1,
-                    _sgrid_y2_ext,
-                    FLOOR_Z1,
-                    gz1a,
-                    gz2b_ext,
-                    gz1b_ext,
-                    Textures.GROUND,
-                )
-            )
-
-    _west_x_ovr = 0
-    _east_x_ovr = 2
-    # The Y span (KNOTT_DRIVEWAY_Y1..Y2) is ~1655 units; the surface is a
-    # ruled (bilinear) slope that's linear in Y between the south (Y1) and
-    # north (Y2) x-profiles, so it can be exactly subdivided into narrower
-    # Y-strips without approximation error. A single full-span brush here
-    # previously produced fall-through gaps in the compiled BSP collision
-    # hull (qbsp clipnode precision issues on very large shallow slopes) —
-    # see the west-side terrain fall-through investigation.
-    _WRAMP_Y_SEGS = 8
-    for wx1, wx2 in ((KNOTT.x1, _ws_taper_x), (_ws_taper_x, KNOTT_DRIVEWAY_WS_X1)):
-        real_edge = wx2 == KNOTT_DRIVEWAY_WS_X1
-        _is_first = wx1 == KNOTT.x1
-        wx1n = wx1 - _west_x_ovr if _is_first else wx1
-        wx2n = wx2 + _east_x_ovr if real_edge else wx2
-        z1a = _south_edge_real(wx1n)
-        z1b = _sidewalk_h(KNOTT_DRIVEWAY_Y1) if real_edge else _south_edge_real(wx2)
-        z2a = _sgrid[-1][2] if _is_first else _south_edge_z(wx1)
-        z2b = _sidewalk_h(KNOTT_DRIVEWAY_Y2) if real_edge else _south_edge_z(wx2)
-        for _seg_i in range(_WRAMP_Y_SEGS):
-            _t0 = _seg_i / _WRAMP_Y_SEGS
-            _t1 = (_seg_i + 1) / _WRAMP_Y_SEGS
-            _y0 = KNOTT_DRIVEWAY_Y1 + _t0 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
-            _y1 = KNOTT_DRIVEWAY_Y1 + _t1 * (KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1)
-            _za0 = z1a + _t0 * (z2a - z1a)
-            _za1 = z1a + _t1 * (z2a - z1a)
-            _zb0 = z1b + _t0 * (z2b - z1b)
-            _zb1 = z1b + _t1 * (z2b - z1b)
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1n,
-                    _y0,
-                    wx2n,
-                    _y0,
-                    wx2n,
-                    _y1,
-                    FLOOR_Z1,
-                    _za0,
-                    _zb0,
-                    _zb1,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1n,
-                    _y0,
-                    wx2n,
-                    _y1,
-                    wx1n,
-                    _y1,
-                    FLOOR_Z1,
-                    _za0,
-                    _zb1,
-                    _za1,
-                    Textures.GROUND,
-                )
-            )
-
-    _flat_z = FLOOR_Z2 + CHARLES_WALK_H
-
-    _hill_profile = [
-        (_charles_verge_x2, 0),
-        (_charles_verge_x2 + 80, 30),
-        (525, 42),
-        (700, 67),
-        (900, 78),
-        (KNOTT.x1, 78),
-        (BRIDGE_ARCH_X[4], 78),
-        (
-            BRIDGE_ARCH_X[4] + 0.2 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.2**2 - 2 * 0.2**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.4 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.4**2 - 2 * 0.4**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.6 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.6**2 - 2 * 0.6**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.8 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.8**2 - 2 * 0.8**3)),
-        ),
-        (KNOTT_DRIVEWAY_WS_X1, 0),
-    ]
-
-    def _hill_z(x):
-        """Absolute model Z of the real-world hill profile at X (grade +
-        piecewise-linear rise above it)."""
-        for (px1, pz1), (px2, pz2) in zip(
-            _hill_profile, _hill_profile[1:], strict=False
-        ):
-            if px1 <= x <= px2:
-                t = (x - px1) / (px2 - px1) if px2 != px1 else 0.0
-                return _flat_z + pz1 + t * (pz2 - pz1)
-        return _flat_z + _hill_profile[-1][1]
-
-    _y0_ext = 0 + _WRAMP_OVR
-    for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:], strict=False):
-        z1, z2 = _hill_z(px1), _hill_z(px2)
-        zs1, zs2 = _south_edge_z(px1), _south_edge_z(px2)
-        _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (0 - KNOTT_DRIVEWAY_Y2)
-        z1_ext = zs1 + (z1 - zs1) * _t0
-        z2_ext = zs2 + (z2 - zs2) * _t0
-        BRUSHES.append(
-            tri_ramp_prism(
-                px1,
-                KNOTT_DRIVEWAY_Y2,
-                px2,
-                KNOTT_DRIVEWAY_Y2,
-                px2,
-                _y0_ext,
-                FLOOR_Z1,
-                zs1,
-                zs2,
-                z2_ext,
-                Textures.GROUND,
-            )
-        )
-        BRUSHES.append(
-            tri_ramp_prism(
-                px1,
-                KNOTT_DRIVEWAY_Y2,
-                px2,
-                _y0_ext,
-                px1,
-                _y0_ext,
-                FLOOR_Z1,
-                zs1,
-                z2_ext,
-                z1_ext,
-                Textures.GROUND,
-            )
-        )
-
-        _nx_ovr = 2 if px1 != _hill_profile[0][0] else 0
-        px1n = px1 - _nx_ovr
-        z1n = _hill_z(px1n) if _nx_ovr else z1
-        BRUSHES.append(
-            tri_ramp_prism(
-                px1n,
-                0,
-                px2,
-                0,
-                px1n,
-                ENNIS_SW_EDGE,
-                FLOOR_Z1,
-                z1n,
-                z2,
-                _flat_z,
-                Textures.GROUND,
-            )
-        )
-        BRUSHES.append(
-            tri_ramp_prism(
-                px2,
-                0,
-                px2,
-                ENNIS_SW_EDGE,
-                px1n,
-                ENNIS_SW_EDGE,
-                FLOOR_Z1,
-                z2,
-                _flat_z,
-                _flat_z,
-                Textures.GROUND,
-            )
-        )
-
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-
-    sidewalk_slabs_flat(
-        BRUSHES,
-        KNOTT_DRIVEWAY_WS_X1,
-        KNOTT_DRIVEWAY_WS_X2,
-        KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-
-    _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-            _west_ext_y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
             KNOTT_DRIVEWAY_WS_X2,
-            _west_ext_y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    sidewalk_slabs_flat(
-        BRUSHES,
-        KNOTT_DRIVEWAY_ES_X1,
-        KNOTT_DRIVEWAY_ES_X2,
-        KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-
-    _east_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            _east_ext_y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.MULCH,
-        )
-    )
-
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-            _east_ext_y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    _e_bulge_x2 = (
-        KNOTT_DRIVEWAY_JCX_E
-        + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
-        + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
-    )
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
             KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z1,
-            _e_bulge_x2,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_JCX_E,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            _e_bulge_x2,
             ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
         )
-    )
-    BRUSHES.append(
-        box(
-            _e_bulge_x2,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z1,
-            WORLD_X2_EXT - WALL_T,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
 
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            ENNIS_Y - ENNIS_HW,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-
-    _west_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _west_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            _west_ext_y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X1,
-            _west_jc_y2,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-
-    _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
-    _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
-    _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        a0 = corner_index * _seg_deg
-        a1 = (corner_index + 1) * _seg_deg
-        t0, t1 = math.radians(a0), math.radians(a1)
+        _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
         BRUSHES.append(
-            tri_prism(
-                KNOTT_DRIVEWAY_JCX_X1,
-                _west_ext_y2,
-                KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t0),
-                _west_ext_y2 + _r_inner * math.sin(t0),
-                KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t1),
-                _west_ext_y2 + _r_inner * math.sin(t1),
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
                 FLOOR_Z2,
+                KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+                _west_ext_y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.GROUND,
             )
         )
-
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        a0 = corner_index * _seg_deg
-        a1 = (corner_index + 1) * _seg_deg
         BRUSHES.append(
-            curb_seg(
-                KNOTT_DRIVEWAY_JCX_X1,
-                _west_ext_y2,
+            box(
+                KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
                 FLOOR_Z2,
+                KNOTT_DRIVEWAY_WS_X2,
+                _west_ext_y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                _r_inner,
-                _r_outer,
-                a0,
-                a1,
                 Textures.CEMENT,
             )
         )
 
-    _peak_out_y = _west_ext_y2 + _r_outer
-    _peak_in_y = _west_ext_y2 + _r_inner
-    _base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_outer
-    _base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_inner
-    _flat_x1 = KNOTT_DRIVEWAY_JCX_X1 - KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
-    BRUSHES.append(
-        box(
-            _flat_x1,
-            _peak_in_y,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_JCX_X1,
-            _peak_out_y,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    BRUSHES.append(
-        box(
-            _flat_x1,
-            _base_in_y,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_JCX_X1,
-            _peak_in_y,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-
-    _taper_x0 = _flat_x1 - KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
-    BRUSHES.append(
-        tri_prism(
-            _flat_x1,
-            _peak_out_y,
-            _taper_x0,
-            _base_out_y,
-            _taper_x0,
-            _base_in_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    BRUSHES.append(
-        tri_prism(
-            _flat_x1,
-            _peak_out_y,
-            _taper_x0,
-            _base_in_y,
-            _flat_x1,
-            _peak_in_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    BRUSHES.append(
-        tri_prism(
-            _flat_x1,
-            _peak_in_y,
-            _taper_x0,
-            _base_in_y,
-            _flat_x1,
-            _base_in_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-
-    _east_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _east_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
-    BRUSHES.append(
-        box(
+        sidewalk_slabs_flat(
+            BRUSHES,
             KNOTT_DRIVEWAY_ES_X1,
-            _east_ext_y2,
-            FLOOR_Z2,
             KNOTT_DRIVEWAY_ES_X2,
-            _east_jc_y2,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
+            KNOTT_DRIVEWAY_EXT_Y1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
         )
-    )
-    _er_outer = KNOTT_DRIVEWAY_CURB_CRN_R
-    _er_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
-    _e_seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        ea0 = 90 + corner_index * _e_seg_deg
-        ea1 = 90 + (corner_index + 1) * _e_seg_deg
-        t0, t1 = math.radians(ea0), math.radians(ea1)
 
+        _east_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X2,
+                _east_ext_y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.MULCH,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+                _east_ext_y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+
+        _e_bulge_x2 = (
+            KNOTT_DRIVEWAY_JCX_E
+            + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+            + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X2,
+                KNOTT_DRIVEWAY_EXT_Y1,
+                FLOOR_Z1,
+                _e_bulge_x2,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_JCX_E,
+                ENNIS_SW_EDGE,
+                FLOOR_Z2,
+                _e_bulge_x2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            box(
+                _e_bulge_x2,
+                KNOTT_DRIVEWAY_EXT_Y1,
+                FLOOR_Z1,
+                WORLD_X2_EXT - WALL_T,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+
+        return _west_ext_y2, _east_ext_y2
+
+    def _append_west_curb_return(_west_ext_y2):
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_RD_X1,
+                KNOTT_DRIVEWAY_EXT_Y2,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X2,
+                ENNIS_Y - ENNIS_HW,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+
+        _west_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _west_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_WS_X1,
+                _west_ext_y2,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_RD_X1,
+                _west_jc_y2,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+
+        _r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
+        _r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
+        _seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
+        for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+            a0 = corner_index * _seg_deg
+            a1 = (corner_index + 1) * _seg_deg
+            t0, t1 = math.radians(a0), math.radians(a1)
+            BRUSHES.append(
+                tri_prism(
+                    KNOTT_DRIVEWAY_JCX_X1,
+                    _west_ext_y2,
+                    KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t0),
+                    _west_ext_y2 + _r_inner * math.sin(t0),
+                    KNOTT_DRIVEWAY_JCX_X1 + _r_inner * math.cos(t1),
+                    _west_ext_y2 + _r_inner * math.sin(t1),
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.GROUND,
+                )
+            )
+
+        for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+            a0 = corner_index * _seg_deg
+            a1 = (corner_index + 1) * _seg_deg
+            BRUSHES.append(
+                curb_seg(
+                    KNOTT_DRIVEWAY_JCX_X1,
+                    _west_ext_y2,
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    _r_inner,
+                    _r_outer,
+                    a0,
+                    a1,
+                    Textures.CEMENT,
+                )
+            )
+
+        _peak_out_y = _west_ext_y2 + _r_outer
+        _peak_in_y = _west_ext_y2 + _r_inner
+        _base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_outer
+        _base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _r_inner
+        _flat_x1 = KNOTT_DRIVEWAY_JCX_X1 - KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+        BRUSHES.append(
+            box(
+                _flat_x1,
+                _peak_in_y,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_JCX_X1,
+                _peak_out_y,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            box(
+                _flat_x1,
+                _base_in_y,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_JCX_X1,
+                _peak_in_y,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+
+        _taper_x0 = _flat_x1 - KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
         BRUSHES.append(
             tri_prism(
-                KNOTT_DRIVEWAY_JCX_E,
-                _east_ext_y2,
-                KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t0),
-                _east_ext_y2 + _er_inner * math.sin(t0),
-                KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t1),
-                _east_ext_y2 + _er_inner * math.sin(t1),
+                _flat_x1,
+                _peak_out_y,
+                _taper_x0,
+                _base_out_y,
+                _taper_x0,
+                _base_in_y,
                 FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            tri_prism(
+                _flat_x1,
+                _peak_out_y,
+                _taper_x0,
+                _base_in_y,
+                _flat_x1,
+                _peak_in_y,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            tri_prism(
+                _flat_x1,
+                _peak_in_y,
+                _taper_x0,
+                _base_in_y,
+                _flat_x1,
+                _base_in_y,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.GROUND,
+            )
+        )
+
+    def _append_east_curb_return(_east_ext_y2):
+        _east_jc_y2 = max(KNOTT_DRIVEWAY_JCY, _east_ext_y2 + KNOTT_DRIVEWAY_CURB_CRN_R)
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_ES_X1,
+                _east_ext_y2,
+                FLOOR_Z2,
+                KNOTT_DRIVEWAY_ES_X2,
+                _east_jc_y2,
+                FLOOR_Z2 + 2,
+                Textures.ROAD,
+            )
+        )
+        _er_outer = KNOTT_DRIVEWAY_CURB_CRN_R
+        _er_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
+        _e_seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
+        for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
+            ea0 = 90 + corner_index * _e_seg_deg
+            ea1 = 90 + (corner_index + 1) * _e_seg_deg
+            t0, t1 = math.radians(ea0), math.radians(ea1)
+            BRUSHES.append(
+                tri_prism(
+                    KNOTT_DRIVEWAY_JCX_E,
+                    _east_ext_y2,
+                    KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t0),
+                    _east_ext_y2 + _er_inner * math.sin(t0),
+                    KNOTT_DRIVEWAY_JCX_E + _er_inner * math.cos(t1),
+                    _east_ext_y2 + _er_inner * math.sin(t1),
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.MULCH,
+                )
+            )
+            BRUSHES.append(
+                curb_seg(
+                    KNOTT_DRIVEWAY_JCX_E,
+                    _east_ext_y2,
+                    FLOOR_Z2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    _er_inner,
+                    _er_outer,
+                    ea0,
+                    ea1,
+                    Textures.CEMENT,
+                )
+            )
+
+        _e_peak_out_y = _east_ext_y2 + _er_outer
+        _e_peak_in_y = _east_ext_y2 + _er_inner
+        _e_base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_outer
+        _e_base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_inner
+        _e_flat_x2 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_JCX_E,
+                _e_peak_in_y,
+                FLOOR_Z2,
+                _e_flat_x2,
+                _e_peak_out_y,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_JCX_E,
+                _e_base_in_y,
+                FLOOR_Z2,
+                _e_flat_x2,
+                _e_peak_in_y,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.MULCH,
             )
         )
 
+        _e_taper_x1 = _e_flat_x2 + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
         BRUSHES.append(
-            curb_seg(
-                KNOTT_DRIVEWAY_JCX_E,
-                _east_ext_y2,
+            tri_prism(
+                _e_taper_x1,
+                _e_base_in_y,
+                _e_taper_x1,
+                _e_base_out_y,
+                _e_flat_x2,
+                _e_peak_out_y,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                _er_inner,
-                _er_outer,
-                ea0,
-                ea1,
                 Textures.CEMENT,
             )
         )
+        BRUSHES.append(
+            tri_prism(
+                _e_flat_x2,
+                _e_peak_in_y,
+                _e_taper_x1,
+                _e_base_in_y,
+                _e_flat_x2,
+                _e_peak_out_y,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.CEMENT,
+            )
+        )
+        BRUSHES.append(
+            tri_prism(
+                _e_flat_x2,
+                _e_base_in_y,
+                _e_taper_x1,
+                _e_base_in_y,
+                _e_flat_x2,
+                _e_peak_in_y,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.MULCH,
+            )
+        )
+        BRUSHES.append(
+            box(
+                KNOTT_DRIVEWAY_JCX_E,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2,
+                _e_taper_x1,
+                _e_base_in_y,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.MULCH,
+            )
+        )
 
-    _e_peak_out_y = _east_ext_y2 + _er_outer
-    _e_peak_in_y = _east_ext_y2 + _er_inner
-    _e_base_out_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_outer
-    _e_base_in_y = KNOTT_DRIVEWAY_EXT_Y2 + _er_inner
-    _e_flat_x2 = KNOTT_DRIVEWAY_JCX_E + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_JCX_E,
-            _e_peak_in_y,
-            FLOOR_Z2,
-            _e_flat_x2,
-            _e_peak_out_y,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_JCX_E,
-            _e_base_in_y,
-            FLOOR_Z2,
-            _e_flat_x2,
-            _e_peak_in_y,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.MULCH,
-        )
-    )
-
-    _e_taper_x1 = _e_flat_x2 + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
-    BRUSHES.append(
-        tri_prism(
-            _e_taper_x1,
-            _e_base_in_y,
-            _e_taper_x1,
-            _e_base_out_y,
-            _e_flat_x2,
-            _e_peak_out_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    BRUSHES.append(
-        tri_prism(
-            _e_flat_x2,
-            _e_peak_in_y,
-            _e_taper_x1,
-            _e_base_in_y,
-            _e_flat_x2,
-            _e_peak_out_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    BRUSHES.append(
-        tri_prism(
-            _e_flat_x2,
-            _e_base_in_y,
-            _e_taper_x1,
-            _e_base_in_y,
-            _e_flat_x2,
-            _e_peak_in_y,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.MULCH,
-        )
-    )
-
-    BRUSHES.append(
-        box(
-            KNOTT_DRIVEWAY_JCX_E,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            _e_taper_x1,
-            _e_base_in_y,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.MULCH,
-        )
-    )
+    _append_driveway_slabs()
+    _append_east_far_south_fill()
+    _append_west_far_south_fill()
+    _append_west_grid_transitions()
+    _append_west_driveway_ramp()
+    _append_hillside_profile_fill()
+    _west_ext_y2, _east_ext_y2 = _append_driveway_extension()
+    _append_west_curb_return(_west_ext_y2)
+    _append_east_curb_return(_east_ext_y2)
 
     return BRUSHES
 
@@ -1102,45 +1116,10 @@ def build():
 
 def _kh_hill_ground_z(x, y):
     """Return the modeled Knott hillside ground height at ``(x, y)``."""
-    _charles_verge_x2 = ROAD_X2 + CHARLES_WALK_W + CHARLES_RAMP_W
     _flat_z = FLOOR_Z2 + CHARLES_WALK_H
-    _hill_profile = [
-        (_charles_verge_x2, 0),
-        (_charles_verge_x2 + 80, 30),
-        (525, 42),
-        (700, 67),
-        (900, 78),
-        (KNOTT.x1, 78),
-        (BRIDGE_ARCH_X[4], 78),
-        (
-            BRIDGE_ARCH_X[4] + 0.2 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.2**2 - 2 * 0.2**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.4 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.4**2 - 2 * 0.4**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.6 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.6**2 - 2 * 0.6**3)),
-        ),
-        (
-            BRIDGE_ARCH_X[4] + 0.8 * (KNOTT_DRIVEWAY_WS_X1 - BRIDGE_ARCH_X[4]),
-            78 * (1 - (3 * 0.8**2 - 2 * 0.8**3)),
-        ),
-        (KNOTT_DRIVEWAY_WS_X1, 0),
-    ]
+    _hill_profile = _kh_hill_profile()
 
-    def _hill_z(px):
-        for (px1, pz1), (px2, pz2) in zip(
-            _hill_profile, _hill_profile[1:], strict=False
-        ):
-            if px1 <= px <= px2:
-                t = (px - px1) / (px2 - px1) if px2 != px1 else 0.0
-                return _flat_z + pz1 + t * (pz2 - pz1)
-        return _flat_z + _hill_profile[-1][1]
-
-    hz = _hill_z(x)
+    hz = _kh_hill_profile_z(x, _hill_profile)
     if y <= 0:
         return hz
     if y >= ENNIS_SW_EDGE:
