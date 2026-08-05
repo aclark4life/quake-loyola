@@ -27,7 +27,6 @@ from .constants.bridge import (
     BRIDGE_DECK_CROSS_STRIP_DROP,
     BRIDGE_DECK_CROSS_STRIP_H,
     BRIDGE_DECK_CROSS_STRIP_HW,
-    BRIDGE_DECK_EAST_RECESS,
     BRIDGE_DECK_EDGE_CEMENT_W,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
@@ -88,7 +87,6 @@ from .constants.derived import (
     PIER6_X,
     WALK_X1,
     WALK_X2,
-    WALL_T,
     WORLD_X1,
     WORLD_X2_EXT,
     deck_bot_z,
@@ -110,7 +108,6 @@ from .constants.fonts import FASCIA_FONT
 from .constants.textures import Textures
 from .constants.world import (
     A_SEGS,
-    ARCH_SLAB_W,
     FLOOR_Z2,
 )
 from .geometry import (
@@ -123,10 +120,8 @@ from .geometry import (
     ent,
     pyramid,
     ramp_slab,
-    shear_box_y,
     square_wall,
     taper_box_x,
-    taper_box_y,
     tile_face_plates,
     torch_flame_only,
 )
@@ -431,31 +426,6 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    DECK_EAST_END_X = WORLD_X2_EXT - WALL_T - BRIDGE_DECK_EAST_RECESS
-    PAR_EAST_END_X = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W - BRIDGE_DECK_EAST_RECESS
-    PIER6_EAST_X = PIER6_X + BRIDGE_PILLAR_HW
-    _ws = _worldspawn_brushes
-
-    for seg_x1, seg_x2 in [
-        (PIER6_EAST_X, DECK_EAST_END_X),
-    ]:
-        for _ys1, _ys2, _tt, _tb, _far, _margin, _margin2, _tt_params in _DECK_BANDS:
-            BRUSHES.append(
-                taper_box_y(
-                    seg_x1,
-                    _ys1 + east_y_shift(seg_x1),
-                    _ys2 + east_y_shift(seg_x1),
-                    BRIDGE_DZ1,
-                    seg_x2,
-                    _ys1 + east_y_shift(seg_x2),
-                    _ys2 + east_y_shift(seg_x2),
-                    BRIDGE_DZ2,
-                    Textures.STONE,
-                    tt=_tt,
-                    tb=_tb,
-                    tt_params=_tt_params,
-                )
-            )
 
     _p1, _p2, _p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
     _n_center = max(1, round((_p3 - _p2) / BRIDGE_SEG_W))
@@ -550,22 +520,6 @@ def _build_all():
             margin2=8,
         )
     )
-    for _seg_x1, _seg_x2 in [
-        (PIER6_EAST_X, PAR_EAST_END_X),
-    ]:
-        _ws.append(
-            shear_box_y(
-                _seg_x1,
-                BRIDGE.y2 - BRIDGE_PAR_W,
-                BRIDGE_DZ2,
-                _seg_x2,
-                BRIDGE.y2,
-                BRIDGE_DZ2 + BRIDGE.parapet_h,
-                east_y_shift(_seg_x1),
-                east_y_shift(_seg_x2),
-                Textures.CEMENT,
-            )
-        )
     _span4_west_mid = (BRIDGE.x2 + WALK_X1) / 2
     BRUSHES.append(
         box(
@@ -588,22 +542,6 @@ def _build_all():
             Textures.CEMENT,
         )
     )
-    for _seg_x1, _seg_x2 in [
-        (PIER6_EAST_X, PAR_EAST_END_X),
-    ]:
-        _ws.append(
-            shear_box_y(
-                _seg_x1,
-                BRIDGE.y1,
-                BRIDGE_DZ2,
-                _seg_x2,
-                BRIDGE.y1 + BRIDGE_PAR_W,
-                BRIDGE_DZ2 + BRIDGE.parapet_h,
-                east_y_shift(_seg_x1),
-                east_y_shift(_seg_x2),
-                Textures.CEMENT,
-            )
-        )
 
     for sx1, sx2, _, _, pb1, pb2, pt1, pt2 in iter_bridge_span_segments():
         BRUSHES.append(
@@ -1038,22 +976,6 @@ def _build_all():
                     margin=-4,
                 )
             )
-            for seg_x1, seg_x2 in [
-                (PIER6_EAST_X, PAR_EAST_END_X),
-            ]:
-                BRUSHES.append(
-                    shear_box_y(
-                        seg_x1,
-                        tube_ny1,
-                        tube_base_z,
-                        seg_x2,
-                        tube_ny2,
-                        tube_base_z + BRIDGE_TUBE_HW * 2,
-                        east_y_shift(seg_x1),
-                        east_y_shift(seg_x2),
-                        Textures.RAIL,
-                    )
-                )
             BRUSHES.append(
                 box(
                     BRIDGE.x2,
@@ -1075,22 +997,6 @@ def _build_all():
                     Textures.RAIL,
                 )
             )
-            for seg_x1, seg_x2 in [
-                (PIER6_EAST_X, PAR_EAST_END_X),
-            ]:
-                BRUSHES.append(
-                    shear_box_y(
-                        seg_x1,
-                        tube_sy1,
-                        tube_base_z,
-                        seg_x2,
-                        tube_sy2,
-                        tube_base_z + BRIDGE_TUBE_HW * 2,
-                        east_y_shift(seg_x1),
-                        east_y_shift(seg_x2),
-                        Textures.RAIL,
-                    )
-                )
 
     def _build_supports():
         """Build the bridge piers, abutments, torches, and teleport fill."""
