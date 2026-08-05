@@ -18,9 +18,9 @@ from ..constants import (
     KNOTT,
     KNOTT_CX,
     KNOTT_ENABLED_WALKWAY,
+    KNOTT_ENT_WALK_ZT1,
+    KNOTT_ENT_WALK_ZT2,
     SDORM_LIFT,
-    WALK_ZT1,
-    WALK_ZT2,
     WEST_CAMPUS_ENABLED_DORMS,
     deck_bot_z,
 )
@@ -133,8 +133,8 @@ def _build_lights(ENTITIES):
     if KNOTT_ENABLED_WALKWAY:
         walk_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2
         walk_frac = (BRIDGE.y1 - walk_mid_y) / float(BRIDGE.y1 - KNOTT.y2)
-        wk_zb1 = WALK_ZT1 - KNOTT.wall_t
-        wk_zb2 = WALK_ZT2 - KNOTT.wall_t
+        wk_zb1 = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t
+        wk_zb2 = KNOTT_ENT_WALK_ZT2 - KNOTT.wall_t
         walk_bot_mid = int(wk_zb1 + walk_frac * (wk_zb2 - wk_zb1))
         ENTITIES.append(
             ent(

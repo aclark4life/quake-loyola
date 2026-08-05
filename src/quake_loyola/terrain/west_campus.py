@@ -115,7 +115,7 @@ def _wct_taper(frac):
 _wct_cols += [_wct_taper(f) for f in _WCT_TAPER_FRACS] + [_wct_flat_walk]
 
 
-def _terrain_z(x, y):
+def terrain_z(x, y):
     """Return the interpolated terrain height at ``(x, y)`` within this grid."""
     x = min(max(x, _wct_x[0]), _wct_x[-1])
     y = max(min(y, wct_y[0]), wct_y[-1])
@@ -162,8 +162,8 @@ def build():
                 # Extrapolate the south edge's Z along the same slope used
                 # for the (unextended) row instead of reusing the
                 # unextended z_sw/z_se, so the overlap region stays on the
-                # same plane _terrain_z() would interpolate (previously
-                # this left the overlap diverging from _terrain_z() by a
+                # same plane terrain_z() would interpolate (previously
+                # this left the overlap diverging from terrain_z() by a
                 # few units near steep rows).
                 z_sw = z_nw + (z_sw - z_nw) * (y2_ext - y1) / (y2 - y1)
                 z_se = z_ne + (z_se - z_ne) * (y2_ext - y1) / (y2 - y1)

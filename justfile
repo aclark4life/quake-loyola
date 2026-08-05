@@ -109,6 +109,9 @@ update-golden: venv
     .venv/bin/python scripts/update_golden.py
 
 # Compile QuakeC source in qc/ into progs.dat using gmqcc
+# NOTE: this recipe requires .tools/gmqcc/gmqcc, which is *not* installed by
+# `just install-tools` — build it from source manually first. QC integration
+# is an on-hold experiment; see docs/quakec.rst for the full toolchain setup.
 compile-qc:
     cd qc && {{gmqcc_bin}} -std=fteqcc -Wall -o ../progs.dat \
         defs.qc subs.qc combat.qc items.qc weapons.qc world.qc \

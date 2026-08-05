@@ -1,6 +1,7 @@
 """Assemble area modules into the final ``loyola.map`` document."""
 
 from dataclasses import replace
+from pathlib import Path
 
 from . import (
     basement,
@@ -91,12 +92,12 @@ def build_map_text():
     return build_map().to_map(WORLDSPAWN_FIELDS)
 
 
-def main():
-    """Write ``loyola.map`` to the repository root."""
+def main(path=None):
+    """Write ``loyola.map`` to ``path`` (default: the repository root)."""
     mb = build_map()
     map_text = mb.to_map(WORLDSPAWN_FIELDS)
 
-    map_path = config.REPO_ROOT / "loyola.map"
+    map_path = Path(path) if path is not None else config.REPO_ROOT / "loyola.map"
     with open(map_path, "w") as f:
         f.write(map_text)
     print(

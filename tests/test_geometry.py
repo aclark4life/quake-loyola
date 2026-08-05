@@ -1,8 +1,11 @@
 import unittest
 
 from quake_loyola.geometry import (
+    arch_fill,
+    arch_pie_seg,
     arch_plate_ring,
     arch_seg,
+    arch_seg_chord,
     arch_wall,
     arch_wall_y,
     box,
@@ -10,6 +13,7 @@ from quake_loyola.geometry import (
     brush_ent,
     corner_ramp,
     corner_window,
+    curb_seg,
     elevator_shaft,
     ent,
     entrance_arch_xwall,
@@ -229,6 +233,22 @@ class PrimitiveValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             arch_seg(0, 10, 0, 0, 16, 32, 45, 0, "t")
 
+    def test_arch_seg_rejects_reversed_xb_xf(self):
+        with self.assertRaises(ValueError):
+            arch_seg(10, 0, 0, 0, 16, 32, 0, 45, "t")
+
+    def test_arch_seg_chord_rejects_reversed_xb_xf(self):
+        with self.assertRaises(ValueError):
+            arch_seg_chord(10, 0, 0, 0, 16, 32, 0, 45, "t")
+
+    def test_arch_pie_seg_rejects_reversed_xb_xf(self):
+        with self.assertRaises(ValueError):
+            arch_pie_seg(10, 0, 0, 0, 32, 0, 45, "t")
+
+    def test_curb_seg_rejects_reversed_z_bounds(self):
+        with self.assertRaises(ValueError):
+            curb_seg(0, 0, 10, 0, 16, 32, 0, 45, "t")
+
 
 class TileAndArchPlateRingTests(unittest.TestCase):
     def test_tile_face_plates_covers_face_with_tile_sized_boxes(self):
@@ -267,6 +287,10 @@ class ArchWallTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 0, "t")
 
+    def test_arch_wall_rejects_reversed_x_bounds(self):
+        with self.assertRaises(ValueError):
+            arch_wall(16, 0, -100, 100, 0, 128, 32, 48, 4, "t")
+
     def test_arch_wall_freestanding_omits_ceiling_slab(self):
         framed = arch_wall(0, 16, -100, 100, 0, 128, 32, 48, 4, "t")
         freestanding = arch_wall(
@@ -292,6 +316,10 @@ class ArchWallTests(unittest.TestCase):
     def test_arch_wall_y_rejects_reversed_bounds(self):
         with self.assertRaises(ValueError):
             arch_wall_y(100, -100, 0, 32, 48, 4, "t")
+
+    def test_arch_fill_rejects_reversed_x_bounds(self):
+        with self.assertRaises(ValueError):
+            arch_fill(16, 0, 0, 0, 32, 4, "t")
 
 
 class EntranceArchTests(unittest.TestCase):

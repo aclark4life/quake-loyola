@@ -595,6 +595,11 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
         )
     if xb == xf:
         raise ValueError(f"arch_seg: degenerate (zero-depth) segment at x={xb}")
+    if xb > xf:
+        raise ValueError(
+            f"arch_seg: requires xb < xf, got xb={xb}, xf={xf}; reversed "
+            "bounds would silently invert the segment's front/back faces"
+        )
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -633,6 +638,11 @@ def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, te
         )
     if xb == xf:
         raise ValueError(f"arch_seg_chord: degenerate (zero-depth) segment at x={xb}")
+    if xb > xf:
+        raise ValueError(
+            f"arch_seg_chord: requires xb < xf, got xb={xb}, xf={xf}; reversed "
+            "bounds would silently invert the segment's front/back faces"
+        )
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     c1, s1 = math.cos(t1), math.sin(t1)
     c2, s2 = math.cos(t2), math.sin(t2)
@@ -671,6 +681,11 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
         )
     if z1 == z2:
         raise ValueError(f"curb_seg: degenerate (zero-height) segment at z={z1}")
+    if z1 > z2:
+        raise ValueError(
+            f"curb_seg: requires z1 < z2, got z1={z1}, z2={z2}; reversed "
+            "bounds would silently invert the segment's top/bottom faces"
+        )
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)
@@ -707,6 +722,11 @@ def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
         )
     if xb == xf:
         raise ValueError(f"arch_pie_seg: degenerate (zero-depth) segment at x={xb}")
+    if xb > xf:
+        raise ValueError(
+            f"arch_pie_seg: requires xb < xf, got xb={xb}, xf={xf}; reversed "
+            "bounds would silently invert the segment's front/back faces"
+        )
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
     tm = (t1 + t2) / 2.0
     c1, s1 = math.cos(t1), math.sin(t1)

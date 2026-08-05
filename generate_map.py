@@ -9,10 +9,12 @@ pip-installed (see ``ql gen`` / ``src/quake_loyola/cli.py``).
 import sys
 from pathlib import Path
 
-# Ensure src/ is on the path so quake_loyola is importable without installing it
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
-from quake_loyola.mapgen import build_map, build_map_text, main  # noqa: F401,E402
+try:
+    from quake_loyola.mapgen import build_map, build_map_text, main  # noqa: F401
+except ModuleNotFoundError:
+    # Fallback for running from a checkout without `pip install -e .`.
+    sys.path.insert(0, str(Path(__file__).parent / "src"))
+    from quake_loyola.mapgen import build_map, build_map_text, main  # noqa: F401
 
 if __name__ == "__main__":
     main()

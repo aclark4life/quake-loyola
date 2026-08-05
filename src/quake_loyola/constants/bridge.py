@@ -110,7 +110,9 @@ BRIDGE_CENTER_SPAN_OFFSET = (
     0.0,
     320.0,
     96.0,
-)  # (dx, dy, dz) applied only to the center span.
+)  # (dx, dy, dz) requested for the center span; applied to the whole enabled
+# bridge assembly (see bridge.py::_shift_center_span) so shared piers stay
+# connected to non-center spans rather than tearing at the joint.
 BRIDGE_CENTER_SPAN_PIER_EMBED = 96  # Extra pier embed when the center span is offset.
 PIER6_ROTATION_DEG = -20  # Clockwise rotation in plan view.
 PIER6_ROTATION_MARGIN = 150  # Extra section-filter margin for the rotated footprint.

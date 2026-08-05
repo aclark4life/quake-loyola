@@ -3,26 +3,33 @@ the repo root" entry point invoked by `ql gen` / `python generate_map.py`.
 build_map()/build_map_text() themselves are already covered indirectly by
 tests/test_regression.py's golden-output assertions."""
 
+import tempfile
 import unittest
+from pathlib import Path
 
-from quake_loyola import config, mapgen
+from quake_loyola import mapgen
 
 
 class MainWritesMapFileTests(unittest.TestCase):
     def test_main_writes_loyola_map_to_repo_root(self):
-        map_path = config.REPO_ROOT / "loyola.map"
-        backup_text = map_path.read_text() if map_path.exists() else None
-        try:
-            mapgen.main()
+        # Write to a temp path rather than the real repo root so this test
+        # has no working-tree side effects.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            map_path = Path(tmpdir) / "loyola.map"
+            mapgen.main(path=map_path)
             self.assertTrue(map_path.exists())
             text = map_path.read_text()
             self.assertIn("worldspawn", text)
             self.assertEqual(text, mapgen.build_map_text())
-        finally:
-            if backup_text is not None:
-                map_path.write_text(backup_text)
-            elif map_path.exists():
-                map_path.unlink()
+
+    def test_main_defaults_to_repo_root(self):
+        # The default (no-arg) path should still target the documented
+        # repo-root location, without actually writing there in this test.
+        import inspect
+
+        sig = inspect.signature(mapgen.main)
+        self.assertIn("path", sig.parameters)
+        self.assertIsNone(sig.parameters["path"].default)
 
 
 if __name__ == "__main__":

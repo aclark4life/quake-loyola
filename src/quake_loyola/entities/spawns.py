@@ -54,42 +54,44 @@ from ..geometry import (
 from ._common import DORM_SOUTH1_CY, DORM_SOUTH2_CY, ROAD_Z, _cs_offset
 
 
-def _build_teleports(ENTITIES):
-    teleports_start = len(ENTITIES)
+def _append_west_bridge_teleport(ENTITIES):
+    """Build the west bridge arch teleport and its lower trigger volume."""
+    if not WEST_CAMPUS_ENABLED_DORMS:
+        return
 
-    if WEST_CAMPUS_ENABLED_DORMS:
-        ENTITIES.append(
-            ent(
-                "info_teleport_destination",
-                targetname="dest_east",
-                origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
-                angle="270",
-            )
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_east",
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            angle="270",
         )
+    )
 
-        west_brushes = arch_fill(
-            WORLD_X1 + WALL_T,
-            WORLD_X1 + WALL_T + ARCH_SLAB_W,
-            0.0,
-            BRIDGE_DZ2,
-            ARCH_RIN,
-            A_SEGS,
-            Textures.TELEPORT,
-            stilt_h=ARCH_STILT_H,
-        )
-        ENTITIES.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
-        ENTITIES.append(brush_ent("func_illusionary", west_brushes))
+    west_brushes = arch_fill(
+        WORLD_X1 + WALL_T,
+        WORLD_X1 + WALL_T + ARCH_SLAB_W,
+        0.0,
+        BRIDGE_DZ2,
+        ARCH_RIN,
+        A_SEGS,
+        Textures.TELEPORT,
+        stilt_h=ARCH_STILT_H,
+    )
+    ENTITIES.append(brush_ent("trigger_teleport", west_brushes, target="dest_east"))
+    ENTITIES.append(brush_ent("func_illusionary", west_brushes))
 
-        wlx1 = WORLD_X1 + WALL_T
-        wlx2 = wlx1 + ARCH_SLAB_W
-        west_lower = [
-            box(
-                wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, BRIDGE_DZ2, Textures.TELEPORT
-            )
-        ]
-        ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
-        ENTITIES.append(brush_ent("func_illusionary", west_lower))
+    wlx1 = WORLD_X1 + WALL_T
+    wlx2 = wlx1 + ARCH_SLAB_W
+    west_lower = [
+        box(wlx1, -ARCH_RIN, FLOOR_Z2, wlx2, ARCH_RIN, BRIDGE_DZ2, Textures.TELEPORT)
+    ]
+    ENTITIES.append(brush_ent("trigger_teleport", west_lower, target="dest_east"))
+    ENTITIES.append(brush_ent("func_illusionary", west_lower))
 
+
+def _append_east_bridge_teleports(ENTITIES):
+    """Build the east rooftop teleport arch and the lower east-deck return."""
     if KNOTT_ENABLED:
         ENTITIES.append(
             ent(
@@ -138,73 +140,80 @@ def _build_teleports(ENTITIES):
     ENTITIES.append(brush_ent("trigger_teleport", east_lower, target="dest_east_deck"))
     ENTITIES.append(brush_ent("func_illusionary", east_lower))
 
-    if WEST_CAMPUS_ENABLED_DORMS:
-        ENTITIES.append(
-            ent(
-                "info_teleport_destination",
-                targetname="dest_south_dorm_roof",
-                origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-                angle="90",
-            )
-        )
-        ENTITIES.append(
-            ent(
-                "info_teleport_destination",
-                targetname="dest_dorm_roof",
-                origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + 40)}",
-                angle="270",
-            )
-        )
 
-    if WEST_CAMPUS_ENABLED_DORMS:
-        # Both trigger targets above land on the dorm roof, so build them
-        # together with their destinations rather than leaving a
-        # trigger_teleport with a dangling target.
-        for arch_y1, arch_y2, trigger_y1, trigger_y2, arch_target in [
-            (
-                CHARLES_Y1,
-                CHARLES_Y1 + CHARLES_ARCH_W,
-                CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
-                CHARLES_Y1 + CHARLES_ARCH_W,
-                "dest_south_dorm_roof",
-            ),
-            (
-                CHARLES_Y2 - CHARLES_ARCH_W,
-                CHARLES_Y2,
-                CHARLES_Y2 - CHARLES_ARCH_W,
-                CHARLES_Y2 - CHARLES_ARCH_TRIG_INSET,
-                "dest_dorm_roof",
-            ),
-        ]:
-            north_south_trigger_brushes = [
-                box(
-                    -CHARLES_ARCH_RIN + CHARLES_ARCH_TRIG_INSET,
-                    trigger_y1,
-                    FLOOR_Z2,
-                    CHARLES_ARCH_RIN - CHARLES_ARCH_TRIG_INSET,
-                    trigger_y2,
-                    FLOOR_Z2 + CHARLES_ARCH_STILT + 128,
-                    Textures.TELEPORT,
-                )
-            ]
-            ENTITIES.append(
-                brush_ent(
-                    "trigger_teleport", north_south_trigger_brushes, target=arch_target
-                )
-            )
+def _append_dorm_roof_teleports(ENTITIES):
+    """Build the Charles Street teleports that land on the dorm roofs."""
+    if not WEST_CAMPUS_ENABLED_DORMS:
+        return
 
-            north_south_glow_brushes = arch_fill_y(
-                arch_y1,
-                arch_y2,
-                0.0,
-                FLOOR_Z2 + 4,
-                CHARLES_ARCH_RIN,
-                A_SEGS,
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_south_dorm_roof",
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
+            angle="90",
+        )
+    )
+    ENTITIES.append(
+        ent(
+            "info_teleport_destination",
+            targetname="dest_dorm_roof",
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + 40)}",
+            angle="270",
+        )
+    )
+
+    # Both trigger targets above land on the dorm roof, so build them
+    # together with their destinations rather than leaving a
+    # trigger_teleport with a dangling target.
+    for arch_y1, arch_y2, trigger_y1, trigger_y2, arch_target in [
+        (
+            CHARLES_Y1,
+            CHARLES_Y1 + CHARLES_ARCH_W,
+            CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
+            CHARLES_Y1 + CHARLES_ARCH_W,
+            "dest_south_dorm_roof",
+        ),
+        (
+            CHARLES_Y2 - CHARLES_ARCH_W,
+            CHARLES_Y2,
+            CHARLES_Y2 - CHARLES_ARCH_W,
+            CHARLES_Y2 - CHARLES_ARCH_TRIG_INSET,
+            "dest_dorm_roof",
+        ),
+    ]:
+        north_south_trigger_brushes = [
+            box(
+                -CHARLES_ARCH_RIN + CHARLES_ARCH_TRIG_INSET,
+                trigger_y1,
+                FLOOR_Z2,
+                CHARLES_ARCH_RIN - CHARLES_ARCH_TRIG_INSET,
+                trigger_y2,
+                FLOOR_Z2 + CHARLES_ARCH_STILT + 128,
                 Textures.TELEPORT,
-                stilt_h=CHARLES_ARCH_STILT,
             )
-            ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
+        ]
+        ENTITIES.append(
+            brush_ent(
+                "trigger_teleport", north_south_trigger_brushes, target=arch_target
+            )
+        )
 
+        north_south_glow_brushes = arch_fill_y(
+            arch_y1,
+            arch_y2,
+            0.0,
+            FLOOR_Z2 + 4,
+            CHARLES_ARCH_RIN,
+            A_SEGS,
+            Textures.TELEPORT,
+            stilt_h=CHARLES_ARCH_STILT,
+        )
+        ENTITIES.append(brush_ent("func_illusionary", north_south_glow_brushes))
+
+
+def _append_charles_arch_details(ENTITIES):
+    """Build the decorative Charles Street stone arches around the teleports."""
     CHARLES_ARCH_SEGS = 24
     for arch_y1, arch_y2 in [
         (CHARLES_Y1, CHARLES_Y1 + CHARLES_ARCH_W),
@@ -226,11 +235,11 @@ def _build_teleports(ENTITIES):
             )
         )
 
-    ENNIS_ARCH_STILT = 64
-    KH_DRIVE_ARCH_STILT = 64
-    ARCH_TRIG_INSET = 8
 
-    kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
+def _append_ennis_east_teleport(ENTITIES):
+    """Build the Ennis east teleport pair and the linked arch trigger/glow."""
+    ENNIS_ARCH_STILT = 64
+    ARCH_TRIG_INSET = 8
 
     if KNOTT_ENABLED:
         ENTITIES.append(
@@ -253,36 +262,43 @@ def _build_teleports(ENTITIES):
     ennis_arch_x1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
     ennis_arch_x2 = WORLD_X2_EXT - WALL_T
     ennis_arch_top_z = FLOOR_Z2 + ENNIS_ARCH_STILT + ENNIS_HW
-    if KNOTT_ENABLED:
-        ennis_east_trigger = [
-            box(
-                ennis_arch_x1,
-                ENNIS_Y - ENNIS_HW + ARCH_TRIG_INSET,
-                FLOOR_Z2 + 4,
-                ennis_arch_x2,
-                ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - ARCH_TRIG_INSET,
-                ennis_arch_top_z,
-                Textures.TELEPORT,
-            )
-        ]
-        ENTITIES.append(
-            brush_ent(
-                "trigger_teleport", ennis_east_trigger, target="dest_kh_drive_south"
-            )
-        )
-        ennis_east_glow = arch_fill(
-            ennis_arch_x1,
-            ennis_arch_x2,
-            float(ENNIS_Y),
-            FLOOR_Z2,
-            ENNIS_HW,
-            A_SEGS,
-            Textures.TELEPORT,
-            stilt_h=ENNIS_ARCH_STILT,
-        )
-        ENTITIES.append(brush_ent("func_illusionary", ennis_east_glow))
+    if not KNOTT_ENABLED:
+        return
 
+    ennis_east_trigger = [
+        box(
+            ennis_arch_x1,
+            ENNIS_Y - ENNIS_HW + ARCH_TRIG_INSET,
+            FLOOR_Z2 + 4,
+            ennis_arch_x2,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - ARCH_TRIG_INSET,
+            ennis_arch_top_z,
+            Textures.TELEPORT,
+        )
+    ]
+    ENTITIES.append(
+        brush_ent("trigger_teleport", ennis_east_trigger, target="dest_kh_drive_south")
+    )
+    ennis_east_glow = arch_fill(
+        ennis_arch_x1,
+        ennis_arch_x2,
+        float(ENNIS_Y),
+        FLOOR_Z2,
+        ENNIS_HW,
+        A_SEGS,
+        Textures.TELEPORT,
+        stilt_h=ENNIS_ARCH_STILT,
+    )
+    ENTITIES.append(brush_ent("func_illusionary", ennis_east_glow))
+
+
+def _append_ennis_arch_detail(ENTITIES):
+    """Build the decorative freestanding stone arch at Ennis east."""
+    ENNIS_ARCH_STILT = 64
     ENNIS_ARCH_ROUT = ENNIS_HW + 56
+    ennis_arch_x1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
+    ennis_arch_x2 = WORLD_X2_EXT - WALL_T
+    ennis_arch_top_z = FLOOR_Z2 + ENNIS_ARCH_STILT + ENNIS_HW
     ennis_stone_arch = arch_wall(
         ennis_arch_x1,
         ennis_arch_x2,
@@ -300,36 +316,51 @@ def _build_teleports(ENTITIES):
     )
     ENTITIES.append(brush_ent("func_detail", ennis_stone_arch))
 
+
+def _append_knott_drive_teleport(ENTITIES):
+    """Build the Knott driveway teleport arch, trigger volume, and glow."""
+    KH_DRIVE_ARCH_STILT = 64
+    ARCH_TRIG_INSET = 8
+    kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
     kh_arch_y1 = CHARLES_Y1
     kh_arch_y2 = CHARLES_Y1 + ARCH_SLAB_W
     kh_arch_top_z = KNOTT_DRIVEWAY_ZT_S + KH_DRIVE_ARCH_STILT + KNOTT.driveway_hw
-    if KNOTT_ENABLED:
-        kh_drive_trigger = [
-            box(
-                kh_drive_cx - KNOTT.driveway_hw + ARCH_TRIG_INSET,
-                kh_arch_y1,
-                KNOTT_DRIVEWAY_ZT_S + 4,
-                kh_drive_cx + KNOTT.driveway_hw - ARCH_TRIG_INSET,
-                kh_arch_y2,
-                kh_arch_top_z,
-                Textures.TELEPORT,
-            )
-        ]
-        ENTITIES.append(
-            brush_ent("trigger_teleport", kh_drive_trigger, target="dest_ennis_east")
-        )
-        kh_drive_glow = arch_fill_y(
-            kh_arch_y1,
-            kh_arch_y2,
-            float(kh_drive_cx),
-            KNOTT_DRIVEWAY_ZT_S,
-            KNOTT.driveway_hw,
-            A_SEGS,
-            Textures.TELEPORT,
-            stilt_h=KH_DRIVE_ARCH_STILT,
-        )
-        ENTITIES.append(brush_ent("func_illusionary", kh_drive_glow))
+    if not KNOTT_ENABLED:
+        return
 
+    kh_drive_trigger = [
+        box(
+            kh_drive_cx - KNOTT.driveway_hw + ARCH_TRIG_INSET,
+            kh_arch_y1,
+            KNOTT_DRIVEWAY_ZT_S + 4,
+            kh_drive_cx + KNOTT.driveway_hw - ARCH_TRIG_INSET,
+            kh_arch_y2,
+            kh_arch_top_z,
+            Textures.TELEPORT,
+        )
+    ]
+    ENTITIES.append(
+        brush_ent("trigger_teleport", kh_drive_trigger, target="dest_ennis_east")
+    )
+    kh_drive_glow = arch_fill_y(
+        kh_arch_y1,
+        kh_arch_y2,
+        float(kh_drive_cx),
+        KNOTT_DRIVEWAY_ZT_S,
+        KNOTT.driveway_hw,
+        A_SEGS,
+        Textures.TELEPORT,
+        stilt_h=KH_DRIVE_ARCH_STILT,
+    )
+    ENTITIES.append(brush_ent("func_illusionary", kh_drive_glow))
+
+
+def _append_knott_drive_arch_detail(ENTITIES):
+    """Build the decorative stone arch around the Knott driveway teleport."""
+    KH_DRIVE_ARCH_STILT = 64
+    kh_drive_cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
+    kh_arch_y1 = CHARLES_Y1
+    kh_arch_y2 = CHARLES_Y1 + ARCH_SLAB_W
     KH_ARCH_ROUT = KNOTT.driveway_hw + 56
     kh_stone_arch = arch_wall_y(
         kh_arch_y1,
@@ -344,11 +375,27 @@ def _build_teleports(ENTITIES):
     )
     ENTITIES.append(brush_ent("func_detail", kh_stone_arch))
 
+
+def _build_teleports(ENTITIES):
+    teleports_start = len(ENTITIES)
+
+    _append_west_bridge_teleport(ENTITIES)
+    _append_east_bridge_teleports(ENTITIES)
+    _append_dorm_roof_teleports(ENTITIES)
+    _append_charles_arch_details(ENTITIES)
+    _append_ennis_east_teleport(ENTITIES)
+    _append_ennis_arch_detail(ENTITIES)
+    _append_knott_drive_teleport(ENTITIES)
+    _append_knott_drive_arch_detail(ENTITIES)
+
     if not ENTITIES_ENABLED_TELEPORTS:
         del ENTITIES[teleports_start:]
 
 
 def _build_player_start(ENTITIES):
+    # Hand-placed spawn location (west of the bridge, on Charles St); not
+    # derived from a terrain/road constant, so it stays a private constant
+    # here rather than in constants/ to avoid implying it tracks map scale.
     spawn_x = -180
     spawn_y = 1992
     spawn_z = 26

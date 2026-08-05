@@ -196,10 +196,10 @@ CHARLES_PLT_X_RET = int((ROAD_X1 + _WEST_LANE_LINE_X) / 2)
 ENNIS_X1 = ROAD_X1
 ROAD_Z = FLOOR_Z2 + 8
 
-WALK_X1 = KNOTT_ORIG_CX - KNOTT_ENT_HALF_W
-WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
+KNOTT_ENT_WALK_X1 = KNOTT_ORIG_CX - KNOTT_ENT_HALF_W
+KNOTT_ENT_WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
 # Knott second-floor walkway landing height.
-WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL_T
+KNOTT_ENT_WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL_T
 WALL_T = 16
 WORLD_X1 = -5135  # West world bound.
 BRIDGE_X1 = -1967  # West bridge bound.
@@ -314,7 +314,9 @@ def ft_to_units(feet, inches=0):
 
 
 BRIDGE_DECK_Z = deck_top_z(0) + 8
-WALK_ZT1 = int(deck_top_z(KNOTT_ORIG_CX))  # Bridge deck height at the Knott approach.
+KNOTT_ENT_WALK_ZT1 = int(
+    deck_top_z(KNOTT_ORIG_CX)
+)  # Bridge deck height at the Knott approach.
 BRIDGE_PAR_W = ft_to_units(2, 6)
 BRIDGE_PILLAR_HW = ft_to_units(2, 5.5) + 8  # Pier half-width.
 BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # Pyramid cap stays flush with the pillar post.
@@ -399,8 +401,11 @@ DORM_FRONT_WALKWAY_X2 = FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET  # Outer edge
 DORM_FRONT_WALKWAY_X1 = DORM_FRONT_WALKWAY_X2 - DORM_FRONT_WALKWAY_W  # Inner edge.
 DORM_FRONT_WALKWAY_SPUR_X1 = DORM_PIER_X + DORM_BRICK_WALL_HW  # Spur west edge.
 DORM_FRONT_WALKWAY_SPUR_Y2 = (
-    DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + BRIDGE_CENTER_SPAN_OFFSET[1]
-)  # Spur north edge.
+    DORM_SOUTH2_Y2
+    + DORM_DOOR_OFF
+    + DORM_DOOR_W // 2
+    + (BRIDGE_CENTER_SPAN_OFFSET[1] if _flag("BRIDGE_ENABLED_SPAN_CENTER") else 0.0)
+)  # Spur north edge; matches the door's center-span shift only when that span is built.
 
 _fog = (
     make_fog(FOG_DENSITY, *[float(x) for x in LIGHTING.fog.split()[1:]])

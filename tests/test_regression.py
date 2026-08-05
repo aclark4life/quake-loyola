@@ -121,6 +121,14 @@ class EntitiesBuildTests(unittest.TestCase):
         (entities.vegetation, "ENTITIES_ENABLED_VEGETATION"),
         (entities.platform, "ENTITIES_ENABLED_PLATFORM"),
         (entities.exit, "ENTITIES_ENABLED_EXIT"),
+        # Geometry-gated flags: default False in normal generation, but
+        # several entity placements (dorm-adjacent teleports, the exit
+        # intermission point, and walkway hell knights) are only reachable
+        # when these are also on.
+        (entities.monsters, "WEST_CAMPUS_ENABLED_DORMS"),
+        (entities.monsters, "KNOTT_ENABLED_WALKWAY"),
+        (entities.spawns, "WEST_CAMPUS_ENABLED_DORMS"),
+        (entities.exit, "WEST_CAMPUS_ENABLED_DORMS"),
     )
 
     def setUp(self):
@@ -169,6 +177,38 @@ class EntitiesBuildTests(unittest.TestCase):
             angle = float(e.fields["angle"])
             self.assertGreaterEqual(angle, 0)
             self.assertLess(angle, 360)
+
+    def test_hell_knights_placed_with_valid_angles(self):
+        # monster_hell_knight placements include both the always-on bridge
+        # deck pair and the KNOTT_ENABLED_WALKWAY-gated walkway/accessible
+        # spots (forced on for this test class) — assert all of them.
+        _, ents = entities.build()
+        hell_knights = [e for e in ents if e.classname == "monster_hell_knight"]
+        self.assertGreaterEqual(
+            len(hell_knights), 5, "expected deck + walkway hell knight placements"
+        )
+        for e in hell_knights:
+            self.assertIn("origin", e.fields)
+            angle = float(e.fields["angle"])
+            self.assertGreaterEqual(angle, 0)
+            self.assertLess(angle, 360)
+
+    def test_intermission_present_when_exit_and_dorms_enabled(self):
+        # Regression test: _build_intermission() must be gated by
+        # WEST_CAMPUS_ENABLED_DORMS the same way _build_exit() is, so the
+        # two entities appear/disappear together.
+        _, ents = entities.build()
+        intermissions = [e for e in ents if e.classname == "info_intermission"]
+        self.assertEqual(len(intermissions), 1)
+
+    def test_intermission_absent_when_dorms_disabled(self):
+        entities.exit.WEST_CAMPUS_ENABLED_DORMS = False
+        try:
+            _, ents = entities.build()
+        finally:
+            entities.exit.WEST_CAMPUS_ENABLED_DORMS = True
+        intermissions = [e for e in ents if e.classname == "info_intermission"]
+        self.assertEqual(intermissions, [])
 
     def test_no_duplicate_point_entity_origins(self):
         # Spawn points must not coincide with each other or with a teleport

@@ -52,13 +52,25 @@ class WestCampusTerrainTests(unittest.TestCase):
         self.assertTrue(all(isinstance(b, Brush) for b in brushes))
 
     def test_terrain_z_matches_quad_corner_samples(self):
-        # Spot-check that _terrain_z() reproduces a few of the raw sampled
-        # grid corners exactly (bilinear interpolation at a grid vertex
-        # should return that vertex's own value).
-        for x in (west_campus._wct_x[0], west_campus._wct_x[-1]):
-            for y in (west_campus.wct_y[0], west_campus.wct_y[-1]):
-                z = west_campus._terrain_z(x, y)
-                self.assertIsInstance(z, float)
+        # Spot-check that terrain_z() reproduces the raw sampled grid corner
+        # values exactly (bilinear interpolation at a grid vertex should
+        # return that vertex's own value, not merely a float).
+        expected = {
+            (west_campus._wct_x[0], west_campus.wct_y[0]): west_campus._wct_cols[0][0],
+            (west_campus._wct_x[0], west_campus.wct_y[-1]): west_campus._wct_cols[0][
+                -1
+            ],
+            (west_campus._wct_x[-1], west_campus.wct_y[0]): west_campus._wct_cols[-1][
+                0
+            ],
+            (west_campus._wct_x[-1], west_campus.wct_y[-1]): west_campus._wct_cols[-1][
+                -1
+            ],
+        }
+        for (x, y), expected_z in expected.items():
+            z = west_campus.terrain_z(x, y)
+            self.assertIsInstance(z, float)
+            self.assertAlmostEqual(z, expected_z)
 
     def test_overlap_extension_uses_extrapolated_not_raw_south_z(self):
         # Regression test: the south edge of each terrain quad used to be

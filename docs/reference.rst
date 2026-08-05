@@ -334,6 +334,8 @@ lives in the module docstring of :mod:`quake_loyola.constants`.
      - Original (pre-extension) reference, e.g. ``KNOTT_ORIG_CX``.
    * - ``KH``
      - Knott Hall (e.g. the ``FLOOR_KH`` texture).
+   * - ``JC`` (e.g. ``DRIVEWAY_JCX`` / ``_JCY``)
+     - Driveway/sidewalk junction X / Y position.
 
 Bridge structure
 ~~~~~~~~~~~~~~~~
@@ -725,6 +727,15 @@ Names below are the ``Textures.*`` constants in :mod:`quake_loyola.constants`.
 Entities
 --------
 
+Counts below are for the default build (all optional ``ENTITIES_ENABLED_*``
+groups such as deathmatch spawns, weapons, and monsters left at their
+hardcoded-default, mostly-off state — see ``tests/test_regression.py``'s
+``EXPECTED_ENTITY_CLASSNAME_COUNTS`` golden, which this table mirrors).
+Enabling more modules via ``ql conf`` (e.g. ``WEST_CAMPUS_ENABLED_DORMS``,
+``ENTITIES_ENABLED_DM_SPAWNS``, ``ENTITIES_ENABLED_WEAPONS``) adds
+``info_player_deathmatch``, ``weapon_*``, ``item_*``, and ``monster_*``
+entities not present in this default count.
+
 .. list-table::
    :header-rows: 1
    :widths: 35 10 55
@@ -732,21 +743,27 @@ Entities
    * - Entity
      - Qty
      - Location
-   * - ``info_player_deathmatch``
-     - 22
-     - Scattered across bridge, campus, and hall.
-   * - ``weapon_rocketlauncher``
-     - 19
-     - Bridge deck, Knott Hall floors, and campus.
-   * - ``item_health``
-     - 14
-     - Bridge deck, hall entrance, and hall floors.
+   * - ``info_player_start`` / ``info_teleport_destination``
+     - 1 / 1
+     - Player spawn and its paired teleport destination.
    * - ``light``
-     - ~480
+     - 63
      - Pillar caps, hall interior/exterior, road, and teleport arches.
-   * - ``func_plat``
+   * - ``light_flame_large_yellow``
+     - 16
+     - Torch flames along the bridge and driveway.
+   * - ``func_detail``
+     - 11
+     - Decorative/structural detail brushes grouped as entities.
+   * - ``func_illusionary``
+     - 3
+     - Non-solid decorative brush groups (e.g. glow effects).
+   * - ``trigger_hurt``
+     - 6
+     - Hazard volumes.
+   * - ``trigger_teleport``
      - 1
-     - Lift shaft inside Knott Hall.
+     - Bridge teleport trigger volume.
 
 Loading and editing
 -------------------
@@ -770,15 +787,19 @@ Manual compilation (without just)
 Download **ericw-tools v0.18.1** from
 `github.com/ericwa/ericw-tools/releases <https://github.com/ericwa/ericw-tools/releases>`_
 and place ``quake101.wad``, ``ad.wad``, ``makkon_building.wad``,
-``ikwhite.wad``, and ``makkon_stone.wad`` alongside the ``.map`` file, then:
+``ikwhite.wad``, ``makkon_stone.wad``, ``mg1.wad``, ``alkaline.wad``, and
+``makkon_nature.wad`` alongside the ``.map`` file, then:
 
 .. code-block:: bash
 
-   qbsp loyola.map
+   qbsp -bsp2 loyola.map
    vis loyola.bsp
    light loyola.bsp
 
-The compiled ``loyola.bsp`` goes in your Quake ``id1/maps/`` directory.
+The ``-bsp2`` flag (also used by ``just compile`` / ``just compile-fast``)
+writes the extended BSP2 format, which this map requires; omitting it
+produces a different (and likely broken) build. The compiled
+``loyola.bsp`` goes in your Quake ``id1/maps/`` directory.
 
 TrenchBroom
 ~~~~~~~~~~~

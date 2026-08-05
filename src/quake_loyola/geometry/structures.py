@@ -239,6 +239,11 @@ def arch_wall(
     stilt_h = rin if stilt_h is None else stilt_h
     if segs <= 0:
         raise ValueError(f"arch_wall: segs must be > 0, got {segs}")
+    if x1 >= x2:
+        raise ValueError(
+            f"arch_wall: requires x1 < x2, got x1={x1}, x2={x2}; reversed "
+            "bounds would silently invert the arch segments"
+        )
     sprz, seg = floor_z + stilt_h, 180.0 / segs
     brushes, pillar_top = [], sprz if freestanding else ceil_z
     if not freestanding:
@@ -642,6 +647,11 @@ def win_frame_ywall(
 def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     if segs <= 0:
         raise ValueError(f"arch_fill: segs must be > 0, got {segs}")
+    if x1 >= x2:
+        raise ValueError(
+            f"arch_fill: requires x1 < x2, got x1={x1}, x2={x2}; reversed "
+            "bounds would silently invert the arch segments"
+        )
     stilt_h = rin if stilt_h is None else stilt_h
     sprz, seg, brushes = floor_z + stilt_h, 180.0 / segs, []
     brushes.append(box(x1, yc - rin, floor_z, x2, yc + rin, sprz, tex))

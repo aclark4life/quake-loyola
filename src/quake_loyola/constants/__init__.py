@@ -29,6 +29,7 @@ Feature abbreviations
     - ``BIY`` — Knott interior-wall Y.
     - ``ORIG`` — original reference position.
     - ``KH`` — Knott Hall.
+    - ``JC`` (as in ``DRIVEWAY_JCX``/``_JCY``) — driveway/sidewalk junction X/Y.
 """
 
 from .bridge import (
@@ -232,6 +233,10 @@ from .derived import (
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_EAST_PIER_FACE_OFFSET,
     KNOTT_ENT_HALF_W,
+    KNOTT_ENT_WALK_X1,
+    KNOTT_ENT_WALK_X2,
+    KNOTT_ENT_WALK_ZT1,
+    KNOTT_ENT_WALK_ZT2,
     KNOTT_GROUND_Z,
     KNOTT_NE_PIER_X,
     KNOTT_ORIG_CX,
@@ -260,10 +265,6 @@ from .derived import (
     SDORM_STAIR_X2,
     SDORM_STAIR_Y1,
     SDORM_STAIR_Y2,
-    WALK_X1,
-    WALK_X2,
-    WALK_ZT1,
-    WALK_ZT2,
     WALL_T,
     WORLD_X1,
     WORLD_X2,
@@ -884,10 +885,10 @@ __all__ = [
     "LIGHTS_ENABLED_TORCHES",
     "TREE_PROFILES",
     "Textures",
-    "WALK_X1",
-    "WALK_X2",
-    "WALK_ZT1",
-    "WALK_ZT2",
+    "KNOTT_ENT_WALK_X1",
+    "KNOTT_ENT_WALK_X2",
+    "KNOTT_ENT_WALK_ZT1",
+    "KNOTT_ENT_WALK_ZT2",
     "WALL_T",
     "WEST_CAMPUS_ENABLED_DORMS",
     "WEST_CAMPUS_ENABLED_FENCE",

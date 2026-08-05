@@ -34,6 +34,16 @@ class FaceTests(unittest.TestCase):
         f = Face((0, 0, 0), (0, 1, 0), (0, 0, 1), "t", "8 0 0 2 2")
         self.assertEqual(f.to_map(), "( 0 0 0 ) ( 0 1 0 ) ( 0 0 1 ) t 8 0 0 2 2")
 
+    def test_to_map_rejects_newline_in_params(self):
+        f = Face((0, 0, 0), (0, 1, 0), (0, 0, 1), "t", "0 0 0 1 1\nworldspawn")
+        with self.assertRaises(ValueError):
+            f.to_map()
+
+    def test_to_map_rejects_quote_in_params(self):
+        f = Face((0, 0, 0), (0, 1, 0), (0, 0, 1), "t", '0 0 0 1 1 "')
+        with self.assertRaises(ValueError):
+            f.to_map()
+
     def test_translated_shifts_all_points_and_keeps_tex(self):
         f = Face((0, 0, 0), (1, 0, 0), (0, 1, 0), "t", "p").translated(10, 20, 30)
         self.assertEqual(f.p1, (10, 20, 30))
@@ -191,6 +201,19 @@ class EntityTests(unittest.TestCase):
         brush = Brush([Face((1, 0, 0), (2, 0, 0), (1, 1, 0), "t")])
         e = Entity("func_detail", {}, [brush]).rotated_z(90)
         self.assertEqual(e.brushes[0].faces[0].p1, (0, 1, 0))
+
+    def test_rotated_z_wraps_angle_into_0_360(self):
+        e = Entity("info_teleport_destination", {"origin": "0 0 0", "angle": "350"})
+        rotated = e.rotated_z(20)
+        self.assertEqual(rotated.fields["angle"], "10")
+
+    def test_rotated_z_wraps_mangle_yaw_into_0_360(self):
+        e = Entity("info_intermission", {"origin": "0 0 0", "mangle": "-10 350 0"})
+        rotated = e.rotated_z(20)
+        pitch, yaw, roll = rotated.fields["mangle"].split()
+        self.assertEqual(yaw, "10")
+        self.assertEqual(pitch, "-10")
+        self.assertEqual(roll, "0")
 
 
 class MapBuilderTests(unittest.TestCase):

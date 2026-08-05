@@ -16,14 +16,14 @@ from ..constants import (
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENABLED_TERRAIN,
     KNOTT_ENABLED_WALKWAY,
+    KNOTT_ENT_WALK_X1,
+    KNOTT_ENT_WALK_X2,
+    KNOTT_ENT_WALK_ZT1,
+    KNOTT_ENT_WALK_ZT2,
     KNOTT_GROUND_Z,
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
-    WALK_X1,
-    WALK_X2,
-    WALK_ZT1,
-    WALK_ZT2,
     WEST_CAMPUS_ENABLED_DORMS,
     deck_top_z,
 )
@@ -147,9 +147,9 @@ def _build_monsters2(ENTITIES):
         )
 
     if KNOTT_ENABLED_WALKWAY:
-        walkway_mid_x = (WALK_X1 + WALK_X2) // 2
+        walkway_mid_x = (KNOTT_ENT_WALK_X1 + KNOTT_ENT_WALK_X2) // 2
         walkway_mid_y = (BRIDGE.y1 + KNOTT.y2) // 2
-        walkway_mid_z = (WALK_ZT1 + WALK_ZT2) // 2
+        walkway_mid_z = (KNOTT_ENT_WALK_ZT1 + KNOTT_ENT_WALK_ZT2) // 2
         ENTITIES.append(
             ent(
                 "monster_hell_knight",

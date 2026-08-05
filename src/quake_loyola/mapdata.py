@@ -65,6 +65,11 @@ class Face:
                 f"Face.to_map(): texture name {self.tex!r} contains whitespace or a "
                 "quote, which would corrupt MAP text serialization"
             )
+        if '"' in self.params or "\n" in self.params:
+            raise ValueError(
+                f"Face.to_map(): params {self.params!r} contains a newline or "
+                "quote, which would corrupt MAP text serialization"
+            )
         return f"{format_point(*self.p1)} {format_point(*self.p2)} {format_point(*self.p3)} {self.tex} {self.params}"
 
     def translated(self, dx: float, dy: float, dz: float) -> Face:
@@ -253,7 +258,7 @@ class Entity:
                 angle_val = None
             if angle_val is not None:
                 if angle_val not in (-1, -2):
-                    fields["angle"] = format_value(angle_val + angle_deg)
+                    fields["angle"] = format_value((angle_val + angle_deg) % 360)
         mangle = fields.get("mangle")
         if mangle is not None:
             parts = mangle.split()
@@ -267,7 +272,7 @@ class Entity:
                     pitch = yaw = roll = None
                 if yaw is not None:
                     fields["mangle"] = (
-                        f"{format_value(pitch)} {format_value(yaw + angle_deg)} "
+                        f"{format_value(pitch)} {format_value((yaw + angle_deg) % 360)} "
                         f"{format_value(roll)}"
                     )
         brushes = [b.rotated_z(angle_deg, cx, cy) for b in self.brushes]

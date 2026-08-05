@@ -135,7 +135,7 @@ def _build_exit(ENTITIES):
 
 
 def _build_intermission(ENTITIES):
-    if not ENTITIES_ENABLED_EXIT:
+    if not (ENTITIES_ENABLED_EXIT and WEST_CAMPUS_ENABLED_DORMS):
         return
     ENTITIES.append(
         ent(
