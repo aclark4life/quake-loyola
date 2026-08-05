@@ -67,16 +67,26 @@ test: venv
     .venv/bin/pytest
 
 # Compile the map (geometry, visibility, and lighting)
-compile: install-tools
+compile: install-tools venv
+    #!/usr/bin/env bash
+    set -euo pipefail
+    light_extra=$(.venv/bin/python3 -c "from quake_loyola import config; print(config.get_build('light_extra'))")
     {{tools_bin}}/qbsp -bsp2 {{map_name}}.map
     {{tools_bin}}/vis {{map_name}}.bsp
-    {{tools_bin}}/light {{map_name}}.bsp
+    light_args=()
+    if [ "$light_extra" = "True" ]; then light_args+=(-extra); fi
+    {{tools_bin}}/light "${light_args[@]}" {{map_name}}.bsp
 
-# Fast compile: skips Full Vis pass, uses 2x2 extra sampling for lighting
-compile-fast: install-tools
+# Fast compile: skips Full Vis pass, honors ql.toml's [build] light_extra setting
+compile-fast: install-tools venv
+    #!/usr/bin/env bash
+    set -euo pipefail
+    light_extra=$(.venv/bin/python3 -c "from quake_loyola import config; print(config.get_build('light_extra'))")
     {{tools_bin}}/qbsp -bsp2 {{map_name}}.map
     {{tools_bin}}/vis -fast {{map_name}}.bsp
-    {{tools_bin}}/light {{map_name}}.bsp
+    light_args=()
+    if [ "$light_extra" = "True" ]; then light_args+=(-extra); fi
+    {{tools_bin}}/light "${light_args[@]}" {{map_name}}.bsp
 
 # Deploy the compiled map and lighting data to the Quake directory
 deploy:

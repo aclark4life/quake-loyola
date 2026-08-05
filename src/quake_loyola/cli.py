@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import platform
 import re
 import shutil
 import subprocess
@@ -253,7 +254,11 @@ def build(
     """Generate and compile the map using the current ``[build]`` settings."""
     generate()
 
-    tools_bin_candidates = list(REPO_ROOT.glob(".tools/ericw-tools-*/bin"))
+    tools_bin_candidates = [
+        p
+        for p in REPO_ROOT.glob(".tools/ericw-tools-*/bin")
+        if p.parent.name.endswith(f"-{platform.system()}")
+    ]
     if not tools_bin_candidates:
         typer.echo(
             "ericw-tools not found under .tools/ — run `just install-tools` first.",

@@ -933,7 +933,12 @@ def _build_ennis_entrance_features():
         cursor_y += ENNIS_GATE_PILLAR_GAP
         if pair_i < _pair_count - 1:
             add_connector(gap_y1, cursor_y)
-    assert cursor_y == bw_mid_y, (cursor_y, bw_mid_y)
+    if cursor_y != bw_mid_y:
+        raise ValueError(
+            f"Ennis gate-run layout drift: cursor_y ({cursor_y}) does not "
+            f"land on bw_mid_y ({bw_mid_y}) — panel/pillar/gap constants no "
+            "longer sum to the expected gate-run midpoint."
+        )
 
     bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
     bw_cy = ENNIS_SHORT_WALL_NY + ENNIS_WALL_T // 2

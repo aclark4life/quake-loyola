@@ -1122,7 +1122,7 @@ def _build_street_details(BRUSHES, ENTITIES):
     ]:
         vy1 = ENNIS_SW_EDGE + CHARLES_WALK_W
         vy2 = ENNIS_Y - ENNIS_HW - ENNIS_CURB_W
-        if vtex is Textures.GROUND:
+        if vtex == Textures.GROUND:
             BRUSHES.append(
                 box(
                     _VERGE_CEMENT_X1,

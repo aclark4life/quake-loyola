@@ -202,6 +202,68 @@ class EntitiesBuildTests(unittest.TestCase):
             f"spawn point(s) coincide with a teleport destination: {colliding}",
         )
 
+    def test_trigger_teleport_targets_resolve(self):
+        # Every trigger_teleport's "target" must name an actual
+        # info_teleport_destination's "targetname" — a typo here compiles
+        # fine but sends players to Quake's (0 0 0) map origin at runtime.
+        _, ents = entities.build()
+        dest_names = {
+            e.fields.get("targetname")
+            for e in ents
+            if e.classname == "info_teleport_destination"
+        }
+        teleporters = [e for e in ents if e.classname == "trigger_teleport"]
+        self.assertTrue(teleporters, "expected at least one trigger_teleport")
+        for e in teleporters:
+            target = e.fields.get("target")
+            self.assertIsNotNone(
+                target, f"trigger_teleport missing 'target' field: {e.fields}"
+            )
+            self.assertIn(
+                target,
+                dest_names,
+                f"trigger_teleport target {target!r} has no matching "
+                "info_teleport_destination targetname",
+            )
+
+    def test_platform_path_corner_chain_resolves(self):
+        # func_train's "target" and every path_corner's "target" must name
+        # an existing path_corner "targetname" — a broken link leaves the
+        # platform stuck (or crashes to the map origin) instead of looping.
+        _, ents = entities.build()
+        path_corners = [e for e in ents if e.classname == "path_corner"]
+        self.assertTrue(path_corners, "expected at least one path_corner")
+        corner_names = {e.fields.get("targetname") for e in path_corners}
+
+        trains = [e for e in ents if e.classname == "func_train"]
+        self.assertTrue(trains, "expected at least one func_train")
+        for e in trains:
+            target = e.fields.get("target")
+            self.assertIsNotNone(
+                target, f"func_train missing 'target' field: {e.fields}"
+            )
+            self.assertIn(
+                target,
+                corner_names,
+                f"func_train target {target!r} has no matching path_corner targetname",
+            )
+
+        for e in path_corners:
+            targetname = e.fields.get("targetname")
+            self.assertIsNotNone(
+                targetname, f"path_corner missing 'targetname' field: {e.fields}"
+            )
+            target = e.fields.get("target")
+            self.assertIsNotNone(
+                target, f"path_corner {targetname!r} missing 'target' field"
+            )
+            self.assertIn(
+                target,
+                corner_names,
+                f"path_corner {targetname!r} target {target!r} has no "
+                "matching path_corner targetname — chain is broken",
+            )
+
 
 class KnottTerrainToggleTests(unittest.TestCase):
     """KNOTT_ENABLED_TERRAIN must be safely toggleable in either direction:

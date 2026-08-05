@@ -731,11 +731,12 @@ def _build_all():
 
     _span1_n = 3
     _span1_gap = (BRIDGE_ARCH_X[1] - BRIDGE_ARCH_X[0]) / (_span1_n + 1)
-    assert _span1_gap >= BRIDGE_BLK_PIR_M, (
-        f"Span 1 parapet-block gap ({_span1_gap:.1f}) is tighter than the minimum "
-        f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
-        "even-margin spacing before it can safely use margin=0."
-    )
+    if _span1_gap < BRIDGE_BLK_PIR_M:
+        raise ValueError(
+            f"Span 1 parapet-block gap ({_span1_gap:.1f}) is tighter than the minimum "
+            f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
+            "even-margin spacing before it can safely use margin=0."
+        )
     add_parapet_blocks(
         BRIDGE_ARCH_X[0],
         BRIDGE_ARCH_X[1],
@@ -746,11 +747,12 @@ def _build_all():
     add_parapet_blocks(BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2], 4)
     _span3_n = 3
     _span3_gap = (BRIDGE_ARCH_X[3] - BRIDGE_ARCH_X[2]) / (_span3_n + 1)
-    assert _span3_gap >= BRIDGE_BLK_PIR_M, (
-        f"Span 3 parapet-block gap ({_span3_gap:.1f}) is tighter than the minimum "
-        f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
-        "even-margin spacing before it can safely use margin=0."
-    )
+    if _span3_gap < BRIDGE_BLK_PIR_M:
+        raise ValueError(
+            f"Span 3 parapet-block gap ({_span3_gap:.1f}) is tighter than the minimum "
+            f"pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or shorten the "
+            "even-margin spacing before it can safely use margin=0."
+        )
     add_parapet_blocks(
         BRIDGE_ARCH_X[2],
         BRIDGE_ARCH_X[3],
@@ -760,11 +762,12 @@ def _build_all():
     )
     _kh_span_n = 3
     _kh_span_gap = (BRIDGE_ARCH_X[4] - BRIDGE.x2) / (_kh_span_n + 1)
-    assert _kh_span_gap >= BRIDGE_BLK_PIR_M, (
-        f"KH span parapet-block gap ({_kh_span_gap:.1f}) is tighter than the "
-        f"minimum pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or "
-        "shorten the even-margin spacing before it can safely use margin=0."
-    )
+    if _kh_span_gap < BRIDGE_BLK_PIR_M:
+        raise ValueError(
+            f"KH span parapet-block gap ({_kh_span_gap:.1f}) is tighter than the "
+            f"minimum pier clearance ({BRIDGE_BLK_PIR_M}) — reduce block count or "
+            "shorten the even-margin spacing before it can safely use margin=0."
+        )
     add_parapet_blocks(
         BRIDGE.x2,
         BRIDGE_ARCH_X[4],

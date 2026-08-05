@@ -242,6 +242,22 @@ class Entity:
             if angle_val is not None:
                 if angle_val not in (-1, -2):
                     fields["angle"] = format_value(angle_val + angle_deg)
+        mangle = fields.get("mangle")
+        if mangle is not None:
+            parts = mangle.split()
+            if len(parts) == 3:
+                # Quake point-entity "mangle" is "pitch yaw roll" (as consumed
+                # by makevectors()), unlike the light-specific "_sunlight_mangle"
+                # ("yaw pitch roll"). Only the yaw component tracks rotated_z.
+                try:
+                    pitch, yaw, roll = (float(v) for v in parts)
+                except ValueError:
+                    pitch = yaw = roll = None
+                if yaw is not None:
+                    fields["mangle"] = (
+                        f"{format_value(pitch)} {format_value(yaw + angle_deg)} "
+                        f"{format_value(roll)}"
+                    )
         brushes = [b.rotated_z(angle_deg, cx, cy) for b in self.brushes]
         return Entity(self.classname, fields, brushes)
 

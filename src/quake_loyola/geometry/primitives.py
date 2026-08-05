@@ -357,16 +357,18 @@ def ramp_slab(
     tt=None,
     tb=None,
     te=None,
+    tw=None,
     ts=None,
     tt_params="0 0 0 1 1",
     tb_params="0 0 0 1 1",
 ):
-    tt, tb, te, ts = tt or tex, tb or tex, te or tex, ts or tex
+    tt, tb, te, tw, ts = tt or tex, tb or tex, te or tex, tw or tex, ts or tex
     if x1 > x2:
         # Keep the slab ordered from x1 to x2 and swap the paired Z values with it.
         x1, x2 = x2, x1
         zb1, zb2 = zb2, zb1
         zt1, zt2 = zt2, zt1
+        tw, te = te, tw
     if x1 == x2 or y1 == y2:
         raise ValueError(
             f"ramp_slab: degenerate (zero-span) brush x=({x1}, {x2}) y=({y1}, {y2})"
@@ -378,7 +380,7 @@ def ramp_slab(
         )
     faces = []
     if zt1 != zb1:
-        faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), te))
+        faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tw))
     if zt2 != zb2:
         faces.append(Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), te))
     faces += [
