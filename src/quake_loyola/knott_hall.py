@@ -97,6 +97,16 @@ CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
 EAST_OPENING_W = 56
+# Second, true-ground-level door (independent of the elevated bridge-deck
+# entrance above) — east of the center door, giving direct outside access
+# to the auditorium on the west side of the ground floor without a rider
+# having to cut through it.
+GROUND_DOOR_W = 112
+GROUND_DOOR_H = 128
+GROUND_DOOR_OFFSET = 180  # East of the center door's opening (offset 100).
+GROUND_DOOR_BOTTOM = 100  # Raised above the building's foundation footer to
+# roughly match real grade near the north wall (terrain there sits well
+# above GROUND_Z).
 MULLION_W = 22  # Vertical divider (base) thickness, bumped up from the
 # historical KH value (12) for better visibility.
 MULLION_PROUD = 12  # How far the mullion's pointed edge projects past the wall.
@@ -257,6 +267,10 @@ def _wall_with_opening(
     beams=False,
     beam_tex=None,
     entrance=False,
+    ground_door_w=0,
+    ground_door_offset=0,
+    ground_door_h=None,
+    ground_door_bottom=None,
 ):
     """A thin wall (in Y) split around a centered opening above bridge level.
 
@@ -281,6 +295,14 @@ def _wall_with_opening(
     True, the lowest segment (plus the ``EXTRA_BASE_H`` band below it) is
     left fully open (no window fill, and any center — i.e. non-edge —
     mullion stops above it) to serve as a ground-level doorway.
+
+    ``ground_door_w`` (if non-zero) cuts a second, independent doorway into
+    the solid base band below ``bottom_z`` — i.e. at true ground level,
+    unlike ``entrance`` (which only affects the elevated bridge-deck-height
+    opening above). It's centered on the wall plus ``ground_door_offset``,
+    left fully open from ``ground_door_bottom`` (defaulting to ``z1``) up
+    to ``ground_door_bottom + ground_door_h`` (``ground_door_h`` defaults
+    to the full base band height, ``bottom_z - z1``, if not given).
     """
     win_bottom = bottom_z + EXTRA_BASE_H
     cx = (x1 + x2) / 2 + offset
@@ -290,7 +312,23 @@ def _wall_with_opening(
     entrance_top = win_bottom + seg_h if entrance else win_bottom
     boxes = []
     if bottom_z > z1:
-        boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
+        if ground_door_w > 0:
+            gcx = (x1 + x2) / 2 + ground_door_offset
+            gx1, gx2 = gcx - ground_door_w / 2, gcx + ground_door_w / 2
+            door_bottom = ground_door_bottom if ground_door_bottom is not None else z1
+            door_top = door_bottom + (
+                ground_door_h if ground_door_h is not None else bottom_z - z1
+            )
+            if gx1 > x1:
+                boxes.append(box(x1, y1, z1, gx1, y2, bottom_z, tex))
+            if gx2 < x2:
+                boxes.append(box(gx2, y1, z1, x2, y2, bottom_z, tex))
+            if door_bottom > z1:
+                boxes.append(box(gx1, y1, z1, gx2, y2, door_bottom, tex))
+            if door_top < bottom_z:
+                boxes.append(box(gx1, y1, door_top, gx2, y2, bottom_z, tex))
+        else:
+            boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
     if x1 < ox1:
         boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
     if ox2 < x2:
@@ -434,6 +472,10 @@ def build():
             beams=True,
             beam_tex=Textures.FENCE,
             entrance=True,
+            ground_door_w=GROUND_DOOR_W,
+            ground_door_offset=GROUND_DOOR_OFFSET,
+            ground_door_h=GROUND_DOOR_H,
+            ground_door_bottom=GROUND_DOOR_BOTTOM,
         ),
         # Roof, lower rectangle — inset behind the parapet ring (WALL_T) so
         # its side faces don't sit flush/coplanar with the exterior wall
