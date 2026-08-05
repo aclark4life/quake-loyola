@@ -1391,7 +1391,7 @@ def _build_all():
                     )
                 )
                 pyramid_apex_z = pcap + BRIDGE_PILLAR_PYR_H
-                torch_ys = [] if px in (PIER2_X, PIER3_X, PIER5_X) else [cy_n, cy_s]
+                torch_ys = [] if px in (PIER2_X, PIER3_X, PIER6_X) else [cy_n, cy_s]
                 for torch_center_y in torch_ys:
                     BRUSHES.append(
                         box(
