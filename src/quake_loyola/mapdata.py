@@ -58,6 +58,13 @@ class Face:
     params: str = "0 0 0 1 1"
 
     def to_map(self) -> str:
+        if not self.tex or not self.tex.strip():
+            raise ValueError("Face.to_map(): texture name must be a non-empty string")
+        if '"' in self.tex or "\n" in self.tex or " " in self.tex:
+            raise ValueError(
+                f"Face.to_map(): texture name {self.tex!r} contains whitespace or a "
+                "quote, which would corrupt MAP text serialization"
+            )
         return f"{format_point(*self.p1)} {format_point(*self.p2)} {format_point(*self.p3)} {self.tex} {self.params}"
 
     def translated(self, dx: float, dy: float, dz: float) -> Face:
@@ -105,6 +112,8 @@ class Brush:
     faces: list[Face]
 
     def to_map(self) -> str:
+        if not self.faces:
+            raise ValueError("Brush.to_map() called on a brush with no faces")
         return "{\n" + "\n".join(f.to_map() for f in self.faces) + "\n}"
 
     def contains(self, p: Point, eps: float = 1e-4) -> bool:
@@ -135,7 +144,10 @@ class Brush:
                     if all(f.is_inside(p, eps) for f in self.faces):
                         verts.append(p)
         if not verts:
-            verts = [p for f in self.faces for p in (f.p1, f.p2, f.p3)]
+            raise ValueError(
+                "Brush.get_bbox(): no valid vertices found by intersecting face "
+                "planes — brush is malformed or non-convex"
+            )
         xs = [p[0] for p in verts]
         ys = [p[1] for p in verts]
         zs = [p[2] for p in verts]

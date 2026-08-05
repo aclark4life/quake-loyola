@@ -107,7 +107,7 @@ class CompositeShapeTests(unittest.TestCase):
         self.assertEqual(len(b.faces), 5)
 
     def test_corner_ramp_returns_four_faces(self):
-        b = corner_ramp(10, 0, 10, 0, 0, 20, "t")
+        b = corner_ramp(10, 0, 20, 10, 0, 20, "t")
         self.assertIsInstance(b, Brush)
         self.assertEqual(len(b.faces), 4)
 

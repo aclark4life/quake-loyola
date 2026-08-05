@@ -113,7 +113,7 @@ def test_conf_set_lighting_preset_rejects_invalid_value(tmp_path):
 def test_conf_get_fog_density_default(tmp_path):
     result = run_ql("conf", "get", "fog_density", cwd=tmp_path)
     assert result.returncode == 0
-    assert result.stdout.strip() == "low"
+    assert result.stdout.strip() == "default"
 
 
 def test_conf_set_fog_density_named_round_trips(tmp_path):

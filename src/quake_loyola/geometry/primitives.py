@@ -239,6 +239,11 @@ def shear_box_y(
     x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
 ):
     tt, tb = tt or tex, tb or tex
+    if x1 == x2 or y1 == y2 or z1 == z2:
+        raise ValueError(
+            f"shear_box_y: degenerate (zero-thickness) brush "
+            f"({x1}, {y1}, {z1}) - ({x2}, {y2}, {z2})"
+        )
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2
     return Brush(
@@ -278,6 +283,16 @@ def taper_box_y(
     endpoint, so the footprint can taper asymmetrically.
     """
     tt, tb = tt or tex, tb or tex
+    if x1 == x2 or z1 == z2:
+        raise ValueError(
+            f"taper_box_y: degenerate (zero-thickness) brush x=({x1}, {x2}) "
+            f"z=({z1}, {z2})"
+        )
+    if y1a == y2a and y1b == y2b:
+        raise ValueError(
+            f"taper_box_y: degenerate (zero-width everywhere) footprint "
+            f"y=({y1a}, {y2a}) at x1, y=({y1b}, {y2b}) at x2"
+        )
     return Brush(
         [
             Face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),
@@ -330,6 +345,11 @@ def taper_box_x(
 
 
 def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
+    if x1 == x2 or y1 == y2 or z1 == z2:
+        raise ValueError(
+            f"shear_pyramid_y: degenerate (zero-thickness) brush "
+            f"x=({x1}, {x2}) y=({y1}, {y2}) z=({z1}, {z2})"
+        )
     y1a, y2a = y1 + s1, y2 + s1
     y1b, y2b = y1 + s2, y2 + s2
     apex = ((x1 + x2) / 2.0, (y1a + y2a + y1b + y2b) / 4.0, z2)
@@ -345,6 +365,11 @@ def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
 
 
 def pyramid(x1, y1, z1, x2, y2, z2, tex):
+    if x1 == x2 or y1 == y2 or z1 == z2:
+        raise ValueError(
+            f"pyramid: degenerate (zero-thickness) brush "
+            f"({x1}, {y1}, {z1}) - ({x2}, {y2}, {z2})"
+        )
     cx, cy = (x1 + x2) / 2.0, (y1 + y2) / 2.0
     apex = (cx, cy, z2)
     return Brush(
@@ -463,6 +488,15 @@ def slab_chamfered_y(x1, x2, y1, y2, zb, zt1, zt2, tex, tt=None, chamfer=4.0):
 
 def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
     tt = tt or tex
+    if z_base == z_hi:
+        raise ValueError(
+            f"corner_ramp: degenerate (zero-height) ramp z=({z_base}, {z_hi})"
+        )
+    if x_far == x_apex or y_far == y_apex:
+        raise ValueError(
+            f"corner_ramp: degenerate (zero-footprint) ramp "
+            f"apex=({x_apex}, {y_apex}) far=({x_far}, {y_far})"
+        )
     a, b, c, d = (
         (x_apex, y_apex, z_hi),
         (x_apex, y_apex, z_base),

@@ -85,7 +85,7 @@ BUILD_DEFAULTS: dict[str, Any] = {
     "vis_mode": "fast",
     "light_extra": False,
     "lighting_preset": "bright",
-    "fog_density": "low",
+    "fog_density": "default",
     "sky_preset": "day",
 }
 
@@ -289,6 +289,45 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     _write_toml_safe(path, raw)
     if path == CONFIG_PATH:
         BUILD[name] = value
+
+
+def set_many(items: list[tuple[str, str, Any]], path: Path = CONFIG_PATH) -> None:
+    """Apply several flag/build changes as a single read-validate-write.
+
+    ``items`` is a list of ``(kind, name, value)`` triples, where ``kind`` is
+    ``"flag"`` or ``"build"``. Unlike calling :func:`set_flag`/:func:`set_build`
+    in a loop, this reads ``ql.toml`` once, applies every change to an
+    in-memory copy, validates the whole result, and writes it back in one
+    shot — so a later item failing validation (or the write itself failing)
+    never leaves an earlier item's change persisted on its own.
+    """
+    check_load_error()
+    for kind, name, _value in items:
+        if kind == "flag" and name not in DEFAULTS:
+            raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
+        if kind == "build" and name not in BUILD_DEFAULTS:
+            raise KeyError(
+                f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS"
+            )
+    raw = _read_toml_safe(path)
+    flags = dict(raw.get("flags", {}))
+    build = dict(raw.get("build", {}))
+    for kind, name, value in items:
+        if kind == "flag":
+            flags[name] = value
+        else:
+            build[name] = value
+    _validate_section("flags", flags, DEFAULTS)
+    _validate_build_values(build)
+    raw["flags"] = flags
+    raw["build"] = build
+    _write_toml_safe(path, raw)
+    if path == CONFIG_PATH:
+        for kind, name, value in items:
+            if kind == "flag":
+                FLAGS[name] = value
+            else:
+                BUILD[name] = value
 
 
 def reset(path: Path = CONFIG_PATH) -> bool:

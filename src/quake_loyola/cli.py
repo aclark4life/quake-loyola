@@ -115,17 +115,24 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
     elif name_l in config.BUILD_DEFAULTS:
         if name_l in BUILD_ENUM_SETTINGS:
             allowed = BUILD_ENUM_SETTINGS[name_l]
-            if value not in allowed:
+            value_l = value.strip().lower()
+            if value_l not in allowed:
                 raise typer.BadParameter(f"{name_l} must be one of {allowed}")
-            parsed_build: object = value
+            parsed_build: object = value_l
         elif name_l == "fog_density":
-            if not is_valid_fog_density(value):
+            stripped = value.strip()
+            value_norm = (
+                stripped.lower()
+                if stripped.lower() in ("default", *FOG_DENSITY_NAMES)
+                else stripped
+            )
+            if not is_valid_fog_density(value_norm):
                 raise typer.BadParameter(
                     "fog_density must be 'default', one of "
                     f"{sorted(FOG_DENSITY_NAMES)}, or a finite, non-negative "
                     "numeric string"
                 )
-            parsed_build = value
+            parsed_build = value_norm
         else:
             parsed_build = _parse_bool(value)
         return "build", name_l, parsed_build
@@ -174,11 +181,8 @@ def config_set(
 
     validated = [_validate_one(name, value) for name, value in pairs]
     try:
-        for kind, key, parsed in validated:
-            if kind == "flag":
-                config.set_flag(key, parsed)
-            else:
-                config.set_build(key, parsed)
+        config.set_many(validated)
+        for _kind, key, parsed in validated:
             typer.echo(f"{key} = {parsed}")
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)

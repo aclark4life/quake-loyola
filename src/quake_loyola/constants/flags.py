@@ -2,6 +2,19 @@
 
 Defaults live in ``config.DEFAULTS`` and can be overridden in ``ql.toml`` or
 via ``ql conf``.
+
+Note: not every ``config.DEFAULTS`` flag is re-exported here. A few flags
+are defined alongside their area's other constants instead, so related
+values stay together:
+
+- ``BASEMENT_ENABLED`` — see ``constants/derived.py``
+- ``KNOTT_ENABLED_WALKWAY`` / ``KNOTT_ENABLED_WALKWAY_BENT`` — see
+  ``constants/knott.py``
+- ``BRIDGE_ENABLED_PIER_BASE_LIGHTS`` — see ``constants/bridge.py``
+
+All of these (plus everything below) are still re-exported from
+``constants/__init__.py``, so callers importing from the top-level
+``constants`` package don't need to know which submodule a flag lives in.
 """
 
 from ..config import get as _flag

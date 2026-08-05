@@ -82,6 +82,12 @@ def make_bush(cx, cy, base_z, size=24):
 
 
 def octagon_column(cx, cy, z0, z1, radius, tex):
+    if z0 == z1:
+        raise ValueError(
+            f"octagon_column: degenerate (zero-height) column z=({z0}, {z1})"
+        )
+    if radius <= 0:
+        raise ValueError(f"octagon_column: radius must be positive, got {radius}")
     faces, N = [], 8
     for i in range(N):
         theta = math.pi * 2 * i / N
