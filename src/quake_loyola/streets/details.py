@@ -522,7 +522,7 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
         (
             layout["charles_y1"],
             ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
-            [(508, Textures.WHITE_STONE)],
+            None,
         ),
         (
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
