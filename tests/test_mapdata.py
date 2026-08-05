@@ -44,6 +44,12 @@ class FaceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             f.to_map()
 
+    def test_to_map_rejects_empty_or_whitespace_texture_name(self):
+        for tex in ("", "   "):
+            with self.subTest(tex=tex):
+                with self.assertRaises(ValueError):
+                    Face((0, 0, 0), (0, 1, 0), (0, 0, 1), tex).to_map()
+
     def test_translated_shifts_all_points_and_keeps_tex(self):
         f = Face((0, 0, 0), (1, 0, 0), (0, 1, 0), "t", "p").translated(10, 20, 30)
         self.assertEqual(f.p1, (10, 20, 30))
@@ -98,6 +104,10 @@ class BrushTests(unittest.TestCase):
         self.assertEqual(lines[0], "{")
         self.assertEqual(lines[-1], "}")
         self.assertEqual(len(lines), 4)  # { + 2 faces + }
+
+    def test_to_map_raises_on_empty_brush(self):
+        with self.assertRaises(ValueError):
+            Brush([]).to_map()
 
     def test_str_matches_to_map(self):
         b = self._brush()
@@ -158,6 +168,12 @@ class EntityTests(unittest.TestCase):
         self.assertIn(brush.to_map(), text)
         self.assertTrue(text.endswith("}"))
 
+    def test_to_map_rejects_empty_or_whitespace_classname(self):
+        for classname in ("", "   "):
+            with self.subTest(classname=classname):
+                with self.assertRaises(ValueError):
+                    Entity(classname).to_map()
+
     def test_defaults_are_independent(self):
         a = Entity("a")
         b = Entity("b")
@@ -214,6 +230,12 @@ class EntityTests(unittest.TestCase):
         self.assertEqual(yaw, "10")
         self.assertEqual(pitch, "-10")
         self.assertEqual(roll, "0")
+
+    def test_rotated_z_leaves_malformed_mangle_unchanged(self):
+        for mangle in ("1 2", "1 2 3 4", "a b c"):
+            with self.subTest(mangle=mangle):
+                rotated = Entity("info_intermission", {"mangle": mangle}).rotated_z(20)
+                self.assertEqual(rotated.fields["mangle"], mangle)
 
 
 class MapBuilderTests(unittest.TestCase):

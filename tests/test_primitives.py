@@ -7,17 +7,25 @@ import unittest
 
 from quake_loyola.geometry import (
     arch_pie_seg,
+    arch_pie_seg_y,
     arch_seg,
     arch_seg_chord,
+    arch_seg_y,
     box,
     box_with_hole,
     clip_poly_to_rect,
     curb_seg,
     polygon_prism,
+    pyramid,
     radial_fan_fills,
     ramp_slab,
     ramp_slab_y,
+    shear_box_y,
+    shear_box_z,
+    shear_pyramid_y,
     slab_chamfered_y,
+    taper_box_x,
+    taper_box_y,
     tri_prism,
     tri_ramp_prism,
 )
@@ -134,6 +142,122 @@ class SlabChamferedYTests(unittest.TestCase):
         self.assertEqual(len(forward.faces), len(reversed_.faces))
 
 
+class ShearBoxYTests(unittest.TestCase):
+    def test_returns_six_faces_and_expected_bbox(self):
+        brush = shear_box_y(0, 10, 20, 100, 30, 40, 5, -3, "tex")
+        self.assertEqual(len(brush.faces), 6)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (0.0, 7.0, 20.0))
+        self.assertEqual(hi, (100.0, 35.0, 40.0))
+
+    def test_rejects_zero_thickness_on_any_axis(self):
+        for args in (
+            (0, 10, 20, 0, 30, 40, 5, -3, "tex"),
+            (0, 10, 20, 100, 10, 40, 5, -3, "tex"),
+            (0, 10, 20, 100, 30, 20, 5, -3, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    shear_box_y(*args)
+
+
+class ShearBoxZTests(unittest.TestCase):
+    def test_returns_six_faces_and_expected_bbox(self):
+        brush = shear_box_z(10, 0, 0, 30, 20, 40, 5, -5, "tex")
+        self.assertEqual(len(brush.faces), 6)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (10.0, -5.0, 0.0))
+        self.assertEqual(hi, (30.0, 25.0, 40.0))
+
+    def test_rejects_zero_thickness_on_any_axis(self):
+        for args in (
+            (10, 0, 0, 10, 20, 40, 5, -5, "tex"),
+            (10, 0, 0, 30, 0, 40, 5, -5, "tex"),
+            (10, 0, 0, 30, 20, 0, 5, -5, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    shear_box_z(*args)
+
+
+class TaperBoxYTests(unittest.TestCase):
+    def test_returns_six_faces_and_expected_bbox(self):
+        brush = taper_box_y(0, 10, 30, 0, 100, 5, 35, 40, "tex")
+        self.assertEqual(len(brush.faces), 6)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (0.0, 5.0, 0.0))
+        self.assertEqual(hi, (100.0, 35.0, 40.0))
+
+    def test_rejects_zero_width_everywhere(self):
+        with self.assertRaises(ValueError):
+            taper_box_y(0, 10, 10, 0, 100, 20, 20, 40, "tex")
+
+    def test_rejects_zero_thickness_in_x_or_z(self):
+        for args in (
+            (0, 10, 30, 0, 0, 5, 35, 40, "tex"),
+            (0, 10, 30, 5, 100, 5, 35, 5, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    taper_box_y(*args)
+
+
+class TaperBoxXTests(unittest.TestCase):
+    def test_returns_six_faces_and_expected_bbox(self):
+        brush = taper_box_x(10, 0, 20, 0, 40, 5, 25, 30, "tex")
+        self.assertEqual(len(brush.faces), 6)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (0.0, 10.0, 0.0))
+        self.assertEqual(hi, (25.0, 40.0, 30.0))
+
+    def test_rejects_zero_thickness_in_y_or_z(self):
+        for args in (
+            (10, 0, 20, 0, 10, 5, 25, 30, "tex"),
+            (10, 0, 20, 5, 40, 5, 25, 5, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    taper_box_x(*args)
+
+
+class ShearPyramidYTests(unittest.TestCase):
+    def test_returns_five_faces_and_expected_bbox(self):
+        brush = shear_pyramid_y(0, 10, 100, 30, 20, 40, 5, -3, "tex")
+        self.assertEqual(len(brush.faces), 5)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (0.0, 7.0, 20.0))
+        self.assertEqual(hi, (100.0, 35.0, 40.0))
+
+    def test_rejects_zero_thickness_on_any_axis(self):
+        for args in (
+            (0, 10, 0, 30, 20, 40, 5, -3, "tex"),
+            (0, 10, 100, 10, 20, 40, 5, -3, "tex"),
+            (0, 10, 100, 30, 20, 20, 5, -3, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    shear_pyramid_y(*args)
+
+
+class PyramidTests(unittest.TestCase):
+    def test_returns_five_faces_and_expected_bbox(self):
+        brush = pyramid(0, 10, 20, 100, 30, 40, "tex")
+        self.assertEqual(len(brush.faces), 5)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (0.0, 10.0, 20.0))
+        self.assertEqual(hi, (100.0, 30.0, 40.0))
+
+    def test_rejects_zero_thickness_on_any_axis(self):
+        for args in (
+            (0, 10, 20, 0, 30, 40, "tex"),
+            (0, 10, 20, 100, 10, 40, "tex"),
+            (0, 10, 20, 100, 30, 20, "tex"),
+        ):
+            with self.subTest(args=args):
+                with self.assertRaises(ValueError):
+                    pyramid(*args)
+
+
 class TriPrismTests(unittest.TestCase):
     def test_rejects_z1_greater_or_equal_z2(self):
         with self.assertRaises(ValueError):
@@ -224,6 +348,36 @@ class ArchPieSegValidationTests(unittest.TestCase):
     def test_rejects_zero_depth_segment(self):
         with self.assertRaises(ValueError):
             arch_pie_seg(5, 5, 0, 0, 10, 0, 90, "tex")
+
+
+class ArchSegYTests(unittest.TestCase):
+    def test_returns_six_faces_and_expected_bbox(self):
+        brush = arch_seg_y(0, 10, 100, 200, 20, 40, 0, 90, "tex")
+        self.assertEqual(len(brush.faces), 6)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (100.0, 0.0, 200.0))
+        self.assertAlmostEqual(hi[0], 156.56854249492378)
+        self.assertEqual(hi[1], 10.0)
+        self.assertAlmostEqual(hi[2], 256.5685424949238)
+
+    def test_propagates_arch_seg_validation(self):
+        with self.assertRaises(ValueError):
+            arch_seg_y(10, 0, 100, 200, 20, 40, 0, 90, "tex")
+
+
+class ArchPieSegYTests(unittest.TestCase):
+    def test_returns_five_faces_and_expected_bbox(self):
+        brush = arch_pie_seg_y(0, 10, 100, 200, 40, 0, 90, "tex")
+        self.assertEqual(len(brush.faces), 5)
+        lo, hi = brush.get_bbox()
+        self.assertEqual(lo, (100.0, 0.0, 200.0))
+        self.assertAlmostEqual(hi[0], 156.56854249492378)
+        self.assertEqual(hi[1], 10.0)
+        self.assertAlmostEqual(hi[2], 256.5685424949238)
+
+    def test_propagates_arch_pie_seg_validation(self):
+        with self.assertRaises(ValueError):
+            arch_pie_seg_y(0, 10, 100, 200, 0, 0, 90, "tex")
 
 
 if __name__ == "__main__":

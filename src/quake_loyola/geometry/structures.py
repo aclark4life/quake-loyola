@@ -15,6 +15,11 @@ from .primitives import (
 
 
 def tile_grid_origins(width, height, tile=34, gap=3):
+    """Return centered lower-left origins for a rectangular tile grid.
+
+    Returns an empty list when the face is smaller than a single tile in either
+    dimension.
+    """
     # A face smaller than one tile produces no tile brushes.
     if width < tile or height < tile:
         return []
@@ -26,6 +31,11 @@ def tile_grid_origins(width, height, tile=34, gap=3):
 
 
 def tile_face_plates(x_face, thickness, y1, y2, z1, z2, tex, tile=34, gap=3):
+    """Return thin tile boxes laid out on a wall face at constant ``x_face``.
+
+    Positive ``thickness`` extrudes toward +X and negative toward -X. Raises
+    ``ValueError`` if ``thickness`` is zero.
+    """
     if thickness == 0:
         raise ValueError("tile_face_plates: thickness must be non-zero")
     x1v, x2v = (
@@ -39,6 +49,11 @@ def tile_face_plates(x_face, thickness, y1, y2, z1, z2, tex, tile=34, gap=3):
 
 
 def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
+    """Return one tile-thick arch-ring plates centered on ``(yc, zc)``.
+
+    The ring spans 180 degrees in the YZ plane and uses ``arch_seg_chord()``
+    segments sized to roughly match the requested tile pitch.
+    """
     x1v, x2v = (
         (x_face, x_face + thickness) if thickness >= 0 else (x_face + thickness, x_face)
     )
@@ -80,6 +95,12 @@ def square_wall(
     base_cap_y1=None,
     base_cap_y2=None,
 ):
+    """Return a rectangular wall with a centered opening along Y.
+
+    ``open_hw`` is the half-width of the opening about ``yc``; optional base,
+    cap, and recess parameters add trim or a recessed jamb. Raises
+    ``ValueError`` if a positive-depth recess omits its texture.
+    """
     brushes, ext = [], open_hw + overhang
     if y1 < yc - ext:
         brushes.append(box(x1, y1, floor_z, x2, yc - ext, ceil_z, tex))
@@ -236,6 +257,12 @@ def arch_wall(
     freestanding=False,
     recess=None,
 ):
+    """Return an arched wall opening centered on ``yc`` and extruded along X.
+
+    The opening uses inner/outer radii ``rin``/``rout`` in the YZ plane, with
+    optional stilts, base trim, overhang, and recesses. Raises ``ValueError``
+    for non-positive ``segs``, reversed X bounds, or textured-recess misuse.
+    """
     stilt_h = rin if stilt_h is None else stilt_h
     if segs <= 0:
         raise ValueError(f"arch_wall: segs must be > 0, got {segs}")
@@ -364,6 +391,10 @@ def arch_wall(
 
 
 def arch_wall_y(y1, y2, floor_z, rin, rout, segs, tex, stilt_h=None, xc=0.0):
+    """Return ``arch_wall()``'s freestanding Y-extruded variant centered on ``xc``.
+
+    Raises ``ValueError`` if ``segs <= 0`` or ``y1 >= y2``.
+    """
     if segs <= 0:
         raise ValueError(f"arch_wall_y: segs must be > 0, got {segs}")
     if y1 >= y2:
@@ -387,6 +418,12 @@ def arch_wall_y(y1, y2, floor_z, rin, rout, segs, tex, stilt_h=None, xc=0.0):
 def gable_slats(
     bx1, bx2, apex_x, eave_z, ridge_z, slab_t, yface, depth, tex, n=24, gap=2, min_w=6
 ):
+    """Return stacked gable slats spanning from eave to ridge.
+
+    The slats extrude from ``yface`` by ``depth`` and taper with the gable
+    edges toward ``apex_x``. Raises ``ValueError`` for invalid counts, a flat
+    roof profile, or gaps that collapse a slat band.
+    """
     if n <= 0:
         raise ValueError(f"gable_slats: n must be > 0, got {n}")
     y0, y1 = sorted((yface, yface + depth))
@@ -397,6 +434,7 @@ def gable_slats(
         )
 
     def edge_x(z):
+        """Return the left/right gable edge X positions at height ``z``."""
         t = z - (eave_z + slab_t)
         if t <= 0:
             return bx1, bx2
@@ -443,6 +481,11 @@ def entrance_arch_xwall(
     arch_h=48,
     arch_t=8,
 ):
+    """Return a framed entrance with a peaked slab arch on an X-facing wall.
+
+    ``face_y`` locates the wall plane and ``out_sign`` chooses whether the
+    depth projects toward +Y or -Y.
+    """
     ya, yb = sorted((face_y, face_y + out_sign * pillar_d))
     lx1, lx2, rx1, rx2 = (
         cx - ent_hw - pillar_w,
@@ -567,6 +610,13 @@ def win_frame_xwall(
     inner_recess=1,
     _fname="win_frame_xwall",
 ):
+    """Return a muntin-style window frame extruded off a wall at ``face_y``.
+
+    ``out_sign`` selects the extrusion direction; ``fw``/``fd`` control the
+    outer frame width and depth, and inner muntins are inset by
+    ``inner_recess``. Raises ``ValueError`` if the requested inner recess
+    leaves no positive muntin depth.
+    """
     if ifw is None:
         ifw = max(fw - 1, 2)
     if fd <= 2 * inner_recess:
@@ -650,6 +700,12 @@ def win_frame_ywall(
 
 
 def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
+    """Return a solid arched fill, not a ring, centered on ``yc``.
+
+    It builds a rectangular stilt up to the spring line and then ``segs``
+    filled pie-slice arch segments. Raises ``ValueError`` if ``segs <= 0`` or
+    the X bounds are reversed or degenerate.
+    """
     if segs <= 0:
         raise ValueError(f"arch_fill: segs must be > 0, got {segs}")
     if x1 >= x2:
@@ -668,6 +724,7 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
+    """Return ``arch_fill()`` with X and Y swapped."""
     return [
         swap_xy(b)
         for b in arch_fill(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=stilt_h)
@@ -675,6 +732,12 @@ def arch_fill_y(y1, y2, xc, floor_z, rin, segs, tex, stilt_h=None):
 
 
 def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=None):
+    """Return a wall slab subdivided around rectangular XZ openings.
+
+    ``openings`` are clamped to the wall bounds before subdivision. ``tf``
+    retextures faces exposed to an opening, while ``ts``/``tn`` override the
+    south and north exterior faces.
+    """
     # Clamp each opening to the wall bounds before subdividing the slab.
     wx1, wx2 = min(x1, x2), max(x1, x2)
     wz1, wz2 = min(z1, z2), max(z1, z2)
@@ -713,6 +776,7 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=Non
 
 
 def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex, tw=None, te=None):
+    """Return ``layered_wall()`` with X and Y swapped."""
     return [
         swap_xy(b)
         for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex, ts=tw, tn=te)

@@ -1,5 +1,7 @@
+import math
 import unittest
 
+from quake_loyola.constants import BRIDGE_EAST_PIVOT_X, BRIDGE_EAST_SPAN_ANGLE
 from quake_loyola.geometry import (
     arch_fill,
     arch_pie_seg,
@@ -14,14 +16,18 @@ from quake_loyola.geometry import (
     corner_ramp,
     corner_window,
     curb_seg,
+    east_y_shift,
     elevator_shaft,
     ent,
     entrance_arch_xwall,
     entrance_arch_ywall,
+    extend_terrain_row_overlap,
     fascia_sign,
     gable_slats,
     iron_fence,
     layered_wall,
+    make_bush,
+    make_giant_tree,
     make_pixel_tree,
     make_tree,
     octagon_column,
@@ -33,6 +39,8 @@ from quake_loyola.geometry import (
     square_wall,
     stairwell,
     tile_face_plates,
+    torch_flame,
+    torch_flame_only,
     tri_prism,
     win_frame_xwall,
     win_frame_ywall,
@@ -84,11 +92,41 @@ class EntityHelperTests(unittest.TestCase):
         e = brush_ent("func_wall", box(0, 0, 0, 1, 1, 1, "t"))
         self.assertEqual(len(e.brushes), 1)
 
+    def test_torch_flame_returns_light_and_flame_entities(self):
+        entities = torch_flame(1, 2, 3)
+        self.assertEqual(
+            [e.classname for e in entities], ["light", "light_flame_large_yellow"]
+        )
+        self.assertEqual(
+            [e.fields for e in entities],
+            [
+                {"origin": "1 2 3", "light": "300", "_light_group": "torch"},
+                {"origin": "1 2 7", "_light_group": "torch"},
+            ],
+        )
+        self.assertTrue(all(e.brushes == [] for e in entities))
+
+    def test_torch_flame_only_returns_standalone_flame_entity(self):
+        entity = torch_flame_only(1, 2, 3)
+        self.assertEqual(entity.classname, "light_flame_large_yellow")
+        self.assertEqual(entity.fields, {"origin": "1 2 3", "_light_group": "torch"})
+        self.assertEqual(entity.brushes, [])
+
 
 class CompositeShapeTests(unittest.TestCase):
     def test_make_tree_returns_four_brushes(self):
         brushes = make_tree(0, 0, 0)
         self.assertEqual(len(brushes), 4)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_make_giant_tree_returns_four_brushes(self):
+        brushes = make_giant_tree(0, 0, 0)
+        self.assertEqual(len(brushes), 4)
+        self.assertTrue(all(isinstance(b, Brush) for b in brushes))
+
+    def test_make_bush_returns_three_brushes(self):
+        brushes = make_bush(0, 0, 0)
+        self.assertEqual(len(brushes), 3)
         self.assertTrue(all(isinstance(b, Brush) for b in brushes))
 
     def test_square_wall_returns_brush_list(self):
@@ -156,6 +194,28 @@ class GuardClauseTests(unittest.TestCase):
         # hanging or dividing by zero deep inside edge_x().
         with self.assertRaises(ValueError):
             gable_slats(0, 100, 50, 0, 16, 16, 0, 8, "t")
+
+
+class HelperFunctionTests(unittest.TestCase):
+    def test_east_y_shift_is_zero_at_and_west_of_pivot(self):
+        self.assertEqual(east_y_shift(BRIDGE_EAST_PIVOT_X), 0.0)
+        self.assertEqual(east_y_shift(BRIDGE_EAST_PIVOT_X - 1), 0.0)
+
+    def test_east_y_shift_is_negative_east_of_pivot(self):
+        shift = east_y_shift(BRIDGE_EAST_PIVOT_X + 10)
+        expected = -10 * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
+        self.assertLess(shift, 0.0)
+        self.assertAlmostEqual(shift, expected)
+
+    def test_extend_terrain_row_overlap_interpolates_extended_edge(self):
+        self.assertEqual(
+            extend_terrain_row_overlap(0, 10, 100, 200, 300, 500, 5),
+            (15, 250.0, 600.0),
+        )
+
+    def test_extend_terrain_row_overlap_rejects_zero_width_row(self):
+        with self.assertRaises(ValueError):
+            extend_terrain_row_overlap(10, 10, 100, 200, 300, 500, 5)
 
 
 class RoundHoleAndRadialFanTests(unittest.TestCase):

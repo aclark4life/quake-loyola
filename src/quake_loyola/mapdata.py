@@ -183,6 +183,10 @@ class Entity:
     brushes: list[Brush] = field(default_factory=list)
 
     def to_map(self) -> str:
+        if not self.classname or not self.classname.strip():
+            raise ValueError(
+                f"Entity classname must be a non-empty string, got {self.classname!r}"
+            )
         for k, v in [("classname", self.classname), *self.fields.items()]:
             if '"' in str(k) or '"' in str(v) or "\n" in str(k) or "\n" in str(v):
                 raise ValueError(

@@ -13,8 +13,20 @@ from quake_loyola.geometry import (
     layered_wall,
     layered_wall_y,
     square_wall,
+    tile_grid_origins,
 )
 from quake_loyola.mapdata import Brush
+
+
+class TileGridOriginsTests(unittest.TestCase):
+    def test_returns_centered_origins_with_expected_spacing(self):
+        origins = tile_grid_origins(80, 80, tile=34, gap=3)
+        self.assertEqual(len(origins), 4)
+        self.assertEqual(origins, [(4.5, 4.5), (4.5, 41.5), (41.5, 4.5), (41.5, 41.5)])
+        xs = sorted({x for x, _ in origins})
+        zs = sorted({z for _, z in origins})
+        self.assertEqual(xs[1] - xs[0], 37.0)
+        self.assertEqual(zs[1] - zs[0], 37.0)
 
 
 class ArchFillTests(unittest.TestCase):
@@ -28,8 +40,17 @@ class ArchFillTests(unittest.TestCase):
         self.assertTrue(all(isinstance(b, Brush) for b in brushes))
 
     def test_arch_fill_y_swaps_axes_and_builds(self):
-        brushes = arch_fill_y(0, 10, 0, 0, 20, 4, "tex")
-        self.assertTrue(brushes)
+        x_brushes = arch_fill(0, 10, 5, 0, 20, 4, "tex")
+        y_brushes = arch_fill_y(0, 10, 5, 0, 20, 4, "tex")
+        self.assertEqual(len(x_brushes), len(y_brushes))
+        for xb, yb in zip(x_brushes, y_brushes, strict=False):
+            (x_min, y_min, z_min), (x_max, y_max, z_max) = xb.get_bbox()
+            (yx_min, yy_min, yz_min), (yx_max, yy_max, yz_max) = yb.get_bbox()
+            # arch_fill_y swaps X and Y, so the swapped brush's X bbox should
+            # match the original's Y bbox and vice versa; Z is unaffected.
+            self.assertEqual((yx_min, yx_max), (y_min, y_max))
+            self.assertEqual((yy_min, yy_max), (x_min, x_max))
+            self.assertEqual((yz_min, yz_max), (z_min, z_max))
 
 
 class GableSlatsTests(unittest.TestCase):

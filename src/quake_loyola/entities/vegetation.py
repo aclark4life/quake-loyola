@@ -41,7 +41,8 @@ from ..geometry import (
 
 
 def _build_vegetation(ENTITIES):
-    vegetation_start = len(ENTITIES)
+    if not ENTITIES_ENABLED_VEGETATION:
+        return
 
     _tree_cx = KNOTT.x1 - 200
     _tree_cy = (KNOTT.y1 + KNOTT.y2) // 2
@@ -227,6 +228,3 @@ def _build_vegetation(ENTITIES):
     all_bush_brushes += knott_verge_brushes
 
     ENTITIES.append(brush_ent("func_detail", all_bush_brushes))
-
-    if not ENTITIES_ENABLED_VEGETATION:
-        del ENTITIES[vegetation_start:]

@@ -276,12 +276,29 @@ def get_build(name: str) -> Any:
     return BUILD[name]
 
 
+def _section_as_dict(raw: dict[str, Any], section_name: str) -> dict[str, Any]:
+    """Return ``raw[section_name]`` as a dict, or raise a clean, user-facing
+    error if it exists but isn't a table (e.g. ``flags = 5`` in ``ql.toml``).
+
+    Without this check, ``dict(raw.get(section_name, {}))`` would raise a
+    raw, confusing ``TypeError`` for non-dict/non-iterable values instead of
+    the same clear error style used elsewhere in this module.
+    """
+    section = raw.get(section_name, {})
+    if not isinstance(section, dict):
+        raise RuntimeError(
+            f"ql.toml [{section_name}] must be a table, got "
+            f"{type(section).__name__}: {section!r}"
+        )
+    return dict(section)
+
+
 def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
     check_load_error()
     if name not in DEFAULTS:
         raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
     raw = _read_toml_safe(path)
-    flags = dict(raw.get("flags", {}))
+    flags = _section_as_dict(raw, "flags")
     flags[name] = value
     _validate_section("flags", flags, DEFAULTS)
     raw["flags"] = flags
@@ -295,7 +312,7 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     if name not in BUILD_DEFAULTS:
         raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
     raw = _read_toml_safe(path)
-    build = dict(raw.get("build", {}))
+    build = _section_as_dict(raw, "build")
     build[name] = value
     _validate_build_values(build)
     raw["build"] = build
@@ -323,8 +340,8 @@ def set_many(items: list[tuple[str, str, Any]], path: Path = CONFIG_PATH) -> Non
                 f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS"
             )
     raw = _read_toml_safe(path)
-    flags = dict(raw.get("flags", {}))
-    build = dict(raw.get("build", {}))
+    flags = _section_as_dict(raw, "flags")
+    build = _section_as_dict(raw, "build")
     for kind, name, value in items:
         if kind == "flag":
             flags[name] = value

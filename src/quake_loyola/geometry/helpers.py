@@ -34,6 +34,11 @@ def extend_terrain_row_overlap(y1, y2, z_near1, z_far1, z_near2, z_far2, overlap
     Returns:
         tuple: ``(y2_extended, z_far1_extended, z_far2_extended)``.
     """
+    if y1 == y2:
+        raise ValueError(
+            "extend_terrain_row_overlap: y1 and y2 must differ (got "
+            f"y1=y2={y1!r}) — a zero-width row has no slope to extend along"
+        )
     y2_ext = y2 + overlap
     t = (y2_ext - y1) / (y2 - y1)
     z_far1_ext = z_near1 + (z_far1 - z_near1) * t

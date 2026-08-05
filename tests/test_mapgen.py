@@ -5,6 +5,7 @@ tests/test_regression.py's golden-output assertions."""
 
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from quake_loyola import mapgen
@@ -23,13 +24,15 @@ class MainWritesMapFileTests(unittest.TestCase):
             self.assertEqual(text, mapgen.build_map_text())
 
     def test_main_defaults_to_repo_root(self):
-        # The default (no-arg) path should still target the documented
-        # repo-root location, without actually writing there in this test.
-        import inspect
-
-        sig = inspect.signature(mapgen.main)
-        self.assertIn("path", sig.parameters)
-        self.assertIsNone(sig.parameters["path"].default)
+        # The default (no-arg) path should actually write to config.REPO_ROOT,
+        # not just declare it in the signature.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fake_repo_root = Path(tmpdir)
+            with unittest.mock.patch.object(mapgen.config, "REPO_ROOT", fake_repo_root):
+                mapgen.main()
+                written_path = fake_repo_root / "loyola.map"
+                self.assertTrue(written_path.exists())
+                self.assertEqual(written_path.read_text(), mapgen.build_map_text())
 
 
 if __name__ == "__main__":

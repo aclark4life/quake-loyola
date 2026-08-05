@@ -23,6 +23,12 @@ def box(
     ts=None,
     tn=None,
 ):
+    """Return an axis-aligned rectangular brush.
+
+    ``tex`` is the default face texture; ``tt``/``tb``/``tw``/``te``/``ts``/``tn``
+    override the top, bottom, west, east, south, and north faces respectively.
+    Raises ``ValueError`` if any span collapses to zero after min/max normalization.
+    """
     if tt is None:
         tt = tex
     if tb is None:
@@ -60,6 +66,11 @@ def box(
 
 
 def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
+    """Return up to four rectangular brushes for a box with an axis-aligned hole.
+
+    The hole is clipped to the outer XY bounds; if nothing remains of it, this
+    returns a single ``box()`` brush instead.
+    """
     # Normalize outer and hole bounds before clipping the opening.
     if x1 > x2:
         x1, x2 = x2, x1
@@ -86,6 +97,12 @@ def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):
 
 
 def polygon_prism(pts, z1, z2, tex):
+    """Return a convex vertical prism extruded from an XY polygon.
+
+    The footprint is rewound counter-clockwise if needed so side faces point
+    outward. Raises ``ValueError`` for fewer than three points, zero height,
+    zero-area footprints, or non-convex input.
+    """
     if len(pts) < 3:
         raise ValueError(f"polygon_prism() requires at least 3 points, got {len(pts)}")
     if z1 == z2:
@@ -131,7 +148,10 @@ def polygon_prism(pts, z1, z2, tex):
 
 
 def clip_poly_to_rect(poly, x1, y1, x2, y2):
+    """Clip a 2D polygon to an axis-aligned rectangle in XY."""
+
     def clip_edge(pts, inside, intersect):
+        """Clip a polygon ring against one half-plane."""
         out = []
         n = len(pts)
         for i in range(n):
@@ -146,12 +166,14 @@ def clip_poly_to_rect(poly, x1, y1, x2, y2):
         return out
 
     def isect_x(p, q, xv):
+        """Return the segment intersection with the vertical line ``x = xv``."""
         px, py = p
         qx, qy = q
         t = (xv - px) / (qx - px)
         return (xv, py + t * (qy - py))
 
     def isect_y(p, q, yv):
+        """Return the segment intersection with the horizontal line ``y = yv``."""
         px, py = p
         qx, qy = q
         t = (yv - py) / (qy - py)
@@ -172,6 +194,12 @@ def clip_poly_to_rect(poly, x1, y1, x2, y2):
 
 
 def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
+    """Return convex prism fills between a circle and a clipping rectangle.
+
+    The result is a list of pie-slice-derived brushes that fill the rectangular
+    corners left after subtracting a round opening. Raises ``ValueError`` if
+    ``n < 3``.
+    """
     if n < 3:
         raise ValueError(f"radial_fan_fills: n must be >= 3, got {n}")
     sx1, sy1, sx2, sy2 = cx - r, cy - r, cx + r, cy + r
@@ -228,6 +256,7 @@ def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
 
 
 def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
+    """Return brushes for a box with a round XY opening approximated by ``n`` sides."""
     pieces = box_with_hole(
         x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
     )
@@ -238,6 +267,11 @@ def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
 def shear_box_y(
     x1, y1, z1, x2, y2, z2, s1, s2, tex, tt=None, tb=None, tb_params="0 0 0 1 1"
 ):
+    """Return a box whose Y span is offset independently at ``x1`` and ``x2``.
+
+    ``s1`` and ``s2`` shift both Y edges at the west and east ends, so the
+    brush is sheared along X. Raises ``ValueError`` for any zero-thickness span.
+    """
     tt, tb = tt or tex, tb or tex
     if x1 == x2 or y1 == y2 or z1 == z2:
         raise ValueError(
@@ -259,6 +293,7 @@ def shear_box_y(
 
 
 def shear_box_z(x1, y1, z1, x2, y2, z2, s1, s2, tex):
+    """Return ``shear_box_y()`` with X and Z swapped, i.e. sheared along Z."""
     return swap_xz(shear_box_y(z1, y1, x1, z2, y2, x2, s1, s2, tex))
 
 
@@ -359,6 +394,11 @@ def taper_box_x(
 
 
 def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
+    """Return a pyramid whose rectangular base is Y-sheared between ``x1`` and ``x2``.
+
+    ``s1`` and ``s2`` offset the two X-end cross-sections before the apex is
+    placed at the averaged sheared center. Raises ``ValueError`` for zero spans.
+    """
     if x1 == x2 or y1 == y2 or z1 == z2:
         raise ValueError(
             f"shear_pyramid_y: degenerate (zero-thickness) brush "
@@ -379,6 +419,10 @@ def shear_pyramid_y(x1, y1, x2, y2, z1, z2, s1, s2, tex):
 
 
 def pyramid(x1, y1, z1, x2, y2, z2, tex):
+    """Return a rectangular pyramid with its apex at the box center on ``z2``.
+
+    Raises ``ValueError`` if any axis span is zero.
+    """
     if x1 == x2 or y1 == y2 or z1 == z2:
         raise ValueError(
             f"pyramid: degenerate (zero-thickness) brush "
@@ -415,6 +459,13 @@ def ramp_slab(
     tt_params="0 0 0 1 1",
     tb_params="0 0 0 1 1",
 ):
+    """Return a slab whose top and bottom heights vary linearly along X.
+
+    ``zb1``/``zt1`` apply at ``x1`` and ``zb2``/``zt2`` at ``x2``; ``tt``/``tb``
+    override the top and bottom textures, while ``te``/``tw``/``ts`` control
+    the east, west, and long side faces. Raises ``ValueError`` for zero X/Y span
+    or zero thickness at both ends.
+    """
     tt, tb, te, tw, ts = tt or tex, tb or tex, te or tex, tw or tex, ts or tex
     if x1 > x2:
         # Keep the slab ordered from x1 to x2 and swap the paired Z values with it.
@@ -471,6 +522,7 @@ def ramp_slab_y(
     ts=None,
     tt_params="0 0 0 1 1",
 ):
+    """Return ``ramp_slab()`` with the slope running along Y instead of X."""
     if y1 > y2:
         y1, y2 = y2, y1
         zb1, zb2 = zb2, zb1
@@ -496,6 +548,7 @@ def ramp_slab_y(
 
 
 def slab_chamfered_y(x1, x2, y1, y2, zb, zt1, zt2, tex, tt=None, chamfer=4.0):
+    """Return ``ramp_slab_y()`` with extra top faces beveling the two Y ends."""
     if y1 > y2:
         y1, y2 = y2, y1
         zt1, zt2 = zt2, zt1
@@ -511,6 +564,11 @@ def slab_chamfered_y(x1, x2, y1, y2, zb, zt1, zt2, tex, tt=None, chamfer=4.0):
 
 
 def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
+    """Return a triangular corner ramp rising from the far rectangle corner to one apex.
+
+    The high corner sits at ``(x_apex, y_apex, z_hi)`` and the footprint extends
+    to ``x_far`` and ``y_far``. Raises ``ValueError`` for zero height or footprint.
+    """
     tt = tt or tex
     if z_base == z_hi:
         raise ValueError(
@@ -545,6 +603,11 @@ def corner_ramp(x_apex, y_apex, x_far, y_far, z_base, z_hi, tex, tt=None):
 
 
 def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
+    """Return a prism extruded from a counter-clockwise XY triangle.
+
+    Raises ``ValueError`` if ``z1 >= z2`` or if the triangle is collinear or
+    clockwise-wound.
+    """
     if z1 >= z2:
         raise ValueError(
             f"tri_prism: z1 must be < z2 (got z1={z1}, z2={z2}); "
@@ -573,6 +636,12 @@ def tri_prism(ax, ay, bx, by, cx, cy, z1, z2, tex):
 
 
 def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
+    """Return a triangular prism with a sloped top sampled at vertices ``a``, ``b``, ``c``.
+
+    The base lies on ``zbot`` and the top face uses per-vertex heights
+    ``za``/``zb``/``zc``. Raises ``ValueError`` for degenerate/clockwise
+    footprints, for ``zbot`` above any top vertex, or for zero volume.
+    """
     tt = tt or tex
     signed_area2 = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay)
     if abs(signed_area2) < 1e-6:
@@ -606,6 +675,12 @@ def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
 
 
 def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Return an X-thickness annular arch segment in the YZ plane.
+
+    ``angle_start_deg``/``angle_end_deg`` sweep around ``(yc, zc)`` from the
+    positive Y axis toward positive Z. Raises ``ValueError`` for invalid radii,
+    spans outside ``(0, 180]``, or reversed/degenerate X bounds.
+    """
     if not (0 <= rin < rout):
         raise ValueError(
             f"arch_seg: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
@@ -649,6 +724,12 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
 
 
 def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Return an X-thickness annular arch segment capped by endpoint chords.
+
+    Unlike ``arch_seg()``, the inner and outer curved faces are bounded by
+    planes through the start/end arc points. Raises ``ValueError`` under the
+    same radius, angle-span, and X-bound preconditions as ``arch_seg()``.
+    """
     if not (0 <= rin < rout):
         raise ValueError(
             f"arch_seg_chord: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
@@ -692,6 +773,11 @@ def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, te
 
 
 def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Return a vertical annular curb segment extruded between ``z1`` and ``z2``.
+
+    The arc is in the XY plane around ``(cx, cy)``. Raises ``ValueError`` for
+    invalid radii, spans outside ``(0, 180]``, or reversed/degenerate Z bounds.
+    """
     if not (0 <= rin < rout):
         raise ValueError(
             f"curb_seg: requires 0 <= rin < rout, got rin={rin}, rout={rout}"
@@ -735,6 +821,12 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
 
 
 def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
+    """Return a solid pie-slice arch segment of radius ``rad`` and X thickness.
+
+    This is the filled counterpart to ``arch_seg()`` with no inner radius.
+    Raises ``ValueError`` for non-positive radius, spans outside ``(0, 180]``,
+    or reversed/degenerate X bounds.
+    """
     if rad <= 0:
         raise ValueError(f"arch_pie_seg: requires rad > 0, got rad={rad}")
     if angle_start_deg >= angle_end_deg:
@@ -774,12 +866,14 @@ def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
 
 
 def arch_seg_y(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Return ``arch_seg()`` with X and Y swapped, i.e. a segment extruded along Y."""
     return swap_xy(
         arch_seg(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex)
     )
 
 
 def arch_pie_seg_y(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex):
+    """Return ``arch_pie_seg()`` with X and Y swapped, i.e. extruded along Y."""
     return swap_xy(
         arch_pie_seg(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex)
     )

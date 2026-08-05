@@ -120,6 +120,17 @@ def make_pixel_tree(
             "curb_seg, which is non-convex/degenerate; use ring_segs=0 (fins "
             "only) or ring_segs>=2"
         )
+    if ring_segs < 0:
+        raise ValueError(f"make_pixel_tree: ring_segs must be >= 0, got {ring_segs!r}")
+    if vox_size <= 0:
+        raise ValueError(
+            f"make_pixel_tree: vox_size must be positive, got {vox_size!r}"
+        )
+    if isinstance(profile, str) and profile not in TREE_PROFILES:
+        raise ValueError(
+            f"make_pixel_tree: unknown profile {profile!r} — expected one of "
+            f"{sorted(TREE_PROFILES)} or a raw profile (list of row strings)"
+        )
     _rng, _TEX = (
         random.Random(fin_seed),
         {"L": Textures.GROUND, "B": Textures.MULCH, "T": Textures.MULCH},
