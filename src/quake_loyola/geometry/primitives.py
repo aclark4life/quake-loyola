@@ -598,6 +598,13 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
             f"curb_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
+    if angle_end_deg - angle_start_deg > 180:
+        raise ValueError(
+            f"curb_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"tangent planes at the midpoint angle, which is only valid for "
+            f"spans up to a half-circle), got "
+            f"{angle_end_deg - angle_start_deg}"
+        )
     if z1 == z2:
         raise ValueError(f"curb_seg: degenerate (zero-height) segment at z={z1}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)

@@ -218,6 +218,9 @@ def generate() -> None:
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
+    except OSError as exc:
+        typer.echo(f"Write failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
 
 _ERICW_TOOLS_VERSION_RE = re.compile(

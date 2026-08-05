@@ -143,6 +143,12 @@ class EntitiesBuildTests(unittest.TestCase):
         for e in spawns:
             self.assertIn("origin", e.fields)
             self.assertIn("angle", e.fields)
+            # "angle" must be a real Quake yaw (degrees CCW from +X, i.e.
+            # east) so a stray non-numeric value or an out-of-range
+            # placeholder doesn't silently leave a spawn facing undefined.
+            angle = float(e.fields["angle"])
+            self.assertGreaterEqual(angle, 0)
+            self.assertLess(angle, 360)
 
     def test_lights_have_positive_intensity(self):
         _, ents = entities.build()
@@ -159,6 +165,11 @@ class EntitiesBuildTests(unittest.TestCase):
         monster_classes = {"monster_ogre", "monster_knight"}
         monsters = [e for e in ents if e.classname in monster_classes]
         self.assertTrue(monsters, "expected at least one monster entity")
+        for e in monsters:
+            self.assertIn("angle", e.fields)
+            angle = float(e.fields["angle"])
+            self.assertGreaterEqual(angle, 0)
+            self.assertLess(angle, 360)
 
     def test_no_duplicate_point_entity_origins(self):
         # Spawn points must not coincide with each other or with a teleport
@@ -389,10 +400,20 @@ class KnottWalkwayBuildTests(unittest.TestCase):
         self.assertIn("func_detail", [e.classname for e in ents])
 
     def test_walkway_bent_enabled_adds_func_detail_entity(self):
-        knott_terrain.KNOTT_ENABLED_WALKWAY = False
+        knott_terrain.KNOTT_ENABLED_WALKWAY = True
         knott_terrain.KNOTT_ENABLED_WALKWAY_BENT = True
         _, ents = knott_terrain.build()
         self.assertIn("func_detail", [e.classname for e in ents])
+
+    def test_walkway_bent_without_walkway_adds_nothing(self):
+        # The support bent is documented as sitting "beneath the south edge
+        # of the walkway span" — it must not be built when the walkway
+        # itself is disabled, or it would be a free-standing support for
+        # geometry that doesn't exist.
+        knott_terrain.KNOTT_ENABLED_WALKWAY = False
+        knott_terrain.KNOTT_ENABLED_WALKWAY_BENT = True
+        brushes, ents = knott_terrain.build()
+        self.assertNotIn("func_detail", [e.classname for e in ents])
 
 
 class LightGroupFilteringTests(unittest.TestCase):

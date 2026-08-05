@@ -1256,7 +1256,7 @@ def _build_walkway():
             )
         )
 
-    if KNOTT_ENABLED_WALKWAY_BENT:
+    if KNOTT_ENABLED_WALKWAY and KNOTT_ENABLED_WALKWAY_BENT:
         _bent_dy, _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
 
         support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy

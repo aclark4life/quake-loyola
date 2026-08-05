@@ -102,8 +102,9 @@ def _read_toml_safe(path: Path) -> dict[str, Any]:
     """Read ``path`` as TOML, converting a parse failure to ``RuntimeError``.
 
     Callers that mutate an existing ``ql.toml`` (``set_flag``/``set_build``)
-    must not let a raw ``tomllib.TOMLDecodeError`` escape from a malformed
-    file — every other config-loading failure in this module surfaces as
+    must not let a raw ``tomllib.TOMLDecodeError`` or filesystem ``OSError``
+    (e.g. permission denied) escape from a malformed or inaccessible file —
+    every other config-loading failure in this module surfaces as
     ``RuntimeError`` (see ``check_load_error``), so this keeps that contract
     consistent for callers (e.g. ``ql conf set``) that only catch
     ``RuntimeError``.
@@ -112,6 +113,8 @@ def _read_toml_safe(path: Path) -> dict[str, Any]:
         return _read_toml(path)
     except tomllib.TOMLDecodeError as exc:
         raise RuntimeError(f"{path} could not be parsed: {exc}") from exc
+    except OSError as exc:
+        raise RuntimeError(f"{path} could not be read: {exc}") from exc
 
 
 def _toml_scalar(value: Any) -> str:
@@ -140,10 +143,27 @@ def _write_toml(path: Path, sections: dict[str, dict[str, Any]]) -> None:
     path.write_text("\n".join(lines).rstrip() + "\n" if lines else "")
 
 
+def _write_toml_safe(path: Path, sections: dict[str, dict[str, Any]]) -> None:
+    """Write ``path`` as TOML, converting filesystem failures to ``RuntimeError``.
+
+    Keeps the same error contract as :func:`_read_toml_safe` so callers
+    (e.g. ``ql conf set``) that only catch ``RuntimeError`` see a clean,
+    user-facing message instead of a raw ``OSError`` traceback when
+    ``ql.toml`` can't be written (permission denied, disk full, etc.).
+    """
+    try:
+        _write_toml(path, sections)
+    except OSError as exc:
+        raise RuntimeError(f"{path} could not be written: {exc}") from exc
+
+
 _LOAD_ERROR: Exception | None = None
 try:
     _raw = _read_toml(CONFIG_PATH)
 except tomllib.TOMLDecodeError as exc:
+    _raw = {}
+    _LOAD_ERROR = exc
+except OSError as exc:
     _raw = {}
     _LOAD_ERROR = exc
 
@@ -253,7 +273,7 @@ def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
     flags[name] = value
     _validate_section("flags", flags, DEFAULTS)
     raw["flags"] = flags
-    _write_toml(path, raw)
+    _write_toml_safe(path, raw)
     if path == CONFIG_PATH:
         FLAGS[name] = value
 
@@ -267,7 +287,7 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     build[name] = value
     _validate_build_values(build)
     raw["build"] = build
-    _write_toml(path, raw)
+    _write_toml_safe(path, raw)
     if path == CONFIG_PATH:
         BUILD[name] = value
 
@@ -277,7 +297,10 @@ def reset(path: Path = CONFIG_PATH) -> bool:
     global _LOAD_ERROR
     removed = False
     if path.exists():
-        path.unlink()
+        try:
+            path.unlink()
+        except OSError as exc:
+            raise RuntimeError(f"{path} could not be removed: {exc}") from exc
         removed = True
     if path == CONFIG_PATH:
         FLAGS.clear()

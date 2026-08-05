@@ -11,8 +11,7 @@ from quake_loyola import config, mapgen
 class MainWritesMapFileTests(unittest.TestCase):
     def test_main_writes_loyola_map_to_repo_root(self):
         map_path = config.REPO_ROOT / "loyola.map"
-        if map_path.exists():
-            map_path.unlink()
+        backup_text = map_path.read_text() if map_path.exists() else None
         try:
             mapgen.main()
             self.assertTrue(map_path.exists())
@@ -20,7 +19,9 @@ class MainWritesMapFileTests(unittest.TestCase):
             self.assertIn("worldspawn", text)
             self.assertEqual(text, mapgen.build_map_text())
         finally:
-            if map_path.exists():
+            if backup_text is not None:
+                map_path.write_text(backup_text)
+            elif map_path.exists():
                 map_path.unlink()
 
 
