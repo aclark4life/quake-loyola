@@ -11,7 +11,6 @@ from .primitives import (
     arch_seg_y,
     box,
     ramp_slab,
-    ramp_slab_y,
 )
 
 
@@ -87,6 +86,10 @@ def square_wall(
     if y2 > yc + ext:
         brushes.append(box(x1, yc + ext, floor_z, x2, y2, ceil_z, tex))
     recess_margin, recess_depth, recess_tex = recess if recess else (0, 0, None)
+    if recess is not None and recess_depth > 0 and recess_tex is None:
+        raise ValueError(
+            "square_wall: recess requires a texture (got recess=(...,  ..., None))"
+        )
     rx1, rx2 = x1 + recess_margin, x2 - recess_margin
     if recess is not None and recess_depth > 0 and rx2 > rx1:
         brushes.append(box(x1, yc - ext, floor_z, rx1, yc - open_hw, ceil_z, tex))
@@ -248,6 +251,10 @@ def arch_wall(
                 box(x1, yc + (rout + overhang), floor_z, x2, y2, ceil_z, tex)
             )
     recess_margin, recess_depth, recess_tex = recess if recess else (0, 0, None)
+    if recess is not None and recess_depth > 0 and recess_tex is None:
+        raise ValueError(
+            "arch_wall: recess requires a texture (got recess=(..., ..., None))"
+        )
     rx1, rx2 = x1 + recess_margin, x2 - recess_margin
     has_recess = recess is not None and recess_depth > 0 and rx2 > rx1
     if has_recess:
@@ -512,76 +519,24 @@ def entrance_arch_ywall(
     arch_h=48,
     arch_t=8,
 ):
-    xa, xb = sorted((face_x, face_x + out_sign * pillar_d))
-    ly1, ly2, ry1, ry2 = (
-        cy - ent_hw - pillar_w,
-        cy - ent_hw,
-        cy + ent_hw,
-        cy + ent_hw + pillar_w,
-    )
-    pz2 = base_z + ent_h + lintel_h
-    eave_z, ridge_z = pz2, pz2 + arch_h
-    brushes = [
-        box(xa, ly1, base_z, xb, ly2, pz2, tex),
-        box(xa, ry1, base_z, xb, ry2, pz2, tex),
-        box(xa, ly1, base_z + ent_h, xb, ry2, pz2, tex),
-        ramp_slab_y(xa, xb, ly1, cy, eave_z, eave_z, eave_z + arch_t, ridge_z, tex),
-        ramp_slab_y(xa, xb, cy, ry2, eave_z, eave_z, ridge_z, eave_z + arch_t, tex),
-    ]
-    overhang, slat_h, side_ov = 3, 5, 2
-    xa_cap, xb_cap = (
-        (xa - overhang if out_sign < 0 else xa),
-        (xb + overhang if out_sign > 0 else xb),
-    )
-    beam_h, beam_gap, upper_rise = 2, 9, 6
-    brushes += [
-        box(
-            xa_cap,
-            ly1 - side_ov,
-            eave_z + upper_rise,
-            xb_cap,
-            ry2 + side_ov,
-            eave_z + upper_rise + beam_h,
-            tex,
-        ),
-        box(
-            xa_cap,
-            ly1 - side_ov,
-            eave_z - beam_gap - beam_h,
-            xb_cap,
-            ry2 + side_ov,
-            eave_z - beam_gap,
-            tex,
-        ),
-    ]
-    half_span = ent_hw + pillar_w
-    slat_drop = side_ov * (arch_h - arch_t) // half_span
-    zb_ext, zt_ext = eave_z + arch_t - slat_drop, eave_z + arch_t - slat_drop + slat_h
-    brushes += [
-        ramp_slab_y(
-            xa_cap,
-            xb_cap,
-            ly1 - side_ov,
+    """Axis-swapped ``entrance_arch_xwall``: same geometry, X and Y swapped."""
+    return [
+        swap_xy(b)
+        for b in entrance_arch_xwall(
             cy,
-            zb_ext,
-            ridge_z,
-            zt_ext,
-            ridge_z + slat_h,
+            base_z,
+            ent_hw,
+            ent_h,
+            face_x,
+            out_sign,
             tex,
-        ),
-        ramp_slab_y(
-            xa_cap,
-            xb_cap,
-            cy,
-            ry2 + side_ov,
-            ridge_z,
-            zb_ext,
-            ridge_z + slat_h,
-            zt_ext,
-            tex,
-        ),
+            pillar_w=pillar_w,
+            pillar_d=pillar_d,
+            lintel_h=lintel_h,
+            arch_h=arch_h,
+            arch_t=arch_t,
+        )
     ]
-    return brushes
 
 
 def win_frame_xwall(
@@ -600,12 +555,13 @@ def win_frame_xwall(
     inner_gap=0,
     ifw=None,
     inner_recess=2,
+    _fname="win_frame_xwall",
 ):
     if ifw is None:
         ifw = max(fw - 1, 2)
     if fd <= 2 * inner_recess:
         raise ValueError(
-            f"win_frame_xwall: fd ({fd}) must be greater than "
+            f"{_fname}: fd ({fd}) must be greater than "
             f"2 * inner_recess ({2 * inner_recess}), or the inner muntin "
             "depth collapses to zero or negative"
         )
@@ -659,45 +615,28 @@ def win_frame_ywall(
     ifw=None,
     inner_recess=2,
 ):
-    if ifw is None:
-        ifw = max(fw - 1, 2)
-    if fd <= 2 * inner_recess:
-        raise ValueError(
-            f"win_frame_ywall: fd ({fd}) must be greater than "
-            f"2 * inner_recess ({2 * inner_recess}), or the inner muntin "
-            "depth collapses to zero or negative"
+    """Axis-swapped ``win_frame_xwall``: same geometry, X and Y swapped."""
+    return [
+        swap_xy(b)
+        for b in win_frame_xwall(
+            yl,
+            yr,
+            zb,
+            zt,
+            face_x,
+            out_sign,
+            tex,
+            fw=fw,
+            fd=fd,
+            margin=margin,
+            crossbar=crossbar,
+            bottom=bottom,
+            inner_gap=inner_gap,
+            ifw=ifw,
+            inner_recess=inner_recess,
+            _fname="win_frame_ywall",
         )
-    xa, xb = sorted((face_x, face_x + out_sign * fd))
-    jxa, jxb = sorted(
-        (face_x + out_sign * inner_recess, face_x + out_sign * (fd - inner_recess))
-    )
-    iy1, iy2, iz1, iz2 = yl + margin, yr - margin, zb + margin, zt - margin
-    bars = [box(xa, iy1, iz2 - fw, xb, iy2, iz2, tex)]
-    if bottom:
-        bars.append(box(xa, iy1, iz1, xb, iy2, iz1 + fw, tex))
-    bars += [
-        box(xa, iy1, iz1, xb, iy1 + fw, iz2, tex),
-        box(xa, iy2 - fw, iz1, xb, iy2, iz2, tex),
     ]
-    jy1, jy2, jz1, jz2 = (
-        iy1 + fw + inner_gap,
-        iy2 - fw - inner_gap,
-        (iz1 + fw + inner_gap if bottom else iz1),
-        iz2 - fw - inner_gap,
-    )
-    if jy2 - jy1 > 2 * ifw and jz2 - jz1 > 2 * ifw:
-        bars += [
-            box(jxa, jy1, jz2 - ifw, jxb, jy2, jz2, tex),
-            box(jxa, jy1, jz1, jxb, jy1 + ifw, jz2, tex),
-            box(jxa, jy2 - ifw, jz1, jxb, jy2, jz2, tex),
-        ]
-        if bottom:
-            bars.append(box(jxa, jy1, jz1, jxb, jy2, jz1 + ifw, tex))
-        if crossbar:
-            cb, zc, cr = max(ifw // 2, 2), (jz1 + jz2) // 2, fd // 2 - ifw // 2
-            cxa, cxb = sorted((face_x + out_sign * cr, face_x + out_sign * (cr + ifw)))
-            bars.append(box(cxa, jy1, zc - cb // 2, cxb, jy2, zc + cb - cb // 2, tex))
-    return bars
 
 
 def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):

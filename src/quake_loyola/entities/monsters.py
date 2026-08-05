@@ -14,6 +14,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_ENABLED_TERRAIN,
     KNOTT_ENABLED_WALKWAY,
     KNOTT_GROUND_Z,
     ROAD_X1,
@@ -23,6 +24,7 @@ from ..constants import (
     WALK_X2,
     WALK_ZT1,
     WALK_ZT2,
+    WEST_CAMPUS_ENABLED_DORMS,
     deck_top_z,
 )
 from ..geometry import (
@@ -46,13 +48,14 @@ def _build_monsters(ENTITIES):
 
     ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
 
-    ENTITIES.append(
-        ent(
-            "monster_ogre",
-            origin=f"{DORM_CX} {DORM_SOUTH1_CY + 150} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-            angle="90",
+    if WEST_CAMPUS_ENABLED_DORMS:
+        ENTITIES.append(
+            ent(
+                "monster_ogre",
+                origin=f"{DORM_CX} {DORM_SOUTH1_CY + 150} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
+                angle="90",
+            )
         )
-    )
 
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters_start:]
@@ -93,38 +96,41 @@ def _build_monsters2(ENTITIES):
     backroad_center_x = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) // 2
     _backroad_rise = KNOTT_DRIVEWAY_ZT_S - KNOTT_DRIVEWAY_ZT_N
 
-    for ogre_y, ogre_z in [
-        (
-            -600,
-            FLOOR_Z2
-            + 2
-            + (
-                _backroad_rise
-                * ((-600) - KNOTT_DRIVEWAY_Y2)
-                // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
+    if KNOTT_ENABLED_TERRAIN:
+        # The backroad driveway ground these knights stand on only exists
+        # when the Knott driveway terrain is built.
+        for ogre_y, ogre_z in [
+            (
+                -600,
+                FLOOR_Z2
+                + 2
+                + (
+                    _backroad_rise
+                    * ((-600) - KNOTT_DRIVEWAY_Y2)
+                    // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
+                )
+                + 24,
+            ),
+            (
+                -1200,
+                FLOOR_Z2
+                + 2
+                + (
+                    _backroad_rise
+                    * ((-1200) - KNOTT_DRIVEWAY_Y2)
+                    // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
+                )
+                + 24,
+            ),
+            (KNOTT_DRIVEWAY_Y1 + 64, KNOTT_GROUND_Z + 2 + 24),
+        ]:
+            ENTITIES.append(
+                ent(
+                    "monster_knight",
+                    origin=f"{backroad_center_x} {ogre_y} {ogre_z}",
+                    angle="90",
+                )
             )
-            + 24,
-        ),
-        (
-            -1200,
-            FLOOR_Z2
-            + 2
-            + (
-                _backroad_rise
-                * ((-1200) - KNOTT_DRIVEWAY_Y2)
-                // (KNOTT_DRIVEWAY_Y1 - KNOTT_DRIVEWAY_Y2)
-            )
-            + 24,
-        ),
-        (KNOTT_DRIVEWAY_Y1 + 64, KNOTT_GROUND_Z + 2 + 24),
-    ]:
-        ENTITIES.append(
-            ent(
-                "monster_knight",
-                origin=f"{backroad_center_x} {ogre_y} {ogre_z}",
-                angle="90",
-            )
-        )
 
     deck_center_z = int(deck_top_z(0)) + 24
     deck_p3_z = int(deck_top_z(525)) + 24

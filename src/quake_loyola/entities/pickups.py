@@ -15,6 +15,7 @@ from ..constants import (
     FLOOR_Z2,
     ROAD_X2,
     SDORM_LIFT,
+    WEST_CAMPUS_ENABLED_DORMS,
     deck_top_z,
 )
 from ..geometry import (
@@ -43,19 +44,20 @@ def _build_weapons(ENTITIES):
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
     ENTITIES.append(ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}"))
-    ENTITIES.append(
-        ent(
-            "weapon_supershotgun",
-            origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+    if WEST_CAMPUS_ENABLED_DORMS:
+        ENTITIES.append(
+            ent(
+                "weapon_supershotgun",
+                origin=f"{DORM_CX} {DORM_SOUTH1_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+            )
         )
-    )
 
-    ENTITIES.append(
-        ent(
-            "weapon_grenadelauncher",
-            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+        ENTITIES.append(
+            ent(
+                "weapon_grenadelauncher",
+                origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+            )
         )
-    )
 
     ENTITIES.append(ent("weapon_nailgun", origin=f"-600 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("weapon_nailgun", origin=f"600 0 {ROAD_Z + 24}"))
@@ -77,9 +79,10 @@ def _build_ammo(ENTITIES):
         ENTITIES.append(ent("item_rockets", origin=f"{rx} 0 {ROAD_Z + 24}"))
         ENTITIES.append(ent("item_rockets", origin=f"-{rx} 0 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))
-    ENTITIES.append(
-        ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
-    )
+    if WEST_CAMPUS_ENABLED_DORMS:
+        ENTITIES.append(
+            ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
+        )
     ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
 
@@ -94,21 +97,23 @@ def _build_health(ENTITIES):
     ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
     ENTITIES.append(ent("item_health", origin=f"-300 400 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_health", origin=f"300 -600 {ROAD_Z + 24}"))
-    ENTITIES.append(
-        ent(
-            "item_health",
-            origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+    if WEST_CAMPUS_ENABLED_DORMS:
+        ENTITIES.append(
+            ent(
+                "item_health",
+                origin=f"{DORM_CX} {DORM_SOUTH2_CY} {FLOOR_Z2 + SDORM_LIFT + 40}",
+            )
         )
-    )
 
     _arm_y, _arm_z = _cs_offset(-200, 0, int(deck_top_z(-200) + 8))
     ENTITIES.append(ent("item_armor1", origin=f"-200 {_arm_y} {_arm_z}"))
-    ENTITIES.append(
-        ent(
-            "item_armorInv",
-            origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
+    if WEST_CAMPUS_ENABLED_DORMS:
+        ENTITIES.append(
+            ent(
+                "item_armorInv",
+                origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
+            )
         )
-    )
 
     if not ENTITIES_ENABLED_HEALTH:
         del ENTITIES[health_start:]

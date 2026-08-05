@@ -6,7 +6,6 @@ from ..config import get as _flag
 from .world import INDENT
 
 KNOTT_DRIVEWAY_HW = 128
-KNOTT_ENABLED_EXTERIOR = _flag("KNOTT_ENABLED_EXTERIOR")  # Exterior shell.
 KNOTT_FLOORS = 5
 KNOTT_FLOOR_H = 192
 KNOTT_BUILDING_W = 1280

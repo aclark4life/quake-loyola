@@ -40,8 +40,8 @@ BUILDING_H = 1523  # Was 1640; net effect of two window panes removed (2 x
 # the ground-floor door/entrance is 1.5 panes tall instead of 1, with every
 # other window pane on every wall staying exactly 78 tall/unchanged.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
-CORNER_CUT_W_NE = 128  # East notch inset from X2.
-CORNER_CUT_W_NW = 188  # West notch inset from X1 — moved east more than the NE side.
+CORNER_CUT_W_NE = 128  # East notch inset from KH_X2.
+CORNER_CUT_W_NW = 188  # West notch inset from KH_X1 — moved east more than the NE side.
 
 SHIFT_NORTH = 220  # Moved a little closer to the bridge deck (+Y).
 SOUTH_EXTEND = 160  # Extra length added to the south end (-Y) to fit 3
@@ -60,19 +60,19 @@ SIDE_WIN_MARGIN = 32  # Margin from each end of the wall to the first/last
 
 # Widened to align the east/west walls with the outer pier faces of the
 # Pier 4-Pier 5 bridge span facing Knott Hall (BRIDGE_ENABLED_SPAN_KH).
-X1 = PIER4_X - BRIDGE_PILLAR_HW  # West wall flush with Pier 4's west face.
-X2 = PIER5_X + BRIDGE_PILLAR_HW  # East wall flush with Pier 5's east face.
-Y1 = KNOTT_Y1 + SHIFT_NORTH - SOUTH_EXTEND
-Y2 = KNOTT_Y2 + SHIFT_NORTH
+KH_X1 = PIER4_X - BRIDGE_PILLAR_HW  # West wall flush with Pier 4's west face.
+KH_X2 = PIER5_X + BRIDGE_PILLAR_HW  # East wall flush with Pier 5's east face.
+KH_Y1 = KNOTT_Y1 + SHIFT_NORTH - SOUTH_EXTEND
+KH_Y2 = KNOTT_Y2 + SHIFT_NORTH
 
 # The north edge steps in at both the NW and NE corners: the footprint is
-# the union of a full-width lower rectangle (up to NOTCH_Y) and a narrower
-# upper rectangle (NOTCH_Y to Y2, inset by CORNER_CUT_W_NW/NE on each side)
+# the union of a full-width lower rectangle (up to KH_NOTCH_Y) and a narrower
+# upper rectangle (KH_NOTCH_Y to KH_Y2, inset by CORNER_CUT_W_NW/NE on each side)
 # rather than one plain rectangle. Both corners cut the same depth south
-# (NOTCH_Y), but the west corner insets further east than the east corner.
-NOTCH_Y = Y2 - CORNER_CUT_DEPTH
-NORTH_X1 = X1 + CORNER_CUT_W_NW
-NORTH_X2 = X2 - CORNER_CUT_W_NE
+# (KH_NOTCH_Y), but the west corner insets further east than the east corner.
+KH_NOTCH_Y = KH_Y2 - CORNER_CUT_DEPTH
+KH_NORTH_X1 = KH_X1 + CORNER_CUT_W_NW
+KH_NORTH_X2 = KH_X2 - CORNER_CUT_W_NE
 
 # The real terrain hillside slopes down noticeably (and non-linearly near
 # the southeast corner) under the footprint — the _kh_hill_ground_z helper
@@ -82,7 +82,7 @@ NORTH_X2 = X2 - CORNER_CUT_W_NE
 # minimum, walls extend down to WORLD_FLOOR_Z (-16), the base terrain fill
 # level used everywhere else in the map, guaranteeing no gap regardless of
 # local terrain undulation.
-GROUND_Z = -16
+KH_GROUND_Z = -16
 
 # Front openings (start one beam segment (104 units) above bridge-deck
 # height and run up to the roof; below that the wall is solid, including
@@ -106,7 +106,7 @@ GROUND_DOOR_H = 128
 GROUND_DOOR_OFFSET = 180  # East of the center door's opening (offset 100).
 GROUND_DOOR_BOTTOM = 100  # Raised above the building's foundation footer to
 # roughly match real grade near the north wall (terrain there sits well
-# above GROUND_Z).
+# above KH_GROUND_Z).
 MULLION_W = 22  # Vertical divider (base) thickness, bumped up from the
 # historical KH value (12) for better visibility.
 MULLION_PROUD = 12  # How far the mullion's pointed edge projects past the wall.
@@ -372,33 +372,33 @@ def build():
     if not KNOTT_ENABLED:
         return [], []
 
-    z1 = GROUND_Z
+    z1 = KH_GROUND_Z
     z2 = z1 + BUILDING_H
     parapet_z2 = z2 + PARAPET_H
     roof_z1 = z2
     roof_z2 = roof_z1 + ROOF_T
 
     west_struct, west_detail = _side_windows(
-        X1,
-        X1 + WALL_T,
-        Y1,
-        NOTCH_Y,
+        KH_X1,
+        KH_X1 + WALL_T,
+        KH_Y1,
+        KH_NOTCH_Y,
         z1,
         z2,
         OPENING_BOTTOM_Z,
         Textures.PIER_STONE,
-        outer_x=X1,
+        outer_x=KH_X1,
     )
     east_struct, east_detail = _side_windows(
-        X2 - WALL_T,
-        X2,
-        Y1,
-        NOTCH_Y,
+        KH_X2 - WALL_T,
+        KH_X2,
+        KH_Y1,
+        KH_NOTCH_Y,
         z1,
         z2,
         OPENING_BOTTOM_Z,
         Textures.PIER_STONE,
-        outer_x=X2,
+        outer_x=KH_X2,
     )
 
     brushes = [
@@ -410,21 +410,21 @@ def build():
         *east_struct,
         # South wall (between the two side walls)
         box(
-            X1 + WALL_T,
-            Y1,
+            KH_X1 + WALL_T,
+            KH_Y1,
             z1,
-            X2 - WALL_T,
-            Y1 + WALL_T,
+            KH_X2 - WALL_T,
+            KH_Y1 + WALL_T,
             z2,
             Textures.PIER_STONE,
         ),
         # NW notch ledge (faces the cut-away square, north-facing) — has the
         # west front opening above bridge-deck height.
         *_wall_with_opening(
-            X1 + WALL_T,
-            NOTCH_Y - WALL_T,
-            NORTH_X1,
-            NOTCH_Y,
+            KH_X1 + WALL_T,
+            KH_NOTCH_Y - WALL_T,
+            KH_NORTH_X1,
+            KH_NOTCH_Y,
             z1,
             z2,
             WEST_OPENING_W,
@@ -439,10 +439,10 @@ def build():
         # NE notch ledge (faces the cut-away square, north-facing) — has the
         # (narrower) east front opening above bridge-deck height.
         *_wall_with_opening(
-            NORTH_X2,
-            NOTCH_Y - WALL_T,
-            X2 - WALL_T,
-            NOTCH_Y,
+            KH_NORTH_X2,
+            KH_NOTCH_Y - WALL_T,
+            KH_X2 - WALL_T,
+            KH_NOTCH_Y,
             z1,
             z2,
             EAST_OPENING_W,
@@ -455,17 +455,33 @@ def build():
             beam_tex=Textures.FENCE,
         ),
         # Upper rectangle west wall (inward face of the NW notch)
-        box(NORTH_X1, NOTCH_Y, z1, NORTH_X1 + WALL_T, Y2, z2, Textures.PIER_STONE),
+        box(
+            KH_NORTH_X1,
+            KH_NOTCH_Y,
+            z1,
+            KH_NORTH_X1 + WALL_T,
+            KH_Y2,
+            z2,
+            Textures.PIER_STONE,
+        ),
         # Upper rectangle east wall (inward face of the NE notch)
-        box(NORTH_X2 - WALL_T, NOTCH_Y, z1, NORTH_X2, Y2, z2, Textures.PIER_STONE),
+        box(
+            KH_NORTH_X2 - WALL_T,
+            KH_NOTCH_Y,
+            z1,
+            KH_NORTH_X2,
+            KH_Y2,
+            z2,
+            Textures.PIER_STONE,
+        ),
         # North wall (upper rectangle, between the two notches) — has the
         # center front opening above bridge-deck height, same size as the
         # west opening.
         *_wall_with_opening(
-            NORTH_X1 + WALL_T,
-            Y2 - WALL_T,
-            NORTH_X2 - WALL_T,
-            Y2,
+            KH_NORTH_X1 + WALL_T,
+            KH_Y2 - WALL_T,
+            KH_NORTH_X2 - WALL_T,
+            KH_Y2,
             z1,
             z2,
             CENTER_OPENING_W,
@@ -491,41 +507,41 @@ def build():
         # walls) are additionally inset by WALL_T on the north side so they
         # don't sit flush against those walls' inward faces; the middle
         # span (open transition into the upper rectangle) can run flush to
-        # NOTCH_Y since there's no wall face there.
+        # KH_NOTCH_Y since there's no wall face there.
         box(
-            X1 + WALL_T,
-            Y1 + WALL_T,
+            KH_X1 + WALL_T,
+            KH_Y1 + WALL_T,
             roof_z1,
-            NORTH_X1,
-            NOTCH_Y - WALL_T,
+            KH_NORTH_X1,
+            KH_NOTCH_Y - WALL_T,
             roof_z2,
             Textures.ROOF_KH,
         ),
         box(
-            NORTH_X1,
-            Y1 + WALL_T,
+            KH_NORTH_X1,
+            KH_Y1 + WALL_T,
             roof_z1,
-            NORTH_X2,
-            NOTCH_Y,
+            KH_NORTH_X2,
+            KH_NOTCH_Y,
             roof_z2,
             Textures.ROOF_KH,
         ),
         box(
-            NORTH_X2,
-            Y1 + WALL_T,
+            KH_NORTH_X2,
+            KH_Y1 + WALL_T,
             roof_z1,
-            X2 - WALL_T,
-            NOTCH_Y - WALL_T,
+            KH_X2 - WALL_T,
+            KH_NOTCH_Y - WALL_T,
             roof_z2,
             Textures.ROOF_KH,
         ),
         # Roof, upper (notched) rectangle — inset behind the parapet ring.
         box(
-            NORTH_X1 + WALL_T,
-            NOTCH_Y,
+            KH_NORTH_X1 + WALL_T,
+            KH_NOTCH_Y,
             roof_z1,
-            NORTH_X2 - WALL_T,
-            Y2 - WALL_T,
+            KH_NORTH_X2 - WALL_T,
+            KH_Y2 - WALL_T,
             roof_z2,
             Textures.ROOF_KH,
         ),
@@ -539,59 +555,75 @@ def build():
     # affect vis/portal generation, and keeps qbsp's edge count for the
     # standard BSP format in range.
     parapet_detail = [
-        box(X1, Y1, z2, X1 + WALL_T, NOTCH_Y, parapet_z2, Textures.PIER_STONE),
-        box(X2 - WALL_T, Y1, z2, X2, NOTCH_Y, parapet_z2, Textures.PIER_STONE),
         box(
-            X1 + WALL_T,
-            Y1,
+            KH_X1,
+            KH_Y1,
             z2,
-            X2 - WALL_T,
-            Y1 + WALL_T,
+            KH_X1 + WALL_T,
+            KH_NOTCH_Y,
             parapet_z2,
             Textures.PIER_STONE,
         ),
         box(
-            X1 + WALL_T,
-            NOTCH_Y - WALL_T,
+            KH_X2 - WALL_T,
+            KH_Y1,
             z2,
-            NORTH_X1,
-            NOTCH_Y,
+            KH_X2,
+            KH_NOTCH_Y,
             parapet_z2,
             Textures.PIER_STONE,
         ),
         box(
-            NORTH_X2,
-            NOTCH_Y - WALL_T,
+            KH_X1 + WALL_T,
+            KH_Y1,
             z2,
-            X2 - WALL_T,
-            NOTCH_Y,
+            KH_X2 - WALL_T,
+            KH_Y1 + WALL_T,
             parapet_z2,
             Textures.PIER_STONE,
         ),
         box(
-            NORTH_X1,
-            NOTCH_Y,
+            KH_X1 + WALL_T,
+            KH_NOTCH_Y - WALL_T,
             z2,
-            NORTH_X1 + WALL_T,
-            Y2,
+            KH_NORTH_X1,
+            KH_NOTCH_Y,
             parapet_z2,
             Textures.PIER_STONE,
         ),
         box(
-            NORTH_X2 - WALL_T,
-            NOTCH_Y,
+            KH_NORTH_X2,
+            KH_NOTCH_Y - WALL_T,
             z2,
-            NORTH_X2,
-            Y2,
+            KH_X2 - WALL_T,
+            KH_NOTCH_Y,
             parapet_z2,
             Textures.PIER_STONE,
         ),
         box(
-            NORTH_X1 + WALL_T,
-            Y2 - WALL_T,
+            KH_NORTH_X1,
+            KH_NOTCH_Y,
             z2,
-            NORTH_X2 - WALL_T,
-            Y2,
+            KH_NORTH_X1 + WALL_T,
+            KH_Y2,
+            parapet_z2,
+            Textures.PIER_STONE,
+        ),
+        box(
+            KH_NORTH_X2 - WALL_T,
+            KH_NOTCH_Y,
+            z2,
+            KH_NORTH_X2,
+            KH_Y2,
+            parapet_z2,
+            Textures.PIER_STONE,
+        ),
+        box(
+            KH_NORTH_X1 + WALL_T,
+            KH_Y2 - WALL_T,
+            z2,
+            KH_NORTH_X2 - WALL_T,
+            KH_Y2,
             parapet_z2,
             Textures.PIER_STONE,
         ),
@@ -615,14 +647,14 @@ def build():
     # a second scale factor) so it always leaves visible padding, regardless
     # of how the letter pixel sizes happen to round.
     sign_half_w = sign_total_w // 2 + sign_padding
-    sign_cx = NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
+    sign_cx = KH_NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
     SIGN_Z_ADJUST = 32  # Lower the sign a little from its default offset.
     sign_z_center = z1 + BUILDING_H // 2 + KNOTT_SIGN_Z_OFFSET + SIGN_Z_ADJUST
     brushes.extend(
         fascia_sign(
             KNOTT_SIGN_TEXT,
             sign_cx,
-            Y2,
+            KH_Y2,
             sign_z_center,
             panel_h=sign_h,
             panel_padding=sign_padding,

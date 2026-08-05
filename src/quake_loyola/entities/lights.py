@@ -21,6 +21,7 @@ from ..constants import (
     SDORM_LIFT,
     WALK_ZT1,
     WALK_ZT2,
+    WEST_CAMPUS_ENABLED_DORMS,
     deck_bot_z,
 )
 from ..geometry import (
@@ -146,12 +147,16 @@ def _build_lights(ENTITIES):
     _dorm_north2_y2 = DORM_NORTH_Y1
     _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     bldg_light_xs = [DORM.x1 + (DORM.x2 - DORM.x1) * i // 4 for i in [1, 2, 3]]
-    for building_y1, building_y2, building_lift in [
-        (DORM_NORTH_Y1, DORM_NORTH_Y2, 0),
-        (_dorm_north2_y1, _dorm_north2_y2, 0),
-        (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, SDORM_LIFT),
-        (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, SDORM_LIFT),
-    ]:
+    for building_y1, building_y2, building_lift in (
+        [
+            (DORM_NORTH_Y1, DORM_NORTH_Y2, 0),
+            (_dorm_north2_y1, _dorm_north2_y2, 0),
+            (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, SDORM_LIFT),
+            (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, SDORM_LIFT),
+        ]
+        if WEST_CAMPUS_ENABLED_DORMS
+        else []
+    ):
         building_y = (building_y1 + building_y2) // 2
         for building_floor_index in range(DORM.floors):
             building_light_z = (

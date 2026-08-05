@@ -19,8 +19,8 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1287
-EXPECTED_ENTITIES = 103
-EXPECTED_MD5 = "891e2d4935bd56c01389718953fdc529"
+EXPECTED_ENTITIES = 102
+EXPECTED_MD5 = "6a845fe3fa9933c44bf9d67fd09ca5f8"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
@@ -32,7 +32,6 @@ EXPECTED_MD5 = "891e2d4935bd56c01389718953fdc529"
 EXPECTED_ENTITY_CLASSNAME_COUNTS = {
     "func_detail": 11,
     "func_illusionary": 3,
-    "info_intermission": 1,
     "info_player_start": 1,
     "info_teleport_destination": 1,
     "light": 63,

@@ -5,6 +5,7 @@ import random
 
 from ..constants import FASCIA_FONT, TREE_PROFILES, Textures
 from ..mapdata import Brush, Face
+from ..utils import swap_xy
 from .primitives import arch_seg, box, curb_seg, pyramid, ramp_slab
 from .structures import layered_wall_y
 
@@ -264,31 +265,13 @@ def render_text_flat_x(text, y0, x_face, z_base, px_w, px_h, depth, tex, mirror=
 
 
 def render_text_flat(text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=False):
-    cols, rows, brushes = 4, 6, []
-    char_w = (cols + 1) * px_w
-    for ci, ch in enumerate(text):
-        bitmap, cx = FASCIA_FONT.get(ch, FASCIA_FONT[" "]), x0 + ci * char_w
-        for row_i, row_bits in enumerate(bitmap):
-            z, run_start = z_base + (rows - 1 - row_i) * px_h, None
-            for col_i in range(cols + 1):
-                src_col = (cols - 1 - col_i) if mirror else col_i
-                lit = col_i < cols and (row_bits & (1 << (cols - 1 - src_col)))
-                if lit and run_start is None:
-                    run_start = col_i
-                elif not lit and run_start is not None:
-                    brushes.append(
-                        box(
-                            cx + run_start * px_w,
-                            y_face,
-                            z,
-                            cx + col_i * px_w,
-                            y_face + depth,
-                            z + px_h,
-                            tex,
-                        )
-                    )
-                    run_start = None
-    return brushes
+    """Axis-swapped ``render_text_flat_x``: same glyph geometry, X and Y swapped."""
+    return [
+        swap_xy(b)
+        for b in render_text_flat_x(
+            text, x0, y_face, z_base, px_w, px_h, depth, tex, mirror=mirror
+        )
+    ]
 
 
 def iron_fence(

@@ -4,6 +4,7 @@ from ..constants import (
     DORM_NORTH_Y2,
     ENTITIES_ENABLED_EXIT,
     FLOOR_Z2,
+    WEST_CAMPUS_ENABLED_DORMS,
     Textures,
 )
 from ..geometry import (
@@ -129,11 +130,13 @@ def _build_exit(ENTITIES):
         if lb:
             ENTITIES.append(brush_ent("func_detail", lb))
 
-    if not ENTITIES_ENABLED_EXIT:
+    if not (ENTITIES_ENABLED_EXIT and WEST_CAMPUS_ENABLED_DORMS):
         del ENTITIES[exit_start:]
 
 
 def _build_intermission(ENTITIES):
+    if not ENTITIES_ENABLED_EXIT:
+        return
     ENTITIES.append(
         ent(
             "info_intermission",

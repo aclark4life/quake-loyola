@@ -1,18 +1,23 @@
 """Shared formatting and coordinate-swap helpers."""
 
+from typing import TYPE_CHECKING
 
-def format_value(v):
+if TYPE_CHECKING:
+    from .mapdata import Brush
+
+
+def format_value(v: float) -> str:
     """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
     f = float(v)
     return str(int(f)) if f == int(f) else f"{f:.6g}"
 
 
-def format_point(x, y, z):
+def format_point(x: float, y: float, z: float) -> str:
     """Return a Quake map point literal string '( x y z )'."""
     return f"( {format_value(x)} {format_value(y)} {format_value(z)} )"
 
 
-def swap_xy(src):
+def swap_xy(src: "Brush") -> "Brush":
     """Return a new Brush with X and Y coordinates swapped on every face.
 
     Swapping two coordinates reflects the brush, so the face winding is also
@@ -39,7 +44,7 @@ def swap_xy(src):
     )
 
 
-def swap_xz(src):
+def swap_xz(src: "Brush") -> "Brush":
     """Return a new Brush with X and Z coordinates swapped on every face.
 
     Same winding correction as ``swap_xy``, but swapping X and Z.

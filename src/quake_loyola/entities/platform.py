@@ -1,6 +1,9 @@
 from ..constants import (
     BRIDGE,
     CHARLES_PLT_BR_X,
+    CHARLES_PLT_H,
+    CHARLES_PLT_SPEED,
+    CHARLES_PLT_W,
     CHARLES_PLT_X_OUT,
     CHARLES_PLT_X_RET,
     CHARLES_PLT_Y_OUT,
@@ -28,10 +31,6 @@ from ._common import ROAD_Z
 
 def _build_platform(ENTITIES):
     platform_start = len(ENTITIES)
-
-    CHARLES_PLT_W = 128
-    CHARLES_PLT_H = 12
-    CHARLES_PLT_SPEED = 180
 
     CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
 

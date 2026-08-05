@@ -105,6 +105,20 @@ def polygon_prism(pts, z1, z2, tex):
     if signed_area2 < 0:
         pts = list(reversed(pts))
     n = len(pts)
+    # A Brush is the intersection of its face half-spaces, which is only
+    # convex if the footprint itself is convex; reject concave/self-
+    # intersecting input rather than silently building the wrong solid.
+    for i in range(n):
+        ax, ay = pts[i]
+        bx, by = pts[(i + 1) % n]
+        cx, cy = pts[(i + 2) % n]
+        cross = (bx - ax) * (cy - by) - (by - ay) * (cx - bx)
+        if cross < -1e-6:
+            raise ValueError(
+                f"polygon_prism: requires a convex polygon (a Brush is the "
+                f"intersection of its face half-spaces), got a concave/"
+                f"self-intersecting footprint {pts}"
+            )
     faces = []
     for i in range(n):
         ax, ay = pts[i]
@@ -538,6 +552,13 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
             f"arch_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
+    if angle_end_deg - angle_start_deg > 180:
+        raise ValueError(
+            f"arch_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"tangent planes at the midpoint angle, which is only valid for "
+            f"spans up to a half-circle), got "
+            f"{angle_end_deg - angle_start_deg}"
+        )
     if xb == xf:
         raise ValueError(f"arch_seg: degenerate (zero-depth) segment at x={xb}")
     t1, t2 = math.radians(angle_start_deg), math.radians(angle_end_deg)
@@ -568,6 +589,13 @@ def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, te
         raise ValueError(
             f"arch_seg_chord: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if angle_end_deg - angle_start_deg > 180:
+        raise ValueError(
+            f"arch_seg_chord: span must be <= 180 degrees (the wedge is bounded "
+            f"by tangent planes at the endpoints, which is only valid for "
+            f"spans up to a half-circle), got "
+            f"{angle_end_deg - angle_start_deg}"
         )
     if xb == xf:
         raise ValueError(f"arch_seg_chord: degenerate (zero-depth) segment at x={xb}")
@@ -635,6 +663,13 @@ def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
         raise ValueError(
             f"arch_pie_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
+        )
+    if angle_end_deg - angle_start_deg > 180:
+        raise ValueError(
+            f"arch_pie_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"tangent planes at the midpoint angle, which is only valid for "
+            f"spans up to a half-circle), got "
+            f"{angle_end_deg - angle_start_deg}"
         )
     if xb == xf:
         raise ValueError(f"arch_pie_seg: degenerate (zero-depth) segment at x={xb}")
