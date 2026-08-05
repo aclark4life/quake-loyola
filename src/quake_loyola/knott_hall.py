@@ -240,7 +240,7 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
                     bx2,
                     g_y2,
                     bz + BEAM_H / 2,
-                    Textures.CEMENT,
+                    Textures.FENCE,
                 )
             )
         prev_end = g_y2
