@@ -791,6 +791,237 @@ def _add_parapet_base_lights(
     )
 
 
+def _build_bridge_parapet_light_spans(
+    brushes, entities, bridge_blk_pir_m, span_boundaries, span_counts
+):
+    """Add parapet base lights across each bridge span."""
+
+    span1_n, span3_n, kh_span_n = span_counts
+    _add_parapet_base_lights(
+        brushes,
+        entities,
+        BRIDGE_ARCH_X[0],
+        BRIDGE_ARCH_X[1],
+        span1_n,
+        bridge_blk_pir_m,
+        span_boundaries,
+        west_margin=0,
+        east_margin=0,
+    )
+    _add_parapet_base_lights(
+        brushes,
+        entities,
+        BRIDGE_ARCH_X[1],
+        BRIDGE_ARCH_X[2],
+        4,
+        bridge_blk_pir_m,
+        span_boundaries,
+    )
+    _add_parapet_base_lights(
+        brushes,
+        entities,
+        BRIDGE_ARCH_X[2],
+        BRIDGE_ARCH_X[3],
+        span3_n,
+        bridge_blk_pir_m,
+        span_boundaries,
+        west_margin=0,
+        east_margin=0,
+    )
+    _add_parapet_base_lights(
+        brushes,
+        entities,
+        BRIDGE.x2,
+        BRIDGE_ARCH_X[4],
+        kh_span_n,
+        bridge_blk_pir_m,
+        span_boundaries,
+        west_margin=0,
+        east_margin=0,
+        n_south=0,
+        y_shift_fn=east_y_shift,
+    )
+
+
+def _build_bridge_parapet_square_brushes(brushes, bridge_blk_pir_m, span_counts):
+    """Add parapet-face square details across each bridge span."""
+
+    span1_n, span3_n, kh_span_n = span_counts
+    _add_parapet_squares(
+        brushes,
+        BRIDGE_ARCH_X[0],
+        BRIDGE_ARCH_X[1],
+        span1_n,
+        bridge_blk_pir_m,
+        west_margin=0,
+        east_margin=0,
+    )
+    _add_parapet_squares(
+        brushes,
+        BRIDGE_ARCH_X[1],
+        BRIDGE_ARCH_X[2],
+        4,
+        bridge_blk_pir_m,
+    )
+    _add_parapet_squares(
+        brushes,
+        BRIDGE_ARCH_X[2],
+        BRIDGE_ARCH_X[3],
+        span3_n,
+        bridge_blk_pir_m,
+        west_margin=0,
+        east_margin=0,
+    )
+    _add_parapet_squares(
+        brushes,
+        BRIDGE.x2,
+        BRIDGE_ARCH_X[4],
+        kh_span_n,
+        bridge_blk_pir_m,
+        west_margin=0,
+        east_margin=0,
+        n_south=0,
+        y_shift_fn=east_y_shift,
+    )
+
+
+def _bridge_south_parapet_endcap_brush(span4_west_mid):
+    """Return the terminal south parapet block before the Knott connector."""
+
+    cx_wall_end = span4_west_mid - BRIDGE_BLK_HW
+    return box(
+        cx_wall_end - BRIDGE_BLK_HW,
+        BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
+        BRIDGE_DZ2 + BRIDGE.parapet_h,
+        cx_wall_end + BRIDGE_BLK_HW,
+        BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
+        BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
+        Textures.CEMENT,
+    )
+
+
+def _bridge_railing_tube_y_bounds():
+    """Return the north and south railing tube Y extents."""
+
+    tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
+    tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
+    tube_sy1 = BRIDGE.y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
+    tube_sy2 = tube_sy1 + BRIDGE_TUBE_HW * 2
+    return tube_ny1, tube_ny2, tube_sy1, tube_sy2
+
+
+def _add_bridge_span_tubes(
+    brushes,
+    span_boundaries,
+    tube_ny1,
+    tube_ny2,
+    tube_sy1,
+    tube_sy2,
+    tube_z_offset,
+):
+    """Add sloped railing tube spans for one vertical offset."""
+
+    for (
+        span_x1,
+        span_x2,
+        _,
+        _,
+        _,
+        _,
+        tube_z1,
+        tube_z2,
+    ) in _iter_bridge_span_segments(span_boundaries):
+        tube_z1 += tube_z_offset
+        tube_z2 += tube_z_offset
+        brushes.append(
+            ramp_slab(
+                span_x1,
+                span_x2,
+                tube_ny1,
+                tube_ny2,
+                tube_z1,
+                tube_z2,
+                tube_z1 + BRIDGE_TUBE_HW * 2,
+                tube_z2 + BRIDGE_TUBE_HW * 2,
+                Textures.RAIL,
+            )
+        )
+        if not (span_x1 < KNOTT_ENT_WALK_X2 and span_x2 > KNOTT_ENT_WALK_X1):
+            brushes.append(
+                ramp_slab(
+                    span_x1,
+                    span_x2,
+                    tube_sy1,
+                    tube_sy2,
+                    tube_z1,
+                    tube_z2,
+                    tube_z1 + BRIDGE_TUBE_HW * 2,
+                    tube_z2 + BRIDGE_TUBE_HW * 2,
+                    Textures.RAIL,
+                )
+            )
+
+
+def _add_bridge_pier6_connection_tubes(
+    brushes,
+    pier6_old_cutoff_x,
+    span4_west_mid,
+    tube_ny1,
+    tube_ny2,
+    tube_sy1,
+    tube_sy2,
+    tube_base_z,
+):
+    """Add the flat railing tube runs west of pier 6 for one offset."""
+
+    brushes.append(
+        box(
+            BRIDGE.x2,
+            tube_ny1,
+            tube_base_z,
+            PIER5_X,
+            tube_ny2,
+            tube_base_z + BRIDGE_TUBE_HW * 2,
+            Textures.RAIL,
+        )
+    )
+    brushes.extend(
+        _pier6_west_pieces(
+            PIER5_X,
+            tube_ny1,
+            tube_ny2,
+            tube_base_z,
+            tube_base_z + BRIDGE_TUBE_HW * 2,
+            Textures.RAIL,
+            pier6_old_cutoff_x,
+            far=False,
+            margin=-4,
+        )
+    )
+    brushes.append(
+        box(
+            BRIDGE.x2,
+            tube_sy1,
+            tube_base_z,
+            span4_west_mid,
+            tube_sy2,
+            tube_base_z + BRIDGE_TUBE_HW * 2,
+            Textures.RAIL,
+        )
+    )
+    brushes.extend(
+        _pier6_west_pieces(
+            PIER5_X,
+            tube_sy1,
+            tube_sy2,
+            tube_base_z,
+            tube_base_z + BRIDGE_TUBE_HW * 2,
+            Textures.RAIL,
+            pier6_old_cutoff_x,
+        )
+    )
+
+
 def _build_bridge_superstructure(
     brushes,
     entities,
@@ -801,193 +1032,37 @@ def _build_bridge_superstructure(
     span4_west_mid,
 ):
     """Build the bridge parapet decorations and railing tubes."""
-    span1_n, span3_n, kh_span_n = span_counts
 
-    _add_parapet_base_lights(
+    _build_bridge_parapet_light_spans(
         brushes,
         entities,
-        BRIDGE_ARCH_X[0],
-        BRIDGE_ARCH_X[1],
-        span1_n,
         bridge_blk_pir_m,
         span_boundaries,
-        west_margin=0,
-        east_margin=0,
+        span_counts,
     )
-    _add_parapet_base_lights(
-        brushes,
-        entities,
-        BRIDGE_ARCH_X[1],
-        BRIDGE_ARCH_X[2],
-        4,
-        bridge_blk_pir_m,
-        span_boundaries,
-    )
-    _add_parapet_base_lights(
-        brushes,
-        entities,
-        BRIDGE_ARCH_X[2],
-        BRIDGE_ARCH_X[3],
-        span3_n,
-        bridge_blk_pir_m,
-        span_boundaries,
-        west_margin=0,
-        east_margin=0,
-    )
-    _add_parapet_base_lights(
-        brushes,
-        entities,
-        BRIDGE.x2,
-        BRIDGE_ARCH_X[4],
-        kh_span_n,
-        bridge_blk_pir_m,
-        span_boundaries,
-        west_margin=0,
-        east_margin=0,
-        n_south=0,
-        y_shift_fn=east_y_shift,
-    )
+    _build_bridge_parapet_square_brushes(brushes, bridge_blk_pir_m, span_counts)
+    brushes.append(_bridge_south_parapet_endcap_brush(span4_west_mid))
 
-    _add_parapet_squares(
-        brushes,
-        BRIDGE_ARCH_X[0],
-        BRIDGE_ARCH_X[1],
-        span1_n,
-        bridge_blk_pir_m,
-        west_margin=0,
-        east_margin=0,
-    )
-    _add_parapet_squares(
-        brushes,
-        BRIDGE_ARCH_X[1],
-        BRIDGE_ARCH_X[2],
-        4,
-        bridge_blk_pir_m,
-    )
-    _add_parapet_squares(
-        brushes,
-        BRIDGE_ARCH_X[2],
-        BRIDGE_ARCH_X[3],
-        span3_n,
-        bridge_blk_pir_m,
-        west_margin=0,
-        east_margin=0,
-    )
-    _add_parapet_squares(
-        brushes,
-        BRIDGE.x2,
-        BRIDGE_ARCH_X[4],
-        kh_span_n,
-        bridge_blk_pir_m,
-        west_margin=0,
-        east_margin=0,
-        n_south=0,
-        y_shift_fn=east_y_shift,
-    )
-    cx_wall_end = span4_west_mid - BRIDGE_BLK_HW
-    brushes.append(
-        box(
-            cx_wall_end - BRIDGE_BLK_HW,
-            BRIDGE.y1 - BRIDGE_BLK_OVH + BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h,
-            cx_wall_end + BRIDGE_BLK_HW,
-            BRIDGE.y1 + BRIDGE_PAR_W - BRIDGE_BLK_INSET,
-            BRIDGE_DZ2 + BRIDGE.parapet_h + BRIDGE_BLK_H,
-            Textures.CEMENT,
-        )
-    )
-
-    tube_ny1 = BRIDGE.y2 - BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
-    tube_ny2 = tube_ny1 + BRIDGE_TUBE_HW * 2
-    tube_sy1 = BRIDGE.y1 + BRIDGE_PAR_W // 2 - BRIDGE_TUBE_HW
-    tube_sy2 = tube_sy1 + BRIDGE_TUBE_HW * 2
-
+    tube_ny1, tube_ny2, tube_sy1, tube_sy2 = _bridge_railing_tube_y_bounds()
     for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-        for (
-            span_x1,
-            span_x2,
-            _,
-            _,
-            _,
-            _,
-            tube_z1,
-            tube_z2,
-        ) in _iter_bridge_span_segments(span_boundaries):
-            tube_z1 += tube_z_offset
-            tube_z2 += tube_z_offset
-            brushes.append(
-                ramp_slab(
-                    span_x1,
-                    span_x2,
-                    tube_ny1,
-                    tube_ny2,
-                    tube_z1,
-                    tube_z2,
-                    tube_z1 + BRIDGE_TUBE_HW * 2,
-                    tube_z2 + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
-            )
-            if not (span_x1 < KNOTT_ENT_WALK_X2 and span_x2 > KNOTT_ENT_WALK_X1):
-                brushes.append(
-                    ramp_slab(
-                        span_x1,
-                        span_x2,
-                        tube_sy1,
-                        tube_sy2,
-                        tube_z1,
-                        tube_z2,
-                        tube_z1 + BRIDGE_TUBE_HW * 2,
-                        tube_z2 + BRIDGE_TUBE_HW * 2,
-                        Textures.RAIL,
-                    )
-                )
-        tube_base_z = BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset
-        brushes.append(
-            box(
-                BRIDGE.x2,
-                tube_ny1,
-                tube_base_z,
-                PIER5_X,
-                tube_ny2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
+        _add_bridge_span_tubes(
+            brushes,
+            span_boundaries,
+            tube_ny1,
+            tube_ny2,
+            tube_sy1,
+            tube_sy2,
+            tube_z_offset,
         )
-        brushes.extend(
-            _pier6_west_pieces(
-                PIER5_X,
-                tube_ny1,
-                tube_ny2,
-                tube_base_z,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-                pier6_old_cutoff_x,
-                far=False,
-                margin=-4,
-            )
-        )
-        brushes.append(
-            box(
-                BRIDGE.x2,
-                tube_sy1,
-                tube_base_z,
-                span4_west_mid,
-                tube_sy2,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-            )
-        )
-        brushes.extend(
-            _pier6_west_pieces(
-                PIER5_X,
-                tube_sy1,
-                tube_sy2,
-                tube_base_z,
-                tube_base_z + BRIDGE_TUBE_HW * 2,
-                Textures.RAIL,
-                pier6_old_cutoff_x,
-            )
+        _add_bridge_pier6_connection_tubes(
+            brushes,
+            pier6_old_cutoff_x,
+            span4_west_mid,
+            tube_ny1,
+            tube_ny2,
+            tube_sy1,
+            tube_sy2,
+            BRIDGE_DZ2 + BRIDGE.parapet_h + tube_z_offset,
         )
 
 

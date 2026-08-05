@@ -23,7 +23,7 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import tri_ramp_prism
+from ..geometry import extend_terrain_row_overlap, tri_ramp_prism
 
 _NE_HEIGHT_SCALE = 0.5
 
@@ -92,10 +92,9 @@ def build():
             z1a, z1b = wcol1[i], wcol1[i + 1]
             z2a, z2b = wcol2[i], wcol2[i + 1]
             if i < len(_ne_y) - 2:
-                y2_ext = y2 + _NE_OVR
-                z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)
-                z2b = z2a + (z2b - z2a) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
+                y2, z1b, z2b = extend_terrain_row_overlap(
+                    y1, y2, z1a, z1b, z2a, z2b, _NE_OVR
+                )
 
             BRUSHES.append(
                 tri_ramp_prism(

@@ -146,6 +146,14 @@ BEAM_PROUD = 4  # Protrusion past the wall's outer face so beams render
 # (78) tall.
 EXTRA_BASE_H = 39
 
+# Fascia sign tuning (north/bridge-facing wall) — mirrors the old KH
+# module's sign but re-centered/re-leveled for this shell's footprint.
+SIGN_EAST_MARGIN = 32  # Gap from the (narrower) north wall's east edge.
+SIGN_PANEL_SCALE = 0.7  # Shrink the sign backing panel a little further.
+SIGN_LETTER_SCALE = 0.7  # Shrink the lettering more, leaving side padding.
+SIGN_SIDE_PADDING = 24  # Extra fixed gap between the glyphs and panel edge.
+SIGN_Z_ADJUST = 32  # Lower the sign a little from its default offset.
+
 
 def _mullion_prism(mx, y1, y2, bottom_z, top_z, tex):
     """A triangular (in cross-section) vertical mullion.
@@ -362,22 +370,16 @@ def _wall_with_opening(
     return boxes
 
 
-def build():
-    """Build the Knott Hall shell: four walls and a roof, no floors.
+def _build_walls(z1, z2):
+    """Build the four wall groups (side windows, south, notch ledges, north
+    opening) between ``z1`` (ground) and ``z2`` (roofline).
 
     Returns:
-        tuple[list, list]: ``(brushes, entities)`` for the building shell,
-        or ``([], [])`` if ``KNOTT_ENABLED`` is off.
+        tuple[list, list, list]: ``(wall_brushes, west_detail, east_detail)``
+        — ``west_detail``/``east_detail`` are the func_detail side-window
+        brushes, kept separate so ``build()`` can fold them into the same
+        func_detail entity as the parapet.
     """
-    if not KNOTT_ENABLED:
-        return [], []
-
-    z1 = KH_GROUND_Z
-    z2 = z1 + BUILDING_H
-    parapet_z2 = z2 + PARAPET_H
-    roof_z1 = z2
-    roof_z2 = roof_z1 + ROOF_T
-
     west_struct, west_detail = _side_windows(
         KH_X1,
         KH_X1 + WALL_T,
@@ -401,7 +403,7 @@ def build():
         outer_x=KH_X2,
     )
 
-    brushes = [
+    wall_brushes = [
         # West wall (lower rectangle only — stops at the NW notch) — has
         # 3 groups of side windows.
         *west_struct,
@@ -499,15 +501,20 @@ def build():
             ground_door_h=GROUND_DOOR_H,
             ground_door_bottom=GROUND_DOOR_BOTTOM,
         ),
-        # Roof, lower rectangle — inset behind the parapet ring (WALL_T) so
-        # its side faces don't sit flush/coplanar with the exterior wall
-        # faces, which caused z-fighting/texture bleed-through between the
-        # stone wall and cement roof textures. Split into 3 spans along the
-        # north edge: the two outer spans (under the NW/NE notch-ledge
-        # walls) are additionally inset by WALL_T on the north side so they
-        # don't sit flush against those walls' inward faces; the middle
-        # span (open transition into the upper rectangle) can run flush to
-        # KH_NOTCH_Y since there's no wall face there.
+    ]
+    return wall_brushes, west_detail, east_detail
+
+
+def _build_roof(roof_z1, roof_z2):
+    """Build the roof deck brushes, inset behind the parapet ring.
+
+    Split into 3 spans along the north edge: the two outer spans (under
+    the NW/NE notch-ledge walls) are additionally inset by ``WALL_T`` on
+    the north side so they don't sit flush against those walls' inward
+    faces; the middle span (open transition into the upper rectangle) can
+    run flush to ``KH_NOTCH_Y`` since there's no wall face there.
+    """
+    return [
         box(
             KH_X1 + WALL_T,
             KH_Y1 + WALL_T,
@@ -547,14 +554,17 @@ def build():
         ),
     ]
 
-    # Parapet lip: a raised rim tracing the same wall footprint, standing
-    # PARAPET_H above the wall top/roof deck — matches the satellite
-    # reference showing a lip around the roof edge with the roof set
-    # slightly below it. Wrapped in func_detail (like the side-window
-    # detail) since it's a thin non-structural rim that doesn't need to
-    # affect vis/portal generation, and keeps qbsp's edge count for the
-    # standard BSP format in range.
-    parapet_detail = [
+
+def _build_parapet(z2, parapet_z2):
+    """Build the parapet lip: a raised rim tracing the wall footprint,
+    standing ``PARAPET_H`` above the wall top/roof deck — matches the
+    satellite reference showing a lip around the roof edge with the roof
+    set slightly below it. Wrapped in func_detail (like the side-window
+    detail) since it's a thin non-structural rim that doesn't need to
+    affect vis/portal generation, and keeps qbsp's edge count for the
+    standard BSP format in range.
+    """
+    return [
         box(
             KH_X1,
             KH_Y1,
@@ -629,18 +639,18 @@ def build():
         ),
     ]
 
-    # Fascia sign on the north (bridge-facing) wall, mirroring the old KH
-    # module's sign but re-centered/re-leveled for this shell's footprint
-    # and height (no floors to anchor to here, so it's centered vertically).
-    # Kept snug against the east edge of the (now-narrower) north wall.
-    SIGN_EAST_MARGIN = 32
-    PANEL_SCALE = 0.7  # shrink the sign backing panel a little further
-    LETTER_SCALE = 0.7  # shrink the lettering more, leaving side padding
-    SIDE_PADDING = 24  # extra fixed gap between the glyphs and panel edge
-    sign_px_w = int(KNOTT_SIGN_PX_W * LETTER_SCALE)
-    sign_px_h = int(KNOTT_SIGN_PX_H * LETTER_SCALE)
-    sign_h = int(KNOTT_SIGN_H * PANEL_SCALE)
-    sign_padding = int(KNOTT_SIGN_PADDING * PANEL_SCALE) + SIDE_PADDING
+
+def _build_sign(z1):
+    """Build the fascia sign on the north (bridge-facing) wall, mirroring
+    the old KH module's sign but re-centered/re-leveled for this shell's
+    footprint and height (no floors to anchor to here, so it's centered
+    vertically). Kept snug against the east edge of the (now-narrower)
+    north wall.
+    """
+    sign_px_w = int(KNOTT_SIGN_PX_W * SIGN_LETTER_SCALE)
+    sign_px_h = int(KNOTT_SIGN_PX_H * SIGN_LETTER_SCALE)
+    sign_h = int(KNOTT_SIGN_H * SIGN_PANEL_SCALE)
+    sign_padding = int(KNOTT_SIGN_PADDING * SIGN_PANEL_SCALE) + SIGN_SIDE_PADDING
     sign_char_w = (4 + 1) * sign_px_w
     sign_total_w = len(KNOTT_SIGN_TEXT) * sign_char_w - sign_px_w
     # Panel is sized off the glyph width plus a fixed side gap (rather than
@@ -648,23 +658,43 @@ def build():
     # of how the letter pixel sizes happen to round.
     sign_half_w = sign_total_w // 2 + sign_padding
     sign_cx = KH_NORTH_X2 - WALL_T - SIGN_EAST_MARGIN - sign_half_w
-    SIGN_Z_ADJUST = 32  # Lower the sign a little from its default offset.
     sign_z_center = z1 + BUILDING_H // 2 + KNOTT_SIGN_Z_OFFSET + SIGN_Z_ADJUST
-    brushes.extend(
-        fascia_sign(
-            KNOTT_SIGN_TEXT,
-            sign_cx,
-            KH_Y2,
-            sign_z_center,
-            panel_h=sign_h,
-            panel_padding=sign_padding,
-            px_w=sign_px_w,
-            px_h=sign_px_h,
-            panel_tex=Textures.CEMENT,
-            text_tex=Textures.RAIL,
-        )
+    return fascia_sign(
+        KNOTT_SIGN_TEXT,
+        sign_cx,
+        KH_Y2,
+        sign_z_center,
+        panel_h=sign_h,
+        panel_padding=sign_padding,
+        px_w=sign_px_w,
+        px_h=sign_px_h,
+        panel_tex=Textures.CEMENT,
+        text_tex=Textures.RAIL,
     )
 
+
+def build():
+    """Build the Knott Hall shell: four walls and a roof, no floors.
+
+    Returns:
+        tuple[list, list]: ``(brushes, entities)`` for the building shell,
+        or ``([], [])`` if ``KNOTT_ENABLED`` is off.
+    """
+    if not KNOTT_ENABLED:
+        return [], []
+
+    z1 = KH_GROUND_Z
+    z2 = z1 + BUILDING_H
+    parapet_z2 = z2 + PARAPET_H
+    roof_z1 = z2
+    roof_z2 = roof_z1 + ROOF_T
+
+    wall_brushes, west_detail, east_detail = _build_walls(z1, z2)
+    roof_brushes = _build_roof(roof_z1, roof_z2)
+    parapet_detail = _build_parapet(z2, parapet_z2)
+    sign_brushes = _build_sign(z1)
+
+    brushes = [*wall_brushes, *roof_brushes, *sign_brushes]
     entities = [brush_ent("func_detail", west_detail + east_detail + parapet_detail)]
 
     return brushes, entities

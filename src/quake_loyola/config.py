@@ -16,6 +16,7 @@ config programmatically mid-process should re-import the affected modules
 from __future__ import annotations
 
 import json
+import sys
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -28,10 +29,22 @@ from .build_presets import (
 
 
 def _find_repo_root(start: Path) -> Path:
-    """Walk upward from ``start`` and return the nearest repo-root marker."""
+    """Walk upward from ``start`` and return the nearest repo-root marker.
+
+    If no ``pyproject.toml``/``.git`` marker is found in ``start`` or any of
+    its parents, ``start`` itself is used as a fallback (this lets ``ql`` be
+    run in an arbitrary working directory as its own self-contained
+    "project" — e.g. tests isolate themselves this way with a ``tmp_path``).
+    A warning is printed in that case so the fallback is never silent.
+    """
     for candidate in (start, *start.parents):
         if (candidate / "pyproject.toml").exists() or (candidate / ".git").exists():
             return candidate
+    print(
+        f"quake_loyola: no pyproject.toml/.git found above {start} — "
+        f"treating {start} itself as the project root for ql.toml/loyola.map.",
+        file=sys.stderr,
+    )
     return start
 
 

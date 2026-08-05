@@ -1,7 +1,7 @@
 """Public geometry constructors and reusable building helpers."""
 
 from .entities import brush_ent, ent, torch_flame, torch_flame_only
-from .helpers import east_y_shift
+from .helpers import east_y_shift, extend_terrain_row_overlap
 from .prefabs import (
     corner_window,
     elevator_shaft,
@@ -80,6 +80,7 @@ __all__ = [
     "corner_window",
     "curb_seg",
     "east_y_shift",
+    "extend_terrain_row_overlap",
     "elevator_shaft",
     "ent",
     "entrance_arch_xwall",

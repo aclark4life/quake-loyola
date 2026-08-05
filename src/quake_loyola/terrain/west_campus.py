@@ -23,7 +23,7 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import tri_ramp_prism
+from ..geometry import extend_terrain_row_overlap, tri_ramp_prism
 
 
 def _clamp0(zs):
@@ -158,16 +158,15 @@ def build():
             z_nw, z_sw = wcol1[i], wcol1[i + 1]
             z_ne, z_se = wcol2[i], wcol2[i + 1]
             if i < len(wct_y) - 2:
-                y2_ext = y2 - _WCT_OVR
                 # Extrapolate the south edge's Z along the same slope used
                 # for the (unextended) row instead of reusing the
                 # unextended z_sw/z_se, so the overlap region stays on the
                 # same plane terrain_z() would interpolate (previously
                 # this left the overlap diverging from terrain_z() by a
                 # few units near steep rows).
-                z_sw = z_nw + (z_sw - z_nw) * (y2_ext - y1) / (y2 - y1)
-                z_se = z_ne + (z_se - z_ne) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
+                y2, z_sw, z_se = extend_terrain_row_overlap(
+                    y1, y2, z_nw, z_sw, z_ne, z_se, -_WCT_OVR
+                )
 
             mx, my = (wx1 + wx2) / 2, (y1 + y2) / 2
             mz = (z_nw + z_ne + z_sw + z_se) / 4

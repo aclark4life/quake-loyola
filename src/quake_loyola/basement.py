@@ -28,6 +28,11 @@ from .geometry import (
     ent,
 )
 
+LIGHT_GRID_Z_OFFSET = 300  # Height above the basement floor for grid lights.
+LIGHT_GRID_STEP = 2500  # Spacing between lights in both X and Y.
+LIGHT_GRID_MARGIN = 300  # Inset from the basement walls before the first light.
+LIGHT_GRID_BRIGHTNESS = "500"
+
 
 def build():
     """Build the basement brushes and entities."""
@@ -109,9 +114,9 @@ def build():
         )
     )
 
-    light_z = BASEMENT_Z1 + 300
-    step = 2500
-    margin = 300
+    light_z = BASEMENT_Z1 + LIGHT_GRID_Z_OFFSET
+    step = LIGHT_GRID_STEP
+    margin = LIGHT_GRID_MARGIN
     x = WORLD_X1 + margin
     while x < WORLD_X2_EXT - margin:
         y = WORLD_Y1 + margin
@@ -120,7 +125,7 @@ def build():
                 ent(
                     "light",
                     origin=f"{x} {y} {light_z}",
-                    light="500",
+                    light=LIGHT_GRID_BRIGHTNESS,
                     _light_group="basement",
                 )
             )

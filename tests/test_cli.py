@@ -13,6 +13,7 @@ never touches the real repo's ql.toml.
 from __future__ import annotations
 
 import os
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -174,6 +175,41 @@ def test_build_without_ericw_tools_fails_cleanly(tmp_path):
     # `ql gen` (called internally by `build`) should still have run and
     # written loyola.map before the toolchain check failed.
     assert (tmp_path / "loyola.map").exists()
+
+
+def _install_fake_ericw_tools(tmp_path: Path) -> None:
+    """Create fake, no-op qbsp/vis/light executables under an isolated
+    tmp_path's .tools/, mimicking a real `just install-tools` layout, so
+    `ql build` can exercise its success path without needing the real
+    ericw-tools binaries. Each fake tool just creates the expected output
+    files (loyola.bsp/.lit) and exits 0."""
+    import stat
+
+    tools_bin = tmp_path / ".tools" / f"ericw-tools-v0.18.1-{platform.system()}" / "bin"
+    tools_bin.mkdir(parents=True)
+    for name, outputs in (
+        ("qbsp", ["loyola.bsp"]),
+        ("vis", []),
+        ("light", ["loyola.lit"]),
+    ):
+        script = tools_bin / name
+        touch_cmds = "\n".join(f'touch "{out}"' for out in outputs)
+        script.write_text(f"#!/bin/sh\n{touch_cmds}\nexit 0\n")
+        script.chmod(script.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def test_build_success_path_compiles_without_deploying(tmp_path):
+    # With fake ericw-tools binaries in place and --no-deploy, `ql build`
+    # should run gen -> qbsp -> vis -> light successfully and skip the
+    # /Applications/id1/maps deploy step (which isn't safe to touch in tests).
+    _install_fake_ericw_tools(tmp_path)
+    result = run_ql("build", "--no-deploy", cwd=tmp_path)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Traceback" not in result.stderr
+    assert (tmp_path / "loyola.map").exists()
+    assert (tmp_path / "loyola.bsp").exists()
+    assert (tmp_path / "loyola.lit").exists()
+    assert "Deployed to" not in result.stdout
 
 
 def test_conf_get_unknown_setting_fails_cleanly(tmp_path):

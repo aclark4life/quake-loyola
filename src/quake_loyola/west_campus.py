@@ -430,23 +430,60 @@ def _make_dorm_context():
     }
 
 
-def _build_north_dorm(dorm_ctx):
-    """Build the northern dorm shell, roof, and interior floor slab."""
+def _north_dorm_center_window_openings(dorm_ctx):
+    """Return the centered upper-floor openings on the north dorm back wall."""
 
     dorm_cx = dorm_ctx["dorm_cx"]
+    dorm_window_levels = dorm_ctx["dorm_window_levels"]
+    return [
+        (
+            dorm_cx - DORM_WIN_HW,
+            zb,
+            dorm_cx + DORM_WIN_HW,
+            zt,
+        )
+        for _, zb, zt in dorm_window_levels(1)
+    ]
+
+
+def _north_dorm_east_window_openings(dorm_ctx):
+    """Return the east-wall window openings for the north dorm."""
+
+    nb_wins_yz = dorm_ctx["nb_wins_yz"]
+    nb_wins_yz_double = dorm_ctx["nb_wins_yz_double"]
+    nb1_e_double_wy = DORM_NORTH_Y1 + 157
+    nb1_e_single_wy = DORM_NORTH_Y1 + 334
+    return nb_wins_yz_double([nb1_e_double_wy]) + nb_wins_yz([nb1_e_single_wy])
+
+
+def _build_north_dorm_floor_brush():
+    """Return the north dorm interior floor slab."""
+
+    return box(
+        DORM.x1 + DORM.wall_t,
+        DORM_NORTH_Y1 + DORM.wall_t,
+        FLOOR_Z1,
+        DORM.x2 - DORM.wall_t,
+        DORM_NORTH_Y2 - DORM.wall_t,
+        FLOOR_Z2,
+        Textures.GROUND,
+        tt=Textures.ROAD,
+    )
+
+
+def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_openings):
+    """Return the north dorm wall runs and top cap slab."""
+
     dorm_north_cy = dorm_ctx["dorm_north_cy"]
     dorm_door_open = dorm_ctx["dorm_door_open"]
     dorm_wx = dorm_ctx["dorm_wx"]
     dorm_wy = dorm_ctx["dorm_wy"]
-    dorm_window_levels = dorm_ctx["dorm_window_levels"]
     nb_wins_xz_upper = dorm_ctx["nb_wins_xz_upper"]
-    nb_wins_yz = dorm_ctx["nb_wins_yz"]
-    nb_wins_yz_double = dorm_ctx["nb_wins_yz_double"]
     nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
     tunn_h = dorm_ctx["tunn_h"]
 
-    north_bldg_detail = []
-    north_bldg_detail.extend(
+    wall_brushes = []
+    wall_brushes.extend(
         layered_wall(
             DORM.x1,
             DORM_NORTH_Y1,
@@ -458,8 +495,7 @@ def _build_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    north_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall(
             DORM.x1,
             DORM_NORTH_Y2 - DORM.wall_t,
@@ -467,26 +503,11 @@ def _build_north_dorm(dorm_ctx):
             DORM.x2,
             DORM_NORTH_Y2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_xz_upper(dorm_wx, x_clear=-1652)
-            + [
-                (
-                    dorm_cx - DORM_WIN_HW,
-                    zb,
-                    dorm_cx + DORM_WIN_HW,
-                    zt,
-                )
-                for _, zb, zt in dorm_window_levels(1)
-            ],
+            nb_wins_xz_upper(dorm_wx, x_clear=-1652) + center_window_openings,
             Textures.BUILDING,
         )
     )
-
-    nb1_e_double_wy = DORM_NORTH_Y1 + 157
-    nb1_e_single_wy = DORM_NORTH_Y1 + 334
-    dorm_e_openings = nb_wins_yz_double([nb1_e_double_wy]) + nb_wins_yz(
-        [nb1_e_single_wy]
-    )
-    north_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM.wall_t,
             DORM.x2 - DORM.wall_t,
@@ -498,8 +519,7 @@ def _build_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    north_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall_y(
             DORM_NORTH_Y1 + DORM.wall_t,
             DORM.x1,
@@ -519,8 +539,7 @@ def _build_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    north_bldg_detail.append(
+    wall_brushes.append(
         box(
             DORM.x1,
             DORM_NORTH_Y1,
@@ -531,9 +550,25 @@ def _build_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
+    return wall_brushes
 
+
+def _build_north_dorm_window_frame_brushes(
+    dorm_ctx, center_window_openings, dorm_e_openings
+):
+    """Return the north dorm window and door trim brushes."""
+
+    dorm_cx = dorm_ctx["dorm_cx"]
+    dorm_north_cy = dorm_ctx["dorm_north_cy"]
+    dorm_wx = dorm_ctx["dorm_wx"]
+    dorm_wy = dorm_ctx["dorm_wy"]
+    nb_wins_xz_upper = dorm_ctx["nb_wins_xz_upper"]
+    nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
+    tunn_h = dorm_ctx["tunn_h"]
+
+    frame_brushes = []
     for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
-        north_bldg_detail += win_frame_xwall(
+        frame_brushes += win_frame_xwall(
             xl,
             xr,
             zb,
@@ -545,10 +580,10 @@ def _build_north_dorm(dorm_ctx):
             margin=DORM_WIN_MARGIN,
         )
 
-    for _, zb, zt in dorm_window_levels(1):
-        north_bldg_detail += win_frame_xwall(
-            dorm_cx - DORM_WIN_HW,
-            dorm_cx + DORM_WIN_HW,
+    for xl, zb, xr, zt in center_window_openings:
+        frame_brushes += win_frame_xwall(
+            xl,
+            xr,
             zb,
             zt,
             DORM_NORTH_Y2,
@@ -559,7 +594,7 @@ def _build_north_dorm(dorm_ctx):
             crossbar=True,
         )
 
-    north_bldg_detail += win_frame_xwall(
+    frame_brushes += win_frame_xwall(
         dorm_cx - DORM_INNER_DOOR_HW,
         dorm_cx + DORM_INNER_DOOR_HW,
         FLOOR_Z2,
@@ -574,20 +609,8 @@ def _build_north_dorm(dorm_ctx):
         bottom=False,
     )
 
-    for yl, zb, yr, zt in nb_wins_yz_double([nb1_e_double_wy]):
-        north_bldg_detail += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
-            DORM.x2,
-            -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-        )
-    for yl, zb, yr, zt in nb_wins_yz([nb1_e_single_wy]):
-        north_bldg_detail += win_frame_ywall(
+    for yl, zb, yr, zt in dorm_e_openings:
+        frame_brushes += win_frame_ywall(
             yl,
             yr,
             zb,
@@ -600,7 +623,7 @@ def _build_north_dorm(dorm_ctx):
         )
 
     for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy):
-        north_bldg_detail += win_frame_ywall(
+        frame_brushes += win_frame_ywall(
             yl,
             yr,
             zb,
@@ -612,7 +635,7 @@ def _build_north_dorm(dorm_ctx):
             margin=DORM_WIN_MARGIN,
         )
 
-    north_bldg_detail += win_frame_ywall(
+    frame_brushes += win_frame_ywall(
         dorm_north_cy - DORM_INNER_DOOR_HW,
         dorm_north_cy + DORM_INNER_DOOR_HW,
         FLOOR_Z2,
@@ -626,14 +649,18 @@ def _build_north_dorm(dorm_ctx):
         crossbar=False,
         bottom=False,
     )
+    return frame_brushes
 
+
+def _build_north_dorm_roof_brushes(dorm_ctx):
+    """Return the north dorm roof slabs and gable slats."""
+
+    dorm_cx = dorm_ctx["dorm_cx"]
     dorm_eave_z = FLOOR_Z2 + DORM_H + DORM.wall_t
     dorm_ridge_z = dorm_eave_z + DORM_ROOF_H
-
     dorm_nb_sy1 = DORM_NORTH_Y1
     dorm_nb_sy2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
-
-    north_bldg_detail.append(
+    return [
         ramp_slab(
             DORM.x1,
             dorm_cx,
@@ -645,10 +672,7 @@ def _build_north_dorm(dorm_ctx):
             dorm_ridge_z,
             Textures.ROOF,
             ts=Textures.GABLE,
-        )
-    )
-
-    north_bldg_detail.append(
+        ),
         ramp_slab(
             dorm_cx,
             DORM.x2,
@@ -660,68 +684,118 @@ def _build_north_dorm(dorm_ctx):
             dorm_eave_z + DORM_SLAB_T,
             Textures.ROOF,
             ts=Textures.GABLE,
+        ),
+        *gable_slats(
+            DORM.x1,
+            DORM.x2,
+            dorm_cx,
+            dorm_eave_z,
+            dorm_ridge_z,
+            DORM_SLAB_T,
+            DORM_NORTH_Y2,
+            -DORM_GABLE_DEPTH,
+            Textures.GABLE,
+            n=8,
+            gap=4,
+        ),
+    ]
+
+
+def _build_north_dorm(dorm_ctx):
+    """Build the northern dorm shell, roof, and interior floor slab."""
+
+    center_window_openings = _north_dorm_center_window_openings(dorm_ctx)
+    dorm_e_openings = _north_dorm_east_window_openings(dorm_ctx)
+
+    north_bldg_detail = []
+    north_bldg_detail.extend(
+        _build_north_dorm_wall_brushes(
+            dorm_ctx,
+            center_window_openings,
+            dorm_e_openings,
         )
     )
-
-    north_bldg_detail += gable_slats(
-        DORM.x1,
-        DORM.x2,
-        dorm_cx,
-        dorm_eave_z,
-        dorm_ridge_z,
-        DORM_SLAB_T,
-        DORM_NORTH_Y2,
-        -DORM_GABLE_DEPTH,
-        Textures.GABLE,
-        n=8,
-        gap=4,
+    north_bldg_detail.extend(
+        _build_north_dorm_window_frame_brushes(
+            dorm_ctx,
+            center_window_openings,
+            dorm_e_openings,
+        )
     )
+    north_bldg_detail.extend(_build_north_dorm_roof_brushes(dorm_ctx))
 
     return (
-        box(
-            DORM.x1 + DORM.wall_t,
-            DORM_NORTH_Y1 + DORM.wall_t,
-            FLOOR_Z1,
-            DORM.x2 - DORM.wall_t,
-            DORM_NORTH_Y2 - DORM.wall_t,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.ROAD,
-        ),
+        _build_north_dorm_floor_brush(),
         brush_ent("func_detail", north_bldg_detail),
     )
 
 
-def _build_second_north_dorm(dorm_ctx):
-    """Build the second north dorm shell, roof, and interior floor slab."""
+def _make_second_north_dorm_context(dorm_ctx):
+    """Return shared bounds and openings for the second north dorm."""
 
     dorm_cx = dorm_ctx["dorm_cx"]
-    dorm_door_open = dorm_ctx["dorm_door_open"]
-    dorm_wx = dorm_ctx["dorm_wx"]
     dorm_window_levels = dorm_ctx["dorm_window_levels"]
-    nb_wins_xz_upper = dorm_ctx["nb_wins_xz_upper"]
     nb_wins_yz = dorm_ctx["nb_wins_yz"]
     nb_wins_yz_double = dorm_ctx["nb_wins_yz_double"]
-    nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
 
     dorm_north2_y2 = DORM_NORTH_Y1
     dorm_north2_y1 = dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     dorm_wy2 = [
         dorm_north2_y1 + (dorm_north2_y2 - dorm_north2_y1) * k // 4 for k in [1, 2, 3]
     ]
+    nb2_e_wy_s1 = dorm_north2_y1 + 82
+    nb2_e_wy_s2 = dorm_north2_y1 + 184
+    nb2_e_double_wy = dorm_north2_y1 + 326
+    return {
+        "dorm_north2_y1": dorm_north2_y1,
+        "dorm_north2_y2": dorm_north2_y2,
+        "dorm_wy2": dorm_wy2,
+        "nb2_cx_opens": [
+            (
+                dorm_cx - DORM_WIN_HW,
+                zb,
+                dorm_cx + DORM_WIN_HW,
+                zt,
+            )
+            for _, zb, zt in dorm_window_levels(1)
+        ],
+        "nb2_e_openings": nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2])
+        + nb_wins_yz_double([nb2_e_double_wy]),
+    }
 
-    nb2_cx_opens = [
-        (
-            dorm_cx - DORM_WIN_HW,
-            zb,
-            dorm_cx + DORM_WIN_HW,
-            zt,
-        )
-        for _, zb, zt in dorm_window_levels(1)
-    ]
-    north2_bldg_detail = []
 
-    north2_bldg_detail.extend(
+def _build_second_north_dorm_floor_brush(second_ctx):
+    """Return the second north dorm interior floor slab."""
+
+    dorm_north2_y1 = second_ctx["dorm_north2_y1"]
+    dorm_north2_y2 = second_ctx["dorm_north2_y2"]
+    return box(
+        DORM.x1 + DORM.wall_t,
+        dorm_north2_y1 + DORM.wall_t,
+        FLOOR_Z1,
+        DORM.x2 - DORM.wall_t,
+        dorm_north2_y2 - DORM.wall_t,
+        FLOOR_Z2,
+        Textures.GROUND,
+        tt=Textures.ROAD,
+    )
+
+
+def _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx):
+    """Return the second north dorm wall runs and top cap slab."""
+
+    dorm_door_open = dorm_ctx["dorm_door_open"]
+    dorm_wx = dorm_ctx["dorm_wx"]
+    nb_wins_xz_upper = dorm_ctx["nb_wins_xz_upper"]
+    nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
+    dorm_north2_y1 = second_ctx["dorm_north2_y1"]
+    dorm_north2_y2 = second_ctx["dorm_north2_y2"]
+    dorm_wy2 = second_ctx["dorm_wy2"]
+    nb2_cx_opens = second_ctx["nb2_cx_opens"]
+    nb2_e_openings = second_ctx["nb2_e_openings"]
+
+    wall_brushes = []
+    wall_brushes.extend(
         layered_wall(
             DORM.x1,
             dorm_north2_y1,
@@ -733,8 +807,7 @@ def _build_second_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    north2_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall(
             DORM.x1,
             dorm_north2_y2 - DORM.wall_t,
@@ -746,11 +819,7 @@ def _build_second_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    nb2_e_wy_s1 = dorm_north2_y1 + 82
-    nb2_e_wy_s2 = dorm_north2_y1 + 184
-    nb2_e_double_wy = dorm_north2_y1 + 326
-    north2_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall_y(
             dorm_north2_y1 + DORM.wall_t,
             DORM.x2 - DORM.wall_t,
@@ -758,13 +827,11 @@ def _build_second_north_dorm(dorm_ctx):
             dorm_north2_y2 - DORM.wall_t,
             DORM.x2,
             FLOOR_Z2 + DORM_H,
-            nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2])
-            + nb_wins_yz_double([nb2_e_double_wy]),
+            nb2_e_openings,
             Textures.BUILDING,
         )
     )
-
-    north2_bldg_detail.extend(
+    wall_brushes.extend(
         layered_wall_y(
             dorm_north2_y1 + DORM.wall_t,
             DORM.x1,
@@ -776,8 +843,7 @@ def _build_second_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
-
-    north2_bldg_detail.append(
+    wall_brushes.append(
         box(
             DORM.x1,
             dorm_north2_y1,
@@ -788,9 +854,25 @@ def _build_second_north_dorm(dorm_ctx):
             Textures.BUILDING,
         )
     )
+    return wall_brushes
 
+
+def _build_second_north_dorm_window_frame_brushes(dorm_ctx, second_ctx):
+    """Return the second north dorm window and door trim brushes."""
+
+    dorm_cx = dorm_ctx["dorm_cx"]
+    dorm_wx = dorm_ctx["dorm_wx"]
+    nb_wins_xz_upper = dorm_ctx["nb_wins_xz_upper"]
+    nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
+    dorm_north2_y1 = second_ctx["dorm_north2_y1"]
+    dorm_north2_y2 = second_ctx["dorm_north2_y2"]
+    dorm_wy2 = second_ctx["dorm_wy2"]
+    nb2_cx_opens = second_ctx["nb2_cx_opens"]
+    nb2_e_openings = second_ctx["nb2_e_openings"]
+
+    frame_brushes = []
     for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
-        north2_bldg_detail += win_frame_xwall(
+        frame_brushes += win_frame_xwall(
             xl,
             xr,
             zb,
@@ -801,10 +883,10 @@ def _build_second_north_dorm(dorm_ctx):
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
-    for _, zb, zt in dorm_window_levels(1):
-        north2_bldg_detail += win_frame_xwall(
-            dorm_cx - DORM_WIN_HW,
-            dorm_cx + DORM_WIN_HW,
+    for xl, zb, xr, zt in nb2_cx_opens:
+        frame_brushes += win_frame_xwall(
+            xl,
+            xr,
             zb,
             zt,
             dorm_north2_y1,
@@ -814,20 +896,8 @@ def _build_second_north_dorm(dorm_ctx):
             margin=DORM_WIN_MARGIN,
         )
 
-    for yl, zb, yr, zt in nb_wins_yz([nb2_e_wy_s1, nb2_e_wy_s2]):
-        north2_bldg_detail += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
-            DORM.x2,
-            -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-        )
-    for yl, zb, yr, zt in nb_wins_yz_double([nb2_e_double_wy]):
-        north2_bldg_detail += win_frame_ywall(
+    for yl, zb, yr, zt in nb2_e_openings:
+        frame_brushes += win_frame_ywall(
             yl,
             yr,
             zb,
@@ -839,7 +909,7 @@ def _build_second_north_dorm(dorm_ctx):
             margin=DORM_WIN_MARGIN,
         )
 
-    north2_bldg_detail += win_frame_xwall(
+    frame_brushes += win_frame_xwall(
         dorm_cx - DORM_INNER_DOOR_HW,
         dorm_cx + DORM_INNER_DOOR_HW,
         FLOOR_Z2,
@@ -855,7 +925,7 @@ def _build_second_north_dorm(dorm_ctx):
     )
 
     for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy2):
-        north2_bldg_detail += win_frame_ywall(
+        frame_brushes += win_frame_ywall(
             yl,
             yr,
             zb,
@@ -866,14 +936,22 @@ def _build_second_north_dorm(dorm_ctx):
             fd=DORM.wall_t,
             margin=DORM_WIN_MARGIN,
         )
+    return frame_brushes
 
+
+def _build_second_north_dorm_roof_brushes(dorm_ctx, second_ctx):
+    """Return the second north dorm roof slabs and gable slats."""
+
+    dorm_cx = dorm_ctx["dorm_cx"]
+    dorm_north2_y1 = second_ctx["dorm_north2_y1"]
+    dorm_north2_y2 = second_ctx["dorm_north2_y2"]
     nb2_eave_z = FLOOR_Z2 + DORM_H + DORM.wall_t
     nb2_ridge_z = nb2_eave_z + DORM_ROOF_H
     nb2_slab_t = DORM_SLAB_T
     nb2_gable_depth = DORM_GABLE_DEPTH
     nb2_sy1 = dorm_north2_y1 + nb2_gable_depth
     nb2_sy2 = dorm_north2_y2
-    north2_bldg_detail.append(
+    return [
         ramp_slab(
             DORM.x1,
             dorm_cx,
@@ -885,9 +963,7 @@ def _build_second_north_dorm(dorm_ctx):
             nb2_ridge_z,
             Textures.ROOF,
             ts=Textures.GABLE,
-        )
-    )
-    north2_bldg_detail.append(
+        ),
         ramp_slab(
             dorm_cx,
             DORM.x2,
@@ -899,34 +975,41 @@ def _build_second_north_dorm(dorm_ctx):
             nb2_eave_z + nb2_slab_t,
             Textures.ROOF,
             ts=Textures.GABLE,
-        )
-    )
+        ),
+        *gable_slats(
+            DORM.x1,
+            DORM.x2,
+            dorm_cx,
+            nb2_eave_z,
+            nb2_ridge_z,
+            nb2_slab_t,
+            dorm_north2_y1,
+            nb2_gable_depth,
+            Textures.GABLE,
+            n=8,
+            gap=4,
+        ),
+    ]
 
-    north2_bldg_detail += gable_slats(
-        DORM.x1,
-        DORM.x2,
-        dorm_cx,
-        nb2_eave_z,
-        nb2_ridge_z,
-        nb2_slab_t,
-        dorm_north2_y1,
-        nb2_gable_depth,
-        Textures.GABLE,
-        n=8,
-        gap=4,
+
+def _build_second_north_dorm(dorm_ctx):
+    """Build the second north dorm shell, roof, and interior floor slab."""
+
+    second_ctx = _make_second_north_dorm_context(dorm_ctx)
+
+    north2_bldg_detail = []
+    north2_bldg_detail.extend(
+        _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx)
+    )
+    north2_bldg_detail.extend(
+        _build_second_north_dorm_window_frame_brushes(dorm_ctx, second_ctx)
+    )
+    north2_bldg_detail.extend(
+        _build_second_north_dorm_roof_brushes(dorm_ctx, second_ctx)
     )
 
     return (
-        box(
-            DORM.x1 + DORM.wall_t,
-            dorm_north2_y1 + DORM.wall_t,
-            FLOOR_Z1,
-            DORM.x2 - DORM.wall_t,
-            dorm_north2_y2 - DORM.wall_t,
-            FLOOR_Z2,
-            Textures.GROUND,
-            tt=Textures.ROAD,
-        ),
+        _build_second_north_dorm_floor_brush(second_ctx),
         brush_ent("func_detail", north2_bldg_detail),
     )
 
@@ -1204,56 +1287,77 @@ def _south_dorm_chimney_bounds(south_ctx, cy):
     return chim_x1, chim_x2, chim_y1, chim_y2
 
 
-def _build_south_dorm_top_and_roof_brushes(
-    south_ctx, chim_x1, chim_x2, chim_y1, chim_y2
-):
-    """Return the top slab, roof, chimney stack, and gable slats."""
+def _build_south_dorm_top_cap_brushes(south_ctx, chim_x1, chim_x2, chim_y1, chim_y2):
+    """Return the south dorm top slab brushes beneath the roof."""
 
     by1 = south_ctx["by1"]
     by2 = south_ctx["by2"]
     bx1 = south_ctx["bx1"]
     bx2 = south_ctx["bx2"]
     chimney = south_ctx["chimney"]
-    cx = south_ctx["cx"]
-    slat_hi = south_ctx["slat_hi"]
-    slat_lo = south_ctx["slat_lo"]
 
-    top_brushes = []
     if chimney:
         _cz1, _cz2 = FLOOR_Z2 + DORM_H, FLOOR_Z2 + DORM_H + DORM.wall_t
-        top_brushes += [
+        return [
             box(bx1, by1, _cz1, chim_x1, by2, _cz2, Textures.BUILDING),
             box(chim_x2, by1, _cz1, bx2, by2, _cz2, Textures.BUILDING),
             box(chim_x1, by1, _cz1, chim_x2, chim_y1, _cz2, Textures.BUILDING),
             box(chim_x1, chim_y2, _cz1, chim_x2, by2, _cz2, Textures.BUILDING),
         ]
-    else:
-        top_brushes.append(
-            box(
-                bx1,
-                by1,
-                FLOOR_Z2 + DORM_H,
-                bx2,
-                by2,
-                FLOOR_Z2 + DORM_H + DORM.wall_t,
-                Textures.BUILDING,
-            )
+    return [
+        box(
+            bx1,
+            by1,
+            FLOOR_Z2 + DORM_H,
+            bx2,
+            by2,
+            FLOOR_Z2 + DORM_H + DORM.wall_t,
+            Textures.BUILDING,
         )
-    eave_z, ridge_z, slab_t = (
-        FLOOR_Z2 + DORM_H + DORM.wall_t,
-        FLOOR_Z2 + DORM_H + DORM.wall_t + DORM_ROOF_H,
-        DORM_SLAB_T,
-    )
-    depth = 6
+    ]
 
+
+def _south_dorm_roof_bounds(south_ctx):
+    """Return shared roof elevations and gable depth for a south dorm."""
+
+    by1 = south_ctx["by1"]
+    by2 = south_ctx["by2"]
+    slat_hi = south_ctx["slat_hi"]
+    slat_lo = south_ctx["slat_lo"]
+    eave_z = FLOOR_Z2 + DORM_H + DORM.wall_t
+    ridge_z = FLOOR_Z2 + DORM_H + DORM.wall_t + DORM_ROOF_H
+    slab_t = DORM_SLAB_T
+    depth = 6
     sy1 = by1 + depth if slat_lo else by1
     sy2 = by2 - depth if slat_hi else by2
+    return eave_z, ridge_z, slab_t, depth, sy1, sy2
+
+
+def _build_south_dorm_roof_brushes(
+    south_ctx,
+    chim_x1,
+    chim_x2,
+    chim_y1,
+    chim_y2,
+    eave_z,
+    ridge_z,
+    slab_t,
+    sy1,
+    sy2,
+):
+    """Return the main south dorm roof slabs."""
+
+    bx1 = south_ctx["bx1"]
+    bx2 = south_ctx["bx2"]
+    chimney = south_ctx["chimney"]
+    cx = south_ctx["cx"]
+
     if chimney:
 
         def _etop(x):
             return int(ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx))
 
-        top_brushes += [
+        return [
             ramp_slab(
                 bx1,
                 cx,
@@ -1315,77 +1419,98 @@ def _build_south_dorm_top_and_roof_brushes(
                 ts=Textures.GABLE,
             ),
         ]
+    return [
+        ramp_slab(
+            bx1,
+            cx,
+            sy1,
+            sy2,
+            eave_z,
+            eave_z,
+            eave_z + slab_t,
+            ridge_z,
+            Textures.ROOF,
+            ts=Textures.GABLE,
+        ),
+        ramp_slab(
+            cx,
+            bx2,
+            sy1,
+            sy2,
+            eave_z,
+            eave_z,
+            ridge_z,
+            eave_z + slab_t,
+            Textures.ROOF,
+            ts=Textures.GABLE,
+        ),
+    ]
 
-        chim_wall, chim_top = 12, ridge_z + 32
-        top_brushes += [
-            box(
-                chim_x1 - chim_wall,
-                chim_y1 - chim_wall,
-                eave_z,
-                chim_x2 + chim_wall,
-                chim_y1,
-                chim_top,
-                Textures.BUILDING,
-            ),
-            box(
-                chim_x1 - chim_wall,
-                chim_y2,
-                eave_z,
-                chim_x2 + chim_wall,
-                chim_y2 + chim_wall,
-                chim_top,
-                Textures.BUILDING,
-            ),
-            box(
-                chim_x1 - chim_wall,
-                chim_y1,
-                eave_z,
-                chim_x1,
-                chim_y2,
-                chim_top,
-                Textures.BUILDING,
-            ),
-            box(
-                chim_x2,
-                chim_y1,
-                eave_z,
-                chim_x2 + chim_wall,
-                chim_y2,
-                chim_top,
-                Textures.BUILDING,
-            ),
-        ]
-    else:
-        top_brushes.append(
-            ramp_slab(
-                bx1,
-                cx,
-                sy1,
-                sy2,
-                eave_z,
-                eave_z,
-                eave_z + slab_t,
-                ridge_z,
-                Textures.ROOF,
-                ts=Textures.GABLE,
-            )
-        )
-        top_brushes.append(
-            ramp_slab(
-                cx,
-                bx2,
-                sy1,
-                sy2,
-                eave_z,
-                eave_z,
-                ridge_z,
-                eave_z + slab_t,
-                Textures.ROOF,
-                ts=Textures.GABLE,
-            )
-        )
+
+def _build_south_dorm_chimney_stack_brushes(
+    south_ctx, chim_x1, chim_x2, chim_y1, chim_y2, eave_z, ridge_z
+):
+    """Return the chimney stack walls above the south dorm roof."""
+
+    chimney = south_ctx["chimney"]
+    if not chimney:
+        return []
+
+    chim_wall, chim_top = 12, ridge_z + 32
+    return [
+        box(
+            chim_x1 - chim_wall,
+            chim_y1 - chim_wall,
+            eave_z,
+            chim_x2 + chim_wall,
+            chim_y1,
+            chim_top,
+            Textures.BUILDING,
+        ),
+        box(
+            chim_x1 - chim_wall,
+            chim_y2,
+            eave_z,
+            chim_x2 + chim_wall,
+            chim_y2 + chim_wall,
+            chim_top,
+            Textures.BUILDING,
+        ),
+        box(
+            chim_x1 - chim_wall,
+            chim_y1,
+            eave_z,
+            chim_x1,
+            chim_y2,
+            chim_top,
+            Textures.BUILDING,
+        ),
+        box(
+            chim_x2,
+            chim_y1,
+            eave_z,
+            chim_x2 + chim_wall,
+            chim_y2,
+            chim_top,
+            Textures.BUILDING,
+        ),
+    ]
+
+
+def _build_south_dorm_gable_slat_brushes(south_ctx, eave_z, ridge_z, slab_t, depth):
+    """Return the optional south dorm gable slats."""
+
+    by1 = south_ctx["by1"]
+    by2 = south_ctx["by2"]
+    bx1 = south_ctx["bx1"]
+    bx2 = south_ctx["bx2"]
+    cx = south_ctx["cx"]
+    slat_hi = south_ctx["slat_hi"]
+    slat_lo = south_ctx["slat_lo"]
+
+    slat_brushes = []
     if slat_lo:
-        top_brushes += gable_slats(
+        slat_brushes += gable_slats(
             bx1,
             bx2,
             cx,
@@ -1399,7 +1524,7 @@ def _build_south_dorm_top_and_roof_brushes(
             gap=4,
         )
     if slat_hi:
-        top_brushes += gable_slats(
+        slat_brushes += gable_slats(
             bx1,
             bx2,
             cx,
@@ -1412,6 +1537,60 @@ def _build_south_dorm_top_and_roof_brushes(
             n=8,
             gap=4,
         )
+    return slat_brushes
+
+
+def _build_south_dorm_top_and_roof_brushes(
+    south_ctx, chim_x1, chim_x2, chim_y1, chim_y2
+):
+    """Return the top slab, roof, chimney stack, and gable slats."""
+
+    eave_z, ridge_z, slab_t, depth, sy1, sy2 = _south_dorm_roof_bounds(south_ctx)
+
+    top_brushes = []
+    top_brushes.extend(
+        _build_south_dorm_top_cap_brushes(
+            south_ctx,
+            chim_x1,
+            chim_x2,
+            chim_y1,
+            chim_y2,
+        )
+    )
+    top_brushes.extend(
+        _build_south_dorm_roof_brushes(
+            south_ctx,
+            chim_x1,
+            chim_x2,
+            chim_y1,
+            chim_y2,
+            eave_z,
+            ridge_z,
+            slab_t,
+            sy1,
+            sy2,
+        )
+    )
+    top_brushes.extend(
+        _build_south_dorm_chimney_stack_brushes(
+            south_ctx,
+            chim_x1,
+            chim_x2,
+            chim_y1,
+            chim_y2,
+            eave_z,
+            ridge_z,
+        )
+    )
+    top_brushes.extend(
+        _build_south_dorm_gable_slat_brushes(
+            south_ctx,
+            eave_z,
+            ridge_z,
+            slab_t,
+            depth,
+        )
+    )
     return top_brushes
 
 
