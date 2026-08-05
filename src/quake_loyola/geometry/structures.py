@@ -403,6 +403,11 @@ def gable_slats(
         return bx1 + t * (apex_x - bx1) / denom, bx2 - t * (bx2 - apex_x) / denom
 
     band, brushes = (ridge_z - eave_z) / n, []
+    if gap >= band:
+        raise ValueError(
+            f"gable_slats: gap ({gap}) must be less than the per-slat band "
+            f"({band}), or every slat collapses to zero/negative height"
+        )
     for i in range(n):
         z0, z1 = eave_z + i * band, eave_z + (i + 1) * band - gap
         xl0, xr0 = edge_x(z0)
@@ -559,7 +564,7 @@ def win_frame_xwall(
     bottom=True,
     inner_gap=0,
     ifw=None,
-    inner_recess=2,
+    inner_recess=1,
     _fname="win_frame_xwall",
 ):
     if ifw is None:
@@ -618,7 +623,7 @@ def win_frame_ywall(
     bottom=True,
     inner_gap=0,
     ifw=None,
-    inner_recess=2,
+    inner_recess=1,
 ):
     """Axis-swapped ``win_frame_xwall``: same geometry, X and Y swapped."""
     return [

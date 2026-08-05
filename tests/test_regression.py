@@ -303,6 +303,53 @@ class EntitiesBuildTests(unittest.TestCase):
                 "matching path_corner targetname — chain is broken",
             )
 
+    def test_trigger_teleport_and_changelevel_brushes_have_nonzero_volume(self):
+        # A code review found no coverage validating the actual brush
+        # VOLUME of trigger_teleport/trigger_changelevel — a bug producing
+        # a degenerate (zero-thickness) trigger brush would still pass the
+        # target-resolution tests above (they only check entity fields),
+        # but would silently make the trigger untouchable in-game.
+        _, ents = entities.build()
+        for classname in ("trigger_teleport", "trigger_changelevel"):
+            triggers = [e for e in ents if e.classname == classname]
+            self.assertTrue(triggers, f"expected at least one {classname}")
+            for e in triggers:
+                self.assertTrue(
+                    e.brushes, f"{classname} entity has no brushes: {e.fields}"
+                )
+                for b in e.brushes:
+                    (x1, y1, z1), (x2, y2, z2) = b.get_bbox()
+                    self.assertLess(x1, x2, f"{classname} brush has zero X extent")
+                    self.assertLess(y1, y2, f"{classname} brush has zero Y extent")
+                    self.assertLess(z1, z2, f"{classname} brush has zero Z extent")
+
+    def test_platform_train_brush_starts_at_its_first_path_corner(self):
+        # The func_train brush's initial position is placed directly at the
+        # first path_corner it targets (rather than some other point on the
+        # loop), so the platform doesn't visibly jump on level start. Verify
+        # the brush's bbox center matches that path_corner's origin.
+        _, ents = entities.build()
+        trains = [e for e in ents if e.classname == "func_train"]
+        path_corners = {
+            e.fields["targetname"]: e.fields["origin"]
+            for e in ents
+            if e.classname == "path_corner"
+        }
+        self.assertTrue(trains, "expected at least one func_train")
+        for e in trains:
+            first_target = e.fields.get("target")
+            self.assertIn(
+                first_target,
+                path_corners,
+                f"func_train target {first_target!r} has no path_corner origin",
+            )
+            ox, oy, oz = (float(v) for v in path_corners[first_target].split())
+            self.assertEqual(len(e.brushes), 1)
+            (x1, y1, z1), (x2, y2, z2) = e.brushes[0].get_bbox()
+            self.assertAlmostEqual((x1 + x2) / 2, ox, places=3)
+            self.assertAlmostEqual((y1 + y2) / 2, oy, places=3)
+            self.assertAlmostEqual((z1 + z2) / 2, oz, places=3)
+
 
 class KnottTerrainToggleTests(unittest.TestCase):
     """KNOTT_ENABLED_TERRAIN must be safely toggleable in either direction:

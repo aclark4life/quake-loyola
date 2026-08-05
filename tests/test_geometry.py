@@ -370,15 +370,17 @@ class WinFrameTests(unittest.TestCase):
         self.assertTrue(brushes)
 
     def test_win_frame_xwall_rejects_fd_not_exceeding_2x_inner_recess(self):
-        # Defaults (fd=4, inner_recess=2) collapse the inner muntin depth to
-        # zero, which used to raise an opaque "degenerate brush" ValueError
-        # deep inside box() instead of a clear, actionable message.
+        # fd=4, inner_recess=2 collapses the inner muntin depth to zero, which
+        # used to raise an opaque "degenerate brush" ValueError deep inside
+        # box() instead of a clear, actionable message. Defaults no longer
+        # trigger this (inner_recess default is now 1), so pass explicit
+        # incompatible values.
         with self.assertRaises(ValueError):
-            win_frame_xwall(0, 64, 0, 64, 0, 1, "t")
+            win_frame_xwall(0, 64, 0, 64, 0, 1, "t", fd=4, inner_recess=2)
 
     def test_win_frame_ywall_rejects_fd_not_exceeding_2x_inner_recess(self):
         with self.assertRaises(ValueError):
-            win_frame_ywall(0, 64, 0, 64, 0, 1, "t")
+            win_frame_ywall(0, 64, 0, 64, 0, 1, "t", fd=4, inner_recess=2)
 
 
 class StairwellTests(unittest.TestCase):

@@ -23,7 +23,8 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import extend_terrain_row_overlap, tri_ramp_prism
+from ..geometry import tri_ramp_prism
+from ._mesh_helpers import append_sampled_grid_mesh
 
 _NE_HEIGHT_SCALE = 0.5
 
@@ -36,6 +37,39 @@ def _clamp0(zs):
     return [
         max(0, z * _NE_HEIGHT_SCALE * taper)
         for z, taper in zip(zs, _NE_ROW_TAPER, strict=False)
+    ]
+
+
+def _build_ne_terrain_cell(wx1, wx2, y1, y2, z1a, z1b, z2a, z2b, texture):
+    """Return the two prisms that mesh one northeast terrain quad."""
+
+    return [
+        tri_ramp_prism(
+            wx1,
+            y1,
+            wx2,
+            y1,
+            wx2,
+            y2,
+            FLOOR_Z1,
+            FLOOR_Z2 + z1a,
+            FLOOR_Z2 + z2a,
+            FLOOR_Z2 + z2b,
+            texture,
+        ),
+        tri_ramp_prism(
+            wx1,
+            y1,
+            wx2,
+            y2,
+            wx1,
+            y2,
+            FLOOR_Z1,
+            FLOOR_Z2 + z1a,
+            FLOOR_Z2 + z2b,
+            FLOOR_Z2 + z1b,
+            texture,
+        ),
     ]
 
 
@@ -82,49 +116,14 @@ def build():
 
     _NE_OVR = 8
 
-    for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_ne_x, _ne_cols, strict=False),
-        zip(_ne_x[1:], _ne_cols[1:], strict=False),
-        strict=False,
-    ):
-        for i in range(len(_ne_y) - 1):
-            y1, y2 = _ne_y[i], _ne_y[i + 1]
-            z1a, z1b = wcol1[i], wcol1[i + 1]
-            z2a, z2b = wcol2[i], wcol2[i + 1]
-            if i < len(_ne_y) - 2:
-                y2, z1b, z2b = extend_terrain_row_overlap(
-                    y1, y2, z1a, z1b, z2a, z2b, _NE_OVR
-                )
-
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y1,
-                    wx2,
-                    y1,
-                    wx2,
-                    y2,
-                    FLOOR_Z1,
-                    FLOOR_Z2 + z1a,
-                    FLOOR_Z2 + z2a,
-                    FLOOR_Z2 + z2b,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y1,
-                    wx2,
-                    y2,
-                    wx1,
-                    y2,
-                    FLOOR_Z1,
-                    FLOOR_Z2 + z1a,
-                    FLOOR_Z2 + z2b,
-                    FLOOR_Z2 + z1b,
-                    Textures.GROUND,
-                )
-            )
+    append_sampled_grid_mesh(
+        BRUSHES,
+        _ne_x,
+        _ne_y,
+        _ne_cols,
+        overlap=_NE_OVR,
+        texture=Textures.GROUND,
+        build_cell_brushes=_build_ne_terrain_cell,
+    )
 
     return BRUSHES, ENTITIES

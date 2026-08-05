@@ -430,6 +430,76 @@ def _make_dorm_context():
     }
 
 
+def _build_dorm_wall_runs(face_specs):
+    """Return layered wall brushes for the supplied dorm face specs."""
+
+    wall_brushes = []
+    for wall_builder, wall_args, openings in face_specs:
+        wall_brushes.extend(
+            wall_builder(
+                *wall_args,
+                openings,
+                Textures.BUILDING,
+            )
+        )
+    return wall_brushes
+
+
+def _build_dorm_frame_runs(frame_specs):
+    """Return window/door frame brushes for the supplied dorm face specs."""
+
+    frame_brushes = []
+    for frame_builder, openings, wall_pos, wall_dir, frame_kwargs in frame_specs:
+        for span1, zb, span2, zt in openings:
+            frame_brushes += frame_builder(
+                span1,
+                span2,
+                zb,
+                zt,
+                wall_pos,
+                wall_dir,
+                Textures.GABLE,
+                fd=DORM.wall_t,
+                margin=DORM_WIN_MARGIN,
+                **frame_kwargs,
+            )
+    return frame_brushes
+
+
+def _build_gable_roof_west_half(x1, cx, y1, y2, eave_z, ridge_z, slab_t):
+    """Return one west roof slab for a gabled dorm shell."""
+
+    return ramp_slab(
+        x1,
+        cx,
+        y1,
+        y2,
+        eave_z,
+        eave_z,
+        eave_z + slab_t,
+        ridge_z,
+        Textures.ROOF,
+        ts=Textures.GABLE,
+    )
+
+
+def _build_gable_roof_east_half(cx, x2, y1, y2, eave_z, ridge_z, top_z):
+    """Return one east roof slab for a gabled dorm shell."""
+
+    return ramp_slab(
+        cx,
+        x2,
+        y1,
+        y2,
+        eave_z,
+        eave_z,
+        ridge_z,
+        top_z,
+        Textures.ROOF,
+        ts=Textures.GABLE,
+    )
+
+
 def _north_dorm_center_window_openings(dorm_ctx):
     """Return the centered upper-floor openings on the north dorm back wall."""
 
@@ -482,62 +552,65 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
     nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
     tunn_h = dorm_ctx["tunn_h"]
 
-    wall_brushes = []
-    wall_brushes.extend(
-        layered_wall(
-            DORM.x1,
-            DORM_NORTH_Y1,
-            FLOOR_Z2,
-            DORM.x2,
-            DORM_NORTH_Y1 + DORM.wall_t,
-            FLOOR_Z2 + DORM_H,
-            [dorm_door_open],
-            Textures.BUILDING,
-        )
-    )
-    wall_brushes.extend(
-        layered_wall(
-            DORM.x1,
-            DORM_NORTH_Y2 - DORM.wall_t,
-            FLOOR_Z2,
-            DORM.x2,
-            DORM_NORTH_Y2,
-            FLOOR_Z2 + DORM_H,
-            nb_wins_xz_upper(dorm_wx, x_clear=-1652) + center_window_openings,
-            Textures.BUILDING,
-        )
-    )
-    wall_brushes.extend(
-        layered_wall_y(
-            DORM_NORTH_Y1 + DORM.wall_t,
-            DORM.x2 - DORM.wall_t,
-            FLOOR_Z2,
-            DORM_NORTH_Y2 - DORM.wall_t,
-            DORM.x2,
-            FLOOR_Z2 + DORM_H,
-            dorm_e_openings,
-            Textures.BUILDING,
-        )
-    )
-    wall_brushes.extend(
-        layered_wall_y(
-            DORM_NORTH_Y1 + DORM.wall_t,
-            DORM.x1,
-            FLOOR_Z2,
-            DORM_NORTH_Y2 - DORM.wall_t,
-            DORM.x1 + DORM.wall_t,
-            FLOOR_Z2 + DORM_H,
-            nb_wins_yz_west(dorm_wy)
-            + [
+    wall_brushes = _build_dorm_wall_runs(
+        [
+            (
+                layered_wall,
                 (
-                    dorm_north_cy - DORM_INNER_DOOR_HW,
+                    DORM.x1,
+                    DORM_NORTH_Y1,
                     FLOOR_Z2,
-                    dorm_north_cy + DORM_INNER_DOOR_HW,
-                    FLOOR_Z2 + tunn_h,
-                )
-            ],
-            Textures.BUILDING,
-        )
+                    DORM.x2,
+                    DORM_NORTH_Y1 + DORM.wall_t,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                [dorm_door_open],
+            ),
+            (
+                layered_wall,
+                (
+                    DORM.x1,
+                    DORM_NORTH_Y2 - DORM.wall_t,
+                    FLOOR_Z2,
+                    DORM.x2,
+                    DORM_NORTH_Y2,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                nb_wins_xz_upper(dorm_wx, x_clear=-1652) + center_window_openings,
+            ),
+            (
+                layered_wall_y,
+                (
+                    DORM_NORTH_Y1 + DORM.wall_t,
+                    DORM.x2 - DORM.wall_t,
+                    FLOOR_Z2,
+                    DORM_NORTH_Y2 - DORM.wall_t,
+                    DORM.x2,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                dorm_e_openings,
+            ),
+            (
+                layered_wall_y,
+                (
+                    DORM_NORTH_Y1 + DORM.wall_t,
+                    DORM.x1,
+                    FLOOR_Z2,
+                    DORM_NORTH_Y2 - DORM.wall_t,
+                    DORM.x1 + DORM.wall_t,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                nb_wins_yz_west(dorm_wy)
+                + [
+                    (
+                        dorm_north_cy - DORM_INNER_DOOR_HW,
+                        FLOOR_Z2,
+                        dorm_north_cy + DORM_INNER_DOOR_HW,
+                        FLOOR_Z2 + tunn_h,
+                    )
+                ],
+            ),
+        ]
     )
     wall_brushes.append(
         box(
@@ -566,90 +639,54 @@ def _build_north_dorm_window_frame_brushes(
     nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
     tunn_h = dorm_ctx["tunn_h"]
 
-    frame_brushes = []
-    for xl, zb, xr, zt in nb_wins_xz_upper(dorm_wx, x_clear=-1652):
-        frame_brushes += win_frame_xwall(
-            xl,
-            xr,
-            zb,
-            zt,
-            DORM_NORTH_Y2,
-            -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-        )
-
-    for xl, zb, xr, zt in center_window_openings:
-        frame_brushes += win_frame_xwall(
-            xl,
-            xr,
-            zb,
-            zt,
-            DORM_NORTH_Y2,
-            -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-            crossbar=True,
-        )
-
-    frame_brushes += win_frame_xwall(
-        dorm_cx - DORM_INNER_DOOR_HW,
-        dorm_cx + DORM_INNER_DOOR_HW,
-        FLOOR_Z2,
-        FLOOR_Z2 + DORM_INNER_DOOR_H,
-        DORM_NORTH_Y1,
-        +1,
-        Textures.GABLE,
-        fw=8,
-        fd=DORM.wall_t,
-        margin=DORM_WIN_MARGIN,
-        crossbar=False,
-        bottom=False,
+    return _build_dorm_frame_runs(
+        [
+            (
+                win_frame_xwall,
+                nb_wins_xz_upper(dorm_wx, x_clear=-1652),
+                DORM_NORTH_Y2,
+                -1,
+                {},
+            ),
+            (
+                win_frame_xwall,
+                center_window_openings,
+                DORM_NORTH_Y2,
+                -1,
+                {"crossbar": True},
+            ),
+            (
+                win_frame_xwall,
+                [
+                    (
+                        dorm_cx - DORM_INNER_DOOR_HW,
+                        FLOOR_Z2,
+                        dorm_cx + DORM_INNER_DOOR_HW,
+                        FLOOR_Z2 + DORM_INNER_DOOR_H,
+                    )
+                ],
+                DORM_NORTH_Y1,
+                +1,
+                {"fw": 8, "crossbar": False, "bottom": False},
+            ),
+            (win_frame_ywall, dorm_e_openings, DORM.x2, -1, {}),
+            (win_frame_ywall, nb_wins_yz_west(dorm_wy), DORM.x1, +1, {}),
+            (
+                win_frame_ywall,
+                [
+                    (
+                        dorm_north_cy - DORM_INNER_DOOR_HW,
+                        FLOOR_Z2,
+                        dorm_north_cy + DORM_INNER_DOOR_HW,
+                        FLOOR_Z2 + tunn_h,
+                    )
+                ],
+                DORM.x1,
+                +1,
+                {"fw": 8, "crossbar": False, "bottom": False},
+            ),
+        ]
     )
-
-    for yl, zb, yr, zt in dorm_e_openings:
-        frame_brushes += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
-            DORM.x2,
-            -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-        )
-
-    for yl, zb, yr, zt in nb_wins_yz_west(dorm_wy):
-        frame_brushes += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
-            DORM.x1,
-            +1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
-        )
-
-    frame_brushes += win_frame_ywall(
-        dorm_north_cy - DORM_INNER_DOOR_HW,
-        dorm_north_cy + DORM_INNER_DOOR_HW,
-        FLOOR_Z2,
-        FLOOR_Z2 + tunn_h,
-        DORM.x1,
-        +1,
-        Textures.GABLE,
-        fw=8,
-        fd=DORM.wall_t,
-        margin=DORM_WIN_MARGIN,
-        crossbar=False,
-        bottom=False,
-    )
-    return frame_brushes
 
 
 def _build_north_dorm_roof_brushes(dorm_ctx):
@@ -661,29 +698,23 @@ def _build_north_dorm_roof_brushes(dorm_ctx):
     dorm_nb_sy1 = DORM_NORTH_Y1
     dorm_nb_sy2 = DORM_NORTH_Y2 - DORM_GABLE_DEPTH
     return [
-        ramp_slab(
+        _build_gable_roof_west_half(
             DORM.x1,
             dorm_cx,
             dorm_nb_sy1,
             dorm_nb_sy2,
             dorm_eave_z,
-            dorm_eave_z,
-            dorm_eave_z + DORM_SLAB_T,
             dorm_ridge_z,
-            Textures.ROOF,
-            ts=Textures.GABLE,
+            DORM_SLAB_T,
         ),
-        ramp_slab(
+        _build_gable_roof_east_half(
             dorm_cx,
             DORM.x2,
             dorm_nb_sy1,
             dorm_nb_sy2,
             dorm_eave_z,
-            dorm_eave_z,
             dorm_ridge_z,
             dorm_eave_z + DORM_SLAB_T,
-            Textures.ROOF,
-            ts=Textures.GABLE,
         ),
         *gable_slats(
             DORM.x1,
@@ -1199,56 +1230,59 @@ def _build_south_dorm_wall_brushes(south_ctx, mid_wxz, cy):
     wyz = south_ctx["wyz"]
     wyz_west = south_ctx["wyz_west"]
 
-    wall_brushes = []
-    wall_brushes.extend(
-        layered_wall(
-            bx1,
-            by1,
-            FLOOR_Z2,
-            bx2,
-            by1 + DORM.wall_t,
-            FLOOR_Z2 + DORM_H,
-            ([] if door_lo else wxz() + mid_wxz)
-            + ([dorm_door_open] if door_lo else []),
-            Textures.BUILDING,
-        )
-    )
-    wall_brushes.extend(
-        layered_wall(
-            bx1,
-            by2 - DORM.wall_t,
-            FLOOR_Z2,
-            bx2,
-            by2,
-            FLOOR_Z2 + DORM_H,
-            ([] if door_hi else wxz_north() + mid_wxz)
-            + ([dorm_door_open] if door_hi else []),
-            Textures.BUILDING,
-        )
-    )
-    wall_brushes.extend(
-        layered_wall_y(
-            by1 + DORM.wall_t,
-            bx1,
-            FLOOR_Z2,
-            by2 - DORM.wall_t,
-            bx1 + DORM.wall_t,
-            FLOOR_Z2 + DORM_H,
-            wyz_west()
-            + (
-                [
-                    (
-                        cy - DORM_INNER_DOOR_HW,
-                        FLOOR_Z2 - SDORM_LIFT,
-                        cy + DORM_INNER_DOOR_HW,
-                        FLOOR_Z2,
-                    )
-                ]
-                if west_door
-                else []
+    wall_brushes = _build_dorm_wall_runs(
+        [
+            (
+                layered_wall,
+                (
+                    bx1,
+                    by1,
+                    FLOOR_Z2,
+                    bx2,
+                    by1 + DORM.wall_t,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                ([] if door_lo else wxz() + mid_wxz)
+                + ([dorm_door_open] if door_lo else []),
             ),
-            Textures.BUILDING,
-        )
+            (
+                layered_wall,
+                (
+                    bx1,
+                    by2 - DORM.wall_t,
+                    FLOOR_Z2,
+                    bx2,
+                    by2,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                ([] if door_hi else wxz_north() + mid_wxz)
+                + ([dorm_door_open] if door_hi else []),
+            ),
+            (
+                layered_wall_y,
+                (
+                    by1 + DORM.wall_t,
+                    bx1,
+                    FLOOR_Z2,
+                    by2 - DORM.wall_t,
+                    bx1 + DORM.wall_t,
+                    FLOOR_Z2 + DORM_H,
+                ),
+                wyz_west()
+                + (
+                    [
+                        (
+                            cy - DORM_INNER_DOOR_HW,
+                            FLOOR_Z2 - SDORM_LIFT,
+                            cy + DORM_INNER_DOOR_HW,
+                            FLOOR_Z2,
+                        )
+                    ]
+                    if west_door
+                    else []
+                ),
+            ),
+        ]
     )
     east_openings = wyz()
     if entrance:
@@ -1256,15 +1290,21 @@ def _build_south_dorm_wall_brushes(south_ctx, mid_wxz, cy):
             o for o in east_openings if o[2] <= cy - ent_hw or o[0] >= cy + ent_hw
         ] + [(cy - ent_hw, FLOOR_Z2, cy + ent_hw, FLOOR_Z2 + ent_h)]
     wall_brushes.extend(
-        layered_wall_y(
-            by1 + DORM.wall_t,
-            bx2 - DORM.wall_t,
-            FLOOR_Z2,
-            by2 - DORM.wall_t,
-            bx2,
-            FLOOR_Z2 + DORM_H,
-            east_openings,
-            Textures.BUILDING,
+        _build_dorm_wall_runs(
+            [
+                (
+                    layered_wall_y,
+                    (
+                        by1 + DORM.wall_t,
+                        bx2 - DORM.wall_t,
+                        FLOOR_Z2,
+                        by2 - DORM.wall_t,
+                        bx2,
+                        FLOOR_Z2 + DORM_H,
+                    ),
+                    east_openings,
+                )
+            ]
         )
     )
     return wall_brushes
@@ -1358,91 +1398,70 @@ def _build_south_dorm_roof_brushes(
             return int(ridge_z + (x - cx) * (eave_z + slab_t - ridge_z) // (bx2 - cx))
 
         return [
-            ramp_slab(
+            _build_gable_roof_west_half(
                 bx1,
                 cx,
                 sy1,
                 sy2,
                 eave_z,
-                eave_z,
-                eave_z + slab_t,
                 ridge_z,
-                Textures.ROOF,
-                ts=Textures.GABLE,
+                slab_t,
             ),
-            ramp_slab(
+            _build_gable_roof_east_half(
                 cx,
                 bx2,
                 sy1,
                 chim_y1,
                 eave_z,
-                eave_z,
                 ridge_z,
                 eave_z + slab_t,
-                Textures.ROOF,
-                ts=Textures.GABLE,
             ),
-            ramp_slab(
+            _build_gable_roof_east_half(
                 cx,
                 bx2,
                 chim_y2,
                 sy2,
                 eave_z,
-                eave_z,
                 ridge_z,
                 eave_z + slab_t,
-                Textures.ROOF,
-                ts=Textures.GABLE,
             ),
-            ramp_slab(
+            _build_gable_roof_east_half(
                 cx,
                 chim_x1,
                 chim_y1,
                 chim_y2,
                 eave_z,
-                eave_z,
                 ridge_z,
                 _etop(chim_x1),
-                Textures.ROOF,
-                ts=Textures.GABLE,
             ),
-            ramp_slab(
+            _build_gable_roof_east_half(
                 chim_x2,
                 bx2,
                 chim_y1,
                 chim_y2,
                 eave_z,
-                eave_z,
                 _etop(chim_x2),
                 eave_z + slab_t,
-                Textures.ROOF,
-                ts=Textures.GABLE,
             ),
         ]
     return [
-        ramp_slab(
+        _build_gable_roof_west_half(
             bx1,
             cx,
             sy1,
             sy2,
             eave_z,
-            eave_z,
-            eave_z + slab_t,
             ridge_z,
-            Textures.ROOF,
-            ts=Textures.GABLE,
+            slab_t,
         ),
-        ramp_slab(
+        _build_gable_roof_east_half(
             cx,
             bx2,
             sy1,
             sy2,
             eave_z,
-            eave_z,
             ridge_z,
             eave_z + slab_t,
-            Textures.ROOF,
-            ts=Textures.GABLE,
         ),
     ]
 
@@ -1693,87 +1712,38 @@ def _build_south_dorm_window_frame_brushes(south_ctx, mid_wxz, cy):
     wyz = south_ctx["wyz"]
     wyz_west = south_ctx["wyz_west"]
 
-    frame_brushes = []
+    frame_specs = []
     if not door_lo:
-        for xl, zb, xr, zt in wxz():
-            frame_brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by1,
-                +1,
-                Textures.GABLE,
-                fd=DORM.wall_t,
-                margin=DORM_WIN_MARGIN,
-            )
-        for xl, zb, xr, zt in mid_wxz:
-            frame_brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by1,
-                +1,
-                Textures.GABLE,
-                fd=DORM.wall_t,
-                margin=DORM_WIN_MARGIN,
-            )
+        frame_specs.extend(
+            [
+                (win_frame_xwall, wxz(), by1, +1, {}),
+                (win_frame_xwall, mid_wxz, by1, +1, {}),
+            ]
+        )
 
     if not door_hi:
-        for xl, zb, xr, zt in wxz_north():
-            frame_brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by2,
-                -1,
-                Textures.GABLE,
-                fd=DORM.wall_t,
-                margin=DORM_WIN_MARGIN,
-            )
-        for xl, zb, xr, zt in mid_wxz:
-            frame_brushes += win_frame_xwall(
-                xl,
-                xr,
-                zb,
-                zt,
-                by2,
-                -1,
-                Textures.GABLE,
-                fd=DORM.wall_t,
-                margin=DORM_WIN_MARGIN,
-            )
-
-    for yl, zb, yr, zt in wyz_west():
-        frame_brushes += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
-            bx1,
-            +1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
+        frame_specs.extend(
+            [
+                (win_frame_xwall, wxz_north(), by2, -1, {}),
+                (win_frame_xwall, mid_wxz, by2, -1, {}),
+            ]
         )
 
-    for yl, zb, yr, zt in wyz():
-        if entrance and not (yr <= cy - ent_hw or yl >= cy + ent_hw):
-            continue
-        frame_brushes += win_frame_ywall(
-            yl,
-            yr,
-            zb,
-            zt,
+    frame_specs.append((win_frame_ywall, wyz_west(), bx1, +1, {}))
+    frame_specs.append(
+        (
+            win_frame_ywall,
+            [
+                (yl, zb, yr, zt)
+                for yl, zb, yr, zt in wyz()
+                if not entrance or yr <= cy - ent_hw or yl >= cy + ent_hw
+            ],
             bx2,
             -1,
-            Textures.GABLE,
-            fd=DORM.wall_t,
-            margin=DORM_WIN_MARGIN,
+            {},
         )
-    return frame_brushes
+    )
+    return _build_dorm_frame_runs(frame_specs)
 
 
 def _build_south_dorm_door_frame_brushes(south_ctx):

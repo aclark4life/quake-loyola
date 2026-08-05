@@ -384,17 +384,23 @@ def _append_charles_road_surfaces(brushes, layout):
             )
 
 
-def _append_charles_sidewalks_and_curbs(brushes, layout):
-    """Add Charles Street sidewalks, curb cuts, and curb ramp slabs."""
-    charles_curb_cut_len = 2 * (layout["sw_slab_len"] + layout["sw_gap"])
-    charles_curb_cut_y2 = layout["charles_crossing_mid"] + charles_curb_cut_len
-    charles_curb_ramp_y2 = charles_curb_cut_y2 + layout["sw_slab_len"]
+def _append_charles_west_sidewalks(
+    brushes,
+    layout,
+    *,
+    curb_cap_d,
+    curb_gap,
+    curb_cut_y2,
+    curb_ramp_y2,
+):
+    """Append the west-side Charles crossing ramp, sidewalk, and curb return."""
+
     _append_street_sidewalk_slabs_y(
         brushes,
         ROAD_X1 - CHARLES_WALK_W,
         ROAD_X1,
         layout["charles_crossing_mid"],
-        charles_curb_cut_y2,
+        curb_cut_y2,
         FLOOR_Z2,
         FLOOR_Z2 + STREET_SURFACE_T,
         Textures.SIDEWALK,
@@ -405,8 +411,8 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
         ramp_slab_y(
             ROAD_X1 - CHARLES_WALK_W,
             ROAD_X1,
-            charles_curb_cut_y2,
-            charles_curb_ramp_y2,
+            curb_cut_y2,
+            curb_ramp_y2,
             FLOOR_Z2,
             FLOOR_Z2,
             FLOOR_Z2 + STREET_SURFACE_T,
@@ -414,13 +420,11 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
             Textures.SIDEWALK,
         )
     )
-    charles_curb_cap_d = 8
-    charles_curb_gap = 2
     _append_street_sidewalk_slabs_y(
         brushes,
         ROAD_X1 - CHARLES_WALK_W,
-        ROAD_X1 - charles_curb_cap_d - charles_curb_gap,
-        charles_curb_ramp_y2 + layout["sw_gap"],
+        ROAD_X1 - curb_cap_d - curb_gap,
+        curb_ramp_y2 + layout["sw_gap"],
         layout["charles_y2"],
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
@@ -430,10 +434,10 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
     )
     brushes.append(
         box(
-            ROAD_X1 - charles_curb_cap_d - charles_curb_gap,
-            charles_curb_ramp_y2 + layout["sw_gap"],
+            ROAD_X1 - curb_cap_d - curb_gap,
+            curb_ramp_y2 + layout["sw_gap"],
             FLOOR_Z2,
-            ROAD_X1 - charles_curb_cap_d,
+            ROAD_X1 - curb_cap_d,
             layout["charles_y2"],
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,
@@ -441,8 +445,8 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
     )
     brushes.append(
         box(
-            ROAD_X1 - charles_curb_cap_d,
-            charles_curb_ramp_y2 + layout["sw_gap"],
+            ROAD_X1 - curb_cap_d,
+            curb_ramp_y2 + layout["sw_gap"],
             FLOOR_Z2 + STREET_SURFACE_T,
             ROAD_X1,
             layout["charles_y2"],
@@ -469,7 +473,7 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
             layout["charles_crossing_mid"],
             FLOOR_Z2 + STREET_SURFACE_T,
             rw_x2,
-            charles_curb_cut_y2,
+            curb_cut_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
         )
@@ -478,8 +482,8 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
         ramp_slab_y(
             rw_x1,
             rw_x2,
-            charles_curb_cut_y2,
-            charles_curb_ramp_y2,
+            curb_cut_y2,
+            curb_ramp_y2,
             FLOOR_Z2 + STREET_SURFACE_T,
             FLOOR_Z2 + CHARLES_WALK_H - STREET_SURFACE_T,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -509,6 +513,11 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
             Textures.GROUND,
         )
     )
+
+
+def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
+    """Append the east-side Charles sidewalk panels and curb caps."""
+
     for seg_y1, seg_y2, seg_overrides in (
         (
             layout["charles_y1"],
@@ -523,7 +532,7 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
     ):
         _append_street_sidewalk_slabs_y(
             brushes,
-            ROAD_X2 + charles_curb_cap_d + charles_curb_gap,
+            ROAD_X2 + curb_cap_d + curb_gap,
             ROAD_X2 + CHARLES_WALK_W,
             seg_y1,
             seg_y2,
@@ -536,10 +545,10 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
         )
         brushes.append(
             box(
-                ROAD_X2 + charles_curb_cap_d,
+                ROAD_X2 + curb_cap_d,
                 seg_y1,
                 FLOOR_Z2,
-                ROAD_X2 + charles_curb_cap_d + charles_curb_gap,
+                ROAD_X2 + curb_cap_d + curb_gap,
                 seg_y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.SIDEWALK_JOINT,
@@ -550,12 +559,35 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
                 ROAD_X2,
                 seg_y1,
                 FLOOR_Z2 + STREET_SURFACE_T,
-                ROAD_X2 + charles_curb_cap_d,
+                ROAD_X2 + curb_cap_d,
                 seg_y2,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 Textures.SIDEWALK,
             )
         )
+
+
+def _append_charles_sidewalks_and_curbs(brushes, layout):
+    """Add Charles Street sidewalks, curb cuts, and curb ramp slabs."""
+    charles_curb_cut_len = 2 * (layout["sw_slab_len"] + layout["sw_gap"])
+    charles_curb_cut_y2 = layout["charles_crossing_mid"] + charles_curb_cut_len
+    charles_curb_ramp_y2 = charles_curb_cut_y2 + layout["sw_slab_len"]
+    charles_curb_cap_d = 8
+    charles_curb_gap = 2
+    _append_charles_west_sidewalks(
+        brushes,
+        layout,
+        curb_cap_d=charles_curb_cap_d,
+        curb_gap=charles_curb_gap,
+        curb_cut_y2=charles_curb_cut_y2,
+        curb_ramp_y2=charles_curb_ramp_y2,
+    )
+    _append_charles_east_sidewalks(
+        brushes,
+        layout,
+        curb_cap_d=charles_curb_cap_d,
+        curb_gap=charles_curb_gap,
+    )
 
 
 def _append_ennis_road_surfaces(brushes, layout):
@@ -626,17 +658,16 @@ def _append_ennis_road_surfaces(brushes, layout):
         )
 
 
-def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
-    """Add the north Ennis sidewalks, curb caps, and the curb bulge."""
-    ennis_curb_cap_d = 8
-    ennis_curb_gap = 2
+def _append_ennis_north_sidewalk_strip(brushes, layout, *, curb_cap_d, curb_gap):
+    """Append the straight north-side Ennis sidewalk tiles."""
+
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
     _append_street_sidewalk_slabs_x(
         brushes,
         ROAD_X2 + CHARLES_WALK_W,
         layout["ennis_x2"],
-        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d + ennis_curb_gap,
+        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap,
         ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
@@ -655,16 +686,21 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
             (ENNIS_GATE_X2, layout["ennis_x2"], Textures.GROUND),
         ],
     )
+
+
+def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap):
+    """Append the curved north-side Ennis curb bulge and its fill wedges."""
+
     curb_bulge_x1 = ENNIS_CEMENT_X2
     curb_bulge_len = ENNIS_CURB_BULGE_LEN
     curb_bulge_x2 = curb_bulge_x1 + curb_bulge_len
     brushes.append(
         box(
             ROAD_X2 + CHARLES_WALK_W,
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d,
             FLOOR_Z2,
             curb_bulge_x1,
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d + ennis_curb_gap,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,
             tt_params=layout["ennis_road_tt_params"],
@@ -673,10 +709,10 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     brushes.append(
         box(
             curb_bulge_x2,
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d,
             FLOOR_Z2,
             layout["ennis_x2"],
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d + ennis_curb_gap,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,
             tt_params=layout["ennis_road_tt_params"],
@@ -686,16 +722,14 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     curb_bulge_depth = curb_bulge_half_len / 2
     curb_bulge_cx = (curb_bulge_x1 + curb_bulge_x2) / 2
     curb_bulge_segments = 24
-    curb_bulge_far_y = (
-        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d + ennis_curb_gap
-    )
+    curb_bulge_far_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap
     brushes.append(
         box(
             ROAD_X2 + CHARLES_WALK_W,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2 + STREET_SURFACE_T,
             curb_bulge_x1,
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
             tt_params=layout["ennis_road_tt_params"],
@@ -715,8 +749,8 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
         bd2 = _bulge_depth_at(bx2)
         outer1_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - bd1
         outer2_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N - bd2
-        inner1_y = outer1_y + ennis_curb_cap_d
-        inner2_y = outer2_y + ennis_curb_cap_d
+        inner1_y = outer1_y + curb_cap_d
+        inner2_y = outer2_y + curb_cap_d
         z1, z2 = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
         brushes.append(
             tri_prism(
@@ -777,7 +811,7 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2 + STREET_SURFACE_T,
             layout["ennis_x2"],
-            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ennis_curb_cap_d,
+            ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
             tt_params=layout["ennis_road_tt_params"],
@@ -785,14 +819,25 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     )
 
 
-def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
-    """Add the south Ennis sidewalks, curb joints, and curb slabs."""
+def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
+    """Add the north Ennis sidewalks, curb caps, and the curb bulge."""
     ennis_curb_cap_d = 8
     ennis_curb_gap = 2
+    _append_ennis_north_sidewalk_strip(
+        brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
+    )
+    _append_ennis_curb_bulge(
+        brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
+    )
+
+
+def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_gap):
+    """Append the south-side westmost Ennis sidewalk slabs by Charles."""
+
     west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
     west_sw_d = CHARLES_WALK_W * 2 + 56
     west_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - west_sw_d
-    west_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap
+    west_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d - curb_gap
     west_north_y1 = west_y2 - layout["sw_slab_len"]
     brushes.append(
         box(
@@ -818,6 +863,70 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             tt_params=layout["ennis_road_tt_params"],
         )
     )
+
+
+def _append_ennis_south_sidewalk_segment(
+    brushes,
+    layout,
+    *,
+    curb_x1,
+    curb_x2,
+    sidewalk_depth,
+    tile_x1,
+    tex_from_x,
+    curb_cap_d,
+    curb_gap,
+):
+    """Append one south-side Ennis sidewalk run with curb joint and cap."""
+
+    _append_street_sidewalk_slabs_x(
+        brushes,
+        tile_x1,
+        curb_x2,
+        ENNIS_SW_EDGE + CHARLES_WALK_W - sidewalk_depth,
+        ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d - curb_gap,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK,
+        layout["sw_slab_len"],
+        layout["sw_gap"],
+        tt_params=layout["ennis_road_tt_params"],
+        tex_from_x=tex_from_x,
+    )
+    brushes.append(
+        box(
+            curb_x1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d - curb_gap,
+            FLOOR_Z2,
+            curb_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+    brushes.append(
+        box(
+            curb_x1,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            curb_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+
+
+def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
+    """Add the south Ennis sidewalks, curb joints, and curb slabs."""
+    ennis_curb_cap_d = 8
+    ennis_curb_gap = 2
+    west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
+    _append_ennis_south_west_entry_slabs(
+        brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
+    )
     for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x in (
         (
             west_curb_x1,
@@ -837,49 +946,22 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             None,
         ),
     ):
-        _append_street_sidewalk_slabs_x(
+        _append_ennis_south_sidewalk_segment(
             brushes,
-            tile_x1,
-            curb_x2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W - sw_d,
-            ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-            layout["sw_slab_len"],
-            layout["sw_gap"],
-            tt_params=layout["ennis_road_tt_params"],
+            layout,
+            curb_x1=curb_x1,
+            curb_x2=curb_x2,
+            sidewalk_depth=sw_d,
+            tile_x1=tile_x1,
             tex_from_x=tex_from_x,
-        )
-        brushes.append(
-            box(
-                curb_x1,
-                ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
-                FLOOR_Z2,
-                curb_x2,
-                ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.SIDEWALK_JOINT,
-                tt_params=layout["ennis_road_tt_params"],
-            )
-        )
-        brushes.append(
-            box(
-                curb_x1,
-                ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                curb_x2,
-                ENNIS_SW_EDGE + CHARLES_WALK_W,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.SIDEWALK,
-                tt_params=layout["ennis_road_tt_params"],
-            )
+            curb_cap_d=ennis_curb_cap_d,
+            curb_gap=ennis_curb_gap,
         )
 
 
-def _append_street_markings(entities, layout):
-    """Add centerlines, lane stripes, and both crosswalks as func_detail."""
-    dash_brushes = []
+def _append_charles_marking_brushes(dash_brushes, layout):
+    """Append Charles Street centerlines, lane stripes, and crosswalk."""
+
     centerline_gap_hw = 2
     for line_x1, line_x2 in (
         (layout["road_cx"] - STREET_DIV_HW, layout["road_cx"] - centerline_gap_hw),
@@ -959,6 +1041,11 @@ def _append_street_markings(entities, layout):
         )
         cx = next_cx
         stripe_on = not stripe_on
+
+
+def _append_ennis_marking_brushes(dash_brushes, layout):
+    """Append Ennis Road divider and crosswalk markings."""
+
     ennis_line_hw = STREET_DIV_LINE_HW
     ennis_line_x1 = ENNIS_PILLAR_X1 + ENNIS_PILLAR_HW
     for gx1, gx2 in _street_detail_ranges_excluding(
@@ -1038,6 +1125,13 @@ def _append_street_markings(entities, layout):
         )
         ey = next_ey
         stripe_on = not stripe_on
+
+
+def _append_street_markings(entities, layout):
+    """Add centerlines, lane stripes, and both crosswalks as func_detail."""
+    dash_brushes = []
+    _append_charles_marking_brushes(dash_brushes, layout)
+    _append_ennis_marking_brushes(dash_brushes, layout)
     if dash_brushes:
         entities.append(brush_ent("func_detail", punch_manhole_detail(dash_brushes)))
 

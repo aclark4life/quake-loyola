@@ -23,7 +23,8 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import extend_terrain_row_overlap, tri_ramp_prism
+from ..geometry import tri_ramp_prism
+from ._mesh_helpers import append_sampled_grid_mesh
 
 
 def _clamp0(zs):
@@ -140,6 +141,67 @@ def terrain_z(x, y):
 _WCT_OVR = 20  # Overlap extension for adjacent terrain rows; see build().
 
 
+def _build_west_campus_terrain_cell(wx1, wx2, y1, y2, z_nw, z_sw, z_ne, z_se, texture):
+    """Return the four prisms that mesh one west-campus terrain quad."""
+
+    mx, my = (wx1 + wx2) / 2, (y1 + y2) / 2
+    mz = (z_nw + z_ne + z_sw + z_se) / 4
+    return [
+        tri_ramp_prism(
+            wx1,
+            y1,
+            mx,
+            my,
+            wx2,
+            y1,
+            FLOOR_Z1,
+            FLOOR_Z2 + z_nw,
+            FLOOR_Z2 + mz,
+            FLOOR_Z2 + z_ne,
+            texture,
+        ),
+        tri_ramp_prism(
+            wx2,
+            y1,
+            mx,
+            my,
+            wx2,
+            y2,
+            FLOOR_Z1,
+            FLOOR_Z2 + z_ne,
+            FLOOR_Z2 + mz,
+            FLOOR_Z2 + z_se,
+            texture,
+        ),
+        tri_ramp_prism(
+            wx2,
+            y2,
+            mx,
+            my,
+            wx1,
+            y2,
+            FLOOR_Z1,
+            FLOOR_Z2 + z_se,
+            FLOOR_Z2 + mz,
+            FLOOR_Z2 + z_sw,
+            texture,
+        ),
+        tri_ramp_prism(
+            wx1,
+            y2,
+            mx,
+            my,
+            wx1,
+            y1,
+            FLOOR_Z1,
+            FLOOR_Z2 + z_sw,
+            FLOOR_Z2 + mz,
+            FLOOR_Z2 + z_nw,
+            texture,
+        ),
+    ]
+
+
 def build():
     """Build the west campus terrain brushes."""
 
@@ -148,89 +210,14 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    for (wx1, wcol1), (wx2, wcol2) in zip(
-        zip(_wct_x, _wct_cols, strict=False),
-        zip(_wct_x[1:], _wct_cols[1:], strict=False),
-        strict=False,
-    ):
-        for i in range(len(wct_y) - 1):
-            y1, y2 = wct_y[i], wct_y[i + 1]
-            z_nw, z_sw = wcol1[i], wcol1[i + 1]
-            z_ne, z_se = wcol2[i], wcol2[i + 1]
-            if i < len(wct_y) - 2:
-                # Extrapolate the south edge's Z along the same slope used
-                # for the (unextended) row instead of reusing the
-                # unextended z_sw/z_se, so the overlap region stays on the
-                # same plane terrain_z() would interpolate (previously
-                # this left the overlap diverging from terrain_z() by a
-                # few units near steep rows).
-                y2, z_sw, z_se = extend_terrain_row_overlap(
-                    y1, y2, z_nw, z_sw, z_ne, z_se, -_WCT_OVR
-                )
-
-            mx, my = (wx1 + wx2) / 2, (y1 + y2) / 2
-            mz = (z_nw + z_ne + z_sw + z_se) / 4
-            zbot = FLOOR_Z1
-
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y1,
-                    mx,
-                    my,
-                    wx2,
-                    y1,
-                    zbot,
-                    FLOOR_Z2 + z_nw,
-                    FLOOR_Z2 + mz,
-                    FLOOR_Z2 + z_ne,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx2,
-                    y1,
-                    mx,
-                    my,
-                    wx2,
-                    y2,
-                    zbot,
-                    FLOOR_Z2 + z_ne,
-                    FLOOR_Z2 + mz,
-                    FLOOR_Z2 + z_se,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx2,
-                    y2,
-                    mx,
-                    my,
-                    wx1,
-                    y2,
-                    zbot,
-                    FLOOR_Z2 + z_se,
-                    FLOOR_Z2 + mz,
-                    FLOOR_Z2 + z_sw,
-                    Textures.GROUND,
-                )
-            )
-            BRUSHES.append(
-                tri_ramp_prism(
-                    wx1,
-                    y2,
-                    mx,
-                    my,
-                    wx1,
-                    y1,
-                    zbot,
-                    FLOOR_Z2 + z_sw,
-                    FLOOR_Z2 + mz,
-                    FLOOR_Z2 + z_nw,
-                    Textures.GROUND,
-                )
-            )
+    append_sampled_grid_mesh(
+        BRUSHES,
+        _wct_x,
+        wct_y,
+        _wct_cols,
+        overlap=-_WCT_OVR,
+        texture=Textures.GROUND,
+        build_cell_brushes=_build_west_campus_terrain_cell,
+    )
 
     return BRUSHES, ENTITIES

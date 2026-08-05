@@ -132,5 +132,126 @@ class BridgeSouthParapetEndcapTest(unittest.TestCase):
         )
 
 
+class BridgeFilterSectionsTest(unittest.TestCase):
+    """Correctness checks for _filter_sections()'s per-section X windows.
+
+    A code review flagged that existing bridge.build() toggle tests only
+    assert entity-COUNT changes (e.g. "fewer entities than the full build"),
+    which would still pass even if _filter_sections() kept the wrong
+    geometry (as long as it dropped *something*). These tests instead
+    assert *which* geometry is kept, by bounding box.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.all_brushes, cls.all_entities = bridge._build_all()
+        cls.enabled_names = list(bridge._section_x_ranges().keys())
+        margin = (
+            bridge.BRIDGE_PILLAR_HW
+            + bridge.BRIDGE_PILLAR_OVERHANG
+            + bridge.PIER6_ROTATION_MARGIN
+        )
+        cls.ranges = bridge._section_accept_ranges(cls.enabled_names, margin)
+
+    def test_extracted_section_brushes_stay_within_its_accept_window(self):
+        for name in self.enabled_names:
+            brushes, entities = bridge._filter_sections(
+                self.all_brushes, self.all_entities, self.enabled_names, [name]
+            )
+            self.assertTrue(
+                entities, f"expected at least one entity extracted for {name!r}"
+            )
+            ax1, ax2 = self.ranges[name]
+            for ent in entities:
+                for b in ent.brushes:
+                    (bx1, _, _), (bx2, _, _) = b.get_bbox()
+                    self.assertGreaterEqual(
+                        bx1,
+                        ax1 - 1e-3,
+                        f"{name}: brush x1={bx1} below window start {ax1}",
+                    )
+                    self.assertLessEqual(
+                        bx2,
+                        ax2 + 1e-3,
+                        f"{name}: brush x2={bx2} beyond window end {ax2}",
+                    )
+
+    def test_disabling_one_span_drops_only_its_own_geometry(self):
+        # Disabling a single span must strictly reduce the retained brush
+        # count (not just possibly change entity count), and every brush
+        # that remains must fall within the *recomputed* accept windows for
+        # the still-enabled sections (boundary-pier ownership shifts when a
+        # neighboring span is dropped, so windows are recomputed per call
+        # rather than reused from setUpClass).
+        full_b, full_e = bridge._filter_sections(
+            self.all_brushes, self.all_entities, self.enabled_names
+        )
+        full_brush_count = sum(len(e.brushes) for e in full_e)
+        margin = (
+            bridge.BRIDGE_PILLAR_HW
+            + bridge.BRIDGE_PILLAR_OVERHANG
+            + bridge.PIER6_ROTATION_MARGIN
+        )
+        for dropped in self.enabled_names:
+            kept_names = [n for n in self.enabled_names if n != dropped]
+            partial_b, partial_e = bridge._filter_sections(
+                self.all_brushes, self.all_entities, kept_names
+            )
+            partial_brush_count = sum(len(e.brushes) for e in partial_e)
+            self.assertLess(
+                partial_brush_count,
+                full_brush_count,
+                f"disabling {dropped!r} should reduce retained brush count",
+            )
+            kept_ranges = bridge._section_accept_ranges(kept_names, margin)
+            allowed = list(kept_ranges.values())
+            for e in partial_e:
+                for b in e.brushes:
+                    (bx1, _, _), (bx2, _, _) = b.get_bbox()
+                    self.assertTrue(
+                        any(
+                            bx1 >= ax1 - 1e-3 and bx2 <= ax2 + 1e-3
+                            for ax1, ax2 in allowed
+                        ),
+                        f"after disabling {dropped!r}, brush x=({bx1}, {bx2}) "
+                        f"falls outside every kept-section window {allowed}",
+                    )
+
+
+class BridgeShiftCenterSpanTest(unittest.TestCase):
+    """_shift_center_span() must translate the enabled assembly by exactly
+    the configured offset — not merely change the brush/entity count."""
+
+    def test_shift_translates_every_brush_by_the_exact_offset(self):
+        all_brushes, all_entities = bridge._build_all()
+        enabled_names = list(bridge._section_x_ranges().keys())
+        offset = (5.0, 320.0, 96.0)
+
+        unshifted_b, unshifted_e = bridge._filter_sections(
+            all_brushes, all_entities, enabled_names
+        )
+        shifted_b, shifted_e = bridge._shift_center_span(
+            all_brushes, all_entities, enabled_names, offset
+        )
+        self.assertEqual(len(unshifted_e), len(shifted_e))
+        self.assertEqual(len(unshifted_b), len(shifted_b))
+
+        dx, dy, dz = offset
+        checked_any = False
+        for e0, e1 in zip(unshifted_e, shifted_e, strict=False):
+            self.assertEqual(len(e0.brushes), len(e1.brushes))
+            for b0, b1 in zip(e0.brushes, e1.brushes, strict=False):
+                (x1, y1, z1), (x2, y2, z2) = b0.get_bbox()
+                (X1, Y1, Z1), (X2, Y2, Z2) = b1.get_bbox()
+                self.assertAlmostEqual(X1 - x1, dx, places=3)
+                self.assertAlmostEqual(Y1 - y1, dy, places=3)
+                self.assertAlmostEqual(Z1 - z1, dz, places=3)
+                self.assertAlmostEqual(X2 - x2, dx, places=3)
+                self.assertAlmostEqual(Y2 - y2, dy, places=3)
+                self.assertAlmostEqual(Z2 - z2, dz, places=3)
+                checked_any = True
+        self.assertTrue(checked_any, "expected at least one brush to check")
+
+
 if __name__ == "__main__":
     unittest.main()

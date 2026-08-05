@@ -96,5 +96,73 @@ class WestCampusTerrainTests(unittest.TestCase):
             self.fail("expected at least one sloped row to test against")
 
 
+class StreetDetailLayoutTests(unittest.TestCase):
+    def test_lane_boundaries_are_ordered_west_to_east(self):
+        # A sign error here (e.g. swapping road_cx +/- STREET_DIV_HW) would
+        # still let details._build_street_details() run without raising,
+        # but would silently overlap or invert travel lanes. Assert the
+        # full west-to-east ordering of the road's cross-section instead.
+        layout = details._make_street_detail_layout()
+        from quake_loyola.constants.derived import ROAD_X1, ROAD_X2
+        from quake_loyola.constants.streets import STREET_DIV_HW, STREET_DIV_LINE_HW
+
+        ordered = [
+            ROAD_X1,
+            layout["west_lane_line_x"] - STREET_DIV_LINE_HW,
+            layout["west_lane_line_x"] + STREET_DIV_LINE_HW,
+            layout["road_cx"] - STREET_DIV_HW,
+            layout["road_cx"],
+            layout["road_cx"] + STREET_DIV_HW,
+            layout["east_lane_line_x"] - STREET_DIV_LINE_HW,
+            layout["east_lane_line_x"] + STREET_DIV_LINE_HW,
+            ROAD_X2,
+        ]
+        for a, b in zip(ordered, ordered[1:], strict=False):
+            self.assertLess(a, b, f"street cross-section out of order: {ordered}")
+
+    def test_charles_crossing_sits_within_charles_span(self):
+        layout = details._make_street_detail_layout()
+        self.assertLess(layout["charles_y1"], layout["charles_crossing_y1"])
+        self.assertLess(layout["charles_crossing_y1"], layout["charles_crossing_y2"])
+        self.assertLess(layout["charles_crossing_y2"], layout["charles_y2"])
+
+
+class StreetShellBoundsTests(unittest.TestCase):
+    def test_shell_brushes_stay_within_world_bounds(self):
+        # Regression guard for the world-edge seam: street-shell geometry
+        # must not extend past the world seal, or it would poke through
+        # (or leave a gap at) the map boundary.
+        from quake_loyola.constants.derived import (
+            WORLD_X1,
+            WORLD_X2_EXT,
+            WORLD_Y1,
+            WORLD_Y2,
+        )
+
+        brushes, _ = shell._build_street_world_shell()
+        margin = 1.0
+        for b in brushes:
+            (x1, y1, _), (x2, y2, _) = b.get_bbox()
+            self.assertGreaterEqual(x1, WORLD_X1 - margin)
+            self.assertLessEqual(x2, WORLD_X2_EXT + margin)
+            self.assertGreaterEqual(y1, WORLD_Y1 - margin)
+            self.assertLessEqual(y2, WORLD_Y2 + margin)
+
+
+class WestCampusTerrainSeamTests(unittest.TestCase):
+    def test_terrain_brushes_stay_within_the_sampled_grid_footprint(self):
+        # Bounding-box sanity: no meshed terrain brush should extend past
+        # the sampled grid's X range (Y is intentionally extended south by
+        # _WCT_OVR — see test_overlap_extension_uses_extrapolated_not_raw_
+        # south_z above — so only X is checked here).
+        brushes, _ = west_campus.build()
+        x_lo, x_hi = min(west_campus._wct_x), max(west_campus._wct_x)
+        margin = 1.0
+        for b in brushes:
+            (x1, _, _), (x2, _, _) = b.get_bbox()
+            self.assertGreaterEqual(x1, x_lo - margin)
+            self.assertLessEqual(x2, x_hi + margin)
+
+
 if __name__ == "__main__":
     unittest.main()

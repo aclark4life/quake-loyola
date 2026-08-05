@@ -293,16 +293,30 @@ def taper_box_y(
             f"taper_box_y: degenerate (zero-width everywhere) footprint "
             f"y=({y1a}, {y2a}) at x1, y=({y1b}, {y2b}) at x2"
         )
-    return Brush(
-        [
-            Face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex),
-            Face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex),
-            Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),
-            Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),
-            Face((x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1), tb, tb_params),
-            Face((x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2), tt, tt_params),
-        ]
-    )
+    faces = []
+    # The x1/x2 end caps and the top/bottom faces all pick 3 points from the (up to 4)
+    # corners at that Z/end. If one end's width collapses to zero (y1a == y2a or
+    # y1b == y2b), the corners at that end coincide, so those faces must fall back to
+    # the opposite end's corners to keep 3 distinct points (avoiding a degenerate face).
+    if y1a != y2a:
+        faces.append(Face((x1, y1a, z1), (x1, y2a, z1), (x1, y1a, z2), tex))
+    if y1b != y2b:
+        faces.append(Face((x2, y1b, z1), (x2, y1b, z2), (x2, y2b, z1), tex))
+    faces += [
+        Face((x1, y1a, z1), (x1, y1a, z2), (x2, y1b, z1), tex),
+        Face((x1, y2a, z1), (x2, y2b, z1), (x1, y2a, z2), tex),
+    ]
+    if y1a != y2a:
+        bottom = (x1, y1a, z1), (x2, y1b, z1), (x1, y2a, z1)
+        top = (x1, y1a, z2), (x1, y2a, z2), (x2, y1b, z2)
+    else:
+        bottom = (x1, y1a, z1), (x2, y1b, z1), (x2, y2b, z1)
+        top = (x1, y1a, z2), (x2, y1b, z2), (x2, y2b, z2)
+    faces += [
+        Face(*bottom, tb, tb_params),
+        Face(*top, tt, tt_params),
+    ]
+    return Brush(faces)
 
 
 def taper_box_x(
@@ -422,9 +436,19 @@ def ramp_slab(
         faces.append(Face((x1, y1, zb1), (x1, y2, zb1), (x1, y1, zt1), tw))
     if zt2 != zb2:
         faces.append(Face((x2, y1, zb2), (x2, y1, zt2), (x2, y2, zb2), te))
+    # The side (ts) faces are the sloped planes running along y1/y2. Their plane is
+    # defined by any 3 distinct points among the 4 side corners; when the x1 end is
+    # collapsed (zt1 == zb1) the (x1, zb1)/(x1, zt1) corners coincide, so fall back to
+    # the x2 corners to keep the 3 chosen points distinct (and vice versa for x2).
+    if zt1 != zb1:
+        s1 = (x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2)
+        s2 = (x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1)
+    else:
+        s1 = (x1, y1, zb1), (x2, y1, zb2), (x2, y1, zt2)
+        s2 = (x1, y2, zb1), (x2, y2, zb2), (x2, y2, zt2)
     faces += [
-        Face((x1, y1, zb1), (x1, y1, zt1), (x2, y1, zb2), ts),
-        Face((x1, y2, zb1), (x2, y2, zb2), (x1, y2, zt1), ts),
+        Face(*s1, ts),
+        Face(*s2, ts),
         Face((x1, y1, zb1), (x2, y1, zb2), (x1, y2, zb1), tb, tb_params),
         Face((x1, y1, zt1), (x1, y2, zt1), (x2, y1, zt2), tt, tt_params),
     ]
@@ -564,6 +588,11 @@ def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
     if zbot > min(za, zb, zc):
         raise ValueError(
             f"tri_ramp_prism: zbot ({zbot}) must be <= za/zb/zc ({za}, {zb}, {zc})"
+        )
+    if zbot == max(za, zb, zc):
+        raise ValueError(
+            f"tri_ramp_prism: zbot ({zbot}) must be < at least one of "
+            f"za/zb/zc ({za}, {zb}, {zc}), or the prism has zero volume"
         )
     return Brush(
         [

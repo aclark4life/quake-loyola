@@ -1725,14 +1725,10 @@ def _append_bridge_fascia_text(entities):
         entities.append(brush_ent("func_detail", letter_brushes))
 
 
-def _build_all():
-    """Generate the full bridge geometry before section filtering."""
-    worldspawn_brushes = []
-    entities = []
-    detail_brushes = []
-    bridge_blk_pir_m = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
+def _bridge_cross_strip_x(bridge_blk_pir_m):
+    """Return the sorted parapet-strip centers shared by the deck slabs."""
 
-    cross_strip_x = sorted(
+    return sorted(
         _parapet_block_centers(
             BRIDGE_ARCH_X[0],
             BRIDGE_ARCH_X[1],
@@ -1762,6 +1758,10 @@ def _build_all():
         )
     )
 
+
+def _bridge_deck_bands():
+    """Return the deck-band specs and inner expansion-joint bounds."""
+
     dw_y1a = BRIDGE.y1
     dw_y1b = BRIDGE.y1 + BRIDGE_PAR_W
     dw_y1c = dw_y1b + BRIDGE_DECK_EDGE_CEMENT_W
@@ -1775,7 +1775,11 @@ def _build_all():
         (dw_y2c, dw_y2b, Textures.DECK_EDGE, Textures.GABLE, False, 0, 0, "0 0 0 1 1"),
         (dw_y2b, dw_y2a, Textures.CEMENT, Textures.CEMENT, False, 0, 0, "0 0 0 1 1"),
     )
-    pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
+    return deck_bands, (dw_y1c, dw_y2c)
+
+
+def _bridge_span_boundaries():
+    """Return the x boundaries for the deck-support span segmentation."""
 
     p1, p2, p3 = BRIDGE_ARCH_X[0], BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
     n_center = max(1, round((p3 - p2) / BRIDGE_SEG_W))
@@ -1783,6 +1787,118 @@ def _build_all():
     span_boundaries = [BRIDGE.x1, p1, p2]
     span_boundaries += [p2 + i * step for i in range(1, n_center)]
     span_boundaries += [p3, BRIDGE.x2]
+    return span_boundaries
+
+
+def _add_bridge_parapet_block_span(
+    detail_brushes,
+    bridge_blk_pir_m,
+    span_boundaries,
+    *,
+    label,
+    x1,
+    x2,
+    count,
+    west_margin=None,
+    east_margin=None,
+    n_south=None,
+    y_shift_fn=None,
+):
+    """Add one parapet-block span after checking its available spacing."""
+
+    gap = (x2 - x1) / (count + 1)
+    if west_margin == 0 and east_margin == 0 and gap < bridge_blk_pir_m:
+        raise ValueError(
+            f"{label} parapet-block gap ({gap:.1f}) is tighter than the minimum "
+            f"pier clearance ({bridge_blk_pir_m}) — reduce block count or shorten the "
+            "even-margin spacing before it can safely use margin=0."
+        )
+
+    kwargs = {}
+    if west_margin is not None:
+        kwargs["west_margin"] = west_margin
+    if east_margin is not None:
+        kwargs["east_margin"] = east_margin
+    if n_south is not None:
+        kwargs["n_south"] = n_south
+    if y_shift_fn is not None:
+        kwargs["y_shift_fn"] = y_shift_fn
+
+    _add_parapet_blocks(
+        detail_brushes,
+        x1,
+        x2,
+        count,
+        bridge_blk_pir_m,
+        span_boundaries,
+        **kwargs,
+    )
+
+
+def _add_bridge_parapet_block_spans(detail_brushes, bridge_blk_pir_m, span_boundaries):
+    """Add the fixed parapet-block spans and return their per-span counts."""
+
+    span1_n = 3
+    _add_bridge_parapet_block_span(
+        detail_brushes,
+        bridge_blk_pir_m,
+        span_boundaries,
+        label="Span 1",
+        x1=BRIDGE_ARCH_X[0],
+        x2=BRIDGE_ARCH_X[1],
+        count=span1_n,
+        west_margin=0,
+        east_margin=0,
+    )
+    _add_bridge_parapet_block_span(
+        detail_brushes,
+        bridge_blk_pir_m,
+        span_boundaries,
+        label="Span 2",
+        x1=BRIDGE_ARCH_X[1],
+        x2=BRIDGE_ARCH_X[2],
+        count=4,
+    )
+    span3_n = 3
+    _add_bridge_parapet_block_span(
+        detail_brushes,
+        bridge_blk_pir_m,
+        span_boundaries,
+        label="Span 3",
+        x1=BRIDGE_ARCH_X[2],
+        x2=BRIDGE_ARCH_X[3],
+        count=span3_n,
+        west_margin=0,
+        east_margin=0,
+    )
+    kh_span_n = 3
+    _add_bridge_parapet_block_span(
+        detail_brushes,
+        bridge_blk_pir_m,
+        span_boundaries,
+        label="KH span",
+        x1=BRIDGE.x2,
+        x2=BRIDGE_ARCH_X[4],
+        count=kh_span_n,
+        west_margin=0,
+        east_margin=0,
+        n_south=0,
+        y_shift_fn=east_y_shift,
+    )
+    return span1_n, span3_n, kh_span_n
+
+
+def _build_all():
+    """Generate the full bridge geometry before section filtering."""
+    worldspawn_brushes = []
+    entities = []
+    detail_brushes = []
+    bridge_blk_pir_m = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + BRIDGE_BLK_PIER_CLEARANCE
+
+    cross_strip_x = _bridge_cross_strip_x(bridge_blk_pir_m)
+    deck_bands, deck_joint_y = _bridge_deck_bands()
+    pier6_old_cutoff_x = PIER6_X - BRIDGE_PILLAR_HW
+    span_boundaries = _bridge_span_boundaries()
 
     _build_bridge_deck_slabs(
         detail_brushes,
@@ -1793,7 +1909,7 @@ def _build_all():
         span_boundaries,
         (BRIDGE.y1 + BRIDGE_PAR_W, BRIDGE.y2 - BRIDGE_PAR_W),
     )
-    _build_bridge_expansion_joints(entities, (dw_y1c, dw_y2c))
+    _build_bridge_expansion_joints(entities, deck_joint_y)
 
     span4_west_mid = (BRIDGE.x2 + KNOTT_ENT_WALK_X1) / 2
     _build_bridge_parapet_shells(
@@ -1803,69 +1919,8 @@ def _build_all():
         span4_west_mid,
     )
 
-    span1_n = 3
-    span1_gap = (BRIDGE_ARCH_X[1] - BRIDGE_ARCH_X[0]) / (span1_n + 1)
-    if span1_gap < bridge_blk_pir_m:
-        raise ValueError(
-            f"Span 1 parapet-block gap ({span1_gap:.1f}) is tighter than the minimum "
-            f"pier clearance ({bridge_blk_pir_m}) — reduce block count or shorten the "
-            "even-margin spacing before it can safely use margin=0."
-        )
-    _add_parapet_blocks(
-        detail_brushes,
-        BRIDGE_ARCH_X[0],
-        BRIDGE_ARCH_X[1],
-        span1_n,
-        bridge_blk_pir_m,
-        span_boundaries,
-        west_margin=0,
-        east_margin=0,
-    )
-    _add_parapet_blocks(
-        detail_brushes,
-        BRIDGE_ARCH_X[1],
-        BRIDGE_ARCH_X[2],
-        4,
-        bridge_blk_pir_m,
-        span_boundaries,
-    )
-    span3_n = 3
-    span3_gap = (BRIDGE_ARCH_X[3] - BRIDGE_ARCH_X[2]) / (span3_n + 1)
-    if span3_gap < bridge_blk_pir_m:
-        raise ValueError(
-            f"Span 3 parapet-block gap ({span3_gap:.1f}) is tighter than the minimum "
-            f"pier clearance ({bridge_blk_pir_m}) — reduce block count or shorten the "
-            "even-margin spacing before it can safely use margin=0."
-        )
-    _add_parapet_blocks(
-        detail_brushes,
-        BRIDGE_ARCH_X[2],
-        BRIDGE_ARCH_X[3],
-        span3_n,
-        bridge_blk_pir_m,
-        span_boundaries,
-        west_margin=0,
-        east_margin=0,
-    )
-    kh_span_n = 3
-    kh_span_gap = (BRIDGE_ARCH_X[4] - BRIDGE.x2) / (kh_span_n + 1)
-    if kh_span_gap < bridge_blk_pir_m:
-        raise ValueError(
-            f"KH span parapet-block gap ({kh_span_gap:.1f}) is tighter than the "
-            f"minimum pier clearance ({bridge_blk_pir_m}) — reduce block count or "
-            "shorten the even-margin spacing before it can safely use margin=0."
-        )
-    _add_parapet_blocks(
-        detail_brushes,
-        BRIDGE.x2,
-        BRIDGE_ARCH_X[4],
-        kh_span_n,
-        bridge_blk_pir_m,
-        span_boundaries,
-        west_margin=0,
-        east_margin=0,
-        n_south=0,
-        y_shift_fn=east_y_shift,
+    span_counts = _add_bridge_parapet_block_spans(
+        detail_brushes, bridge_blk_pir_m, span_boundaries
     )
 
     _build_bridge_superstructure(
@@ -1874,7 +1929,7 @@ def _build_all():
         bridge_blk_pir_m,
         pier6_old_cutoff_x,
         span_boundaries,
-        (span1_n, span3_n, kh_span_n),
+        span_counts,
         span4_west_mid,
     )
 
