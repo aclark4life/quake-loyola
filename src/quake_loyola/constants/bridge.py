@@ -26,6 +26,7 @@ BRIDGE_DECK_CROSS_STRIP_HW = BRIDGE_BLK_HW  # Matches the parapet block half-wid
 BRIDGE_DECK_CROSS_STRIP_DROP = 1  # Embed 1 unit to avoid coplanar faces.
 BRIDGE_DECK_CROSS_STRIP_H = 2  # Decal thickness.
 BRIDGE_JOINT_METAL_HW = 6  # Half-width of the center expansion-joint metal strip.
+BRIDGE_JOINT_GAP_HW = 1  # Half-width of the dark joint-plate gap seam.
 BRIDGE_JOINT_CEMENT_W = 20  # Width of each cement band flanking the metal strip.
 BRIDGE_DZ1, BRIDGE_DZ2 = (
     256,

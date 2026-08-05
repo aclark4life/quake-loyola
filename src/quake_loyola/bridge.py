@@ -34,6 +34,7 @@ from .constants.bridge import (
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
     BRIDGE_JOINT_CEMENT_W,
+    BRIDGE_JOINT_GAP_HW,
     BRIDGE_JOINT_METAL_HW,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIER_LINING_MARGIN,
@@ -432,16 +433,19 @@ def _build_bridge_expansion_joints(
     joint_brushes = []
     for px in BRIDGE_ARCH_X:
         m1, m2 = px - BRIDGE_JOINT_METAL_HW, px + BRIDGE_JOINT_METAL_HW
+        g1, g2 = px - BRIDGE_JOINT_GAP_HW, px + BRIDGE_JOINT_GAP_HW
         c1w, c2w = m1 - BRIDGE_JOINT_CEMENT_W, m1
         c1e, c2e = m2, m2 + BRIDGE_JOINT_CEMENT_W
         t1w, t2w = c1w - BRIDGE_JOINT_CEMENT_W, c1w
         t1e, t2e = c2e, c2e + BRIDGE_JOINT_CEMENT_W
-        joint_xs = [t1w, t2w, c1w, c2w, m1, m2, c1e, c2e, t1e, t2e]
+        joint_xs = [t1w, t2w, c1w, c2w, m1, g1, g2, m2, c1e, c2e, t1e, t2e]
         joint_zts = {x: deck_top_z(x) + BRIDGE_DECK_CROSS_STRIP_DROP for x in joint_xs}
         for x1, x2, tex, tb_params in (
             (t1w, t2w, Textures.DECK_EDGE, "0 0 0 1 1"),
             (c1w, c2w, Textures.CEMENT, "0 0 0 1 1"),
-            (m1, m2, Textures.JOINT_METAL, "0 0 90 1 1"),
+            (m1, g1, Textures.JOINT_METAL, "0 0 90 1 1"),
+            (g1, g2, Textures.JOINT_GAP, "0 0 90 1 1"),
+            (g2, m2, Textures.JOINT_METAL, "0 0 90 1 1"),
             (c1e, c2e, Textures.CEMENT, "0 0 0 1 1"),
             (t1e, t2e, Textures.DECK_EDGE, "0 0 0 1 1"),
         ):
