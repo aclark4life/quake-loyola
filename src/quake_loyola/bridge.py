@@ -33,6 +33,8 @@ from .constants.bridge import (
     BRIDGE_FASCIA_PX_H,
     BRIDGE_FASCIA_PX_W,
     BRIDGE_FASCIA_TEXT,
+    BRIDGE_JOINT_CEMENT_W,
+    BRIDGE_JOINT_METAL_HW,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIER_LINING_MARGIN,
     BRIDGE_PIER_LINING_THICK,
@@ -495,6 +497,44 @@ def _build_all():
             )
         )
     ENTITIES.append(brush_ent("func_illusionary", _cross_strip_brushes))
+
+    # Expansion-joint bands at each pier: a center metal strip, then cement,
+    # then the same tile texture used along the sides of the deck floor,
+    # echoing the joint seen crossing the deck in the reference photo
+    # (ref/bridge-joint.png).
+    _joint_brushes = []
+    for _px in BRIDGE_ARCH_X:
+        _m1, _m2 = _px - BRIDGE_JOINT_METAL_HW, _px + BRIDGE_JOINT_METAL_HW
+        _c1w, _c2w = _m1 - BRIDGE_JOINT_CEMENT_W, _m1
+        _c1e, _c2e = _m2, _m2 + BRIDGE_JOINT_CEMENT_W
+        _t1w, _t2w = _c1w - BRIDGE_JOINT_CEMENT_W, _c1w
+        _t1e, _t2e = _c2e, _c2e + BRIDGE_JOINT_CEMENT_W
+        _joint_xs = [_t1w, _t2w, _c1w, _c2w, _m1, _m2, _c1e, _c2e, _t1e, _t2e]
+        _joint_zts = {
+            _x: deck_top_z(_x) + BRIDGE_DECK_CROSS_STRIP_DROP for _x in _joint_xs
+        }
+        for _x1, _x2, _tex, _tb_params in (
+            (_t1w, _t2w, Textures.DECK_EDGE, "0 0 0 1 1"),
+            (_c1w, _c2w, Textures.CEMENT, "0 0 0 1 1"),
+            (_m1, _m2, Textures.JOINT_METAL, "0 0 90 1 1"),
+            (_c1e, _c2e, Textures.CEMENT, "0 0 0 1 1"),
+            (_t1e, _t2e, Textures.DECK_EDGE, "0 0 0 1 1"),
+        ):
+            _joint_brushes.append(
+                ramp_slab(
+                    _x1,
+                    _x2,
+                    _dw_y1c,
+                    _dw_y2c,
+                    _joint_zts[_x1] - BRIDGE_DECK_CROSS_STRIP_H,
+                    _joint_zts[_x2] - BRIDGE_DECK_CROSS_STRIP_H,
+                    _joint_zts[_x1],
+                    _joint_zts[_x2],
+                    _tex,
+                    tb_params=_tb_params,
+                )
+            )
+    ENTITIES.append(brush_ent("func_illusionary", _joint_brushes))
 
     BRUSHES.append(
         box(

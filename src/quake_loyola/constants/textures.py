@@ -47,6 +47,7 @@ class Textures:
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"
     ROOF_KH = "gn_grey2"  # from alkaline.wad; KH roof deck
+    JOINT_METAL = "gn_grey2"  # from alkaline.wad; bridge deck expansion-joint strip
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
     SIDEWALK_JOINT = FENCE  # same texture as the iron fence; expansion-joint filler
