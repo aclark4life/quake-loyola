@@ -363,6 +363,12 @@ def _build_knott_terrain():
                 gz2a = _sgrid_z + gcol2[_seg_i]
                 gz2b = _sgrid_z + gcol2[_seg_i + 1]
 
+                if _seg_i < len(_far_south_y) - 2:
+                    y2_ext = y2 - _WRAMP_OVR
+                    gz1b = gz1a + (gz1b - gz1a) * (y2_ext - y1) / (y2 - y1)
+                    gz2b = gz2a + (gz2b - gz2a) * (y2_ext - y1) / (y2 - y1)
+                    y2 = y2_ext
+
                 if gx1 == KNOTT.x1 and _seg_i == 0:
                     BRUSHES.append(
                         tri_ramp_prism(
