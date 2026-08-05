@@ -1,6 +1,7 @@
 import random
 
 from ..constants import (
+    ARCH_SLAB_W,
     BRIDGE,
     CHARLES_WALK_W,
     DORM,
@@ -166,7 +167,12 @@ def _build_vegetation(ENTITIES):
         ):
             et_placed.append((cx, cy))
 
-    for target in ((3349, -195), (3215, -461)):
+    # Clear the tree nearest each end of the live Ennis east teleport arch
+    # footprint (see entities/spawns.py:_append_ennis_east_teleport) so
+    # vegetation never overlaps the teleport trigger/arch.
+    _ennis_arch_x1 = WORLD_X2_EXT - WALL_T - ARCH_SLAB_W
+    _ennis_arch_x2 = WORLD_X2_EXT - WALL_T
+    for target in ((_ennis_arch_x1, ENNIS_Y), (_ennis_arch_x2, ENNIS_Y)):
         et_placed.sort(key=lambda p, t=target: (p[0] - t[0]) ** 2 + (p[1] - t[1]) ** 2)
         et_placed = et_placed[1:]
     for cx, cy in et_placed:

@@ -279,7 +279,6 @@ from .derived import (
     ft_to_units,
     pier6_east_face_x_at_y,
     pier6_west_face_x_at_y,
-    pier6_west_face_y_at_x,
 )
 from .dorm import (
     DORM_BRICK_GATE_H,
@@ -858,7 +857,6 @@ __all__ = [
     "PIER6_X",
     "pier6_east_face_x_at_y",
     "pier6_west_face_x_at_y",
-    "pier6_west_face_y_at_x",
     "PIER6_ROTATION_DEG",
     "PIER6_ROTATION_MARGIN",
     "ROAD_VERGE_BUFFER",

@@ -63,7 +63,10 @@ These are rough estimates (±10–15%) from manual pixel-to-scale-bar
 measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 ``WORLD_Y2`` were scaled from their previous values to match this target
 (X: -5135..7708 = 850 ft; Y: -6642..4085 = 710 ft), keeping Charles Street's
-centerline at X=0. All other module geometry (bridge, dorms, Knott Hall,
+centerline at X=0. Since then, ``WORLD_X2`` has grown to accommodate the
+east-side Ennis Parallel/Knott driveway extension (currently X: -5135..9100
+≈ 937 ft; Y: -6642..4085 ≈ 706 ft, with the true walled boundary extending to
+``WORLD_X2_EXT`` = 9612 ≈ 969 ft). All other module geometry (bridge, dorms, Knott Hall,
 terrain) was, at the time, disabled or scoped down via the per-section flags in
 ``constants/flags.py`` (bridge span flags, west-campus section flags,
 ``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_ENABLED_DETAILS``,

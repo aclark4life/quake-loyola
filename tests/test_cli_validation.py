@@ -12,6 +12,7 @@ it must restore FLAGS/BUILD and delete the file afterward so it doesn't
 leak state into other tests (e.g. the golden-hash regression suite, which
 assumes hardcoded defaults)."""
 
+import platform
 import unittest
 from unittest import mock
 
@@ -247,7 +248,10 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
         self.runner = CliRunner()
         self.map_path = config.REPO_ROOT / "loyola.map"
         self.tools_dir = (
-            config.REPO_ROOT / ".tools" / "ericw-tools-v0.18.1-Darwin" / "bin"
+            config.REPO_ROOT
+            / ".tools"
+            / f"ericw-tools-v0.18.1-{platform.system()}"
+            / "bin"
         )
         self.tools_dir.mkdir(parents=True, exist_ok=True)
         for tool in ("qbsp", "vis", "light"):

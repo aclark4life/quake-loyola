@@ -333,11 +333,6 @@ def pier6_west_face_x_at_y(y):
     return PIER6_X - BRIDGE_PILLAR_HW / _PIER6_COS - _PIER6_TAN * y
 
 
-def pier6_west_face_y_at_x(x):
-    """Return the Y where the rotated west face crosses a given X."""
-    return (PIER6_X - BRIDGE_PILLAR_HW / _PIER6_COS - x) / _PIER6_TAN
-
-
 def pier6_east_face_x_at_y(y):
     """Return the rotated east-face X position for a given Y."""
     return PIER6_X + BRIDGE_PILLAR_HW / _PIER6_COS - _PIER6_TAN * y
