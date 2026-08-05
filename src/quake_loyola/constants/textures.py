@@ -51,7 +51,7 @@ class Textures:
     JOINT_GAP = "black"  # from quake101.wad; dark shadow-gap seam between joint plates
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
-    SIDEWALK_JOINT = FENCE  # same texture as the iron fence; expansion-joint filler
+    SIDEWALK_JOINT = JOINT_GAP  # dark shadow-gap seam between sidewalk tiles
     SKY = SKY_PRESETS[_get_build("sky_preset")]
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
