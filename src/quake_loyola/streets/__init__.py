@@ -8,7 +8,7 @@ curbs, lamps, trees, driveways, and the rest of ``STREETS_ENABLED_DETAILS``.
 
 from ..constants.flags import STREETS_ENABLED_DETAILS
 from .details import _build_street_details
-from .shell import _build_street_world_shell
+from .shell import _build_street_world_shell, _build_world_seal
 
 
 def build():
@@ -19,6 +19,10 @@ def build():
         including the roadway, sidewalks, tunnel, and related detail brushes.
     """
     BRUSHES, ENTITIES = _build_street_world_shell()
-    if not STREETS_ENABLED_DETAILS:
-        return BRUSHES, ENTITIES
-    return _build_street_details(BRUSHES, ENTITIES)
+    if STREETS_ENABLED_DETAILS:
+        BRUSHES, ENTITIES = _build_street_details(BRUSHES, ENTITIES)
+    # The world-seal brushes are global leak-prevention geometry, not a
+    # cosmetic detail, so they must always be built regardless of the
+    # STREETS_ENABLED_DETAILS flag.
+    BRUSHES.extend(_build_world_seal())
+    return BRUSHES, ENTITIES

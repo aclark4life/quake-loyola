@@ -137,6 +137,9 @@ def _terrain_z(x, y):
     return FLOOR_Z2 + z1 + (z2 - z1) * tx
 
 
+_WCT_OVR = 20  # Overlap extension for adjacent terrain rows; see build().
+
+
 def build():
     """Build the west campus terrain brushes."""
 
@@ -144,8 +147,6 @@ def build():
         return [], []
     BRUSHES = []
     ENTITIES = []
-
-    _WCT_OVR = 20
 
     for (wx1, wcol1), (wx2, wcol2) in zip(
         zip(_wct_x, _wct_cols, strict=False),
@@ -157,7 +158,16 @@ def build():
             z_nw, z_sw = wcol1[i], wcol1[i + 1]
             z_ne, z_se = wcol2[i], wcol2[i + 1]
             if i < len(wct_y) - 2:
-                y2 = y2 - _WCT_OVR
+                y2_ext = y2 - _WCT_OVR
+                # Extrapolate the south edge's Z along the same slope used
+                # for the (unextended) row instead of reusing the
+                # unextended z_sw/z_se, so the overlap region stays on the
+                # same plane _terrain_z() would interpolate (previously
+                # this left the overlap diverging from _terrain_z() by a
+                # few units near steep rows).
+                z_sw = z_nw + (z_sw - z_nw) * (y2_ext - y1) / (y2 - y1)
+                z_se = z_ne + (z_se - z_ne) * (y2_ext - y1) / (y2 - y1)
+                y2 = y2_ext
 
             mx, my = (wx1 + wx2) / 2, (y1 + y2) / 2
             mz = (z_nw + z_ne + z_sw + z_se) / 4

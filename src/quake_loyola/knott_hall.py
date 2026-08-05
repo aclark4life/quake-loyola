@@ -84,15 +84,15 @@ NORTH_X2 = X2 - CORNER_CUT_W_NE
 # local terrain undulation.
 GROUND_Z = -16
 
-# Front openings (all start at bridge-deck height and run up to the roof;
-# below bridge-deck height the wall is solid): a center opening on the
-# north wall, and matching openings on the south-facing notch-ledge walls
-# (the walls that bound the NW/NE corner cuts from the south) flanking it.
-# The center and west openings share the same size; the east one is
-# narrower.
+# Front openings (start one beam segment (104 units) above bridge-deck
+# height and run up to the roof; below that the wall is solid, including
+# across the deck itself): a center opening on the north wall, and
+# matching openings on the south-facing notch-ledge walls (the walls that
+# bound the NW/NE corner cuts from the south) flanking it. The center and
+# west openings share the same size; the east one is narrower.
 OPENING_BOTTOM_Z = BRIDGE_DZ2 + 104  # Bumped up one beam segment (104 units)
 # so the former bottom-most opening segment is now the top-most segment
-# instead (paired with the BUILDING_H increase below).
+# instead (paired with the BUILDING_H reduction above).
 CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
@@ -363,6 +363,12 @@ def _wall_with_opening(
 
 
 def build():
+    """Build the Knott Hall shell: four walls and a roof, no floors.
+
+    Returns:
+        tuple[list, list]: ``(brushes, entities)`` for the building shell,
+        or ``([], [])`` if ``KNOTT_ENABLED`` is off.
+    """
     if not KNOTT_ENABLED:
         return [], []
 

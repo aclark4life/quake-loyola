@@ -2,6 +2,7 @@ from ..constants.bridge import (
     BRIDGE_DZ2,
 )
 from ..constants.derived import (
+    BASEMENT_FLOOR_Z1,
     BRIDGE,
     DORM,
     MANHOLE_R,
@@ -201,3 +202,24 @@ def _build_street_world_shell():
         )
     )
     return BRUSHES, ENTITIES
+
+
+def _build_world_seal():
+    """Six large SKY brushes forming a leak-proof shell around the entire
+    world bounding box (with generous margin), independent of any other
+    module's geometry. This is global leak-prevention geometry, not a
+    cosmetic detail, so it must always be built regardless of whether
+    ``STREETS_ENABLED_DETAILS`` is on.
+    """
+    seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
+    seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256
+    seal_z1, seal_z2 = BASEMENT_FLOOR_Z1 - 256, WORLD_Z2 + 512
+    ST = 64
+    return [
+        box(seal_x1, seal_y1, seal_z1, seal_x2, seal_y2, seal_z1 + ST, Textures.SKY),
+        box(seal_x1, seal_y1, seal_z2 - ST, seal_x2, seal_y2, seal_z2, Textures.SKY),
+        box(seal_x1, seal_y1, seal_z1, seal_x1 + ST, seal_y2, seal_z2, Textures.SKY),
+        box(seal_x2 - ST, seal_y1, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY),
+        box(seal_x1, seal_y1, seal_z1, seal_x2, seal_y1 + ST, seal_z2, Textures.SKY),
+        box(seal_x1, seal_y2 - ST, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY),
+    ]

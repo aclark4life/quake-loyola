@@ -1,16 +1,15 @@
 from ..constants import (
     BRIDGE,
+    CHARLES_PLT_BR_X,
     CHARLES_PLT_X_OUT,
     CHARLES_PLT_X_RET,
+    CHARLES_PLT_Y_OUT,
+    CHARLES_PLT_Y_RET,
     CHARLES_Y1,
     CHARLES_Y2,
     DORM,
-    ENNIS_HW,
-    ENNIS_Y,
     ENTITIES_ENABLED_PLATFORM,
     FLOOR_Z2,
-    KNOTT,
-    KNOTT_DRIVEWAY_RD_X1,
     KNOTT_DRIVEWAY_Y1,
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
@@ -35,9 +34,6 @@ def _build_platform(ENTITIES):
     CHARLES_PLT_SPEED = 180
 
     CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
-    CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + 16
-    CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
-    CHARLES_PLT_BR_X = KNOTT_DRIVEWAY_RD_X1 + KNOTT.driveway_hw // 2
 
     platform_z_charles = ROAD_Z + CHARLES_PLT_H // 2
     platform_z_flat = FLOOR_Z2 + 2 + CHARLES_PLT_H // 2
@@ -58,7 +54,7 @@ def _build_platform(ENTITIES):
             [cs_platform_brush],
             target="cs_pc1",
             speed=str(CHARLES_PLT_SPEED),
-            minlight="255",
+            _minlight="255",
         )
     )
 

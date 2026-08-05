@@ -70,15 +70,53 @@ class BasementToggleTests(unittest.TestCase):
 
 
 class StreetDetailsToggleTests(unittest.TestCase):
-    def test_disabling_details_reduces_brush_count(self):
-        full_brushes, _ = streets.build()
+    def test_world_seal_always_present_regardless_of_details_flag(self):
+        # Regression test for a bug where the global SKY leak-seal brushes
+        # lived inside _build_street_details() and were only built when
+        # STREETS_ENABLED_DETAILS was True, so turning details off could
+        # leave the map unsealed (a leak). The seal must always be present.
+        original = streets.STREETS_ENABLED_DETAILS
+        try:
+            streets.STREETS_ENABLED_DETAILS = False
+            disabled_brushes, _ = streets.build()
+            streets.STREETS_ENABLED_DETAILS = True
+            enabled_brushes, _ = streets.build()
+        finally:
+            streets.STREETS_ENABLED_DETAILS = original
+
+        def sky_brush_count(brushes):
+            from quake_loyola.constants import Textures
+
+            return sum(
+                1 for b in brushes if any(face.tex == Textures.SKY for face in b.faces)
+            )
+
+        self.assertGreaterEqual(sky_brush_count(disabled_brushes), 6)
+        self.assertEqual(
+            sky_brush_count(disabled_brushes), sky_brush_count(enabled_brushes)
+        )
+
+    def test_disabling_details_removes_detail_entities(self):
+        # Top-level world BRUSHES no longer differ: the global leak-seal
+        # brushes (previously only added when details were built) are now
+        # always appended in streets/__init__.py regardless of this flag,
+        # since they're leak-prevention geometry, not a cosmetic detail.
+        # The actual cosmetic detail brushes (curbs, lamps, trees,
+        # driveways, etc.) are wrapped into func_detail brush entities, so
+        # the toggle's effect shows up in ENTITIES instead.
+        full_brushes, full_entities = streets.build()
         original = streets.STREETS_ENABLED_DETAILS
         streets.STREETS_ENABLED_DETAILS = False
         try:
-            reduced_brushes, _ = streets.build()
+            reduced_brushes, reduced_entities = streets.build()
         finally:
             streets.STREETS_ENABLED_DETAILS = original
-        self.assertLess(len(reduced_brushes), len(full_brushes))
+        self.assertEqual(len(reduced_brushes), len(full_brushes))
+        self.assertLess(len(reduced_entities), len(full_entities))
+        self.assertFalse(
+            any(ent.classname == "func_detail" for ent in reduced_entities)
+        )
+        self.assertTrue(any(ent.classname == "func_detail" for ent in full_entities))
 
 
 class NeTerrainToggleTests(unittest.TestCase):

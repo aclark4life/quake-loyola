@@ -1616,9 +1616,6 @@ def _build_all():
     if letter_brushes:
         ENTITIES.append(brush_ent("func_detail", letter_brushes))
 
-    if DETAIL_BRUSHES:
-        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
-
     return BRUSHES, ENTITIES
 
 

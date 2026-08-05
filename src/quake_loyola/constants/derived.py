@@ -201,7 +201,6 @@ WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
 # Knott second-floor walkway landing height.
 WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL_T
 WALL_T = 16
-WIN_HALF = 24
 WORLD_X1 = -5135  # West world bound.
 BRIDGE_X1 = -1967  # West bridge bound.
 BRIDGE_SEG_W = (BRIDGE_X2 - BRIDGE_X1) / BRIDGE_SEG_SPAN_W

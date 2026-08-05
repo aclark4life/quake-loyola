@@ -1116,7 +1116,7 @@ def _build_dorms():
         eave_z, ridge_z, slab_t = (
             FLOOR_Z2 + DORM_H + DORM.wall_t,
             FLOOR_Z2 + DORM_H + DORM.wall_t + DORM_ROOF_H,
-            16,
+            DORM_SLAB_T,
         )
         depth = 6
 

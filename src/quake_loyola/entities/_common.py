@@ -3,18 +3,13 @@
 from ..constants import (
     BRIDGE_ARCH_X,
     BRIDGE_CENTER_SPAN_OFFSET,
-    DORM_SOUTH1_Y1,
-    DORM_SOUTH1_Y2,
-    DORM_SOUTH2_Y1,
-    DORM_SOUTH2_Y2,
-    FLOOR_Z2,
+    DORM_SOUTH1_CY,  # noqa: F401 - re-exported for entities/{monsters,pickups,spawns}.py
+    DORM_SOUTH2_CY,  # noqa: F401 - re-exported for entities/{pickups,spawns}.py
+    ROAD_Z,  # noqa: F401 - re-exported for entities/{lights,monsters,pickups,platform,spawns}.py
 )
 
-ROAD_Z = FLOOR_Z2 + 8
 CS_X1, CS_X2 = BRIDGE_ARCH_X[1], BRIDGE_ARCH_X[2]
 _CS_DY, _CS_DZ = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
-DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
-DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 
 
 def _cs_offset(x, y, z):

@@ -1,7 +1,6 @@
 import math
 
 from ..constants.derived import (
-    BASEMENT_FLOOR_Z1,
     CHARLES_CRN_R,
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
@@ -34,7 +33,6 @@ from ..constants.derived import (
     WORLD_X2_EXT,
     WORLD_Y1,
     WORLD_Y2,
-    WORLD_Z2,
 )
 from ..constants.ennis import (
     ENNIS_CURB_BULGE_LEN,
@@ -1397,31 +1395,10 @@ def _build_street_details(BRUSHES, ENTITIES):
     if DETAIL_BRUSHES:
         DETAIL_BRUSHES = punch_manhole_detail(DETAIL_BRUSHES)
         ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
-    seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
-    seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256
-    seal_z1, seal_z2 = BASEMENT_FLOOR_Z1 - 256, WORLD_Z2 + 512
-    ST = 64
-    BRUSHES.extend(
-        [
-            box(
-                seal_x1, seal_y1, seal_z1, seal_x2, seal_y2, seal_z1 + ST, Textures.SKY
-            ),
-            box(
-                seal_x1, seal_y1, seal_z2 - ST, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),
-            box(
-                seal_x1, seal_y1, seal_z1, seal_x1 + ST, seal_y2, seal_z2, Textures.SKY
-            ),
-            box(
-                seal_x2 - ST, seal_y1, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),
-            box(
-                seal_x1, seal_y1, seal_z1, seal_x2, seal_y1 + ST, seal_z2, Textures.SKY
-            ),
-            box(
-                seal_x1, seal_y2 - ST, seal_z1, seal_x2, seal_y2, seal_z2, Textures.SKY
-            ),
-        ]
-    )
+
+    # NOTE: the global world-seal brushes used to live here, but that made
+    # leak-prevention geometry conditional on STREETS_ENABLED_DETAILS. They
+    # now live in shell.py::_build_world_seal() and are always built by
+    # streets/__init__.py::build() regardless of this flag.
 
     return BRUSHES, ENTITIES

@@ -199,7 +199,11 @@ def config_reset(
         f"Delete {config.CONFIG_PATH} and restore all defaults?"
     ):
         raise typer.Abort()
-    config.reset()
+    try:
+        config.reset()
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
     typer.echo("Reset to defaults.")
 
 
@@ -218,6 +222,9 @@ def generate() -> None:
         _generate_main()
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    except ValueError as exc:
+        typer.echo(f"Map assembly failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     except OSError as exc:
         typer.echo(f"Write failed: {exc}", err=True)

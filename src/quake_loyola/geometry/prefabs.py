@@ -494,7 +494,12 @@ def stairwell(
 
 def elevator_shaft(x1, x2, y1, y2, ground_z, top_z, door_openings, wall_t, tex):
     """A rectangular shaft (e.g. an elevator core) with solid walls on
-    three sides and per-floor door openings on the west (``x1``) face.
+    the south (``y1``), west (``x1``), and east (``x2``) sides, and
+    per-floor door openings on the west face. The north (``y2``) side is
+    left open by design so the shaft can be dropped against and merged
+    with an adjoining floor/corridor wall without creating a double wall;
+    callers that need a fully enclosed shaft must cap the north side
+    themselves.
 
     ``door_openings`` is a list of ``(y1, z1, y2, z2)`` tuples in the
     ``layered_wall_y`` opening format — typically one tuple per floor.
