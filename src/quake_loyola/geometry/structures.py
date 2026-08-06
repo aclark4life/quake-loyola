@@ -14,6 +14,36 @@ from .primitives import (
 )
 
 
+def sidewalk_panel_spans(v1, v2, slab_len, gap, offset=0):
+    """Return the ``(panels, joints)`` spans tiling ``[v1, v2)`` into a walk.
+
+    Panels are ``slab_len`` long and separated by ``gap``-wide joints. The last
+    panel is truncated at ``v2`` and no trailing joint is emitted, so the run
+    always ends flush with ``v2``. ``offset`` shifts the panel grid backwards by
+    that many units, so a parallel run (a curb beside a walk, say) can be given
+    joints that fall in different places. Returns two lists of ``(start, end)``
+    pairs.
+    """
+    if slab_len <= 0:
+        raise ValueError(f"sidewalk_panel_spans: slab_len must be > 0, got {slab_len}")
+    if gap < 0:
+        raise ValueError(f"sidewalk_panel_spans: gap must be >= 0, got {gap}")
+    if offset < 0:
+        raise ValueError(f"sidewalk_panel_spans: offset must be >= 0, got {offset}")
+    panels, joints = [], []
+    step = slab_len + gap
+    v = v1 - offset % step
+    while v < v2:
+        panel_end = min(v + slab_len, v2)
+        # An offset that lands inside a joint clips away the leading panel.
+        if panel_end > max(v, v1):
+            panels.append((max(v, v1), panel_end))
+        v += step
+        if v < v2:
+            joints.append((max(panel_end, v1), min(v, v2)))
+    return panels, joints
+
+
 def tile_grid_origins(width, height, tile=34, gap=3):
     """Return centered lower-left origins for a rectangular tile grid.
 

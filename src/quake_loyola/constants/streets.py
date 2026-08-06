@@ -15,6 +15,15 @@ CHARLES_WALK_H = 8
 CHARLES_WALK_W = 80
 
 STREET_CHARLES_CURB_W = 8
+# Sidewalk panel pitch: SW_SLAB_LEN of walking surface, then a dark
+# SIDEWALK_JOINT stripe of SW_GAP. Shared by Charles St, Ennis Rd, and the
+# Knott driveway walks so panels read as one paving system.
+STREET_SW_SLAB_LEN = 80
+STREET_SW_GAP = 2
+# Curbs are poured in longer sections than sidewalk panels, and their joints
+# are offset so they never line up with those of the walk running beside them.
+STREET_CURB_SLAB_LEN = 124
+STREET_CURB_JOINT_OFFSET = 60
 STREET_DIV_HW = (
     6  # carved centerline slot half-width (doubled stripe thickness; see streets.py)
 )

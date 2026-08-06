@@ -65,6 +65,8 @@ from ..constants.streets import (
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
+    STREET_SW_GAP,
+    STREET_SW_SLAB_LEN,
 )
 from ..constants.textures import (
     Textures,
@@ -344,8 +346,8 @@ def _make_street_detail_layout():
         "road_cx": road_cx,
         "west_lane_line_x": (ROAD_X1 + road_cx - STREET_DIV_HW) / 2,
         "east_lane_line_x": (road_cx + STREET_DIV_HW + ROAD_X2) / 2,
-        "sw_slab_len": 80,
-        "sw_gap": 2,
+        "sw_slab_len": STREET_SW_SLAB_LEN,
+        "sw_gap": STREET_SW_GAP,
         "ennis_road_tt_params": "0 0 90 1 1",
         "ennis_center_y": ENNIS_Y + ENNIS_WIDEN_N / 2 + ENNIS_DIVIDER_EXTRA_N,
     }

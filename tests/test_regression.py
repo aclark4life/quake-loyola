@@ -18,9 +18,9 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # ql.toml with overrides would otherwise change brush/entity counts and the
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
-EXPECTED_BRUSHES = 1290
+EXPECTED_BRUSHES = 1460
 EXPECTED_ENTITIES = 102
-EXPECTED_MD5 = "6988f84f3640d7c18ae125992f37797e"
+EXPECTED_MD5 = "2f783a33b27f8d0124a1cd76b8650cf3"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
