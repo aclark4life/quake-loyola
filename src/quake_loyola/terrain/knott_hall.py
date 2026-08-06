@@ -236,15 +236,29 @@ def _append_knott_driveway_slabs(brushes):
         KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
         Textures.CEMENT,
     )
+    # The east side is a curb rather than a sidewalk: an ENNIS_CURB_W cement
+    # strip at the roadbed edge with ground behind it. It runs the full length
+    # of the driveway and continues north through the extension (see
+    # _append_knott_driveway_extension) up to the Ennis sidewalk.
     _append_sloped_sidewalk_slab(
         brushes,
         KNOTT_DRIVEWAY_ES_X1,
-        KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
         KNOTT_DRIVEWAY_Y1,
         KNOTT_DRIVEWAY_Y2,
         KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
         KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
         Textures.CEMENT,
+    )
+    _append_sloped_sidewalk_slab(
+        brushes,
+        KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+        KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_Y1,
+        KNOTT_DRIVEWAY_Y2,
+        KNOTT_DRIVEWAY_ZT_S + CHARLES_WALK_H,
+        KNOTT_DRIVEWAY_ZT_N + CHARLES_WALK_H,
+        Textures.GROUND,
     )
 
 
@@ -802,11 +816,34 @@ def _append_knott_driveway_extension(brushes):
         )
     )
 
+    # Continue the driveway's east curb north: an ENNIS_CURB_W cement strip at
+    # the roadbed edge backed by ground, up to the Ennis sidewalk, which then
+    # crosses the full width in cement.
+    _append_flat_sidewalk_slab(
+        brushes,
+        KNOTT_DRIVEWAY_ES_X1,
+        KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+        KNOTT_DRIVEWAY_EXT_Y1,
+        ENNIS_SW_EDGE,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.CEMENT,
+    )
+    _append_flat_sidewalk_slab(
+        brushes,
+        KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
+        KNOTT_DRIVEWAY_ES_X2,
+        KNOTT_DRIVEWAY_EXT_Y1,
+        ENNIS_SW_EDGE,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.GROUND,
+    )
     _append_flat_sidewalk_slab(
         brushes,
         KNOTT_DRIVEWAY_ES_X1,
         KNOTT_DRIVEWAY_ES_X2,
-        KNOTT_DRIVEWAY_EXT_Y1,
+        ENNIS_SW_EDGE,
         ENNIS_SW_EDGE + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
