@@ -83,8 +83,12 @@ class Face:
     def rotated_z(self, angle_deg: float, cx: float = 0.0, cy: float = 0.0) -> Face:
         """Return a copy rotated in the XY plane about ``(cx, cy)``.
 
-        Rotated coordinates are rounded to 0.1-unit precision so thin faces
-        stay intact while qbsp-sensitive floating-point noise is reduced.
+        Rotated coordinates are rounded to 1e-6 units — enough to keep the
+        output byte-identical across platforms whose ``sin``/``cos`` differ in
+        the last bits, while staying fine enough that faces which were
+        coplanar before the rotation stay coplanar after it. Coarser rounding
+        (0.1, or even 1e-4) skews neighbouring faces off their shared plane
+        and makes qbsp emit "New portal was clipped away" warnings.
         """
         rad = math.radians(angle_deg)
         cos_a, sin_a = math.cos(rad), math.sin(rad)
@@ -92,8 +96,8 @@ class Face:
         def r(p: Point) -> Point:
             x, y = p[0] - cx, p[1] - cy
             return (
-                round(cx + x * cos_a - y * sin_a, 1),
-                round(cy + x * sin_a + y * cos_a, 1),
+                round(cx + x * cos_a - y * sin_a, 6),
+                round(cy + x * sin_a + y * cos_a, 6),
                 p[2],
             )
 

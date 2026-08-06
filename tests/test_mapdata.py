@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from quake_loyola.mapdata import (
@@ -16,9 +17,16 @@ class FormattingTests(unittest.TestCase):
         self.assertEqual(format_value(-16), "-16")
         self.assertEqual(format_value(0), "0")
 
-    def test_format_value_fractions_use_six_sig_figs(self):
+    def test_format_value_fractions_use_ten_sig_figs(self):
         self.assertEqual(format_value(2.5), "2.5")
-        self.assertEqual(format_value(1.0 / 3.0), "0.333333")
+        self.assertEqual(format_value(1.0 / 3.0), "0.3333333333")
+
+    def test_format_value_snaps_trig_noise_to_zero(self):
+        # cos(90 degrees) is 6.1e-17, not 0; emitting that verbatim gives qbsp
+        # plane definitions with meaningless sub-epsilon skew.
+        self.assertEqual(format_value(math.cos(math.radians(90))), "0")
+        self.assertEqual(format_value(-1e-12), "0")
+        self.assertEqual(format_value(1e-6), "1e-06")
 
     def test_format_point(self):
         self.assertEqual(format_point(1, 2, 3), "( 1 2 3 )")
@@ -66,13 +74,16 @@ class FaceTests(unittest.TestCase):
         self.assertEqual(f.p2, (0, 2, 5))
         self.assertEqual(f.p3, (-1, 1, 5))
 
-    def test_rotated_z_snaps_to_tenth_unit(self):
+    def test_rotated_z_snaps_to_micro_unit(self):
         # A 30-degree rotation produces irrational coordinates; rotated_z
-        # must snap them to the documented 0.1-unit grid rather than leaving
-        # raw floating-point noise (see rotated_z's docstring).
+        # must snap them to the documented 1e-6 grid so the output stays
+        # byte-identical across platforms, while remaining fine enough that
+        # previously coplanar faces stay coplanar (see rotated_z's docstring).
         f = Face((10, 0, 0), (0, 0, 0), (0, 0, 1), "t").rotated_z(30)
         for coord in (f.p1[0], f.p1[1]):
-            self.assertEqual(coord, round(coord, 1))
+            self.assertEqual(coord, round(coord, 6))
+        self.assertAlmostEqual(f.p1[0], 10 * math.cos(math.radians(30)), places=5)
+        self.assertAlmostEqual(f.p1[1], 10 * math.sin(math.radians(30)), places=5)
 
     def test_rotated_z_about_nonzero_center(self):
         f = Face((10, 10, 0), (11, 10, 0), (10, 11, 0), "t").rotated_z(

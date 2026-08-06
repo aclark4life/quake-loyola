@@ -6,10 +6,27 @@ if TYPE_CHECKING:
     from .mapdata import Brush
 
 
+#: Magnitude below which a coordinate is treated as exactly zero. Trig-derived
+#: coordinates (arch segments, rotated brushes) land on values like 6.1e-17
+#: instead of 0; emitting those verbatim gives qbsp plane definitions with
+#: meaningless sub-epsilon skew.
+_ZERO_SNAP = 1e-9
+
+#: Significant figures used when serialising non-integer coordinates. Six
+#: sig-figs (the historical value) quantises a coordinate near 121.244444 to
+#: 121.244 — an error of up to 5e-4 that qbsp reports as "Point ... off plane"
+#: and "Healing degenerate edge", because brushes meshed from the same
+#: interpolated surface no longer share exactly coplanar faces. Ten sig-figs
+#: keeps the geometry the generator actually computed.
+_SIG_FIGS = 10
+
+
 def format_value(v: float) -> str:
-    """Format a number as an integer string if whole, otherwise 6-sig-fig float."""
+    """Format a number as an integer string if whole, otherwise a 10-sig-fig float."""
     f = float(v)
-    return str(int(f)) if f == int(f) else f"{f:.6g}"
+    if abs(f) < _ZERO_SNAP:
+        f = 0.0
+    return str(int(f)) if f == int(f) else f"{f:.{_SIG_FIGS}g}"
 
 
 def format_point(x: float, y: float, z: float) -> str:
