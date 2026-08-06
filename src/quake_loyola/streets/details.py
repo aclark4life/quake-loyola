@@ -907,18 +907,33 @@ def _append_ennis_south_sidewalk_segment(
             tt_params=layout["ennis_road_tt_params"],
         )
     )
-    brushes.append(
-        box(
+    # The curb reads as a row of stone blocks, so it skips the 90-degree
+    # rotation the rest of the Ennis surfaces use and keeps the texture's own
+    # 32-unit block columns running along the curb. Its westmost tile stays
+    # plain sidewalk so the stone starts where the tiled walk does.
+    for slab_x1, slab_x2, slab_tex, slab_tt in (
+        (
             curb_x1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            curb_x2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
+            min(tile_x1, curb_x2),
             Textures.SIDEWALK,
-            tt_params=layout["ennis_road_tt_params"],
+            layout["ennis_road_tt_params"],
+        ),
+        (min(tile_x1, curb_x2), curb_x2, Textures.CURB, "0 0 0 1 1"),
+    ):
+        if slab_x1 >= slab_x2:
+            continue
+        brushes.append(
+            box(
+                slab_x1,
+                ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                slab_x2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                slab_tex,
+                tt_params=slab_tt,
+            )
         )
-    )
 
 
 def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
