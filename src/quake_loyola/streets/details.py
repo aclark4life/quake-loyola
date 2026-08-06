@@ -349,6 +349,10 @@ def _make_street_detail_layout():
         "sw_slab_len": STREET_SW_SLAB_LEN,
         "sw_gap": STREET_SW_GAP,
         "ennis_road_tt_params": "0 0 90 1 1",
+        # The south Ennis walk in front of Knott Hall lays its paving on the
+        # diagonal, like the bridge deck's main band, so the stone's courses
+        # run across the walk instead of squaring up with the curb.
+        "ennis_south_sw_tt_params": "0 0 45 1 1",
         "ennis_center_y": ENNIS_Y + ENNIS_WIDEN_N / 2 + ENNIS_DIVIDER_EXTRA_N,
     }
 
@@ -892,7 +896,7 @@ def _append_ennis_south_sidewalk_segment(
         Textures.SIDEWALK,
         layout["sw_slab_len"],
         layout["sw_gap"],
-        tt_params=layout["ennis_road_tt_params"],
+        tt_params=layout["ennis_south_sw_tt_params"],
         tex_from_x=tex_from_x,
     )
     brushes.append(
