@@ -120,7 +120,11 @@ def _kh_hill_profile_z(x, hill_profile):
 def _append_sloped_sidewalk_slab(
     brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex
 ):
-    """Add one full-depth sloped sidewalk slab."""
+    """Add one full-depth sloped sidewalk slab.
+
+    The slab's east and west faces (``ts``) are the curb sides exposed to the
+    driveway, so they take the walking surface's texture rather than ground.
+    """
     brushes.append(
         ramp_slab_y(
             x1,
@@ -133,6 +137,7 @@ def _append_sloped_sidewalk_slab(
             top_z_n,
             Textures.GROUND,
             tt=surface_tex,
+            ts=surface_tex,
         )
     )
 

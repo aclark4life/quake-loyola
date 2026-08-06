@@ -20,7 +20,7 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1287
 EXPECTED_ENTITIES = 102
-EXPECTED_MD5 = "cfbcf477206613bc68c56343171f8da8"
+EXPECTED_MD5 = "60f1a2faf1dfb04e9c9e0632c3052f0f"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
