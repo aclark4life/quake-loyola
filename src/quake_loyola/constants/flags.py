@@ -41,6 +41,9 @@ STREETS_ENABLED_DETAILS = _flag(
 WEST_CAMPUS_ENABLED_DORMS = _flag(
     "WEST_CAMPUS_ENABLED_DORMS"
 )  # Dorm buildings and grounds.
+WEST_CAMPUS_ENABLED_DORMS_SOUTH = (
+    _flag("WEST_CAMPUS_ENABLED_DORMS_SOUTH") and WEST_CAMPUS_ENABLED_DORMS
+)  # The south dorm pair only; the north pair is always built with the dorms.
 WEST_CAMPUS_ENABLED_FENCE = _flag("WEST_CAMPUS_ENABLED_FENCE")  # Charles St iron fence.
 WEST_CAMPUS_ENABLED_TERRAIN = _flag(
     "WEST_CAMPUS_ENABLED_TERRAIN"

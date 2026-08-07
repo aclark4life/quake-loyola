@@ -138,7 +138,14 @@ def terrain_z(x, y):
     return FLOOR_Z2 + z1 + (z2 - z1) * tx
 
 
-_WCT_OVR = 20  # Overlap extension for adjacent terrain rows; see build().
+_WCT_OVR = 32  # Overlap extension for adjacent terrain rows; see build().
+# 32 is chosen empirically: the terrain grid's DORM_X1/DORM_X2 columns and its
+# y=1096/1546 rows fall exactly on the dorm walls, so an overlap that lands
+# near the wall thickness makes qbsp clip the wall faces against the
+# overlapping terrain prisms and leaves uncovered strips at grade inside the
+# dorms. Sweeping 0..40 against a hole scan of the dorm block gave 73/426/1446
+# /42/59/131/1/16 uncovered samples for 0/4/8/12/16/24/32/40. Re-run that sweep
+# if the terrain grid or the dorm footprint moves.
 
 
 def _build_west_campus_terrain_cell(wx1, wx2, y1, y2, z_nw, z_sw, z_ne, z_se, texture):

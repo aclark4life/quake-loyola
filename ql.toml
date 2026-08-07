@@ -4,6 +4,7 @@ KNOTT_ENABLED = true
 KNOTT_ENABLED_TERRAIN = true
 KNOTT_ENABLED_WALKWAY = false
 KNOTT_ENABLED_WALKWAY_BENT = true
+WEST_CAMPUS_ENABLED_DORMS = true
 
 [build]
 fog_density = "off"

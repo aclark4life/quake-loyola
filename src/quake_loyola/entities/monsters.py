@@ -24,7 +24,7 @@ from ..constants import (
     ROAD_X1,
     ROAD_X2,
     SDORM_LIFT,
-    WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     deck_top_z,
 )
 from ..geometry import (
@@ -48,7 +48,7 @@ def _build_monsters(ENTITIES):
 
     ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
 
-    if WEST_CAMPUS_ENABLED_DORMS:
+    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
         ENTITIES.append(
             ent(
                 "monster_ogre",

@@ -56,6 +56,7 @@ from .constants.dorm import (
 from .constants.flags import (
     BRIDGE_ENABLED_SPAN_CENTER,
     WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     WEST_CAMPUS_ENABLED_FENCE,
     WEST_CAMPUS_ENABLED_SIDEWALK,
     WEST_CAMPUS_ENABLED_TERRAIN,
@@ -1848,6 +1849,8 @@ def _make_south_dorm(
 def _build_south_dorm_entities(dorm_ctx):
     """Build the two south dorm func_detail entities."""
 
+    if not WEST_CAMPUS_ENABLED_DORMS_SOUTH:
+        return []
     return [
         brush_ent(
             "func_detail",
@@ -1889,6 +1892,9 @@ def _build_dorm_seam_brushes(dorm_ctx):
     """Build the tunnel seam floor brushes between the dorm blocks."""
 
     dorm_cx = dorm_ctx["dorm_cx"]
+    seams = [(DORM_NORTH_Y1, 0)]
+    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
+        seams.append((DORM_SOUTH1_Y2, SDORM_LIFT))
     return [
         box(
             dorm_cx - DORM_INNER_DOOR_HW,
@@ -1900,7 +1906,7 @@ def _build_dorm_seam_brushes(dorm_ctx):
             Textures.GROUND,
             tt=Textures.ROAD,
         )
-        for seam_y, seam_lift in ((DORM_NORTH_Y1, 0), (DORM_SOUTH1_Y2, SDORM_LIFT))
+        for seam_y, seam_lift in seams
     ]
 
 
@@ -1921,7 +1927,6 @@ def _build_dorms():
 
     entities.extend(_build_south_dorm_entities(dorm_ctx))
     brushes.extend(_build_dorm_seam_brushes(dorm_ctx))
-
     return brushes, entities
 
 

@@ -60,6 +60,7 @@ DEFAULTS: dict[str, bool] = {
     "BRIDGE_ENABLED_SPAN_EAST_EXT": True,
     "STREETS_ENABLED_DETAILS": True,
     "WEST_CAMPUS_ENABLED_DORMS": False,
+    "WEST_CAMPUS_ENABLED_DORMS_SOUTH": False,
     "WEST_CAMPUS_ENABLED_FENCE": True,
     "WEST_CAMPUS_ENABLED_TERRAIN": True,
     "WEST_CAMPUS_ENABLED_WALL": True,
@@ -249,6 +250,27 @@ else:
 
 FLAGS: dict[str, bool] = {**DEFAULTS, **_flags_raw}
 BUILD: dict[str, Any] = {**BUILD_DEFAULTS, **_build_raw}
+
+
+def non_default_overrides() -> dict[str, Any]:
+    """Return every flag/build setting whose effective value differs from its
+    hardcoded ``config.py`` default, keyed by name.
+
+    Used to surface ambient ``ql.toml`` state at the top of ``ql gen``/
+    ``generate_map.py`` output — silent config drift between developers (or
+    between an interactive session and a tool like ``scripts/update_golden.py``)
+    is exactly what caused a golden-value regression once; always print this
+    rather than letting a non-default ``ql.toml`` change output unannounced.
+    """
+    check_load_error()
+    overrides: dict[str, Any] = {}
+    for name, default in DEFAULTS.items():
+        if FLAGS[name] != default:
+            overrides[name] = FLAGS[name]
+    for name, default in BUILD_DEFAULTS.items():
+        if BUILD[name] != default:
+            overrides[name] = BUILD[name]
+    return overrides
 
 
 def check_load_error() -> None:

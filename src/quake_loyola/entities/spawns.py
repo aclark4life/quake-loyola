@@ -37,6 +37,7 @@ from ..constants import (
     SDORM_LIFT,
     WALL_T,
     WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     WORLD_X1,
     WORLD_X2_EXT,
     Textures,
@@ -146,14 +147,15 @@ def _append_dorm_roof_teleports(ENTITIES):
     if not WEST_CAMPUS_ENABLED_DORMS:
         return
 
-    ENTITIES.append(
-        ent(
-            "info_teleport_destination",
-            targetname="dest_south_dorm_roof",
-            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-            angle="90",
+    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
+        ENTITIES.append(
+            ent(
+                "info_teleport_destination",
+                targetname="dest_south_dorm_roof",
+                origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
+                angle="90",
+            )
         )
-    )
     ENTITIES.append(
         ent(
             "info_teleport_destination",
@@ -172,7 +174,12 @@ def _append_dorm_roof_teleports(ENTITIES):
             CHARLES_Y1 + CHARLES_ARCH_W,
             CHARLES_Y1 + CHARLES_ARCH_TRIG_INSET,
             CHARLES_Y1 + CHARLES_ARCH_W,
-            "dest_south_dorm_roof",
+            # With the south dorm pair off there is no roof to land on, so
+            # send the south arch to the north dorm roof instead of leaving
+            # a trigger_teleport pointing at a destination that never exists.
+            "dest_south_dorm_roof"
+            if WEST_CAMPUS_ENABLED_DORMS_SOUTH
+            else "dest_dorm_roof",
         ),
         (
             CHARLES_Y2 - CHARLES_ARCH_W,
@@ -438,6 +445,9 @@ def _build_dm_spawns(ENTITIES):
                 ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
                 ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
                 ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
+            ]
+        if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
+            spawn_points += [
                 ((DORM_CX, DORM_SOUTH1_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
                 ((DORM_CX, DORM_SOUTH2_CY, FLOOR_Z2 + SDORM_LIFT + 40), 90),
             ]

@@ -94,6 +94,15 @@ def build_map_text():
 
 def main(path=None):
     """Write ``loyola.map`` to ``path`` (default: the repository root)."""
+    overrides = config.non_default_overrides()
+    if overrides:
+        print(
+            f"quake_loyola: {len(overrides)} non-default flag/build setting(s) "
+            f"active from {config.CONFIG_PATH}:"
+        )
+        for name in sorted(overrides):
+            print(f"  {name} = {overrides[name]!r}")
+
     mb = build_map()
     map_text = mb.to_map(WORLDSPAWN_FIELDS)
 

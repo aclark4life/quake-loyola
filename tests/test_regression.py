@@ -20,7 +20,7 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1459
 EXPECTED_ENTITIES = 104
-EXPECTED_MD5 = "02ed0c0746c8c87c463e092d3ed9196d"
+EXPECTED_MD5 = "ae8d67c322802a9a0022ea341e4c4b35"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
@@ -125,9 +125,12 @@ class EntitiesBuildTests(unittest.TestCase):
         # several entity placements (dorm-adjacent teleports, the exit
         # intermission point, and walkway hell knights) are only reachable
         # when these are also on.
-        (entities.monsters, "WEST_CAMPUS_ENABLED_DORMS"),
+        (entities.monsters, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
         (entities.monsters, "KNOTT_ENABLED_WALKWAY"),
         (entities.spawns, "WEST_CAMPUS_ENABLED_DORMS"),
+        (entities.spawns, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
+        (entities.pickups, "WEST_CAMPUS_ENABLED_DORMS"),
+        (entities.pickups, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
         (entities.exit, "WEST_CAMPUS_ENABLED_DORMS"),
     )
 
@@ -478,6 +481,7 @@ class WestCampusDormsBuildTests(unittest.TestCase):
             name: getattr(west_campus, name)
             for name in (
                 "WEST_CAMPUS_ENABLED_DORMS",
+                "WEST_CAMPUS_ENABLED_DORMS_SOUTH",
                 "WEST_CAMPUS_ENABLED_FENCE",
                 "WEST_CAMPUS_ENABLED_WALL",
                 "WEST_CAMPUS_ENABLED_SIDEWALK",
@@ -505,6 +509,25 @@ class WestCampusDormsBuildTests(unittest.TestCase):
             "enabling WEST_CAMPUS_ENABLED_DORMS should add dorm-shell brushes",
         )
         self.assertTrue(ents, "expected dorm-related entities (func_detail etc.)")
+
+    def test_south_dorm_pair_is_behind_its_own_subflag(self):
+        west_campus.WEST_CAMPUS_ENABLED_DORMS = True
+        west_campus.WEST_CAMPUS_ENABLED_DORMS_SOUTH = False
+        north_only_brushes, north_only_ents = west_campus.build()
+        west_campus.WEST_CAMPUS_ENABLED_DORMS_SOUTH = True
+        both_brushes, both_ents = west_campus.build()
+        self.assertGreater(
+            len(both_ents),
+            len(north_only_ents),
+            "enabling WEST_CAMPUS_ENABLED_DORMS_SOUTH should add the two "
+            "south dorm func_detail entities",
+        )
+        self.assertGreater(
+            len(both_brushes),
+            len(north_only_brushes),
+            "enabling WEST_CAMPUS_ENABLED_DORMS_SOUTH should add the south "
+            "tunnel seam brush",
+        )
 
     def test_fence_without_terrain_raises(self):
         west_campus.WEST_CAMPUS_ENABLED_TERRAIN = False

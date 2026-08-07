@@ -16,6 +16,7 @@ from ..constants import (
     ROAD_X2,
     SDORM_LIFT,
     WEST_CAMPUS_ENABLED_DORMS,
+    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     deck_top_z,
 )
 from ..geometry import (
@@ -44,7 +45,7 @@ def _build_weapons(ENTITIES):
         ENTITIES.append(ent("weapon_rocketlauncher", origin=rl_origin))
 
     ENTITIES.append(ent("weapon_supershotgun", origin=f"300 300 {ROAD_Z + 24}"))
-    if WEST_CAMPUS_ENABLED_DORMS:
+    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
         ENTITIES.append(
             ent(
                 "weapon_supershotgun",
@@ -97,7 +98,7 @@ def _build_health(ENTITIES):
     ENTITIES.append(ent("item_health", origin=f"-100 {_hp_y} {_hp_z}"))
     ENTITIES.append(ent("item_health", origin=f"-300 400 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_health", origin=f"300 -600 {ROAD_Z + 24}"))
-    if WEST_CAMPUS_ENABLED_DORMS:
+    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
         ENTITIES.append(
             ent(
                 "item_health",
