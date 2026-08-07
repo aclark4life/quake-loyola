@@ -351,8 +351,11 @@ def _make_street_detail_layout():
         "ennis_road_tt_params": "0 0 90 1 1",
         # The south Ennis walk in front of Knott Hall lays its paving on the
         # diagonal, like the bridge deck's main band, so the stone's courses
-        # run across the walk instead of squaring up with the curb.
-        "ennis_south_sw_tt_params": "0 0 45 1 1",
+        # run across the walk instead of squaring up with the curb. It is also
+        # the one surface in the map scaled below 1: at 1 texel per unit the
+        # 512px stone's basketweave bricks come out 51 by 25 inches, so a
+        # quarter scale brings them down to a believable 13 by 6 inches.
+        "ennis_south_sw_tt_params": "0 0 45 0.25 0.25",
         "ennis_center_y": ENNIS_Y + ENNIS_WIDEN_N / 2 + ENNIS_DIVIDER_EXTRA_N,
     }
 
@@ -871,6 +874,9 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     )
 
 
+ENNIS_CURB_TEX_PARAMS = "0 0 0 0.25 0.25"
+
+
 def _append_ennis_south_sidewalk_segment(
     brushes,
     layout,
@@ -913,19 +919,32 @@ def _append_ennis_south_sidewalk_segment(
     )
     # The curb reads as a row of stone blocks, so it skips the 90-degree
     # rotation the rest of the Ennis surfaces use and keeps the texture's own
-    # 32-unit block columns running along the curb. Its westmost tile stays
-    # plain sidewalk so the stone starts where the tiled walk does.
-    for slab_x1, slab_x2, slab_tex, slab_tt in (
+    # block columns running along the curb. At the walk's quarter scale those
+    # columns land 8 units apart, matching the curb's depth, so its cap and its
+    # road-facing side both read as one row of square blocks. Every face takes
+    # the scale, since the side is as visible from the road as the cap is from
+    # the walk. The westmost tile stays plain sidewalk so the stone starts
+    # where the tiled walk does.
+    for slab_x1, slab_x2, slab_tex, slab_params, scale_sides in (
         (
             curb_x1,
             min(tile_x1, curb_x2),
             Textures.SIDEWALK,
             layout["ennis_road_tt_params"],
+            False,
         ),
-        (min(tile_x1, curb_x2), curb_x2, Textures.CURB, "0 0 0 1 1"),
+        (min(tile_x1, curb_x2), curb_x2, Textures.CURB, ENNIS_CURB_TEX_PARAMS, True),
     ):
         if slab_x1 >= slab_x2:
             continue
+        face_params = (
+            {
+                side: slab_params
+                for side in ("tw_params", "te_params", "ts_params", "tn_params")
+            }
+            if scale_sides
+            else {}
+        )
         brushes.append(
             box(
                 slab_x1,
@@ -935,7 +954,8 @@ def _append_ennis_south_sidewalk_segment(
                 ENNIS_SW_EDGE + CHARLES_WALK_W,
                 FLOOR_Z2 + CHARLES_WALK_H,
                 slab_tex,
-                tt_params=slab_tt,
+                tt_params=slab_params,
+                **face_params,
             )
         )
 

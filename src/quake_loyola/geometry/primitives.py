@@ -22,11 +22,17 @@ def box(
     te=None,
     ts=None,
     tn=None,
+    tw_params="0 0 0 1 1",
+    te_params="0 0 0 1 1",
+    ts_params="0 0 0 1 1",
+    tn_params="0 0 0 1 1",
 ):
     """Return an axis-aligned rectangular brush.
 
     ``tex`` is the default face texture; ``tt``/``tb``/``tw``/``te``/``ts``/``tn``
-    override the top, bottom, west, east, south, and north faces respectively.
+    override the top, bottom, west, east, south, and north faces respectively,
+    and the matching ``*_params`` arguments set each face's
+    ``"offx offy rot scaleX scaleY"`` texture alignment.
     Raises ``ValueError`` if any span collapses to zero after min/max normalization.
     """
     if tt is None:
@@ -55,10 +61,10 @@ def box(
         )
     return Brush(
         [
-            Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw),
-            Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), te),
-            Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ts),
-            Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tn),
+            Face((x1, y1, z1), (x1, y2, z1), (x1, y1, z2), tw, tw_params),
+            Face((x2, y1, z1), (x2, y1, z2), (x2, y2, z1), te, te_params),
+            Face((x1, y1, z1), (x1, y1, z2), (x2, y1, z1), ts, ts_params),
+            Face((x1, y2, z1), (x2, y2, z1), (x1, y2, z2), tn, tn_params),
             Face((x1, y1, z1), (x2, y1, z1), (x1, y2, z1), tb, tb_params),
             Face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
         ]
