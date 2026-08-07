@@ -44,14 +44,19 @@ CORNER_CUT_W_NE = 128  # East notch inset from KH_X2.
 CORNER_CUT_W_NW = 188  # West notch inset from KH_X1 — moved east more than the NE side.
 
 SHIFT_NORTH = 220  # Moved a little closer to the bridge deck (+Y).
-SOUTH_EXTEND = 160  # Extra length added to the south end (-Y) to fit 3
-# groups of 6 side windows (with 5 mullions each) plus 2 inter-group gaps.
+SOUTH_EXTEND = 1088  # Extra length added to the south end (-Y): 160 to fit 3
+# groups of 6 side windows (with 5 mullions each) plus 2 inter-group gaps,
+# then a further 928 lengthening the whole hall southward (+25%, then +10%
+# twice more). SIDE_WIN_W grew alongside it (48 -> 72, x1.5, tracking the
+# 1815 -> 2743 length) so the side-wall window band scales with the building
+# instead of being stranded in a sea of blank wall — _side_windows keeps the
+# band centred on the wall on its own.
 
 # Side-wall window layout (east/west walls, full bridge-deck-to-roof
 # height, same style as the front openings): 3 groups of 6 windows per
 # side, each group split by 5 mullions, with a ~4-window-wide gap between
 # groups and a margin at each end.
-SIDE_WIN_W = 48  # Width of each individual window pane.
+SIDE_WIN_W = 72  # Width of each individual window pane.
 SIDE_WIN_GROUPS = 3
 SIDE_WINS_PER_GROUP = 6
 SIDE_GROUP_GAP_WINS = 4  # Gap between groups, in window-widths.
