@@ -62,6 +62,18 @@ BRIDGE_PIER_PLATE_SIZE = 34
 BRIDGE_PIER_PLATE_GAP = 3
 BRIDGE_PIER_PLATE_D = 1  # Slight protrusion from the pillar wall.
 
+# Banner hung from a horizontal mast on Pier 2's south face, facing Charles St.
+# {TF_Banner1 is 64x128, and the banner is built to match at 1:1 so the whole
+# image lands on it exactly once with no wrap.
+BRIDGE_BANNER_W = 64
+BRIDGE_BANNER_H = 128
+BRIDGE_BANNER_T = 2
+BRIDGE_BANNER_GAP = 4  # Clearance between the pier face and the banner's near edge.
+BRIDGE_BANNER_TOP_Z = 152  # Banner top / mast underside, above the pier floor.
+BRIDGE_BANNER_MAST_T = 6
+BRIDGE_BANNER_MAST_PROUD = 8  # Mast overhang past the banner's outer edge.
+BRIDGE_BANNER_CORNER_INSET = 40  # Half the depth of Pier 2's south corner column.
+
 # Cement lining on the interior faces of each opening.
 BRIDGE_PIER_LINING_MARGIN = 6
 BRIDGE_PIER_LINING_THICK = 3

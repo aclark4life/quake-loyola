@@ -12,6 +12,14 @@ from .constants.bridge import (
     BRIDGE_ABUTMENT_RAMP_CAP_H,
     BRIDGE_ABUTMENT_RAMP_HIGH_H,
     BRIDGE_ABUTMENT_RAMP_LOW_H,
+    BRIDGE_BANNER_CORNER_INSET,
+    BRIDGE_BANNER_GAP,
+    BRIDGE_BANNER_H,
+    BRIDGE_BANNER_MAST_PROUD,
+    BRIDGE_BANNER_MAST_T,
+    BRIDGE_BANNER_T,
+    BRIDGE_BANNER_TOP_Z,
+    BRIDGE_BANNER_W,
     BRIDGE_BASE_LIGHT_BRIGHTNESS,
     BRIDGE_BASE_LIGHT_D,
     BRIDGE_BASE_LIGHT_H,
@@ -1948,6 +1956,69 @@ def _build_all():
     return brushes, entities
 
 
+def _append_bridge_pier2_banner(entities, enabled_names):
+    """Hang a banner from a horizontal mast off Pier 2's east face.
+
+    Charles St runs north-south a little east of Pier 2, so the mast projects
+    east from the pier's south corner column, out over the road, with the
+    banner swinging below it like a flag. That leaves the banner's broad faces
+    pointing north and south - the two directions traffic approaches from - and
+    its silhouette readable end-on from the pier itself.
+
+    Texture offsets are computed from the banner's final world position, after
+    any center-span shift: ``Brush.translated`` moves the geometry but leaves
+    texture alignment in world space, so an offset derived from pre-shift
+    coordinates would slide the image off the banner.
+    """
+    if BRIDGE_ENABLED_SUPPORTS is not True and PIER2_X not in BRIDGE_ENABLED_SUPPORTS:
+        return
+    shifted = (
+        BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names
+    )
+    _, dy, dz = BRIDGE_CENTER_SPAN_OFFSET if shifted else (0.0, 0.0, 0.0)
+
+    x_face = PIER2_X + BRIDGE_PILLAR_HW
+    z_top = FLOOR_Z2 + BRIDGE_BANNER_TOP_Z + dz
+    y_center = BRIDGE.y1 - BRIDGE_PILLAR_OVERHANG + dy + BRIDGE_BANNER_CORNER_INSET
+    x1 = x_face + BRIDGE_BANNER_GAP
+    x2 = x1 + BRIDGE_BANNER_W
+    mast_hw = BRIDGE_BANNER_MAST_T / 2
+
+    entities.append(
+        brush_ent(
+            "func_detail",
+            box(
+                x_face,
+                y_center - mast_hw,
+                z_top,
+                x2 + BRIDGE_BANNER_MAST_PROUD,
+                y_center + mast_hw,
+                z_top + BRIDGE_BANNER_MAST_T,
+                Textures.RAIL,
+            ),
+        )
+    )
+    # The banner reads as cloth, so it hangs non-solid; func_illusionary also
+    # gets the masked texture rendered with its cutouts honoured.
+    banner_params = f"{-x1 % BRIDGE_BANNER_W} {z_top % BRIDGE_BANNER_H} 0 1 1"
+    entities.append(
+        brush_ent(
+            "func_illusionary",
+            box(
+                x1,
+                y_center - BRIDGE_BANNER_T / 2,
+                z_top - BRIDGE_BANNER_H,
+                x2,
+                y_center + BRIDGE_BANNER_T / 2,
+                z_top,
+                Textures.BANNER,
+                ts_params=banner_params,
+                tn_params=banner_params,
+            ),
+        )
+    )
+
+
 def build():
     """Build the pedestrian bridge: deck, arch spans, piers, and parapets.
 
@@ -1975,6 +2046,7 @@ def build():
         BRUSHES, ENTITIES = _shift_center_span(
             BRUSHES, ENTITIES, enabled_names, BRIDGE_CENTER_SPAN_OFFSET
         )
+    _append_bridge_pier2_banner(ENTITIES, enabled_names)
     return BRUSHES, ENTITIES
 
 

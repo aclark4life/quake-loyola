@@ -28,6 +28,7 @@ class Textures:
     BRICK_KH = "city6_8"
     BUILDING = "city2_1"
     CEMENT = "sfloor3_2"
+    BANNER = "{TF_Banner1"  # from mg1.wad; masked (alpha) hanging banner
     CURB = "stn_t04a_wht1"  # from makkon_stone.wad; Ennis Rd curb slabs
     FENCE = "metal4_4"
     CENTERLINE = "win_fbylw_01"  # Fullbright yellow stand-in for centerline paint.
