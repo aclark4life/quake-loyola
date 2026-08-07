@@ -440,6 +440,13 @@ def _build_bridge_expansion_joints(
     dw_y1c, dw_y2c = deck_band_y
     joint_brushes = []
     for px in BRIDGE_ARCH_X:
+        rotated = px == PIER6_X
+        if rotated:
+            # Pier 6 is rotated about its own axis, so its joint has to lean
+            # over to stay parallel to the pier. Shearing rather than rotating
+            # keeps the band's ends square against the deck edges instead of
+            # letting one end ride over the parapet and the other fall short.
+            shear_cy = east_y_shift(px)
         m1, m2 = px - BRIDGE_JOINT_METAL_HW, px + BRIDGE_JOINT_METAL_HW
         g1, g2 = px - BRIDGE_JOINT_GAP_HW, px + BRIDGE_JOINT_GAP_HW
         c1w, c2w = m1 - BRIDGE_JOINT_CEMENT_W, m1
@@ -457,20 +464,21 @@ def _build_bridge_expansion_joints(
             (c1e, c2e, Textures.CEMENT, "0 0 0 1 1"),
             (t1e, t2e, Textures.DECK_EDGE, "0 0 0 1 1"),
         ):
-            joint_brushes.append(
-                ramp_slab(
-                    x1,
-                    x2,
-                    dw_y1c,
-                    dw_y2c,
-                    joint_zts[x1] - BRIDGE_DECK_CROSS_STRIP_H,
-                    joint_zts[x2] - BRIDGE_DECK_CROSS_STRIP_H,
-                    joint_zts[x1],
-                    joint_zts[x2],
-                    tex,
-                    tb_params=tb_params,
-                )
+            joint = ramp_slab(
+                x1,
+                x2,
+                dw_y1c,
+                dw_y2c,
+                joint_zts[x1] - BRIDGE_DECK_CROSS_STRIP_H,
+                joint_zts[x2] - BRIDGE_DECK_CROSS_STRIP_H,
+                joint_zts[x1],
+                joint_zts[x2],
+                tex,
+                tb_params=tb_params,
             )
+            if rotated:
+                joint = joint.sheared_x_by_y(-PIER6_ROTATION_DEG, shear_cy)
+            joint_brushes.append(joint)
     entities.append(brush_ent("func_illusionary", joint_brushes))
 
 

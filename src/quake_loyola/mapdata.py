@@ -103,6 +103,23 @@ class Face:
 
         return Face(r(self.p1), r(self.p2), r(self.p3), self.tex, self.params)
 
+    def sheared_x_by_y(self, angle_deg: float, cy: float = 0.0) -> Face:
+        """Return a copy sheared along X by ``tan(angle_deg)`` per unit of Y.
+
+        Unlike ``rotated_z`` this leaves Y untouched, so faces that were
+        perpendicular to Y stay perpendicular to it while faces that ran along
+        Y take on the given angle — the shape a band gets when it has to lean
+        over to follow rotated geometry without pulling away from the square
+        edges it terminates against. Coordinates are rounded as in
+        ``rotated_z``, and for the same reason.
+        """
+        slope = math.tan(math.radians(angle_deg))
+
+        def s(p: Point) -> Point:
+            return (round(p[0] + (p[1] - cy) * slope, 6), p[1], p[2])
+
+        return Face(s(self.p1), s(self.p2), s(self.p3), self.tex, self.params)
+
     def is_inside(self, p: Point, eps: float = 1e-4) -> bool:
         """Return True if point p is on the solid (positive) side of this face's plane."""
         normal, _d = _face_plane(self)
@@ -173,6 +190,11 @@ class Brush:
         """Return a copy of this brush rotated angle_deg degrees about the
         vertical axis through (cx, cy) — see Face.rotated_z."""
         return Brush([f.rotated_z(angle_deg, cx, cy) for f in self.faces])
+
+    def sheared_x_by_y(self, angle_deg: float, cy: float = 0.0) -> Brush:
+        """Return a copy of this brush sheared along X about the Y line ``cy``
+        — see Face.sheared_x_by_y."""
+        return Brush([f.sheared_x_by_y(angle_deg, cy) for f in self.faces])
 
 
 @dataclass
