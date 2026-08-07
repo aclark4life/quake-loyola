@@ -244,7 +244,13 @@ def _knott_terrain_state():
         "far_south_y": [KNOTT_DRIVEWAY_Y1, -3000, -4500, WORLD_Y1 + WALL_T],
         "far_south_z_west": _far_south_z_west,
         "far_south_z_east": [92, 57, 60, 35],
-        "WRAMP_OVR": 4,
+        "WRAMP_OVR": 4,  # Only for the ramp aprons at the junction itself; the
+        # far_south_y segments below deliberately do NOT overlap. Consecutive
+        # segments already share an exact Z at their common Y (the same
+        # far_south_z_* sample serves as one segment's end and the next one's
+        # start), so running a segment 4 units past its neighbour's start only
+        # buried one sloped surface a hair under another and left qbsp
+        # carving unbuildable slivers out of the seam (WARNING 12).
         "charles_verge_x2": _charles_verge_x2,
         "sgrid": [
             (_charles_verge_x2, _sgrid_z, _sgrid_z),
@@ -384,11 +390,6 @@ def _append_knott_east_far_south_fill(brushes, state):
         ra1 = state["sgrid_z"] + z1
         ra2 = state["sgrid_z"] + z2
 
-        if _seg_i < len(state["far_south_y"]) - 2:
-            y2_ext = y2 - state["WRAMP_OVR"]
-            ra2 = ra1 + (ra2 - ra1) * (y2_ext - y1) / (y2 - y1)
-            y2 = y2_ext
-
         brushes.append(
             tri_ramp_prism(
                 KNOTT_DRIVEWAY_ES_X2,
@@ -506,12 +507,6 @@ def _append_knott_west_far_south_fill(brushes, state):
             gz2a = state["sgrid_z"] + gcol2[_seg_i]
             gz2b = state["sgrid_z"] + gcol2[_seg_i + 1]
 
-            if _seg_i < len(state["far_south_y"]) - 2:
-                y2_ext = y2 - state["WRAMP_OVR"]
-                gz1b = gz1a + (gz1b - gz1a) * (y2_ext - y1) / (y2 - y1)
-                gz2b = gz2a + (gz2b - gz2a) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
-
             if gx1 == KNOTT.x1 and _seg_i == 0:
                 brushes.append(
                     tri_ramp_prism(
@@ -614,12 +609,6 @@ def _append_knott_west_grid_transitions(brushes, state):
             y1, y2 = state["far_south_y"][i], state["far_south_y"][i + 1]
             z1a, z1b = wcol1[i], wcol1[i + 1]
             z2a, z2b = wcol2[i], wcol2[i + 1]
-            if i < len(state["far_south_y"]) - 2:
-                y2_ext = y2 - state["WRAMP_OVR"]
-                z1b = z1a + (z1b - z1a) * (y2_ext - y1) / (y2 - y1)
-                z2b = z2a + (z2b - z2a) * (y2_ext - y1) / (y2 - y1)
-                y2 = y2_ext
-
             brushes.append(
                 tri_ramp_prism(
                     wx1,
@@ -1005,17 +994,6 @@ def _append_knott_driveway_extension(brushes):
         offset=_knott_curb_phase(ENNIS_SW_EDGE + CHARLES_WALK_W),
     )
 
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y1,
-            FLOOR_Z1,
-            _e_bulge_x2,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
     brushes.append(
         box(
             _e_bulge_x2,

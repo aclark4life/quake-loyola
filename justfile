@@ -1,10 +1,13 @@
 # justfile for Loyola bridge Quake 1 map
 
 # Paths to tools and directories
-ericw_version := "v0.18.1"
+# ericw-tools 2.0.0-alpha11 or newer is required: qbsp v0.18.1 drops and
+# orphans faces on Pier 6's rotated stonework, which shows up in game as
+# see-through holes and invisible walls.
+ericw_version := "2.0.0-alpha11"
 ericw_os      := if os() == "macos" { "Darwin" } else { "Linux" }
 ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version + "-" + ericw_os
-tools_bin     := ericw_dir + "/bin"
+tools_bin     := ericw_dir
 gmqcc_bin  := justfile_directory() + "/.tools/gmqcc/gmqcc"
 progs_src  := justfile_directory() + "/qc/progs.src"
 quake_dir  := "/Applications/id1"
@@ -34,8 +37,13 @@ install-tools:
         mkdir -p "$dest"
         echo "Downloading $archive..."
         curl -L -o "$dest/$archive" "$url"
-        unzip -q "$dest/$archive" -d "$dest"
+        # The 2.x archives have no top-level directory, so extract into one.
+        unzip -q "$dest/$archive" -d "{{ericw_dir}}"
         rm "$dest/$archive"
+        # macOS quarantines downloaded binaries; Gatekeeper would block them.
+        if [ "{{ericw_os}}" = "Darwin" ]; then
+            xattr -dr com.apple.quarantine "{{ericw_dir}}" 2>/dev/null || true
+        fi
         echo "Installed ericw-tools {{ericw_version}} to {{ericw_dir}}"
     fi
 

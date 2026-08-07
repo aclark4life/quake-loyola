@@ -219,11 +219,16 @@ def square_wall(
             )
         )
         if base_cap_h > 0:
+            # The cap is only proud along X, where it reads as a plinth on the
+            # pier's open faces. Extending it along Y as well would bury it
+            # inside the jambs, and its sloped top/bottom planes would then cut
+            # through the jamb walls -- qbsp drops wall faces along those cuts,
+            # which showed up as see-through holes in Pier 6's opening.
             cap_tex, cx1, cx2, crin = (
                 base_cap_tex or tex,
                 x1 - base_cap_ovh,
                 x2 + base_cap_ovh,
-                open_hw + base_cap_ovh,
+                open_hw,
             )
             brushes.append(
                 ramp_slab(

@@ -787,7 +787,7 @@ Or from the in-game console:
 Manual compilation (without just)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Download **ericw-tools v0.18.1** from
+Download **ericw-tools 2.0.0-alpha11** (or newer) from
 `github.com/ericwa/ericw-tools/releases <https://github.com/ericwa/ericw-tools/releases>`_
 and place ``quake101.wad``, ``ad.wad``, ``makkon_building.wad``,
 ``ikwhite.wad``, ``makkon_stone.wad``, ``mg1.wad``, ``alkaline.wad``, and
@@ -803,6 +803,15 @@ The ``-bsp2`` flag (also used by ``just compile`` / ``just compile-fast``)
 writes the extended BSP2 format, which this map requires; omitting it
 produces a different (and likely broken) build. The compiled
 ``loyola.bsp`` goes in your Quake ``id1/maps/`` directory.
+
+.. note::
+
+   ericw-tools **2.0.0-alpha11 or newer is required**. The older ``qbsp``
+   v0.18.1 mis-compiles Pier 6's rotated stonework: it deletes some wall
+   faces outright and emits others without linking them to any BSP leaf, so
+   the engine never draws them. In game that appears as see-through holes
+   and large invisible walls on the pier. The 2.x ``qbsp`` compiles the same
+   ``.map`` cleanly.
 
 TrenchBroom
 ~~~~~~~~~~~
@@ -835,7 +844,7 @@ Set the game path in ``Preferences.json``:
 Both compile profiles use ``${MAP_DIR_PATH}`` as the working directory so
 ericw-tools picks up ``quake101.wad`` from the same folder as the ``.map``
 file.  Tool paths point to
-``~/Downloads/ericw-tools-v0.18.1-Darwin/bin/``.
+``~/Downloads/ericw-tools-2.0.0-alpha11-Darwin/``.
 
 **Workflow**: open ``loyola.map`` → edit → **Run → Compile Map** → **Run →
 Launch Engine** (vkQuake).

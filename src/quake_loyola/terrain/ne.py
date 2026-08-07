@@ -114,7 +114,12 @@ def build():
         [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
     ]
 
-    _NE_OVR = 8
+    # Row overlap that hides the seams between sampled terrain rows. Was 8,
+    # but at that exact width qbsp 2.x turns the x 2786..3202 / y 2200..2208
+    # overlap band into a full-height sliver leaf it cannot reach from any
+    # entity, so the outside fill marks it solid — an invisible wall running
+    # from grade to the sky. 16 keeps the seams covered without the sliver.
+    _NE_OVR = 16
 
     append_sampled_grid_mesh(
         BRUSHES,
