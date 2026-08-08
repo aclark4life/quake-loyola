@@ -616,3 +616,121 @@ def fascia_sign(
         )
     )
     return brushes
+
+
+def exit_portal(
+    cx,
+    cy,
+    z0,
+    hw,
+    h,
+    *,
+    portal_tex,
+    frame_tex,
+    text_tex,
+    text="EXIT",
+    frame_t=16,
+    frame_d=12,
+    px_w=4,
+    px_h=2,
+    depth=2,
+    embed=1,
+):
+    """A labelled portal: a teleport volume inside a signed masonry frame.
+
+    Builds a ``hw``-half-width, ``h``-tall portal volume centred on
+    ``(cx, cy)`` and standing on ``z0``, wrapped by jambs and a lintel on
+    all four sides with ``text`` spelled out in flush-mounted pixel-font
+    lettering across every lintel face.
+
+    Factored out of the retired west-campus dorm exit so the portal can be
+    dropped into whatever building replaces it. Callers decide what to do
+    with the volume — typically one ``trigger_changelevel`` plus one
+    ``func_illusionary`` sharing the same brush.
+
+    Args:
+        cx: Portal centre X.
+        cy: Portal centre Y.
+        z0: Portal floor elevation.
+        hw: Portal half-width, applied on both X and Y.
+        h: Portal height above ``z0``.
+        portal_tex: Texture for the portal volume itself.
+        frame_tex: Texture for the surrounding jambs and lintels.
+        text_tex: Texture for the lettering.
+        text: Sign text, repeated on all four lintel faces.
+        frame_t: Jamb/lintel thickness.
+        frame_d: Frame depth through the wall.
+        px_w: Pixel-font cell width.
+        px_h: Pixel-font cell height.
+        depth: Lettering protrusion beyond the lintel face.
+        embed: Lettering inset into the lintel face.
+
+    Returns:
+        tuple: ``(portal_brush, surround_brushes, light_origin)`` — the
+        portal volume, a flat list of frame and lettering brushes suitable
+        for wrapping in ``func_detail``, and a suggested ``(x, y, z)`` for
+        a fill light inside the portal.
+    """
+    x1, x2 = cx - hw, cx + hw
+    top = z0 + h
+    total = depth + embed
+    text_w = (len(text) * 5 - 1) * px_w
+    z_base = top + (frame_t - 6 * px_h) // 2
+
+    portal = box(x1, cy - hw, z0, x2, cy + hw, top, portal_tex)
+    surround = []
+
+    # North and south faces: jambs, lintel, and lettering.
+    for face_cy, out_sign in [(cy - hw, -1), (cy + hw, +1)]:
+        fy1 = face_cy - frame_d // 2
+        fy2 = face_cy + frame_d // 2
+        for bx1, bx2, bz1, bz2 in [
+            (x1 - frame_t, x1, z0, top + frame_t),
+            (x2, x2 + frame_t, z0, top + frame_t),
+            (x1 - frame_t, x2 + frame_t, top, top + frame_t),
+        ]:
+            surround.append(box(bx1, fy1, bz1, bx2, fy2, bz2, frame_tex))
+
+        if out_sign < 0:
+            letters, y_face, mirror = text, fy1 - depth, False
+        else:
+            letters, y_face, mirror = text[::-1], fy2 - embed, True
+        surround.extend(
+            render_text_flat(
+                letters,
+                x0=cx - text_w // 2,
+                y_face=y_face,
+                z_base=z_base,
+                px_w=px_w,
+                px_h=px_h,
+                depth=total,
+                tex=text_tex,
+                mirror=mirror,
+            )
+        )
+
+    # East and west faces: lintels spanning the returns, plus lettering.
+    beam_y1 = cy - hw - frame_d // 2
+    beam_y2 = cy + hw + frame_d // 2
+    for bx1, bx2 in [(x1 - frame_t, x1), (x2, x2 + frame_t)]:
+        surround.append(box(bx1, beam_y1, top, bx2, beam_y2, top + frame_t, frame_tex))
+
+    for x_face, letters, mirror in [
+        (x1 - frame_t - depth, text[::-1], True),
+        (x2 + frame_t - embed, text, False),
+    ]:
+        surround.extend(
+            render_text_flat_x(
+                letters,
+                y0=cy - text_w // 2,
+                x_face=x_face,
+                z_base=z_base,
+                px_w=px_w,
+                px_h=px_h,
+                depth=total,
+                tex=text_tex,
+                mirror=mirror,
+            )
+        )
+
+    return portal, surround, (cx, cy, z0 + h // 2)

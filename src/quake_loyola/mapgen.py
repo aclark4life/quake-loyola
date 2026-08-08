@@ -7,6 +7,7 @@ from . import (
     basement,
     bridge,
     config,
+    dorms,
     entities,
     knott_hall,
     maryland_hall,
@@ -18,7 +19,6 @@ from .constants import (
     BASEMENT_ENABLED_LIGHTS,
     LIGHTS_ENABLED_ABUTMENT_ARCH,
     LIGHTS_ENABLED_DECK_WALL,
-    LIGHTS_ENABLED_DORM_INTERIOR,
     LIGHTS_ENABLED_PENDANTS,
     LIGHTS_ENABLED_PIER_UPLIGHTS,
     LIGHTS_ENABLED_TORCHES,
@@ -30,6 +30,7 @@ MODULES = [
     streets,
     west_campus,
     terrain.west_campus,
+    dorms,
     bridge,
     terrain.knott_hall,
     knott_hall,
@@ -48,7 +49,6 @@ LIGHT_GROUP_FLAGS = {
     "pendant": LIGHTS_ENABLED_PENDANTS,
     "pier_uplight": LIGHTS_ENABLED_PIER_UPLIGHTS,
     "abutment_arch": LIGHTS_ENABLED_ABUTMENT_ARCH,
-    "dorm_interior": LIGHTS_ENABLED_DORM_INTERIOR,
 }
 
 

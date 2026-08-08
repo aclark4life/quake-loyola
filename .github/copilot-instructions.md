@@ -10,14 +10,15 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/mapgen.py` | Actual module-assembly logic (`build_map`, `main`) — importable once pip-installed |
 | `src/quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
 | `src/quake_loyola/mapdata.py` | `MapBuilder` — collects brushes/entities and serialises to `.map` |
-| `src/quake_loyola/geometry/` | Low-level brush / face construction helpers (package: primitives, structures, prefabs, entities, helpers) |
+| `src/quake_loyola/geometry/` | Low-level brush / face construction helpers (package: primitives, structures, prefabs, buildings, entities, helpers) |
 | `src/quake_loyola/constants/` | Shared numeric constants and texture names (package: flags, world, textures, lighting, fonts, trees, ennis, bridge, streets, dorm, knott, maryland, derived) |
 | `src/quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
 | `src/quake_loyola/knott_hall.py` | Knott Hall shell (walls, roof, fascia sign) |
+| `src/quake_loyola/dorms.py` | West-campus dorms — cleared pending a rebuild (emits nothing) |
 | `src/quake_loyola/streets/` | Charles Street and surrounding road geometry (package: `shell`, `ennis`, `details`) |
-| `src/quake_loyola/west_campus.py` | West-campus buildings and terrain |
+| `src/quake_loyola/west_campus.py` | West-campus frontage (iron fence, brick wall, terrace walk) |
 | `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `maryland`, `ne`, `west_campus`) |
-| `src/quake_loyola/entities/` | Player spawns, items, lights (package: `spawns`, `pickups`, `monsters`, `vegetation`, `lights`, `exit`, `platform`, `_common`) |
+| `src/quake_loyola/entities/` | Player spawns, items, lights (package: `spawns`, `pickups`, `monsters`, `vegetation`, `lights`, `platform`, `_common`) |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
 | `ql` | Typer CLI entry point — `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |

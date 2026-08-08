@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 
 import generate_map
-from quake_loyola import entities, mapgen, maryland_hall, streets, west_campus
+from quake_loyola import dorms, entities, mapgen, maryland_hall, streets, west_campus
 from quake_loyola.mapdata import Entity
 from quake_loyola.terrain import knott_hall as knott_terrain
 from quake_loyola.terrain import maryland as maryland_terrain
@@ -120,18 +120,9 @@ class EntitiesBuildTests(unittest.TestCase):
         (entities.monsters, "ENTITIES_ENABLED_MONSTERS"),
         (entities.vegetation, "ENTITIES_ENABLED_VEGETATION"),
         (entities.platform, "ENTITIES_ENABLED_PLATFORM"),
-        (entities.exit, "ENTITIES_ENABLED_EXIT"),
-        # Geometry-gated flags: default False in normal generation, but
-        # several entity placements (dorm-adjacent teleports, the exit
-        # intermission point, and walkway hell knights) are only reachable
-        # when these are also on.
-        (entities.monsters, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
+        # Geometry-gated flag: default False in normal generation, but the
+        # walkway hell knights are only reachable when it is also on.
         (entities.monsters, "KNOTT_ENABLED_WALKWAY"),
-        (entities.spawns, "WEST_CAMPUS_ENABLED_DORMS"),
-        (entities.spawns, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
-        (entities.pickups, "WEST_CAMPUS_ENABLED_DORMS"),
-        (entities.pickups, "WEST_CAMPUS_ENABLED_DORMS_SOUTH"),
-        (entities.exit, "WEST_CAMPUS_ENABLED_DORMS"),
     )
 
     def setUp(self):
@@ -195,23 +186,6 @@ class EntitiesBuildTests(unittest.TestCase):
             angle = float(e.fields["angle"])
             self.assertGreaterEqual(angle, 0)
             self.assertLess(angle, 360)
-
-    def test_intermission_present_when_exit_and_dorms_enabled(self):
-        # Regression test: _build_intermission() must be gated by
-        # WEST_CAMPUS_ENABLED_DORMS the same way _build_exit() is, so the
-        # two entities appear/disappear together.
-        _, ents = entities.build()
-        intermissions = [e for e in ents if e.classname == "info_intermission"]
-        self.assertEqual(len(intermissions), 1)
-
-    def test_intermission_absent_when_dorms_disabled(self):
-        entities.exit.WEST_CAMPUS_ENABLED_DORMS = False
-        try:
-            _, ents = entities.build()
-        finally:
-            entities.exit.WEST_CAMPUS_ENABLED_DORMS = True
-        intermissions = [e for e in ents if e.classname == "info_intermission"]
-        self.assertEqual(intermissions, [])
 
     def test_no_duplicate_point_entity_origins(self):
         # Spawn points must not coincide with each other or with a teleport
@@ -312,10 +286,18 @@ class EntitiesBuildTests(unittest.TestCase):
         # a degenerate (zero-thickness) trigger brush would still pass the
         # target-resolution tests above (they only check entity fields),
         # but would silently make the trigger untouchable in-game.
+        #
+        # trigger_changelevel is not required: the map's only exit portal
+        # lived inside the dorms and was removed with them, so it is only
+        # validated if something re-adds it.
         _, ents = entities.build()
-        for classname in ("trigger_teleport", "trigger_changelevel"):
+        for classname, required in (
+            ("trigger_teleport", True),
+            ("trigger_changelevel", False),
+        ):
             triggers = [e for e in ents if e.classname == classname]
-            self.assertTrue(triggers, f"expected at least one {classname}")
+            if required:
+                self.assertTrue(triggers, f"expected at least one {classname}")
             for e in triggers:
                 self.assertTrue(
                     e.brushes, f"{classname} entity has no brushes: {e.fields}"
@@ -469,19 +451,24 @@ class MarylandBuildTests(unittest.TestCase):
                 )
 
 
-class WestCampusDormsBuildTests(unittest.TestCase):
-    """WEST_CAMPUS_ENABLED_DORMS defaults to False, so west_campus.py's
-    dorm-shell/walkway geometry (~1200 lines of build()) never runs in the
-    default-config regression tests above. Force it on here so that branch
-    actually gets exercised, and confirm the fence/wall/sidewalk-without-
-    terrain guard still raises."""
+class DormsClearedTests(unittest.TestCase):
+    """The dorm buildings were removed pending a rebuild; dorms.py is a
+    placeholder that must stay wired into mapgen without emitting anything."""
+
+    def test_build_returns_nothing(self):
+        self.assertEqual(dorms.build(), ([], []))
+
+    def test_module_is_still_registered_with_mapgen(self):
+        self.assertIn(dorms, mapgen.MODULES)
+
+
+class WestCampusFrontageBuildTests(unittest.TestCase):
+    """Confirm the fence/wall/sidewalk-without-terrain guard still raises."""
 
     def setUp(self):
         self._saved = {
             name: getattr(west_campus, name)
             for name in (
-                "WEST_CAMPUS_ENABLED_DORMS",
-                "WEST_CAMPUS_ENABLED_DORMS_SOUTH",
                 "WEST_CAMPUS_ENABLED_FENCE",
                 "WEST_CAMPUS_ENABLED_WALL",
                 "WEST_CAMPUS_ENABLED_SIDEWALK",
@@ -493,41 +480,9 @@ class WestCampusDormsBuildTests(unittest.TestCase):
         for name, value in self._saved.items():
             setattr(west_campus, name, value)
 
-    def test_dorms_disabled_builds_nothing_dorm_specific(self):
-        west_campus.WEST_CAMPUS_ENABLED_DORMS = False
+    def test_frontage_builds_geometry(self):
         brushes, _ = west_campus.build()
-        self.assertTrue(brushes, "expected non-dorm west-campus geometry")
-
-    def test_dorms_enabled_adds_brushes_and_entities(self):
-        west_campus.WEST_CAMPUS_ENABLED_DORMS = False
-        without_dorms = len(west_campus.build()[0])
-        west_campus.WEST_CAMPUS_ENABLED_DORMS = True
-        brushes, ents = west_campus.build()
-        self.assertGreater(
-            len(brushes),
-            without_dorms,
-            "enabling WEST_CAMPUS_ENABLED_DORMS should add dorm-shell brushes",
-        )
-        self.assertTrue(ents, "expected dorm-related entities (func_detail etc.)")
-
-    def test_south_dorm_pair_is_behind_its_own_subflag(self):
-        west_campus.WEST_CAMPUS_ENABLED_DORMS = True
-        west_campus.WEST_CAMPUS_ENABLED_DORMS_SOUTH = False
-        north_only_brushes, north_only_ents = west_campus.build()
-        west_campus.WEST_CAMPUS_ENABLED_DORMS_SOUTH = True
-        both_brushes, both_ents = west_campus.build()
-        self.assertGreater(
-            len(both_ents),
-            len(north_only_ents),
-            "enabling WEST_CAMPUS_ENABLED_DORMS_SOUTH should add the two "
-            "south dorm func_detail entities",
-        )
-        self.assertGreater(
-            len(both_brushes),
-            len(north_only_brushes),
-            "enabling WEST_CAMPUS_ENABLED_DORMS_SOUTH should add the south "
-            "tunnel seam brush",
-        )
+        self.assertTrue(brushes, "expected west-campus frontage geometry")
 
     def test_fence_without_terrain_raises(self):
         west_campus.WEST_CAMPUS_ENABLED_TERRAIN = False

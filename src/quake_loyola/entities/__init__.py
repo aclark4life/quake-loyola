@@ -1,14 +1,13 @@
 """Gameplay entities, lights, teleports, and movers.
 
 Each submodule groups one concern (spawns, pickups, monsters, lights,
-vegetation, the Charles St platform loop, and the exit portal) and exposes
+vegetation, and the Charles St platform loop) and exposes
 ``_build_x(ENTITIES)`` helpers that append to a shared, mutable ``ENTITIES``
 list. :func:`build` runs them in the same order as the original monolithic
 module to keep entity ordering (and therefore the generated ``.map`` output)
 unchanged.
 """
 
-from . import exit as _exit
 from . import lights as _lights
 from . import monsters as _monsters
 from . import pickups as _pickups
@@ -33,7 +32,5 @@ def build():
     _vegetation._build_vegetation(ENTITIES)
     _platform._build_platform(ENTITIES)
     _monsters._build_monsters2(ENTITIES)
-    _exit._build_exit(ENTITIES)
-    _exit._build_intermission(ENTITIES)
 
     return BRUSHES, ENTITIES

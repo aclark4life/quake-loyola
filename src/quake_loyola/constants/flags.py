@@ -38,12 +38,6 @@ BRIDGE_ENABLED_SPAN_EAST_EXT = _flag(
 STREETS_ENABLED_DETAILS = _flag(
     "STREETS_ENABLED_DETAILS"
 )  # Roads, sidewalks, curbs, lamps, trees, driveways, and Ennis entrance features.
-WEST_CAMPUS_ENABLED_DORMS = _flag(
-    "WEST_CAMPUS_ENABLED_DORMS"
-)  # Dorm buildings and grounds.
-WEST_CAMPUS_ENABLED_DORMS_SOUTH = (
-    _flag("WEST_CAMPUS_ENABLED_DORMS_SOUTH") and WEST_CAMPUS_ENABLED_DORMS
-)  # The south dorm pair only; the north pair is always built with the dorms.
 WEST_CAMPUS_ENABLED_FENCE = _flag("WEST_CAMPUS_ENABLED_FENCE")  # Charles St iron fence.
 WEST_CAMPUS_ENABLED_TERRAIN = _flag(
     "WEST_CAMPUS_ENABLED_TERRAIN"
@@ -73,7 +67,6 @@ ENTITIES_ENABLED_VEGETATION = _flag("ENTITIES_ENABLED_VEGETATION")  # Trees and 
 ENTITIES_ENABLED_PLATFORM = _flag(
     "ENTITIES_ENABLED_PLATFORM"
 )  # Charles St platform loop and its rocket launchers.
-ENTITIES_ENABLED_EXIT = _flag("ENTITIES_ENABLED_EXIT")  # Single-player exit portal.
 
 # Light groups.
 LIGHTS_ENABLED_TORCHES = _flag("LIGHTS_ENABLED_TORCHES")  # Torch and flame fixtures.
@@ -89,9 +82,6 @@ LIGHTS_ENABLED_PIER_UPLIGHTS = _flag(
 LIGHTS_ENABLED_ABUTMENT_ARCH = _flag(
     "LIGHTS_ENABLED_ABUTMENT_ARCH"
 )  # West abutment cement-arch lights.
-LIGHTS_ENABLED_DORM_INTERIOR = _flag(
-    "LIGHTS_ENABLED_DORM_INTERIOR"
-)  # Dorm interior lights.
 BASEMENT_ENABLED_LIGHTS = _flag("BASEMENT_ENABLED_LIGHTS")  # Basement fixtures.
 MARYLAND_ENABLED = _flag("MARYLAND_ENABLED")  # Maryland Hall massing block.
 MARYLAND_ENABLED_TERRAIN = _flag(

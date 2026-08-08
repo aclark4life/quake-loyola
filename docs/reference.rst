@@ -734,16 +734,19 @@ Counts below are for the default build (all optional ``ENTITIES_ENABLED_*``
 groups such as deathmatch spawns, weapons, and monsters left at their
 hardcoded-default, mostly-off state — see ``tests/test_regression.py``'s
 ``EXPECTED_ENTITY_CLASSNAME_COUNTS`` golden, which this table mirrors).
-``WEST_CAMPUS_ENABLED_DORMS`` builds the two north dorms (the pair north of
-the Charles St midpoint, y 646..1546) plus their exit portal, teleport
-destinations, and interior lights. The south dorm pair (y -1968..-1068) is
-behind its own sub-flag, ``WEST_CAMPUS_ENABLED_DORMS_SOUTH``, which is ANDed
-with ``WEST_CAMPUS_ENABLED_DORMS`` so it cannot be enabled on its own. With
-the south pair off, the south Charles-arch teleport retargets to the north
-dorm roof rather than leaving a ``trigger_teleport`` pointing at a
-destination that is never emitted.
 
-Enabling more modules via ``ql conf`` (e.g. ``WEST_CAMPUS_ENABLED_DORMS``,
+The west-campus dorm buildings have been removed pending a rebuild (see
+:mod:`quake_loyola.dorms`), and everything that was anchored to them went
+with them: the ``EXIT`` portal and its ``info_intermission``, the dorm-roof
+teleport destinations and the Charles-arch and west-bridge-arch triggers
+that fed them, the in-building deathmatch spawns and pickups, and the
+dorm interior lights. Their ``WEST_CAMPUS_ENABLED_DORMS``,
+``WEST_CAMPUS_ENABLED_DORMS_SOUTH``, ``ENTITIES_ENABLED_EXIT``, and
+``LIGHTS_ENABLED_DORM_INTERIOR`` flags were removed too rather than left as
+toggles that do nothing. The map therefore has no level exit until the
+dorms are rebuilt.
+
+Enabling more modules via ``ql conf`` (e.g.
 ``ENTITIES_ENABLED_DM_SPAWNS``, ``ENTITIES_ENABLED_WEAPONS``) adds
 ``info_player_deathmatch``, ``weapon_*``, ``item_*``, and ``monster_*``
 entities not present in this default count.

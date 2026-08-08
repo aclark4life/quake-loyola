@@ -25,6 +25,7 @@ from ..geometry import (
     box,
     brush_ent,
     ent,
+    path_loop,
 )
 from ._common import ROAD_Z
 
@@ -57,31 +58,22 @@ def _build_platform(ENTITIES):
         )
     )
 
-    for path_corner_name, path_x, path_y, path_z, next_target in [
-        ("cs_pc1", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc2"),
-        ("cs_pc2", CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc3"),
-        ("cs_pc3", CHARLES_PLT_BR_X, CHARLES_PLT_Y_OUT, platform_z_flat, "cs_pc4"),
-        ("cs_pc4", CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat, "cs_pc5"),
-        (
-            "cs_pc5",
-            CHARLES_PLT_BR_X,
-            KNOTT_DRIVEWAY_Y1,
-            platform_z_backroad_south,
-            "cs_pc6",
-        ),
-        ("cs_pc6", CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat, "cs_pc7"),
-        ("cs_pc7", CHARLES_PLT_BR_X, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc8"),
-        ("cs_pc8", CHARLES_PLT_X_RET, CHARLES_PLT_Y_RET, platform_z_flat, "cs_pc9"),
-        ("cs_pc9", CHARLES_PLT_X_RET, CHARLES_PLT_Y_S, platform_z_charles, "cs_pc1"),
-    ]:
-        ENTITIES.append(
-            ent(
-                "path_corner",
-                targetname=path_corner_name,
-                target=next_target,
-                origin=f"{path_x} {path_y} {path_z}",
-            )
+    ENTITIES.extend(
+        path_loop(
+            "cs_pc",
+            [
+                (CHARLES_PLT_X_OUT, CHARLES_PLT_Y_S, platform_z_charles),
+                (CHARLES_PLT_X_OUT, CHARLES_PLT_Y_OUT, platform_z_flat),
+                (CHARLES_PLT_BR_X, CHARLES_PLT_Y_OUT, platform_z_flat),
+                (CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat),
+                (CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y1, platform_z_backroad_south),
+                (CHARLES_PLT_BR_X, KNOTT_DRIVEWAY_Y2, platform_z_flat),
+                (CHARLES_PLT_BR_X, CHARLES_PLT_Y_RET, platform_z_flat),
+                (CHARLES_PLT_X_RET, CHARLES_PLT_Y_RET, platform_z_flat),
+                (CHARLES_PLT_X_RET, CHARLES_PLT_Y_S, platform_z_charles),
+            ],
         )
+    )
 
     ENTITIES.append(
         ent(

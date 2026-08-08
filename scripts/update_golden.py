@@ -19,9 +19,10 @@ with non-default flags (e.g. a module a developer flipped on for local
 iteration) would silently leak into the "golden" values this script writes,
 producing a golden file that doesn't match what the test suite actually
 computes. See the incident this guarded against: a stray
-``WEST_CAMPUS_ENABLED_DORMS = true`` in the repo's ``ql.toml`` leaked into
-a golden update, which then failed every regression test because pytest
-(correctly isolated) computed different, lower counts.
+``WEST_CAMPUS_ENABLED_DORMS = true`` (a flag that has since been removed
+along with the dorms) in the repo's ``ql.toml`` leaked into a golden
+update, which then failed every regression test because pytest (correctly
+isolated) computed different, lower counts.
 """
 
 import hashlib

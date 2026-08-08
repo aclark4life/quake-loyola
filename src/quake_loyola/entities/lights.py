@@ -7,25 +7,12 @@ from ..constants import (
     BRIDGE_PILLAR_BASE_H,
     BRIDGE_PILLAR_BASE_RAMP_H,
     BRIDGE_PILLAR_HW,
-    DORM,
-    DORM_NORTH2_Y1,
-    DORM_NORTH2_Y2,
-    DORM_NORTH_Y1,
-    DORM_NORTH_Y2,
-    DORM_SOUTH1_Y1,
-    DORM_SOUTH1_Y2,
-    DORM_SOUTH2_Y1,
-    DORM_SOUTH2_Y2,
     FLOOR_Z2,
     KNOTT,
     KNOTT_CX,
     KNOTT_ENABLED_WALKWAY,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_ENT_WALK_ZT2,
-    NORTH_DORM_LIFT,
-    SDORM_LIFT,
-    WEST_CAMPUS_ENABLED_DORMS,
-    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     deck_bot_z,
 )
 from ..geometry import (
@@ -147,36 +134,3 @@ def _build_lights(ENTITIES):
                 light="300",
             )
         )
-
-    _dorm_north2_y2 = DORM_NORTH2_Y2
-    _dorm_north2_y1 = DORM_NORTH2_Y1
-    bldg_light_xs = [DORM.x1 + (DORM.x2 - DORM.x1) * i // 4 for i in [1, 2, 3]]
-    dorm_light_rows = []
-    if WEST_CAMPUS_ENABLED_DORMS:
-        dorm_light_rows += [
-            (DORM_NORTH_Y1, DORM_NORTH_Y2, NORTH_DORM_LIFT),
-            (_dorm_north2_y1, _dorm_north2_y2, NORTH_DORM_LIFT),
-        ]
-    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
-        dorm_light_rows += [
-            (DORM_SOUTH1_Y1, DORM_SOUTH1_Y2, SDORM_LIFT),
-            (DORM_SOUTH2_Y1, DORM_SOUTH2_Y2, SDORM_LIFT),
-        ]
-    for building_y1, building_y2, building_lift in dorm_light_rows:
-        building_y = (building_y1 + building_y2) // 2
-        for building_floor_index in range(DORM.floors):
-            building_light_z = (
-                FLOOR_Z2
-                + building_lift
-                + building_floor_index * DORM.floor_h
-                + DORM.floor_h // 2
-            )
-            for bldg_light_x in bldg_light_xs:
-                ENTITIES.append(
-                    ent(
-                        "light",
-                        origin=f"{bldg_light_x} {building_y} {building_light_z}",
-                        light="250",
-                        _light_group="dorm_interior",
-                    )
-                )

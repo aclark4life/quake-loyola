@@ -71,8 +71,11 @@ called in order by :func:`generate_map.build_map`:
      - Charles Street road surface, curbs, footpaths, world sky walls,
        and the embankment slopes on the south dorm side.
    * - :mod:`quake_loyola.west_campus`
-     - South and north dormitory buildings (walls, floors, roofs, windows,
-       the tunnel underneath them, stairwell, iron fences).
+     - West-campus frontage: the hillside iron fence, brick wall, and
+       terrace walk.
+   * - :mod:`quake_loyola.dorms`
+     - Placeholder for the west-campus dormitories, which have been
+       removed pending a rebuild; currently emits nothing.
    * - :mod:`quake_loyola.bridge`
      - The pedestrian bridge deck, arch ribs, pillars, railings, the
        east/west walkway approaches, and the "LOYOLA UNIVERSITY MARYLAND"

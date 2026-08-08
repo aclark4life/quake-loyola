@@ -1,7 +1,5 @@
 from ..constants import (
     BRIDGE,
-    DORM_CX,
-    DORM_RIDGE_Z,
     ENNIS_HW,
     ENNIS_WIDEN_N,
     ENNIS_Y,
@@ -23,14 +21,12 @@ from ..constants import (
     KNOTT_GROUND_Z,
     ROAD_X1,
     ROAD_X2,
-    SDORM_LIFT,
-    WEST_CAMPUS_ENABLED_DORMS_SOUTH,
     deck_top_z,
 )
 from ..geometry import (
     ent,
 )
-from ._common import DORM_SOUTH1_CY, ROAD_Z, _cs_offset
+from ._common import ROAD_Z, _cs_offset
 
 
 def _build_monsters(ENTITIES):
@@ -47,15 +43,6 @@ def _build_monsters(ENTITIES):
     ENTITIES.append(ent("monster_ogre", origin=f"700 0 {ROAD_Z + 24}", angle="270"))
 
     ENTITIES.append(ent("monster_ogre", origin=f"-700 0 {ROAD_Z + 24}", angle="90"))
-
-    if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
-        ENTITIES.append(
-            ent(
-                "monster_ogre",
-                origin=f"{DORM_CX} {DORM_SOUTH1_CY + 150} {int(DORM_RIDGE_Z + SDORM_LIFT + 40)}",
-                angle="90",
-            )
-        )
 
     if not ENTITIES_ENABLED_MONSTERS:
         del ENTITIES[monsters_start:]
