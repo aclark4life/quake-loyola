@@ -21,6 +21,7 @@ from .constants.derived import (
     FENCE_X1,
     FENCE_X2,
     FLOOR_Z2,
+    NORTH_DORM_LIFT,
     SDORM_LIFT,
     SDORM_STAIR_N,
     SDORM_STAIR_RISE,
@@ -1892,7 +1893,7 @@ def _build_dorm_seam_brushes(dorm_ctx):
     """Build the tunnel seam floor brushes between the dorm blocks."""
 
     dorm_cx = dorm_ctx["dorm_cx"]
-    seams = [(DORM_NORTH_Y1, 0)]
+    seams = [(DORM_NORTH_Y1, NORTH_DORM_LIFT)]
     if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
         seams.append((DORM_SOUTH1_Y2, SDORM_LIFT))
     return [
@@ -1917,13 +1918,18 @@ def _build_dorms():
     entities = []
     dorm_ctx = _make_dorm_context()
 
+    # The two north dorm buildings sit on a natural rise in the west-campus
+    # hillside (see NORTH_DORM_LIFT's docstring in constants/derived.py) —
+    # lift the whole shell, floor slab, and interior detail entity by that
+    # amount so they sit on top of the sampled terrain instead of buried
+    # in it.
     north_floor_brush, north_entity = _build_north_dorm(dorm_ctx)
-    entities.append(north_entity)
-    brushes.append(north_floor_brush)
+    entities.append(north_entity.translated(0, 0, NORTH_DORM_LIFT))
+    brushes.append(north_floor_brush.translated(0, 0, NORTH_DORM_LIFT))
 
     north2_floor_brush, north2_entity = _build_second_north_dorm(dorm_ctx)
-    entities.append(north2_entity)
-    brushes.append(north2_floor_brush)
+    entities.append(north2_entity.translated(0, 0, NORTH_DORM_LIFT))
+    brushes.append(north2_floor_brush.translated(0, 0, NORTH_DORM_LIFT))
 
     entities.extend(_build_south_dorm_entities(dorm_ctx))
     brushes.extend(_build_dorm_seam_brushes(dorm_ctx))

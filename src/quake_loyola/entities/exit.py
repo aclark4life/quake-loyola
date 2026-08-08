@@ -4,6 +4,7 @@ from ..constants import (
     DORM_NORTH_Y2,
     ENTITIES_ENABLED_EXIT,
     FLOOR_Z2,
+    NORTH_DORM_LIFT,
     WEST_CAMPUS_ENABLED_DORMS,
     Textures,
 )
@@ -24,7 +25,7 @@ def _build_exit(ENTITIES):
     _north2_y1 = _north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
     dorm_exit_yc = (_north2_y1 + _north2_y2) // 2
     dorm_exit_hw = 64
-    dorm_exit_z0 = FLOOR_Z2
+    dorm_exit_z0 = FLOOR_Z2 + NORTH_DORM_LIFT
     dorm_exit_brush = box(
         dorm_exit_xc - dorm_exit_hw,
         dorm_exit_yc - dorm_exit_hw,

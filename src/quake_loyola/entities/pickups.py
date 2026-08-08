@@ -13,6 +13,7 @@ from ..constants import (
     ENTITIES_ENABLED_HEALTH,
     ENTITIES_ENABLED_WEAPONS,
     FLOOR_Z2,
+    NORTH_DORM_LIFT,
     ROAD_X2,
     SDORM_LIFT,
     WEST_CAMPUS_ENABLED_DORMS,
@@ -82,7 +83,10 @@ def _build_ammo(ENTITIES):
     ENTITIES.append(ent("item_shells", origin=f"-300 -300 {ROAD_Z + 24}"))
     if WEST_CAMPUS_ENABLED_DORMS:
         ENTITIES.append(
-            ent("item_shells", origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + 40}")
+            ent(
+                "item_shells",
+                origin=f"{DORM_CX} {DORM_NORTH_CY} {FLOOR_Z2 + NORTH_DORM_LIFT + 40}",
+            )
         )
     ENTITIES.append(ent("item_spikes", origin=f"-400 200 {ROAD_Z + 24}"))
     ENTITIES.append(ent("item_spikes", origin=f"400 -200 {ROAD_Z + 24}"))
@@ -112,7 +116,7 @@ def _build_health(ENTITIES):
         ENTITIES.append(
             ent(
                 "item_armorInv",
-                origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + 40)}",
+                origin=f"{DORM_CX} {DORM_NORTH_CY} {int(DORM_RIDGE_Z + NORTH_DORM_LIFT + 40)}",
             )
         )
 

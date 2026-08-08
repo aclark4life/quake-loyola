@@ -34,6 +34,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_RD_X2,
     KNOTT_DRIVEWAY_ZT_S,
     KNOTT_ENABLED,
+    NORTH_DORM_LIFT,
     SDORM_LIFT,
     WALL_T,
     WEST_CAMPUS_ENABLED_DORMS,
@@ -64,7 +65,7 @@ def _append_west_bridge_teleport(ENTITIES):
         ent(
             "info_teleport_destination",
             targetname="dest_east",
-            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + 40)}",
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2} {int(DORM_RIDGE_Z + NORTH_DORM_LIFT + 40)}",
             angle="270",
         )
     )
@@ -160,7 +161,7 @@ def _append_dorm_roof_teleports(ENTITIES):
         ent(
             "info_teleport_destination",
             targetname="dest_dorm_roof",
-            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + 40)}",
+            origin=f"{(DORM.x1 + DORM.x2) // 2} {(DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2 - 100} {int(DORM_RIDGE_Z + NORTH_DORM_LIFT + 40)}",
             angle="270",
         )
     )
@@ -442,9 +443,23 @@ def _build_dm_spawns(ENTITIES):
             # These sit inside/on the dorm building, so only add them when
             # that geometry actually exists — otherwise they float in air.
             spawn_points += [
-                ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + 40), 90),
-                ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + DORM.floor_h + 40), 90),
-                ((DORM_CX, DORM_NORTH_CY + 150, int(DORM_RIDGE_Z + 40)), 90),
+                ((DORM_CX, DORM_NORTH_CY, FLOOR_Z2 + NORTH_DORM_LIFT + 40), 90),
+                (
+                    (
+                        DORM_CX,
+                        DORM_NORTH_CY,
+                        FLOOR_Z2 + NORTH_DORM_LIFT + DORM.floor_h + 40,
+                    ),
+                    90,
+                ),
+                (
+                    (
+                        DORM_CX,
+                        DORM_NORTH_CY + 150,
+                        int(DORM_RIDGE_Z + NORTH_DORM_LIFT + 40),
+                    ),
+                    90,
+                ),
             ]
         if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
             spawn_points += [

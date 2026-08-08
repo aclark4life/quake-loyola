@@ -381,6 +381,17 @@ DORM = DormSpec(
 # South-dorm terrace.
 SDORM_LIFT = 128  # Terrace height.
 
+# North-dorm terrace. The two north dorm buildings sit on a natural rise in
+# the west-campus hillside — real terrain samples across their footprint
+# (see terrain/west_campus.py's surveyed grid) run roughly 90-151 units
+# above FLOOR_Z2, so building the shells flush with FLOOR_Z2 (as before)
+# left them mostly buried in the hillside. Lifting by one floor height
+# (matching SDORM_LIFT's convention) brings the floor slab close to grade,
+# leaving at most ~25 units of terrain poking above it at the footprint's
+# worst corner — the same order of embedding SDORM_LIFT already tolerates
+# for the south pair.
+NORTH_DORM_LIFT = DORM.floor_h
+
 SDORM_STAIR_HW = 40  # Half-width; matches the west-wall door opening.
 SDORM_STAIR_N = SDORM_LIFT // 16  # Number of 16-unit steps.
 SDORM_STAIR_RISE = SDORM_LIFT // SDORM_STAIR_N  # Per-step rise.

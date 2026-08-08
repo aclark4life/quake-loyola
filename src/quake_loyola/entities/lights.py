@@ -20,6 +20,7 @@ from ..constants import (
     KNOTT_ENABLED_WALKWAY,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_ENT_WALK_ZT2,
+    NORTH_DORM_LIFT,
     SDORM_LIFT,
     WEST_CAMPUS_ENABLED_DORMS,
     WEST_CAMPUS_ENABLED_DORMS_SOUTH,
@@ -151,8 +152,8 @@ def _build_lights(ENTITIES):
     dorm_light_rows = []
     if WEST_CAMPUS_ENABLED_DORMS:
         dorm_light_rows += [
-            (DORM_NORTH_Y1, DORM_NORTH_Y2, 0),
-            (_dorm_north2_y1, _dorm_north2_y2, 0),
+            (DORM_NORTH_Y1, DORM_NORTH_Y2, NORTH_DORM_LIFT),
+            (_dorm_north2_y1, _dorm_north2_y2, NORTH_DORM_LIFT),
         ]
     if WEST_CAMPUS_ENABLED_DORMS_SOUTH:
         dorm_light_rows += [
