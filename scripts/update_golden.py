@@ -1,5 +1,11 @@
 """Recompute golden values in tests/test_regression.py from the current map.
 
+Rewrites every golden constant test_regression.py checks: EXPECTED_BRUSHES,
+EXPECTED_ENTITIES, EXPECTED_MD5, and the EXPECTED_ENTITY_CLASSNAME_COUNTS
+breakdown. (The breakdown used to be hand-maintained, which meant the
+documented `just update-golden && just test` workflow still left a failing
+test behind whenever a change shifted the per-classname distribution.)
+
 This mechanism is self-updating: it re-derives the golden brush/entity
 counts and MD5 hash from the same build_map()/build_map_text() code path
 that test_regression.py verifies against. That means it has no independent
@@ -30,6 +36,7 @@ import os
 import re
 import sys
 import tempfile
+from collections import Counter
 from pathlib import Path
 
 # Ensure the project root and src/ are on the path when called from any directory.
@@ -55,6 +62,18 @@ new_md5 = hashlib.md5(text.encode()).hexdigest()
 mb = generate_map.build_map()
 new_brushes = len(mb.brushes)
 new_entities = len(mb.entities)
+new_classnames = dict(sorted(Counter(e.classname for e in mb.entities).items()))
+
+
+def _format_classname_counts(counts):
+    """Render the counts dict the way the golden file spells it out."""
+    body = "".join(f'    "{name}": {count},\n' for name, count in counts.items())
+    return "EXPECTED_ENTITY_CLASSNAME_COUNTS = {\n" + body + "}"
+
+
+_CLASSNAME_COUNTS_RE = re.compile(
+    r"EXPECTED_ENTITY_CLASSNAME_COUNTS\s*=\s*\{[^}]*\}", re.DOTALL
+)
 
 path = root / "tests" / "test_regression.py"
 src = path.read_text()
@@ -72,6 +91,26 @@ print(
 )
 print(f"  EXPECTED_MD5      : {old_md5.group(1) if old_md5 else '?'} -> {new_md5}")
 
+old_classname_block = _CLASSNAME_COUNTS_RE.search(src)
+old_classnames = (
+    dict(
+        (name, int(count))
+        for name, count in re.findall(
+            r'"([^"]+)"\s*:\s*(\d+)', old_classname_block.group(0)
+        )
+    )
+    if old_classname_block
+    else {}
+)
+if old_classnames != new_classnames:
+    print("  EXPECTED_ENTITY_CLASSNAME_COUNTS:")
+    for name in sorted(set(old_classnames) | set(new_classnames)):
+        before, after = old_classnames.get(name, 0), new_classnames.get(name, 0)
+        if before != after:
+            print(f"    {name:<28}: {before} -> {after}")
+else:
+    print("  EXPECTED_ENTITY_CLASSNAME_COUNTS: unchanged")
+
 if "--yes" not in sys.argv:
     reply = input(
         "\nHave you reviewed the geometry diff (e.g. `just generate` + "
@@ -85,9 +124,19 @@ if "--yes" not in sys.argv:
 src = re.sub(r"(EXPECTED_BRUSHES\s*=\s*)\d+", rf"\g<1>{new_brushes}", src)
 src = re.sub(r"(EXPECTED_ENTITIES\s*=\s*)\d+", rf"\g<1>{new_entities}", src)
 src = re.sub(r'(EXPECTED_MD5\s*=\s*")[0-9a-f]+"', rf'\g<1>{new_md5}"', src)
+if old_classname_block:
+    src = _CLASSNAME_COUNTS_RE.sub(
+        lambda _: _format_classname_counts(new_classnames), src, count=1
+    )
+else:
+    raise SystemExit(
+        "EXPECTED_ENTITY_CLASSNAME_COUNTS not found in tests/test_regression.py; "
+        "golden values NOT updated."
+    )
 path.write_text(src)
 
 print("Updated golden values:")
 print(f"  EXPECTED_BRUSHES  = {new_brushes}")
 print(f"  EXPECTED_ENTITIES = {new_entities}")
 print(f"  EXPECTED_MD5      = {new_md5}")
+print(f"  EXPECTED_ENTITY_CLASSNAME_COUNTS = {new_classnames}")
