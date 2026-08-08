@@ -34,6 +34,15 @@ STREET_SURFACE_T = 2
 ROAD_X1, ROAD_X2 = -606, 256
 # Charles St carries a travel lane and a parking lane on each side.
 STREET_DIV_LINE_HW = 2  # Half-width of each parking-lane stripe.
+# Those stripes are broken, as lane lines are on a real roadway. US practice
+# (MUTCD) is a 1:3 line-to-gap ratio, drawn here as 10 ft of paint to 30 ft of
+# road at SCALE = 15.108 units/ft. Both stripes are stepped off the same
+# lattice so the dashes on either side of the street stay abreast of each
+# other, and a dash clipped shorter than this by an intersection is dropped
+# rather than left as a stub.
+STREET_LANE_DASH_LEN = 151  # 10 ft
+STREET_LANE_DASH_GAP = 453  # 30 ft
+STREET_LANE_DASH_MIN = STREET_LANE_DASH_LEN // 3
 
 # Crosswalk stripe geometry.
 CROSSWALK_LEN = 80  # Depth along the direction of travel.

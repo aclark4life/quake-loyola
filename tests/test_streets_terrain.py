@@ -100,6 +100,96 @@ class StreetDetailLayoutTests(unittest.TestCase):
         for a, b in zip(ordered, ordered[1:], strict=False):
             self.assertLess(a, b, f"street cross-section out of order: {ordered}")
 
+    def test_lane_lines_are_broken_into_dashes(self):
+        from quake_loyola.constants.streets import (
+            STREET_DIV_LINE_HW,
+            STREET_LANE_DASH_GAP,
+            STREET_LANE_DASH_LEN,
+            STREET_LANE_DASH_MIN,
+        )
+
+        layout = details._make_street_detail_layout()
+        brushes = []
+        details._append_charles_marking_brushes(brushes, layout)
+
+        for lane_line_x in (layout["west_lane_line_x"], layout["east_lane_line_x"]):
+            runs = self._runs_in_stripe_slot(brushes, lane_line_x, STREET_DIV_LINE_HW)
+            dashes = [(y1, y2) for y1, y2, painted in runs if painted]
+            gaps = [(y1, y2) for y1, y2, painted in runs if not painted]
+            self.assertGreater(len(dashes), 5, "lane line is not broken up")
+            self.assertGreater(len(gaps), 5, "lane line has no gaps between dashes")
+
+            for y1, y2 in dashes:
+                self.assertLessEqual(y2 - y1, STREET_LANE_DASH_LEN)
+                self.assertGreaterEqual(
+                    y2 - y1, STREET_LANE_DASH_MIN, "dash left as a stub"
+                )
+            # Every gap is a full dash gap except where the pattern is cut off:
+            # the crossing interrupts it, and the north end of the street stops
+            # it mid-cycle.
+            for y1, y2 in gaps:
+                if y1 == layout["charles_crossing_y2"] or y2 == layout["charles_y2"]:
+                    self.assertLess(y2 - y1, STREET_LANE_DASH_GAP)
+                    continue
+                self.assertAlmostEqual(y2 - y1, STREET_LANE_DASH_GAP, places=3)
+
+    def test_lane_line_slot_is_painted_end_to_end(self):
+        # The road surface is carved away for the stripe's full length, so any
+        # stretch the markings don't paint is a slot straight through to the
+        # void. Only the pedestrian crossing may be left to another builder.
+        from quake_loyola.constants.streets import STREET_DIV_LINE_HW
+
+        layout = details._make_street_detail_layout()
+        brushes = []
+        details._append_charles_marking_brushes(brushes, layout)
+
+        for lane_line_x in (layout["west_lane_line_x"], layout["east_lane_line_x"]):
+            runs = self._runs_in_stripe_slot(brushes, lane_line_x, STREET_DIV_LINE_HW)
+            self.assertEqual(runs[0][0], layout["charles_y1"])
+            self.assertEqual(runs[-1][1], layout["charles_y2"])
+            holes = [
+                (a[1], b[0])
+                for a, b in zip(runs, runs[1:], strict=False)
+                if b[0] - a[1] > 1e-6
+            ]
+            self.assertEqual(
+                holes,
+                [(layout["charles_crossing_y1"], layout["charles_crossing_y2"])],
+                "unpainted stretch of lane-line slot outside the crossing",
+            )
+
+    def test_both_lane_lines_keep_their_dashes_abreast(self):
+        from quake_loyola.constants.streets import STREET_DIV_LINE_HW
+
+        layout = details._make_street_detail_layout()
+        brushes = []
+        details._append_charles_marking_brushes(brushes, layout)
+        west, east = (
+            [
+                (y1, y2)
+                for y1, y2, painted in self._runs_in_stripe_slot(
+                    brushes, x, STREET_DIV_LINE_HW
+                )
+                if painted
+            ]
+            for x in (layout["west_lane_line_x"], layout["east_lane_line_x"])
+        )
+        self.assertEqual(west, east)
+
+    @staticmethod
+    def _runs_in_stripe_slot(brushes, line_x, line_hw):
+        """Return this stripe slot's (y1, y2, is_painted) runs, south to north."""
+        runs = []
+        for b in brushes:
+            (x1, y1, _), (x2, y2, _) = b.get_bbox()
+            if abs(x1 - (line_x - line_hw)) > 1e-6:
+                continue
+            if abs(x2 - (line_x + line_hw)) > 1e-6:
+                continue
+            painted = any(f.tex == Textures.PARKING_STRIPE for f in b.faces)
+            runs.append((y1, y2, painted))
+        return sorted(runs)
+
     def test_charles_crossing_sits_within_charles_span(self):
         layout = details._make_street_detail_layout()
         self.assertLess(layout["charles_y1"], layout["charles_crossing_y1"])

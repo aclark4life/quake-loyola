@@ -70,6 +70,9 @@ from ..constants.streets import (
     STREET_DIV_HW,
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
+    STREET_LANE_DASH_GAP,
+    STREET_LANE_DASH_LEN,
+    STREET_LANE_DASH_MIN,
     STREET_SURFACE_T,
     STREET_SW_GAP,
     STREET_SW_SLAB_LEN,
@@ -176,6 +179,45 @@ def _street_detail_ranges_excluding(v1, v2, ex1, ex2):
     if ex2 < v2:
         ranges.append((max(ex2, v1), v2))
     return ranges
+
+
+def _street_dash_runs(v1, v2, *, anchor, dash_len, gap_len, min_dash):
+    """Tile ``[v1, v2)`` with a broken line's paint and gap runs.
+
+    Returns ``(start, end, is_dash)`` covering the whole span with no holes —
+    the caller must paint the gaps too, because the road surface is carved away
+    along the stripe's full length and anything left unpainted would be a slot
+    straight through to the void.
+
+    The dash pattern is stepped off ``anchor`` rather than off ``v1``, so every
+    run of the same line stays on one lattice however the street is chopped up
+    by intersections, and parallel lines sharing an anchor stay abreast. A dash
+    the span's end cuts shorter than ``min_dash`` is dropped rather than left
+    as a stub.
+    """
+
+    period = dash_len + gap_len
+    runs = []
+    i = math.floor((v1 - anchor) / period)
+    while True:
+        dash_start = anchor + i * period
+        dash_end = dash_start + dash_len
+        i += 1
+        if dash_start >= v2:
+            break
+        clipped1, clipped2 = max(dash_start, v1), min(dash_end, v2)
+        if clipped2 > clipped1 and clipped2 - clipped1 >= min_dash:
+            runs.append((clipped1, clipped2, True))
+    filled = []
+    cursor = v1
+    for start, end, _ in runs:
+        if start > cursor:
+            filled.append((cursor, start, False))
+        filled.append((start, end, True))
+        cursor = end
+    if cursor < v2:
+        filled.append((cursor, v2, False))
+    return filled
 
 
 def _append_street_sidewalk_slabs_y(
@@ -1100,18 +1142,26 @@ def _append_charles_marking_brushes(dash_brushes, layout):
             layout["charles_crossing_y1"],
             layout["charles_crossing_y2"],
         ):
-            dash_brushes.append(
-                box(
-                    lane_line_x - STREET_DIV_LINE_HW,
-                    seg_y1,
-                    FLOOR_Z2,
-                    lane_line_x + STREET_DIV_LINE_HW,
-                    seg_y2,
-                    FLOOR_Z2 + STREET_SURFACE_T,
-                    Textures.PARKING_STRIPE,
-                    tt_params=divider_tt_params,
+            for run_y1, run_y2, is_dash in _street_dash_runs(
+                seg_y1,
+                seg_y2,
+                anchor=layout["charles_y1"],
+                dash_len=STREET_LANE_DASH_LEN,
+                gap_len=STREET_LANE_DASH_GAP,
+                min_dash=STREET_LANE_DASH_MIN,
+            ):
+                dash_brushes.append(
+                    box(
+                        lane_line_x - STREET_DIV_LINE_HW,
+                        run_y1,
+                        FLOOR_Z2,
+                        lane_line_x + STREET_DIV_LINE_HW,
+                        run_y2,
+                        FLOOR_Z2 + STREET_SURFACE_T,
+                        Textures.PARKING_STRIPE if is_dash else Textures.ROAD,
+                        tt_params=divider_tt_params if is_dash else "0 0 0 1 1",
+                    )
                 )
-            )
     # The crossing steps south stripe by stripe as it runs west to east, so the
     # west end lands in the lowered sidewalk entrance and the east end against
     # the east walk. Every column still paints the full band depth, filling
