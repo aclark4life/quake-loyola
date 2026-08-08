@@ -61,6 +61,8 @@ from ..constants.streets import (
     ROAD_X1,
     ROAD_X2,
     STREET_CHARLES_CURB_W,
+    STREET_CURB_JOINT_OFFSET,
+    STREET_CURB_SLAB_LEN,
     STREET_DIV_HW,
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
@@ -81,6 +83,7 @@ from ..geometry import (
     brush_ent,
     curb_seg,
     ramp_slab_y,
+    sidewalk_panel_spans,
     torch_flame,
     tri_prism,
 )
@@ -393,6 +396,25 @@ def _append_charles_road_surfaces(brushes, layout):
             )
 
 
+def _append_charles_curb_sections(brushes, layout, x1, x2, y1, y2, z_base, z_top):
+    """Tile a Charles St curb run into poured sections.
+
+    Curbs are poured in longer runs than the walk beside them, so they use
+    STREET_CURB_SLAB_LEN with joints phase-shifted off the sidewalk grid by
+    STREET_CURB_JOINT_OFFSET. Anchoring the phase to ``charles_y1`` keeps every
+    curb piece on one grid — both sides of the street, and the runs either side
+    of a crossing or of Ennis Rd — so each kerb line reads as a single pour.
+    """
+    step = STREET_CURB_SLAB_LEN + STREET_SW_GAP
+    offset = (y1 - layout["charles_y1"] + STREET_CURB_JOINT_OFFSET) % step
+    panels, joints = sidewalk_panel_spans(
+        y1, y2, STREET_CURB_SLAB_LEN, STREET_SW_GAP, offset
+    )
+    for span, tex in ((panels, Textures.SIDEWALK), (joints, Textures.SIDEWALK_JOINT)):
+        for py1, py2 in span:
+            brushes.append(box(x1, py1, z_base, x2, py2, z_top, tex))
+
+
 def _append_charles_west_sidewalks(
     brushes,
     layout,
@@ -452,16 +474,16 @@ def _append_charles_west_sidewalks(
             Textures.SIDEWALK_JOINT,
         )
     )
-    brushes.append(
-        box(
-            ROAD_X1 - curb_cap_d,
-            curb_ramp_y2 + layout["sw_gap"],
-            FLOOR_Z2 + STREET_SURFACE_T,
-            ROAD_X1,
-            layout["charles_y2"],
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-        )
+    # The curb is poured in its own sections, off the sidewalk's joint grid.
+    _append_charles_curb_sections(
+        brushes,
+        layout,
+        ROAD_X1 - curb_cap_d,
+        ROAD_X1,
+        curb_ramp_y2 + layout["sw_gap"],
+        layout["charles_y2"],
+        FLOOR_Z2 + STREET_SURFACE_T,
+        FLOOR_Z2 + CHARLES_WALK_H,
     )
     brushes.append(
         box(
@@ -500,16 +522,15 @@ def _append_charles_west_sidewalks(
             Textures.SIDEWALK,
         )
     )
-    brushes.append(
-        box(
-            ROAD_X1 - STREET_CHARLES_CURB_W,
-            layout["charles_y1"],
-            FLOOR_Z2,
-            ROAD_X1,
-            layout["charles_crossing_mid"],
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-        )
+    _append_charles_curb_sections(
+        brushes,
+        layout,
+        ROAD_X1 - STREET_CHARLES_CURB_W,
+        ROAD_X1,
+        layout["charles_y1"],
+        layout["charles_crossing_mid"],
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
     )
     brushes.append(
         box(
@@ -563,16 +584,15 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
                 Textures.SIDEWALK_JOINT,
             )
         )
-        brushes.append(
-            box(
-                ROAD_X2,
-                seg_y1,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                ROAD_X2 + curb_cap_d,
-                seg_y2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.SIDEWALK,
-            )
+        _append_charles_curb_sections(
+            brushes,
+            layout,
+            ROAD_X2,
+            ROAD_X2 + curb_cap_d,
+            seg_y1,
+            seg_y2,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            FLOOR_Z2 + CHARLES_WALK_H,
         )
 
 
