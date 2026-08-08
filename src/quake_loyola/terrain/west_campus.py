@@ -139,13 +139,26 @@ def terrain_z(x, y):
 
 
 _WCT_OVR = 32  # Overlap extension for adjacent terrain rows; see build().
-# 32 is chosen empirically: the terrain grid's DORM_X1/DORM_X2 columns and its
-# y=1396/1846 rows fall exactly on the dorm walls, so an overlap that lands
-# near the wall thickness makes qbsp clip the wall faces against the
-# overlapping terrain prisms and leaves uncovered strips at grade inside the
-# dorms. Sweeping 0..40 against a hole scan of the dorm block gave 73/426/1446
-# /42/59/131/1/16 uncovered samples for 0/4/8/12/16/24/32/40. Re-run that sweep
-# if the terrain grid or the dorm footprint moves.
+# The original value was tuned against the dorm block: the grid's DORM_X1/
+# DORM_X2 columns and its y=1396/1846 rows fell exactly on the dorm walls, so
+# an overlap near the wall thickness made qbsp clip the wall faces against the
+# overlapping terrain prisms and leave uncovered strips at grade indoors.
+# Sweeping 0..40 against a hole scan then gave 73/426/1446/42/59/131/1/16
+# uncovered samples for 0/4/8/12/16/24/32/40, which made 32 a lone good value
+# wedged between two bad ones.
+#
+# That is no longer the situation. The dorms have been retired (see
+# quake_loyola.dorms), so there are no walls left for the overlap to fight
+# with, and re-running both scans confirms it:
+#   * scripts/check_ground_coverage.py reports 0 holes / 617070 samples at
+#     overlap 0, 8, 16, 24, 28, 32, 36, 40, 48 and 64.
+#   * a qbsp + BSP face scan for the sliver-leaf-marked-SOLID bug that bit
+#     terrain/ne.py twice (a full-height GROUND face running from grade to the
+#     sky) finds none, and no leak, at 16..64 in steps of 2-8.
+# So 32 now sits in the middle of a uniformly clean band on both criteria
+# rather than on a spike, and it is kept only because changing it would churn
+# geometry for no benefit. Re-run both sweeps, not just the hole scan, if
+# buildings ever land back on this grid.
 
 
 def _build_west_campus_terrain_cell(wx1, wx2, y1, y2, z_nw, z_sw, z_ne, z_se, texture):
