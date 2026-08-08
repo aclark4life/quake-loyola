@@ -239,7 +239,10 @@ DORM_NORTH_Y2 = 1846  # North dorm bound. Shifted +300 north of the bridge
 # dorm pair.
 DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH
 DORM_SOUTH1_Y1 = -1968  # South dorm anchor.
-DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH
+SDORM1_EXTRA_DEPTH = 150  # Extra depth on south1 to space its west-wall
+# windows further apart (more brick between them); south2 shifts north by
+# the same amount to stay flush against south1.
+DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH + SDORM1_EXTRA_DEPTH
 DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
 DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2
 DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH
