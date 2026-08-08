@@ -1,7 +1,7 @@
 from ..constants import (
     DORM,
-    DORM_NORTH_Y1,
-    DORM_NORTH_Y2,
+    DORM_NORTH2_Y1,
+    DORM_NORTH2_Y2,
     ENTITIES_ENABLED_EXIT,
     FLOOR_Z2,
     NORTH_DORM_LIFT,
@@ -21,8 +21,8 @@ def _build_exit(ENTITIES):
     exit_start = len(ENTITIES)
 
     dorm_exit_xc = (DORM.x1 + DORM.x2) // 2
-    _north2_y2 = DORM_NORTH_Y1
-    _north2_y1 = _north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
+    _north2_y2 = DORM_NORTH2_Y2
+    _north2_y1 = DORM_NORTH2_Y1
     dorm_exit_yc = (_north2_y1 + _north2_y2) // 2
     dorm_exit_hw = 64
     dorm_exit_z0 = FLOOR_Z2 + NORTH_DORM_LIFT

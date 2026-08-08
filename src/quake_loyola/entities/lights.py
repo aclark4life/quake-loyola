@@ -8,6 +8,8 @@ from ..constants import (
     BRIDGE_PILLAR_BASE_RAMP_H,
     BRIDGE_PILLAR_HW,
     DORM,
+    DORM_NORTH2_Y1,
+    DORM_NORTH2_Y2,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
     DORM_SOUTH1_Y1,
@@ -146,8 +148,8 @@ def _build_lights(ENTITIES):
             )
         )
 
-    _dorm_north2_y2 = DORM_NORTH_Y1
-    _dorm_north2_y1 = _dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
+    _dorm_north2_y2 = DORM_NORTH2_Y2
+    _dorm_north2_y1 = DORM_NORTH2_Y1
     bldg_light_xs = [DORM.x1 + (DORM.x2 - DORM.x1) * i // 4 for i in [1, 2, 3]]
     dorm_light_rows = []
     if WEST_CAMPUS_ENABLED_DORMS:

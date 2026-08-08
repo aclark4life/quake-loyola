@@ -9,6 +9,8 @@ from .constants.derived import (
     DORM_FRONT_WALKWAY_X1,
     DORM_FRONT_WALKWAY_X2,
     DORM_H,
+    DORM_NORTH2_Y1,
+    DORM_NORTH2_Y2,
     DORM_NORTH_Y1,
     DORM_NORTH_Y2,
     DORM_PIER_X,
@@ -776,8 +778,8 @@ def _make_second_north_dorm_context(dorm_ctx):
     nb_wins_yz = dorm_ctx["nb_wins_yz"]
     nb_wins_yz_double = dorm_ctx["nb_wins_yz_double"]
 
-    dorm_north2_y2 = DORM_NORTH_Y1
-    dorm_north2_y1 = dorm_north2_y2 - (DORM_NORTH_Y2 - DORM_NORTH_Y1)
+    dorm_north2_y2 = DORM_NORTH2_Y2
+    dorm_north2_y1 = DORM_NORTH2_Y1
     dorm_wy2 = [
         dorm_north2_y1 + (dorm_north2_y2 - dorm_north2_y1) * k // 4 for k in [1, 2, 3]
     ]
