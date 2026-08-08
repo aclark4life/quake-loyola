@@ -58,11 +58,24 @@ def test_conf_set_sky_preset_night_round_trips(tmp_path):
 
 
 def test_conf_set_sky_preset_rejects_invalid_value(tmp_path):
-    result = run_ql("conf", "set", "sky_preset", "midnight", cwd=tmp_path)
+    # Not a named preset and not a valid WAD2 texture name (contains a space).
+    result = run_ql("conf", "set", "sky_preset", "not a texture", cwd=tmp_path)
     assert result.returncode != 0
     assert "sky_preset must be one of" in result.stdout + result.stderr
     # Nothing should have been persisted for an invalid value.
     assert not (tmp_path / "ql.toml").exists()
+
+
+def test_conf_set_sky_preset_accepts_raw_texture_name_round_trips(tmp_path):
+    # Any WAD2-legal texture name is accepted as-is, so any loaded WAD's
+    # skybox can be tried without adding a formal named preset for it.
+    set_result = run_ql("conf", "set", "sky_preset", "sky_z1", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "sky_preset = sky_z1" in set_result.stdout
+
+    get_result = run_ql("conf", "get", "sky_preset", cwd=tmp_path)
+    assert get_result.returncode == 0
+    assert get_result.stdout.strip() == "sky_z1"
 
 
 def test_conf_get_vis_mode_default(tmp_path):
@@ -157,7 +170,7 @@ def test_gen_with_malformed_toml_fails_cleanly(tmp_path):
 
 
 def test_build_with_malformed_toml_fails_cleanly(tmp_path):
-    (tmp_path / "ql.toml").write_text('[build]\nsky_preset = "midnight"\n')
+    (tmp_path / "ql.toml").write_text('[build]\nsky_preset = "not a texture"\n')
     result = run_ql("build", cwd=tmp_path)
     assert result.returncode == 1
     assert "Traceback" not in result.stderr

@@ -24,7 +24,9 @@ from typing import Any
 from .build_presets import (
     BUILD_ENUM_SETTINGS,
     FOG_DENSITY_NAMES,
+    SKY_PRESET_NAMES,
     is_valid_fog_density,
+    is_valid_sky_preset,
 )
 
 
@@ -223,6 +225,12 @@ def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
             f"ql.toml [build] fog_density must be 'default', one of "
             f"{FOG_DENSITY_NAMES}, or a numeric string, got "
             f"{data['fog_density']!r}"
+        )
+    if "sky_preset" in data and not is_valid_sky_preset(str(data["sky_preset"])):
+        raise ValueError(
+            f"ql.toml [build] sky_preset must be one of {SKY_PRESET_NAMES}, or a "
+            "WAD2 skybox texture name (letters/digits/underscore, 1-15 chars), "
+            f"got {data['sky_preset']!r}"
         )
     if "light_extra" in data and not isinstance(data["light_extra"], bool):
         raise TypeError(

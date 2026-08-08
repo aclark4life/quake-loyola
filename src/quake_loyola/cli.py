@@ -17,6 +17,7 @@ from .build_presets import (
     LIGHTING_PRESET_NAMES,
     SKY_PRESET_NAMES,
     is_valid_fog_density,
+    is_valid_sky_preset,
 )
 
 REPO_ROOT = config.REPO_ROOT
@@ -71,7 +72,10 @@ def config_show() -> None:
             elif name == "fog_density":
                 options = f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
             elif name == "sky_preset":
-                options = f", options: {', '.join(SKY_PRESET_NAMES)}"
+                options = (
+                    f", options: {', '.join(SKY_PRESET_NAMES)}, "
+                    "or a raw WAD2 skybox texture name"
+                )
             typer.echo(
                 f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
             )
@@ -133,6 +137,17 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
                     "numeric string"
                 )
             parsed_build = value_norm
+        elif name_l == "sky_preset":
+            stripped = value.strip()
+            value_norm = (
+                stripped.lower() if stripped.lower() in SKY_PRESET_NAMES else stripped
+            )
+            if not is_valid_sky_preset(value_norm):
+                raise typer.BadParameter(
+                    f"sky_preset must be one of {SKY_PRESET_NAMES}, or a WAD2 "
+                    "skybox texture name (letters/digits/underscore, 1-15 chars)"
+                )
+            parsed_build = value_norm
         else:
             parsed_build = _parse_bool(value)
         return "build", name_l, parsed_build
@@ -162,6 +177,7 @@ def config_set(
         ql conf set lighting_preset dusk
         ql conf set fog_density high
         ql conf set sky_preset night
+        ql conf set sky_preset sky_z1   # raw texture name, any loaded WAD
 
     Multiple settings at once (NAME=VALUE form, space-separated):
         ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk

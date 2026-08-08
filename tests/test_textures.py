@@ -8,7 +8,7 @@ from quake_loyola.constants.textures import SKY_PRESET_NAMES, SKY_PRESETS, Textu
 
 
 def test_sky_presets_cover_day_and_night():
-    assert {"day", "night"} <= set(SKY_PRESETS)
+    assert set(SKY_PRESETS) == {"day", "night"}
     assert SKY_PRESET_NAMES == sorted(SKY_PRESETS)
 
 

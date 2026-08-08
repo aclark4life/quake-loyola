@@ -1,6 +1,8 @@
 """Texture-name constants used throughout the map generator.
 
-``sky_preset`` selects the world sky texture from ``SKY_PRESETS``.
+``sky_preset`` selects the world sky texture: either a named preset from
+``SKY_PRESETS``, or (for anything else) a raw WAD2 skybox texture name used
+as-is — see ``build_presets.is_valid_sky_preset``.
 """
 
 from ..build_presets import SKY_PRESET_NAMES as _SKY_PRESET_NAME_TUPLE
@@ -10,7 +12,6 @@ from ..config import get_build as _get_build
 SKY_PRESETS: dict[str, str] = {
     "day": "sky4",  # quake101.wad daytime sky
     "night": "sky1",  # quake101.wad nighttime sky
-    "sky_z1": "sky_z1",  # alkaline.wad stylised sky (testing)
 }
 
 # Sorted valid ``sky_preset`` names for CLI validation and help text.
@@ -22,6 +23,8 @@ SKY_PRESET_NAMES: list[str] = sorted(SKY_PRESETS)
 assert SKY_PRESET_NAMES == sorted(_SKY_PRESET_NAME_TUPLE), (
     "SKY_PRESETS keys drifted from build_presets.SKY_PRESET_NAMES"
 )
+
+_sky_preset_setting = _get_build("sky_preset")
 
 
 class Textures:
@@ -55,7 +58,7 @@ class Textures:
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
     SIDEWALK_JOINT = JOINT_GAP  # dark shadow-gap seam between sidewalk tiles
-    SKY = SKY_PRESETS[_get_build("sky_preset")]
+    SKY = SKY_PRESETS.get(_sky_preset_setting, _sky_preset_setting)
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad
