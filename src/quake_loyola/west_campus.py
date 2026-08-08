@@ -554,6 +554,11 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
     nb_wins_yz_west = dorm_ctx["nb_wins_yz_west"]
     tunn_h = dorm_ctx["tunn_h"]
 
+    # Wall runs extend down to FLOOR_Z2 - NORTH_DORM_LIFT (i.e. absolute
+    # grade after the whole building is translated by NORTH_DORM_LIFT in
+    # _build_dorms()), not just to the interior floor line (FLOOR_Z2) — so
+    # the brick reaches true ground instead of leaving the raised building
+    # floating over the lower corners of the sampled terrain.
     wall_brushes = _build_dorm_wall_runs(
         [
             (
@@ -561,7 +566,7 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
                 (
                     DORM.x1,
                     DORM_NORTH_Y1,
-                    FLOOR_Z2,
+                    FLOOR_Z2 - NORTH_DORM_LIFT,
                     DORM.x2,
                     DORM_NORTH_Y1 + DORM.wall_t,
                     FLOOR_Z2 + DORM_H,
@@ -573,7 +578,7 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
                 (
                     DORM.x1,
                     DORM_NORTH_Y2 - DORM.wall_t,
-                    FLOOR_Z2,
+                    FLOOR_Z2 - NORTH_DORM_LIFT,
                     DORM.x2,
                     DORM_NORTH_Y2,
                     FLOOR_Z2 + DORM_H,
@@ -585,7 +590,7 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
                 (
                     DORM_NORTH_Y1 + DORM.wall_t,
                     DORM.x2 - DORM.wall_t,
-                    FLOOR_Z2,
+                    FLOOR_Z2 - NORTH_DORM_LIFT,
                     DORM_NORTH_Y2 - DORM.wall_t,
                     DORM.x2,
                     FLOOR_Z2 + DORM_H,
@@ -597,7 +602,7 @@ def _build_north_dorm_wall_brushes(dorm_ctx, center_window_openings, dorm_e_open
                 (
                     DORM_NORTH_Y1 + DORM.wall_t,
                     DORM.x1,
-                    FLOOR_Z2,
+                    FLOOR_Z2 - NORTH_DORM_LIFT,
                     DORM_NORTH_Y2 - DORM.wall_t,
                     DORM.x1 + DORM.wall_t,
                     FLOOR_Z2 + DORM_H,
@@ -828,11 +833,13 @@ def _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx):
     nb2_e_openings = second_ctx["nb2_e_openings"]
 
     wall_brushes = []
+    # See _build_north_dorm_wall_brushes for why these extend down to
+    # FLOOR_Z2 - NORTH_DORM_LIFT rather than FLOOR_Z2.
     wall_brushes.extend(
         layered_wall(
             DORM.x1,
             dorm_north2_y1,
-            FLOOR_Z2,
+            FLOOR_Z2 - NORTH_DORM_LIFT,
             DORM.x2,
             dorm_north2_y1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
@@ -844,7 +851,7 @@ def _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx):
         layered_wall(
             DORM.x1,
             dorm_north2_y2 - DORM.wall_t,
-            FLOOR_Z2,
+            FLOOR_Z2 - NORTH_DORM_LIFT,
             DORM.x2,
             dorm_north2_y2,
             FLOOR_Z2 + DORM_H,
@@ -856,7 +863,7 @@ def _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx):
         layered_wall_y(
             dorm_north2_y1 + DORM.wall_t,
             DORM.x2 - DORM.wall_t,
-            FLOOR_Z2,
+            FLOOR_Z2 - NORTH_DORM_LIFT,
             dorm_north2_y2 - DORM.wall_t,
             DORM.x2,
             FLOOR_Z2 + DORM_H,
@@ -868,7 +875,7 @@ def _build_second_north_dorm_wall_brushes(dorm_ctx, second_ctx):
         layered_wall_y(
             dorm_north2_y1 + DORM.wall_t,
             DORM.x1,
-            FLOOR_Z2,
+            FLOOR_Z2 - NORTH_DORM_LIFT,
             dorm_north2_y2 - DORM.wall_t,
             DORM.x1 + DORM.wall_t,
             FLOOR_Z2 + DORM_H,
