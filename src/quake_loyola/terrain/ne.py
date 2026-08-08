@@ -114,12 +114,19 @@ def build():
         [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
     ]
 
-    # Row overlap that hides the seams between sampled terrain rows. Was 8,
-    # but at that exact width qbsp 2.x turns the x 2786..3202 / y 2200..2208
-    # overlap band into a full-height sliver leaf it cannot reach from any
-    # entity, so the outside fill marks it solid — an invisible wall running
-    # from grade to the sky. 16 keeps the seams covered without the sliver.
-    _NE_OVR = 16
+    # Row overlap that hides the seams between sampled terrain rows. Every
+    # overlap band is a thin full-height air leaf, and at some widths qbsp 2.x
+    # fails to reach one from any entity, so the outside fill marks it solid —
+    # a wall of ground running from grade to the sky, invisible from the other
+    # side. 8 did that to the x 2786..3202 / y 2200..2208 band; 16 then did it
+    # to the whole y 1546..1562 row-0 band once the west-campus dorms came out
+    # of the map. Sweeping 0..64 against a BSP face scan showed 16 as the only
+    # bad width remaining, with 20..64 all clean, so 24 sits well inside that
+    # band rather than one step away from a known-bad value. The cost is that
+    # each row pokes at most ~4 units through its neighbour's surface. Re-run
+    # the sweep if the grid, the sampled heights, or the surrounding geometry
+    # moves.
+    _NE_OVR = 24
 
     append_sampled_grid_mesh(
         BRUSHES,
