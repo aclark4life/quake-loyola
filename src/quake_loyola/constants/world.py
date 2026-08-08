@@ -1,7 +1,6 @@
 """Shared world-scale and cross-area geometry constants."""
 
 ARCH_RIN = 96
-ARCH_ROUT = 136
 ARCH_SLAB_W = 32
 ARCH_STILT_H = 96
 

@@ -20,7 +20,6 @@ BRIDGE_BASE_LIGHT_H = 64  # Wall-light height.
 BRIDGE_BASE_LIGHT_D = 2  # Wall-light protrusion.
 BRIDGE_BASE_LIGHT_Z_LIFT = 12  # Lift above the deck.
 BRIDGE_BASE_LIGHT_BRIGHTNESS = "150"  # Subtle uplight.
-BRIDGE_DECK_EAST_RECESS = 1
 BRIDGE_DECK_EDGE_CEMENT_W = 16  # Visible cement margin along each deck edge.
 BRIDGE_DECK_CROSS_STRIP_HW = BRIDGE_BLK_HW  # Matches the parapet block half-width.
 BRIDGE_DECK_CROSS_STRIP_DROP = 1  # Embed 1 unit to avoid coplanar faces.

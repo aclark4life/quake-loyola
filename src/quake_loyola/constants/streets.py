@@ -3,7 +3,6 @@
 CHARLES_ARCH_RIN = 256
 CHARLES_ARCH_ROUT = 312
 CHARLES_ARCH_STILT = 96
-CHARLES_ARCH_TRIG_INSET = 8
 CHARLES_ARCH_W = 48
 CHARLES_CRN_SEGS = 12
 CHARLES_LAMP_POST_EAST_SETBACK = 48
@@ -27,6 +26,9 @@ STREET_CURB_JOINT_OFFSET = 60
 STREET_DIV_HW = (
     6  # carved centerline slot half-width (doubled stripe thickness; see streets.py)
 )
+# Half-width of the unpainted gap down the middle of the carved centerline
+# slot, which separates it into the two yellow lines of a double centerline.
+STREET_DIV_GAP_HW = 2
 STREET_ENNIS_DIV_HW = 16
 STREET_SURFACE_T = 2
 ROAD_X1, ROAD_X2 = -606, 256

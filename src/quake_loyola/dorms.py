@@ -29,6 +29,13 @@ The footprint, height, lift, and terrace constants all survive in
 west-campus terrain grid, the Charles St sky walls, and the frontage walk
 — so the rebuilt buildings will land back on the same footprint.
 
+The constants that only ever described the retired prototype's own detail
+— its window grid (``DORM_WIN_*``), entrance and inner-door openings
+(``DORM_ENT_*``, ``DORM_INNER_DOOR_*``), ``DORM_GABLE_DEPTH``, and
+``DORM_SLAB_T`` — were deleted along with the geometry, since nothing else
+reads them and the rebuild will want to pick its own. The reusable
+builders above take all of those as arguments.
+
 There is no ``WEST_CAMPUS_ENABLED_DORMS`` flag any more; it was removed
 along with the geometry rather than left behind as a toggle that does
 nothing. Add a fresh flag when there is something to gate again.
