@@ -11,26 +11,14 @@ from ..constants.derived import (
     ENNIS_SW_EDGE,
     ENNIS_X1,
     ENNIS_Y,
-    KNOTT,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
-    KNOTT_DRIVEWAY_CURB_CRN_R,
-    KNOTT_DRIVEWAY_CURB_CRN_SEGS,
-    KNOTT_DRIVEWAY_ES_X1,
     KNOTT_DRIVEWAY_ES_X2,
-    KNOTT_DRIVEWAY_EXT_Y2,
-    KNOTT_DRIVEWAY_JCX_E,
-    KNOTT_DRIVEWAY_JCX_X1,
-    KNOTT_DRIVEWAY_JCY,
-    KNOTT_DRIVEWAY_RD_X1,
-    KNOTT_DRIVEWAY_RD_X2,
     KNOTT_DRIVEWAY_WS_X1,
-    KNOTT_DRIVEWAY_WS_X2,
     MANHOLE_R,
     MANHOLE_X,
     MANHOLE_Y,
     WALL_T,
-    WORLD_X1,
     WORLD_X2_EXT,
     WORLD_Y1,
     WORLD_Y2,
@@ -45,11 +33,6 @@ from ..constants.ennis import (
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
-)
-from ..constants.flags import (
-    KNOTT_ENABLED_TERRAIN,
-    NE_ENABLED_TERRAIN,
-    WEST_CAMPUS_ENABLED_TERRAIN,
 )
 from ..constants.streets import (
     CHARLES_CRN_SEGS,
@@ -88,7 +71,6 @@ from ..geometry import (
     box,
     box_with_round_hole,
     brush_ent,
-    curb_seg,
     ramp_slab_y,
     sidewalk_panel_spans,
     torch_flame,
@@ -1399,11 +1381,7 @@ def _append_intersection_corners(brushes):
 
 def _append_verge_fill_surfaces(brushes, layout):
     """Add the verge fill and curb apron surfaces south and east of Ennis."""
-    west_verge_x1 = (
-        ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
-        if WEST_CAMPUS_ENABLED_TERRAIN
-        else WORLD_X1 + WALL_T
-    )
+    west_verge_x1 = ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
     east_verge_x2 = WORLD_X2_EXT - WALL_T
     brushes.append(
         box(
@@ -1417,17 +1395,10 @@ def _append_verge_fill_surfaces(brushes, layout):
         )
     )
     west_verge_y2 = ENNIS_SW_EDGE - CHARLES_WALK_W
-    east_verge_segs = (
-        [
-            (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, west_verge_y2),
-            (KNOTT_DRIVEWAY_CORRIDOR_X2, east_verge_x2, ENNIS_SW_EDGE),
-        ]
-        if KNOTT_ENABLED_TERRAIN
-        else [
-            (ROAD_X2 + CHARLES_WALK_W, KNOTT.x2, west_verge_y2),
-            (KNOTT.x2, east_verge_x2, ENNIS_SW_EDGE),
-        ]
-    )
+    east_verge_segs = [
+        (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, west_verge_y2),
+        (KNOTT_DRIVEWAY_CORRIDOR_X2, east_verge_x2, ENNIS_SW_EDGE),
+    ]
     for evx1, evx2, evy2 in east_verge_segs:
         brushes.append(
             box(
@@ -1440,19 +1411,6 @@ def _append_verge_fill_surfaces(brushes, layout):
                 Textures.GROUND,
             )
         )
-    if not NE_ENABLED_TERRAIN:
-        brushes.append(
-            box(
-                ROAD_X2 + CHARLES_WALK_W,
-                ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
-                FLOOR_Z2,
-                layout["ennis_x2"],
-                layout["charles_y2"],
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
-            )
-        )
-
     verge_cement_x1 = ROAD_X2 + CHARLES_WALK_W
     verge_cement_x2 = verge_cement_x1 + layout["sw_slab_len"]
     for vx1, vx2, vtex in [
@@ -1509,185 +1467,6 @@ def _append_verge_fill_surfaces(brushes, layout):
                 vx2,
                 ENNIS_Y - ENNIS_HW,
                 FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
-            )
-        )
-
-
-def _append_knott_driveway_surfaces(brushes):
-    """Add the Knott driveway road fills and curved curb returns when exposed."""
-    if KNOTT_ENABLED_TERRAIN:
-        return
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            ENNIS_SW_EDGE,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_WS_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.MULCH,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_RD_X1,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X2,
-            ENNIS_Y - ENNIS_HW,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_WS_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_RD_X1,
-            KNOTT_DRIVEWAY_JCY,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    r_outer = KNOTT_DRIVEWAY_CURB_CRN_R
-    r_inner = KNOTT_DRIVEWAY_CURB_CRN_R - ENNIS_CURB_W
-    seg_deg = 90.0 / KNOTT_DRIVEWAY_CURB_CRN_SEGS
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        a0 = corner_index * seg_deg
-        a1 = (corner_index + 1) * seg_deg
-        t0, t1 = math.radians(a0), math.radians(a1)
-        brushes.append(
-            tri_prism(
-                KNOTT_DRIVEWAY_JCX_X1,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                KNOTT_DRIVEWAY_JCX_X1 + r_inner * math.cos(t0),
-                KNOTT_DRIVEWAY_EXT_Y2 + r_inner * math.sin(t0),
-                KNOTT_DRIVEWAY_JCX_X1 + r_inner * math.cos(t1),
-                KNOTT_DRIVEWAY_EXT_Y2 + r_inner * math.sin(t1),
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.GROUND,
-            )
-        )
-        brushes.append(
-            curb_seg(
-                KNOTT_DRIVEWAY_JCX_X1,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                r_inner,
-                r_outer,
-                a0,
-                a1,
-                Textures.CEMENT,
-            )
-        )
-    brushes.append(
-        box(
-            KNOTT_DRIVEWAY_ES_X1,
-            KNOTT_DRIVEWAY_EXT_Y2,
-            FLOOR_Z2,
-            KNOTT_DRIVEWAY_ES_X2,
-            KNOTT_DRIVEWAY_JCY,
-            FLOOR_Z2 + 2,
-            Textures.ROAD,
-        )
-    )
-    for corner_index in range(KNOTT_DRIVEWAY_CURB_CRN_SEGS):
-        ea0 = 90 + corner_index * seg_deg
-        ea1 = 90 + (corner_index + 1) * seg_deg
-        t0, t1 = math.radians(ea0), math.radians(ea1)
-        brushes.append(
-            tri_prism(
-                KNOTT_DRIVEWAY_JCX_E,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                KNOTT_DRIVEWAY_JCX_E + r_inner * math.cos(t0),
-                KNOTT_DRIVEWAY_EXT_Y2 + r_inner * math.sin(t0),
-                KNOTT_DRIVEWAY_JCX_E + r_inner * math.cos(t1),
-                KNOTT_DRIVEWAY_EXT_Y2 + r_inner * math.sin(t1),
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.MULCH,
-            )
-        )
-        brushes.append(
-            curb_seg(
-                KNOTT_DRIVEWAY_JCX_E,
-                KNOTT_DRIVEWAY_EXT_Y2,
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                r_inner,
-                r_outer,
-                ea0,
-                ea1,
                 Textures.CEMENT,
             )
         )
@@ -1758,7 +1537,6 @@ def _build_street_details(BRUSHES, ENTITIES):
     _append_street_markings(ENTITIES, layout, manhole_seen)
     _append_intersection_corners(detail_brushes)
     _append_verge_fill_surfaces(detail_brushes, layout)
-    _append_knott_driveway_surfaces(detail_brushes)
     _append_ennis_entrance_detail_features(detail_brushes, ENTITIES)
     _append_lamp_details(detail_brushes, ENTITIES)
 
@@ -1766,9 +1544,7 @@ def _build_street_details(BRUSHES, ENTITIES):
         detail_brushes = punch_manhole_detail(detail_brushes, manhole_seen)
         ENTITIES.append(brush_ent("func_detail", detail_brushes))
 
-    # NOTE: the global world-seal brushes used to live here, but that made
-    # leak-prevention geometry conditional on STREETS_ENABLED_DETAILS. They
-    # now live in shell.py::_build_world_seal() and are always built by
-    # streets/__init__.py::build() regardless of this flag.
+    # NOTE: the global world-seal brushes live in shell.py::_build_world_seal()
+    # and are appended by streets/__init__.py::build().
 
     return BRUSHES, ENTITIES

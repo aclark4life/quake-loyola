@@ -69,12 +69,10 @@ ambient level, fog color) at once.
 ### Everything else
 
 ```bash
-ql conf show                     # the build settings, with their valid values
-ql conf show --all               # ...plus the ~35 module/light flags
-ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
+ql conf show                     # every build setting, with its valid values
 ql conf set light_extra true     # light -extra (2x2 supersampling)
 ql conf set vis_mode=full lighting_preset=dusk fog_density=high  # several at once
-ql conf get KNOTT_ENABLED
+ql conf get vis_mode
 ql conf reset                    # delete ql.toml, back to defaults
 ```
 

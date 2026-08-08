@@ -1,12 +1,11 @@
-"""Load and persist build flags and CLI build settings from ``ql.toml``.
+"""Load and persist the CLI build settings from ``ql.toml``.
 
-Note on staleness: ``ql.toml`` is read once, at import time, into
-``FLAGS``/``BUILD`` below. Downstream modules (e.g. ``constants.flags``,
-``constants.lighting``) resolve their own module-level constants from those
-dicts at *their* import time too, and are not re-evaluated afterwards.
-``set_flag()``/``set_build()`` keep ``FLAGS``/``BUILD`` themselves in sync
-for any code that calls ``config.get()``/``config.get_build()`` directly,
-but they do **not** retroactively update already-imported constants. This
+Note on staleness: ``ql.toml`` is read once, at import time, into ``BUILD``
+below. Downstream modules (e.g. ``constants.lighting``) resolve their own
+module-level constants from that dict at *their* import time too, and are
+not re-evaluated afterwards. ``set_build()`` keeps ``BUILD`` itself in sync
+for any code that calls ``config.get_build()`` directly, but it does
+**not** retroactively update already-imported constants. This
 is safe for the ``ql`` CLI, where each invocation is a fresh process (see
 ``cli.py``), but callers embedding this package as a library and mutating
 config programmatically mid-process should re-import the affected modules
@@ -55,45 +54,6 @@ REPO_ROOT = _find_repo_root(Path.cwd())
 CONFIG_PATH = REPO_ROOT / "ql.toml"
 
 
-DEFAULTS: dict[str, bool] = {
-    "BRIDGE_ENABLED_SPAN_WEST_APPROACH": True,
-    "BRIDGE_ENABLED_SPAN_CENTER": True,
-    "BRIDGE_ENABLED_SPAN_EAST_APPROACH": True,
-    "BRIDGE_ENABLED_SPAN_KH": True,
-    "BRIDGE_ENABLED_SPAN_EAST_EXT": True,
-    "STREETS_ENABLED_DETAILS": True,
-    "WEST_CAMPUS_ENABLED_FENCE": True,
-    "WEST_CAMPUS_ENABLED_TERRAIN": True,
-    "WEST_CAMPUS_ENABLED_WALL": True,
-    "WEST_CAMPUS_ENABLED_SIDEWALK": True,
-    "NE_ENABLED_TERRAIN": True,
-    "KNOTT_ENABLED_TERRAIN": True,
-    "KNOTT_ENABLED": True,
-    "ENTITIES_ENABLED_TELEPORTS": False,
-    "ENTITIES_ENABLED_DM_SPAWNS": False,
-    "ENTITIES_ENABLED_WEAPONS": False,
-    "ENTITIES_ENABLED_AMMO": False,
-    "ENTITIES_ENABLED_HEALTH": False,
-    "ENTITIES_ENABLED_MONSTERS": False,
-    "ENTITIES_ENABLED_VEGETATION": False,
-    "ENTITIES_ENABLED_PLATFORM": False,
-    "MARYLAND_ENABLED": False,
-    "MARYLAND_ENABLED_TERRAIN": False,
-    "LIGHTS_ENABLED_TORCHES": True,
-    "LIGHTS_ENABLED_DECK_WALL": True,
-    "LIGHTS_ENABLED_PENDANTS": False,
-    "LIGHTS_ENABLED_PIER_UPLIGHTS": False,
-    "LIGHTS_ENABLED_ABUTMENT_ARCH": False,
-    "BASEMENT_ENABLED_LIGHTS": True,
-    "BRIDGE_ENABLED_FASCIA_TEXT": True,
-    "BRIDGE_ENABLED_SUPPORTS": True,
-    "BRIDGE_ENABLED_PIER_BASE_LIGHTS": False,
-    "KNOTT_ENABLED_WALKWAY": False,
-    "KNOTT_ENABLED_WALKWAY_BENT": False,
-    "BASEMENT_ENABLED": True,
-}
-
-
 BUILD_DEFAULTS: dict[str, Any] = {
     "vis_mode": "fast",
     "light_extra": False,
@@ -113,7 +73,7 @@ def _read_toml(path: Path) -> dict[str, Any]:
 def _read_toml_safe(path: Path) -> dict[str, Any]:
     """Read ``path`` as TOML, converting a parse failure to ``RuntimeError``.
 
-    Callers that mutate an existing ``ql.toml`` (``set_flag``/``set_build``)
+    Callers that mutate an existing ``ql.toml`` (``set_build``/``set_many``)
     must not let a raw ``tomllib.TOMLDecodeError`` or filesystem ``OSError``
     (e.g. permission denied) escape from a malformed or inaccessible file —
     every other config-loading failure in this module surfaces as
@@ -185,7 +145,7 @@ def _validate_section(
 ) -> dict[str, Any]:
     """Validate a loaded ql.toml section against its known keys/defaults.
 
-    Rejects a non-table section, unknown keys, and boolean-flag values that
+    Rejects a non-table section, unknown keys, and boolean values that
     aren't actually booleans (e.g. a string leaking through and becoming
     silently truthy downstream).
     """
@@ -274,24 +234,22 @@ def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
 
 if _LOAD_ERROR is None:
     try:
-        _flags_raw = _validate_section("flags", _raw.get("flags", {}), DEFAULTS)
         _build_raw = _validate_build_values(
             _validate_section(
                 "build", _migrate_legacy_build(_raw.get("build", {})), BUILD_DEFAULTS
             )
         )
     except (TypeError, KeyError, ValueError) as exc:
-        _flags_raw, _build_raw = {}, {}
+        _build_raw = {}
         _LOAD_ERROR = exc
 else:
-    _flags_raw, _build_raw = {}, {}
+    _build_raw = {}
 
-FLAGS: dict[str, bool] = {**DEFAULTS, **_flags_raw}
 BUILD: dict[str, Any] = {**BUILD_DEFAULTS, **_build_raw}
 
 
 def non_default_overrides() -> dict[str, Any]:
-    """Return every flag/build setting whose effective value differs from its
+    """Return every build setting whose effective value differs from its
     hardcoded ``config.py`` default, keyed by name.
 
     Used to surface ambient ``ql.toml`` state at the top of ``ql gen``/
@@ -302,9 +260,6 @@ def non_default_overrides() -> dict[str, Any]:
     """
     check_load_error()
     overrides: dict[str, Any] = {}
-    for name, default in DEFAULTS.items():
-        if FLAGS[name] != default:
-            overrides[name] = FLAGS[name]
     for name, default in BUILD_DEFAULTS.items():
         if BUILD[name] != default:
             overrides[name] = BUILD[name]
@@ -320,14 +275,6 @@ def check_load_error() -> None:
         ) from _LOAD_ERROR
 
 
-def get(name: str) -> bool:
-    """Return the effective value of a flag (default, overridden by ql.toml)."""
-    check_load_error()
-    if name not in DEFAULTS:
-        raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
-    return FLAGS[name]
-
-
 def get_build(name: str) -> Any:
     """Return the effective value of a build-tool setting."""
     check_load_error()
@@ -338,7 +285,7 @@ def get_build(name: str) -> Any:
 
 def _section_as_dict(raw: dict[str, Any], section_name: str) -> dict[str, Any]:
     """Return ``raw[section_name]`` as a dict, or raise a clean, user-facing
-    error if it exists but isn't a table (e.g. ``flags = 5`` in ``ql.toml``).
+    error if it exists but isn't a table (e.g. ``build = 5`` in ``ql.toml``).
 
     Without this check, ``dict(raw.get(section_name, {}))`` would raise a
     raw, confusing ``TypeError`` for non-dict/non-iterable values instead of
@@ -351,20 +298,6 @@ def _section_as_dict(raw: dict[str, Any], section_name: str) -> dict[str, Any]:
             f"{type(section).__name__}: {section!r}"
         )
     return dict(section)
-
-
-def set_flag(name: str, value: bool, path: Path = CONFIG_PATH) -> None:
-    check_load_error()
-    if name not in DEFAULTS:
-        raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
-    raw = _read_toml_safe(path)
-    flags = _section_as_dict(raw, "flags")
-    flags[name] = value
-    _validate_section("flags", flags, DEFAULTS)
-    raw["flags"] = flags
-    _write_toml_safe(path, raw)
-    if path == CONFIG_PATH:
-        FLAGS[name] = value
 
 
 def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
@@ -381,43 +314,32 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
         BUILD[name] = value
 
 
-def set_many(items: list[tuple[str, str, Any]], path: Path = CONFIG_PATH) -> None:
-    """Apply several flag/build changes as a single read-validate-write.
+def set_many(items: list[tuple[str, Any]], path: Path = CONFIG_PATH) -> None:
+    """Apply several build-setting changes as a single read-validate-write.
 
-    ``items`` is a list of ``(kind, name, value)`` triples, where ``kind`` is
-    ``"flag"`` or ``"build"``. Unlike calling :func:`set_flag`/:func:`set_build`
-    in a loop, this reads ``ql.toml`` once, applies every change to an
-    in-memory copy, validates the whole result, and writes it back in one
-    shot — so a later item failing validation (or the write itself failing)
-    never leaves an earlier item's change persisted on its own.
+    ``items`` is a list of ``(name, value)`` pairs. Unlike calling
+    :func:`set_build` in a loop, this reads ``ql.toml`` once, applies every
+    change to an in-memory copy, validates the whole result, and writes it
+    back in one shot — so a later item failing validation (or the write
+    itself failing) never leaves an earlier item's change persisted on its
+    own.
     """
     check_load_error()
-    for kind, name, _value in items:
-        if kind == "flag" and name not in DEFAULTS:
-            raise KeyError(f"Unknown flag {name!r} — not in config.DEFAULTS")
-        if kind == "build" and name not in BUILD_DEFAULTS:
+    for name, _value in items:
+        if name not in BUILD_DEFAULTS:
             raise KeyError(
                 f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS"
             )
     raw = _read_toml_safe(path)
-    flags = _section_as_dict(raw, "flags")
     build = _migrate_legacy_build(_section_as_dict(raw, "build"))
-    for kind, name, value in items:
-        if kind == "flag":
-            flags[name] = value
-        else:
-            build[name] = value
-    _validate_section("flags", flags, DEFAULTS)
+    for name, value in items:
+        build[name] = value
     _validate_build_values(build)
-    raw["flags"] = flags
     raw["build"] = build
     _write_toml_safe(path, raw)
     if path == CONFIG_PATH:
-        for kind, name, value in items:
-            if kind == "flag":
-                FLAGS[name] = value
-            else:
-                BUILD[name] = value
+        for name, value in items:
+            BUILD[name] = value
 
 
 def reset(path: Path = CONFIG_PATH) -> bool:
@@ -431,8 +353,6 @@ def reset(path: Path = CONFIG_PATH) -> bool:
             raise RuntimeError(f"{path} could not be removed: {exc}") from exc
         removed = True
     if path == CONFIG_PATH:
-        FLAGS.clear()
-        FLAGS.update(DEFAULTS)
         BUILD.clear()
         BUILD.update(BUILD_DEFAULTS)
 

@@ -2,14 +2,8 @@
 
 from dataclasses import dataclass
 
-from ..config import get as _flag
-
 BRIDGE_ARCH_PIER_RISE = 82  # Deck rise at Piers 2 and 3.
 BRIDGE_ARCH_RISE = 100  # Deck rise at the center of Charles St.
-BRIDGE_ACCESS_WALK_CENTER_X = 2120
-BRIDGE_ACCESS_WALK_HW = 32
-BRIDGE_ACCESS_WALK_NORTH_OFFSET = 80
-BRIDGE_ACCESS_WALK_PIER_CLEARANCE = 96
 BRIDGE_BLK_H = 36
 BRIDGE_BLK_HW = 32  # Parapet cap block half-width.
 BRIDGE_BLK_OVH = 0
@@ -46,9 +40,6 @@ BRIDGE_PILLAR_CAP_H = 12  # Pillar cap height.
 BRIDGE_PILLAR_CAP_IN_OVH = 4
 BRIDGE_PILLAR_CAP_OUT_OVH = 20
 BRIDGE_PILLAR_EXTRA = 64  # Extra pillar height above the deck.
-BRIDGE_ENABLED_PIER_BASE_LIGHTS = _flag(
-    "BRIDGE_ENABLED_PIER_BASE_LIGHTS"
-)  # Pier-base lights.
 BRIDGE_PIER_FILL_OFFSET = 16
 BRIDGE_PILLAR_INNER_R = (144, 84)  # (half-width, crown rise)
 BRIDGE_PILLAR_OUTER_R = (126, 72)  # (half-width, crown rise)
@@ -86,13 +77,6 @@ BRIDGE_SEG_SPAN_W = 32
 BRIDGE_SQ_D = 1
 BRIDGE_SQ_HH = 6
 BRIDGE_SQ_HW = 8
-BRIDGE_SUPPORT_BEAM_H = 60  # Support beam height.
-BRIDGE_SUPPORT_HW = 16
-BRIDGE_SUPPORT_PIER_HALF_W = 25  # Support pier half-width.
-BRIDGE_TELEPORT_ARCH_X1_OFFSET = 2  # Inset from the pier's west face.
-BRIDGE_TELEPORT_ARCH_X2_OFFSET = 18  # Leaves a 16-unit slab behind the recess.
-BRIDGE_TELEPORT_ARCH_CLEARANCE = 8  # Crown clearance below the deck.
-BRIDGE_TELEPORT_DEST_Z = 40
 
 # West-abutment plinth heights.
 BRIDGE_ABUTMENT_RAMP_HIGH_H = 40  # West-face ramp height.

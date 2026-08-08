@@ -2,18 +2,15 @@
 
 import math
 
-from ..config import get as _flag
 from ..wads import WAD_FILES as _WAD_FILES
 from .bridge import (
     BRIDGE_ARCH_PIER_RISE,
     BRIDGE_ARCH_RISE,
-    BRIDGE_BLK_HW,
     BRIDGE_CENTER_PIER_SPAN,
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ1,
     BRIDGE_DZ2,
     BRIDGE_EAST_SPAN2_LEN,
-    BRIDGE_EAST_SPAN_ANGLE,
     BRIDGE_OUTER_PIER_SPAN,
     BRIDGE_PAR_H,
     BRIDGE_PILLAR_OVERHANG,
@@ -31,11 +28,8 @@ from .dorm import (
     DORM_DOOR_OFF,
     DORM_DOOR_W,
     DORM_FENCE_OFFSET,
-    DORM_FLOORS,
     DORM_FRONT_WALKWAY_FENCE_OFFSET,
     DORM_FRONT_WALKWAY_W,
-    DORM_WALL_T,
-    DormSpec,
 )
 from .ennis import (
     ENNIS_CURB_W,
@@ -61,7 +55,6 @@ from .lighting import FOG_DENSITY, LIGHTING, make_fog
 from .streets import (
     CHARLES_CRN_SEGS,
     CHARLES_LAMP_POST_EAST_SETBACK,
-    CHARLES_PLT_W,
     CHARLES_WALK_W,
     ROAD_X1,
     ROAD_X2,
@@ -72,7 +65,6 @@ from .world import ARCH_SLAB_W, FLOOR_Z2, SCALE, WORLD_EAST_BUFFER
 
 # Derived constants.
 KNOTT_ENT_HALF_W = 64
-KNOTT_STAIR_LANDING_GAP = 16
 KNOTT_EAST_PIER_FACE_OFFSET = 32
 # Bridge north edge to the Ennis south curb.
 ENNIS_BRIDGE_TO_SOUTH_EDGE = 640
@@ -80,7 +72,6 @@ ENNIS_BRIDGE_TO_SOUTH_EDGE = 640
 ENNIS_CENTERLINE_SHIFT_N = 183
 ENNIS_NORTH_OFFSET = ENNIS_BRIDGE_TO_SOUTH_EDGE + ENNIS_HW + ENNIS_CENTERLINE_SHIFT_N
 CHARLES_LAMP_POST_SETBACK = 104  # Offset south of the Ennis curb.
-CHARLES_PLATFORM_ROAD_OFFSET = 16
 ROAD_VERGE_BUFFER = -56  # Additional padding for the Ennis south grass verge.
 DORM_PIER_FACE_OFFSET = 32
 BRIDGE_LAMP_POST_CLEARANCE = 32
@@ -114,12 +105,10 @@ KNOTT_DRIVEWAY_WS_X1 = KNOTT_X2 + KNOTT_DRIVEWAY_X_SHIFT
 KNOTT_DRIVEWAY_JCX_X1 = KNOTT_DRIVEWAY_WS_X1
 KNOTT_DRIVEWAY_WS_X2 = KNOTT_X2 + KNOTT_DRIVEWAY_X_SHIFT + KNOTT_DRIVEWAY_CURB_WALK_W
 KNOTT_DRIVEWAY_RD_X1 = KNOTT_DRIVEWAY_WS_X2
-CHARLES_PLT_BR_X = KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_HW // 2
 KNOTT_DRIVEWAY_RD_X2 = KNOTT_DRIVEWAY_RD_X1 + 2 * KNOTT_DRIVEWAY_HW
 KNOTT_DRIVEWAY_ES_X1 = KNOTT_DRIVEWAY_RD_X2
 KNOTT_DRIVEWAY_ES_X2 = KNOTT_DRIVEWAY_RD_X2 + KNOTT_DRIVEWAY_CURB_WALK_W
 KNOTT_DRIVEWAY_JCX_E = KNOTT_DRIVEWAY_ES_X2
-KNOTT_CX = (KNOTT_X1 + KNOTT_X2) // 2
 KNOTT_DRIVEWAY_Y1 = KNOTT_Y1
 KNOTT_DRIVEWAY_Y2 = KNOTT_Y2
 KNOTT_DRIVEWAY_EXT_Y1 = KNOTT_DRIVEWAY_Y2
@@ -149,8 +138,6 @@ KNOTT_Z2 = KNOTT_GROUND_Z + KNOTT_FLOORS * KNOTT_FLOOR_H
 BRIDGE_X2 = BRIDGE_ARCH_X[3]  # Pier 4 / span-2 terminus.
 ENNIS_Y = BRIDGE_Y2 + ENNIS_NORTH_OFFSET
 CHARLES_LAMP_POST_YS = [ENNIS_Y - ENNIS_HW - CHARLES_LAMP_POST_SETBACK]
-CHARLES_PLT_Y_OUT = ENNIS_Y - ENNIS_HW + CHARLES_PLATFORM_ROAD_OFFSET
-CHARLES_PLT_Y_RET = ENNIS_Y + ENNIS_HW // 8
 ENNIS_SW_EDGE = ENNIS_Y - ENNIS_HW - 3 * CHARLES_WALK_W - ROAD_VERGE_BUFFER
 ENNIS_WALL_NY = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ENNIS_PILLAR_HW * 2
 ENNIS_SHORT_WALL_GAP = 8  # gap north of the sidewalk squares
@@ -180,20 +167,13 @@ BRIDGE_PIER_GROUND_Z = {
     PIER2_X: 0,  # West-side center pier.
     PIER3_X: 20,  # Knott-side center pier.
 }
-DORM_FLOOR_H = 128  # Shorter than Knott's floor height.
-DORM_ROOF_H = 192  # roof ridge rise above eave (independent of floor height)
-DORM_H = DORM_FLOORS * DORM_FLOOR_H
 DORM_PIER_X = min(BRIDGE_ARCH_X)
-DORM_EAVE_Z = FLOOR_Z2 + DORM_H + DORM_WALL_T
-DORM_RIDGE_Z = DORM_EAVE_Z + DORM_ROOF_H
 DORM_WALL_S_Y2 = -(BRIDGE_Y2 + BRIDGE_PILLAR_OVERHANG)
 # Lane-centered outbound/return platform X positions (matches the east/west
 # lane-line midpoints used elsewhere for Charles St. lane geometry).
 _ROAD_CX = (ROAD_X1 + ROAD_X2) / 2
 _WEST_LANE_LINE_X = (ROAD_X1 + _ROAD_CX - STREET_DIV_HW) / 2
 _EAST_LANE_LINE_X = (_ROAD_CX + STREET_DIV_HW + ROAD_X2) / 2
-CHARLES_PLT_X_OUT = int((_EAST_LANE_LINE_X + ROAD_X2) / 2)
-CHARLES_PLT_X_RET = int((ROAD_X1 + _WEST_LANE_LINE_X) / 2)
 # Ennis Rd begins at the east kerb line of Charles St: it tees into Charles
 # rather than crossing it, so it has no carriageway west of here. Paving it
 # from ROAD_X1 instead used to lay a second, 90-degree-rotated road surface
@@ -201,12 +181,9 @@ CHARLES_PLT_X_RET = int((ROAD_X1 + _WEST_LANE_LINE_X) / 2)
 # there, and the Ennis one won -- Charles appeared to change texture direction
 # for the length of the junction.
 ENNIS_X1 = ROAD_X2
-ROAD_Z = FLOOR_Z2 + 8
 
 KNOTT_ENT_WALK_X1 = KNOTT_ORIG_CX - KNOTT_ENT_HALF_W
-KNOTT_ENT_WALK_X2 = KNOTT_ORIG_CX + KNOTT_ENT_HALF_W
 # Knott second-floor walkway landing height.
-KNOTT_ENT_WALK_ZT2 = KNOTT_GROUND_Z + KNOTT_FLOOR_H + KNOTT_WALL_T
 WALL_T = 16
 WORLD_X1 = -5135  # West world bound.
 BRIDGE_X1 = -1967  # West bridge bound.
@@ -221,50 +198,26 @@ ENNIS_CEMENT_X2 = (
 )  # Aligned with the east teleport center.
 ENNIS_GATE_X2 = (ENNIS_GATE_X1 + _EAST_FEATURES_X2_EXT - WALL_T) // 2
 ENNIS_CEMENT_X1 = ENNIS_GATE_X2
-BRIDGE_EAST_SHIFT_END = -(
-    (_EAST_FEATURES_X2_EXT - WALL_T) - BRIDGE_ARCH_X[5]
-) * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
-BRIDGE_SPAN_CENTRES = [
-    (BRIDGE_X1 + BRIDGE_ARCH_X[0]) // 2,
-    (BRIDGE_ARCH_X[0] + BRIDGE_ARCH_X[1]) // 2,
-    (BRIDGE_ARCH_X[1] + BRIDGE_ARCH_X[2]) // 2,
-    (BRIDGE_ARCH_X[2] + BRIDGE_X2) // 2,
-    (BRIDGE_X2 + BRIDGE_ARCH_X[4]) // 2,
-    (BRIDGE_ARCH_X[4] + BRIDGE_ARCH_X[5]) // 2,
-    (BRIDGE_ARCH_X[5] + _EAST_FEATURES_X2_EXT - WALL_T) // 2,
-]
-BRIDGE_PEND_XS = tuple(BRIDGE_SPAN_CENTRES)  # Independent copy, not an alias.
 WORLD_Y1, WORLD_Y2 = (
     -6642,  # South world bound.
     4085,
 )
 CHARLES_Y1 = -2768  # South Charles St bound.
-CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
 CHARLES_Y2 = 1696  # North Charles St bound.
 DORM_NORTH_Y2 = 1846  # North dorm bound. Shifted +300 north of the bridge
 # to leave room for another building in the gap between the bridge and the
 # dorm pair.
 DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH
-NDORM2_EXTRA_DEPTH = 150  # Extra depth on the second (southernmost) north
-# dorm building to space its west-wall windows further apart (more brick
-# between them); it extends further south so the main north dorm block
-# above stays put.
-DORM_NORTH2_Y2 = DORM_NORTH_Y1
-DORM_NORTH2_Y1 = DORM_NORTH2_Y2 - DORM_DEPTH - NDORM2_EXTRA_DEPTH
 DORM_SOUTH1_Y1 = -1968  # South dorm anchor.
-SDORM1_EXTRA_DEPTH = 150  # Extra depth on south1 to space its west-wall
-# windows further apart (more brick between them); south2 shifts north by
-# the same amount to stay flush against south1.
+SDORM1_EXTRA_DEPTH = 150  # Extra depth on the south1 footprint; south2
+# shifts north by the same amount to stay flush against it.
 DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH + SDORM1_EXTRA_DEPTH
-DORM_SOUTH1_CY = (DORM_SOUTH1_Y1 + DORM_SOUTH1_Y2) // 2
 DORM_SOUTH2_Y1 = DORM_SOUTH1_Y2
 DORM_SOUTH2_Y2 = DORM_SOUTH2_Y1 + DORM_DEPTH
-DORM_SOUTH2_CY = (DORM_SOUTH2_Y1 + DORM_SOUTH2_Y2) // 2
 WORLD_Z2 = max(640, KNOTT_Z2 + 768)  # Bumped headroom (was +512, then +640)
 # so players can stand/jump on top of KH without hitting the sky ceiling.
 
 # Sub-basement shell.
-BASEMENT_ENABLED = _flag("BASEMENT_ENABLED")
 BASEMENT_SLAB_T = 16  # Matches FLOOR_Z1..FLOOR_Z2 thickness.
 BASEMENT_Z1 = -WORLD_Z2  # Basement floor top.
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # Basement floor slab bottom.
@@ -273,7 +226,6 @@ BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # Basement floor slab bottom.
 MANHOLE_X, MANHOLE_Y = 170, 986
 # 32x32 player hull needs at least 16*sqrt(2); 28 leaves margin.
 MANHOLE_R = 28
-DORM_NORTH_CY = (DORM_NORTH_Y1 + DORM_NORTH_Y2) // 2
 BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[5]  # Pier 6 anchors the east-span bend.
 
 
@@ -331,14 +283,9 @@ def ft_to_units(feet, inches=0):
     return round((feet + inches / 12) * SCALE)
 
 
-BRIDGE_DECK_Z = deck_top_z(0) + 8
-KNOTT_ENT_WALK_ZT1 = int(
-    deck_top_z(KNOTT_ORIG_CX)
-)  # Bridge deck height at the Knott approach.
 BRIDGE_PAR_W = ft_to_units(2, 6)
 BRIDGE_PILLAR_HW = ft_to_units(2, 5.5) + 8  # Pier half-width.
 BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # Pyramid cap stays flush with the pillar post.
-BRIDGE_BLK_PIR_M = BRIDGE_PILLAR_HW + BRIDGE_BLK_HW + 4
 
 
 # Pier 6 is rotated, so its face X positions vary by Y.
@@ -363,11 +310,6 @@ DORM_X1 = DORM_X2 - 576
 DORM_CX = (DORM_X1 + DORM_X2) // 2
 ENNIS_GATE_PILLAR_W = ENNIS_GATE_PILLAR_OPENING_W + 2 * ENNIS_GATE_PILLAR_LEG_T
 
-# Shared teleport destination coordinates.
-KH_ROOFTOP_ORIGIN = "2149 -264 904"  # Knott rooftop landing.
-KH_ROOFTOP_ORIGIN_ENNIS_EAST = "2149 -216 904"
-KH_ROOFTOP_ORIGIN_KH_DRIVE_SOUTH = "2149 -312 904"
-
 KNOTT = KnottSpec(
     floors=KNOTT_FLOORS,
     floor_h=KNOTT_FLOOR_H,
@@ -387,48 +329,15 @@ BRIDGE = BridgeSpec(
     parapet_h=BRIDGE_PAR_H,
     walk_wall=BRIDGE_WALK_WALL,
 )
-DORM = DormSpec(
-    floor_h=DORM_FLOOR_H,
-    floors=DORM_FLOORS,
-    wall_t=DORM_WALL_T,
-    depth=DORM_DEPTH,
-    x1=DORM_X1,
-    x2=DORM_X2,
-)
-
 # South-dorm terrace.
 SDORM_LIFT = 128  # Terrace height.
 
-# North-dorm terrace. The two north dorm buildings sit on a natural rise in
-# the west-campus hillside — real terrain samples across their footprint
-# (see terrain/west_campus.py's surveyed grid) run roughly 90-151 units
-# above FLOOR_Z2, so building the shells flush with FLOOR_Z2 (as before)
-# left them mostly buried in the hillside. Lifting by one floor height
-# (matching SDORM_LIFT's convention) brings the floor slab close to grade,
-# leaving at most ~25 units of terrain poking above it at the footprint's
-# worst corner — the same order of embedding SDORM_LIFT already tolerates
-# for the south pair.
-NORTH_DORM_LIFT = DORM.floor_h
-
-SDORM_STAIR_HW = 40  # Half-width; matches the west-wall door opening.
-SDORM_STAIR_N = SDORM_LIFT // 16  # Number of 16-unit steps.
-SDORM_STAIR_RISE = SDORM_LIFT // SDORM_STAIR_N  # Per-step rise.
-SDORM_STAIR_RUN = 32  # Per-step tread depth.
-SDORM_STAIR_X1 = DORM_X1 + KNOTT_STAIR_LANDING_GAP  # West edge of the run.
-SDORM_STAIR_X2 = (
-    SDORM_STAIR_X1 + SDORM_STAIR_N * SDORM_STAIR_RUN
-)  # East edge of the run.
-SDORM_STAIR_Y1 = DORM_SOUTH1_CY - SDORM_STAIR_HW
-SDORM_STAIR_Y2 = DORM_SOUTH1_CY + SDORM_STAIR_HW
 
 DORM_FRONT_WALKWAY_X2 = FENCE_X1 - DORM_FRONT_WALKWAY_FENCE_OFFSET  # Outer edge.
 DORM_FRONT_WALKWAY_X1 = DORM_FRONT_WALKWAY_X2 - DORM_FRONT_WALKWAY_W  # Inner edge.
 DORM_FRONT_WALKWAY_SPUR_X1 = DORM_PIER_X + DORM_BRICK_WALL_HW  # Spur west edge.
 DORM_FRONT_WALKWAY_SPUR_Y2 = (
-    DORM_SOUTH2_Y2
-    + DORM_DOOR_OFF
-    + DORM_DOOR_W // 2
-    + (BRIDGE_CENTER_SPAN_OFFSET[1] if _flag("BRIDGE_ENABLED_SPAN_CENTER") else 0.0)
+    DORM_SOUTH2_Y2 + DORM_DOOR_OFF + DORM_DOOR_W // 2 + BRIDGE_CENTER_SPAN_OFFSET[1]
 )  # Spur north edge; matches the door's center-span shift only when that span is built.
 
 _fog = (

@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-from ..config import get as _flag
 from .world import INDENT
 
 KNOTT_DRIVEWAY_HW = 128
@@ -18,10 +17,6 @@ KNOTT_SIGN_TEXT = "MARION BURK KNOTT HALL"
 KNOTT_SIGN_H = 72
 KNOTT_SIGN_PADDING = 4
 KNOTT_SIGN_Z_OFFSET = 20
-KNOTT_ENABLED_WALKWAY = _flag("KNOTT_ENABLED_WALKWAY")
-KNOTT_ENABLED_WALKWAY_BENT = _flag(
-    "KNOTT_ENABLED_WALKWAY_BENT"
-)  # Support bent beneath the south edge of the walkway span.
 KNOTT_WALL_T = 16
 KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
 

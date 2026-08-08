@@ -54,13 +54,6 @@ west_campus
    :members:
    :undoc-members:
 
-dorms
-~~~~~
-
-.. automodule:: quake_loyola.dorms
-   :members:
-   :undoc-members:
-
 bridge
 ~~~~~~
 

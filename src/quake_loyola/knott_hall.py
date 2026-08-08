@@ -13,7 +13,6 @@ added back here.
 from .constants import (
     BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
-    KNOTT_ENABLED,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -682,12 +681,8 @@ def build():
     """Build the Knott Hall shell: four walls and a roof, no floors.
 
     Returns:
-        tuple[list, list]: ``(brushes, entities)`` for the building shell,
-        or ``([], [])`` if ``KNOTT_ENABLED`` is off.
+        tuple[list, list]: ``(brushes, entities)`` for the building shell.
     """
-    if not KNOTT_ENABLED:
-        return [], []
-
     z1 = KH_GROUND_Z
     z2 = z1 + BUILDING_H
     parapet_z2 = z2 + PARAPET_H

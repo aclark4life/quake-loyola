@@ -99,8 +99,8 @@ class EntityHelperTests(unittest.TestCase):
         self.assertEqual(
             [e.fields for e in entities],
             [
-                {"origin": "1 2 3", "light": "300", "_light_group": "torch"},
-                {"origin": "1 2 7", "_light_group": "torch"},
+                {"origin": "1 2 3", "light": "300"},
+                {"origin": "1 2 7"},
             ],
         )
         self.assertTrue(all(e.brushes == [] for e in entities))
@@ -108,7 +108,7 @@ class EntityHelperTests(unittest.TestCase):
     def test_torch_flame_only_returns_standalone_flame_entity(self):
         entity = torch_flame_only(1, 2, 3)
         self.assertEqual(entity.classname, "light_flame_large_yellow")
-        self.assertEqual(entity.fields, {"origin": "1 2 3", "_light_group": "torch"})
+        self.assertEqual(entity.fields, {"origin": "1 2 3"})
         self.assertEqual(entity.brushes, [])
 
 

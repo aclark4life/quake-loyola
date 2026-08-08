@@ -11,18 +11,18 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/` | Python package — geometry primitives, map builder, per-area modules |
 | `src/quake_loyola/mapdata.py` | `MapBuilder` — collects brushes/entities and serialises to `.map` |
 | `src/quake_loyola/geometry/` | Low-level brush / face construction helpers (package: primitives, structures, prefabs, buildings, entities, helpers) |
-| `src/quake_loyola/constants/` | Shared numeric constants and texture names (package: flags, world, textures, lighting, fonts, trees, ennis, bridge, streets, dorm, knott, maryland, derived) |
+| `src/quake_loyola/constants/` | Shared numeric constants and texture names (package: world, textures, lighting, fonts, trees, ennis, bridge, streets, dorm, knott, derived) |
 | `src/quake_loyola/bridge.py` | Bridge deck, arch spans, piers, parapets |
 | `src/quake_loyola/knott_hall.py` | Knott Hall shell (walls, roof, fascia sign) |
 | `src/quake_loyola/dorms.py` | West-campus dorms — cleared pending a rebuild (emits nothing) |
 | `src/quake_loyola/streets/` | Charles Street and surrounding road geometry (package: `shell`, `ennis`, `details`) |
 | `src/quake_loyola/west_campus.py` | West-campus frontage (iron fence, brick wall, terrace walk) |
-| `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `maryland`, `ne`, `west_campus`) |
+| `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `ne`, `west_campus`) |
 | `src/quake_loyola/entities/` | Player spawns, items, lights (package: `spawns`, `pickups`, `monsters`, `vegetation`, `lights`, `platform`, `_common`) |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
 | `ql` | Typer CLI entry point — `ql sky/fog/light/vis` / `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
-| `src/quake_loyola/config.py` | Flag/build-setting defaults + `ql.toml` load/save |
+| `src/quake_loyola/config.py` | Build-setting defaults + `ql.toml` load/save |
 | `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
 | `src/quake_loyola/build_presets.py` | Valid values for the `[build]` settings, and their validators |
 | `src/quake_loyola/wads.py` | The project's WAD list + a minimal WAD2 reader (used to validate `sky`) |
@@ -77,11 +77,11 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 
 ## Configuring the build
 
-Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and the
-`[build]` settings are stored in `ql.toml` (repo root, tracked in git) and
-edited with the `ql` CLI — see the module docstring of
-`src/quake_loyola/config.py`, `docs/cli.rst`, and the README's "Configuring
-the build" section.
+The `[build]` settings (sky, fog, lighting, vis/light quality) are stored in
+`ql.toml` (repo root, tracked in git) and edited with the `ql` CLI — see the
+module docstring of `src/quake_loyola/config.py`, `docs/cli.rst`, and the
+README's "Configuring the build" section. There are no module on/off flags:
+every area module is always built.
 
 The settings changed most often have single-purpose commands; each prints the
 current value and the valid ones when run with no argument:
@@ -93,12 +93,10 @@ ql light dusk     # time-of-day lighting preset
 ql vis full       # vis pass used by `ql build`
 ```
 
-Everything else goes through `ql conf set <NAME> <value>` (`ql conf show`
-for the build settings, `ql conf show --all` to include the ~35 module/light
-flags). `generate_map.py` picks up `ql.toml` automatically through
-`constants/flags.py` (and a few flags in
-`constants/bridge.py`/`knott.py`/`derived.py`) at import time; no code changes
-are needed to flip a module on/off.
+Everything else goes through `ql conf set <NAME> <value>`, and `ql conf show`
+lists every setting with its default and valid values. `generate_map.py`
+picks up `ql.toml` automatically through `constants/lighting.py` and
+`constants/textures.py` at import time.
 
 ## Key conventions
 

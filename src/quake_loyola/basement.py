@@ -1,7 +1,6 @@
 """Sub-basement shell, lighting, and return teleport."""
 
 from .constants import (
-    BASEMENT_ENABLED,
     BASEMENT_FLOOR_Z1,
     BASEMENT_Z1,
     CHARLES_ARCH_RIN,
@@ -36,9 +35,6 @@ LIGHT_GRID_BRIGHTNESS = "500"
 
 def build():
     """Build the basement brushes and entities."""
-    if not BASEMENT_ENABLED:
-        return [], []
-
     BRUSHES = []
     ENTITIES = []
 
@@ -126,7 +122,6 @@ def build():
                     "light",
                     origin=f"{x} {y} {light_z}",
                     light=LIGHT_GRID_BRIGHTNESS,
-                    _light_group="basement",
                 )
             )
             y += step

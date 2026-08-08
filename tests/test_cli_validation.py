@@ -42,24 +42,24 @@ class ParseBoolTests(unittest.TestCase):
 
 
 class ValidateOneTests(unittest.TestCase):
-    def test_flag_name_is_case_insensitive_and_parsed_as_bool(self):
-        kind, key, value = cli._validate_one("knott_enabled_walkway", "true")
-        self.assertEqual((kind, key, value), ("flag", "KNOTT_ENABLED_WALKWAY", True))
+    def test_name_is_case_insensitive_and_bool_setting_is_parsed(self):
+        key, value = cli._validate_one("LIGHT_EXTRA", "true")
+        self.assertEqual((key, value), ("light_extra", True))
 
     def test_enum_build_setting_accepts_valid_value(self):
-        kind, key, value = cli._validate_one("vis_mode", "full")
-        self.assertEqual((kind, key, value), ("build", "vis_mode", "full"))
+        key, value = cli._validate_one("vis_mode", "full")
+        self.assertEqual((key, value), ("vis_mode", "full"))
 
     def test_enum_build_setting_rejects_invalid_value(self):
         with self.assertRaises(typer.BadParameter):
             cli._validate_one("vis_mode", "ultra")
 
     def test_fog_density_accepts_named_preset(self):
-        kind, key, value = cli._validate_one("fog_density", "high")
-        self.assertEqual((kind, key, value), ("build", "fog_density", "high"))
+        key, value = cli._validate_one("fog_density", "high")
+        self.assertEqual((key, value), ("fog_density", "high"))
 
     def test_fog_density_accepts_custom_float_string(self):
-        _, _, value = cli._validate_one("fog_density", "0.05")
+        _, value = cli._validate_one("fog_density", "0.05")
         self.assertEqual(value, "0.05")
 
     def test_fog_density_rejects_invalid_value(self):
@@ -67,8 +67,8 @@ class ValidateOneTests(unittest.TestCase):
             cli._validate_one("fog_density", "extreme")
 
     def test_boolean_build_setting_parsed_as_bool(self):
-        kind, key, value = cli._validate_one("light_extra", "true")
-        self.assertEqual((kind, key, value), ("build", "light_extra", True))
+        key, value = cli._validate_one("light_extra", "true")
+        self.assertEqual((key, value), ("light_extra", True))
 
     def test_unknown_setting_name_exits_with_code_1(self):
         with self.assertRaises(typer.Exit) as ctx:
@@ -88,17 +88,11 @@ class CliRunnerConfigCommandTests(unittest.TestCase):
     def tearDown(self):
         config.reset()
 
-    def test_conf_show_lists_flags_and_build_settings(self):
-        result = self.runner.invoke(cli.app, ["conf", "show", "--all"])
+    def test_conf_show_lists_build_settings(self):
+        result = self.runner.invoke(cli.app, ["conf", "show"])
         self.assertEqual(result.exit_code, 0)
-        self.assertIn("[flags]", result.stdout)
         self.assertIn("[build]", result.stdout)
         self.assertIn("sky", result.stdout)
-
-    def test_conf_get_known_flag(self):
-        result = self.runner.invoke(cli.app, ["conf", "get", "KNOTT_ENABLED"])
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.stdout.strip(), str(config.DEFAULTS["KNOTT_ENABLED"]))
 
     def test_conf_get_known_build_setting(self):
         result = self.runner.invoke(cli.app, ["conf", "get", "vis_mode"])
@@ -119,15 +113,15 @@ class CliRunnerConfigCommandTests(unittest.TestCase):
     def test_conf_set_multiple_name_equals_value_pairs(self):
         result = self.runner.invoke(
             cli.app,
-            ["conf", "set", "KNOTT_ENABLED=false", "vis_mode=full"],
+            ["conf", "set", "light_extra=true", "vis_mode=full"],
         )
         self.assertEqual(result.exit_code, 0)
-        self.assertFalse(config.get("KNOTT_ENABLED"))
+        self.assertTrue(config.get_build("light_extra"))
         self.assertEqual(config.get_build("vis_mode"), "full")
 
     def test_conf_set_rejects_arg_missing_equals_in_multi_form(self):
         result = self.runner.invoke(
-            cli.app, ["conf", "set", "KNOTT_ENABLED=false", "vis_mode"]
+            cli.app, ["conf", "set", "light_extra=true", "vis_mode"]
         )
         self.assertNotEqual(result.exit_code, 0)
 
@@ -144,7 +138,7 @@ class CliRunnerConfigCommandTests(unittest.TestCase):
         self.assertIn("already using defaults", result.stdout)
 
     def test_conf_reset_with_yes_flag_skips_confirmation(self):
-        config.set_flag("KNOTT_ENABLED", False)
+        config.set_build("vis_mode", "full")
         self.assertTrue(config.CONFIG_PATH.exists())
         result = self.runner.invoke(cli.app, ["conf", "reset", "--yes"])
         self.assertEqual(result.exit_code, 0)
@@ -152,13 +146,13 @@ class CliRunnerConfigCommandTests(unittest.TestCase):
         self.assertFalse(config.CONFIG_PATH.exists())
 
     def test_conf_reset_declining_confirmation_aborts(self):
-        config.set_flag("KNOTT_ENABLED", False)
+        config.set_build("vis_mode", "full")
         self.assertTrue(config.CONFIG_PATH.exists())
         result = self.runner.invoke(cli.app, ["conf", "reset"], input="n\n")
         self.assertNotEqual(result.exit_code, 0)
         # Aborted before deleting — the override survives.
         self.assertTrue(config.CONFIG_PATH.exists())
-        self.assertFalse(config.get("KNOTT_ENABLED"))
+        self.assertEqual(config.get_build("vis_mode"), "full")
 
 
 class CliRunnerGenCommandTests(unittest.TestCase):

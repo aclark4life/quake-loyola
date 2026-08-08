@@ -98,15 +98,6 @@ class KnottHallBuildTest(unittest.TestCase):
             len(west_detail) + len(east_detail) + len(parapet_brushes),
         )
 
-    def test_build_disabled_returns_empty(self):
-        original = knott_hall.KNOTT_ENABLED
-        knott_hall.KNOTT_ENABLED = False
-        try:
-            brushes, entities = knott_hall.build()
-        finally:
-            knott_hall.KNOTT_ENABLED = original
-        self.assertEqual((brushes, entities), ([], []))
-
 
 class BridgeRailingTubeBoundsTest(unittest.TestCase):
     def test_tube_bounds_are_ordered_and_symmetric_width(self):
@@ -135,28 +126,27 @@ class BridgeSouthParapetEndcapTest(unittest.TestCase):
 class BridgeFilterSectionsTest(unittest.TestCase):
     """Correctness checks for _filter_sections()'s per-section X windows.
 
-    A code review flagged that existing bridge.build() toggle tests only
-    assert entity-COUNT changes (e.g. "fewer entities than the full build"),
-    which would still pass even if _filter_sections() kept the wrong
-    geometry (as long as it dropped *something*). These tests instead
-    assert *which* geometry is kept, by bounding box.
+    _shift_center_span() runs every brush through _filter_sections(), so a
+    window that keeps the wrong geometry would silently move (or drop) part
+    of the bridge. These tests assert *which* geometry each section's window
+    keeps, by bounding box.
     """
 
     @classmethod
     def setUpClass(cls):
         cls.all_brushes, cls.all_entities = bridge._build_all()
-        cls.enabled_names = list(bridge._section_x_ranges().keys())
+        cls.section_names = list(bridge._section_x_ranges().keys())
         margin = (
             bridge.BRIDGE_PILLAR_HW
             + bridge.BRIDGE_PILLAR_OVERHANG
             + bridge.PIER6_ROTATION_MARGIN
         )
-        cls.ranges = bridge._section_accept_ranges(cls.enabled_names, margin)
+        cls.ranges = bridge._section_accept_ranges(margin)
 
     def test_extracted_section_brushes_stay_within_its_accept_window(self):
-        for name in self.enabled_names:
+        for name in self.section_names:
             brushes, entities = bridge._filter_sections(
-                self.all_brushes, self.all_entities, self.enabled_names, [name]
+                self.all_brushes, self.all_entities, [name]
             )
             self.assertTrue(
                 entities, f"expected at least one entity extracted for {name!r}"
@@ -176,62 +166,18 @@ class BridgeFilterSectionsTest(unittest.TestCase):
                         f"{name}: brush x2={bx2} beyond window end {ax2}",
                     )
 
-    def test_disabling_one_span_drops_only_its_own_geometry(self):
-        # Disabling a single span must strictly reduce the retained brush
-        # count (not just possibly change entity count), and every brush
-        # that remains must fall within the *recomputed* accept windows for
-        # the still-enabled sections (boundary-pier ownership shifts when a
-        # neighboring span is dropped, so windows are recomputed per call
-        # rather than reused from setUpClass).
-        full_b, full_e = bridge._filter_sections(
-            self.all_brushes, self.all_entities, self.enabled_names
-        )
-        full_brush_count = sum(len(e.brushes) for e in full_e)
-        margin = (
-            bridge.BRIDGE_PILLAR_HW
-            + bridge.BRIDGE_PILLAR_OVERHANG
-            + bridge.PIER6_ROTATION_MARGIN
-        )
-        for dropped in self.enabled_names:
-            kept_names = [n for n in self.enabled_names if n != dropped]
-            partial_b, partial_e = bridge._filter_sections(
-                self.all_brushes, self.all_entities, kept_names
-            )
-            partial_brush_count = sum(len(e.brushes) for e in partial_e)
-            self.assertLess(
-                partial_brush_count,
-                full_brush_count,
-                f"disabling {dropped!r} should reduce retained brush count",
-            )
-            kept_ranges = bridge._section_accept_ranges(kept_names, margin)
-            allowed = list(kept_ranges.values())
-            for e in partial_e:
-                for b in e.brushes:
-                    (bx1, _, _), (bx2, _, _) = b.get_bbox()
-                    self.assertTrue(
-                        any(
-                            bx1 >= ax1 - 1e-3 and bx2 <= ax2 + 1e-3
-                            for ax1, ax2 in allowed
-                        ),
-                        f"after disabling {dropped!r}, brush x=({bx1}, {bx2}) "
-                        f"falls outside every kept-section window {allowed}",
-                    )
-
 
 class BridgeShiftCenterSpanTest(unittest.TestCase):
-    """_shift_center_span() must translate the enabled assembly by exactly
-    the configured offset — not merely change the brush/entity count."""
+    """_shift_center_span() must translate the assembly by exactly the
+    configured offset — not merely change the brush/entity count."""
 
     def test_shift_translates_every_brush_by_the_exact_offset(self):
         all_brushes, all_entities = bridge._build_all()
-        enabled_names = list(bridge._section_x_ranges().keys())
         offset = (5.0, 320.0, 96.0)
 
-        unshifted_b, unshifted_e = bridge._filter_sections(
-            all_brushes, all_entities, enabled_names
-        )
+        unshifted_b, unshifted_e = bridge._filter_sections(all_brushes, all_entities)
         shifted_b, shifted_e = bridge._shift_center_span(
-            all_brushes, all_entities, enabled_names, offset
+            all_brushes, all_entities, offset
         )
         self.assertEqual(len(unshifted_e), len(shifted_e))
         self.assertEqual(len(unshifted_b), len(shifted_b))

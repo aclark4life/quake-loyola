@@ -17,7 +17,6 @@ from ..constants import (
     FLOOR_Z2,
     ROAD_X1,
     WALL_T,
-    WEST_CAMPUS_ENABLED_TERRAIN,
     WORLD_X1,
     WORLD_Y1,
     WORLD_Y2,
@@ -201,9 +200,6 @@ def _build_west_campus_terrain_cell(wx1, wx2, y1, y2, z_nw, z_sw, z_ne, z_se, te
 
 def build():
     """Build the west campus terrain brushes."""
-
-    if not WEST_CAMPUS_ENABLED_TERRAIN:
-        return [], []
     BRUSHES = []
     ENTITIES = []
 

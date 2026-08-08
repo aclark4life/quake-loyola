@@ -1,8 +1,13 @@
-"""West-campus dorm building constants and the DormSpec dataclass."""
+"""West-campus frontage constants.
 
-from dataclasses import dataclass
+The dorm buildings themselves were removed pending a rebuild; what is left
+here describes the street frontage that outlived them — the brick wall,
+gate, pillars, iron fence, and front walkway — plus the footprint depth the
+surviving frontage bounds are still measured from. The ``DORM_`` prefix is
+kept because the frontage is positioned relative to where the dorms stood.
+"""
 
-DORM_DEPTH = 450
+DORM_DEPTH = 450  # Dorm-footprint depth; frontage bounds derive from it.
 DORM_FENCE_OFFSET = 216
 DORM_FRONT_WALKWAY_FENCE_OFFSET = 40
 DORM_FRONT_WALKWAY_W = 96
@@ -17,15 +22,3 @@ DORM_BRICK_WALL_HW = 12
 DORM_BRICK_GATE_H = 96
 DORM_DOOR_OFF = 160
 DORM_DOOR_W = 80
-DORM_FLOORS = 3
-DORM_WALL_T = 16
-
-
-@dataclass
-class DormSpec:
-    floor_h: int
-    floors: int
-    wall_t: int
-    depth: int
-    x1: int
-    x2: int

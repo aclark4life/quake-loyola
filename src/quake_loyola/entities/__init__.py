@@ -1,36 +1,32 @@
-"""Gameplay entities, lights, teleports, and movers.
+"""Gameplay entities.
 
-Each submodule groups one concern (spawns, pickups, monsters, lights,
-vegetation, and the Charles St platform loop) and exposes
-``_build_x(ENTITIES)`` helpers that append to a shared, mutable ``ENTITIES``
-list. :func:`build` runs them in the same order as the original monolithic
-module to keep entity ordering (and therefore the generated ``.map`` output)
-unchanged.
+Currently just the single-player spawn point. Lights are emitted by the area
+module that owns the geometry they light (e.g. :mod:`quake_loyola.basement`),
+not from here.
 """
 
-from . import lights as _lights
-from . import monsters as _monsters
-from . import pickups as _pickups
-from . import platform as _platform
-from . import spawns as _spawns
-from . import vegetation as _vegetation
+from ..geometry import ent
+
+# Hand-placed spawn location (west of the bridge, on Charles St); not derived
+# from a terrain/road constant, so it stays a private constant here rather
+# than in constants/ to avoid implying it tracks map scale.
+_SPAWN_X = -180
+_SPAWN_Y = 1992
+_SPAWN_Z = 26
 
 
 def build():
-    """Build gameplay entities, lights, teleports, and movers."""
-    BRUSHES = []
-    ENTITIES = []
-
-    _spawns._build_teleports(ENTITIES)
-    _spawns._build_player_start(ENTITIES)
-    _spawns._build_dm_spawns(ENTITIES)
-    _pickups._build_weapons(ENTITIES)
-    _monsters._build_monsters(ENTITIES)
-    _pickups._build_ammo(ENTITIES)
-    _pickups._build_health(ENTITIES)
-    _lights._build_lights(ENTITIES)
-    _vegetation._build_vegetation(ENTITIES)
-    _platform._build_platform(ENTITIES)
-    _monsters._build_monsters2(ENTITIES)
-
-    return BRUSHES, ENTITIES
+    """Build gameplay entities."""
+    return [], [
+        ent(
+            "info_player_start",
+            origin=f"{_SPAWN_X} {_SPAWN_Y} {_SPAWN_Z}",
+            angle="270",
+        ),
+        ent(
+            "info_teleport_destination",
+            targetname="dest_start",
+            origin=f"{_SPAWN_X} {_SPAWN_Y + 24} {_SPAWN_Z}",
+            angle="270",
+        ),
+    ]

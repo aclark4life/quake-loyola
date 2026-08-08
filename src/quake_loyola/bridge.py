@@ -1,7 +1,7 @@
 """Build the pedestrian bridge over Charles Street.
 
 This module generates the bridge deck, parapets, piers, archwork,
-abutment teleports, and fascia lettering between west campus and Knott Hall.
+abutments, and fascia lettering between west campus and Knott Hall.
 """
 
 from .constants.bridge import (
@@ -69,10 +69,6 @@ from .constants.bridge import (
     BRIDGE_SQ_HW,
     BRIDGE_SQ_LINTEL_H,
     BRIDGE_SQ_LINTEL_STONE_H,
-    BRIDGE_TELEPORT_ARCH_CLEARANCE,
-    BRIDGE_TELEPORT_ARCH_X1_OFFSET,
-    BRIDGE_TELEPORT_ARCH_X2_OFFSET,
-    BRIDGE_TELEPORT_DEST_Z,
     BRIDGE_TORCH_CUP_H,
     BRIDGE_TORCH_CUP_HW,
     BRIDGE_TORCH_POST_H,
@@ -103,16 +99,6 @@ from .constants.derived import (
     deck_top_z,
     pier6_east_face_x_at_y,
     pier6_west_face_x_at_y,
-)
-from .constants.flags import (
-    BRIDGE_ENABLED_FASCIA_TEXT,
-    BRIDGE_ENABLED_SPAN_CENTER,
-    BRIDGE_ENABLED_SPAN_EAST_APPROACH,
-    BRIDGE_ENABLED_SPAN_EAST_EXT,
-    BRIDGE_ENABLED_SPAN_KH,
-    BRIDGE_ENABLED_SPAN_WEST_APPROACH,
-    BRIDGE_ENABLED_SUPPORTS,
-    ENTITIES_ENABLED_TELEPORTS,
 )
 from .constants.fonts import FASCIA_FONT
 from .constants.textures import Textures
@@ -157,25 +143,19 @@ _SECTION_ORDER = [
 ]
 
 
-def _boundary_owner(left_name, right_name, enabled_names):
+def _boundary_owner(left_name, right_name):
     """Return which adjacent section owns a shared boundary pier.
 
-    center_span takes priority; other boundaries prefer the section nearer
-    center_span, with a fallback to whichever candidate is enabled.
+    center_span takes priority; every other boundary is owned by the section
+    on its left.
     """
-    if right_name == "center_span":
-        preferred, fallback = right_name, left_name
-    elif left_name == "center_span":
-        preferred, fallback = left_name, right_name
-    else:
-        preferred, fallback = left_name, right_name
-    return preferred if preferred in enabled_names else fallback
+    return right_name if right_name == "center_span" else left_name
 
 
-def _section_accept_ranges(enabled_names, margin):
-    """Return per-section X acceptance windows for the enabled bridge sections.
+def _section_accept_ranges(margin):
+    """Return the per-section X acceptance window for each bridge section.
 
-    Each boundary pier belongs to exactly one enabled section, so the windows
+    Each boundary pier belongs to exactly one section, so the windows
     partition the bridge without duplicating or dropping pier geometry.
     """
     section_piers = _section_x_ranges()
@@ -183,52 +163,35 @@ def _section_accept_ranges(enabled_names, margin):
     for idx, name in enumerate(_SECTION_ORDER):
         px1, px2 = section_piers[name]
         if idx == 0:
-            # Extend all the way to the world edge so the west
-            # abutment/teleport geometry (built out at WORLD_X1, far beyond
-            # the first pier's pillar-overhang margin) isn't dropped when
-            # section filtering is active.
+            # Extend all the way to the world edge so the west abutment
+            # geometry (built out at WORLD_X1, far beyond the first pier's
+            # pillar-overhang margin) isn't dropped.
             ax1 = WORLD_X1
         else:
-            owner = _boundary_owner(_SECTION_ORDER[idx - 1], name, enabled_names)
+            owner = _boundary_owner(_SECTION_ORDER[idx - 1], name)
             ax1 = px1 - margin if owner == name else px1
         if idx == len(_SECTION_ORDER) - 1:
             # Symmetric with the west edge above: reach WORLD_X2_EXT so the
-            # east abutment/teleport geometry isn't dropped either.
+            # east abutment geometry isn't dropped either.
             ax2 = WORLD_X2_EXT
         else:
-            owner = _boundary_owner(name, _SECTION_ORDER[idx + 1], enabled_names)
+            owner = _boundary_owner(name, _SECTION_ORDER[idx + 1])
             ax2 = px2 + margin if owner == name else px2
         ranges[name] = (ax1, ax2)
     return ranges
 
 
-def _pier_survives_section_filter(pier_x, enabled_names):
-    """True if the pier at ``pier_x`` is kept by ``_filter_sections``.
+def _filter_sections(brushes, entities, extract_names=None):
+    """Return only the geometry assigned to ``extract_names``.
 
-    Geometry appended *after* filtering (the pier banners) has to make the
-    same ownership decision itself, or it ends up hanging in mid-air over a
-    pier that was filtered out.
-    """
-    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG + PIER6_ROTATION_MARGIN
-    accept_ranges = _section_accept_ranges(enabled_names, margin)
-    return any(
-        ax1 <= pier_x <= ax2
-        for name, (ax1, ax2) in accept_ranges.items()
-        if name in enabled_names
-    )
-
-
-def _filter_sections(brushes, entities, enabled_names, extract_names=None):
-    """Return only the geometry assigned to the selected bridge sections.
-
-    `enabled_names` defines shared-pier ownership for the full enabled set.
-    `extract_names`, when provided, limits the returned subset while keeping
-    that ownership unchanged.
+    Section ownership of the shared boundary piers is always resolved across
+    the full set of sections; ``extract_names`` only limits which of the
+    resulting windows the geometry is matched against (default: all of them).
     """
     if extract_names is None:
-        extract_names = enabled_names
+        extract_names = _SECTION_ORDER
     margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG + PIER6_ROTATION_MARGIN
-    accept_ranges = _section_accept_ranges(enabled_names, margin)
+    accept_ranges = _section_accept_ranges(margin)
     enabled_spans = [accept_ranges[name] for name in extract_names]
 
     def _in_any_span(b):
@@ -803,7 +766,6 @@ def _add_parapet_base_lights(
                     f"{int((zb1 + zb2) / 2) + BRIDGE_BASE_LIGHT_H // 2}"
                 ),
                 light=BRIDGE_BASE_LIGHT_BRIGHTNESS,
-                _light_group="deck_wall",
             )
         )
         return None
@@ -1467,8 +1429,8 @@ def _rotate_pier6_support_geometry(
     )
 
 
-def _build_bridge_west_abutment_fill(brushes, teleport_state, ctx):
-    """Build the west abutment fill and record the teleport geometry."""
+def _build_bridge_west_abutment_fill(brushes, ctx):
+    """Build the west abutment fill."""
     if ctx["px"] != min(BRIDGE_ARCH_X):
         return
 
@@ -1476,12 +1438,8 @@ def _build_bridge_west_abutment_fill(brushes, teleport_state, ctx):
     x2 = ctx["x2"]
     a_rin = ctx["a_rin"]
     pier_floor_z = ctx["pier_floor_z"]
-    pier_top_z = ctx["pier_top_z"]
     pdeck = ctx["pdeck"]
 
-    ramp_top_west_z = (
-        pier_floor_z + BRIDGE_ABUTMENT_RAMP_HIGH_H + BRIDGE_ABUTMENT_RAMP_CAP_H
-    )
     ramp_top_east_z = (
         pier_floor_z + BRIDGE_ABUTMENT_RAMP_LOW_H + BRIDGE_ABUTMENT_RAMP_CAP_H
     )
@@ -1496,22 +1454,6 @@ def _build_bridge_west_abutment_fill(brushes, teleport_state, ctx):
             Textures.CEMENT,
         )
     )
-
-    teleport_floor_z = ramp_top_west_z
-    teleport_stilt_height = (
-        pier_top_z - teleport_floor_z - a_rin - BRIDGE_TELEPORT_ARCH_CLEARANCE
-    )
-    teleport_state["brush"] = arch_fill(
-        x1 + BRIDGE_TELEPORT_ARCH_X1_OFFSET,
-        x1 + BRIDGE_TELEPORT_ARCH_X2_OFFSET,
-        0.0,
-        teleport_floor_z,
-        a_rin,
-        A_SEGS,
-        Textures.TELEPORT,
-        stilt_h=teleport_stilt_height,
-    )
-    teleport_state["dest_z"] = int(pdeck) + BRIDGE_TELEPORT_DEST_Z
 
     cem_rin = BRIDGE_ABUTMENT_CEMENT_RIN
     cem_floor_z = ramp_top_east_z
@@ -1532,7 +1474,7 @@ def _build_bridge_west_abutment_fill(brushes, teleport_state, ctx):
     )
 
 
-def _build_bridge_support_pier(brushes, entities, px, teleport_state):
+def _build_bridge_support_pier(brushes, entities, px):
     """Build one bridge support pier, including abutment specials."""
     pier5_lintel_gap_default = 24
     pier6_rot_bstart = len(brushes) if px == PIER6_X else None
@@ -1633,44 +1575,19 @@ def _build_bridge_support_pier(brushes, entities, px, teleport_state):
     _rotate_pier6_support_geometry(
         brushes, entities, ctx, pier6_rot_bstart, pier6_rot_estart
     )
-    _build_bridge_west_abutment_fill(brushes, teleport_state, ctx)
+    _build_bridge_west_abutment_fill(brushes, ctx)
 
 
-def _build_bridge_supports(brushes, entities, teleport_state):
-    """Build the bridge piers, abutments, torches, and teleport fill."""
-    if BRIDGE_ENABLED_SUPPORTS:
-        for px in BRIDGE_ARCH_X:
-            if (
-                BRIDGE_ENABLED_SUPPORTS is not True
-                and px not in BRIDGE_ENABLED_SUPPORTS
-            ):
-                continue
-            _build_bridge_support_pier(brushes, entities, px, teleport_state)
+def _build_bridge_supports(brushes, entities):
+    """Build the bridge piers, abutments, and torches."""
+    for px in BRIDGE_ARCH_X:
+        _build_bridge_support_pier(brushes, entities, px)
 
 
 def _append_bridge_detail_entity(entities, detail_brushes):
     """Wrap the generated bridge geometry into the same func_detail entity."""
     if detail_brushes:
         entities.append(brush_ent("func_detail", detail_brushes))
-
-
-def _append_bridge_teleport_entities(entities, teleport_state):
-    """Append the west-abutment teleport entities when teleports are enabled."""
-    if ENTITIES_ENABLED_TELEPORTS and teleport_state:
-        entities.append(
-            ent(
-                "info_teleport_destination",
-                targetname="dest_abutment_deck",
-                origin=f"{min(BRIDGE_ARCH_X)} 0 {teleport_state['dest_z']}",
-                angle="0",
-            )
-        )
-        entities.append(
-            brush_ent(
-                "trigger_teleport", teleport_state["brush"], target="dest_abutment_deck"
-            )
-        )
-        entities.append(brush_ent("func_illusionary", teleport_state["brush"]))
 
 
 def _render_bridge_fascia(
@@ -1728,32 +1645,25 @@ def _append_bridge_fascia_text(entities):
     fascia_cx = (PIER2_X + PIER3_X) // 2
     text_x0 = fascia_cx - total_w // 2
 
-    letter_brushes = (
-        (
-            _render_bridge_fascia(
-                BRIDGE_FASCIA_TEXT,
-                x0=text_x0,
-                y_face=BRIDGE.y1,
-                px_w=BRIDGE_FASCIA_PX_W,
-                px_h=BRIDGE_FASCIA_PX_H,
-                depth=1,
-                tex=Textures.RAIL,
-                capital_pos=capital_pos,
-            )
-            + _render_bridge_fascia(
-                BRIDGE_FASCIA_TEXT[::-1],
-                x0=text_x0,
-                y_face=BRIDGE.y2 + 1,
-                px_w=BRIDGE_FASCIA_PX_W,
-                px_h=BRIDGE_FASCIA_PX_H,
-                depth=1,
-                tex=Textures.RAIL,
-                capital_pos=capital_pos_rev,
-                mirror=True,
-            )
-        )
-        if BRIDGE_ENABLED_FASCIA_TEXT
-        else []
+    letter_brushes = _render_bridge_fascia(
+        BRIDGE_FASCIA_TEXT,
+        x0=text_x0,
+        y_face=BRIDGE.y1,
+        px_w=BRIDGE_FASCIA_PX_W,
+        px_h=BRIDGE_FASCIA_PX_H,
+        depth=1,
+        tex=Textures.RAIL,
+        capital_pos=capital_pos,
+    ) + _render_bridge_fascia(
+        BRIDGE_FASCIA_TEXT[::-1],
+        x0=text_x0,
+        y_face=BRIDGE.y2 + 1,
+        px_w=BRIDGE_FASCIA_PX_W,
+        px_h=BRIDGE_FASCIA_PX_H,
+        depth=1,
+        tex=Textures.RAIL,
+        capital_pos=capital_pos_rev,
+        mirror=True,
     )
     if letter_brushes:
         entities.append(brush_ent("func_detail", letter_brushes))
@@ -1967,18 +1877,16 @@ def _build_all():
         span4_west_mid,
     )
 
-    teleport_state = {}
-    _build_bridge_supports(detail_brushes, entities, teleport_state)
+    _build_bridge_supports(detail_brushes, entities)
 
     brushes = worldspawn_brushes
     _append_bridge_detail_entity(entities, detail_brushes)
-    _append_bridge_teleport_entities(entities, teleport_state)
     _append_bridge_fascia_text(entities)
 
     return brushes, entities
 
 
-def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
+def _append_bridge_pier_banner(entities, pier_x, x_dir, y_side):
     """Hang a banner from a horizontal mast off one center-span pier.
 
     Charles St runs north-south between Piers 2 and 3, so each mast projects
@@ -1989,8 +1897,6 @@ def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
 
     Args:
         entities: Entity list to append the mast and banner to.
-        enabled_names: Enabled bridge section names, used to decide whether the
-            center-span offset applies.
         pier_x: X centre of the pier to hang from.
         x_dir: ``+1`` to project east off the pier, ``-1`` to project west.
         y_side: ``-1`` to hang from the south corner column, ``+1`` for north.
@@ -2000,17 +1906,7 @@ def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
     texture alignment in world space, so an offset derived from pre-shift
     coordinates would slide the image off the banner.
     """
-    if BRIDGE_ENABLED_SUPPORTS is not True and pier_x not in BRIDGE_ENABLED_SUPPORTS:
-        return
-    # The banners are appended after _filter_sections has run, so they have to
-    # repeat its ownership test: without this, disabling the span that owns
-    # Pier 2 or Pier 3 leaves its banner and mast floating over Charles St
-    # with no pier behind them.
-    if not _pier_survives_section_filter(pier_x, enabled_names):
-        return
-    shifted = (
-        BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names
-    )
+    shifted = BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0)
     _, dy, dz = BRIDGE_CENTER_SPAN_OFFSET if shifted else (0.0, 0.0, 0.0)
 
     x_face = pier_x + x_dir * BRIDGE_PILLAR_HW
@@ -2065,51 +1961,34 @@ def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
 def build():
     """Build the pedestrian bridge: deck, arch spans, piers, and parapets.
 
-    Individual spans (west approach, center, east approach) are toggled via
-    the ``BRIDGE_ENABLED_SPAN_*`` config flags.
-
     Returns:
-        tuple[list, list]: ``(brushes, entities)`` for the enabled bridge
-        sections.
+        tuple[list, list]: ``(brushes, entities)`` for the whole bridge.
     """
-    sections_enabled = {
-        "west_approach": BRIDGE_ENABLED_SPAN_WEST_APPROACH,
-        "center_span": BRIDGE_ENABLED_SPAN_CENTER,
-        "east_approach": BRIDGE_ENABLED_SPAN_EAST_APPROACH,
-        "kh_span": BRIDGE_ENABLED_SPAN_KH,
-        "east_ext": BRIDGE_ENABLED_SPAN_EAST_EXT,
-    }
-    if not any(sections_enabled.values()):
-        return [], []
     BRUSHES, ENTITIES = _build_all()
-    enabled_names = [name for name, v in sections_enabled.items() if v]
-    if not all(sections_enabled.values()):
-        BRUSHES, ENTITIES = _filter_sections(BRUSHES, ENTITIES, enabled_names)
-    if BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names:
+    if BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0):
         BRUSHES, ENTITIES = _shift_center_span(
-            BRUSHES, ENTITIES, enabled_names, BRIDGE_CENTER_SPAN_OFFSET
+            BRUSHES, ENTITIES, BRIDGE_CENTER_SPAN_OFFSET
         )
     # Piers 2 and 3 flank Charles St, so their banners hang kitty-corner from
     # each other: Pier 2's off its south corner facing east into the road,
     # Pier 3's off its north corner facing west into the road.
-    _append_bridge_pier_banner(ENTITIES, enabled_names, PIER2_X, x_dir=1, y_side=-1)
-    _append_bridge_pier_banner(ENTITIES, enabled_names, PIER3_X, x_dir=-1, y_side=1)
+    _append_bridge_pier_banner(ENTITIES, PIER2_X, x_dir=1, y_side=-1)
+    _append_bridge_pier_banner(ENTITIES, PIER3_X, x_dir=-1, y_side=1)
     return BRUSHES, ENTITIES
 
 
-def _shift_center_span(brushes, entities, enabled_names, offset):
-    """Translate the center span and any other enabled sections by one offset.
+def _shift_center_span(brushes, entities, offset):
+    """Translate the whole bridge assembly by one offset.
 
-    Shared piers stay connected because every enabled section moves as the
-    same rigid assembly. Filter the full enabled set in a single pass rather
-    than extracting each section separately and concatenating: per-section
-    acceptance windows intentionally overlap their neighbor's near a shared
-    pier (so the owning section's margin can capture boundary geometry),
-    and extracting+translating each name individually would double up any
-    brush that falls in that overlap band.
+    Shared piers stay connected because every section moves as the same rigid
+    assembly. Filter in a single pass rather than extracting each section
+    separately and concatenating: per-section acceptance windows intentionally
+    overlap their neighbor's near a shared pier (so the owning section's margin
+    can capture boundary geometry), and extracting+translating each name
+    individually would double up any brush that falls in that overlap band.
     """
     dx, dy, dz = offset
-    sect_b, sect_e = _filter_sections(brushes, entities, enabled_names)
+    sect_b, sect_e = _filter_sections(brushes, entities)
     sect_b = [b.translated(dx, dy, dz) for b in sect_b]
     sect_e = [e.translated(dx, dy, dz) for e in sect_e]
     return sect_b, sect_e

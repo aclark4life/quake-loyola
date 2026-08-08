@@ -41,15 +41,11 @@ def test_conf_show_lists_sky_options(tmp_path):
     assert "sky texture name from a loaded WAD" in result.stdout
 
 
-def test_conf_show_hides_flags_unless_all_is_passed(tmp_path):
-    brief = run_ql("conf", "show", cwd=tmp_path)
-    assert brief.returncode == 0
-    assert "KNOTT_ENABLED" not in brief.stdout
-    assert "module/light flags" in brief.stdout
-
-    full = run_ql("conf", "show", "--all", cwd=tmp_path)
-    assert full.returncode == 0
-    assert "KNOTT_ENABLED" in full.stdout
+def test_conf_show_lists_every_build_setting(tmp_path):
+    result = run_ql("conf", "show", cwd=tmp_path)
+    assert result.returncode == 0
+    for name in ("vis_mode", "light_extra", "lighting_preset", "fog_density", "sky"):
+        assert name in result.stdout
 
 
 def test_conf_get_sky_default(tmp_path):

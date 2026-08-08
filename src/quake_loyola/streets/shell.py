@@ -4,7 +4,7 @@ from ..constants.bridge import (
 from ..constants.derived import (
     BASEMENT_FLOOR_Z1,
     BRIDGE,
-    DORM,
+    DORM_X1,
     MANHOLE_R,
     MANHOLE_X,
     MANHOLE_Y,
@@ -116,7 +116,7 @@ def _build_street_world_shell():
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
-            DORM.x1 + WALL_T,
+            DORM_X1 + WALL_T,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             FLOOR_Z1,
@@ -129,7 +129,7 @@ def _build_street_world_shell():
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
-            DORM.x1 + WALL_T,
+            DORM_X1 + WALL_T,
             WORLD_Y2 - WALL_T,
             WORLD_Y2,
             BRIDGE_DZ2 - WALL_T,
@@ -141,7 +141,7 @@ def _build_street_world_shell():
     )
     BRUSHES.append(
         box(
-            DORM.x1,
+            DORM_X1,
             WORLD_Y2 - WALL_T,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -153,7 +153,7 @@ def _build_street_world_shell():
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
-            DORM.x1 + WALL_T,
+            DORM_X1 + WALL_T,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             FLOOR_Z1,
@@ -166,7 +166,7 @@ def _build_street_world_shell():
     BRUSHES.append(
         ramp_slab(
             BRIDGE.x1,
-            DORM.x1 + WALL_T,
+            DORM_X1 + WALL_T,
             WORLD_Y1,
             WORLD_Y1 + WALL_T,
             BRIDGE_DZ2 - WALL_T,
@@ -178,7 +178,7 @@ def _build_street_world_shell():
     )
     BRUSHES.append(
         box(
-            DORM.x1,
+            DORM_X1,
             WORLD_Y1,
             FLOOR_Z1,
             WORLD_X2_EXT,
@@ -204,9 +204,8 @@ def _build_street_world_shell():
 def _build_world_seal():
     """Six large SKY brushes forming a leak-proof shell around the entire
     world bounding box (with generous margin), independent of any other
-    module's geometry. This is global leak-prevention geometry, not a
-    cosmetic detail, so it must always be built regardless of whether
-    ``STREETS_ENABLED_DETAILS`` is on.
+    module's geometry. This is global leak-prevention geometry rather than
+    cosmetic detailing.
     """
     seal_x1, seal_x2 = WORLD_X1 - 256, WORLD_X2_EXT + 256
     seal_y1, seal_y2 = WORLD_Y1 - 256, WORLD_Y2 + 256

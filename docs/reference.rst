@@ -66,13 +66,11 @@ measurement, not a surveyed footprint. ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/
 centerline at X=0. Since then, ``WORLD_X2`` has grown to accommodate the
 east-side Ennis Parallel/Knott driveway extension (currently X: -5135..9100
 ≈ 937 ft; Y: -6642..4085 ≈ 706 ft, with the true walled boundary extending to
-``WORLD_X2_EXT`` = 9612 ≈ 969 ft). All other module geometry (bridge, dorms, Knott Hall,
-terrain) was, at the time, disabled or scoped down via the per-section flags in
-``constants/flags.py`` (bridge span flags, west-campus section flags,
-``KNOTT_ENABLED_TERRAIN``, ``KNOTT_ENABLED``, ``STREETS_ENABLED_DETAILS``,
-entities.py's per-group flags)
-while each area's own dimensions are re-derived against this new world size
-from the ``ref/`` top-down views.
+``WORLD_X2_EXT`` = 9612 ≈ 969 ft). All other module geometry (bridge, dorms,
+Knott Hall, terrain) was, at the time, disabled or scoped down via a set of
+per-section ``*_ENABLED`` flags (since removed — every area module is now
+built unconditionally) while each area's own dimensions are re-derived
+against this new world size from the ``ref/`` top-down views.
 
 **Fixed anchors vs. the world rectangle.** Several modules' constants used to
 be defined *relative to* ``WORLD_X1``/``WORLD_X2``/``WORLD_Y1``/``WORLD_Y2``
@@ -165,9 +163,9 @@ parked cars), using RGB pixel sampling to find the road-surface/verge
 boundary: 48px, 44px, and 52px, averaging **~35.8 ft** (35.8, 32.8, 38.8 ft
 respectively; 0.7463 ft/px). This originally matched ``ROAD_X1``/``ROAD_X2``
 (``-256``/``256`` = 33.9 ft) well within measurement noise — no change was
-needed at the time. ``STREETS_ENABLED_DETAILS`` was re-enabled as the first
-re-derived module (roads, sidewalks, curbs, lamps, trees, driveways, Ennis
-entrance features); compiles with no leaks at the new world size.
+needed at the time. The street detailing (roads, sidewalks, curbs, lamps,
+trees, driveways, Ennis entrance features) was the first module re-derived
+against the new world size; it compiles with no leaks.
 
 **Deliberate deviation from the real-world measurement (2026-07)** — Charles
 St was subsequently widened to the west several times on request, purely for
@@ -265,9 +263,8 @@ approximation is refined):
 the re-measured rise at Knott Hall's west edge, and
 ``quake_loyola.terrain.knott_hall`` models the continued eastward climb
 toward Ennis Parallel from real elevation samples rather than a flat
-plateau. ``WEST_CAMPUS_ENABLED_TERRAIN``, ``KNOTT_ENABLED_TERRAIN``, and
-``KNOTT_ENABLED`` (the Knott Hall building shell itself) all default
-to enabled.
+plateau. The west-campus terrain, the Knott terrain, and the Knott Hall
+building shell itself are all part of every build.
 
 **Open item:** Charles St still uses a single flat ``ROAD_Z``
 (``FLOOR_Z2 + 8``) rather than the ~10 ft north-south grade measured along
@@ -503,13 +500,13 @@ Knott Hall
      - The cement support structure under the bridge approach in front of Knott
        Hall. Consists of a horizontal cap beam running along the south bridge
        edge (Pier 4 → Pier 5) with 5 vertical drop piers reaching to ground
-       level. Only present when ``KNOTT_ENABLED_WALKWAY = True``.
+       level. Removed along with the Knott walkway; documented here as the
+       intended design for when the walkway is rebuilt.
    * - **Accessible walkway**
      - The small N-S cement path running along the west face of Pier 5, from
        the Knott Hall north face up to the bridge south edge. A short E-W ramp
        at the north end wraps around Pier 5 and connects to the back-road west
-       sidewalk. Generated alongside the main walkway when
-       ``KNOTT_ENABLED_WALKWAY = True``.
+       sidewalk. Removed along with the main Knott walkway.
 
 Street / road
 ~~~~~~~~~~~~~
@@ -730,26 +727,21 @@ Names below are the ``Textures.*`` constants in :mod:`quake_loyola.constants`.
 Entities
 --------
 
-Counts below are for the default build (all optional ``ENTITIES_ENABLED_*``
-groups such as deathmatch spawns, weapons, and monsters left at their
-hardcoded-default, mostly-off state — see ``tests/test_regression.py``'s
-``EXPECTED_ENTITY_CLASSNAME_COUNTS`` golden, which this table mirrors).
+Counts below are for the whole map — every module is built unconditionally
+(see ``tests/test_regression.py``'s ``EXPECTED_ENTITY_CLASSNAME_COUNTS``
+golden, which this table mirrors).
 
-The west-campus dorm buildings have been removed pending a rebuild (see
-:mod:`quake_loyola.dorms`), and everything that was anchored to them went
-with them: the ``EXIT`` portal and its ``info_intermission``, the dorm-roof
-teleport destinations and the Charles-arch and west-bridge-arch triggers
-that fed them, the in-building deathmatch spawns and pickups, and the
-dorm interior lights. Their ``WEST_CAMPUS_ENABLED_DORMS``,
-``WEST_CAMPUS_ENABLED_DORMS_SOUTH``, ``ENTITIES_ENABLED_EXIT``, and
-``LIGHTS_ENABLED_DORM_INTERIOR`` flags were removed too rather than left as
-toggles that do nothing. The map therefore has no level exit until the
-dorms are rebuilt.
+The west-campus dorm buildings have been removed pending a rebuild, and
+everything anchored to them went with them: the ``EXIT`` portal and its
+``info_intermission``, the dorm-roof teleport destinations and the
+Charles-arch and west-bridge-arch triggers that fed them, the in-building
+deathmatch spawns and pickups, and the dorm interior lights. The map
+therefore has no level exit until the dorms are rebuilt.
 
-Enabling more modules via ``ql conf`` (e.g.
-``ENTITIES_ENABLED_DM_SPAWNS``, ``ENTITIES_ENABLED_WEAPONS``) adds
-``info_player_deathmatch``, ``weapon_*``, ``item_*``, and ``monster_*``
-entities not present in this default count.
+The deathmatch spawns, weapon/ammo/health pickups, monsters, vegetation,
+and the Charles St platform loop were likewise removed rather than left
+behind disabled ``*_ENABLED`` toggles, so the counts below are simply what
+the map builds — there is nothing left to switch on.
 
 .. list-table::
    :header-rows: 1

@@ -1,12 +1,5 @@
-[flags]
-BRIDGE_ENABLED_SPAN_EAST_EXT = true
-KNOTT_ENABLED = true
-KNOTT_ENABLED_TERRAIN = true
-KNOTT_ENABLED_WALKWAY = false
-KNOTT_ENABLED_WALKWAY_BENT = true
-
 [build]
 fog_density = "off"
 lighting_preset = "bright"
-sky = "sky_z1"
+sky = "sky_blue_3"
 vis_mode = "full"

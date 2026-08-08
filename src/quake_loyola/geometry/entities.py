@@ -25,8 +25,8 @@ def torch_flame(
 ) -> list[Entity]:
     """Build a light + torch-flame entity pair at ``(x, y, z)``."""
     return [
-        ent("light", origin=f"{x} {y} {z}", light=light, _light_group="torch"),
-        ent(flame_cls, origin=f"{x} {y} {z + flame_dz}", _light_group="torch"),
+        ent("light", origin=f"{x} {y} {z}", light=light),
+        ent(flame_cls, origin=f"{x} {y} {z + flame_dz}"),
     ]
 
 
@@ -34,7 +34,7 @@ def torch_flame_only(
     x: float, y: float, z: float, flame_cls: str = "light_flame_large_yellow"
 ) -> Entity:
     """Build a standalone torch-flame entity (no accompanying light) at ``(x, y, z)``."""
-    return ent(flame_cls, origin=f"{x} {y} {z}", _light_group="torch")
+    return ent(flame_cls, origin=f"{x} {y} {z}")
 
 
 def teleport_pad(

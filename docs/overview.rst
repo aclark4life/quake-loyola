@@ -73,9 +73,6 @@ called in order by :func:`generate_map.build_map`:
    * - :mod:`quake_loyola.west_campus`
      - West-campus frontage: the hillside iron fence, brick wall, and
        terrace walk.
-   * - :mod:`quake_loyola.dorms`
-     - Placeholder for the west-campus dormitories, which have been
-       removed pending a rebuild; currently emits nothing.
    * - :mod:`quake_loyola.bridge`
      - The pedestrian bridge deck, arch ribs, pillars, railings, the
        east/west walkway approaches, and the "LOYOLA UNIVERSITY MARYLAND"
@@ -85,9 +82,12 @@ called in order by :func:`generate_map.build_map`:
        walls on the east side of Charles Street.
    * - :mod:`quake_loyola.knott_hall`
      - Knott Hall building shell: walls, floors, roof, windows, interior.
+   * - :mod:`quake_loyola.basement`
+     - The sub-basement shell beneath Charles Street, its lighting grid,
+       and the arch teleporter back to the surface.
    * - :mod:`quake_loyola.entities`
-     - All Quake point entities: player spawns, deathmatch spawns, health /
-       armour / weapon pickups, the exit teleporter and its frame.
+     - Quake point entities not owned by an area module — currently the
+       single-player spawn point.
 
 Build pipeline
 --------------

@@ -16,7 +16,6 @@ from ..constants import (
     FLOOR_Z2,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
-    NE_ENABLED_TERRAIN,
     ROAD_X2,
     WALL_T,
     WORLD_X2_EXT,
@@ -110,8 +109,6 @@ _ne_cols = [
 
 def build():
     """Build the northeast terrain brushes."""
-    if not NE_ENABLED_TERRAIN:
-        return [], []
     BRUSHES = []
     ENTITIES = []
 

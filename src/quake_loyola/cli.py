@@ -5,8 +5,7 @@ Three layers, narrowest first:
 * the shortcut commands ``ql sky`` / ``ql fog`` / ``ql light`` / ``ql vis`` —
   the handful of settings worth changing day to day. Run with no argument to
   print the current value and the valid ones.
-* ``ql conf`` — the full surface, including the ~40 geometry/light module
-  flags, all persisted to ``ql.toml``.
+* ``ql conf`` — show, set, and reset every build setting in ``ql.toml``.
 * ``ql gen`` / ``ql build`` — run the pipeline.
 """
 
@@ -81,15 +80,8 @@ def _parse_bool(value: str) -> bool:
 
 
 @config_app.command("show")
-def config_show(
-    all_settings: bool = typer.Option(
-        False,
-        "--all",
-        "-a",
-        help="Also list the module/light flags, not just the build settings.",
-    ),
-) -> None:
-    """Show the build settings; add --all for the module/light flags too."""
+def config_show() -> None:
+    """Show every build setting, its default, and its valid values."""
     try:
         exists = config.CONFIG_PATH.exists()
         typer.echo(
@@ -111,20 +103,6 @@ def config_show(
                     subsequent_indent=" " * 15,
                 ):
                     typer.echo(line)
-        if all_settings:
-            typer.echo("\n[flags]")
-            for name in sorted(config.DEFAULTS):
-                value = config.get(name)
-                default = config.DEFAULTS[name]
-                marker = "*" if value != default else " "
-                typer.echo(
-                    f" {marker} {name:<34} = {str(value):<5} (default: {default})"
-                )
-        else:
-            typer.echo(
-                f"\n[flags] {len(config.DEFAULTS)} module/light flags "
-                "(run `ql conf show --all` to list them)"
-            )
         typer.echo("\n(* = overridden from its default via ql.toml)")
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
@@ -133,13 +111,10 @@ def config_show(
 
 @config_app.command("get")
 def config_get(name: str) -> None:
-    """Print the effective value of a single flag or build setting."""
-    name_u = name.upper()
+    """Print the effective value of a single build setting."""
     name_l = name.lower()
     try:
-        if name_u in config.DEFAULTS:
-            typer.echo(str(config.get(name_u)))
-        elif name_l in config.BUILD_DEFAULTS:
+        if name_l in config.BUILD_DEFAULTS:
             typer.echo(str(config.get_build(name_l)))
         else:
             typer.echo(
@@ -152,17 +127,13 @@ def config_get(name: str) -> None:
         raise typer.Exit(code=1) from exc
 
 
-def _validate_one(name: str, value: str) -> tuple[str, str, object]:
+def _validate_one(name: str, value: str) -> tuple[str, object]:
     """Validate a single NAME/value pair without persisting it.
 
-    Return ``(kind, key, parsed_value)`` where ``kind`` is ``"flag"`` or
-    ``"build"``.
+    Return the ``(key, parsed_value)`` pair to hand to :func:`config.set_many`.
     """
-    name_u = name.upper()
     name_l = name.lower()
-    if name_u in config.DEFAULTS:
-        return "flag", name_u, _parse_bool(value)
-    elif name_l in config.BUILD_DEFAULTS:
+    if name_l in config.BUILD_DEFAULTS:
         if name_l in BUILD_ENUM_SETTINGS:
             allowed = BUILD_ENUM_SETTINGS[name_l]
             value_l = value.strip().lower()
@@ -190,7 +161,7 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
             parsed_build = value_norm
         else:
             parsed_build = _parse_bool(value)
-        return "build", name_l, parsed_build
+        return name_l, parsed_build
     else:
         typer.echo(
             f"Unknown setting {name!r}. Run `ql conf show` for the full list.",
@@ -201,8 +172,6 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
 
 _CONFIG_SET_EPILOG = """\b
 Examples:
-  ql conf set KNOTT_ENABLED true
-  ql conf set WEST_CAMPUS_ENABLED_TERRAIN true
   ql conf set vis_mode full
   ql conf set light_extra true
   ql conf set lighting_preset dusk
@@ -211,7 +180,7 @@ Examples:
 
 \b
 Multiple settings at once (NAME=VALUE form, space-separated):
-  ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
+  ql conf set vis_mode=full lighting_preset=dusk sky=sky_z1
 """
 
 
@@ -221,7 +190,7 @@ def config_set(
         ..., help="Either 'NAME VALUE', or one or more 'NAME=VALUE' pairs."
     ),
 ) -> None:
-    """Set one or more flags/build settings, persisted to ql.toml.
+    """Set one or more build settings, persisted to ql.toml.
 
     For the settings you change most often there are shorter commands:
     ql sky, ql fog, ql light, and ql vis.
@@ -242,7 +211,7 @@ def config_set(
     validated = [_validate_one(name, value) for name, value in pairs]
     try:
         config.set_many(validated)
-        for _kind, key, parsed in validated:
+        for key, parsed in validated:
             typer.echo(f"{key} = {parsed}")
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
@@ -255,7 +224,7 @@ def config_reset(
         False, "--yes", "-y", help="Skip the confirmation prompt."
     ),
 ) -> None:
-    """Delete ql.toml, reverting every flag/setting to its default."""
+    """Delete ql.toml, reverting every build setting to its default."""
     if not config.CONFIG_PATH.exists():
         typer.echo("No ql.toml found — already using defaults.")
         raise typer.Exit()
@@ -291,8 +260,8 @@ def _shortcut(setting: str, value: str | None) -> None:
             if options:
                 typer.echo(f"options: {options}")
             return
-        _kind, key, parsed = _validate_one(setting, value)
-        config.set_many([(_kind, key, parsed)])
+        key, parsed = _validate_one(setting, value)
+        config.set_many([(key, parsed)])
         typer.echo(f"{key} = {parsed}")
     except RuntimeError as exc:
         typer.echo(str(exc), err=True)
@@ -352,7 +321,7 @@ def vis(
 
 @app.command("gen")
 def generate() -> None:
-    """Write loyola.map from the current config-driven flag settings."""
+    """Write loyola.map using the current build settings."""
     try:
         from .mapgen import main as _generate_main
 

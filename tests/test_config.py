@@ -1,6 +1,6 @@
-"""Tests for quake_loyola.config — the ql.toml-backed flag/build-setting
-override system used by the `ql conf` CLI and read by
-constants/flags.py (and a few other constants modules) at import time."""
+"""Tests for quake_loyola.config — the ql.toml-backed build-setting override
+system used by the `ql conf` CLI and read by constants/lighting.py (and a few
+other constants modules) at import time."""
 
 import pytest
 
@@ -8,58 +8,31 @@ from quake_loyola import config
 
 
 def test_defaults_load_without_config_file(tmp_path):
-    """With no ql.toml present, every flag/build value should equal its
-    hardcoded default."""
+    """With no ql.toml present, every build value should equal its hardcoded
+    default."""
     missing = tmp_path / "does_not_exist.toml"
     raw = config._read_toml(missing)
     assert raw == {}
-    # The live module-level FLAGS/BUILD (loaded once at process start, from
+    # The live module-level BUILD dict (loaded once at process start, from
     # the isolated cwd set up by tests/conftest.py) must be the hardcoded
     # defaults — this is what the golden regression values assume.
-    assert config.FLAGS == config.DEFAULTS
     assert config.BUILD == config.BUILD_DEFAULTS
 
 
 def test_config_file_values_override_the_hardcoded_defaults(tmp_path):
-    """The merge that FLAGS/BUILD are built from at import time must let a
-    ql.toml value win over the default, and leave untouched keys alone."""
+    """The merge that BUILD is built from at import time must let a ql.toml
+    value win over the default, and leave untouched keys alone."""
     path = tmp_path / "ql.toml"
-    flag = next(name for name, value in config.DEFAULTS.items() if value is False)
-    config._write_toml(path, {"flags": {flag: True}, "build": {"vis_mode": "full"}})
+    config._write_toml(path, {"build": {"vis_mode": "full"}})
     raw = config._read_toml(path)
 
-    merged_flags = {**config.DEFAULTS, **raw.get("flags", {})}
     merged_build = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
-    assert merged_flags[flag] is True
     assert merged_build["vis_mode"] == "full"
     assert config.BUILD_DEFAULTS["vis_mode"] == "fast"  # default left intact
-    untouched = {k: v for k, v in merged_flags.items() if k != flag}
-    assert untouched == {k: v for k, v in config.DEFAULTS.items() if k != flag}
-
-
-def test_set_and_get_flag_round_trips(tmp_path):
-    path = tmp_path / "ql.toml"
-    assert (
-        config.get("KNOTT_ENABLED_WALKWAY") == config.DEFAULTS["KNOTT_ENABLED_WALKWAY"]
-    )  # sanity
-    config.set_flag("KNOTT_ENABLED_WALKWAY", True, path=path)
-    raw = config._read_toml(path)
-    assert raw["flags"]["KNOTT_ENABLED_WALKWAY"] is True
-    # Re-merging on top of DEFAULTS should reflect the override.
-    merged = {**config.DEFAULTS, **raw.get("flags", {})}
-    assert merged["KNOTT_ENABLED_WALKWAY"] is True
-    # Unrelated flags stay at their defaults.
-    assert merged["BASEMENT_ENABLED"] == config.DEFAULTS["BASEMENT_ENABLED"]
-
-
-def test_set_flag_rejects_unknown_name(tmp_path):
-    path = tmp_path / "ql.toml"
-    try:
-        config.set_flag("NOT_A_REAL_FLAG", True, path=path)
-    except KeyError:
-        pass
-    else:
-        raise AssertionError("expected KeyError for unknown flag name")
+    untouched = {k: v for k, v in merged_build.items() if k != "vis_mode"}
+    assert untouched == {
+        k: v for k, v in config.BUILD_DEFAULTS.items() if k != "vis_mode"
+    }
 
 
 def test_set_and_get_build_setting_round_trips(tmp_path):
@@ -107,7 +80,7 @@ def test_explicit_sky_wins_over_legacy_sky_preset():
 
 def test_reset_removes_config_file(tmp_path):
     path = tmp_path / "ql.toml"
-    config.set_flag("KNOTT_ENABLED_WALKWAY", True, path=path)
+    config.set_build("vis_mode", "full", path=path)
     assert path.exists()
     removed = config.reset(path=path)
     assert removed is True
@@ -158,53 +131,53 @@ def test_toml_scalar_formats_int_and_float():
 
 def test_write_toml_skips_empty_sections(tmp_path):
     path = tmp_path / "ql.toml"
-    config._write_toml(path, {"flags": {}, "build": {"vis_mode": "full"}})
+    config._write_toml(path, {"empty": {}, "build": {"vis_mode": "full"}})
     text = path.read_text()
-    assert "[flags]" not in text
+    assert "[empty]" not in text
     assert "[build]" in text
     assert "vis_mode" in text
 
 
 def test_write_toml_all_empty_writes_empty_file(tmp_path):
     path = tmp_path / "ql.toml"
-    config._write_toml(path, {"flags": {}, "build": {}})
+    config._write_toml(path, {"empty": {}, "build": {}})
     assert path.read_text() == ""
 
 
 def test_write_toml_rejects_non_table_top_level_value(tmp_path):
     """A stray non-table top-level key (e.g. a scalar the user hand-added
-    outside [flags]/[build]) must surface as a clean RuntimeError rather
-    than an unhandled TypeError from iterating a non-dict value."""
+    outside [build]) must surface as a clean RuntimeError rather than an
+    unhandled TypeError from iterating a non-dict value."""
     path = tmp_path / "ql.toml"
     with pytest.raises(RuntimeError, match="isn't a table"):
-        config._write_toml(path, {"extra_scalar": 5, "flags": {"KNOTT_ENABLED": True}})
+        config._write_toml(path, {"extra_scalar": 5, "build": {"vis_mode": "full"}})
 
 
-def test_set_flag_rejects_config_with_non_table_top_level_key(tmp_path):
-    """set_flag must not let an unrelated non-table key in an existing
+def test_set_build_rejects_config_with_non_table_top_level_key(tmp_path):
+    """set_build must not let an unrelated non-table key in an existing
     ql.toml crash with a raw TypeError; it should raise RuntimeError so
     `ql conf set` (which only catches RuntimeError) reports it cleanly."""
     path = tmp_path / "ql.toml"
-    path.write_text("extra_scalar = 5\n\n[flags]\nKNOTT_ENABLED = true\n")
+    path.write_text('extra_scalar = 5\n\n[build]\nvis_mode = "full"\n')
     with pytest.raises(RuntimeError, match="isn't a table"):
-        config.set_flag("KNOTT_ENABLED", False, path=path)
+        config.set_build("vis_mode", "fast", path=path)
 
 
 def test_validate_section_rejects_non_table():
     with pytest.raises(TypeError, match="must be a table"):
-        config._validate_section("flags", "not a dict", config.DEFAULTS)
+        config._validate_section("build", "not a dict", config.BUILD_DEFAULTS)
 
 
 def test_validate_section_rejects_unknown_key():
     with pytest.raises(KeyError):
-        config._validate_section("flags", {"NOT_A_REAL_FLAG": True}, config.DEFAULTS)
-
-
-def test_validate_section_rejects_non_bool_flag_value():
-    with pytest.raises(TypeError, match="must be a bool"):
         config._validate_section(
-            "flags", {"KNOTT_ENABLED_WALKWAY": "yes"}, config.DEFAULTS
+            "build", {"not_a_real_setting": True}, config.BUILD_DEFAULTS
         )
+
+
+def test_validate_section_rejects_non_bool_value():
+    with pytest.raises(TypeError, match="must be a bool"):
+        config._validate_section("build", {"light_extra": "yes"}, config.BUILD_DEFAULTS)
 
 
 def test_validate_build_values_rejects_bad_enum_setting():
@@ -222,11 +195,6 @@ def test_validate_build_values_rejects_non_bool_light_extra():
         config._validate_build_values({"light_extra": "yes"})
 
 
-def test_get_rejects_unknown_flag_name():
-    with pytest.raises(KeyError):
-        config.get("NOT_A_REAL_FLAG")
-
-
 def test_get_build_rejects_unknown_setting_name():
     with pytest.raises(KeyError):
         config.get_build("not_a_real_setting")
@@ -239,45 +207,28 @@ def test_set_build_rejects_unknown_setting_name(tmp_path):
     assert not path.exists()
 
 
-def test_set_flag_and_reset_update_in_memory_state_at_config_path():
-    """When path == CONFIG_PATH (the default), set_flag()/reset() must keep
-    FLAGS/BUILD themselves in sync for callers that read config.get()
-    directly, not just the on-disk ql.toml."""
-    original = config.get("KNOTT_ENABLED_WALKWAY")
-    try:
-        config.set_flag("KNOTT_ENABLED_WALKWAY", not original)
-        assert config.get("KNOTT_ENABLED_WALKWAY") == (not original)
-        assert config.FLAGS["KNOTT_ENABLED_WALKWAY"] == (not original)
-    finally:
-        removed = config.reset()
-        assert removed is True
-        assert (
-            config.get("KNOTT_ENABLED_WALKWAY")
-            == config.DEFAULTS["KNOTT_ENABLED_WALKWAY"]
-        )
-
-
-def test_set_build_updates_in_memory_state_at_config_path():
+def test_set_build_and_reset_update_in_memory_state_at_config_path():
+    """When path == CONFIG_PATH (the default), set_build()/reset() must keep
+    BUILD itself in sync for callers that read config.get_build() directly,
+    not just the on-disk ql.toml."""
     try:
         config.set_build("vis_mode", "full")
         assert config.get_build("vis_mode") == "full"
         assert config.BUILD["vis_mode"] == "full"
     finally:
-        config.reset()
-        assert config.get_build("vis_mode") == "fast"
+        removed = config.reset()
+        assert removed is True
+        assert config.get_build("vis_mode") == config.BUILD_DEFAULTS["vis_mode"]
 
 
 def test_set_many_applies_every_item_in_one_write(tmp_path):
     path = tmp_path / "ql.toml"
     config.set_many(
-        [
-            ("flag", "KNOTT_ENABLED_WALKWAY", False),
-            ("build", "vis_mode", "full"),
-        ],
+        [("light_extra", True), ("vis_mode", "full")],
         path=path,
     )
     raw = config._read_toml(path)
-    assert raw["flags"]["KNOTT_ENABLED_WALKWAY"] is False
+    assert raw["build"]["light_extra"] is True
     assert raw["build"]["vis_mode"] == "full"
 
 
@@ -291,16 +242,13 @@ def test_set_many_persists_nothing_when_a_later_item_is_invalid(tmp_path):
 
     with pytest.raises(ValueError):
         config.set_many(
-            [
-                ("flag", "KNOTT_ENABLED_WALKWAY", False),
-                ("build", "vis_mode", "ultra"),
-            ],
+            [("sky", "sky1"), ("vis_mode", "ultra")],
             path=path,
         )
 
     assert path.read_text() == before
     raw = config._read_toml(path)
-    assert "KNOTT_ENABLED_WALKWAY" not in raw.get("flags", {})
+    assert "sky" not in raw.get("build", {})
     assert "vis_mode" not in raw.get("build", {})
 
 
@@ -308,10 +256,7 @@ def test_set_many_rejects_an_unknown_name_before_touching_the_file(tmp_path):
     path = tmp_path / "ql.toml"
     with pytest.raises(KeyError):
         config.set_many(
-            [
-                ("flag", "KNOTT_ENABLED_WALKWAY", False),
-                ("flag", "NO_SUCH_FLAG", True),
-            ],
+            [("vis_mode", "full"), ("no_such_setting", True)],
             path=path,
         )
     assert not path.exists()

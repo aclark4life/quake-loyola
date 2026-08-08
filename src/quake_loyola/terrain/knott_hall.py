@@ -8,20 +8,7 @@ bridge corridor.
 import math
 
 from ..constants import (
-    BRIDGE,
-    BRIDGE_ACCESS_WALK_CENTER_X,
-    BRIDGE_ACCESS_WALK_HW,
-    BRIDGE_ACCESS_WALK_NORTH_OFFSET,
-    BRIDGE_ACCESS_WALK_PIER_CLEARANCE,
     BRIDGE_ARCH_X,
-    BRIDGE_CENTER_SPAN_OFFSET,
-    BRIDGE_PILLAR_OVERHANG,
-    BRIDGE_SUPPORT_BEAM_H,
-    BRIDGE_SUPPORT_HW,
-    BRIDGE_SUPPORT_PIER_HALF_W,
-    BRIDGE_TUBE_GAP,
-    BRIDGE_TUBE_HW,
-    BRIDGE_TUBE_RISE,
     CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -52,13 +39,6 @@ from ..constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
-    KNOTT_ENABLED_TERRAIN,
-    KNOTT_ENABLED_WALKWAY,
-    KNOTT_ENABLED_WALKWAY_BENT,
-    KNOTT_ENT_WALK_X1,
-    KNOTT_ENT_WALK_X2,
-    KNOTT_ENT_WALK_ZT1,
-    KNOTT_ENT_WALK_ZT2,
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
@@ -71,9 +51,7 @@ from ..constants import (
 )
 from ..geometry import (
     box,
-    brush_ent,
     curb_seg,
-    ramp_slab,
     ramp_slab_y,
     sidewalk_panel_spans,
     tri_prism,
@@ -1293,13 +1271,8 @@ def _build_knott_terrain():
 
 
 def build():
-    """Build Knott Hall terrain plus any enabled walkway geometry."""
-
-    walk_brushes, walk_entities = _build_walkway()
-    if not KNOTT_ENABLED_TERRAIN:
-        return walk_brushes, walk_entities
-    terrain_brushes = _build_knott_terrain()
-    return terrain_brushes + walk_brushes, walk_entities
+    """Build the Knott Hall terrain, embankment, and driveway."""
+    return _build_knott_terrain(), []
 
 
 def _kh_hill_ground_z(x, y):
@@ -1314,193 +1287,3 @@ def _kh_hill_ground_z(x, y):
         return _flat_z
     t = y / ENNIS_SW_EDGE
     return hz + (_flat_z - hz) * t
-
-
-def _build_walkway():
-    """Build the Knott walkway, accessible path, and optional support bent."""
-    BRUSHES = []
-    DETAIL_BRUSHES = []
-
-    if KNOTT_ENABLED_WALKWAY:
-        wk_zb1 = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t
-        wk_zb2 = KNOTT_ENT_WALK_ZT2 - KNOTT.wall_t
-        BRUSHES.append(
-            ramp_slab_y(
-                KNOTT_ENT_WALK_X1,
-                KNOTT_ENT_WALK_X2,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                KNOTT_ENT_WALK_ZT1,
-                KNOTT_ENT_WALK_ZT2,
-                Textures.CEMENT,
-                tt=Textures.FLOOR,
-            )
-        )
-
-        DETAIL_BRUSHES.append(
-            ramp_slab_y(
-                KNOTT_ENT_WALK_X1 - BRIDGE.walk_wall,
-                KNOTT_ENT_WALK_X1,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                KNOTT_ENT_WALK_ZT1 + BRIDGE.parapet_h,
-                KNOTT_ENT_WALK_ZT2 + BRIDGE.parapet_h,
-                Textures.CEMENT,
-            )
-        )
-        DETAIL_BRUSHES.append(
-            ramp_slab_y(
-                KNOTT_ENT_WALK_X2,
-                KNOTT_ENT_WALK_X2 + BRIDGE.walk_wall,
-                BRIDGE.y1,
-                KNOTT.y2,
-                wk_zb1,
-                wk_zb2,
-                KNOTT_ENT_WALK_ZT1 + BRIDGE.parapet_h,
-                KNOTT_ENT_WALK_ZT2 + BRIDGE.parapet_h,
-                Textures.CEMENT,
-            )
-        )
-
-        for tube_z_offset in [BRIDGE_TUBE_RISE, BRIDGE_TUBE_RISE + BRIDGE_TUBE_GAP]:
-            tube_base_z = KNOTT_ENT_WALK_ZT1 + BRIDGE.parapet_h + tube_z_offset
-            ww_cx = BRIDGE.walk_wall // 2
-            DETAIL_BRUSHES.append(
-                box(
-                    KNOTT_ENT_WALK_X1 - ww_cx - BRIDGE_TUBE_HW,
-                    KNOTT.y2,
-                    tube_base_z,
-                    KNOTT_ENT_WALK_X1 - ww_cx + BRIDGE_TUBE_HW,
-                    BRIDGE.y1,
-                    tube_base_z + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
-            )
-            DETAIL_BRUSHES.append(
-                box(
-                    KNOTT_ENT_WALK_X2 + ww_cx - BRIDGE_TUBE_HW,
-                    KNOTT.y2,
-                    tube_base_z,
-                    KNOTT_ENT_WALK_X2 + ww_cx + BRIDGE_TUBE_HW,
-                    BRIDGE.y1,
-                    tube_base_z + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
-            )
-
-        east_walk_center_x = BRIDGE_ACCESS_WALK_CENTER_X
-        east_walk_half_width = BRIDGE_ACCESS_WALK_HW
-        east_walk_x2 = east_walk_center_x + east_walk_half_width
-        east_walk_y2 = (
-            BRIDGE.y2
-            + BRIDGE_PILLAR_OVERHANG
-            + BRIDGE_ACCESS_WALK_PIER_CLEARANCE
-            + BRIDGE_ACCESS_WALK_NORTH_OFFSET
-        )
-        terrain_z2 = int(_kh_hill_ground_z(east_walk_x2, east_walk_y2))
-
-        east_walk_ext_y1 = east_walk_y2 - (east_walk_half_width * 2)
-        east_walk_ext_y2 = east_walk_y2
-        extension_terrain_z1 = int(_kh_hill_ground_z(east_walk_x2, east_walk_ext_y1))
-        extension_terrain_z2 = terrain_z2
-        extension_terrain_z_west = (extension_terrain_z1 + extension_terrain_z2) // 2
-        DETAIL_BRUSHES.append(
-            ramp_slab(
-                east_walk_x2,
-                KNOTT.x2,
-                east_walk_ext_y1,
-                east_walk_ext_y2,
-                FLOOR_Z1,
-                FLOOR_Z1,
-                extension_terrain_z_west,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.CEMENT,
-                tt=Textures.FLOOR,
-            )
-        )
-
-    if KNOTT_ENABLED_WALKWAY and KNOTT_ENABLED_WALKWAY_BENT:
-        _bent_dy, _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
-
-        support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy
-        support_half_width = BRIDGE_SUPPORT_HW
-        support_y1 = support_y_center - support_half_width
-        support_y2 = support_y_center + support_half_width
-
-        beam_top_z = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t + _bent_dz
-        beam_height = BRIDGE_SUPPORT_BEAM_H
-        beam_bottom_z = beam_top_z - beam_height
-
-        beam_x1 = BRIDGE_ARCH_X[3]
-        beam_x2 = BRIDGE_ARCH_X[4]
-
-        step = (beam_x2 - beam_x1) / 6
-        support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
-        support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
-
-        # Pull the east-most support pillar in closer to the actual bridge
-        # pier at beam_x2, instead of leaving it a full even-spacing step
-        # (~209 units) away.
-        support_pier_xs[-1] = int(beam_x2 - 140)
-        # Nudge the 2nd-most east pillar east a bit too, off its even
-        # spacing, to open the gap toward its western neighbor.
-        support_pier_xs[-2] = int(support_pier_xs[-2] + 60)
-
-        # The beam itself stops short of the Pier 4 wall (beam_x1) and
-        # instead starts flush with the first drop pier's west face,
-        # leaving the west end open to match the real building (no beam
-        # spans the gap before the first support pillar).
-        beam_start_x = support_pier_xs[0] - support_pier_half_width
-
-        DETAIL_BRUSHES.append(
-            box(
-                beam_start_x,
-                support_y1,
-                beam_bottom_z,
-                beam_x2,
-                support_y2,
-                beam_top_z,
-                Textures.CEMENT,
-            )
-        )
-
-        support_y_center = (support_y1 + support_y2) / 2.0
-        for pier_x in support_pier_xs:
-            pier_ground_z = _kh_hill_ground_z(pier_x, support_y_center)
-            DETAIL_BRUSHES.append(
-                box(
-                    pier_x - support_pier_half_width,
-                    support_y1,
-                    pier_ground_z,
-                    pier_x + support_pier_half_width,
-                    support_y2,
-                    beam_bottom_z,
-                    Textures.CEMENT,
-                )
-            )
-
-        _tie_x1 = support_pier_xs[-1]
-        _tie_z1 = _kh_hill_ground_z(_tie_x1, support_y_center)
-        _tie_z2 = _kh_hill_ground_z(beam_x2, support_y_center)
-        DETAIL_BRUSHES.append(
-            ramp_slab(
-                _tie_x1,
-                beam_x2,
-                support_y1,
-                support_y2,
-                _tie_z1,
-                _tie_z2,
-                _tie_z1 + beam_height,
-                _tie_z2 + beam_height,
-                Textures.CEMENT,
-            )
-        )
-
-    ENTITIES = []
-    if DETAIL_BRUSHES:
-        ENTITIES.append(brush_ent("func_detail", DETAIL_BRUSHES))
-    return BRUSHES, ENTITIES

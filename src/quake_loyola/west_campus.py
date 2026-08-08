@@ -34,13 +34,6 @@ from .constants.dorm import (
     DORM_DOOR_OFF,
     DORM_DOOR_W,
 )
-from .constants.flags import (
-    BRIDGE_ENABLED_SPAN_CENTER,
-    WEST_CAMPUS_ENABLED_FENCE,
-    WEST_CAMPUS_ENABLED_SIDEWALK,
-    WEST_CAMPUS_ENABLED_TERRAIN,
-    WEST_CAMPUS_ENABLED_WALL,
-)
 from .constants.textures import Textures
 from .constants.world import FENCE_H, FENCE_SPACING
 from .geometry import (
@@ -143,12 +136,8 @@ def _build_brick_wall(BRUSHES, ENTITIES):
 
     wall_hw = DORM_BRICK_WALL_HW
 
-    if BRIDGE_ENABLED_SPAN_CENTER:
-        wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
-        wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
-    else:
-        wall_shift_y = 0
-        wall_shift_z = 0
+    wall_shift_y = BRIDGE_CENTER_SPAN_OFFSET[1]
+    wall_shift_z = BRIDGE_CENTER_SPAN_OFFSET[2]
     bridge_top_z = BRIDGE_DZ2 + wall_shift_z
     wall_start_y = DORM_SOUTH2_Y2 + wall_shift_y
     s_door_y = DORM_SOUTH2_Y2 + DORM_DOOR_OFF + wall_shift_y
@@ -321,31 +310,13 @@ def build():
     """Build west-campus buildings and terrain.
 
     Returns:
-        tuple[list, list]: ``(brushes, entities)`` for the west-campus area,
-        gated by the relevant ``WEST_CAMPUS_ENABLED_*`` config flags.
+        tuple[list, list]: ``(brushes, entities)`` for the west-campus area.
     """
     BRUSHES = []
     ENTITIES = []
 
-    if (
-        WEST_CAMPUS_ENABLED_FENCE
-        or WEST_CAMPUS_ENABLED_WALL
-        or WEST_CAMPUS_ENABLED_SIDEWALK
-    ) and not WEST_CAMPUS_ENABLED_TERRAIN:
-        raise ValueError(
-            "west_campus.build(): WEST_CAMPUS_ENABLED_FENCE/WALL/SIDEWALK "
-            "follow the real hillside terrain and require "
-            "WEST_CAMPUS_ENABLED_TERRAIN to also be on — enable it (or "
-            "disable the fence/wall/sidewalk) via `ql conf set`."
-        )
-
-    if WEST_CAMPUS_ENABLED_FENCE:
-        _build_iron_fence(ENTITIES)
-
-    if WEST_CAMPUS_ENABLED_WALL:
-        _build_brick_wall(BRUSHES, ENTITIES)
-
-    if WEST_CAMPUS_ENABLED_SIDEWALK:
-        _build_sidewalk(BRUSHES)
+    _build_iron_fence(ENTITIES)
+    _build_brick_wall(BRUSHES, ENTITIES)
+    _build_sidewalk(BRUSHES)
 
     return BRUSHES, ENTITIES

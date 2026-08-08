@@ -20,8 +20,7 @@ Commands
 
 The CLI has three layers, narrowest first: the shortcut commands for the
 handful of settings worth changing day to day, ``ql conf`` for the full
-surface (including the ~35 module/light flags), and ``ql gen``/``ql build``
-to run the pipeline.
+``[build]`` surface, and ``ql gen``/``ql build`` to run the pipeline.
 
 Shortcut commands
 ~~~~~~~~~~~~~~~~~
@@ -61,7 +60,7 @@ fields at once (sun color and angle, ambient level, fog color).
 ``ql gen``
 ~~~~~~~~~~
 
-Write ``loyola.map`` from the current config-driven flag settings — same as
+Write ``loyola.map`` using the current build settings — same as
 ``just generate``, but config-aware.
 
 ``ql build``
@@ -86,26 +85,24 @@ implementation of the pipeline and the recipe name always wins over
 ``ql conf show``
 ~~~~~~~~~~~~~~~~
 
-List the build settings, their effective values, defaults, and valid values
-(overridden values are marked with ``*``). Pass ``--all``/``-a`` to also list
-the module/light flags, which are hidden by default to keep the output
-readable.
+List every build setting, its effective value, default, and valid values
+(overridden values are marked with ``*``).
 
 ``ql conf get NAME``
 ~~~~~~~~~~~~~~~~~~~~
 
-Print the effective value of a single flag or build setting.
+Print the effective value of a single build setting.
 
 ``ql conf set``
 ~~~~~~~~~~~~~~~
 
-Set one or more flags/build settings, persisted to ``ql.toml``. Accepts
-either the ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
+Set one or more build settings, persisted to ``ql.toml``. Accepts either the
+``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
 
 .. code-block:: bash
 
-   ql conf set KNOTT_ENABLED true          # flip a module/light flag on or off
-   ql conf set knott_enabled true          # names are case-insensitive
+   ql conf set vis_mode full               # "fast" or "full"
+   ql conf set VIS_MODE full               # names are case-insensitive
    ql conf set light_extra true            # light -extra (2x2 supersampling)
    ql conf set sky sky_z1                  # same as `ql sky sky_z1`
 
@@ -115,7 +112,7 @@ either the ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
 ``ql conf reset``
 ~~~~~~~~~~~~~~~~~
 
-Delete ``ql.toml``, reverting every flag/setting to its default. Pass
+Delete ``ql.toml``, reverting every build setting to its default. Pass
 ``--yes``/``-y`` to skip the confirmation prompt.
 
 ``ql conf path``

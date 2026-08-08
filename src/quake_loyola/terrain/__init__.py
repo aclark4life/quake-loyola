@@ -1,7 +1,6 @@
 """Terrain builders for the map's quadrant-specific ground geometry.
 
-Each submodule exposes ``build() -> (brushes, entities)`` and can be toggled
-with its own ``*_ENABLED_TERRAIN`` flag.
+Each submodule exposes ``build() -> (brushes, entities)``.
 
 Sampled height grids (``ne``, ``west_campus``) are meshed by
 ``_mesh_helpers.append_sampled_grid_mesh``, which tiles the grid exactly: each
@@ -23,6 +22,6 @@ and ``tests/test_streets_terrain.py`` now asserts that every meshed brush stays
 inside its own cell so the fudging cannot creep back in.
 """
 
-from . import knott_hall, maryland, ne, west_campus
+from . import knott_hall, ne, west_campus
 
-__all__ = ["knott_hall", "maryland", "ne", "west_campus"]
+__all__ = ["knott_hall", "ne", "west_campus"]
