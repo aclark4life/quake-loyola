@@ -92,7 +92,6 @@ from .constants.derived import (
     BRIDGE_PILLAR_PYR_W,
     BRIDGE_SEG_W,
     KNOTT_ENT_WALK_X1,
-    KNOTT_ENT_WALK_X2,
     PIER2_X,
     PIER3_X,
     PIER4_X,
@@ -201,6 +200,22 @@ def _section_accept_ranges(enabled_names, margin):
             ax2 = px2 + margin if owner == name else px2
         ranges[name] = (ax1, ax2)
     return ranges
+
+
+def _pier_survives_section_filter(pier_x, enabled_names):
+    """True if the pier at ``pier_x`` is kept by ``_filter_sections``.
+
+    Geometry appended *after* filtering (the pier banners) has to make the
+    same ownership decision itself, or it ends up hanging in mid-air over a
+    pier that was filtered out.
+    """
+    margin = BRIDGE_PILLAR_HW + BRIDGE_PILLAR_OVERHANG + PIER6_ROTATION_MARGIN
+    accept_ranges = _section_accept_ranges(enabled_names, margin)
+    return any(
+        ax1 <= pier_x <= ax2
+        for name, (ax1, ax2) in accept_ranges.items()
+        if name in enabled_names
+    )
 
 
 def _filter_sections(brushes, entities, enabled_names, extract_names=None):
@@ -488,7 +503,16 @@ def _build_bridge_parapet_shells(
     span_boundaries,
     span4_west_mid,
 ):
-    """Build the continuous parapet walls along the deck edges."""
+    """Build the continuous parapet walls along the deck edges.
+
+    The south parapet stops at ``span4_west_mid`` rather than running the full
+    length: that, together with the ``n_south=0`` passed for the spans beside
+    Knott Hall, is what opens the south side up for the Knott connector walk.
+    (Three ``KNOTT_ENT_WALK_X1/X2`` skip guards used to sit in the per-segment
+    loops here and in the tube builder as well, but every span boundary those
+    loops iterate ends at ``BRIDGE.x2``, well west of the walk, so they never
+    fired; removing them left the generated map byte-identical.)
+    """
     brushes.append(
         box(
             BRIDGE.x2,
@@ -553,20 +577,19 @@ def _build_bridge_parapet_shells(
                 Textures.CEMENT,
             )
         )
-        if not (sx1 < KNOTT_ENT_WALK_X2 and sx2 > KNOTT_ENT_WALK_X1):
-            brushes.append(
-                ramp_slab(
-                    sx1,
-                    sx2,
-                    BRIDGE.y1,
-                    BRIDGE.y1 + BRIDGE_PAR_W,
-                    pb1,
-                    pb2,
-                    pt1,
-                    pt2,
-                    Textures.CEMENT,
-                )
+        brushes.append(
+            ramp_slab(
+                sx1,
+                sx2,
+                BRIDGE.y1,
+                BRIDGE.y1 + BRIDGE_PAR_W,
+                pb1,
+                pb2,
+                pt1,
+                pt2,
+                Textures.CEMENT,
             )
+        )
 
 
 def _add_repeated_parapet_decorations(
@@ -575,7 +598,6 @@ def _add_repeated_parapet_decorations(
     x_end,
     n,
     *,
-    x_half_width,
     z_at_center,
     north_brush,
     south_brush,
@@ -607,13 +629,9 @@ def _add_repeated_parapet_decorations(
         if brush is not None:
             brushes.append(brush)
     for cx, sy, bz in iter_positions(n_s, x1_s):
-        if not (
-            cx - x_half_width < KNOTT_ENT_WALK_X2
-            and cx + x_half_width > KNOTT_ENT_WALK_X1
-        ):
-            brush = south_brush(cx, sy, bz)
-            if brush is not None:
-                brushes.append(brush)
+        brush = south_brush(cx, sy, bz)
+        if brush is not None:
+            brushes.append(brush)
 
 
 def _add_parapet_blocks(
@@ -668,7 +686,6 @@ def _add_parapet_blocks(
         x_start,
         x_end,
         n,
-        x_half_width=BRIDGE_BLK_HW,
         z_at_center=lambda cx: (
             min(
                 deck_top_z(cx - BRIDGE_BLK_HW),
@@ -716,7 +733,6 @@ def _add_parapet_squares(
         x_start,
         x_end,
         n,
-        x_half_width=BRIDGE_SQ_HW,
         z_at_center=lambda cx: (
             int(
                 min(
@@ -797,7 +813,6 @@ def _add_parapet_base_lights(
         x_start,
         x_end,
         n,
-        x_half_width=BRIDGE_BASE_LIGHT_HW,
         z_at_center=lambda cx: int(deck_top_z(cx)),
         north_brush=lambda cx, sy, _bz: _fixture(cx, sy, BRIDGE.y2 - BRIDGE_PAR_W, -1),
         south_brush=lambda cx, sy, _bz: _fixture(cx, sy, BRIDGE.y1 + BRIDGE_PAR_W, +1),
@@ -966,20 +981,19 @@ def _add_bridge_span_tubes(
                 Textures.RAIL,
             )
         )
-        if not (span_x1 < KNOTT_ENT_WALK_X2 and span_x2 > KNOTT_ENT_WALK_X1):
-            brushes.append(
-                ramp_slab(
-                    span_x1,
-                    span_x2,
-                    tube_sy1,
-                    tube_sy2,
-                    tube_z1,
-                    tube_z2,
-                    tube_z1 + BRIDGE_TUBE_HW * 2,
-                    tube_z2 + BRIDGE_TUBE_HW * 2,
-                    Textures.RAIL,
-                )
+        brushes.append(
+            ramp_slab(
+                span_x1,
+                span_x2,
+                tube_sy1,
+                tube_sy2,
+                tube_z1,
+                tube_z2,
+                tube_z1 + BRIDGE_TUBE_HW * 2,
+                tube_z2 + BRIDGE_TUBE_HW * 2,
+                Textures.RAIL,
             )
+        )
 
 
 def _add_bridge_pier6_connection_tubes(
@@ -1987,6 +2001,12 @@ def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
     coordinates would slide the image off the banner.
     """
     if BRIDGE_ENABLED_SUPPORTS is not True and pier_x not in BRIDGE_ENABLED_SUPPORTS:
+        return
+    # The banners are appended after _filter_sections has run, so they have to
+    # repeat its ownership test: without this, disabling the span that owns
+    # Pier 2 or Pier 3 leaves its banner and mast floating over Charles St
+    # with no pier behind them.
+    if not _pier_survives_section_filter(pier_x, enabled_names):
         return
     shifted = (
         BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names

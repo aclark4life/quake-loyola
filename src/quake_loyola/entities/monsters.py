@@ -146,10 +146,12 @@ def _build_monsters2(ENTITIES):
         )
 
         accessible_walk_z = KNOTT_GROUND_Z + 24
-        for accessible_walk_y, accessible_walk_angle in [
-            (-128, 90),
-            (180, 270),
-        ]:
+        # These two stand on the Knott hillside beside the walkway rather than
+        # on the walkway slab itself (x=2120 is east of it), so they need the
+        # terrain that supports them, not just the walkway.
+        for accessible_walk_y, accessible_walk_angle in (
+            [(-128, 90), (180, 270)] if KNOTT_ENABLED_TERRAIN else []
+        ):
             ENTITIES.append(
                 ent(
                     "monster_hell_knight",
