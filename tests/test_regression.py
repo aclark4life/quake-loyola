@@ -20,15 +20,15 @@ from quake_loyola.terrain import maryland as maryland_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1461
 EXPECTED_ENTITIES = 106
-EXPECTED_MD5 = "8a1594a397460ad640f3cf19fe699370"
+EXPECTED_MD5 = "528a9e3c13d5bc8aadd247d54d64350e"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
 # changed" with no clue what; breaking it down by classname pinpoints which
 # entity type moved, without needing a full checked-in golden .map file.
-# Keep in sync with the totals above (and re-derive by hand, the same way,
-# if you intentionally change entity output — this has no independent
-# oracle either).
+# scripts/update_golden.py rewrites this block along with the totals above,
+# so it stays in sync — but it has no independent oracle either, so review
+# the printed delta before blessing it.
 EXPECTED_ENTITY_CLASSNAME_COUNTS = {
     "func_detail": 13,
     "func_illusionary": 5,

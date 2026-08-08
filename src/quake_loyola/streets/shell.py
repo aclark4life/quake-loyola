@@ -16,9 +16,6 @@ from ..constants.derived import (
     WORLD_Y2,
     WORLD_Z2,
 )
-from ..constants.flags import (
-    WEST_CAMPUS_ENABLED_TERRAIN,
-)
 from ..constants.textures import (
     Textures,
 )
@@ -38,8 +35,15 @@ def _build_street_world_shell():
 
     BRUSHES = []
     ENTITIES = []
-    _tunnel_wall_tex_n = Textures.SKY
-    _tunnel_wall_tex = Textures.GROUND if WEST_CAMPUS_ENABLED_TERRAIN else Textures.SKY
+    # These world-shell walls are SKY-content brushes. A brush carries a single
+    # content type in Quake, taken from its faces, so painting GROUND on just
+    # the sloped top/end faces of a SKY ramp makes it a mixed-content brush:
+    # qbsp warns ("brush has multiple face contents (SKY vs SOLID)") and uses
+    # SKY anyway, so the ground faces never rendered. Making the whole ramp
+    # GROUND instead would seal the map just as well but would put an opaque
+    # wall of dirt across the southern horizon, which is exactly the artifact
+    # the northeast terrain overlap bug used to produce. So the shell stays
+    # uniformly SKY and the terrain modules own any visible ground.
     BRUSHES.extend(
         box_with_round_hole(
             WORLD_X1,
@@ -120,9 +124,6 @@ def _build_street_world_shell():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=_tunnel_wall_tex_n,
-            te=_tunnel_wall_tex_n,
-            ts=_tunnel_wall_tex_n,
         )
     )
     BRUSHES.append(
@@ -136,7 +137,6 @@ def _build_street_world_shell():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=_tunnel_wall_tex_n,
         )
     )
     BRUSHES.append(
@@ -161,8 +161,6 @@ def _build_street_world_shell():
             BRIDGE_DZ2 - WALL_T,
             SDORM_LIFT,
             Textures.SKY,
-            tt=_tunnel_wall_tex,
-            ts=_tunnel_wall_tex,
         )
     )
     BRUSHES.append(
@@ -176,7 +174,6 @@ def _build_street_world_shell():
             WORLD_Z2,
             WORLD_Z2,
             Textures.SKY,
-            tb=_tunnel_wall_tex,
         )
     )
     BRUSHES.append(

@@ -9,6 +9,8 @@ assertions, matching the style of the rest of the suite.
 
 import unittest
 
+from quake_loyola.constants import CHARLES_CROSSWALK_LEN, CHARLES_CROSSWALK_STRIPE_W
+from quake_loyola.constants.textures import Textures
 from quake_loyola.mapdata import Brush, Entity
 from quake_loyola.streets import details, shell
 from quake_loyola.terrain import west_campus
@@ -125,6 +127,47 @@ class StreetDetailLayoutTests(unittest.TestCase):
         self.assertLess(layout["charles_y1"], layout["charles_crossing_y1"])
         self.assertLess(layout["charles_crossing_y1"], layout["charles_crossing_y2"])
         self.assertLess(layout["charles_crossing_y2"], layout["charles_y2"])
+
+    def test_charles_crossing_stops_short_of_the_ennis_carriageway(self):
+        # Ennis Rd paves its carriageway clear across Charles St at the same z
+        # as the road markings, so a crossing stripe that reaches past the
+        # Ennis south curb ends up coplanar with it and z-fights a crosswalk
+        # stripe into the middle of the junction. Guard the band as a whole and
+        # every stripe the stepped band actually emits.
+        from quake_loyola.constants.derived import ENNIS_HW, ENNIS_Y
+
+        junction_y = ENNIS_Y - ENNIS_HW
+        layout = details._make_street_detail_layout()
+        self.assertLessEqual(layout["charles_crossing_y2"], junction_y)
+        self.assertLessEqual(layout["charles_crossing_north_w"], junction_y)
+
+        dash_brushes = []
+        details._append_charles_marking_brushes(dash_brushes, layout)
+        stripes = [
+            b
+            for b in dash_brushes
+            if any(f.tex == Textures.PARKING_STRIPE for f in b.faces)
+        ]
+        self.assertTrue(stripes)
+        crossing_stripes = 0
+        for brush in stripes:
+            pts = [p for f in brush.faces for p in (f.p1, f.p2, f.p3)]
+            xs = [p[0] for p in pts]
+            if max(xs) - min(xs) != CHARLES_CROSSWALK_STRIPE_W:
+                continue  # lane divider running the length of the street
+            crossing_stripes += 1
+            self.assertLessEqual(max(p[1] for p in pts), junction_y)
+        self.assertGreater(crossing_stripes, 1)
+
+    def test_charles_crossing_west_stripe_lands_in_the_lowered_entrance(self):
+        # The point of stepping the band is that its west end lines up with
+        # the lowered sidewalk entrance opposite it.
+        layout = details._make_street_detail_layout()
+        cut_y1, cut_y2 = layout["charles_crossing_mid"], layout["charles_curb_cut_y2"]
+        stripe_y2 = layout["charles_crossing_north_w"]
+        stripe_y1 = stripe_y2 - CHARLES_CROSSWALK_LEN
+        self.assertLessEqual(cut_y1, stripe_y1)
+        self.assertLessEqual(stripe_y2, cut_y2)
 
 
 class StreetShellBoundsTests(unittest.TestCase):

@@ -65,6 +65,7 @@ from ..constants.streets import (
     STREET_CHARLES_CURB_W,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
+    STREET_DIV_GAP_HW,
     STREET_DIV_HW,
     STREET_DIV_LINE_HW,
     STREET_ENNIS_DIV_HW,
@@ -92,7 +93,7 @@ from ..geometry import (
 from .ennis import _build_ennis_entrance_features
 
 
-def punch_manhole_detail(brushes):
+def punch_manhole_detail(brushes, seen=None):
     """Cut the manhole opening through overlapping thin detail slabs.
 
     Brushes fully inside the hole are dropped; overlapping box slabs are
@@ -101,9 +102,15 @@ def punch_manhole_detail(brushes):
     thin surface layer near the intersection, so each may be individually
     diced against the same manhole circle — de-duplicate the resulting
     brushes so identical wedges aren't emitted twice.
+
+    The same overlap happens *between* calls: the lane markings and the road
+    surfaces are punched separately into two func_detail entities, and both
+    dice the same circle. Pass a shared ``seen`` set across those calls so a
+    wedge already emitted by one is skipped by the other instead of being
+    stacked coincident with it.
     """
     out = []
-    seen = set()
+    seen = set() if seen is None else seen
 
     def _emit(brush):
         key = brush.to_map()
@@ -337,14 +344,24 @@ def _make_street_detail_layout():
     charles_y2 = WORLD_Y2 - WALL_T
     # North edge of the east walk, and the anchor the crossing hangs off.
     charles_walk_edge_y = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
-    charles_crossing_mid = charles_walk_edge_y - CROSSWALK_LEN / 2
     charles_curb_cut_len = 2 * (STREET_SW_SLAB_LEN + STREET_SW_GAP)
-    charles_curb_cut_y2 = charles_crossing_mid + charles_curb_cut_len
     # The crossing steps south as it runs west to east: its west stripe sits in
     # the lowered sidewalk entrance on that side, its east stripe against the
-    # east walk's north edge. y1/y2 are the band's full extent, which is what
-    # the road surface and the lane markings cut themselves around.
-    charles_crossing_y2 = charles_curb_cut_y2
+    # east walk's north edge. The west end is capped at the Ennis Rd south curb
+    # because Ennis paves its carriageway clear across Charles St at the same
+    # z: a stripe reaching past ENNIS_Y - ENNIS_HW lands coplanar with that
+    # surface, z-fighting a crosswalk stripe into the middle of the junction.
+    charles_crossing_north_w = min(
+        charles_walk_edge_y - CROSSWALK_LEN / 2 + charles_curb_cut_len,
+        ENNIS_Y - ENNIS_HW,
+    )
+    # The lowered entrance is sized off the sidewalk's slab pitch and hangs off
+    # the band's west end, so the two stay aligned wherever the cap lands.
+    charles_curb_cut_y2 = charles_crossing_north_w
+    charles_crossing_mid = charles_curb_cut_y2 - charles_curb_cut_len
+    # y1/y2 are the band's full extent, which is what the road surface and the
+    # lane markings cut themselves around.
+    charles_crossing_y2 = charles_crossing_north_w
     charles_crossing_y1 = charles_walk_edge_y - CHARLES_CROSSWALK_LEN
     road_cx = (ROAD_X1 + ROAD_X2) / 2
     return {
@@ -353,7 +370,7 @@ def _make_street_detail_layout():
         "charles_crossing_y1": charles_crossing_y1,
         "charles_crossing_y2": charles_crossing_y2,
         "charles_crossing_mid": charles_crossing_mid,
-        "charles_crossing_north_w": charles_curb_cut_y2,
+        "charles_crossing_north_w": charles_crossing_north_w,
         "charles_crossing_north_e": charles_walk_edge_y,
         "charles_curb_cut_y2": charles_curb_cut_y2,
         "charles_curb_ramp_y2": charles_curb_cut_y2 + STREET_SW_SLAB_LEN,
@@ -1035,10 +1052,9 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
 def _append_charles_marking_brushes(dash_brushes, layout):
     """Append Charles Street centerlines, lane stripes, and crosswalk."""
 
-    centerline_gap_hw = 2
     for line_x1, line_x2 in (
-        (layout["road_cx"] - STREET_DIV_HW, layout["road_cx"] - centerline_gap_hw),
-        (layout["road_cx"] + centerline_gap_hw, layout["road_cx"] + STREET_DIV_HW),
+        (layout["road_cx"] - STREET_DIV_HW, layout["road_cx"] - STREET_DIV_GAP_HW),
+        (layout["road_cx"] + STREET_DIV_GAP_HW, layout["road_cx"] + STREET_DIV_HW),
     ):
         for line_y1, line_y2 in _street_detail_ranges_excluding(
             layout["charles_y1"],
@@ -1065,10 +1081,10 @@ def _append_charles_marking_brushes(dash_brushes, layout):
     ):
         dash_brushes.append(
             box(
-                layout["road_cx"] - centerline_gap_hw,
+                layout["road_cx"] - STREET_DIV_GAP_HW,
                 gap_y1,
                 FLOOR_Z2,
-                layout["road_cx"] + centerline_gap_hw,
+                layout["road_cx"] + STREET_DIV_GAP_HW,
                 gap_y2,
                 FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.ROAD,
@@ -1240,13 +1256,15 @@ def _append_ennis_marking_brushes(dash_brushes, layout):
         stripe_on = not stripe_on
 
 
-def _append_street_markings(entities, layout):
+def _append_street_markings(entities, layout, manhole_seen=None):
     """Add centerlines, lane stripes, and both crosswalks as func_detail."""
     dash_brushes = []
     _append_charles_marking_brushes(dash_brushes, layout)
     _append_ennis_marking_brushes(dash_brushes, layout)
     if dash_brushes:
-        entities.append(brush_ent("func_detail", punch_manhole_detail(dash_brushes)))
+        entities.append(
+            brush_ent("func_detail", punch_manhole_detail(dash_brushes, manhole_seen))
+        )
 
 
 def _append_intersection_corners(brushes):
@@ -1677,13 +1695,16 @@ def _build_street_details(BRUSHES, ENTITIES):
     """Build the detailed roadway, sidewalks, markings, and street fixtures."""
     detail_brushes = []
     layout = _make_street_detail_layout()
+    # Shared across both punch_manhole_detail() calls below so the markings and
+    # the road surfaces don't each emit their own copy of the same wedges.
+    manhole_seen = set()
 
     _append_charles_road_surfaces(detail_brushes, layout)
     _append_charles_sidewalks_and_curbs(detail_brushes, layout)
     _append_ennis_road_surfaces(detail_brushes, layout)
     _append_ennis_north_sidewalks_and_curb_bulge(detail_brushes, layout)
     _append_ennis_south_sidewalks_and_curbs(detail_brushes, layout)
-    _append_street_markings(ENTITIES, layout)
+    _append_street_markings(ENTITIES, layout, manhole_seen)
     _append_intersection_corners(detail_brushes)
     _append_verge_fill_surfaces(detail_brushes, layout)
     _append_knott_driveway_surfaces(detail_brushes)
@@ -1691,7 +1712,7 @@ def _build_street_details(BRUSHES, ENTITIES):
     _append_lamp_details(detail_brushes, ENTITIES)
 
     if detail_brushes:
-        detail_brushes = punch_manhole_detail(detail_brushes)
+        detail_brushes = punch_manhole_detail(detail_brushes, manhole_seen)
         ENTITIES.append(brush_ent("func_detail", detail_brushes))
 
     # NOTE: the global world-seal brushes used to live here, but that made
