@@ -89,7 +89,9 @@ def arch_plate_ring(x_face, thickness, yc, zc, rin, tex, tile=34, gap=3):
     )
     r1, r2 = rin, rin + tile
     r_avg, pitch = (r1 + r2) / 2.0, tile + gap
-    segs = max(1, int((math.pi * r_avg) // pitch))
+    # At least two: one segment would span the ring's full 180 degrees, which
+    # arch_seg_chord rejects because both radial faces collapse onto one plane.
+    segs = max(2, int((math.pi * r_avg) // pitch))
     step = 180.0 / segs
     gap_deg = math.degrees(gap / r_avg) if r_avg > 0 else 0.0
     brushes = []
@@ -296,11 +298,13 @@ def arch_wall(
 
     The opening uses inner/outer radii ``rin``/``rout`` in the YZ plane, with
     optional stilts, base trim, overhang, and recesses. Raises ``ValueError``
-    for non-positive ``segs``, reversed X bounds, or textured-recess misuse.
+    for ``segs < 2``, reversed X bounds, or textured-recess misuse.
     """
     stilt_h = rin if stilt_h is None else stilt_h
-    if segs <= 0:
-        raise ValueError(f"arch_wall: segs must be > 0, got {segs}")
+    if segs < 2:
+        raise ValueError(
+            f"arch_wall: segs must be >= 2, got {segs}; a single segment would span the full 180 degrees, collapsing both of its radial faces onto one plane"
+        )
     if x1 >= x2:
         raise ValueError(
             f"arch_wall: requires x1 < x2, got x1={x1}, x2={x2}; reversed "
@@ -428,10 +432,12 @@ def arch_wall(
 def arch_wall_y(y1, y2, floor_z, rin, rout, segs, tex, stilt_h=None, xc=0.0):
     """Return ``arch_wall()``'s freestanding Y-extruded variant centered on ``xc``.
 
-    Raises ``ValueError`` if ``segs <= 0`` or ``y1 >= y2``.
+    Raises ``ValueError`` if ``segs < 2`` or ``y1 >= y2``.
     """
-    if segs <= 0:
-        raise ValueError(f"arch_wall_y: segs must be > 0, got {segs}")
+    if segs < 2:
+        raise ValueError(
+            f"arch_wall_y: segs must be >= 2, got {segs}; a single segment would span the full 180 degrees, collapsing both of its radial faces onto one plane"
+        )
     if y1 >= y2:
         raise ValueError(
             f"arch_wall_y: requires y1 < y2, got y1={y1}, y2={y2}; "
@@ -738,11 +744,13 @@ def arch_fill(x1, x2, yc, floor_z, rin, segs, tex, stilt_h=None):
     """Return a solid arched fill, not a ring, centered on ``yc``.
 
     It builds a rectangular stilt up to the spring line and then ``segs``
-    filled pie-slice arch segments. Raises ``ValueError`` if ``segs <= 0`` or
+    filled pie-slice arch segments. Raises ``ValueError`` if ``segs < 2`` or
     the X bounds are reversed or degenerate.
     """
-    if segs <= 0:
-        raise ValueError(f"arch_fill: segs must be > 0, got {segs}")
+    if segs < 2:
+        raise ValueError(
+            f"arch_fill: segs must be >= 2, got {segs}; a single segment would span the full 180 degrees, collapsing both of its radial faces onto one plane"
+        )
     if x1 >= x2:
         raise ValueError(
             f"arch_fill: requires x1 < x2, got x1={x1}, x2={x2}; reversed "

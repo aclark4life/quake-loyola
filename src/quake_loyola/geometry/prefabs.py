@@ -88,6 +88,10 @@ def octagon_column(cx, cy, z0, z1, radius, tex):
         )
     if radius <= 0:
         raise ValueError(f"octagon_column: radius must be positive, got {radius}")
+    if z0 > z1:
+        # Match box()'s convention: reversed Z would invert the caps and the
+        # side winding, yielding an inside-out solid rather than an error.
+        z0, z1 = z1, z0
     faces, N = [], 8
     for i in range(N):
         theta = math.pi * 2 * i / N

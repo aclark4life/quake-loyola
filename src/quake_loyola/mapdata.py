@@ -121,14 +121,30 @@ class Face:
         return Face(s(self.p1), s(self.p2), s(self.p3), self.tex, self.params)
 
     def is_inside(self, p: Point, eps: float = 1e-4) -> bool:
-        """Return True if point p is on the solid (positive) side of this face's plane."""
+        """Return True if point p is on the solid (positive) side of this face's plane.
+
+        ``eps`` is a distance in map units, so the plane normal is normalized
+        first. ``_face_plane`` returns an unnormalized cross product whose
+        magnitude is twice the area of the triangle the face was defined by,
+        and that varies by orders of magnitude across the map — an octagon
+        side face is defined by unit offsets, a ``box`` face by offsets of
+        hundreds. Comparing against the raw dot product would scale the
+        effective tolerance by the reciprocal of the normal's length and make
+        the test far tighter on large brushes than on small ones.
+        """
         normal, _d = _face_plane(self)
+        length = math.sqrt(normal[0] ** 2 + normal[1] ** 2 + normal[2] ** 2)
+        if length == 0:
+            raise ValueError(
+                "Face.is_inside() called on a degenerate face whose three "
+                "points are collinear or coincident"
+            )
         dot = (
             normal[0] * (p[0] - self.p1[0])
             + normal[1] * (p[1] - self.p1[1])
             + normal[2] * (p[2] - self.p1[2])
         )
-        return dot >= -eps
+        return dot / length >= -eps
 
 
 @dataclass
@@ -257,7 +273,17 @@ class Entity:
         present) for point entities such as lights or torch flames. Z is
         unaffected. The "angle" field (Quake yaw, degrees, counter-clockwise
         from east looking down) is adjusted by the same amount so directional
-        point entities keep facing the same relative way."""
+        point entities keep facing the same relative way.
+
+        The rotated ``origin`` is rounded to 0.1 units, coarser than the 1e-6
+        that ``Face.rotated_z`` uses. That is deliberate and safe only because
+        the two never apply to the same thing: a point entity's origin has no
+        planes to stay coplanar with, so a tidy origin is worth more than
+        precision, while brush faces need the fine rounding to keep surfaces
+        that were coplanar before the rotation coplanar after it. An entity
+        carrying *both* brushes and an origin would rotate the two at
+        different precisions; none exists today, and one would want the
+        origin rounded to match its brushes."""
         fields = dict(self.fields)
         origin = fields.get("origin")
         if origin is not None:

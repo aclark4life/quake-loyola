@@ -525,6 +525,7 @@ def ramp_slab_y(
     tt=None,
     tb=None,
     te=None,
+    tw=None,
     ts=None,
     tt_params="0 0 0 1 1",
 ):
@@ -547,6 +548,7 @@ def ramp_slab_y(
             tt=tt,
             tb=tb,
             te=te,
+            tw=tw,
             ts=ts,
             tt_params=tt_params,
         )
@@ -685,7 +687,7 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
 
     ``angle_start_deg``/``angle_end_deg`` sweep around ``(yc, zc)`` from the
     positive Y axis toward positive Z. Raises ``ValueError`` for invalid radii,
-    spans outside ``(0, 180]``, or reversed/degenerate X bounds.
+    spans outside ``(0, 180)``, or reversed/degenerate X bounds.
     """
     if not (0 <= rin < rout):
         raise ValueError(
@@ -696,11 +698,13 @@ def arch_seg(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
             f"arch_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
-    if angle_end_deg - angle_start_deg > 180:
+    if angle_end_deg - angle_start_deg >= 180:
         raise ValueError(
-            f"arch_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"arch_seg: span must be < 180 degrees (the wedge is bounded by "
             f"tangent planes at the midpoint angle, which is only valid for "
-            f"spans up to a half-circle), got "
+            f"spans below a half-circle: at exactly 180 both radial faces "
+            f"collapse onto the same plane and the solid loses its angular "
+            f"bound entirely), got "
             f"{angle_end_deg - angle_start_deg}"
         )
     if xb == xf:
@@ -745,11 +749,13 @@ def arch_seg_chord(xb, xf, yc, zc, rin, rout, angle_start_deg, angle_end_deg, te
             f"arch_seg_chord: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
-    if angle_end_deg - angle_start_deg > 180:
+    if angle_end_deg - angle_start_deg >= 180:
         raise ValueError(
-            f"arch_seg_chord: span must be <= 180 degrees (the wedge is bounded "
+            f"arch_seg_chord: span must be < 180 degrees (the wedge is bounded "
             f"by tangent planes at the endpoints, which is only valid for "
-            f"spans up to a half-circle), got "
+            f"spans below a half-circle: at exactly 180 both radial faces "
+            f"collapse onto the same plane and the solid loses its angular "
+            f"bound entirely), got "
             f"{angle_end_deg - angle_start_deg}"
         )
     if xb == xf:
@@ -782,7 +788,7 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
     """Return a vertical annular curb segment extruded between ``z1`` and ``z2``.
 
     The arc is in the XY plane around ``(cx, cy)``. Raises ``ValueError`` for
-    invalid radii, spans outside ``(0, 180]``, or reversed/degenerate Z bounds.
+    invalid radii, spans outside ``(0, 180)``, or reversed/degenerate Z bounds.
     """
     if not (0 <= rin < rout):
         raise ValueError(
@@ -793,11 +799,13 @@ def curb_seg(cx, cy, z1, z2, rin, rout, angle_start_deg, angle_end_deg, tex):
             f"curb_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
-    if angle_end_deg - angle_start_deg > 180:
+    if angle_end_deg - angle_start_deg >= 180:
         raise ValueError(
-            f"curb_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"curb_seg: span must be < 180 degrees (the wedge is bounded by "
             f"tangent planes at the midpoint angle, which is only valid for "
-            f"spans up to a half-circle), got "
+            f"spans below a half-circle: at exactly 180 both radial faces "
+            f"collapse onto the same plane and the solid loses its angular "
+            f"bound entirely), got "
             f"{angle_end_deg - angle_start_deg}"
         )
     if z1 == z2:
@@ -830,7 +838,7 @@ def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Return a solid pie-slice arch segment of radius ``rad`` and X thickness.
 
     This is the filled counterpart to ``arch_seg()`` with no inner radius.
-    Raises ``ValueError`` for non-positive radius, spans outside ``(0, 180]``,
+    Raises ``ValueError`` for non-positive radius, spans outside ``(0, 180)``,
     or reversed/degenerate X bounds.
     """
     if rad <= 0:
@@ -840,11 +848,13 @@ def arch_pie_seg(xb, xf, yc, zc, rad, angle_start_deg, angle_end_deg, tex):
             f"arch_pie_seg: requires angle_start_deg < angle_end_deg, got "
             f"{angle_start_deg} >= {angle_end_deg}"
         )
-    if angle_end_deg - angle_start_deg > 180:
+    if angle_end_deg - angle_start_deg >= 180:
         raise ValueError(
-            f"arch_pie_seg: span must be <= 180 degrees (the wedge is bounded by "
+            f"arch_pie_seg: span must be < 180 degrees (the wedge is bounded by "
             f"tangent planes at the midpoint angle, which is only valid for "
-            f"spans up to a half-circle), got "
+            f"spans below a half-circle: at exactly 180 both radial faces "
+            f"collapse onto the same plane and the solid loses its angular "
+            f"bound entirely), got "
             f"{angle_end_deg - angle_start_deg}"
         )
     if xb == xf:
