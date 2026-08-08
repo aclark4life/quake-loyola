@@ -21,9 +21,11 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/entities/` | Player spawns, items, lights (package: `spawns`, `pickups`, `monsters`, `vegetation`, `lights`, `platform`, `_common`) |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
-| `ql` | Typer CLI entry point — `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
+| `ql` | Typer CLI entry point — `ql sky/fog/light/vis` / `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
 | `src/quake_loyola/config.py` | Flag/build-setting defaults + `ql.toml` load/save |
 | `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
+| `src/quake_loyola/build_presets.py` | Valid values for the `[build]` settings, and their validators |
+| `src/quake_loyola/wads.py` | The project's WAD list + a minimal WAD2 reader (used to validate `sky`) |
 
 ## Workflow
 
@@ -75,13 +77,28 @@ Runs the full pytest suite under `.venv/`. Tests cover geometry helpers, `MapBui
 
 ## Configuring the build
 
-Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and vis/light
-quality settings are controlled via `ql.toml` (repo root, tracked in git) and the
-`ql conf` CLI — see the module docstring of `src/quake_loyola/config.py`
-and the README's "Configuring the build" section. `generate_map.py` picks up
-`ql.toml` automatically through `constants/flags.py` (and a few flags in
+Module on/off flags (bridge, Knott Hall, terrain, lights, etc.) and the
+`[build]` settings are stored in `ql.toml` (repo root, tracked in git) and
+edited with the `ql` CLI — see the module docstring of
+`src/quake_loyola/config.py`, `docs/cli.rst`, and the README's "Configuring
+the build" section.
+
+The settings changed most often have single-purpose commands; each prints the
+current value and the valid ones when run with no argument:
+
+```bash
+ql sky sky_z1     # world sky texture (a plain WAD2 texture name)
+ql fog high       # off/low/med/high, a number, or "default" (the light preset's own)
+ql light dusk     # time-of-day lighting preset
+ql vis full       # vis pass used by `ql build`
+```
+
+Everything else goes through `ql conf set <NAME> <value>` (`ql conf show`
+for the build settings, `ql conf show --all` to include the ~35 module/light
+flags). `generate_map.py` picks up `ql.toml` automatically through
+`constants/flags.py` (and a few flags in
 `constants/bridge.py`/`knott.py`/`derived.py`) at import time; no code changes
-needed to flip a module on/off — use `ql conf set <NAME> true|false`.
+are needed to flip a module on/off.
 
 ## Key conventions
 
@@ -90,7 +107,7 @@ needed to flip a module on/off — use `ql conf set <NAME> true|false`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `mapgen.build_map()` (invoked via `generate_map.py` or `ql gen`) calls every module's `build()` and merges results.
 - **Texture names** — defined in `src/quake_loyola/constants/textures.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
 - **No side effects in area modules** — area modules (`bridge.py`, `knott_hall.py`, `west_campus.py`, `streets/`, `terrain/`, `entities/`, etc.) must not write files or print output. File writing/printing is confined to the entrypoint layer (`mapgen.main()`, shared by `generate_map.py` and `ql gen`), not to individual area modules.
-- **WADs** — `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, `makkon_stone.wad`, `mg1.wad`, `alkaline.wad`, and `makkon_nature.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
+- **WADs** — the list lives in `src/quake_loyola/wads.py` (`WAD_FILES`), which is the single source of truth for both the worldspawn `wad` key and the `sky` setting's validation: `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, `makkon_stone.wad`, `mg1.wad`, `alkaline.wad`, and `makkon_nature.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
 
 ## Dependencies
 

@@ -89,11 +89,11 @@ class CliRunnerConfigCommandTests(unittest.TestCase):
         config.reset()
 
     def test_conf_show_lists_flags_and_build_settings(self):
-        result = self.runner.invoke(cli.app, ["conf", "show"])
+        result = self.runner.invoke(cli.app, ["conf", "show", "--all"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("[flags]", result.stdout)
         self.assertIn("[build]", result.stdout)
-        self.assertIn("sky_preset", result.stdout)
+        self.assertIn("sky", result.stdout)
 
     def test_conf_get_known_flag(self):
         result = self.runner.invoke(cli.app, ["conf", "get", "KNOTT_ENABLED"])

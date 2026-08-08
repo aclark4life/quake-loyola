@@ -24,9 +24,10 @@ from typing import Any
 from .build_presets import (
     BUILD_ENUM_SETTINGS,
     FOG_DENSITY_NAMES,
-    SKY_PRESET_NAMES,
+    LEGACY_SKY_PRESETS,
     is_valid_fog_density,
-    is_valid_sky_preset,
+    is_valid_sky,
+    sky_options,
 )
 
 
@@ -98,7 +99,7 @@ BUILD_DEFAULTS: dict[str, Any] = {
     "light_extra": False,
     "lighting_preset": "bright",
     "fog_density": "default",
-    "sky_preset": "day",
+    "sky": "sky4",
 }
 
 
@@ -206,6 +207,34 @@ def _validate_section(
     return data
 
 
+_MIGRATION_WARNED: set[str] = set()
+
+
+def _migrate_legacy_build(data: Any) -> Any:
+    """Rewrite retired ``[build]`` keys in ``data`` onto their current names.
+
+    ``sky_preset`` (a two-entry ``day``/``night`` alias table over a texture
+    name) was replaced by the plain ``sky`` texture name. Without this, an
+    older ``ql.toml`` would fail :func:`_validate_section`'s unknown-key check
+    with a bare "unknown key" error, so migrate it and warn once instead. The
+    value is only carried over when ``sky`` isn't already set explicitly.
+    """
+    if not isinstance(data, dict) or "sky_preset" not in data:
+        return data
+    migrated = dict(data)
+    legacy = str(migrated.pop("sky_preset"))
+    migrated.setdefault("sky", LEGACY_SKY_PRESETS.get(legacy, legacy))
+    if "sky_preset" not in _MIGRATION_WARNED:
+        _MIGRATION_WARNED.add("sky_preset")
+        print(
+            "quake_loyola: ql.toml [build] sky_preset is retired — using "
+            f'sky = "{migrated["sky"]}" instead. Run '
+            f"`ql sky {migrated['sky']}` to rewrite ql.toml and silence this.",
+            file=sys.stderr,
+        )
+    return migrated
+
+
 def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
     """Validate every build-setting value up front, at ``ql.toml`` load time.
 
@@ -226,12 +255,15 @@ def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
             f"{FOG_DENSITY_NAMES}, or a numeric string, got "
             f"{data['fog_density']!r}"
         )
-    if "sky_preset" in data and not is_valid_sky_preset(str(data["sky_preset"])):
-        raise ValueError(
-            f"ql.toml [build] sky_preset must be one of {SKY_PRESET_NAMES}, or a "
-            "WAD2 skybox texture name (letters/digits/underscore, 1-15 chars), "
-            f"got {data['sky_preset']!r}"
+    if "sky" in data and not is_valid_sky(str(data["sky"]), REPO_ROOT):
+        available = sky_options(REPO_ROOT)
+        expected = (
+            f"one of {available}"
+            if available
+            else "a sky texture name (letters/digits/underscore, 1-15 chars, "
+            "starting with 'sky')"
         )
+        raise ValueError(f"ql.toml [build] sky must be {expected}, got {data['sky']!r}")
     if "light_extra" in data and not isinstance(data["light_extra"], bool):
         raise TypeError(
             f"ql.toml [build] light_extra must be a bool, "
@@ -244,7 +276,9 @@ if _LOAD_ERROR is None:
     try:
         _flags_raw = _validate_section("flags", _raw.get("flags", {}), DEFAULTS)
         _build_raw = _validate_build_values(
-            _validate_section("build", _raw.get("build", {}), BUILD_DEFAULTS)
+            _validate_section(
+                "build", _migrate_legacy_build(_raw.get("build", {})), BUILD_DEFAULTS
+            )
         )
     except (TypeError, KeyError, ValueError) as exc:
         _flags_raw, _build_raw = {}, {}
@@ -338,7 +372,7 @@ def set_build(name: str, value: Any, path: Path = CONFIG_PATH) -> None:
     if name not in BUILD_DEFAULTS:
         raise KeyError(f"Unknown build setting {name!r} — not in config.BUILD_DEFAULTS")
     raw = _read_toml_safe(path)
-    build = _section_as_dict(raw, "build")
+    build = _migrate_legacy_build(_section_as_dict(raw, "build"))
     build[name] = value
     _validate_build_values(build)
     raw["build"] = build
@@ -367,7 +401,7 @@ def set_many(items: list[tuple[str, str, Any]], path: Path = CONFIG_PATH) -> Non
             )
     raw = _read_toml_safe(path)
     flags = _section_as_dict(raw, "flags")
-    build = _section_as_dict(raw, "build")
+    build = _migrate_legacy_build(_section_as_dict(raw, "build"))
     for kind, name, value in items:
         if kind == "flag":
             flags[name] = value

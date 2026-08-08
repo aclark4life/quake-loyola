@@ -39,39 +39,61 @@ are downloaded from Quaketastic automatically by `just setup`.
 
 ## Configuring the build
 
-Which modules get built (bridge, Knott Hall, terrain, lights, etc.) and a
-couple of compile-time settings (vis/light quality) are controlled by the
-`ql` CLI, backed by a `ql.toml` file at the repo root (tracked in git — it's
-the current build's override layer on top of the hardcoded defaults in
-`src/quake_loyola/config.py`). Install it as a console-script:
+The `ql` CLI controls the build, backed by a `ql.toml` file at the repo root
+(tracked in git — it's the current build's override layer on top of the
+hardcoded defaults in `src/quake_loyola/config.py`). Install it as a
+console-script:
 
 ```bash
 pip install -e .       # installs the `ql` command + typer into your environment
-ql conf show
 ```
+
+### The settings you'll actually change
+
+Four shortcut commands cover the day-to-day knobs. Run any of them with no
+argument to print the current value and the valid ones:
 
 ```bash
-ql conf show
-ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
-ql conf set vis_mode full             # "fast" (default) or "full" vis pass
-ql conf set light_extra true          # light -extra (2x2 supersampling)
-ql conf set lighting_preset dusk      # dawn/midday/golden_hour/dusk/overcast/night/bright/afternoon
-ql conf set fog_density high          # "default" (preset's own), off/low/med/high, or a custom float
-ql conf set sky_preset night          # day (default) or night, or a raw WAD2
-                                       # skybox texture name (e.g. sky_z1) from
-                                       # any loaded WAD, for one-off testing
-ql conf set vis_mode=full lighting_preset=dusk fog_density=high  # set several at once
-ql conf get KNOTT_ENABLED
-ql conf reset                         # delete ql.toml, back to defaults
-ql gen                                  # same as `just generate`, but config-aware
-ql build                                # generate + qbsp + vis + light + deploy,
-                                           # using the [build] settings above
+ql sky                # show the current sky texture and every sky in the loaded WADs
+ql sky sky_z1         # set it (a plain texture name — sky4, sky1, sky_z1, ...)
+ql fog high           # off/low/med/high, a number like 0.05, or "default"
+ql light dusk         # time-of-day lighting: dawn/midday/golden_hour/dusk/...
+ql vis full           # "fast" (default) or "full" vis pass, used by `ql build`
 ```
 
+`ql fog default` means "use whatever fog the current `ql light` preset
+defines"; any other value overrides it. `ql light` stays a named preset
+because it sets six correlated worldspawn fields (sun color and angle,
+ambient level, fog color) at once.
+
+### Everything else
+
+```bash
+ql conf show                     # the build settings, with their valid values
+ql conf show --all               # ...plus the ~35 module/light flags
+ql conf set KNOTT_ENABLED true   # flip a module/light flag on or off
+ql conf set light_extra true     # light -extra (2x2 supersampling)
+ql conf set vis_mode=full lighting_preset=dusk fog_density=high  # several at once
+ql conf get KNOTT_ENABLED
+ql conf reset                    # delete ql.toml, back to defaults
+```
+
+### Running the build
+
+```bash
+ql gen                  # same as `just generate`, but config-aware
+ql build                # generate + qbsp + vis + light + deploy
+ql build --vis full     # override the configured vis mode for this run only
+```
+
+`just compile` and `just compile-fast` call `ql build` under the hood with
+`--vis full` / `--vis fast`, so there's one implementation of the pipeline
+and the recipe name always wins over `ql.toml`'s `vis_mode`.
+
 `generate_map.py` (and `just generate`) automatically pick up whatever is in
-`ql.toml` too — `ql conf set ...` is just a convenient way to edit it.
-`just venv` already runs `pip install -e .` for you, so `.venv/bin/ql` is
-ready to use after `just test`/`just venv`.
+`ql.toml` too — the CLI is just a convenient way to edit it. `just venv`
+already runs `pip install -e .` for you, so `.venv/bin/ql` is ready to use
+after `just test`/`just venv`.
 
 ## Playing
 

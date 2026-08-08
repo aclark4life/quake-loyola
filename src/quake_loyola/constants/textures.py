@@ -1,30 +1,11 @@
 """Texture-name constants used throughout the map generator.
 
-``sky_preset`` selects the world sky texture: either a named preset from
-``SKY_PRESETS``, or (for anything else) a raw WAD2 skybox texture name used
-as-is — see ``build_presets.is_valid_sky_preset``.
+The world sky comes from the ``sky`` build setting, which is a plain WAD2
+texture name (``sky4``, ``sky_z1``, ...) validated against the project's WADs
+by ``build_presets.is_valid_sky``.
 """
 
-from ..build_presets import SKY_PRESET_NAMES as _SKY_PRESET_NAME_TUPLE
 from ..config import get_build as _get_build
-
-# Build-setting values for ``sky_preset``.
-SKY_PRESETS: dict[str, str] = {
-    "day": "sky4",  # quake101.wad daytime sky
-    "night": "sky1",  # quake101.wad nighttime sky
-}
-
-# Sorted valid ``sky_preset`` names for CLI validation and help text.
-SKY_PRESET_NAMES: list[str] = sorted(SKY_PRESETS)
-
-# ``config.py`` validates ``sky_preset`` against ``build_presets`` before this
-# module is ever imported, so this is an internal-consistency check (a
-# mismatch here is a bug in this file) rather than user-facing validation.
-assert SKY_PRESET_NAMES == sorted(_SKY_PRESET_NAME_TUPLE), (
-    "SKY_PRESETS keys drifted from build_presets.SKY_PRESET_NAMES"
-)
-
-_sky_preset_setting = _get_build("sky_preset")
 
 
 class Textures:
@@ -58,7 +39,7 @@ class Textures:
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
     SIDEWALK_JOINT = JOINT_GAP  # dark shadow-gap seam between sidewalk tiles
-    SKY = SKY_PRESETS.get(_sky_preset_setting, _sky_preset_setting)
+    SKY = _get_build("sky")
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad

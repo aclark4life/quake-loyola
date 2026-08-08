@@ -1,6 +1,7 @@
 """Tests for the `ql` CLI (src/quake_loyola/cli.py), focused on the
-`ql conf` subcommands' validation of named-preset build settings
-(sky_preset, lighting_preset, fog_density, vis_mode).
+`ql conf` subcommands' and the ql sky/fog/light/vis shortcut commands'
+validation of the build settings (sky, lighting_preset, fog_density,
+vis_mode).
 
 Each test invokes the CLI in a fresh subprocess (via `python -c`, with
 PYTHONPATH pointed at src/ — same as pytest's own `pythonpath` config in
@@ -32,50 +33,106 @@ def run_ql(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_conf_show_lists_sky_preset_options(tmp_path):
+def test_conf_show_lists_sky_options(tmp_path):
     result = run_ql("conf", "show", cwd=tmp_path)
     assert result.returncode == 0
-    assert "sky_preset" in result.stdout
-    assert "options: day, night" in result.stdout
+    assert "sky " in result.stdout
+    # An isolated tmp_path has no WADs to scan, so the generic hint is shown.
+    assert "sky texture name from a loaded WAD" in result.stdout
 
 
-def test_conf_get_sky_preset_default(tmp_path):
-    result = run_ql("conf", "get", "sky_preset", cwd=tmp_path)
+def test_conf_show_hides_flags_unless_all_is_passed(tmp_path):
+    brief = run_ql("conf", "show", cwd=tmp_path)
+    assert brief.returncode == 0
+    assert "KNOTT_ENABLED" not in brief.stdout
+    assert "module/light flags" in brief.stdout
+
+    full = run_ql("conf", "show", "--all", cwd=tmp_path)
+    assert full.returncode == 0
+    assert "KNOTT_ENABLED" in full.stdout
+
+
+def test_conf_get_sky_default(tmp_path):
+    result = run_ql("conf", "get", "sky", cwd=tmp_path)
     assert result.returncode == 0
-    assert result.stdout.strip() == "day"
+    assert result.stdout.strip() == "sky4"
 
 
-def test_conf_set_sky_preset_night_round_trips(tmp_path):
-    set_result = run_ql("conf", "set", "sky_preset", "night", cwd=tmp_path)
+def test_conf_set_sky_round_trips(tmp_path):
+    set_result = run_ql("conf", "set", "sky", "sky1", cwd=tmp_path)
     assert set_result.returncode == 0
-    assert "sky_preset = night" in set_result.stdout
+    assert "sky = sky1" in set_result.stdout
 
-    get_result = run_ql("conf", "get", "sky_preset", cwd=tmp_path)
+    get_result = run_ql("conf", "get", "sky", cwd=tmp_path)
     assert get_result.returncode == 0
-    assert get_result.stdout.strip() == "night"
+    assert get_result.stdout.strip() == "sky1"
 
     assert (tmp_path / "ql.toml").exists()
 
 
-def test_conf_set_sky_preset_rejects_invalid_value(tmp_path):
-    # Not a named preset and not a valid WAD2 texture name (contains a space).
-    result = run_ql("conf", "set", "sky_preset", "not a texture", cwd=tmp_path)
+def test_conf_set_sky_rejects_invalid_value(tmp_path):
+    # Not a valid WAD2 texture name (contains a space).
+    result = run_ql("conf", "set", "sky", "not a texture", cwd=tmp_path)
     assert result.returncode != 0
-    assert "sky_preset must be one of" in result.stdout + result.stderr
+    assert "sky must be" in result.stdout + result.stderr
     # Nothing should have been persisted for an invalid value.
     assert not (tmp_path / "ql.toml").exists()
 
 
-def test_conf_set_sky_preset_accepts_raw_texture_name_round_trips(tmp_path):
-    # Any WAD2-legal texture name is accepted as-is, so any loaded WAD's
-    # skybox can be tried without adding a formal named preset for it.
-    set_result = run_ql("conf", "set", "sky_preset", "sky_z1", cwd=tmp_path)
-    assert set_result.returncode == 0
-    assert "sky_preset = sky_z1" in set_result.stdout
+def test_conf_set_sky_rejects_non_sky_texture_name(tmp_path):
+    # qbsp only compiles sky* textures as sky, so a well-formed but non-sky
+    # texture name must be rejected up front.
+    result = run_ql("conf", "set", "sky", "bricka2_1", cwd=tmp_path)
+    assert result.returncode != 0
+    assert not (tmp_path / "ql.toml").exists()
 
-    get_result = run_ql("conf", "get", "sky_preset", cwd=tmp_path)
-    assert get_result.returncode == 0
-    assert get_result.stdout.strip() == "sky_z1"
+
+def test_sky_shortcut_sets_and_shows_value(tmp_path):
+    set_result = run_ql("sky", "sky_z1", cwd=tmp_path)
+    assert set_result.returncode == 0
+    assert "sky = sky_z1" in set_result.stdout
+
+    show_result = run_ql("sky", cwd=tmp_path)
+    assert show_result.returncode == 0
+    assert "sky = sky_z1" in show_result.stdout
+    assert "options:" in show_result.stdout
+
+
+def test_fog_shortcut_sets_and_shows_value(tmp_path):
+    assert run_ql("fog", "high", cwd=tmp_path).returncode == 0
+    show_result = run_ql("fog", cwd=tmp_path)
+    assert show_result.returncode == 0
+    assert "fog_density = high" in show_result.stdout
+
+
+def test_light_shortcut_sets_and_shows_value(tmp_path):
+    assert run_ql("light", "dusk", cwd=tmp_path).returncode == 0
+    show_result = run_ql("light", cwd=tmp_path)
+    assert show_result.returncode == 0
+    assert "lighting_preset = dusk" in show_result.stdout
+
+
+def test_vis_shortcut_sets_and_shows_value(tmp_path):
+    assert run_ql("vis", "full", cwd=tmp_path).returncode == 0
+    show_result = run_ql("vis", cwd=tmp_path)
+    assert show_result.returncode == 0
+    assert "vis_mode = full" in show_result.stdout
+    assert "options: fast, full" in show_result.stdout
+
+
+def test_shortcut_rejects_invalid_value_without_persisting(tmp_path):
+    result = run_ql("light", "midnight", cwd=tmp_path)
+    assert result.returncode != 0
+    assert not (tmp_path / "ql.toml").exists()
+
+
+def test_legacy_sky_preset_in_ql_toml_still_works(tmp_path):
+    # An older, hand-written ql.toml must not hard-fail on the retired key.
+    (tmp_path / "ql.toml").write_text('[build]\nsky_preset = "night"\n')
+    result = run_ql("conf", "get", "sky", cwd=tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.strip() == "sky1"
+    assert "sky_preset is retired" in result.stderr
 
 
 def test_conf_get_vis_mode_default(tmp_path):
@@ -170,7 +227,7 @@ def test_gen_with_malformed_toml_fails_cleanly(tmp_path):
 
 
 def test_build_with_malformed_toml_fails_cleanly(tmp_path):
-    (tmp_path / "ql.toml").write_text('[build]\nsky_preset = "not a texture"\n')
+    (tmp_path / "ql.toml").write_text('[build]\nsky = "not a texture"\n')
     result = run_ql("build", cwd=tmp_path)
     assert result.returncode == 1
     assert "Traceback" not in result.stderr

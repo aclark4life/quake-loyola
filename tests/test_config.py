@@ -69,21 +69,40 @@ def test_set_and_get_build_setting_round_trips(tmp_path):
     assert raw["build"]["vis_mode"] == "full"
 
 
-def test_sky_preset_default_is_day():
-    assert (
-        config.get_build("sky_preset") == config.BUILD_DEFAULTS["sky_preset"] == "day"
-    )
+def test_sky_default_is_sky4():
+    assert config.get_build("sky") == config.BUILD_DEFAULTS["sky"] == "sky4"
 
 
-def test_set_and_get_sky_preset_round_trips(tmp_path):
+def test_set_and_get_sky_round_trips(tmp_path):
     path = tmp_path / "ql.toml"
-    config.set_build("sky_preset", "night", path=path)
+    config.set_build("sky", "sky1", path=path)
     raw = config._read_toml(path)
-    assert raw["build"]["sky_preset"] == "night"
+    assert raw["build"]["sky"] == "sky1"
     merged = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
-    assert merged["sky_preset"] == "night"
-    # The global default (unaffected by a path-scoped write) stays "day".
-    assert config.get_build("sky_preset") == "day"
+    assert merged["sky"] == "sky1"
+    # The global default (unaffected by a path-scoped write) stays "sky4".
+    assert config.get_build("sky") == "sky4"
+
+
+def test_legacy_sky_preset_key_is_migrated(tmp_path):
+    # An older ql.toml using the retired sky_preset key must keep working:
+    # its value is mapped onto the `sky` texture name rather than failing
+    # the unknown-key check.
+    path = tmp_path / "ql.toml"
+    path.write_text('[build]\nsky_preset = "night"\n')
+    raw = config._read_toml(path)
+    migrated = config._migrate_legacy_build(raw["build"])
+    assert migrated == {"sky": "sky1"}
+
+
+def test_legacy_sky_preset_passes_through_raw_texture_name():
+    # sky_preset also accepted raw texture names; those carry over as-is.
+    assert config._migrate_legacy_build({"sky_preset": "sky_z1"}) == {"sky": "sky_z1"}
+
+
+def test_explicit_sky_wins_over_legacy_sky_preset():
+    migrated = config._migrate_legacy_build({"sky_preset": "night", "sky": "sky_z1"})
+    assert migrated == {"sky": "sky_z1"}
 
 
 def test_reset_removes_config_file(tmp_path):

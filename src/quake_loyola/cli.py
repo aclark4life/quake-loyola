@@ -1,4 +1,14 @@
-"""Typer CLI for viewing config, generating maps, and running builds."""
+"""Typer CLI for viewing config, generating maps, and running builds.
+
+Three layers, narrowest first:
+
+* the shortcut commands ``ql sky`` / ``ql fog`` / ``ql light`` / ``ql vis`` —
+  the handful of settings worth changing day to day. Run with no argument to
+  print the current value and the valid ones.
+* ``ql conf`` — the full surface, including the ~40 geometry/light module
+  flags, all persisted to ``ql.toml``.
+* ``ql gen`` / ``ql build`` — run the pipeline.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +16,7 @@ import platform
 import re
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 
 import typer
@@ -14,10 +25,10 @@ from . import config
 from .build_presets import (
     BUILD_ENUM_SETTINGS,
     FOG_DENSITY_NAMES,
-    LIGHTING_PRESET_NAMES,
-    SKY_PRESET_NAMES,
+    VIS_MODES,
     is_valid_fog_density,
-    is_valid_sky_preset,
+    is_valid_sky,
+    sky_options,
 )
 
 REPO_ROOT = config.REPO_ROOT
@@ -25,14 +36,39 @@ REPO_ROOT = config.REPO_ROOT
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 app = typer.Typer(
-    help="quake-loyola build CLI — configure module/light flags and run the build.",
+    help="quake-loyola build CLI - configure the map and run the build.",
     context_settings=CONTEXT_SETTINGS,
+    rich_markup_mode=None,
 )
 config_app = typer.Typer(
     help="View or change build-time settings stored in ql.toml.",
     context_settings=CONTEXT_SETTINGS,
+    rich_markup_mode=None,
 )
 app.add_typer(config_app, name="conf")
+
+
+def _build_options_hint(name: str) -> str:
+    """Return a human-readable description of ``name``'s valid values.
+
+    Single source of the "options: ..." text shared by ``ql conf show`` and
+    each shortcut command's no-argument output, so the two can't drift.
+    """
+    if name in BUILD_ENUM_SETTINGS:
+        return ", ".join(BUILD_ENUM_SETTINGS[name])
+    if name == "fog_density":
+        return (
+            "default (the lighting preset's own fog), "
+            f"{', '.join(FOG_DENSITY_NAMES)}, or a number (e.g. 0.05)"
+        )
+    if name == "sky":
+        available = sky_options(REPO_ROOT)
+        if available:
+            return ", ".join(available)
+        return "a sky texture name from a loaded WAD (e.g. sky4, sky_z1)"
+    if name == "light_extra":
+        return "true, false"
+    return ""
 
 
 def _parse_bool(value: str) -> bool:
@@ -45,39 +81,49 @@ def _parse_bool(value: str) -> bool:
 
 
 @config_app.command("show")
-def config_show() -> None:
-    """List every flag and build setting, its effective value, and its default."""
+def config_show(
+    all_settings: bool = typer.Option(
+        False,
+        "--all",
+        "-a",
+        help="Also list the module/light flags, not just the build settings.",
+    ),
+) -> None:
+    """Show the build settings; add --all for the module/light flags too."""
     try:
         exists = config.CONFIG_PATH.exists()
         typer.echo(
             f"Config file: {config.CONFIG_PATH}"
-            + ("" if exists else " (not created yet — showing defaults)")
+            + ("" if exists else " (not created yet - showing defaults)")
         )
-        typer.echo("\n[flags]")
-        for name in sorted(config.DEFAULTS):
-            value = config.get(name)
-            default = config.DEFAULTS[name]
-            marker = "*" if value != default else " "
-            typer.echo(f" {marker} {name:<34} = {str(value):<5} (default: {default})")
         typer.echo("\n[build]")
         for name in sorted(config.BUILD_DEFAULTS):
             value = config.get_build(name)
             default = config.BUILD_DEFAULTS[name]
             marker = "*" if value != default else " "
-            options = ""
-            if name == "vis_mode":
-                options = ", options: fast, full"
-            elif name == "lighting_preset":
-                options = f", options: {', '.join(LIGHTING_PRESET_NAMES)}"
-            elif name == "fog_density":
-                options = f", options: default, {', '.join(FOG_DENSITY_NAMES)}, or a custom float"
-            elif name == "sky_preset":
-                options = (
-                    f", options: {', '.join(SKY_PRESET_NAMES)}, "
-                    "or a raw WAD2 skybox texture name"
+            typer.echo(f" {marker} {name:<16} = {str(value):<8} (default: {default})")
+            options = _build_options_hint(name)
+            if options:
+                for line in textwrap.wrap(
+                    f"options: {options}",
+                    width=76,
+                    initial_indent=" " * 6,
+                    subsequent_indent=" " * 15,
+                ):
+                    typer.echo(line)
+        if all_settings:
+            typer.echo("\n[flags]")
+            for name in sorted(config.DEFAULTS):
+                value = config.get(name)
+                default = config.DEFAULTS[name]
+                marker = "*" if value != default else " "
+                typer.echo(
+                    f" {marker} {name:<34} = {str(value):<5} (default: {default})"
                 )
+        else:
             typer.echo(
-                f" {marker} {name:<34} = {str(value):<5} (default: {default}{options})"
+                f"\n[flags] {len(config.DEFAULTS)} module/light flags "
+                "(run `ql conf show --all` to list them)"
             )
         typer.echo("\n(* = overridden from its default via ql.toml)")
     except RuntimeError as exc:
@@ -137,16 +183,10 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
                     "numeric string"
                 )
             parsed_build = value_norm
-        elif name_l == "sky_preset":
-            stripped = value.strip()
-            value_norm = (
-                stripped.lower() if stripped.lower() in SKY_PRESET_NAMES else stripped
-            )
-            if not is_valid_sky_preset(value_norm):
-                raise typer.BadParameter(
-                    f"sky_preset must be one of {SKY_PRESET_NAMES}, or a WAD2 "
-                    "skybox texture name (letters/digits/underscore, 1-15 chars)"
-                )
+        elif name_l == "sky":
+            value_norm = value.strip()
+            if not is_valid_sky(value_norm, REPO_ROOT):
+                raise typer.BadParameter(f"sky must be {_build_options_hint('sky')}")
             parsed_build = value_norm
         else:
             parsed_build = _parse_bool(value)
@@ -159,9 +199,23 @@ def _validate_one(name: str, value: str) -> tuple[str, str, object]:
         raise typer.Exit(code=1)
 
 
-@config_app.command(
-    "set", context_settings={**CONTEXT_SETTINGS, "ignore_unknown_options": True}
-)
+_CONFIG_SET_EPILOG = """\b
+Examples:
+  ql conf set KNOTT_ENABLED true
+  ql conf set WEST_CAMPUS_ENABLED_TERRAIN true
+  ql conf set vis_mode full
+  ql conf set light_extra true
+  ql conf set lighting_preset dusk
+  ql conf set fog_density high
+  ql conf set sky sky_z1
+
+\b
+Multiple settings at once (NAME=VALUE form, space-separated):
+  ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
+"""
+
+
+@config_app.command("set", epilog=_CONFIG_SET_EPILOG)
 def config_set(
     args: list[str] = typer.Argument(
         ..., help="Either 'NAME VALUE', or one or more 'NAME=VALUE' pairs."
@@ -169,18 +223,8 @@ def config_set(
 ) -> None:
     """Set one or more flags/build settings, persisted to ql.toml.
 
-    Examples:
-        ql conf set KNOTT_ENABLED true
-        ql conf set WEST_CAMPUS_ENABLED_TERRAIN true
-        ql conf set vis_mode full
-        ql conf set light_extra true
-        ql conf set lighting_preset dusk
-        ql conf set fog_density high
-        ql conf set sky_preset night
-        ql conf set sky_preset sky_z1   # raw texture name, any loaded WAD
-
-    Multiple settings at once (NAME=VALUE form, space-separated):
-        ql conf set KNOTT_ENABLED=true vis_mode=full lighting_preset=dusk
+    For the settings you change most often there are shorter commands:
+    ql sky, ql fog, ql light, and ql vis.
     """
     if len(args) == 2 and "=" not in args[0] and "=" not in args[1]:
         pairs = [(args[0], args[1])]
@@ -231,6 +275,79 @@ def config_reset(
 def config_path() -> None:
     """Print the path to ql.toml (whether or not it exists yet)."""
     typer.echo(str(config.CONFIG_PATH))
+
+
+def _shortcut(setting: str, value: str | None) -> None:
+    """Back the ``ql sky``/``fog``/``light``/``vis`` shortcut commands.
+
+    With no ``value``, print the setting's current value and its valid ones;
+    otherwise validate and persist it exactly as ``ql conf set`` would.
+    """
+    try:
+        if value is None:
+            current = config.get_build(setting)
+            typer.echo(f"{setting} = {current}")
+            options = _build_options_hint(setting)
+            if options:
+                typer.echo(f"options: {options}")
+            return
+        _kind, key, parsed = _validate_one(setting, value)
+        config.set_many([(_kind, key, parsed)])
+        typer.echo(f"{key} = {parsed}")
+    except RuntimeError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("sky")
+def sky(
+    texture: str | None = typer.Argument(
+        None,
+        help="Sky texture name, e.g. sky4 or sky_z1. Omit to show the current one.",
+    ),
+) -> None:
+    """Show or set the world sky texture (the 'sky' build setting)."""
+    _shortcut("sky", texture)
+
+
+@app.command("fog")
+def fog(
+    density: str | None = typer.Argument(
+        None,
+        help=(
+            "off/low/med/high, a number like 0.05, or 'default' to use the "
+            "lighting preset's own fog. Omit to show the current value."
+        ),
+    ),
+) -> None:
+    """Show or set the fog density (the 'fog_density' build setting)."""
+    _shortcut("fog_density", density)
+
+
+@app.command("light")
+def light(
+    preset: str | None = typer.Argument(
+        None,
+        help="Time-of-day lighting preset. Omit to show the current one.",
+    ),
+) -> None:
+    """Show or set the time-of-day lighting (the 'lighting_preset' setting).
+
+    A preset sets every correlated worldspawn lighting field at once (sun
+    color and angle, ambient level, fog color), which is why this one stays a
+    named preset rather than a raw value.
+    """
+    _shortcut("lighting_preset", preset)
+
+
+@app.command("vis")
+def vis(
+    mode: str | None = typer.Argument(
+        None, help="'fast' or 'full'. Omit to show the current mode."
+    ),
+) -> None:
+    """Show or set the vis pass used by 'ql build' (the 'vis_mode' setting)."""
+    _shortcut("vis_mode", mode)
 
 
 @app.command("gen")
@@ -322,9 +439,33 @@ def build(
         True,
         help="Copy the compiled .bsp/.lit into the Quake maps directory afterwards.",
     ),
+    gen: bool = typer.Option(
+        True,
+        "--gen/--no-gen",
+        help="Regenerate loyola.map first. --no-gen compiles the existing one.",
+    ),
+    vis_mode: str | None = typer.Option(
+        None,
+        "--vis",
+        help="Override the configured vis mode for this run only: fast or full.",
+    ),
+    light_extra: bool | None = typer.Option(
+        None,
+        "--extra/--no-extra",
+        help="Override the configured light -extra setting for this run only.",
+    ),
 ) -> None:
-    """Generate and compile the map using the current ``[build]`` settings."""
-    generate()
+    """Generate and compile the map using the current build settings.
+
+    The vis mode and light -extra setting come from ql.toml (see 'ql vis' and
+    'ql conf set light_extra'); --vis/--extra override them for one run
+    without persisting anything, which is how the justfile's compile and
+    compile-fast recipes pin their vis pass.
+    """
+    if vis_mode is not None and vis_mode not in VIS_MODES:
+        raise typer.BadParameter(f"--vis must be one of {', '.join(VIS_MODES)}")
+    if gen:
+        generate()
 
     tools_bin = _find_ericw_tools_bin(REPO_ROOT)
     if tools_bin is None:
@@ -337,8 +478,10 @@ def build(
         raise typer.Exit(code=1)
 
     try:
-        vis_mode = config.get_build("vis_mode")
-        light_extra = config.get_build("light_extra")
+        if vis_mode is None:
+            vis_mode = config.get_build("vis_mode")
+        if light_extra is None:
+            light_extra = config.get_build("light_extra")
 
         subprocess.run(
             [str(tools_bin / "qbsp"), "-bsp2", "loyola.map"], cwd=REPO_ROOT, check=True

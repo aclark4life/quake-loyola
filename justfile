@@ -75,31 +75,17 @@ test: venv
     .venv/bin/pytest
 
 # Compile the map (geometry, visibility, and lighting) with a full Vis pass.
-# The recipe name picks the Vis pass, so ql.toml's [build] vis_mode is
-# deliberately ignored here; it only steers `ql build`, which has no such
-# fast/full split of its own. [build] light_extra is honored by both.
+# Delegates to `ql build`, so there is a single implementation of the
+# qbsp -> vis -> light pipeline; the recipe name pins the Vis pass via --vis,
+# overriding ql.toml's [build] vis_mode for this run only. [build] light_extra
+# is honored unless overridden.
 compile: install-tools venv
-    #!/usr/bin/env bash
-    set -euo pipefail
-    light_extra=$(.venv/bin/python3 -c "from quake_loyola import config; print(config.get_build('light_extra'))")
-    {{tools_bin}}/qbsp -bsp2 {{map_name}}.map
-    {{tools_bin}}/vis {{map_name}}.bsp
-    light_args=()
-    if [ "$light_extra" = "True" ]; then light_args+=(-extra); fi
-    {{tools_bin}}/light "${light_args[@]}" {{map_name}}.bsp
+    .venv/bin/ql build --vis full --no-gen --no-deploy
 
-# Fast compile: skips the Full Vis pass, honors ql.toml's [build] light_extra
-# setting. As with `compile`, the recipe name picks the Vis pass and [build]
-# vis_mode is deliberately ignored; it only steers `ql build`.
+# Fast compile: skips the Full Vis pass. As with `compile`, the recipe name
+# pins the Vis pass via --vis; everything else comes from ql.toml's [build].
 compile-fast: install-tools venv
-    #!/usr/bin/env bash
-    set -euo pipefail
-    light_extra=$(.venv/bin/python3 -c "from quake_loyola import config; print(config.get_build('light_extra'))")
-    {{tools_bin}}/qbsp -bsp2 {{map_name}}.map
-    {{tools_bin}}/vis -fast {{map_name}}.bsp
-    light_args=()
-    if [ "$light_extra" = "True" ]; then light_args+=(-extra); fi
-    {{tools_bin}}/light "${light_args[@]}" {{map_name}}.bsp
+    .venv/bin/ql build --vis fast --no-gen --no-deploy
 
 # Deploy the compiled map and lighting data to the Quake directory
 deploy:

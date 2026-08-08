@@ -18,6 +18,46 @@ is ready to use after ``just test``/``just venv``.
 Commands
 --------
 
+The CLI has three layers, narrowest first: the shortcut commands for the
+handful of settings worth changing day to day, ``ql conf`` for the full
+surface (including the ~35 module/light flags), and ``ql gen``/``ql build``
+to run the pipeline.
+
+Shortcut commands
+~~~~~~~~~~~~~~~~~
+
+``ql sky``, ``ql fog``, ``ql light``, and ``ql vis`` each set a single
+``[build]`` setting. Run one with no argument to print the current value
+and every valid one:
+
+.. code-block:: bash
+
+   ql sky                # show the current sky + every sky texture in the WADs
+   ql sky sky_z1         # set the world sky texture
+   ql fog high           # off/low/med/high, a number like 0.05, or "default"
+   ql light dusk         # time-of-day lighting preset
+   ql vis full           # "fast" (default) or "full" vis pass
+
+``sky`` is a plain WAD2 texture name, not a named preset. It is validated
+against the textures actually present in the project's WADs (see
+:mod:`quake_loyola.wads`), so a typo is caught at ``ql sky`` time rather
+than surfacing as a missing-texture warning during compilation. Names must
+start with ``sky`` since qbsp only compiles ``sky*`` textures as sky.
+
+``fog`` accepts ``default``, meaning "use whatever fog the current
+``lighting_preset`` defines"; any other value overrides it. Note that
+``default`` and ``off`` are different — ``off`` disables fog outright.
+
+``light`` remains a named preset because it sets six correlated worldspawn
+fields at once (sun color and angle, ambient level, fog color).
+
+.. note::
+
+   ``sky_preset`` (a two-entry ``day``/``night`` alias table over a texture
+   name) was replaced by ``sky``. An existing ``ql.toml`` using it keeps
+   working — the value is migrated on load, with a warning — but new
+   configuration should set ``sky`` directly.
+
 ``ql gen``
 ~~~~~~~~~~
 
@@ -28,20 +68,28 @@ Write ``loyola.map`` from the current config-driven flag settings — same as
 ~~~~~~~~~~~~
 
 Generate + compile the map (``qbsp`` → ``vis`` → ``light``) and deploy the
-result, honoring the ``[build]`` settings below (``vis_mode``,
-``light_extra``) — the same pipeline as ``just compile``/``just
-compile-fast``, but configurable without editing the ``justfile``.
+result, honoring the ``vis_mode`` and ``light_extra`` build settings.
 
 .. code-block:: bash
 
    ql build                  # generate, compile, and deploy
    ql build --no-deploy      # skip copying the .bsp/.lit into the Quake maps dir
+   ql build --no-gen         # compile the existing loyola.map as-is
+   ql build --vis full       # override vis_mode for this run only
+   ql build --extra          # override light_extra for this run only
+
+``just compile`` and ``just compile-fast`` call ``ql build --vis full``
+/ ``--vis fast`` (with ``--no-gen --no-deploy``), so there is a single
+implementation of the pipeline and the recipe name always wins over
+``ql.toml``'s ``vis_mode``.
 
 ``ql conf show``
 ~~~~~~~~~~~~~~~~
 
-List every flag and build setting, its effective value, and its default
-(overridden values are marked with ``*``).
+List the build settings, their effective values, defaults, and valid values
+(overridden values are marked with ``*``). Pass ``--all``/``-a`` to also list
+the module/light flags, which are hidden by default to keep the output
+readable.
 
 ``ql conf get NAME``
 ~~~~~~~~~~~~~~~~~~~~
@@ -52,19 +100,14 @@ Print the effective value of a single flag or build setting.
 ~~~~~~~~~~~~~~~
 
 Set one or more flags/build settings, persisted to ``ql.toml``. Accepts
-either the legacy ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
+either the ``NAME VALUE`` form, or one or more ``NAME=VALUE`` pairs:
 
 .. code-block:: bash
 
    ql conf set KNOTT_ENABLED true          # flip a module/light flag on or off
    ql conf set knott_enabled true          # names are case-insensitive
-   ql conf set vis_mode full               # "fast" (default) or "full" vis pass
    ql conf set light_extra true            # light -extra (2x2 supersampling)
-   ql conf set lighting_preset dusk        # dawn/midday/golden_hour/dusk/overcast/night/bright/afternoon
-   ql conf set fog_density high            # "default" (preset's own), off/low/med/high, or a custom float
-   ql conf set sky_preset night            # day (default) or night, or a raw WAD2
-                                            # skybox texture name (e.g. sky_z1) from
-                                            # any loaded WAD, for one-off testing
+   ql conf set sky sky_z1                  # same as `ql sky sky_z1`
 
    # Set several settings in one command:
    ql conf set vis_mode=full lighting_preset=dusk fog_density=high
@@ -88,5 +131,13 @@ Reference
    :undoc-members:
 
 .. automodule:: quake_loyola.config
+   :members:
+   :undoc-members:
+
+.. automodule:: quake_loyola.build_presets
+   :members:
+   :undoc-members:
+
+.. automodule:: quake_loyola.wads
    :members:
    :undoc-members:

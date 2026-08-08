@@ -3,6 +3,7 @@
 import math
 
 from ..config import get as _flag
+from ..wads import WAD_FILES as _WAD_FILES
 from .bridge import (
     BRIDGE_ARCH_PIER_RISE,
     BRIDGE_ARCH_RISE,
@@ -438,7 +439,7 @@ _fog = (
 
 
 WORLDSPAWN_FIELDS = {
-    "wad": "quake101.wad;ad.wad;makkon_building.wad;ikwhite.wad;makkon_stone.wad;mg1.wad;alkaline.wad;makkon_nature.wad",
+    "wad": ";".join(_WAD_FILES),
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
     "sky": Textures.SKY,
     "dmflags": "128",

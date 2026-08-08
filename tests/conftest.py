@@ -5,7 +5,7 @@ freeze ``config.get()``/``config.get_build()`` values) from the repo root at
 *import time* — the first time anything imports ``quake_loyola`` in this
 process. If a developer has a local, gitignored ``ql.toml`` with overridden
 flags/build settings, tests that assert default-config behavior (e.g.
-``config.get_build("sky_preset") == "day"``, the regression suite's golden
+``config.get_build("sky") == "sky4"``, the regression suite's golden
 brush/entity counts and MD5 hash) would spuriously fail — not because the
 code is broken, but because the ambient config changed the generated output.
 

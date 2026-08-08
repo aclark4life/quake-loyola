@@ -1,4 +1,4 @@
-"""Names of valid values for CLI/``ql.toml``-configurable build settings.
+"""Valid values for the CLI/``ql.toml``-configurable ``[build]`` settings.
 
 Kept independent of :mod:`quake_loyola.constants` (which owns the full
 preset *data* — sunlight colors/angles, texture names, etc.) so that
@@ -7,13 +7,23 @@ when ``ql.toml`` is loaded, and :mod:`quake_loyola.cli` can display/validate
 those values, without importing (and thereby initializing) the whole
 ``constants`` package for config-only commands.
 
-``constants.lighting`` and ``constants.textures`` import the name tuples
-from here rather than redefining them, so there is a single source of
-truth; each asserts its preset dict's keys match at import time.
+``constants.lighting`` imports the name tuples from here rather than
+redefining them, so there is a single source of truth; it asserts its preset
+dict's keys match at import time.
+
+``lighting_preset`` is the one genuine *preset* left: it sets six correlated
+worldspawn fields (sun color, sun angle, ambient, fog color, ...) that are
+painful to set individually. Everything else here is a direct value — ``sky``
+is a plain texture name, ``fog_density`` a level or a number.
 """
+
+from __future__ import annotations
 
 import math
 import re
+from pathlib import Path
+
+from .wads import SKY_TEXTURE_PREFIX, sky_texture_names
 
 VIS_MODES: tuple[str, ...] = ("fast", "full")
 
@@ -30,7 +40,10 @@ LIGHTING_PRESET_NAMES: tuple[str, ...] = (
 
 FOG_DENSITY_NAMES: tuple[str, ...] = ("off", "low", "med", "high")
 
-SKY_PRESET_NAMES: tuple[str, ...] = ("day", "night")
+#: Former ``sky_preset`` values, kept only to migrate an older ``ql.toml``
+#: (see ``config._migrate_legacy_build``). Set ``sky`` to a texture name
+#: directly instead.
+LEGACY_SKY_PRESETS: dict[str, str] = {"day": "sky4", "night": "sky1"}
 
 # WAD2 texture names are ASCII, up to 15 chars (16-byte name field minus the
 # NUL terminator), conventionally lowercase alnum/underscore — matches every
@@ -63,13 +76,36 @@ def is_valid_fog_density(value: str) -> bool:
     return math.isfinite(parsed) and parsed >= 0
 
 
-def is_valid_sky_preset(value: str) -> bool:
-    """Return True if ``value`` is a valid ``sky_preset`` build setting.
+def is_valid_sky(value: str, root: Path | None = None) -> bool:
+    """Return True if ``value`` names a usable sky texture.
 
-    Valid values are one of :data:`SKY_PRESET_NAMES` (looked up in
-    ``Textures.SKY_PRESETS``), or a raw WAD2 skybox texture name (e.g.
-    ``sky_z1``, ``sky3_1``) used as-is — letting any texture from a loaded
-    WAD be tried as the world sky without adding a formal named preset for
-    it.
+    ``sky`` is a plain WAD2 texture name (``sky4``, ``sky_z1``, ...) rather
+    than a named preset. A name must be syntactically valid *and* start with
+    :data:`~quake_loyola.wads.SKY_TEXTURE_PREFIX`, since qbsp only compiles
+    ``sky*`` textures as sky.
+
+    When ``root`` is given, the name is additionally checked against the
+    textures actually present in the project's WADs, so a typo is caught at
+    ``ql conf set`` time instead of surfacing as a missing-texture warning
+    during compilation. If no WAD can be read (they aren't downloaded yet,
+    say) that check is skipped rather than rejecting every value.
     """
-    return value in SKY_PRESET_NAMES or bool(_SKY_TEXTURE_NAME_RE.fullmatch(value))
+    if not _SKY_TEXTURE_NAME_RE.fullmatch(value):
+        return False
+    if not value.lower().startswith(SKY_TEXTURE_PREFIX):
+        return False
+    if root is None:
+        return True
+    available = sky_texture_names(root)
+    return not available or value in available
+
+
+def sky_options(root: Path | None = None) -> list[str]:
+    """Return the sky textures available in the project's WADs, sorted.
+
+    Empty when ``root`` is None or no WAD could be read; callers should fall
+    back to describing the expected format instead of listing values.
+    """
+    if root is None:
+        return []
+    return sorted(sky_texture_names(root))
