@@ -10,6 +10,7 @@ from ..config import get_build as _get_build
 SKY_PRESETS: dict[str, str] = {
     "day": "sky4",  # quake101.wad daytime sky
     "night": "sky1",  # quake101.wad nighttime sky
+    "sky_z1": "sky_z1",  # alkaline.wad stylised sky (testing)
 }
 
 # Sorted valid ``sky_preset`` names for CLI validation and help text.

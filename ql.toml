@@ -8,5 +8,5 @@ KNOTT_ENABLED_WALKWAY_BENT = true
 [build]
 fog_density = "off"
 lighting_preset = "bright"
-sky_preset = "day"
+sky_preset = "sky_z1"
 vis_mode = "full"

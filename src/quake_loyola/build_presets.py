@@ -29,7 +29,7 @@ LIGHTING_PRESET_NAMES: tuple[str, ...] = (
 
 FOG_DENSITY_NAMES: tuple[str, ...] = ("off", "low", "med", "high")
 
-SKY_PRESET_NAMES: tuple[str, ...] = ("day", "night")
+SKY_PRESET_NAMES: tuple[str, ...] = ("day", "night", "sky_z1")
 
 # Build settings whose validation is simply "must be one of these strings".
 # Single source of truth for both `config._validate_build_values` (ql.toml
