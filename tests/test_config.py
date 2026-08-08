@@ -13,17 +13,28 @@ def test_defaults_load_without_config_file(tmp_path):
     missing = tmp_path / "does_not_exist.toml"
     raw = config._read_toml(missing)
     assert raw == {}
-    # Also verify the actual default-merging logic that FLAGS/BUILD are
-    # built from at import time: with no ql.toml, merging {} on top of
-    # DEFAULTS/BUILD_DEFAULTS must reproduce the defaults exactly.
-    merged_flags = {**config.DEFAULTS, **raw.get("flags", {})}
-    merged_build = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
-    assert merged_flags == config.DEFAULTS
-    assert merged_build == config.BUILD_DEFAULTS
-    # And the live module-level FLAGS/BUILD (loaded once at process start,
-    # from the isolated cwd set up by tests/conftest.py) reflect this too.
+    # The live module-level FLAGS/BUILD (loaded once at process start, from
+    # the isolated cwd set up by tests/conftest.py) must be the hardcoded
+    # defaults — this is what the golden regression values assume.
     assert config.FLAGS == config.DEFAULTS
     assert config.BUILD == config.BUILD_DEFAULTS
+
+
+def test_config_file_values_override_the_hardcoded_defaults(tmp_path):
+    """The merge that FLAGS/BUILD are built from at import time must let a
+    ql.toml value win over the default, and leave untouched keys alone."""
+    path = tmp_path / "ql.toml"
+    flag = next(name for name, value in config.DEFAULTS.items() if value is False)
+    config._write_toml(path, {"flags": {flag: True}, "build": {"vis_mode": "full"}})
+    raw = config._read_toml(path)
+
+    merged_flags = {**config.DEFAULTS, **raw.get("flags", {})}
+    merged_build = {**config.BUILD_DEFAULTS, **raw.get("build", {})}
+    assert merged_flags[flag] is True
+    assert merged_build["vis_mode"] == "full"
+    assert config.BUILD_DEFAULTS["vis_mode"] == "fast"  # default left intact
+    untouched = {k: v for k, v in merged_flags.items() if k != flag}
+    assert untouched == {k: v for k, v in config.DEFAULTS.items() if k != flag}
 
 
 def test_set_and_get_flag_round_trips(tmp_path):
@@ -235,3 +246,53 @@ def test_set_build_updates_in_memory_state_at_config_path():
     finally:
         config.reset()
         assert config.get_build("vis_mode") == "fast"
+
+
+def test_set_many_applies_every_item_in_one_write(tmp_path):
+    path = tmp_path / "ql.toml"
+    config.set_many(
+        [
+            ("flag", "KNOTT_ENABLED_WALKWAY", False),
+            ("build", "vis_mode", "full"),
+        ],
+        path=path,
+    )
+    raw = config._read_toml(path)
+    assert raw["flags"]["KNOTT_ENABLED_WALKWAY"] is False
+    assert raw["build"]["vis_mode"] == "full"
+
+
+def test_set_many_persists_nothing_when_a_later_item_is_invalid(tmp_path):
+    """set_many's whole reason to exist is that it validates the merged result
+    before writing, so a bad item can't leave an earlier good one persisted.
+    The CLI pre-validates every pair, so nothing else exercises this path."""
+    path = tmp_path / "ql.toml"
+    config.set_build("light_extra", True, path=path)
+    before = path.read_text()
+
+    with pytest.raises(ValueError):
+        config.set_many(
+            [
+                ("flag", "KNOTT_ENABLED_WALKWAY", False),
+                ("build", "vis_mode", "ultra"),
+            ],
+            path=path,
+        )
+
+    assert path.read_text() == before
+    raw = config._read_toml(path)
+    assert "KNOTT_ENABLED_WALKWAY" not in raw.get("flags", {})
+    assert "vis_mode" not in raw.get("build", {})
+
+
+def test_set_many_rejects_an_unknown_name_before_touching_the_file(tmp_path):
+    path = tmp_path / "ql.toml"
+    with pytest.raises(KeyError):
+        config.set_many(
+            [
+                ("flag", "KNOTT_ENABLED_WALKWAY", False),
+                ("flag", "NO_SUCH_FLAG", True),
+            ],
+            path=path,
+        )
+    assert not path.exists()
