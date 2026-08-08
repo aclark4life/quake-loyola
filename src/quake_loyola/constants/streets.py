@@ -37,3 +37,10 @@ STREET_DIV_LINE_HW = 2  # Half-width of each parking-lane stripe.
 CROSSWALK_LEN = 80  # Depth along the direction of travel.
 CROSSWALK_STRIPE_W = 32  # Stripe width across the crossing.
 CROSSWALK_GAP_W = 32  # Gap width between stripes.
+# Charles St's crossing is drawn at twice the Ennis crossing's stripe size, and
+# its band steps south from west to east so the west end meets the lowered
+# sidewalk entrance on that side. The gap between stripes stays at
+# CROSSWALK_GAP_W, so the doubled stripes read as a chunkier zebra rather than
+# just a coarser one.
+CHARLES_CROSSWALK_LEN = 2 * CROSSWALK_LEN
+CHARLES_CROSSWALK_STRIPE_W = 2 * CROSSWALK_STRIPE_W

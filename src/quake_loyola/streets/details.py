@@ -52,6 +52,8 @@ from ..constants.flags import (
 )
 from ..constants.streets import (
     CHARLES_CRN_SEGS,
+    CHARLES_CROSSWALK_LEN,
+    CHARLES_CROSSWALK_STRIPE_W,
     CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -333,15 +335,28 @@ def _make_street_detail_layout():
     """Compute the shared local geometry values for street-detail helpers."""
     charles_y1 = WORLD_Y1 + WALL_T
     charles_y2 = WORLD_Y2 - WALL_T
-    charles_crossing_y2 = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
-    charles_crossing_y1 = charles_crossing_y2 - CROSSWALK_LEN
+    # North edge of the east walk, and the anchor the crossing hangs off.
+    charles_walk_edge_y = ENNIS_Y - ENNIS_HW - CHARLES_CRN_R
+    charles_crossing_mid = charles_walk_edge_y - CROSSWALK_LEN / 2
+    charles_curb_cut_len = 2 * (STREET_SW_SLAB_LEN + STREET_SW_GAP)
+    charles_curb_cut_y2 = charles_crossing_mid + charles_curb_cut_len
+    # The crossing steps south as it runs west to east: its west stripe sits in
+    # the lowered sidewalk entrance on that side, its east stripe against the
+    # east walk's north edge. y1/y2 are the band's full extent, which is what
+    # the road surface and the lane markings cut themselves around.
+    charles_crossing_y2 = charles_curb_cut_y2
+    charles_crossing_y1 = charles_walk_edge_y - CHARLES_CROSSWALK_LEN
     road_cx = (ROAD_X1 + ROAD_X2) / 2
     return {
         "charles_y1": charles_y1,
         "charles_y2": charles_y2,
         "charles_crossing_y1": charles_crossing_y1,
         "charles_crossing_y2": charles_crossing_y2,
-        "charles_crossing_mid": (charles_crossing_y1 + charles_crossing_y2) / 2,
+        "charles_crossing_mid": charles_crossing_mid,
+        "charles_crossing_north_w": charles_curb_cut_y2,
+        "charles_crossing_north_e": charles_walk_edge_y,
+        "charles_curb_cut_y2": charles_curb_cut_y2,
+        "charles_curb_ramp_y2": charles_curb_cut_y2 + STREET_SW_SLAB_LEN,
         "ennis_x1": ROAD_X1,
         "ennis_x2": WORLD_X2_EXT - WALL_T,
         "ennis_crossing_x1": ROAD_X2,
@@ -598,9 +613,6 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
 
 def _append_charles_sidewalks_and_curbs(brushes, layout):
     """Add Charles Street sidewalks, curb cuts, and curb ramp slabs."""
-    charles_curb_cut_len = 2 * (layout["sw_slab_len"] + layout["sw_gap"])
-    charles_curb_cut_y2 = layout["charles_crossing_mid"] + charles_curb_cut_len
-    charles_curb_ramp_y2 = charles_curb_cut_y2 + layout["sw_slab_len"]
     charles_curb_cap_d = 8
     charles_curb_gap = 2
     _append_charles_west_sidewalks(
@@ -608,8 +620,8 @@ def _append_charles_sidewalks_and_curbs(brushes, layout):
         layout,
         curb_cap_d=charles_curb_cap_d,
         curb_gap=charles_curb_gap,
-        curb_cut_y2=charles_curb_cut_y2,
-        curb_ramp_y2=charles_curb_ramp_y2,
+        curb_cut_y2=layout["charles_curb_cut_y2"],
+        curb_ramp_y2=layout["charles_curb_ramp_y2"],
     )
     _append_charles_east_sidewalks(
         brushes,
@@ -1083,25 +1095,65 @@ def _append_charles_marking_brushes(dash_brushes, layout):
                     tt_params=divider_tt_params,
                 )
             )
+    # The crossing steps south stripe by stripe as it runs west to east, so the
+    # west end lands in the lowered sidewalk entrance and the east end against
+    # the east walk. Every column still paints the full band depth, filling
+    # whatever the stripe doesn't cover with road, because the road surface
+    # itself is cut away around the band.
+    band_y1, band_y2 = layout["charles_crossing_y1"], layout["charles_crossing_y2"]
+    columns = []
     cx = ROAD_X1
     stripe_on = True
     while cx < ROAD_X2:
         next_cx = min(
-            cx + (CROSSWALK_STRIPE_W if stripe_on else CROSSWALK_GAP_W), ROAD_X2
+            cx + (CHARLES_CROSSWALK_STRIPE_W if stripe_on else CROSSWALK_GAP_W),
+            ROAD_X2,
         )
-        dash_brushes.append(
-            box(
-                cx,
-                layout["charles_crossing_y1"],
-                FLOOR_Z2,
-                next_cx,
-                layout["charles_crossing_y2"],
-                FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.PARKING_STRIPE if stripe_on else Textures.ROAD,
-            )
-        )
+        columns.append((cx, next_cx, stripe_on))
         cx = next_cx
         stripe_on = not stripe_on
+    stripe_count = sum(1 for _, _, on in columns if on)
+    north_w, north_e = (
+        layout["charles_crossing_north_w"],
+        layout["charles_crossing_north_e"],
+    )
+    step = (north_w - north_e) / (stripe_count - 1) if stripe_count > 1 else 0
+    stripe_i = 0
+    for col_x1, col_x2, is_stripe in columns:
+        if not is_stripe:
+            dash_brushes.append(
+                box(
+                    col_x1,
+                    band_y1,
+                    FLOOR_Z2,
+                    col_x2,
+                    band_y2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    Textures.ROAD,
+                )
+            )
+            continue
+        stripe_y2 = north_w - step * stripe_i
+        stripe_y1 = stripe_y2 - CHARLES_CROSSWALK_LEN
+        stripe_i += 1
+        for seg_y1, seg_y2, seg_tex in (
+            (band_y1, stripe_y1, Textures.ROAD),
+            (stripe_y1, stripe_y2, Textures.PARKING_STRIPE),
+            (stripe_y2, band_y2, Textures.ROAD),
+        ):
+            if seg_y2 <= seg_y1:
+                continue
+            dash_brushes.append(
+                box(
+                    col_x1,
+                    seg_y1,
+                    FLOOR_Z2,
+                    col_x2,
+                    seg_y2,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    seg_tex,
+                )
+            )
 
 
 def _append_ennis_marking_brushes(dash_brushes, layout):
