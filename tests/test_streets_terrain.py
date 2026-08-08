@@ -147,6 +147,62 @@ class StreetDetailLayoutTests(unittest.TestCase):
         self.assertLessEqual(cut_y1, stripe_y1)
         self.assertLessEqual(stripe_y2, cut_y2)
 
+    def test_ennis_road_surfaces_begin_at_the_east_edge_of_charles(self):
+        # Ennis Rd tees into Charles St rather than crossing it, so it has no
+        # carriageway west of the Charles east kerb line.
+        from quake_loyola.constants.derived import ROAD_X2
+
+        layout = details._make_street_detail_layout()
+        self.assertEqual(layout["ennis_x1"], ROAD_X2)
+
+        brushes = []
+        details._append_ennis_road_surfaces(brushes, layout)
+        self.assertTrue(brushes)
+        for b in brushes:
+            (x1, _, _), _ = b.get_bbox()
+            self.assertGreaterEqual(
+                x1,
+                ROAD_X2,
+                "Ennis road surface reaches west of the Charles east kerb",
+            )
+
+    def test_the_charles_ennis_junction_is_paved_exactly_once(self):
+        # Both streets used to pave the junction, coplanar and at the same z.
+        # The Ennis surface is laid at 90 degrees to the Charles one, and it
+        # won, so Charles visibly changed texture direction for the length of
+        # the junction. Whichever won, two coincident surfaces z-fight.
+        from quake_loyola.constants import ENNIS_WIDEN_N
+        from quake_loyola.constants.derived import (
+            ENNIS_HW,
+            ENNIS_Y,
+            ROAD_X1,
+            ROAD_X2,
+        )
+
+        layout = details._make_street_detail_layout()
+        surfaces = []
+        details._append_charles_road_surfaces(surfaces, layout)
+        details._append_ennis_road_surfaces(surfaces, layout)
+
+        boxes = [b.get_bbox() for b in surfaces]
+        south, north = ENNIS_Y - ENNIS_HW, ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N
+        checked = 0
+        for x in range(int(ROAD_X1) + 20, int(ROAD_X2), 100):
+            for y in range(int(south) + 20, int(north), 60):
+                covering = sum(
+                    1
+                    for (bx1, by1, _), (bx2, by2, _) in boxes
+                    if bx1 <= x <= bx2 and by1 <= y <= by2
+                )
+                self.assertEqual(
+                    covering,
+                    1,
+                    f"({x}, {y}) in the junction is paved by {covering} road "
+                    f"surfaces; expected exactly one",
+                )
+                checked += 1
+        self.assertGreater(checked, 20)
+
 
 class StreetShellBoundsTests(unittest.TestCase):
     def test_shell_brushes_stay_within_world_bounds(self):

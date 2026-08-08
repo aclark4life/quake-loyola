@@ -193,7 +193,13 @@ _WEST_LANE_LINE_X = (ROAD_X1 + _ROAD_CX - STREET_DIV_HW) / 2
 _EAST_LANE_LINE_X = (_ROAD_CX + STREET_DIV_HW + ROAD_X2) / 2
 CHARLES_PLT_X_OUT = int((_EAST_LANE_LINE_X + ROAD_X2) / 2)
 CHARLES_PLT_X_RET = int((ROAD_X1 + _WEST_LANE_LINE_X) / 2)
-ENNIS_X1 = ROAD_X1
+# Ennis Rd begins at the east kerb line of Charles St: it tees into Charles
+# rather than crossing it, so it has no carriageway west of here. Paving it
+# from ROAD_X1 instead used to lay a second, 90-degree-rotated road surface
+# over the whole Charles junction, coplanar with the Charles lanes already
+# there, and the Ennis one won -- Charles appeared to change texture direction
+# for the length of the junction.
+ENNIS_X1 = ROAD_X2
 ROAD_Z = FLOOR_Z2 + 8
 
 KNOTT_ENT_WALK_X1 = KNOTT_ORIG_CX - KNOTT_ENT_HALF_W
