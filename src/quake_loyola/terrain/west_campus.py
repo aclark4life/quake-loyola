@@ -88,9 +88,9 @@ _wct_x = _wct_raw_x + [_wct_taper_x(f) for f in _WCT_TAPER_FRACS] + [_wct_sidewa
 wct_y = [
     WORLD_Y2 - WALL_T,
     2800,
+    1846,
     1696,
-    1546,
-    1096,
+    1396,
     500,
     0,
     -1068,
@@ -140,7 +140,7 @@ def terrain_z(x, y):
 
 _WCT_OVR = 32  # Overlap extension for adjacent terrain rows; see build().
 # 32 is chosen empirically: the terrain grid's DORM_X1/DORM_X2 columns and its
-# y=1096/1546 rows fall exactly on the dorm walls, so an overlap that lands
+# y=1396/1846 rows fall exactly on the dorm walls, so an overlap that lands
 # near the wall thickness makes qbsp clip the wall faces against the
 # overlapping terrain prisms and leaves uncovered strips at grade inside the
 # dorms. Sweeping 0..40 against a hole scan of the dorm block gave 73/426/1446

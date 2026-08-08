@@ -234,7 +234,9 @@ WORLD_Y1, WORLD_Y2 = (
 CHARLES_Y1 = -2768  # South Charles St bound.
 CHARLES_PLT_Y_S = CHARLES_Y1 + CHARLES_PLT_W // 2 + 48
 CHARLES_Y2 = 1696  # North Charles St bound.
-DORM_NORTH_Y2 = 1546  # North dorm bound.
+DORM_NORTH_Y2 = 1846  # North dorm bound. Shifted +300 north of the bridge
+# to leave room for another building in the gap between the bridge and the
+# dorm pair.
 DORM_NORTH_Y1 = DORM_NORTH_Y2 - DORM_DEPTH
 DORM_SOUTH1_Y1 = -1968  # South dorm anchor.
 DORM_SOUTH1_Y2 = DORM_SOUTH1_Y1 + DORM_DEPTH
