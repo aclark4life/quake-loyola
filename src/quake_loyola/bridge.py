@@ -1964,42 +1964,57 @@ def _build_all():
     return brushes, entities
 
 
-def _append_bridge_pier2_banner(entities, enabled_names):
-    """Hang a banner from a horizontal mast off Pier 2's east face.
+def _append_bridge_pier_banner(entities, enabled_names, pier_x, x_dir, y_side):
+    """Hang a banner from a horizontal mast off one center-span pier.
 
-    Charles St runs north-south a little east of Pier 2, so the mast projects
-    east from the pier's south corner column, out over the road, with the
-    banner swinging below it like a flag. That leaves the banner's broad faces
-    pointing north and south - the two directions traffic approaches from - and
-    its silhouette readable end-on from the pier itself.
+    Charles St runs north-south between Piers 2 and 3, so each mast projects
+    off the pier's streetward face, out over the road, with the banner swinging
+    below it like a flag. That leaves the banner's broad faces pointing north
+    and south - the two directions traffic approaches from - and its silhouette
+    readable end-on from the pier itself.
+
+    Args:
+        entities: Entity list to append the mast and banner to.
+        enabled_names: Enabled bridge section names, used to decide whether the
+            center-span offset applies.
+        pier_x: X centre of the pier to hang from.
+        x_dir: ``+1`` to project east off the pier, ``-1`` to project west.
+        y_side: ``-1`` to hang from the south corner column, ``+1`` for north.
 
     Texture offsets are computed from the banner's final world position, after
     any center-span shift: ``Brush.translated`` moves the geometry but leaves
     texture alignment in world space, so an offset derived from pre-shift
     coordinates would slide the image off the banner.
     """
-    if BRIDGE_ENABLED_SUPPORTS is not True and PIER2_X not in BRIDGE_ENABLED_SUPPORTS:
+    if BRIDGE_ENABLED_SUPPORTS is not True and pier_x not in BRIDGE_ENABLED_SUPPORTS:
         return
     shifted = (
         BRIDGE_CENTER_SPAN_OFFSET != (0.0, 0.0, 0.0) and "center_span" in enabled_names
     )
     _, dy, dz = BRIDGE_CENTER_SPAN_OFFSET if shifted else (0.0, 0.0, 0.0)
 
-    x_face = PIER2_X + BRIDGE_PILLAR_HW
+    x_face = pier_x + x_dir * BRIDGE_PILLAR_HW
     z_top = FLOOR_Z2 + BRIDGE_BANNER_TOP_Z + dz
-    y_center = BRIDGE.y1 - BRIDGE_PILLAR_OVERHANG + dy + BRIDGE_BANNER_CORNER_INSET
-    x1 = x_face + BRIDGE_BANNER_GAP
-    x2 = x1 + BRIDGE_BANNER_W
+    pier_corner_y = BRIDGE.y2 if y_side > 0 else BRIDGE.y1
+    y_center = (
+        pier_corner_y
+        + y_side * (BRIDGE_PILLAR_OVERHANG - BRIDGE_BANNER_CORNER_INSET)
+        + dy
+    )
+    x_near = x_face + x_dir * BRIDGE_BANNER_GAP
+    x_far = x_near + x_dir * BRIDGE_BANNER_W
+    x1, x2 = min(x_near, x_far), max(x_near, x_far)
     mast_hw = BRIDGE_BANNER_MAST_T / 2
+    mast_tip = x_far + x_dir * BRIDGE_BANNER_MAST_PROUD
 
     entities.append(
         brush_ent(
             "func_detail",
             box(
-                x_face,
+                min(x_face, mast_tip),
                 y_center - mast_hw,
                 z_top,
-                x2 + BRIDGE_BANNER_MAST_PROUD,
+                max(x_face, mast_tip),
                 y_center + mast_hw,
                 z_top + BRIDGE_BANNER_MAST_T,
                 Textures.RAIL,
@@ -2054,7 +2069,11 @@ def build():
         BRUSHES, ENTITIES = _shift_center_span(
             BRUSHES, ENTITIES, enabled_names, BRIDGE_CENTER_SPAN_OFFSET
         )
-    _append_bridge_pier2_banner(ENTITIES, enabled_names)
+    # Piers 2 and 3 flank Charles St, so their banners hang kitty-corner from
+    # each other: Pier 2's off its south corner facing east into the road,
+    # Pier 3's off its north corner facing west into the road.
+    _append_bridge_pier_banner(ENTITIES, enabled_names, PIER2_X, x_dir=1, y_side=-1)
+    _append_bridge_pier_banner(ENTITIES, enabled_names, PIER3_X, x_dir=-1, y_side=1)
     return BRUSHES, ENTITIES
 
 
