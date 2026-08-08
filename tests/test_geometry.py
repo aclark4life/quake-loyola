@@ -21,7 +21,6 @@ from quake_loyola.geometry import (
     ent,
     entrance_arch_xwall,
     entrance_arch_ywall,
-    extend_terrain_row_overlap,
     fascia_sign,
     gable_slats,
     iron_fence,
@@ -206,16 +205,6 @@ class HelperFunctionTests(unittest.TestCase):
         expected = -10 * math.tan(math.radians(BRIDGE_EAST_SPAN_ANGLE))
         self.assertLess(shift, 0.0)
         self.assertAlmostEqual(shift, expected)
-
-    def test_extend_terrain_row_overlap_interpolates_extended_edge(self):
-        self.assertEqual(
-            extend_terrain_row_overlap(0, 10, 100, 200, 300, 500, 5),
-            (15, 250.0, 600.0),
-        )
-
-    def test_extend_terrain_row_overlap_rejects_zero_width_row(self):
-        with self.assertRaises(ValueError):
-            extend_terrain_row_overlap(10, 10, 100, 200, 300, 500, 5)
 
 
 class RoundHoleAndRadialFanTests(unittest.TestCase):

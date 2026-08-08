@@ -13,7 +13,8 @@ from quake_loyola.constants import CHARLES_CROSSWALK_LEN, CHARLES_CROSSWALK_STRI
 from quake_loyola.constants.textures import Textures
 from quake_loyola.mapdata import Brush, Entity
 from quake_loyola.streets import details, shell
-from quake_loyola.terrain import west_campus
+from quake_loyola.terrain import ne, west_campus
+from quake_loyola.terrain._mesh_helpers import append_sampled_grid_mesh
 
 
 class StreetWorldShellTests(unittest.TestCase):
@@ -73,29 +74,6 @@ class WestCampusTerrainTests(unittest.TestCase):
             z = west_campus.terrain_z(x, y)
             self.assertIsInstance(z, float)
             self.assertAlmostEqual(z, expected_z)
-
-    def test_overlap_extension_uses_extrapolated_not_raw_south_z(self):
-        # Regression test: the south edge of each terrain quad used to be
-        # extended by _WCT_OVR while still using the *unextended* row's
-        # raw sampled Z for that edge (a leftover of copying the general
-        # overlap technique without the linear re-projection terrain/ne.py
-        # uses). That left the overlap region's height diverging from the
-        # slope implied by the row's own two corners. The fix re-projects
-        # z_sw/z_se along the row's own NW->SW / NE->SE slope onto the
-        # extended y, so it must differ from the raw (unextended) corner Z
-        # whenever that slope is non-zero.
-        for i in range(len(west_campus.wct_y) - 2):
-            y1, y2 = west_campus.wct_y[i], west_campus.wct_y[i + 1]
-            y2_ext = y2 - west_campus._WCT_OVR
-            col = west_campus._wct_cols[0]
-            z_nw, z_sw_raw = col[i], col[i + 1]
-            if z_nw == z_sw_raw:
-                continue  # flat row; extrapolation trivially equals raw Z
-            z_sw_ext = z_nw + (z_sw_raw - z_nw) * (y2_ext - y1) / (y2 - y1)
-            self.assertNotAlmostEqual(z_sw_ext, z_sw_raw, places=3)
-            break
-        else:
-            self.fail("expected at least one sloped row to test against")
 
 
 class StreetDetailLayoutTests(unittest.TestCase):
@@ -192,19 +170,101 @@ class StreetShellBoundsTests(unittest.TestCase):
             self.assertLessEqual(y2, WORLD_Y2 + margin)
 
 
-class WestCampusTerrainSeamTests(unittest.TestCase):
-    def test_terrain_brushes_stay_within_the_sampled_grid_footprint(self):
-        # Bounding-box sanity: no meshed terrain brush should extend past
-        # the sampled grid's X range (Y is intentionally extended south by
-        # _WCT_OVR — see test_overlap_extension_uses_extrapolated_not_raw_
-        # south_z above — so only X is checked here).
-        brushes, _ = west_campus.build()
-        x_lo, x_hi = min(west_campus._wct_x), max(west_campus._wct_x)
-        margin = 1.0
+class SampledTerrainMeshTests(unittest.TestCase):
+    """The sampled height grids must tile their domain exactly.
+
+    Rows used to be stretched a few units past their own boundary to hide
+    seams that the exact tiling means never existed. Overlapping rows
+    interpenetrate, and those intersections produce BSP slivers that qbsp's
+    outside fill can mark solid — a wall of ground from grade to sky, with no
+    leak to explain it. These tests pin the invariant that replaced the two
+    hand-tuned overlap widths.
+    """
+
+    def _assert_every_brush_stays_in_one_cell(self, brushes, x_grid, y_grid):
+        xs = sorted(x_grid)
+        ys = sorted(y_grid)
+        margin = 1e-6
         for b in brushes:
-            (x1, _, _), (x2, _, _) = b.get_bbox()
-            self.assertGreaterEqual(x1, x_lo - margin)
-            self.assertLessEqual(x2, x_hi + margin)
+            (bx1, by1, _), (bx2, by2, _) = b.get_bbox()
+            cells = [
+                (x1, x2, y1, y2)
+                for x1, x2 in zip(xs, xs[1:], strict=False)
+                for y1, y2 in zip(ys, ys[1:], strict=False)
+                if bx1 >= x1 - margin
+                and bx2 <= x2 + margin
+                and by1 >= y1 - margin
+                and by2 <= y2 + margin
+            ]
+            self.assertTrue(
+                cells,
+                f"terrain brush {(bx1, by1, bx2, by2)} spans past its own grid "
+                f"cell — a row overlap has been reintroduced",
+            )
+
+    def test_west_campus_brushes_each_stay_inside_one_grid_cell(self):
+        brushes, _ = west_campus.build()
+        self.assertTrue(brushes)
+        self._assert_every_brush_stays_in_one_cell(
+            brushes, west_campus._wct_x, west_campus.wct_y
+        )
+
+    def test_northeast_brushes_each_stay_inside_one_grid_cell(self):
+        brushes, _ = ne.build()
+        self.assertTrue(brushes)
+        self._assert_every_brush_stays_in_one_cell(brushes, ne._ne_x, ne._ne_y)
+
+    def test_mesh_helper_never_emits_a_cell_outside_its_own_interval(self):
+        # Drive the helper directly with a sloped synthetic grid, so the
+        # invariant is pinned to the helper rather than to either grid's data.
+        x_grid = [0, 100, 200]
+        y_grid = [0, 100, 200, 300]
+        cols = [[0, 10, 20, 30], [5, 15, 25, 35], [40, 30, 20, 10]]
+        cells = []
+
+        def record(x1, x2, y1, y2, *_corners_and_texture):
+            cells.append((x1, x2, y1, y2))
+            return []
+
+        append_sampled_grid_mesh(
+            [],
+            x_grid,
+            y_grid,
+            cols,
+            texture="t",
+            build_cell_brushes=record,
+        )
+
+        self.assertEqual(len(cells), (len(x_grid) - 1) * (len(y_grid) - 1))
+        for x1, x2, y1, y2 in cells:
+            self.assertIn((x1, x2), list(zip(x_grid, x_grid[1:], strict=False)))
+            self.assertIn((y1, y2), list(zip(y_grid, y_grid[1:], strict=False)))
+
+    def test_adjacent_cells_read_the_same_height_for_the_edge_they_share(self):
+        # This is what makes the mesh watertight without any overlap: the
+        # corner heights a cell gets for its far edge must be bit-identical to
+        # the ones its neighbour gets for its near edge. Re-projecting either
+        # along a row's slope (the old overlap behaviour) breaks it.
+        x_grid = [0, 100, 200]
+        y_grid = [0, 100, 200, 300]
+        cols = [[0, 10, 20, 30], [5, 15, 25, 35], [40, 30, 20, 10]]
+        corners = {}
+
+        def record(x1, _x2, y1, _y2, z_nw, z_sw, z_ne, z_se, _texture):
+            corners[(x1, y1)] = (z_nw, z_sw, z_ne, z_se)
+            return []
+
+        append_sampled_grid_mesh(
+            [], x_grid, y_grid, cols, texture="t", build_cell_brushes=record
+        )
+
+        for (x1, y1), (_z_nw, z_sw, z_ne, z_se) in corners.items():
+            south = corners.get((x1, y1 + 100))
+            if south is not None:
+                self.assertEqual((z_sw, z_se), (south[0], south[2]))
+            east = corners.get((x1 + 100, y1))
+            if east is not None:
+                self.assertEqual((z_ne, z_se), (east[0], east[1]))
 
 
 if __name__ == "__main__":

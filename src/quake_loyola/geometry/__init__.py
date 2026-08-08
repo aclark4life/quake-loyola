@@ -20,7 +20,7 @@ from .entities import (
     torch_flame,
     torch_flame_only,
 )
-from .helpers import east_y_shift, extend_terrain_row_overlap
+from .helpers import east_y_shift
 from .prefabs import (
     corner_window,
     elevator_shaft,
@@ -102,7 +102,6 @@ __all__ = [
     "corner_window",
     "curb_seg",
     "east_y_shift",
-    "extend_terrain_row_overlap",
     "elevator_shaft",
     "ent",
     "entrance_arch_xwall",

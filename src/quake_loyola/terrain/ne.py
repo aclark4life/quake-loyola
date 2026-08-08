@@ -73,6 +73,41 @@ def _build_ne_terrain_cell(wx1, wx2, y1, y2, z1a, z1b, z2a, z2b, texture):
     ]
 
 
+_ne_x = [
+    ROAD_X2 + CHARLES_WALK_W,
+    900,
+    1700,
+    KNOTT_DRIVEWAY_CORRIDOR_X1,
+    KNOTT_DRIVEWAY_CORRIDOR_X2,
+    3472,
+    5000,
+    7300,
+    WORLD_X2_EXT - WALL_T,
+]
+
+_ne_y = [
+    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
+    1546,
+    1696,
+    2200,
+    2800,
+    3450,
+    WORLD_Y2 - WALL_T,
+]
+
+_ne_cols = [
+    [CHARLES_WALK_H] * len(_ne_y),
+    [CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
+    [CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
+    [CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
+    [CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
+    [CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
+    [CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
+    [CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
+    [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
+]
+
+
 def build():
     """Build the northeast terrain brushes."""
     if not NE_ENABLED_TERRAIN:
@@ -80,60 +115,11 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    _ne_x = [
-        ROAD_X2 + CHARLES_WALK_W,
-        900,
-        1700,
-        KNOTT_DRIVEWAY_CORRIDOR_X1,
-        KNOTT_DRIVEWAY_CORRIDOR_X2,
-        3472,
-        5000,
-        7300,
-        WORLD_X2_EXT - WALL_T,
-    ]
-
-    _ne_y = [
-        ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
-        1546,
-        1696,
-        2200,
-        2800,
-        3450,
-        WORLD_Y2 - WALL_T,
-    ]
-
-    _ne_cols = [
-        [CHARLES_WALK_H] * len(_ne_y),
-        [CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
-        [CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
-        [CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
-        [CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
-        [CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
-        [CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
-        [CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
-        [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
-    ]
-
-    # Row overlap that hides the seams between sampled terrain rows. Every
-    # overlap band is a thin full-height air leaf, and at some widths qbsp 2.x
-    # fails to reach one from any entity, so the outside fill marks it solid —
-    # a wall of ground running from grade to the sky, invisible from the other
-    # side. 8 did that to the x 2786..3202 / y 2200..2208 band; 16 then did it
-    # to the whole y 1546..1562 row-0 band once the west-campus dorms came out
-    # of the map. Sweeping 0..64 against a BSP face scan showed 16 as the only
-    # bad width remaining, with 20..64 all clean, so 24 sits well inside that
-    # band rather than one step away from a known-bad value. The cost is that
-    # each row pokes at most ~4 units through its neighbour's surface. Re-run
-    # the sweep if the grid, the sampled heights, or the surrounding geometry
-    # moves.
-    _NE_OVR = 24
-
     append_sampled_grid_mesh(
         BRUSHES,
         _ne_x,
         _ne_y,
         _ne_cols,
-        overlap=_NE_OVR,
         texture=Textures.GROUND,
         build_cell_brushes=_build_ne_terrain_cell,
     )
