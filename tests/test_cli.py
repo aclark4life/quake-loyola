@@ -165,13 +165,13 @@ def test_build_with_malformed_toml_fails_cleanly(tmp_path):
 
 
 def test_build_without_ericw_tools_fails_cleanly(tmp_path):
-    # No .tools/ericw-tools-*/bin under an isolated cwd — `ql build` should
+    # No .tools/ericw-tools-* under an isolated cwd — `ql build` should
     # generate the map, then fail with a clear, actionable message instead
     # of a stack trace when it can't find the compiler toolchain.
     result = run_ql("build", cwd=tmp_path)
     assert result.returncode == 1
     assert "Traceback" not in result.stderr
-    assert "ericw-tools not found" in result.stdout + result.stderr
+    assert "not found under .tools/" in result.stdout + result.stderr
     # `ql gen` (called internally by `build`) should still have run and
     # written loyola.map before the toolchain check failed.
     assert (tmp_path / "loyola.map").exists()
@@ -182,10 +182,14 @@ def _install_fake_ericw_tools(tmp_path: Path) -> None:
     tmp_path's .tools/, mimicking a real `just install-tools` layout, so
     `ql build` can exercise its success path without needing the real
     ericw-tools binaries. Each fake tool just creates the expected output
-    files (loyola.bsp/.lit) and exits 0."""
+    files (loyola.bsp/.lit) and exits 0.
+
+    The layout matches what `just install-tools` actually unpacks: a supported
+    2.x release with the binaries at the top level of the versioned directory,
+    with no bin/ subdirectory."""
     import stat
 
-    tools_bin = tmp_path / ".tools" / f"ericw-tools-v0.18.1-{platform.system()}" / "bin"
+    tools_bin = tmp_path / ".tools" / f"ericw-tools-2.0.0-alpha11-{platform.system()}"
     tools_bin.mkdir(parents=True)
     for name, outputs in (
         ("qbsp", ["loyola.bsp"]),
@@ -210,6 +214,26 @@ def test_build_success_path_compiles_without_deploying(tmp_path):
     assert (tmp_path / "loyola.bsp").exists()
     assert (tmp_path / "loyola.lit").exists()
     assert "Deployed to" not in result.stdout
+
+
+def test_build_refuses_an_ericw_tools_install_older_than_the_minimum(tmp_path):
+    # qbsp v0.18.1 drops and orphans faces on Pier 6, leaving see-through
+    # holes and invisible walls, so `ql build` must refuse a stale install
+    # rather than silently compiling the map with it.
+    import stat
+
+    tools_bin = tmp_path / ".tools" / f"ericw-tools-v0.18.1-{platform.system()}" / "bin"
+    tools_bin.mkdir(parents=True)
+    for name in ("qbsp", "vis", "light"):
+        script = tools_bin / name
+        script.write_text("#!/bin/sh\nexit 0\n")
+        script.chmod(script.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+
+    result = run_ql("build", "--no-deploy", cwd=tmp_path)
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    assert "not found under .tools/" in result.stdout + result.stderr
+    assert not (tmp_path / "loyola.bsp").exists()
 
 
 def test_conf_get_unknown_setting_fails_cleanly(tmp_path):

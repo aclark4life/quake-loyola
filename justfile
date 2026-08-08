@@ -74,7 +74,10 @@ venv:
 test: venv
     .venv/bin/pytest
 
-# Compile the map (geometry, visibility, and lighting)
+# Compile the map (geometry, visibility, and lighting) with a full Vis pass.
+# The recipe name picks the Vis pass, so ql.toml's [build] vis_mode is
+# deliberately ignored here; it only steers `ql build`, which has no such
+# fast/full split of its own. [build] light_extra is honored by both.
 compile: install-tools venv
     #!/usr/bin/env bash
     set -euo pipefail
@@ -85,7 +88,9 @@ compile: install-tools venv
     if [ "$light_extra" = "True" ]; then light_args+=(-extra); fi
     {{tools_bin}}/light "${light_args[@]}" {{map_name}}.bsp
 
-# Fast compile: skips Full Vis pass, honors ql.toml's [build] light_extra setting
+# Fast compile: skips the Full Vis pass, honors ql.toml's [build] light_extra
+# setting. As with `compile`, the recipe name picks the Vis pass and [build]
+# vis_mode is deliberately ignored; it only steers `ql build`.
 compile-fast: install-tools venv
     #!/usr/bin/env bash
     set -euo pipefail

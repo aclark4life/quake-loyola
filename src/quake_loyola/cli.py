@@ -156,7 +156,7 @@ def config_set(
 
     Examples:
         ql conf set KNOTT_ENABLED true
-        ql conf set west_campus_enabled_dorms true
+        ql conf set WEST_CAMPUS_ENABLED_TERRAIN true
         ql conf set vis_mode full
         ql conf set light_extra true
         ql conf set lighting_preset dusk
@@ -236,23 +236,68 @@ def generate() -> None:
 
 
 _ERICW_TOOLS_VERSION_RE = re.compile(
-    r"ericw-tools-v(\d+)\.(\d+)\.(\d+)(?:-(\d+)-g[0-9a-f]+)?"
+    r"ericw-tools-v?(\d+)\.(\d+)\.(\d+)"
+    r"(?:-(alpha|beta|rc)(\d+))?"
+    r"(?:-(\d+)-g[0-9a-f]+)?"
 )
 
+#: Lowest ericw-tools release this project will compile with, matching
+#: ``ericw_version`` in the justfile. qbsp v0.18.1 drops and orphans faces on
+#: Pier 6, producing see-through holes and invisible walls, so an older install
+#: left lying around under .tools/ must never be selected.
+_ERICW_TOOLS_MIN_VERSION = (2, 0, 0)
 
-def _ericw_tools_version(path: Path) -> tuple[int, int, int, int]:
+_ERICW_PRERELEASE_ORDER = {"alpha": 0, "beta": 1, "rc": 2}
+
+
+def _ericw_tools_version(path: Path) -> tuple[int, int, int, int, int, int]:
     """Sort key for a ``.tools/ericw-tools-*`` directory by release version.
 
-    Parses ``vMAJOR.MINOR.PATCH`` (and an optional ``-N-gHASH`` dev-build
-    commit count) out of the directory name so the newest install is picked
-    even when installs aren't in lexicographic order (e.g. v0.9.0 vs
-    v0.18.1). Unparseable names sort lowest.
+    Parses ``[v]MAJOR.MINOR.PATCH``, an optional ``-alphaN``/``-betaN``/``-rcN``
+    prerelease, and an optional ``-N-gHASH`` dev-build commit count out of the
+    directory name, so the newest install is picked even when installs aren't
+    in lexicographic order (e.g. v0.9.0 vs v0.18.1, or 2.0.0-alpha11 vs
+    v0.18.1). A final release sorts above any prerelease of the same version.
+    Unparseable names sort lowest.
     """
-    match = _ERICW_TOOLS_VERSION_RE.search(path.parent.name)
+    match = _ERICW_TOOLS_VERSION_RE.search(path.name)
     if not match:
-        return (0, 0, 0, 0)
-    major, minor, patch, commits = match.groups()
-    return (int(major), int(minor), int(patch), int(commits or 0))
+        return (0, 0, 0, 0, 0, 0)
+    major, minor, patch, pre_kind, pre_num, commits = match.groups()
+    # 3 == a final release, which outranks every prerelease of that version.
+    pre_rank = 3 if pre_kind is None else _ERICW_PRERELEASE_ORDER[pre_kind]
+    return (
+        int(major),
+        int(minor),
+        int(patch),
+        pre_rank,
+        int(pre_num or 0),
+        int(commits or 0),
+    )
+
+
+def _find_ericw_tools_bin(repo_root: Path) -> Path | None:
+    """Return the directory holding the ericw-tools binaries, or None.
+
+    ``just install-tools`` unpacks the 2.x archives with the binaries at the
+    top level of ``.tools/ericw-tools-<version>-<System>/``, while older 0.18.x
+    builds nested them in a ``bin/`` subdirectory. Accept either layout, ignore
+    anything older than the minimum supported release, and pick the newest of
+    what's left.
+    """
+    candidates = []
+    for tools_dir in repo_root.glob(".tools/ericw-tools-*"):
+        if not tools_dir.name.endswith(f"-{platform.system()}"):
+            continue
+        if _ericw_tools_version(tools_dir)[:3] < _ERICW_TOOLS_MIN_VERSION:
+            continue
+        for tools_bin in (tools_dir, tools_dir / "bin"):
+            if (tools_bin / "qbsp").is_file():
+                candidates.append((_ericw_tools_version(tools_dir), tools_bin))
+                break
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: item[0])[1]
 
 
 @app.command()
@@ -265,18 +310,15 @@ def build(
     """Generate and compile the map using the current ``[build]`` settings."""
     generate()
 
-    tools_bin_candidates = [
-        p
-        for p in REPO_ROOT.glob(".tools/ericw-tools-*/bin")
-        if p.parent.name.endswith(f"-{platform.system()}")
-    ]
-    if not tools_bin_candidates:
+    tools_bin = _find_ericw_tools_bin(REPO_ROOT)
+    if tools_bin is None:
+        version = ".".join(str(part) for part in _ERICW_TOOLS_MIN_VERSION)
         typer.echo(
-            "ericw-tools not found under .tools/ — run `just install-tools` first.",
+            f"ericw-tools {version} or newer not found under .tools/ — "
+            "run `just install-tools` first.",
             err=True,
         )
         raise typer.Exit(code=1)
-    tools_bin = max(tools_bin_candidates, key=_ericw_tools_version)
 
     try:
         vis_mode = config.get_build("vis_mode")

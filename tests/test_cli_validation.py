@@ -13,7 +13,10 @@ leak state into other tests (e.g. the golden-hash regression suite, which
 assumes hardcoded defaults)."""
 
 import platform
+import shutil
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 import typer
@@ -199,44 +202,135 @@ class CliRunnerBuildCommandTests(unittest.TestCase):
             self.map_path.unlink()
         result = self.runner.invoke(cli.app, ["build"])
         self.assertNotEqual(result.exit_code, 0)
-        self.assertIn("ericw-tools not found", result.output)
+        self.assertIn("not found under .tools/", result.output)
         # `generate()` (called internally by `build`) should still have run
         # and written loyola.map before the toolchain check failed.
         self.assertTrue(self.map_path.exists())
 
 
 class EricwToolsVersionSortTests(unittest.TestCase):
-    """`_ericw_tools_version` must parse vMAJOR.MINOR.PATCH (and an optional
-    -N-gHASH dev-build suffix) out of a `.tools/ericw-tools-*/bin` path so
-    the newest install is picked even when installs aren't in lexicographic
-    order (e.g. v0.9.0 should sort below v0.18.1, not above it)."""
+    """`_ericw_tools_version` must parse the directory names `just
+    install-tools` actually produces — `2.0.0-alpha11` today, `vMAJOR.MINOR
+    .PATCH[-N-gHASH]` for the older 0.18.x builds — so the newest install is
+    picked even when installs aren't in lexicographic order (e.g. v0.9.0
+    should sort below v0.18.1, not above it)."""
 
-    def _bin_path(self, dirname: str):
-        return config.REPO_ROOT / ".tools" / dirname / "bin"
+    def _tools_path(self, dirname: str):
+        return config.REPO_ROOT / ".tools" / dirname
 
     def test_parses_plain_release_version(self):
-        version = cli._ericw_tools_version(self._bin_path("ericw-tools-v0.18.1-Darwin"))
-        self.assertEqual(version, (0, 18, 1, 0))
+        version = cli._ericw_tools_version(
+            self._tools_path("ericw-tools-v0.18.1-Darwin")
+        )
+        self.assertEqual(version[:3], (0, 18, 1))
 
     def test_parses_dev_build_commit_count(self):
         version = cli._ericw_tools_version(
-            self._bin_path("ericw-tools-v0.18.1-32-g6660c5f-Darwin")
+            self._tools_path("ericw-tools-v0.18.1-32-g6660c5f-Darwin")
         )
-        self.assertEqual(version, (0, 18, 1, 32))
+        self.assertEqual(version[:3], (0, 18, 1))
+        self.assertEqual(version[-1], 32)
+
+    def test_parses_the_version_scheme_install_tools_actually_installs(self):
+        # The justfile installs ericw-tools 2.0.0-alpha11, whose directory
+        # name has no leading "v" and carries a prerelease tag. An unparseable
+        # name sorts lowest, which previously let a stale v0.18.1 install win.
+        version = cli._ericw_tools_version(
+            self._tools_path(f"ericw-tools-2.0.0-alpha11-{platform.system()}")
+        )
+        self.assertEqual(version[:3], (2, 0, 0))
+        self.assertGreater(
+            version,
+            cli._ericw_tools_version(
+                self._tools_path("ericw-tools-v0.18.1-32-g6660c5f-Darwin")
+            ),
+        )
+
+    def test_final_release_outranks_its_own_prereleases(self):
+        release = cli._ericw_tools_version(self._tools_path("ericw-tools-2.0.0-Darwin"))
+        alpha = cli._ericw_tools_version(
+            self._tools_path("ericw-tools-2.0.0-alpha11-Darwin")
+        )
+        beta = cli._ericw_tools_version(
+            self._tools_path("ericw-tools-2.0.0-beta1-Darwin")
+        )
+        self.assertLess(alpha, beta)
+        self.assertLess(beta, release)
 
     def test_unparseable_name_sorts_lowest(self):
-        version = cli._ericw_tools_version(self._bin_path("ericw-tools-mystery"))
-        self.assertEqual(version, (0, 0, 0, 0))
+        version = cli._ericw_tools_version(self._tools_path("ericw-tools-mystery"))
+        self.assertEqual(version, (0, 0, 0, 0, 0, 0))
 
     def test_newer_minor_version_outranks_lexicographically_larger_string(self):
         # "v0.9.0" > "v0.18.1" lexicographically, but 0.18.1 is the newer
         # release — max() by _ericw_tools_version must pick v0.18.1.
         candidates = [
-            self._bin_path("ericw-tools-v0.9.0-Darwin"),
-            self._bin_path("ericw-tools-v0.18.1-Darwin"),
+            self._tools_path("ericw-tools-v0.9.0-Darwin"),
+            self._tools_path("ericw-tools-v0.18.1-Darwin"),
         ]
         newest = max(candidates, key=cli._ericw_tools_version)
-        self.assertEqual(newest, self._bin_path("ericw-tools-v0.18.1-Darwin"))
+        self.assertEqual(newest, self._tools_path("ericw-tools-v0.18.1-Darwin"))
+
+
+class EricwToolsDiscoveryTests(unittest.TestCase):
+    """`_find_ericw_tools_bin` must locate the binaries in the layout `just
+    install-tools` produces, and must refuse the too-old builds that may still
+    be sitting under .tools/ from a previous install."""
+
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.root, True)
+
+    def _install(self, dirname: str, *, nested_bin: bool) -> Path:
+        tools_bin = self.root / ".tools" / dirname
+        if nested_bin:
+            tools_bin = tools_bin / "bin"
+        tools_bin.mkdir(parents=True, exist_ok=True)
+        for tool in ("qbsp", "vis", "light"):
+            (tools_bin / tool).touch()
+        return tools_bin
+
+    def test_finds_binaries_at_the_top_level_as_install_tools_unpacks_them(self):
+        # `just install-tools` unzips the 2.x archive so qbsp/vis/light land
+        # directly in .tools/ericw-tools-<version>-<System>/, with no bin/.
+        expected = self._install(
+            f"ericw-tools-2.0.0-alpha11-{platform.system()}", nested_bin=False
+        )
+        self.assertEqual(cli._find_ericw_tools_bin(self.root), expected)
+
+    def test_still_finds_binaries_in_a_nested_bin_directory(self):
+        expected = self._install(
+            f"ericw-tools-2.0.0-alpha11-{platform.system()}", nested_bin=True
+        )
+        self.assertEqual(cli._find_ericw_tools_bin(self.root), expected)
+
+    def test_refuses_an_install_older_than_the_minimum_supported_release(self):
+        # qbsp v0.18.1 drops and orphans faces on Pier 6, leaving see-through
+        # holes and invisible walls, so it must never be selected even when
+        # it is the only install present.
+        self._install(f"ericw-tools-v0.18.1-{platform.system()}", nested_bin=True)
+        self.assertIsNone(cli._find_ericw_tools_bin(self.root))
+
+    def test_prefers_the_supported_release_over_a_stale_old_install(self):
+        self._install(f"ericw-tools-v0.18.1-{platform.system()}", nested_bin=True)
+        self._install(
+            f"ericw-tools-v0.18.1-32-g6660c5f-{platform.system()}", nested_bin=True
+        )
+        expected = self._install(
+            f"ericw-tools-2.0.0-alpha11-{platform.system()}", nested_bin=False
+        )
+        self.assertEqual(cli._find_ericw_tools_bin(self.root), expected)
+
+    def test_ignores_installs_built_for_another_platform(self):
+        other = "Linux" if platform.system() != "Linux" else "Darwin"
+        self._install(f"ericw-tools-2.0.0-alpha11-{other}", nested_bin=False)
+        self.assertIsNone(cli._find_ericw_tools_bin(self.root))
+
+    def test_ignores_a_directory_with_no_qbsp_in_it(self):
+        (self.root / ".tools" / f"ericw-tools-2.0.0-{platform.system()}").mkdir(
+            parents=True
+        )
+        self.assertIsNone(cli._find_ericw_tools_bin(self.root))
 
 
 class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
@@ -247,11 +341,12 @@ class CliRunnerBuildCommandSuccessTests(unittest.TestCase):
     def setUp(self):
         self.runner = CliRunner()
         self.map_path = config.REPO_ROOT / "loyola.map"
+        # Mirror the layout `just install-tools` produces: a supported 2.x
+        # release with the binaries at the top level, no bin/ subdirectory.
         self.tools_dir = (
             config.REPO_ROOT
             / ".tools"
-            / f"ericw-tools-v0.18.1-{platform.system()}"
-            / "bin"
+            / f"ericw-tools-2.0.0-alpha11-{platform.system()}"
         )
         self.tools_dir.mkdir(parents=True, exist_ok=True)
         for tool in ("qbsp", "vis", "light"):
