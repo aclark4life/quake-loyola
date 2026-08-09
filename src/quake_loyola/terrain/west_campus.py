@@ -7,6 +7,9 @@ street edge.
 """
 
 from ..constants import (
+    BRIDGE,
+    BRIDGE_CENTER_SPAN_OFFSET,
+    BRIDGE_PILLAR_OVERHANG,
     BRIDGE_X1,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -90,13 +93,25 @@ if not (len(_wct_raw_x) == len(set(_wct_raw_x)) and _wct_raw_x == sorted(_wct_ra
 _wct_x = _wct_raw_x + [_wct_taper_x(f) for f in _WCT_TAPER_FRACS] + [_wct_sidewalk_x]
 
 
+#: North face of the shifted centre-span pier footprint (Pier 2's base is the
+#: full pillar depth, moved north with the rest of the centre span). The
+#: terrain grid uses this as a row so the cell edge lands flush on the pier
+#: instead of leaving a thin strip of ground between the two: qbsp dropped the
+#: top face of that 90x16 remainder, so the ground north of Pier 2 was solid
+#: but see-through. Derived rather than hardcoded so the row follows the pier
+#: if the centre-span offset is ever retuned.
+_WCT_PIER_NORTH_Y = int(
+    BRIDGE.y2 + BRIDGE_PILLAR_OVERHANG + BRIDGE_CENTER_SPAN_OFFSET[1]
+)
+
+
 wct_y = [
     WORLD_Y2 - WALL_T,
     2800,
     1846,
     1696,
     1396,
-    500,
+    _WCT_PIER_NORTH_Y,
     0,
     -918,
     -1968,
@@ -105,6 +120,13 @@ wct_y = [
     -5200,
     WORLD_Y1 + WALL_T,
 ]
+
+if not wct_y == sorted(wct_y, reverse=True):
+    raise ValueError(
+        "west_campus_terrain Y grid must stay in strict north-to-south order; "
+        f"the pier row at y={_WCT_PIER_NORTH_Y} has drifted past a neighbour — "
+        "re-derive the terrain grid before changing the centre-span offset."
+    )
 
 
 _wct_cols = [_clamp0(col) for _, col in _wct_raw]
