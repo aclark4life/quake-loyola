@@ -23,9 +23,13 @@ class LightingPreset:
     fog: str  # "density r g b"
 
     def to_worldspawn(self) -> dict:
-        # ericw-tools expects "_minlight" and "_sunlight_mangle" ("yaw pitch roll").
-        pitch, yaw = self.sunlight_dir.split()
-        mangle = f"{yaw} {pitch} 0"
+        # ericw-tools expects "_minlight" and "_sunlight_mangle" ("yaw pitch roll"),
+        # where the mangle gives the direction the sunlight *travels*, not the
+        # direction of the sun. A sun sitting at elevation E above the horizon
+        # therefore shines downward at pitch -E; passing +E aims the sun at the
+        # sky and leaves the whole map lit by _minlight alone.
+        elevation, yaw = self.sunlight_dir.split()
+        mangle = f"{yaw} {-float(elevation):g} 0"
         return {
             "_minlight": self.ambient,
             "_sunlight": self.sunlight,

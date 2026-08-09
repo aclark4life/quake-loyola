@@ -138,61 +138,43 @@ def terrain_z(x, y):
 
 
 def _build_west_campus_terrain_cell(wx1, wx2, y1, y2, z_nw, z_sw, z_ne, z_se, texture):
-    """Return the four prisms that mesh one west-campus terrain quad."""
+    """Return the two prisms that mesh one west-campus terrain quad.
 
-    mx, my = (wx1 + wx2) / 2, (y1 + y2) / 2
-    mz = (z_nw + z_ne + z_sw + z_se) / 4
+    The quad is split along its NW-SE diagonal, the same scheme
+    ``terrain.ne`` uses. An earlier version fanned four triangles around an
+    interpolated centre vertex; that centre landed on half-unit coordinates
+    whenever a cell had odd width, and qbsp reliably dropped some of the
+    resulting sliver top faces, leaving see-through holes in the hillside
+    (the collision hull stayed intact, so the ground was invisible but still
+    solid). Two integer-cornered triangles avoid the problem entirely and
+    halve the brush count for this grid.
+    """
+
     return [
         tri_ramp_prism(
             wx1,
             y1,
-            mx,
-            my,
+            wx2,
+            y2,
             wx2,
             y1,
             FLOOR_Z1,
             FLOOR_Z2 + z_nw,
-            FLOOR_Z2 + mz,
+            FLOOR_Z2 + z_se,
             FLOOR_Z2 + z_ne,
             texture,
         ),
         tri_ramp_prism(
-            wx2,
-            y1,
-            mx,
-            my,
-            wx2,
-            y2,
-            FLOOR_Z1,
-            FLOOR_Z2 + z_ne,
-            FLOOR_Z2 + mz,
-            FLOOR_Z2 + z_se,
-            texture,
-        ),
-        tri_ramp_prism(
-            wx2,
-            y2,
-            mx,
-            my,
-            wx1,
-            y2,
-            FLOOR_Z1,
-            FLOOR_Z2 + z_se,
-            FLOOR_Z2 + mz,
-            FLOOR_Z2 + z_sw,
-            texture,
-        ),
-        tri_ramp_prism(
-            wx1,
-            y2,
-            mx,
-            my,
             wx1,
             y1,
+            wx1,
+            y2,
+            wx2,
+            y2,
             FLOOR_Z1,
-            FLOOR_Z2 + z_sw,
-            FLOOR_Z2 + mz,
             FLOOR_Z2 + z_nw,
+            FLOOR_Z2 + z_sw,
+            FLOOR_Z2 + z_se,
             texture,
         ),
     ]
