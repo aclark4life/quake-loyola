@@ -35,7 +35,13 @@ _wct_dorm_cx = (DORM_X1 + DORM_X2) // 2
 _wct_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
 
 
-_WCT_TAPER_FRACS = (0.2, 0.4, 0.6, 0.8)
+# Two intermediate columns, not four. The taper spans ~717 units, so four
+# columns made every cell ~143 wide while the southern rows are over 1400
+# deep — a 10:1 sliver. qbsp dropped the top faces of those slivers once the
+# rest of the map was present (removing streets or bridge alone made them
+# reappear), leaving see-through-but-solid ground across the south-west
+# hillside. Wider cells fix it outright, and with fewer brushes.
+_WCT_TAPER_FRACS = (0.34, 0.67)
 if not FENCE_X1 < _wct_sidewalk_x:
     raise ValueError(
         "west_campus_terrain X grid must stay in strict west-to-east order; "
