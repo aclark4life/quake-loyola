@@ -23,6 +23,7 @@ import math
 import re
 from pathlib import Path
 
+from .skyboxes import is_valid_skybox_name, skybox_names
 from .wads import SKY_TEXTURE_PREFIX, sky_texture_names
 
 VIS_MODES: tuple[str, ...] = ("fast", "full")
@@ -109,3 +110,32 @@ def sky_options(root: Path | None = None) -> list[str]:
     if root is None:
         return []
     return sorted(sky_texture_names(root))
+
+
+def is_valid_skybox(value: str) -> bool:
+    """Return True if ``value`` names a usable environment skybox.
+
+    ``""`` is valid and means "no skybox" — the engine falls back to drawing
+    the ``sky`` texture, which is the project's default. Any other value must
+    be a syntactically valid name *and*, when the ``gfx/env`` directory can be
+    read, one that is actually installed there, so a typo is caught at
+    ``ql skybox`` time instead of showing up as a black sky in game. If the
+    directory is missing (Quake isn't installed on this machine, say) that
+    check is skipped rather than rejecting every value.
+    """
+    if value == "":
+        return True
+    if not is_valid_skybox_name(value):
+        return False
+    available = skybox_names()
+    return not available or value in available
+
+
+def skybox_options() -> list[str]:
+    """Return the skyboxes installed in ``gfx/env``, sorted.
+
+    Empty when none are installed or the directory can't be read; callers
+    should fall back to describing the expected format instead of listing
+    values.
+    """
+    return sorted(skybox_names())

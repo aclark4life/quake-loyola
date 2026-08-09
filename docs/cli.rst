@@ -25,14 +25,15 @@ handful of settings worth changing day to day, ``ql conf`` for the full
 Shortcut commands
 ~~~~~~~~~~~~~~~~~
 
-``ql sky``, ``ql fog``, ``ql light``, and ``ql vis`` each set a single
-``[build]`` setting. Run one with no argument to print the current value
-and every valid one:
+``ql sky``, ``ql skybox``, ``ql fog``, ``ql light``, and ``ql vis`` each set
+a single ``[build]`` setting. Run one with no argument to print the current
+value and every valid one:
 
 .. code-block:: bash
 
    ql sky                # show the current sky + every sky texture in the WADs
    ql sky sky_z1         # set the world sky texture
+   ql skybox mak_sunset1 # set the environment skybox ("none" to unset)
    ql fog high           # off/low/med/high, a number like 0.05, or "default"
    ql light dusk         # time-of-day lighting preset
    ql vis full           # "fast" (default) or "full" vis pass
@@ -42,6 +43,46 @@ against the textures actually present in the project's WADs (see
 :mod:`quake_loyola.wads`), so a typo is caught at ``ql sky`` time rather
 than surfacing as a missing-texture warning during compilation. Names must
 start with ``sky`` since qbsp only compiles ``sky*`` textures as sky.
+
+``skybox`` is a different thing that stacks on top of ``sky`` rather than
+replacing it. It names six images (``<name>_bk``, ``_dn``, ``_ft``, ``_lf``,
+``_rt``, ``_up``) in the engine's ``gfx/env`` directory, and is written out
+as the ``sky`` *worldspawn key*; engines draw that cubemap through the map's
+sky faces at run time. The ``sky`` *texture* is still required, because its
+``sky`` prefix is the only thing that tells qbsp which faces are sky at all.
+
+.. warning::
+
+   The two meanings of "sky" are easy to confuse. The ``sky`` **build
+   setting** is a WAD texture name; the ``sky`` **worldspawn key** is a
+   skybox name. That is the engines' convention (see ``Sky_NewMap`` in
+   QuakeSpasm-derived ports, which accept ``sky``, ``skyname`` and
+   ``qlsky``) — they have never read a texture name from worldspawn, and
+   qbsp/vis/light never read the key at all. Writing the texture name there
+   just makes the engine look for a ``gfx/env`` file that cannot exist, so
+   the key is omitted entirely when no skybox is set.
+
+.. note::
+
+   The value written to worldspawn keeps the pack's trailing separator ---
+   ``mak_sunset1`` goes out as ``mak_sunset1_``. Engines assemble each face
+   path as ``gfx/env/%s%s`` against a bare ``rt``/``bk``/``lf``/``ft``/
+   ``up``/``dn``, so without the underscore they look for
+   ``gfx/env/mak_sunset1rt.tga``, fail, and fall back to the scrolling sky
+   with no visible error. :func:`quake_loyola.skyboxes.skybox_worldspawn_value`
+   reads the separator back off the installed files rather than assuming it.
+
+The images are art assets rather than code and are not tracked in this repo
+— install a pack into ``gfx/env`` under your Quake directory (``$QUAKE_DIR``,
+default ``/Applications/id1``). :mod:`quake_loyola.skyboxes` discovers what
+is installed there, and only a name whose six faces are *all* present is
+accepted, so a half-copied pack can't be selected. Set it to ``""`` (or pass
+``none``) to fall back to the plain sky texture.
+
+.. note::
+
+   A skybox is a run-time engine feature, so TrenchBroom does not render it.
+   The editor keeps showing the flat ``sky`` texture on those faces.
 
 ``fog`` accepts ``default``, meaning "use whatever fog the current
 ``lighting_preset`` defines"; any other value overrides it. Note that
@@ -136,5 +177,9 @@ Reference
    :undoc-members:
 
 .. automodule:: quake_loyola.wads
+   :members:
+   :undoc-members:
+
+.. automodule:: quake_loyola.skyboxes
    :members:
    :undoc-members:

@@ -1,5 +1,6 @@
 [build]
 fog_density = "off"
 lighting_preset = "bright"
-sky = "sky_blue_3"
+sky = "sky4"
+skybox = "mak_sunset1"
 vis_mode = "full"

@@ -26,8 +26,11 @@ from .build_presets import (
     LEGACY_SKY_PRESETS,
     is_valid_fog_density,
     is_valid_sky,
+    is_valid_skybox,
     sky_options,
+    skybox_options,
 )
+from .skyboxes import env_dir
 
 
 def _find_repo_root(start: Path) -> Path:
@@ -60,6 +63,7 @@ BUILD_DEFAULTS: dict[str, Any] = {
     "lighting_preset": "bright",
     "fog_density": "default",
     "sky": "sky4",
+    "skybox": "",
 }
 
 
@@ -224,6 +228,16 @@ def _validate_build_values(data: dict[str, Any]) -> dict[str, Any]:
             "starting with 'sky')"
         )
         raise ValueError(f"ql.toml [build] sky must be {expected}, got {data['sky']!r}")
+    if "skybox" in data and not is_valid_skybox(str(data["skybox"])):
+        available = skybox_options()
+        expected = (
+            f'"" (no skybox) or one of {available}'
+            if available
+            else f'"" (no skybox) or the name of a skybox installed in {env_dir()}'
+        )
+        raise ValueError(
+            f"ql.toml [build] skybox must be {expected}, got {data['skybox']!r}"
+        )
     if "light_extra" in data and not isinstance(data["light_extra"], bool):
         raise TypeError(
             f"ql.toml [build] light_extra must be a bool, "

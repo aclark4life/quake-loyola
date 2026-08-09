@@ -3,9 +3,24 @@
 The world sky comes from the ``sky`` build setting, which is a plain WAD2
 texture name (``sky4``, ``sky_z1``, ...) validated against the project's WADs
 by ``build_presets.is_valid_sky``.
+
+:data:`SKYBOX` is the separate ``skybox`` build setting: the name of a six-image
+environment skybox installed in the engine's ``gfx/env`` directory (see
+``quake_loyola.skyboxes``). It is not a texture — when set, it becomes the
+``sky`` *worldspawn key* (which engines read as a skybox name, never as a
+texture name) and the engine draws it through the sky faces instead of
+:attr:`Textures.SKY`. Empty means "no skybox", and the key is then omitted.
 """
 
 from ..config import get_build as _get_build
+from ..skyboxes import skybox_worldspawn_value as _skybox_worldspawn_value
+
+SKYBOX = str(_get_build("skybox"))
+
+#: What :data:`SKYBOX` has to be spelled as in worldspawn. Engines glue the
+#: face suffix straight onto this (``gfx/env/`` + value + ``rt``), so it
+#: carries the pack's trailing separator: ``mak_sunset1`` -> ``mak_sunset1_``.
+SKYBOX_WORLDSPAWN = _skybox_worldspawn_value(SKYBOX)
 
 
 class Textures:
@@ -42,5 +57,10 @@ class Textures:
     SKY = _get_build("sky")
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"
+    #: For brush entities the player never sees. Vanilla triggers zero their
+    #: modelindex so nothing is drawn regardless, but the texture still picks
+    #: the face's compile behaviour -- so it must not be SKY, which would put
+    #: the trigger's faces into the map's sky and show the skybox through them.
+    TRIGGER = "trigger"
     WHITE_STONE = "stn_f14_wht1"  # from makkon_stone.wad
     WINDOW_KH = "{win01_1brk1b"  # from ad.wad; masked (alpha) window pane texture

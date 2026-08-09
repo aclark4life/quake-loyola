@@ -27,8 +27,11 @@ from .build_presets import (
     VIS_MODES,
     is_valid_fog_density,
     is_valid_sky,
+    is_valid_skybox,
     sky_options,
+    skybox_options,
 )
+from .skyboxes import env_dir
 
 REPO_ROOT = config.REPO_ROOT
 
@@ -65,6 +68,11 @@ def _build_options_hint(name: str) -> str:
         if available:
             return ", ".join(available)
         return "a sky texture name from a loaded WAD (e.g. sky4, sky_z1)"
+    if name == "skybox":
+        available = skybox_options()
+        if available:
+            return '"" (none), ' + ", ".join(available)
+        return f'"" (none), or a skybox installed in {env_dir()}'
     if name == "light_extra":
         return "true, false"
     return ""
@@ -158,6 +166,15 @@ def _validate_one(name: str, value: str) -> tuple[str, object]:
             value_norm = value.strip()
             if not is_valid_sky(value_norm, REPO_ROOT):
                 raise typer.BadParameter(f"sky must be {_build_options_hint('sky')}")
+            parsed_build = value_norm
+        elif name_l == "skybox":
+            value_norm = value.strip()
+            if value_norm.lower() in ("none", "off", '""'):
+                value_norm = ""
+            if not is_valid_skybox(value_norm):
+                raise typer.BadParameter(
+                    f"skybox must be {_build_options_hint('skybox')}"
+                )
             parsed_build = value_norm
         else:
             parsed_build = _parse_bool(value)
@@ -277,6 +294,25 @@ def sky(
 ) -> None:
     """Show or set the world sky texture (the 'sky' build setting)."""
     _shortcut("sky", texture)
+
+
+@app.command("skybox")
+def skybox(
+    name: str | None = typer.Argument(
+        None,
+        help=(
+            "Environment skybox name, e.g. mak_sunset1. Use 'none' to fall "
+            "back to the sky texture. Omit to show the current one."
+        ),
+    ),
+) -> None:
+    """Show or set the environment skybox (the 'skybox' build setting).
+
+    The images live in the engine's gfx/env directory, not in this repo; only
+    skyboxes already installed there can be selected. This is a run-time
+    engine feature, so TrenchBroom still shows the flat 'sky' texture.
+    """
+    _shortcut("skybox", name)
 
 
 @app.command("fog")

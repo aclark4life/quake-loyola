@@ -60,7 +60,7 @@ from .streets import (
     ROAD_X2,
     STREET_DIV_HW,
 )
-from .textures import Textures
+from .textures import SKYBOX_WORLDSPAWN
 from .world import ARCH_SLAB_W, FLOOR_Z2, SCALE, WORLD_EAST_BUFFER
 
 # Derived constants.
@@ -350,7 +350,16 @@ _fog = (
 WORLDSPAWN_FIELDS = {
     "wad": ";".join(_WAD_FILES),
     "message": "Loyola University Maryland - Charles Street Pedestrian Bridge",
-    "sky": Textures.SKY,
     "dmflags": "128",
+    # Engines (vkQuake, QuakeSpasm, Ironwail) read the worldspawn "sky" key as
+    # the name of a six-image skybox under gfx/env -- *not* as a texture name.
+    # qbsp ignores the key entirely; it decides which faces are sky purely
+    # from the sky* texture prefix, so Textures.SKY does that job on its own.
+    # The key is therefore omitted when no skybox is configured: pointing it
+    # at a texture name only makes the engine hunt for a gfx/env file that
+    # cannot exist and silently fall back. Note the value keeps the skybox's
+    # trailing separator, because the engine's path format is "gfx/env/%s%s"
+    # with a bare "rt"/"bk"/... suffix -- there is no separator in it.
+    **({"sky": SKYBOX_WORLDSPAWN} if SKYBOX_WORLDSPAWN else {}),
     **{**LIGHTING.to_worldspawn(), "_fog": _fog},
 }

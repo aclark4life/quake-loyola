@@ -50,12 +50,13 @@ pip install -e .       # installs the `ql` command + typer into your environment
 
 ### The settings you'll actually change
 
-Four shortcut commands cover the day-to-day knobs. Run any of them with no
+Five shortcut commands cover the day-to-day knobs. Run any of them with no
 argument to print the current value and the valid ones:
 
 ```bash
 ql sky                # show the current sky texture and every sky in the loaded WADs
 ql sky sky_z1         # set it (a plain texture name — sky4, sky1, sky_z1, ...)
+ql skybox mak_sunset1 # environment skybox; "none" falls back to the sky texture
 ql fog high           # off/low/med/high, a number like 0.05, or "default"
 ql light dusk         # time-of-day lighting: dawn/midday/golden_hour/dusk/...
 ql vis full           # "fast" (default) or "full" vis pass, used by `ql build`
@@ -65,6 +66,45 @@ ql vis full           # "fast" (default) or "full" vis pass, used by `ql build`
 defines"; any other value overrides it. `ql light` stays a named preset
 because it sets six correlated worldspawn fields (sun color and angle,
 ambient level, fog color) at once.
+
+### Sky texture vs. skybox
+
+They stack rather than compete, and you normally want both:
+
+* **`ql sky`** picks a WAD2 texture whose name starts with `sky`. That prefix
+  is how qbsp knows which faces are sky at all, so this setting is mandatory
+  — and it's what TrenchBroom draws on those faces in the editor.
+* **`ql skybox`** writes the `sky` worldspawn key, naming six images in the
+  engine's `gfx/env` directory. Modern engines (vkQuake, QuakeSpasm,
+  Ironwail) draw that cubemap *through* the sky faces at run time instead of
+  the scrolling sky texture.
+
+  Note the asymmetry: the *build setting* called `sky` is the texture, but
+  the *worldspawn key* called `sky` is the skybox. That's the engines'
+  convention, not ours — they've never read a texture name from worldspawn.
+  qbsp ignores the key completely, so nothing is lost.
+
+  The written value keeps the pack's trailing underscore (`mak_sunset1_`)
+  because engines build each face path as `gfx/env/` + value + a bare `rt`,
+  with no separator of their own. `ql skybox` takes the friendly name and
+  works the separator out from the installed files.
+
+The skybox images are art assets, not code — they are not tracked in this
+repo. Install a pack (e.g. Makkon's) by unzipping it into `gfx/env` under
+your Quake directory:
+
+```bash
+mkdir -p /Applications/id1/gfx/env
+unzip -o makkon_skyboxes.zip -d /Applications/id1/gfx/env
+ql skybox             # lists every skybox it found there
+```
+
+`ql skybox` only accepts a name whose six faces are all present, so a typo or
+a half-copied pack is caught before the build instead of showing up as a
+black sky in game. Set `$QUAKE_DIR` if your Quake directory isn't
+`/Applications/id1`. Because a skybox is a run-time engine feature,
+TrenchBroom does not render it — the editor keeps showing the flat sky
+texture from `ql sky`.
 
 ### Everything else
 

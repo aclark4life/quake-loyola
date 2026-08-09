@@ -1387,7 +1387,7 @@ def _build_bridge_support_caps_and_torches(brushes, entities, ctx):
             px + 16,
             torch_center_y + 16,
             flame_z + 40,
-            Textures.SKY,
+            Textures.TRIGGER,
         )
         entities.append(brush_ent("trigger_hurt", [fhb], dmg="10"))
 
