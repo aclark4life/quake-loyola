@@ -75,6 +75,7 @@ from ..geometry import (
     sidewalk_panel_spans,
     torch_flame,
     tri_prism,
+    tri_ramp_prism,
 )
 from .ennis import _build_ennis_entrance_features
 
@@ -605,23 +606,71 @@ def _append_charles_west_sidewalks(
 def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
     """Append the east-side Charles sidewalk panels and curb caps."""
 
-    for seg_y1, seg_y2, seg_overrides in (
+    for seg_y1, seg_y2, seg_overrides, ramp_from_corner in (
         (
             layout["charles_y1"],
             ENNIS_Y - ENNIS_HW - CHARLES_WALK_W,
             None,
+            False,
         ),
         (
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
             layout["charles_y2"],
             None,
+            True,
         ),
     ):
+        panel_y1 = seg_y1
+        if ramp_from_corner:
+            # The NE intersection corner ramps down to street grade along its
+            # arc, meeting this tile's south-west corner flush with the curb
+            # while its south-east corner sits at the corner's inland apex
+            # (already full height). Only that one corner is low, so the tile
+            # is a twisted ramp rather than a uniform slope: split it along
+            # the diagonal from the low corner so one half tapers up to
+            # height and the other is already flat at full height.
+            ramp_y2 = seg_y1 + layout["sw_slab_len"]
+            ramp_x1, ramp_x2 = ROAD_X2, ROAD_X2 + CHARLES_WALK_W
+            ramp_lo, ramp_hi = (
+                FLOOR_Z2 + STREET_SURFACE_T,
+                FLOOR_Z2 + CHARLES_WALK_H,
+            )
+            brushes.append(
+                tri_ramp_prism(
+                    ramp_x1,
+                    seg_y1,
+                    ramp_x2,
+                    seg_y1,
+                    ramp_x1,
+                    ramp_y2,
+                    FLOOR_Z2,
+                    ramp_lo,
+                    ramp_hi,
+                    ramp_hi,
+                    Textures.SIDEWALK,
+                )
+            )
+            brushes.append(
+                tri_ramp_prism(
+                    ramp_x2,
+                    seg_y1,
+                    ramp_x2,
+                    ramp_y2,
+                    ramp_x1,
+                    ramp_y2,
+                    FLOOR_Z2,
+                    ramp_hi,
+                    ramp_hi,
+                    ramp_hi,
+                    Textures.SIDEWALK,
+                )
+            )
+            panel_y1 = ramp_y2 + layout["sw_gap"]
         _append_street_sidewalk_slabs_y(
             brushes,
             ROAD_X2 + curb_cap_d + curb_gap,
             ROAD_X2 + CHARLES_WALK_W,
-            seg_y1,
+            panel_y1,
             seg_y2,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -633,7 +682,7 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
         brushes.append(
             box(
                 ROAD_X2 + curb_cap_d,
-                seg_y1,
+                panel_y1,
                 FLOOR_Z2,
                 ROAD_X2 + curb_cap_d + curb_gap,
                 seg_y2,
@@ -646,7 +695,7 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
             layout,
             ROAD_X2,
             ROAD_X2 + curb_cap_d,
-            seg_y1,
+            panel_y1,
             seg_y2,
             FLOOR_Z2 + STREET_SURFACE_T,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -1364,8 +1413,14 @@ def _append_intersection_corners(brushes):
             cx_ne + CHARLES_CRN_R * math.cos(angle_end),
             cy_ne + CHARLES_CRN_R * math.sin(angle_end),
         )
+        # Like the lowered sidewalk at the west end of the Charles crosswalk,
+        # this corner drops to street grade so pedestrians stepping off the
+        # Ennis crossing don't meet a curb. Unlike that straight curb cut, the
+        # ramp here wraps the whole rounded corner: full sidewalk height only
+        # at the apex (inland, away from the street) and flush with the road
+        # all along the arc facing the curb.
         brushes.append(
-            tri_prism(
+            tri_ramp_prism(
                 cx_ne,
                 cy_ne,
                 arc_x0,
@@ -1374,6 +1429,8 @@ def _append_intersection_corners(brushes):
                 arc_y1,
                 FLOOR_Z2,
                 FLOOR_Z2 + CHARLES_WALK_H,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                FLOOR_Z2 + STREET_SURFACE_T,
                 Textures.SIDEWALK,
             )
         )
