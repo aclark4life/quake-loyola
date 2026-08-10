@@ -45,4 +45,6 @@ ENNIS_WALL_H = 96
 ENNIS_WALL_PILLAR_H = 120 + ENNIS_PANEL_MOUNT_FOOT_DROP  # Sunk onto the brick top.
 ENNIS_WALL_PILLAR_HW = 14
 ENNIS_WALL_T = 8
-ENNIS_WALL_X_OFFSET = 96
+ENNIS_WALL_X_OFFSET = (
+    176  # Grass buffer between the Charles sidewalk and the wall/fence.
+)
