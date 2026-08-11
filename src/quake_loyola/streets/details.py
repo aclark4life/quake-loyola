@@ -1490,30 +1490,18 @@ def _append_intersection_corners(brushes):
             Textures.ROAD,
         )
     )
-    for corner_index in range(CHARLES_CRN_SEGS):
-        angle_start = math.radians(90 + corner_index * 90 / CHARLES_CRN_SEGS)
-        angle_end = math.radians(90 + (corner_index + 1) * 90 / CHARLES_CRN_SEGS)
-        arc_x0, arc_y0 = (
-            cx_se + CHARLES_CRN_R * math.cos(angle_start),
-            cy_se + CHARLES_CRN_R * math.sin(angle_start),
-        )
-        arc_x1, arc_y1 = (
-            cx_se + CHARLES_CRN_R * math.cos(angle_end),
-            cy_se + CHARLES_CRN_R * math.sin(angle_end),
-        )
-        brushes.append(
-            tri_prism(
-                cx_se,
-                cy_se,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
-                FLOOR_Z2,
-                FLOOR_Z2 + CHARLES_WALK_H,
-                Textures.SIDEWALK,
-            )
-        )
+    # This corner keeps full sidewalk height; only the kerb line is banded,
+    # continuing the joint of the straight runs around the arc.
+    _append_corner_arc_bands(
+        brushes,
+        cx_se,
+        cy_se,
+        90,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        curb_cap_d=CHARLES_CURB_CAP_D,
+        curb_gap=CHARLES_CURB_GAP,
+    )
 
     cx_ne = ROAD_X2 + CHARLES_CRN_R
     cy_ne = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_CRN_R
@@ -1588,15 +1576,32 @@ def _append_verge_fill_surfaces(brushes, layout):
         vy1 = ENNIS_SW_EDGE + CHARLES_WALK_W
         vy2 = ENNIS_Y - ENNIS_HW - ENNIS_CURB_W
         if vtex == Textures.GROUND:
+            # The cement pad east of the SE corner is the one piece of this
+            # verge that meets the Ennis curb concrete-to-concrete, so it
+            # carries the curb joint on its north edge, continuing the one
+            # scored around the corner's arc. Further east the verge is
+            # grass, which just abuts the curb with no joint.
+            verge_joint_y1 = vy2 - CHARLES_CURB_GAP
             brushes.append(
                 box(
                     verge_cement_x1,
                     vy1,
                     FLOOR_Z1,
                     verge_cement_x2,
-                    vy2,
+                    verge_joint_y1,
                     FLOOR_Z2 + CHARLES_WALK_H,
                     Textures.CEMENT,
+                )
+            )
+            brushes.append(
+                box(
+                    verge_cement_x1,
+                    verge_joint_y1,
+                    FLOOR_Z1,
+                    verge_cement_x2,
+                    vy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.SIDEWALK_JOINT,
                 )
             )
             brushes.append(
