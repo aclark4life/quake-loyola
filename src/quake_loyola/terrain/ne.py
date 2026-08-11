@@ -10,6 +10,8 @@ from ..constants import (
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_HW,
+    ENNIS_WALL_T,
+    ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
     ENNIS_Y,
     FLOOR_Z1,
@@ -17,6 +19,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
     ROAD_X2,
+    STREET_SW_SLAB_LEN,
     WALL_T,
     WORLD_X2_EXT,
     WORLD_Y2,
@@ -84,8 +87,13 @@ _ne_x = [
     WORLD_X2_EXT - WALL_T,
 ]
 
+# X where the NE entrance wall sits — the strip between the corner's ramped
+# sidewalk tiles and the wall is paved (cement) rather than grass.
+_NE_WALL_X = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET + ENNIS_WALL_T
+
 _ne_y = [
     ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
+    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + STREET_SW_SLAB_LEN,
     1546,
     1696,
     2200,
@@ -96,14 +104,14 @@ _ne_y = [
 
 _ne_cols = [
     [CHARLES_WALK_H] * len(_ne_y),
-    [CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
-    [CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
-    [CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
-    [CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
-    [CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
-    [CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
-    [CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
-    [CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
 ]
 
 
@@ -112,11 +120,35 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
+    # Cement pad from the corner's ramped sidewalk tiles to the entrance
+    # wall, matching the extent of the sloped ramp tile — just the first
+    # (northernmost-adjacent) row — before regular (non-ramped) sidewalk
+    # tiles/grass resume: flat at sidewalk grade, matching the sidewalk/wall
+    # base on both sides so it ties in without a seam.
     append_sampled_grid_mesh(
         BRUSHES,
-        _ne_x,
+        [_ne_x[0], _NE_WALL_X],
+        _ne_y[:2],
+        [_ne_cols[0][:2], _ne_cols[0][:2]],
+        texture=Textures.CEMENT,
+        build_cell_brushes=_build_ne_terrain_cell,
+    )
+
+    # Remainder of the corner-to-wall strip (rows north of the cement pad).
+    append_sampled_grid_mesh(
+        BRUSHES,
+        [_ne_x[0], _NE_WALL_X],
+        _ne_y[1:],
+        [_ne_cols[0][1:], _ne_cols[0][1:]],
+        texture=Textures.GROUND,
+        build_cell_brushes=_build_ne_terrain_cell,
+    )
+
+    append_sampled_grid_mesh(
+        BRUSHES,
+        [_NE_WALL_X] + _ne_x[1:],
         _ne_y,
-        _ne_cols,
+        [_ne_cols[0]] + _ne_cols[1:],
         texture=Textures.GROUND,
         build_cell_brushes=_build_ne_terrain_cell,
     )
