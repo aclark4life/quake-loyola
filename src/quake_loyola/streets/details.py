@@ -790,14 +790,16 @@ def _append_ennis_road_surfaces(brushes, layout):
         )
 
 
-def _append_ennis_north_sidewalk_strip(brushes, layout, *, curb_cap_d, curb_gap):
+def _append_ennis_north_sidewalk_strip(
+    brushes, layout, *, curb_cap_d, curb_gap, ramp_x2
+):
     """Append the straight north-side Ennis sidewalk tiles."""
 
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
     _append_street_sidewalk_slabs_x(
         brushes,
-        ROAD_X2 + CHARLES_WALK_W,
+        ramp_x2,
         layout["ennis_x2"],
         ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap,
         ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
@@ -820,7 +822,53 @@ def _append_ennis_north_sidewalk_strip(brushes, layout, *, curb_cap_d, curb_gap)
     )
 
 
-def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap):
+def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2):
+    """Ramp the NE corner's slope on east, over the sidewalk's first two tiles.
+
+    The rounded NE corner is flush with the street all along its arc and only
+    reaches full sidewalk height at its inland apex, which lands exactly at
+    this strip's north-west corner. Only that one south-west corner (against
+    the Ennis curb) is low, so — like the matching Charles-side tile — this
+    is a twisted ramp rather than a uniform slope: one triangle tapers up
+    from the flush corner and the other is already flat at full height.
+    """
+    ramp_x1 = ROAD_X2 + CHARLES_WALK_W
+    ramp_y1 = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N
+    ramp_y2 = ramp_y1 + CHARLES_WALK_W
+    ramp_lo, ramp_hi = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
+    brushes.append(
+        tri_ramp_prism(
+            ramp_x1,
+            ramp_y1,
+            ramp_x2,
+            ramp_y1,
+            ramp_x1,
+            ramp_y2,
+            FLOOR_Z2,
+            ramp_lo,
+            ramp_hi,
+            ramp_hi,
+            Textures.SIDEWALK,
+        )
+    )
+    brushes.append(
+        tri_ramp_prism(
+            ramp_x2,
+            ramp_y1,
+            ramp_x2,
+            ramp_y2,
+            ramp_x1,
+            ramp_y2,
+            FLOOR_Z2,
+            ramp_hi,
+            ramp_hi,
+            ramp_hi,
+            Textures.SIDEWALK,
+        )
+    )
+
+
+def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap, ramp_x2):
     """Append the curved north-side Ennis curb bulge and its fill wedges."""
 
     curb_bulge_x1 = ENNIS_CEMENT_X2
@@ -828,7 +876,7 @@ def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap):
     curb_bulge_x2 = curb_bulge_x1 + curb_bulge_len
     brushes.append(
         box(
-            ROAD_X2 + CHARLES_WALK_W,
+            ramp_x2,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d,
             FLOOR_Z2,
             curb_bulge_x1,
@@ -857,7 +905,7 @@ def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap):
     curb_bulge_far_y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + curb_cap_d + curb_gap
     brushes.append(
         box(
-            ROAD_X2 + CHARLES_WALK_W,
+            ramp_x2,
             ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N,
             FLOOR_Z2 + STREET_SURFACE_T,
             curb_bulge_x1,
@@ -955,11 +1003,21 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     """Add the north Ennis sidewalks, curb caps, and the curb bulge."""
     ennis_curb_cap_d = 8
     ennis_curb_gap = 2
+    ramp_x2 = ROAD_X2 + CHARLES_WALK_W + 2 * layout["sw_slab_len"]
+    _append_ennis_corner_ramp_extension(brushes, ramp_x2=ramp_x2)
     _append_ennis_north_sidewalk_strip(
-        brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
+        brushes,
+        layout,
+        curb_cap_d=ennis_curb_cap_d,
+        curb_gap=ennis_curb_gap,
+        ramp_x2=ramp_x2,
     )
     _append_ennis_curb_bulge(
-        brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
+        brushes,
+        layout,
+        curb_cap_d=ennis_curb_cap_d,
+        curb_gap=ennis_curb_gap,
+        ramp_x2=ramp_x2,
     )
 
 
