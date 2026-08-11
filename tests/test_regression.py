@@ -16,9 +16,9 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # ql.toml with overrides would otherwise change brush/entity counts and the
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
-EXPECTED_BRUSHES = 1127
+EXPECTED_BRUSHES = 1145
 EXPECTED_ENTITIES = 106
-EXPECTED_MD5 = "b3dad5f8b4a72df346ad84d8e2adc826"
+EXPECTED_MD5 = "84740e62ae6929033820352561d8ac6e"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something

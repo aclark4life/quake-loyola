@@ -19,6 +19,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
     ROAD_X2,
+    STREET_SURFACE_T,
     STREET_SW_SLAB_LEN,
     WALL_T,
     WORLD_X2_EXT,
@@ -31,7 +32,7 @@ from ._mesh_helpers import append_sampled_grid_mesh
 _NE_HEIGHT_SCALE = 0.5
 
 
-_NE_ROW_TAPER = [0.25, 0.45, 0.7, 1.0, 1.0, 1.0]
+_NE_ROW_TAPER = [0.25, 0.3275, 0.45, 0.7, 1.0, 1.0, 1.0]
 
 
 def _clamp0(zs):
@@ -95,6 +96,7 @@ _ne_y = [
     ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
     ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + STREET_SW_SLAB_LEN,
     1546,
+    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + 2 * STREET_SW_SLAB_LEN,
     1696,
     2200,
     2800,
@@ -102,16 +104,33 @@ _ne_y = [
     WORLD_Y2 - WALL_T,
 ]
 
+# The corner-adjacent strip (x = _ne_x[0]) now tracks the sidewalk's own
+# grade: the flat low corner and the first Charles-side tile's east edge
+# both sit flat at street-surface grade here, then the ground slopes up to
+# full sidewalk height across the relocated ramp tile (the second tile
+# north), matching CHARLES_WALK_H beyond that.
+_NE_CORNER_STRIP_H = [
+    FLOOR_Z2 + STREET_SURFACE_T,
+    FLOOR_Z2 + STREET_SURFACE_T,
+    FLOOR_Z2 + 4.325,
+    FLOOR_Z2 + CHARLES_WALK_H,
+    FLOOR_Z2 + CHARLES_WALK_H,
+    FLOOR_Z2 + CHARLES_WALK_H,
+    FLOOR_Z2 + CHARLES_WALK_H,
+    FLOOR_Z2 + CHARLES_WALK_H,
+    FLOOR_Z2 + CHARLES_WALK_H,
+]
+
 _ne_cols = [
-    [CHARLES_WALK_H] * len(_ne_y),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([123, 108, 55, -17, -80, -90]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([173, 149, 105, 36, -20, -51]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([210, 177, 127, 47, -8, -56]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([209, 201, 119, 37, -15, -53]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([200, 199, 189, 74, -9, -33]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([369, 219, 192, 148, 19, -16]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([310, 287, 233, 201, 142, 39]),
-    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([370, 356, 311, 221, 198, 110]),
+    [z - FLOOR_Z2 for z in _NE_CORNER_STRIP_H],
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([123, 118.1, 108, 55, -17, -80, -90]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([173, 165.16, 149, 105, 36, -20, -51]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([210, 199.22, 177, 127, 47, -8, -56]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([209, 206.39, 201, 119, 37, -15, -53]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([200, 199.67, 199, 189, 74, -9, -33]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([369, 320.0, 219, 192, 148, 19, -16]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([310, 302.49, 287, 233, 201, 142, 39]),
+    [CHARLES_WALK_H, CHARLES_WALK_H] + _clamp0([370, 365.43, 356, 311, 221, 198, 110]),
 ]
 
 
@@ -120,11 +139,7 @@ def build():
     BRUSHES = []
     ENTITIES = []
 
-    # Cement pad from the corner's ramped sidewalk tiles to the entrance
-    # wall, matching the extent of the sloped ramp tile — just the first
-    # (northernmost-adjacent) row — before regular (non-ramped) sidewalk
-    # tiles/grass resume: flat at sidewalk grade, matching the sidewalk/wall
-    # base on both sides so it ties in without a seam.
+    # Cement pad over the corner and its first (still-flat) sidewalk tile.
     append_sampled_grid_mesh(
         BRUSHES,
         [_ne_x[0], _NE_WALL_X],
@@ -134,12 +149,25 @@ def build():
         build_cell_brushes=_build_ne_terrain_cell,
     )
 
-    # Remainder of the corner-to-wall strip (rows north of the cement pad).
+    # Ground strip alongside the relocated ramp tile: slopes up from the
+    # flat corner grade to full sidewalk height across the same Y-span as
+    # the ramp, so the ground doesn't leave a ledge next to the sidewalk.
     append_sampled_grid_mesh(
         BRUSHES,
         [_ne_x[0], _NE_WALL_X],
-        _ne_y[1:],
-        [_ne_cols[0][1:], _ne_cols[0][1:]],
+        _ne_y[1:4],
+        [_ne_cols[0][1:4], _ne_cols[0][1:4]],
+        texture=Textures.GROUND,
+        build_cell_brushes=_build_ne_terrain_cell,
+    )
+
+    # Remainder of the corner-to-wall strip (rows north of the ramp), flat
+    # at full sidewalk height.
+    append_sampled_grid_mesh(
+        BRUSHES,
+        [_ne_x[0], _NE_WALL_X],
+        _ne_y[3:],
+        [_ne_cols[0][3:], _ne_cols[0][3:]],
         texture=Textures.GROUND,
         build_cell_brushes=_build_ne_terrain_cell,
     )
