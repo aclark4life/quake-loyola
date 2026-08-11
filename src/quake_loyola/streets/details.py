@@ -71,13 +71,20 @@ from ..geometry import (
     box,
     box_with_round_hole,
     brush_ent,
+    polygon_prism,
     ramp_slab_y,
     sidewalk_panel_spans,
     torch_flame,
     tri_prism,
-    tri_ramp_prism,
 )
 from .ennis import _build_ennis_entrance_features
+
+# Depth of the Charles curb cap in from the road edge, and the width of the
+# joint scored between that cap and the sidewalk panels behind it. Shared by
+# the straight runs and the rounded intersection corners so the joint lands
+# at the same offset all the way around.
+CHARLES_CURB_CAP_D = 8
+CHARLES_CURB_GAP = 2
 
 
 def punch_manhole_detail(brushes, seen=None):
@@ -603,6 +610,59 @@ def _append_charles_west_sidewalks(
     )
 
 
+def _append_charles_corner_ramp_tiles(
+    brushes, seg_y1, *, slab_len, gap, curb_cap_d, curb_gap
+):
+    """Build the two Charles-side tiles between the NE corner and the walk.
+
+    The NE intersection corner is flat at street grade for its whole extent,
+    so the first tile north of it stays flat at that same low grade; the step
+    back up to full sidewalk height happens across the tile after it, which
+    slopes uniformly south to north. Both tiles are banded like the rest of
+    the run — curb cap, curb joint, then walk panels — so the kerb line and
+    its joint carry on unbroken from the corner's arc to the straight run,
+    and the tiles' own expansion joints stop at the curb joint instead of
+    running out into the street. Returns the Y the regular panels resume at.
+    """
+    flat_y2 = seg_y1 + slab_len
+    ramp_y2 = flat_y2 + slab_len
+    panel_y1 = ramp_y2 + gap
+    lo, hi = FLOOR_Z2 + STREET_SURFACE_T, FLOOR_Z2 + CHARLES_WALK_H
+
+    def band(x1, x2, y1, y2, z_south, z_north, tex):
+        """Add one band of a tile, flat or sloped along Y."""
+        if z_south == z_north:
+            brushes.append(box(x1, y1, FLOOR_Z1, x2, y2, z_south, tex))
+        else:
+            brushes.append(
+                ramp_slab_y(x1, x2, y1, y2, FLOOR_Z1, FLOOR_Z1, z_south, z_north, tex)
+            )
+
+    curb_x2 = ROAD_X2 + curb_cap_d
+    walk_x1 = curb_x2 + curb_gap
+    # Curb cap and its joint run the tiles' whole length as a single pour —
+    # a curb return at a ramp is poured in one piece — rising out of the
+    # flush corner exactly as the walk beside it does.
+    for bx1, bx2, tex in (
+        (ROAD_X2, curb_x2, Textures.SIDEWALK),
+        (curb_x2, walk_x1, Textures.SIDEWALK_JOINT),
+    ):
+        band(bx1, bx2, seg_y1, flat_y2, lo, lo, tex)
+        band(bx1, bx2, flat_y2, ramp_y2, lo, hi, tex)
+        band(bx1, bx2, ramp_y2, panel_y1, hi, hi, tex)
+
+    # Walk panels, each with an expansion joint cut out of its north end so
+    # the tile boundaries — which the northeast terrain grid ties to — stay
+    # exactly where they are. The ramp reaches full sidewalk height at its
+    # north edge, so its joint is a flat slab.
+    walk_x2 = ROAD_X2 + CHARLES_WALK_W
+    band(walk_x1, walk_x2, seg_y1, flat_y2 - gap, lo, lo, Textures.SIDEWALK)
+    band(walk_x1, walk_x2, flat_y2 - gap, flat_y2, lo, lo, Textures.SIDEWALK_JOINT)
+    band(walk_x1, walk_x2, flat_y2, ramp_y2, lo, hi, Textures.SIDEWALK)
+    band(walk_x1, walk_x2, ramp_y2, panel_y1, hi, hi, Textures.SIDEWALK_JOINT)
+    return panel_y1
+
+
 def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
     """Append the east-side Charles sidewalk panels and curb caps."""
 
@@ -622,66 +682,14 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
     ):
         panel_y1 = seg_y1
         if ramp_from_corner:
-            # The NE intersection corner is now flat at street grade for its
-            # whole extent, so the first tile north of it (flush with the
-            # corner's south edge) stays flat at that same low grade too.
-            # The step back up to full sidewalk height happens on the next
-            # tile north, which slopes uniformly from south (the corner's
-            # low grade) to north (full sidewalk height). Both the west
-            # (curb) and east (terrain) edges rise together, so there is no
-            # ledge at either seam.
-            flat_y2 = seg_y1 + layout["sw_slab_len"]
-            ramp_y1, ramp_y2 = flat_y2, flat_y2 + layout["sw_slab_len"]
-            ramp_x1, ramp_x2 = ROAD_X2, ROAD_X2 + CHARLES_WALK_W
-            ramp_lo, ramp_hi = (
-                FLOOR_Z2 + STREET_SURFACE_T,
-                FLOOR_Z2 + CHARLES_WALK_H,
+            panel_y1 = _append_charles_corner_ramp_tiles(
+                brushes,
+                seg_y1,
+                slab_len=layout["sw_slab_len"],
+                gap=layout["sw_gap"],
+                curb_cap_d=curb_cap_d,
+                curb_gap=curb_gap,
             )
-            # This tile is flush with the flattened corner on its south, so it
-            # sits flat at that same street-surface grade — the step up to
-            # full sidewalk height is entirely on the ramp tile north of it.
-            brushes.append(
-                box(
-                    ramp_x1,
-                    seg_y1,
-                    FLOOR_Z1,
-                    ramp_x2,
-                    flat_y2,
-                    ramp_lo,
-                    Textures.SIDEWALK,
-                )
-            )
-            brushes.append(
-                tri_ramp_prism(
-                    ramp_x1,
-                    ramp_y1,
-                    ramp_x2,
-                    ramp_y1,
-                    ramp_x1,
-                    ramp_y2,
-                    FLOOR_Z2,
-                    ramp_lo,
-                    ramp_lo,
-                    ramp_hi,
-                    Textures.SIDEWALK,
-                )
-            )
-            brushes.append(
-                tri_ramp_prism(
-                    ramp_x2,
-                    ramp_y1,
-                    ramp_x2,
-                    ramp_y2,
-                    ramp_x1,
-                    ramp_y2,
-                    FLOOR_Z2,
-                    ramp_lo,
-                    ramp_hi,
-                    ramp_hi,
-                    Textures.SIDEWALK,
-                )
-            )
-            panel_y1 = ramp_y2 + layout["sw_gap"]
         _append_street_sidewalk_slabs_y(
             brushes,
             ROAD_X2 + curb_cap_d + curb_gap,
@@ -720,8 +728,8 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
 
 def _append_charles_sidewalks_and_curbs(brushes, layout):
     """Add Charles Street sidewalks, curb cuts, and curb ramp slabs."""
-    charles_curb_cap_d = 8
-    charles_curb_gap = 2
+    charles_curb_cap_d = CHARLES_CURB_CAP_D
+    charles_curb_gap = CHARLES_CURB_GAP
     _append_charles_west_sidewalks(
         brushes,
         layout,
@@ -838,7 +846,7 @@ def _append_ennis_north_sidewalk_strip(
     )
 
 
-def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2):
+def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2, curb_cap_d, curb_gap):
     """Flatten the NE corner's low grade east across the sidewalk's first two
     tiles, then step up to full sidewalk height where the regular sidewalk
     panels resume.
@@ -847,22 +855,34 @@ def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2):
     extent, so this strip carries that same low grade straight across —
     no ramp. A hard vertical step/curb (rather than a ramp) makes up the
     difference at ``ramp_x2``, where the full-height sidewalk resumes.
+
+    The strip is still banded curb cap / curb joint / apron at the same
+    offsets off the road edge as the corner's arc to its west and the raised
+    Ennis curb to its east, so the kerb line reads continuously across it
+    even though it lies flush here.
     """
     ramp_x1 = ROAD_X2 + CHARLES_WALK_W
     ramp_y1 = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N
     ramp_y2 = ramp_y1 + CHARLES_WALK_W
     ramp_lo = FLOOR_Z2 + STREET_SURFACE_T
-    brushes.append(
-        box(
-            ramp_x1,
-            ramp_y1,
-            FLOOR_Z2,
-            ramp_x2,
-            ramp_y2,
-            ramp_lo,
-            Textures.SIDEWALK,
+    curb_y2 = ramp_y1 + curb_cap_d
+    joint_y2 = curb_y2 + curb_gap
+    for by1, by2, tex in (
+        (ramp_y1, curb_y2, Textures.SIDEWALK),
+        (curb_y2, joint_y2, Textures.SIDEWALK_JOINT),
+        (joint_y2, ramp_y2, Textures.SIDEWALK),
+    ):
+        brushes.append(
+            box(
+                ramp_x1,
+                by1,
+                FLOOR_Z2,
+                ramp_x2,
+                by2,
+                ramp_lo,
+                tex,
+            )
         )
-    )
     # The regular full-height sidewalk panel resumes immediately east of
     # ramp_x2 (built separately) at full sidewalk height, so the shared
     # boundary at ramp_x2 is already a hard vertical step/curb — no extra
@@ -1005,7 +1025,12 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     ennis_curb_cap_d = 8
     ennis_curb_gap = 2
     ramp_x2 = ROAD_X2 + CHARLES_WALK_W + 2 * layout["sw_slab_len"]
-    _append_ennis_corner_ramp_extension(brushes, ramp_x2=ramp_x2)
+    _append_ennis_corner_ramp_extension(
+        brushes,
+        ramp_x2=ramp_x2,
+        curb_cap_d=ennis_curb_cap_d,
+        curb_gap=ennis_curb_gap,
+    )
     _append_ennis_north_sidewalk_strip(
         brushes,
         layout,
@@ -1408,6 +1433,48 @@ def _append_street_markings(entities, layout, manhole_seen=None):
         )
 
 
+def _append_corner_arc_bands(
+    brushes, cx, cy, angle_base, z1, z2, *, curb_cap_d, curb_gap
+):
+    """Tile a rounded intersection corner into radial bands.
+
+    The corner is swept as an inner sidewalk wedge, the curb joint following
+    the arc, and the curb cap itself, so the longitudinal joint of the
+    straight runs (``curb_cap_d`` in from the road edge, ``curb_gap`` wide)
+    carries on around the corner at the same offset. All three bands share
+    the straight chords of the segment, so they stay watertight.
+    """
+    joint_r2 = CHARLES_CRN_R - curb_cap_d
+    joint_r1 = joint_r2 - curb_gap
+
+    def arc_pt(radius, angle_deg):
+        angle = math.radians(angle_deg)
+        return (cx + radius * math.cos(angle), cy + radius * math.sin(angle))
+
+    for corner_index in range(CHARLES_CRN_SEGS):
+        angle_start = angle_base + corner_index * 90 / CHARLES_CRN_SEGS
+        angle_end = angle_base + (corner_index + 1) * 90 / CHARLES_CRN_SEGS
+        inner_0, inner_1 = arc_pt(joint_r1, angle_start), arc_pt(joint_r1, angle_end)
+        brushes.append(tri_prism(cx, cy, *inner_0, *inner_1, z1, z2, Textures.SIDEWALK))
+        for r1, r2, tex in (
+            (joint_r1, joint_r2, Textures.SIDEWALK_JOINT),
+            (joint_r2, CHARLES_CRN_R, Textures.SIDEWALK),
+        ):
+            brushes.append(
+                polygon_prism(
+                    [
+                        arc_pt(r1, angle_start),
+                        arc_pt(r2, angle_start),
+                        arc_pt(r2, angle_end),
+                        arc_pt(r1, angle_end),
+                    ],
+                    z1,
+                    z2,
+                    tex,
+                )
+            )
+
+
 def _append_intersection_corners(brushes):
     """Add the southeast and northeast Charles/Ennis corner geometry."""
     cx_se = ROAD_X2 + CHARLES_CRN_R
@@ -1461,36 +1528,23 @@ def _append_intersection_corners(brushes):
             Textures.ROAD,
         )
     )
-    for corner_index in range(CHARLES_CRN_SEGS):
-        angle_start = math.radians(180 + corner_index * 90 / CHARLES_CRN_SEGS)
-        angle_end = math.radians(180 + (corner_index + 1) * 90 / CHARLES_CRN_SEGS)
-        arc_x0, arc_y0 = (
-            cx_ne + CHARLES_CRN_R * math.cos(angle_start),
-            cy_ne + CHARLES_CRN_R * math.sin(angle_start),
-        )
-        arc_x1, arc_y1 = (
-            cx_ne + CHARLES_CRN_R * math.cos(angle_end),
-            cy_ne + CHARLES_CRN_R * math.sin(angle_end),
-        )
-        # Like the lowered sidewalk at the west end of the Charles crosswalk,
-        # this corner drops to street grade so pedestrians stepping off the
-        # Ennis crossing don't meet a curb. The whole rounded corner (apex and
-        # arc alike) sits flush with the road; the step back up to full
-        # sidewalk height happens on the adjoining tiles instead (a ramp on
-        # the Charles side, a hard step/curb on the Ennis side).
-        brushes.append(
-            tri_prism(
-                cx_ne,
-                cy_ne,
-                arc_x0,
-                arc_y0,
-                arc_x1,
-                arc_y1,
-                FLOOR_Z2,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.SIDEWALK,
-            )
-        )
+    # Like the lowered sidewalk at the west end of the Charles crosswalk, this
+    # corner drops to street grade so pedestrians stepping off the Ennis
+    # crossing don't meet a curb. The whole rounded corner (apex and arc
+    # alike) sits flush with the road; the step back up to full sidewalk
+    # height happens on the adjoining tiles instead (a ramp on the Charles
+    # side, a hard step/curb on the Ennis side). The curb joint is still
+    # scored around the arc, continuing the one on the straight runs.
+    _append_corner_arc_bands(
+        brushes,
+        cx_ne,
+        cy_ne,
+        180,
+        FLOOR_Z2,
+        FLOOR_Z2 + STREET_SURFACE_T,
+        curb_cap_d=CHARLES_CURB_CAP_D,
+        curb_gap=CHARLES_CURB_GAP,
+    )
 
 
 def _append_verge_fill_surfaces(brushes, layout):
