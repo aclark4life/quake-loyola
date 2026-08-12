@@ -44,6 +44,7 @@ from ..constants.streets import (
     CROSSWALK_GAP_W,
     CROSSWALK_LEN,
     CROSSWALK_STRIPE_W,
+    ENNIS_CROSSWALK_E_OFFSET,
     ROAD_X1,
     ROAD_X2,
     STREET_CHARLES_CURB_W,
@@ -409,8 +410,8 @@ def _make_street_detail_layout():
         "charles_curb_ramp_y2": charles_curb_cut_y2 + STREET_SW_SLAB_LEN,
         "ennis_x1": ENNIS_X1,
         "ennis_x2": WORLD_X2_EXT - WALL_T,
-        "ennis_crossing_x1": ROAD_X2,
-        "ennis_crossing_x2": ROAD_X2 + CHARLES_WALK_W,
+        "ennis_crossing_x1": ROAD_X2 + ENNIS_CROSSWALK_E_OFFSET,
+        "ennis_crossing_x2": ROAD_X2 + ENNIS_CROSSWALK_E_OFFSET + CHARLES_WALK_W,
         "road_cx": road_cx,
         "west_lane_line_x": (ROAD_X1 + road_cx - STREET_DIV_HW) / 2,
         "east_lane_line_x": (road_cx + STREET_DIV_HW + ROAD_X2) / 2,
@@ -766,22 +767,31 @@ def _append_ennis_road_surfaces(brushes, layout):
                 tt_params=layout["ennis_road_tt_params"],
             )
         )
-    for road_x1, road_x2 in [
+    for road_seg_x1, road_seg_x2 in [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
         (KNOTT_DRIVEWAY_CORRIDOR_X2, layout["ennis_x2"]),
     ]:
-        brushes.append(
-            box(
-                road_x1,
-                ENNIS_Y - ENNIS_HW,
-                FLOOR_Z2,
-                road_x2,
-                layout["ennis_center_y"] - STREET_ENNIS_DIV_HW,
-                FLOOR_Z2 + STREET_SURFACE_T,
-                Textures.ROAD,
-                tt_params=layout["ennis_road_tt_params"],
+        # The crossing band now reaches east of ROAD_X2 + CHARLES_WALK_W, so
+        # this segment has to be carved around it too, not just the one west
+        # of that boundary.
+        for road_x1, road_x2 in _street_detail_ranges_excluding(
+            road_seg_x1,
+            road_seg_x2,
+            layout["ennis_crossing_x1"],
+            layout["ennis_crossing_x2"],
+        ):
+            brushes.append(
+                box(
+                    road_x1,
+                    ENNIS_Y - ENNIS_HW,
+                    FLOOR_Z2,
+                    road_x2,
+                    layout["ennis_center_y"] - STREET_ENNIS_DIV_HW,
+                    FLOOR_Z2 + STREET_SURFACE_T,
+                    Textures.ROAD,
+                    tt_params=layout["ennis_road_tt_params"],
+                )
             )
-        )
     brushes.append(
         box(
             KNOTT_DRIVEWAY_CORRIDOR_X1,

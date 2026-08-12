@@ -52,3 +52,7 @@ CROSSWALK_GAP_W = 32  # Gap width between stripes.
 # just a coarser one.
 CHARLES_CROSSWALK_LEN = 2 * CROSSWALK_LEN
 CHARLES_CROSSWALK_STRIPE_W = 2 * CROSSWALK_STRIPE_W
+# The Ennis crossing sits east of the Charles roadway edge by this much rather
+# than starting flush with it, so it clears the rounded intersection corner
+# instead of being drawn over the top of it.
+ENNIS_CROSSWALK_E_OFFSET = 40
