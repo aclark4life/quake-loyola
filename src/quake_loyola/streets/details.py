@@ -93,6 +93,25 @@ from .ennis import _build_ennis_entrance_features
 CHARLES_CURB_CAP_D = 8
 CHARLES_CURB_GAP = 2
 
+# The Ennis south-west entry pad (the WHITE_STONE/CEMENT apron by the Charles
+# St corner) runs flush with the Charles curb joint on its west edge, rather
+# than stopping at the plain sidewalk's east edge as the rest of the apron
+# does, so this y-span of the standard Charles sidewalk tiling has to be
+# carved out to make room for it.
+WEST_ENTRY_PAD_X1 = ROAD_X2 + CHARLES_CURB_CAP_D + CHARLES_CURB_GAP
+WEST_ENTRY_PAD_Y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - (CHARLES_WALK_W * 2 + 56)
+WEST_ENTRY_PAD_Y2 = (
+    ENNIS_SW_EDGE + CHARLES_WALK_W - CHARLES_CURB_CAP_D - CHARLES_CURB_GAP
+)
+WEST_ENTRY_PAD_X2 = ROAD_X2 + CHARLES_WALK_W + STREET_SW_SLAB_LEN
+
+# A short stone apron continuing the entry pad south, paved over what would
+# otherwise be verge grass, so the pad doesn't dead-end mid-block. Its south
+# edge (588) is the sidewalk-tiling joint that lands just past the standard
+# Charles sidewalk tile immediately south of the pad (590-651) — "just past"
+# that tile, not a fresh span of its own.
+SOUTH_STONE_PATCH_Y1 = 588
+
 
 def punch_manhole_detail(brushes, seen=None):
     """Cut the manhole opening through overlapping thin detail slabs.
@@ -694,19 +713,25 @@ def _append_charles_east_sidewalks(brushes, layout, *, curb_cap_d, curb_gap):
                 curb_cap_d=curb_cap_d,
                 curb_gap=curb_gap,
             )
-        _append_street_sidewalk_slabs_y(
-            brushes,
-            ROAD_X2 + curb_cap_d + curb_gap,
-            ROAD_X2 + CHARLES_WALK_W,
-            panel_y1,
-            seg_y2,
-            FLOOR_Z2,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
-            layout["sw_slab_len"],
-            layout["sw_gap"],
-            tile_overrides=seg_overrides,
-        )
+        # The Ennis south-west entry pad butts flush against the curb joint
+        # for this same y-span (see WEST_ENTRY_PAD_Y1/Y2), so this run has to
+        # skip that range instead of tiling plain sidewalk across it.
+        for tile_y1, tile_y2 in _street_detail_ranges_excluding(
+            panel_y1, seg_y2, WEST_ENTRY_PAD_Y1, WEST_ENTRY_PAD_Y2
+        ):
+            _append_street_sidewalk_slabs_y(
+                brushes,
+                ROAD_X2 + curb_cap_d + curb_gap,
+                ROAD_X2 + CHARLES_WALK_W,
+                tile_y1,
+                tile_y2,
+                FLOOR_Z2,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                Textures.SIDEWALK,
+                layout["sw_slab_len"],
+                layout["sw_gap"],
+                tile_overrides=seg_overrides,
+            )
         brushes.append(
             box(
                 ROAD_X2 + curb_cap_d,
@@ -1092,7 +1117,14 @@ def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
 
 
 def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_gap):
-    """Append the south-side westmost Ennis sidewalk slabs by Charles."""
+    """Append the south-side westmost Ennis sidewalk slabs by Charles.
+
+    Both slabs run flush with the Charles curb joint on their west edge
+    (``WEST_ENTRY_PAD_X1``) instead of stopping at the plain sidewalk's east
+    edge, so they cover the full width in front of the corner. The plain
+    Charles sidewalk tiling is carved around this same y-span to make room
+    (see ``_append_charles_east_sidewalks``).
+    """
 
     west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
     west_sw_d = CHARLES_WALK_W * 2 + 56
@@ -1101,7 +1133,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     west_north_y1 = west_y2 - layout["sw_slab_len"]
     brushes.append(
         box(
-            west_curb_x1,
+            WEST_ENTRY_PAD_X1,
             west_y1,
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"],
@@ -1113,7 +1145,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     )
     brushes.append(
         box(
-            west_curb_x1,
+            WEST_ENTRY_PAD_X1,
             west_north_y1,
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"],
@@ -1631,6 +1663,46 @@ def _append_verge_fill_surfaces(brushes, layout):
         (KNOTT_DRIVEWAY_CORRIDOR_X2, east_verge_x2, ENNIS_SW_EDGE),
     ]
     for evx1, evx2, evy2 in east_verge_segs:
+        # The verge segment west of the Knott driveway fronts the Ennis
+        # south-west entry pad, so the strip under the pad and the stone
+        # apron continuing it south (evx1..WEST_ENTRY_PAD_X2,
+        # SOUTH_STONE_PATCH_Y1..WEST_ENTRY_PAD_Y1) is carved out of it
+        # rather than paved as grass.
+        if evx1 == ROAD_X2 + CHARLES_WALK_W:
+            brushes.append(
+                box(
+                    WEST_ENTRY_PAD_X2,
+                    layout["charles_y1"],
+                    FLOOR_Z2,
+                    evx2,
+                    evy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.GROUND,
+                )
+            )
+            brushes.append(
+                box(
+                    evx1,
+                    layout["charles_y1"],
+                    FLOOR_Z2,
+                    WEST_ENTRY_PAD_X2,
+                    SOUTH_STONE_PATCH_Y1,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.GROUND,
+                )
+            )
+            brushes.append(
+                box(
+                    evx1,
+                    SOUTH_STONE_PATCH_Y1,
+                    FLOOR_Z2,
+                    WEST_ENTRY_PAD_X2,
+                    WEST_ENTRY_PAD_Y1,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.WHITE_STONE,
+                )
+            )
+            continue
         brushes.append(
             box(
                 evx1,
