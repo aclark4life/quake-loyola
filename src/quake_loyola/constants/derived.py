@@ -222,8 +222,9 @@ BASEMENT_SLAB_T = 16  # Matches FLOOR_Z1..FLOOR_Z2 thickness.
 BASEMENT_Z1 = -WORLD_Z2  # Basement floor top.
 BASEMENT_FLOOR_Z1 = BASEMENT_Z1 - BASEMENT_SLAB_T  # Basement floor slab bottom.
 
-# Round manhole opening through the world floor and basement ceiling.
-MANHOLE_X, MANHOLE_Y = 170, 986
+# Round manhole opening through the world floor and basement ceiling. It sits
+# out in the Charles/Ennis intersection, midway between Ennis Road's two curbs.
+MANHOLE_X, MANHOLE_Y = 170, ENNIS_Y + ENNIS_WIDEN_N // 2
 # 32x32 player hull needs at least 16*sqrt(2); 28 leaves margin.
 MANHOLE_R = 28
 BRIDGE_EAST_PIVOT_X = BRIDGE_ARCH_X[5]  # Pier 6 anchors the east-span bend.
