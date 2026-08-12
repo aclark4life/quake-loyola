@@ -56,3 +56,11 @@ CHARLES_CROSSWALK_STRIPE_W = 2 * CROSSWALK_STRIPE_W
 # than starting flush with it, so it clears the rounded intersection corner
 # instead of being drawn over the top of it.
 ENNIS_CROSSWALK_E_OFFSET = 40
+# Diagonal expansion joint scored across the paving at the northeast
+# Charles/Ennis corner. The two points define the joint's centre line, which
+# is treated as infinite: it runs from the corner's curb face, over the
+# corner arc and the Ennis apron, and across the cement pad to where the
+# paving gives way to grass.
+ENNIS_NE_DIAG_JOINT_P1 = (327.0, 1358.0)
+ENNIS_NE_DIAG_JOINT_P2 = (389.0, 1504.0)
+ENNIS_NE_DIAG_JOINT_W = 2.0

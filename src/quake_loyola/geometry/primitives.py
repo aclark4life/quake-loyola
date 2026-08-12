@@ -199,6 +199,89 @@ def clip_poly_to_rect(poly, x1, y1, x2, y2):
     return pts
 
 
+def clip_poly_halfplane(poly, nx, ny, c):
+    """Clip a 2D polygon to the half-plane ``nx * x + ny * y <= c``."""
+    out = []
+    n = len(poly)
+    for i in range(n):
+        cur, prv = poly[i], poly[i - 1]
+        cur_d = nx * cur[0] + ny * cur[1] - c
+        prv_d = nx * prv[0] + ny * prv[1] - c
+        if cur_d <= 0:
+            if prv_d > 0:
+                t = prv_d / (prv_d - cur_d)
+                out.append(
+                    (prv[0] + t * (cur[0] - prv[0]), prv[1] + t * (cur[1] - prv[1]))
+                )
+            out.append(cur)
+        elif prv_d <= 0:
+            t = prv_d / (prv_d - cur_d)
+            out.append((prv[0] + t * (cur[0] - prv[0]), prv[1] + t * (cur[1] - prv[1])))
+    return out
+
+
+def _clean_poly(poly, tol=1e-6):
+    """Drop duplicate and collinear vertices, returning [] if degenerate."""
+    pts = []
+    for p in poly:
+        if not pts or abs(p[0] - pts[-1][0]) > tol or abs(p[1] - pts[-1][1]) > tol:
+            pts.append(p)
+    if len(pts) > 1 and abs(pts[0][0] - pts[-1][0]) <= tol:
+        if abs(pts[0][1] - pts[-1][1]) <= tol:
+            pts.pop()
+    if len(pts) < 3:
+        return []
+    kept = []
+    n = len(pts)
+    for i in range(n):
+        ax, ay = pts[i - 1]
+        bx, by = pts[i]
+        cx, cy = pts[(i + 1) % n]
+        if abs((bx - ax) * (cy - by) - (by - ay) * (cx - bx)) > tol:
+            kept.append(pts[i])
+    if len(kept) < 3:
+        return []
+    area2 = sum(
+        kept[i][0] * kept[(i + 1) % len(kept)][1]
+        - kept[(i + 1) % len(kept)][0] * kept[i][1]
+        for i in range(len(kept))
+    )
+    return kept if abs(area2) > tol else []
+
+
+def score_polygon_prisms(pts, z1, z2, tex, p1, p2, width, joint_tex):
+    """Return the prisms of a polygon prism scored by a straight joint line.
+
+    The joint's centre line runs through ``p1`` and ``p2`` and is treated as
+    infinite, so the joint simply terminates wherever the paving does. The
+    footprint is cut into the paving either side of the line plus a
+    ``width``-wide band of ``joint_tex`` between them; pieces that fall
+    outside the footprint are dropped, so a polygon the line misses comes
+    back as a single unscored prism.
+    """
+    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+    length = math.hypot(dx, dy)
+    if length == 0:
+        raise ValueError("score_polygon_prisms: joint line needs two distinct points")
+    nx, ny = dy / length, -dx / length
+    centre = nx * p1[0] + ny * p1[1]
+    lo, hi = centre - width / 2.0, centre + width / 2.0
+    bands = (
+        (clip_poly_halfplane(pts, nx, ny, lo), tex),
+        (
+            clip_poly_halfplane(clip_poly_halfplane(pts, nx, ny, hi), -nx, -ny, -lo),
+            joint_tex,
+        ),
+        (clip_poly_halfplane(pts, -nx, -ny, -hi), tex),
+    )
+    out = []
+    for band, band_tex in bands:
+        cleaned = _clean_poly(band)
+        if cleaned:
+            out.append(polygon_prism(cleaned, z1, z2, band_tex))
+    return out
+
+
 def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
     """Return convex prism fills between a circle and a clipping rectangle.
 

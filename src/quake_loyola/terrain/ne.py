@@ -10,6 +10,9 @@ from ..constants import (
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     ENNIS_HW,
+    ENNIS_NE_DIAG_JOINT_P1,
+    ENNIS_NE_DIAG_JOINT_P2,
+    ENNIS_NE_DIAG_JOINT_W,
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
@@ -26,7 +29,7 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import tri_ramp_prism
+from ..geometry import score_polygon_prisms, tri_ramp_prism
 from ._mesh_helpers import append_sampled_grid_mesh
 
 _NE_HEIGHT_SCALE = 0.5
@@ -140,13 +143,26 @@ def build():
     ENTITIES = []
 
     # Cement pad over the corner and its first (still-flat) sidewalk tile.
-    append_sampled_grid_mesh(
-        BRUSHES,
-        [_ne_x[0], _NE_WALL_X],
-        _ne_y[:2],
-        [_ne_cols[0][:2], _ne_cols[0][:2]],
-        texture=Textures.CEMENT,
-        build_cell_brushes=_build_ne_terrain_cell,
+    # It is flat, so it is poured as a single slab rather than a meshed
+    # quad, which lets the diagonal joint coming up off the Charles/Ennis
+    # corner be scored straight across it to the grass edge at its north.
+    pad_z = FLOOR_Z2 + _ne_cols[0][0]
+    BRUSHES.extend(
+        score_polygon_prisms(
+            [
+                (_ne_x[0], _ne_y[0]),
+                (_NE_WALL_X, _ne_y[0]),
+                (_NE_WALL_X, _ne_y[1]),
+                (_ne_x[0], _ne_y[1]),
+            ],
+            FLOOR_Z1,
+            pad_z,
+            Textures.CEMENT,
+            ENNIS_NE_DIAG_JOINT_P1,
+            ENNIS_NE_DIAG_JOINT_P2,
+            ENNIS_NE_DIAG_JOINT_W,
+            Textures.SIDEWALK_JOINT,
+        )
     )
 
     # Ground strip alongside the relocated ramp tile: slopes up from the

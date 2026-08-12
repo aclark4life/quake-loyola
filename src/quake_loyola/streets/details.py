@@ -45,6 +45,9 @@ from ..constants.streets import (
     CROSSWALK_LEN,
     CROSSWALK_STRIPE_W,
     ENNIS_CROSSWALK_E_OFFSET,
+    ENNIS_NE_DIAG_JOINT_P1,
+    ENNIS_NE_DIAG_JOINT_P2,
+    ENNIS_NE_DIAG_JOINT_W,
     ROAD_X1,
     ROAD_X2,
     STREET_CHARLES_CURB_W,
@@ -74,6 +77,7 @@ from ..geometry import (
     brush_ent,
     polygon_prism,
     ramp_slab_y,
+    score_polygon_prisms,
     sidewalk_panel_spans,
     torch_flame,
     tri_prism,
@@ -882,15 +886,26 @@ def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2, curb_cap_d, curb_ga
         (curb_y2, joint_y2, Textures.SIDEWALK_JOINT),
         (joint_y2, ramp_y2, Textures.SIDEWALK),
     ):
-        brushes.append(
-            box(
-                ramp_x1,
-                by1,
+        if tex is Textures.SIDEWALK_JOINT:
+            brushes.append(box(ramp_x1, by1, FLOOR_Z2, ramp_x2, by2, ramp_lo, tex))
+            continue
+        # The apron band carries the corner's diagonal joint on east across
+        # it; the bands the line misses come back as a single slab.
+        brushes.extend(
+            score_polygon_prisms(
+                [
+                    (ramp_x1, by1),
+                    (ramp_x2, by1),
+                    (ramp_x2, by2),
+                    (ramp_x1, by2),
+                ],
                 FLOOR_Z2,
-                ramp_x2,
-                by2,
                 ramp_lo,
                 tex,
+                ENNIS_NE_DIAG_JOINT_P1,
+                ENNIS_NE_DIAG_JOINT_P2,
+                ENNIS_NE_DIAG_JOINT_W,
+                Textures.SIDEWALK_JOINT,
             )
         )
     # The regular full-height sidewalk panel resumes immediately east of
@@ -1444,7 +1459,7 @@ def _append_street_markings(entities, layout, manhole_seen=None):
 
 
 def _append_corner_arc_bands(
-    brushes, cx, cy, angle_base, z1, z2, *, curb_cap_d, curb_gap
+    brushes, cx, cy, angle_base, z1, z2, *, curb_cap_d, curb_gap, score=None
 ):
     """Tile a rounded intersection corner into radial bands.
 
@@ -1453,6 +1468,9 @@ def _append_corner_arc_bands(
     straight runs (``curb_cap_d`` in from the road edge, ``curb_gap`` wide)
     carries on around the corner at the same offset. All three bands share
     the straight chords of the segment, so they stay watertight.
+
+    ``score`` optionally adds a straight joint scored across the paving,
+    given as ``(p1, p2, width)``; the bands it misses are unaffected.
     """
     joint_r2 = CHARLES_CRN_R - curb_cap_d
     joint_r1 = joint_r2 - curb_gap
@@ -1461,28 +1479,53 @@ def _append_corner_arc_bands(
         angle = math.radians(angle_deg)
         return (cx + radius * math.cos(angle), cy + radius * math.sin(angle))
 
+    def add_paving(footprint):
+        """Add one paved band, scored by the diagonal joint if it crosses it."""
+        if score is None:
+            brushes.append(polygon_prism(footprint, z1, z2, Textures.SIDEWALK))
+            return
+        p1, p2, width = score
+        brushes.extend(
+            score_polygon_prisms(
+                footprint,
+                z1,
+                z2,
+                Textures.SIDEWALK,
+                p1,
+                p2,
+                width,
+                Textures.SIDEWALK_JOINT,
+            )
+        )
+
     for corner_index in range(CHARLES_CRN_SEGS):
         angle_start = angle_base + corner_index * 90 / CHARLES_CRN_SEGS
         angle_end = angle_base + (corner_index + 1) * 90 / CHARLES_CRN_SEGS
         inner_0, inner_1 = arc_pt(joint_r1, angle_start), arc_pt(joint_r1, angle_end)
-        brushes.append(tri_prism(cx, cy, *inner_0, *inner_1, z1, z2, Textures.SIDEWALK))
-        for r1, r2, tex in (
-            (joint_r1, joint_r2, Textures.SIDEWALK_JOINT),
-            (joint_r2, CHARLES_CRN_R, Textures.SIDEWALK),
-        ):
-            brushes.append(
-                polygon_prism(
-                    [
-                        arc_pt(r1, angle_start),
-                        arc_pt(r2, angle_start),
-                        arc_pt(r2, angle_end),
-                        arc_pt(r1, angle_end),
-                    ],
-                    z1,
-                    z2,
-                    tex,
-                )
+        add_paving([(cx, cy), inner_0, inner_1])
+        # The curb joint band is already joint-textured, so a diagonal joint
+        # crossing it needs no cut of its own.
+        brushes.append(
+            polygon_prism(
+                [
+                    inner_0,
+                    arc_pt(joint_r2, angle_start),
+                    arc_pt(joint_r2, angle_end),
+                    inner_1,
+                ],
+                z1,
+                z2,
+                Textures.SIDEWALK_JOINT,
             )
+        )
+        add_paving(
+            [
+                arc_pt(joint_r2, angle_start),
+                arc_pt(CHARLES_CRN_R, angle_start),
+                arc_pt(CHARLES_CRN_R, angle_end),
+                arc_pt(joint_r2, angle_end),
+            ]
+        )
 
 
 def _append_intersection_corners(brushes):
@@ -1542,6 +1585,11 @@ def _append_intersection_corners(brushes):
         FLOOR_Z2 + STREET_SURFACE_T,
         curb_cap_d=CHARLES_CURB_CAP_D,
         curb_gap=CHARLES_CURB_GAP,
+        score=(
+            ENNIS_NE_DIAG_JOINT_P1,
+            ENNIS_NE_DIAG_JOINT_P2,
+            ENNIS_NE_DIAG_JOINT_W,
+        ),
     )
 
 
