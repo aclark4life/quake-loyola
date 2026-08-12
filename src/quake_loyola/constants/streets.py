@@ -64,3 +64,7 @@ ENNIS_CROSSWALK_E_OFFSET = 40
 ENNIS_NE_DIAG_JOINT_P1 = (327.0, 1358.0)
 ENNIS_NE_DIAG_JOINT_P2 = (389.0, 1504.0)
 ENNIS_NE_DIAG_JOINT_W = 2.0
+# Cross joints scored across the cement pad east of that diagonal: one line
+# running east-west through this point, and one running south from it to the
+# pad's south edge. With the diagonal they leave the pad in four tiles.
+ENNIS_NE_PAD_TILE_P = (433.0, 1458.0)

@@ -249,6 +249,80 @@ def _clean_poly(poly, tol=1e-6):
     return kept if abs(area2) > tol else []
 
 
+def poly_contains(poly, pt, tol=1e-9):
+    """Return whether a point lies inside (or on the edge of) a convex polygon."""
+    n = len(poly)
+    area2 = sum(
+        poly[i][0] * poly[(i + 1) % n][1] - poly[(i + 1) % n][0] * poly[i][1]
+        for i in range(n)
+    )
+    sign = 1.0 if area2 >= 0 else -1.0
+    for i in range(n):
+        ax, ay = poly[i]
+        bx, by = poly[(i + 1) % n]
+        cross = (bx - ax) * (pt[1] - ay) - (by - ay) * (pt[0] - ax)
+        if cross * sign < -tol:
+            return False
+    return True
+
+
+def split_poly_by_joint(poly, p1, p2, width):
+    """Return the ``(footprint, is_joint)`` pieces of a convex polygon cut by a joint.
+
+    The joint's centre line runs through ``p1`` and ``p2`` and is treated as
+    infinite, so it simply terminates wherever the polygon does. Degenerate
+    pieces are dropped, so a polygon the line misses comes back as a single
+    non-joint piece.
+    """
+    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+    length = math.hypot(dx, dy)
+    if length == 0:
+        raise ValueError("split_poly_by_joint: joint line needs two distinct points")
+    nx, ny = dy / length, -dx / length
+    centre = nx * p1[0] + ny * p1[1]
+    lo, hi = centre - width / 2.0, centre + width / 2.0
+    pieces = (
+        (clip_poly_halfplane(poly, nx, ny, lo), False),
+        (
+            clip_poly_halfplane(clip_poly_halfplane(poly, nx, ny, hi), -nx, -ny, -lo),
+            True,
+        ),
+        (clip_poly_halfplane(poly, -nx, -ny, -hi), False),
+    )
+    out = []
+    for piece, is_joint in pieces:
+        cleaned = _clean_poly(piece)
+        if cleaned:
+            out.append((cleaned, is_joint))
+    return out
+
+
+def split_poly_by_joints(poly, joints):
+    """Cut a convex polygon by a series of joints in turn.
+
+    Each joint is ``(p1, p2, width, through)``. ``through`` picks the single
+    piece to cut — the one containing that point — or is ``None`` to cut every
+    piece cut so far. Because each joint only ever cuts pieces left by the
+    ones before it, a later joint terminates where an earlier one runs, which
+    is what makes a joint that stops partway across the paving (a tee rather
+    than a crossing) fall out on its own.
+
+    Returns ``(footprint, is_joint)`` pairs.
+    """
+    pieces = [(list(poly), False)]
+    for p1, p2, width, through in joints:
+        out = []
+        for piece, is_joint in pieces:
+            cut = not is_joint and (through is None or poly_contains(piece, through))
+            out.extend(
+                split_poly_by_joint(piece, p1, p2, width)
+                if cut
+                else [(piece, is_joint)]
+            )
+        pieces = out
+    return pieces
+
+
 def score_polygon_prisms(pts, z1, z2, tex, p1, p2, width, joint_tex):
     """Return the prisms of a polygon prism scored by a straight joint line.
 
@@ -259,27 +333,10 @@ def score_polygon_prisms(pts, z1, z2, tex, p1, p2, width, joint_tex):
     outside the footprint are dropped, so a polygon the line misses comes
     back as a single unscored prism.
     """
-    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
-    length = math.hypot(dx, dy)
-    if length == 0:
-        raise ValueError("score_polygon_prisms: joint line needs two distinct points")
-    nx, ny = dy / length, -dx / length
-    centre = nx * p1[0] + ny * p1[1]
-    lo, hi = centre - width / 2.0, centre + width / 2.0
-    bands = (
-        (clip_poly_halfplane(pts, nx, ny, lo), tex),
-        (
-            clip_poly_halfplane(clip_poly_halfplane(pts, nx, ny, hi), -nx, -ny, -lo),
-            joint_tex,
-        ),
-        (clip_poly_halfplane(pts, -nx, -ny, -hi), tex),
-    )
-    out = []
-    for band, band_tex in bands:
-        cleaned = _clean_poly(band)
-        if cleaned:
-            out.append(polygon_prism(cleaned, z1, z2, band_tex))
-    return out
+    return [
+        polygon_prism(piece, z1, z2, joint_tex if is_joint else tex)
+        for piece, is_joint in split_poly_by_joint(pts, p1, p2, width)
+    ]
 
 
 def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):

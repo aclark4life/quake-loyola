@@ -13,6 +13,7 @@ from ..constants import (
     ENNIS_NE_DIAG_JOINT_P1,
     ENNIS_NE_DIAG_JOINT_P2,
     ENNIS_NE_DIAG_JOINT_W,
+    ENNIS_NE_PAD_TILE_P,
     ENNIS_WALL_T,
     ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
@@ -29,7 +30,7 @@ from ..constants import (
     WORLD_Y2,
     Textures,
 )
-from ..geometry import score_polygon_prisms, tri_ramp_prism
+from ..geometry import polygon_prism, split_poly_by_joints, tri_ramp_prism
 from ._mesh_helpers import append_sampled_grid_mesh
 
 _NE_HEIGHT_SCALE = 0.5
@@ -137,6 +138,33 @@ _ne_cols = [
 ]
 
 
+_PAD_TILE_X, _PAD_TILE_Y = ENNIS_NE_PAD_TILE_P
+
+# Joints scored across the cement pad, in the order they are cut. Each one
+# only cuts the pieces the ones before it left, so a joint that should stop
+# partway across (a tee rather than a crossing) does so on its own.
+_PAD_JOINTS = (
+    # The diagonal coming up off the Charles/Ennis corner, across the whole pad.
+    (ENNIS_NE_DIAG_JOINT_P1, ENNIS_NE_DIAG_JOINT_P2, ENNIS_NE_DIAG_JOINT_W, None),
+    # East-west through the tile point, cutting only the paving east of the
+    # diagonal, so its west end lands on the diagonal instead of crossing it.
+    (
+        (_PAD_TILE_X - 1, _PAD_TILE_Y),
+        (_PAD_TILE_X + 1, _PAD_TILE_Y),
+        ENNIS_NE_DIAG_JOINT_W,
+        ENNIS_NE_PAD_TILE_P,
+    ),
+    # South from the tile point to the pad's south edge, cutting only the
+    # paving south of the east-west joint.
+    (
+        (_PAD_TILE_X, _PAD_TILE_Y - 1),
+        (_PAD_TILE_X, _PAD_TILE_Y + 1),
+        ENNIS_NE_DIAG_JOINT_W,
+        (_PAD_TILE_X, (_PAD_TILE_Y + _ne_y[0]) / 2),
+    ),
+)
+
+
 def build():
     """Build the northeast terrain brushes."""
     BRUSHES = []
@@ -144,24 +172,24 @@ def build():
 
     # Cement pad over the corner and its first (still-flat) sidewalk tile.
     # It is flat, so it is poured as a single slab rather than a meshed
-    # quad, which lets the diagonal joint coming up off the Charles/Ennis
-    # corner be scored straight across it to the grass edge at its north.
+    # quad, which lets it be scored into tiles: the diagonal joint coming up
+    # off the Charles/Ennis corner, and the cross east of it.
     pad_z = FLOOR_Z2 + _ne_cols[0][0]
     BRUSHES.extend(
-        score_polygon_prisms(
+        polygon_prism(
+            piece,
+            FLOOR_Z1,
+            pad_z,
+            Textures.SIDEWALK_JOINT if is_joint else Textures.CEMENT,
+        )
+        for piece, is_joint in split_poly_by_joints(
             [
                 (_ne_x[0], _ne_y[0]),
                 (_NE_WALL_X, _ne_y[0]),
                 (_NE_WALL_X, _ne_y[1]),
                 (_ne_x[0], _ne_y[1]),
             ],
-            FLOOR_Z1,
-            pad_z,
-            Textures.CEMENT,
-            ENNIS_NE_DIAG_JOINT_P1,
-            ENNIS_NE_DIAG_JOINT_P2,
-            ENNIS_NE_DIAG_JOINT_W,
-            Textures.SIDEWALK_JOINT,
+            _PAD_JOINTS,
         )
     )
 

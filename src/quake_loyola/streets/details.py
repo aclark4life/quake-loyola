@@ -48,6 +48,7 @@ from ..constants.streets import (
     ENNIS_NE_DIAG_JOINT_P1,
     ENNIS_NE_DIAG_JOINT_P2,
     ENNIS_NE_DIAG_JOINT_W,
+    ENNIS_NE_PAD_TILE_P,
     ROAD_X1,
     ROAD_X2,
     STREET_CHARLES_CURB_W,
@@ -79,6 +80,7 @@ from ..geometry import (
     ramp_slab_y,
     score_polygon_prisms,
     sidewalk_panel_spans,
+    split_poly_by_joints,
     torch_flame,
     tri_prism,
 )
@@ -881,6 +883,25 @@ def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2, curb_cap_d, curb_ga
     ramp_lo = FLOOR_Z2 + STREET_SURFACE_T
     curb_y2 = ramp_y1 + curb_cap_d
     joint_y2 = curb_y2 + curb_gap
+    diag_joint = (
+        ENNIS_NE_DIAG_JOINT_P1,
+        ENNIS_NE_DIAG_JOINT_P2,
+        ENNIS_NE_DIAG_JOINT_W,
+        None,
+    )
+    # The joint running south across the cement pad carries on over the walk
+    # band and dies on the curb joint, so it reads as one line from the pad
+    # to the kerb.
+    tile_x = ENNIS_NE_PAD_TILE_P[0]
+    walk_joints = (
+        diag_joint,
+        (
+            (tile_x, joint_y2),
+            (tile_x, ramp_y2),
+            ENNIS_NE_DIAG_JOINT_W,
+            (tile_x, (joint_y2 + ramp_y2) / 2),
+        ),
+    )
     for by1, by2, tex in (
         (ramp_y1, curb_y2, Textures.SIDEWALK),
         (curb_y2, joint_y2, Textures.SIDEWALK_JOINT),
@@ -889,23 +910,24 @@ def _append_ennis_corner_ramp_extension(brushes, *, ramp_x2, curb_cap_d, curb_ga
         if tex is Textures.SIDEWALK_JOINT:
             brushes.append(box(ramp_x1, by1, FLOOR_Z2, ramp_x2, by2, ramp_lo, tex))
             continue
-        # The apron band carries the corner's diagonal joint on east across
-        # it; the bands the line misses come back as a single slab.
+        # Bands a joint misses come back whole, so the curb cap — which only
+        # the diagonal could reach, and doesn't — stays a single slab.
+        joints = walk_joints if by1 == joint_y2 else (diag_joint,)
         brushes.extend(
-            score_polygon_prisms(
+            polygon_prism(
+                piece,
+                FLOOR_Z2,
+                ramp_lo,
+                Textures.SIDEWALK_JOINT if is_joint else tex,
+            )
+            for piece, is_joint in split_poly_by_joints(
                 [
                     (ramp_x1, by1),
                     (ramp_x2, by1),
                     (ramp_x2, by2),
                     (ramp_x1, by2),
                 ],
-                FLOOR_Z2,
-                ramp_lo,
-                tex,
-                ENNIS_NE_DIAG_JOINT_P1,
-                ENNIS_NE_DIAG_JOINT_P2,
-                ENNIS_NE_DIAG_JOINT_W,
-                Textures.SIDEWALK_JOINT,
+                joints,
             )
         )
     # The regular full-height sidewalk panel resumes immediately east of
