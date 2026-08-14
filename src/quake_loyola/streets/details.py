@@ -1269,14 +1269,16 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     # The entry pad's stone/cement slabs end at west_curb_x1 + sw_slab_len,
     # while the tiled stone sidewalk west of the Knott driveway doesn't start
     # until sw_gap further east (its tile_x1, below) — score the gap between
-    # them as a joint instead of leaving it an unbuilt seam.
+    # them as a joint instead of leaving it an unbuilt seam. Run it the full
+    # depth to the curb line so it matches the length of the curb/tiles it
+    # sits between, rather than stopping short at the curb cap.
     brushes.append(
         box(
             west_curb_x1 + layout["sw_slab_len"],
             ENNIS_SW_EDGE + CHARLES_WALK_W - (CHARLES_WALK_W * 2 + 56),
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
-            ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,
             tt_params=layout["ennis_road_tt_params"],
@@ -1284,21 +1286,8 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     )
     # The curb joint band/curb slab are skipped west of tile_x1 (see
     # curb_band_x1 below) since the entry pad's cement now runs flush to the
-    # curb there; fill the narrow strip directly above the joint we just
-    # scored (west_curb_x1 + sw_slab_len .. + sw_gap) with cement too, so it
-    # doesn't end up an unbuilt gap or a stray perpendicular joint.
-    brushes.append(
-        box(
-            west_curb_x1 + layout["sw_slab_len"],
-            ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
-            FLOOR_Z2,
-            west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CEMENT,
-            tt_params=layout["ennis_road_tt_params"],
-        )
-    )
+    # curb there, and the joint above now spans the full depth to the curb
+    # line, so no separate cement fill is needed for that strip.
     for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x, curb_band_x1 in (
         (
             west_curb_x1,
