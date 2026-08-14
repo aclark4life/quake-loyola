@@ -1131,6 +1131,12 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     west_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - west_sw_d
     west_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d - curb_gap
     west_north_y1 = west_y2 - layout["sw_slab_len"]
+    # The cement slab runs all the way to the curb line itself
+    # (ENNIS_SW_EDGE + CHARLES_WALK_W), rather than stopping at the regular
+    # panels' curb-joint offset, so this frontage is one flush pour with no
+    # scored joint or curb-block texture cutting across it — unlike the
+    # tiled runs east of it, which do score a joint there.
+    curb_edge_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W
     brushes.append(
         box(
             WEST_ENTRY_PAD_X1,
@@ -1149,7 +1155,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
             west_north_y1,
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"],
-            west_y2,
+            curb_edge_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.CEMENT,
             tt_params=layout["ennis_road_tt_params"],
@@ -1171,8 +1177,19 @@ def _append_ennis_south_sidewalk_segment(
     tex_from_x,
     curb_cap_d,
     curb_gap,
+    curb_band_x1=None,
 ):
-    """Append one south-side Ennis sidewalk run with curb joint and cap."""
+    """Append one south-side Ennis sidewalk run with curb joint and cap.
+
+    ``curb_band_x1`` overrides the west start of the curb joint band and
+    curb slab (but not the tiled panels) for a run whose west end is already
+    paved flush to the curb by another slab — e.g. the west run's entry pad,
+    which pours its own frontage flush to the curb line with no scored
+    joint — so that frontage isn't re-scored with a redundant joint/curb
+    texture.
+    """
+    if curb_band_x1 is None:
+        curb_band_x1 = curb_x1
 
     _append_street_sidewalk_slabs_x(
         brushes,
@@ -1190,7 +1207,7 @@ def _append_ennis_south_sidewalk_segment(
     )
     brushes.append(
         box(
-            curb_x1,
+            curb_band_x1,
             ENNIS_SW_EDGE + CHARLES_WALK_W - curb_cap_d - curb_gap,
             FLOOR_Z2,
             curb_x2,
@@ -1208,7 +1225,7 @@ def _append_ennis_south_sidewalk_segment(
     # walk does.
     for slab_x1, slab_x2, slab_tex, slab_params, scale_sides in (
         (
-            curb_x1,
+            curb_band_x1,
             min(tile_x1, curb_x2),
             Textures.SIDEWALK,
             layout["ennis_road_tt_params"],
@@ -1265,7 +1282,24 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             tt_params=layout["ennis_road_tt_params"],
         )
     )
-    for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x in (
+    # The curb joint band/curb slab are skipped west of tile_x1 (see
+    # curb_band_x1 below) since the entry pad's cement now runs flush to the
+    # curb there; fill the narrow strip directly above the joint we just
+    # scored (west_curb_x1 + sw_slab_len .. + sw_gap) with cement too, so it
+    # doesn't end up an unbuilt gap or a stray perpendicular joint.
+    brushes.append(
+        box(
+            west_curb_x1 + layout["sw_slab_len"],
+            ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
+            FLOOR_Z2,
+            west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+    for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x, curb_band_x1 in (
         (
             west_curb_x1,
             KNOTT_DRIVEWAY_WS_X1,
@@ -1275,12 +1309,14 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
                 west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
                 Textures.WHITE_STONE,
             ),
+            west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
         ),
         (
             KNOTT_DRIVEWAY_ES_X2,
             layout["ennis_x2"],
             CHARLES_WALK_W,
             KNOTT_DRIVEWAY_ES_X2,
+            None,
             None,
         ),
     ):
@@ -1294,6 +1330,7 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             tex_from_x=tex_from_x,
             curb_cap_d=ennis_curb_cap_d,
             curb_gap=ennis_curb_gap,
+            curb_band_x1=curb_band_x1,
         )
 
 
