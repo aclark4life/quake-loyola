@@ -1249,6 +1249,22 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     _append_ennis_south_west_entry_slabs(
         brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
     )
+    # The entry pad's stone/cement slabs end at west_curb_x1 + sw_slab_len,
+    # while the tiled stone sidewalk west of the Knott driveway doesn't start
+    # until sw_gap further east (its tile_x1, below) — score the gap between
+    # them as a joint instead of leaving it an unbuilt seam.
+    brushes.append(
+        box(
+            west_curb_x1 + layout["sw_slab_len"],
+            ENNIS_SW_EDGE + CHARLES_WALK_W - (CHARLES_WALK_W * 2 + 56),
+            FLOOR_Z2,
+            west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
+            ENNIS_SW_EDGE + CHARLES_WALK_W - ennis_curb_cap_d - ennis_curb_gap,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
     for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x in (
         (
             west_curb_x1,
