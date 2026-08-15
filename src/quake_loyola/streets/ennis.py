@@ -517,6 +517,7 @@ def _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex):
         ),
     )
     _build_ennis_short_wall_bridge_fence(brushes, wall_x2)
+    return wall_x2
 
 
 def _build_ennis_main_gate_layout(
@@ -832,13 +833,13 @@ def _build_ennis_corner_wall_pillar(brushes, ennis_wall_x1):
     )
 
 
-def _build_ennis_east_gate(gate_fence_tex):
+def _build_ennis_east_gate(gate_fence_tex, gate_x1):
     """Build the freestanding east gate brush set for the func_detail entity."""
     east_gate_y1 = ENNIS_WALL_NY + ENNIS_WALL_T // 2 - 1
     east_gate_y2 = east_gate_y1 + 2
     east_gate_brushes = [
         box(
-            ENNIS_GATE_X1,
+            gate_x1,
             east_gate_y1,
             FLOOR_Z2 + ENNIS_GATE_FENCE_HEIGHT - ENNIS_GATE_FENCE_TOP_RAIL_DROP,
             ENNIS_GATE_X2,
@@ -850,7 +851,7 @@ def _build_ennis_east_gate(gate_fence_tex):
             gate_fence_tex,
         )
     ]
-    east_gate_picket_x = ENNIS_GATE_X1
+    east_gate_picket_x = gate_x1
     east_gate_picket_index = 0
     while True:
         east_gate_picket_width = (
@@ -1181,10 +1182,10 @@ def _build_ennis_entrance_features():
     gate_fence_tex = Textures.FENCE
 
     _build_ennis_entrance_pillars(brushes, entities)
-    _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex)
+    wall_x2 = _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex)
     _build_ennis_main_gate_section(brushes, ennis_wall_x1, gate_fence_tex)
     _build_ennis_corner_wall_pillar(brushes, ennis_wall_x1)
-    east_gate_brushes = _build_ennis_east_gate(gate_fence_tex)
+    east_gate_brushes = _build_ennis_east_gate(gate_fence_tex, wall_x2)
     _build_ennis_cement_wall(brushes, entities)
     if east_gate_brushes:
         entities.append(brush_ent("func_detail", east_gate_brushes))
