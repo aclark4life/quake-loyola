@@ -1152,15 +1152,57 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     # scored joint or curb-block texture cutting across it — unlike the
     # tiled runs east of it, which do score a joint there.
     curb_edge_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W
+    entry_pad_joint_w = 2
+    # Score joints where this stone slab meets cement: to the north (the
+    # cement slab poured above it, full width) and to the south, but only
+    # across the west portion (x:266..336) where the neighbor to the south
+    # is cement — east of x=336 the neighbor is another stone patch, so no
+    # joint is scored there.
     brushes.append(
         box(
             WEST_ENTRY_PAD_X1,
             west_y1,
             FLOOR_Z2,
+            336,
+            west_y1 + entry_pad_joint_w,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+    brushes.append(
+        box(
+            WEST_ENTRY_PAD_X1,
+            west_y1 + entry_pad_joint_w,
+            FLOOR_Z2,
+            336,
+            west_north_y1 - entry_pad_joint_w,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.WHITE_STONE,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+    brushes.append(
+        box(
+            336,
+            west_y1,
+            FLOOR_Z2,
+            west_curb_x1 + layout["sw_slab_len"],
+            west_north_y1 - entry_pad_joint_w,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.WHITE_STONE,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
+    brushes.append(
+        box(
+            WEST_ENTRY_PAD_X1,
+            west_north_y1 - entry_pad_joint_w,
+            FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"],
             west_north_y1,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.WHITE_STONE,
+            Textures.SIDEWALK_JOINT,
             tt_params=layout["ennis_road_tt_params"],
         )
     )
@@ -1748,9 +1790,24 @@ def _append_verge_fill_surfaces(brushes, layout):
                     Textures.GROUND,
                 )
             )
+            # Score a joint along the west edge where the patch meets the
+            # cement sidewalk slab (evx1 - CHARLES_WALK_W .. evx1, y:590..
+            # WEST_ENTRY_PAD_Y1) instead of leaving a hard, unscored cut.
+            west_patch_joint_w = 2
             brushes.append(
                 box(
                     evx1,
+                    SOUTH_STONE_PATCH_Y1,
+                    FLOOR_Z2,
+                    evx1 + west_patch_joint_w,
+                    WEST_ENTRY_PAD_Y1,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.SIDEWALK_JOINT,
+                )
+            )
+            brushes.append(
+                box(
+                    evx1 + west_patch_joint_w,
                     SOUTH_STONE_PATCH_Y1,
                     FLOOR_Z2,
                     WEST_ENTRY_PAD_X2,
