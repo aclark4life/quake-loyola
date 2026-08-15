@@ -884,9 +884,14 @@ def _append_ennis_north_sidewalk_strip(
             ),
             (
                 stone_x1,
-                ENNIS_PILLAR_X1,
+                ENNIS_PILLAR_X1 - joint_w,
                 Textures.WHITE_STONE,
                 layout["ennis_road_tt_params"],
+            ),
+            (
+                ENNIS_PILLAR_X1 - joint_w,
+                ENNIS_PILLAR_X1,
+                Textures.SIDEWALK_JOINT,
             ),
             (ENNIS_PILLAR_X1, ENNIS_GATE_X2, Textures.MULCH),
             (ENNIS_GATE_X2, layout["ennis_x2"], Textures.GROUND),
