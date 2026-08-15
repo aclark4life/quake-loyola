@@ -859,6 +859,11 @@ def _append_ennis_north_sidewalk_strip(
 
     ennis_wall_x1 = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET
     bw_cx = ennis_wall_x1 + ENNIS_WALL_T // 2
+    stone_x1 = bw_cx - ENNIS_WALL_PILLAR_HW + 4
+    # Score a joint at the west edge of the stone run, where it meets the
+    # plain cement sidewalk, so the material change reads as a scored seam
+    # instead of an untextured hard cut.
+    joint_w = 2
     _append_street_sidewalk_slabs_x(
         brushes,
         ramp_x2,
@@ -873,7 +878,12 @@ def _append_ennis_north_sidewalk_strip(
         tt_params=layout["ennis_road_tt_params"],
         tex_ranges=[
             (
-                bw_cx - ENNIS_WALL_PILLAR_HW + 4,
+                stone_x1 - joint_w,
+                stone_x1,
+                Textures.SIDEWALK_JOINT,
+            ),
+            (
+                stone_x1,
                 ENNIS_PILLAR_X1,
                 Textures.WHITE_STONE,
                 layout["ennis_road_tt_params"],
