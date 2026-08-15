@@ -130,7 +130,17 @@ CHARLES_LAMP_POST_XS = [
 ]
 ENNIS_PILLAR_EAST_SHIFT = 100  # Shared eastward shift for the Ennis pillars and gate.
 ENNIS_GATE_X1 = BRIDGE_ARCH_X[2] + ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT + 20
-ENNIS_PILLAR_X1 = BRIDGE_ARCH_X[2] - ENNIS_PILLAR_HW + ENNIS_PILLAR_EAST_SHIFT
+# The short brick wall segment now extends past the old gate-aligned pillar
+# position to meet the ornamental fence run's true east end (see
+# _build_ennis_short_wall_section) — shift the pillars further east so they
+# line up with that new wall end instead of the original gate position.
+ENNIS_PILLAR_WALL_END_SHIFT = 66
+ENNIS_PILLAR_X1 = (
+    BRIDGE_ARCH_X[2]
+    - ENNIS_PILLAR_HW
+    + ENNIS_PILLAR_EAST_SHIFT
+    + ENNIS_PILLAR_WALL_END_SHIFT
+)
 CHARLES_LAMP_POST_H = BRIDGE_DZ2 - BRIDGE_LAMP_POST_CLEARANCE
 KNOTT_GROUND_Z = 221  # Terrain height anchor for the Knott side.
 KNOTT_DRIVEWAY_ZT_S = KNOTT_GROUND_Z

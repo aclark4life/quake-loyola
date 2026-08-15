@@ -381,12 +381,29 @@ def _build_ennis_short_wall_bridge_fence(brushes, bwex2):
 
 def _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex):
     """Build the short masonry wall and its attached ornamental fence run."""
+    sw_arch_post_lead_x = (
+        ennis_wall_x1 + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
+    )
+    sw_panel_count = 3
+    sw_panel_outer_w = ENNIS_SW_PANEL_OUTER_W
+    sw_run_w = (
+        sw_panel_count * sw_panel_outer_w + (sw_panel_count - 1) * ENNIS_PANEL_GAP
+    )
+    sw_run_x1 = sw_arch_post_lead_x + ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
+    # The trailing arch post (the fence run's true east end) can sit east of
+    # bwex2 — extend the brick wall to meet it so the fence isn't left
+    # floating over an unbuilt gap with no brick underneath.
+    sw_trailing_gap_x2 = sw_run_x1 + sw_run_w + ENNIS_GATE_PILLAR_GAP
+    sw_last_post_x2 = (
+        sw_trailing_gap_x2 + ENNIS_GATE_PILLAR_W // 2 + ENNIS_GATE_PILLAR_W // 2
+    )
+    wall_x2 = max(bwex2, sw_last_post_x2)
     brushes.append(
         box(
             ennis_wall_x1,
             ENNIS_SHORT_WALL_NY,
             FLOOR_Z2,
-            bwex2,
+            wall_x2,
             ENNIS_SHORT_WALL_NY + ENNIS_WALL_T,
             FLOOR_Z2 + ENNIS_WALL_H,
             Textures.BUILDING,
@@ -399,16 +416,7 @@ def _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex):
     sw_panel_z1 = sw_brick_top_z + ENNIS_PANEL_MOUNT_FOOT_DROP
     sw_panel_z_center = sw_panel_z1 + ENNIS_PANEL_OUTER_H // 2
     _sw_frame_t = (ENNIS_PANEL_OUTER_W - ENNIS_PANEL_INNER_W) // 2
-    sw_panel_outer_w = ENNIS_SW_PANEL_OUTER_W
     sw_panel_inner_w = sw_panel_outer_w - 2 * _sw_frame_t
-    sw_arch_post_lead_x = (
-        ennis_wall_x1 + ENNIS_WALL_T // 2 + ENNIS_WALL_PILLAR_HW + ENNIS_GATE_PILLAR_GAP
-    )
-    sw_panel_count = 3
-    sw_run_w = (
-        sw_panel_count * sw_panel_outer_w + (sw_panel_count - 1) * ENNIS_PANEL_GAP
-    )
-    sw_run_x1 = sw_arch_post_lead_x + ENNIS_GATE_PILLAR_W + ENNIS_GATE_PILLAR_GAP
 
     _build_ennis_gate_run(
         brushes,
@@ -508,7 +516,7 @@ def _build_ennis_short_wall_section(brushes, ennis_wall_x1, bwex2, sw_tex):
             )
         ),
     )
-    _build_ennis_short_wall_bridge_fence(brushes, bwex2)
+    _build_ennis_short_wall_bridge_fence(brushes, wall_x2)
 
 
 def _build_ennis_main_gate_layout(
