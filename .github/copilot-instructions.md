@@ -138,11 +138,8 @@ Builds Sphinx HTML documentation into `docs/_build/html/`.
    just generate && just compile-fast && just deploy && just update-golden && just test
    ```
 
-### One committer at a time
-Only one AI assistant — Auggie/Augment **or** Copilot, never both — should commit for a given change. Do not let both assistants create commits for the same change (e.g. one committing and the other amending, or both committing separately). Whichever assistant is actively working the task owns the commit; the other must not commit on top of it. Auggie has sometimes forgotten to add its `Co-authored-by: Augment` trailer — always double-check the trailer is present before pushing, regardless of which assistant is committing.
-
 ### Co-commit authorship
-When committing on behalf of the user, always list the user as the **primary author** and the AI assistant as a **co-author** using the `Co-authored-by:` trailer:
+When committing on behalf of the user, always list the user as the **primary author** and Copilot as a **co-author** using the `Co-authored-by:` trailer:
 
 ```
 git commit --author="Jeffrey 'Alex' Clark <aclark@aclark.net>" -F <msg-file>
@@ -150,7 +147,8 @@ git commit --author="Jeffrey 'Alex' Clark <aclark@aclark.net>" -F <msg-file>
 
 Commit message trailer:
 ```
-Co-authored-by: Augment <augment@augmentcode.com>
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```
 
-Never make the AI assistant the primary author.
+Never make the AI assistant the primary author. A commit should carry exactly
+one AI co-author trailer — never more than one.
