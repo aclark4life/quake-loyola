@@ -858,12 +858,15 @@ def _append_knott_driveway_extension(brushes):
             Textures.ROAD,
         )
     )
+    # South of the Ennis walk: the driveway's west sidewalk, its joint, and the
+    # curb strip at the roadbed edge. The walk band itself is poured as one
+    # stone apron below, so these all stop at ENNIS_SW_EDGE.
     _append_tiled_flat_sidewalk_y(
         brushes,
         KNOTT_DRIVEWAY_WS_X1,
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
         KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        ENNIS_SW_EDGE,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.CEMENT,
@@ -873,26 +876,44 @@ def _append_knott_driveway_extension(brushes):
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
         KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        ENNIS_SW_EDGE,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK_JOINT,
     )
 
     _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
-    # The west curb runs past the walk's north end to close the bulge return.
-    _append_tiled_flat_sidewalk_y(
+    # The Ennis walk crosses the driveway head in the same stone as the walk
+    # either side of it, matching the apron on the driveway's east side. It
+    # spans the full width to the roadbed, so the curb is depressed here.
+    _append_tiled_flat_sidewalk_x(
         brushes,
-        KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+        KNOTT_DRIVEWAY_WS_X1,
         KNOTT_DRIVEWAY_WS_X2,
-        KNOTT_DRIVEWAY_EXT_Y1,
-        _west_ext_y2,
+        ENNIS_SW_EDGE,
+        ENNIS_SW_EDGE + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.CEMENT,
-        slab_len=STREET_CURB_SLAB_LEN,
-        offset=_knott_curb_phase(KNOTT_DRIVEWAY_EXT_Y1),
+        Textures.WHITE_STONE,
     )
+    # The west curb resumes north of the walk and runs past its end to close
+    # the bulge return.
+    for _curb_y1, _curb_y2 in (
+        (KNOTT_DRIVEWAY_EXT_Y1, ENNIS_SW_EDGE),
+        (ENNIS_SW_EDGE + CHARLES_WALK_W, _west_ext_y2),
+    ):
+        _append_tiled_flat_sidewalk_y(
+            brushes,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+            KNOTT_DRIVEWAY_WS_X2,
+            _curb_y1,
+            _curb_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+            slab_len=STREET_CURB_SLAB_LEN,
+            offset=_knott_curb_phase(_curb_y1),
+        )
     brushes.append(
         box(
             KNOTT_DRIVEWAY_WS_X1,

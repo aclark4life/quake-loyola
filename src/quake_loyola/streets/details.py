@@ -1,6 +1,7 @@
 import math
 
 from ..constants.derived import (
+    BRIDGE_ARCH_X,
     CHARLES_CRN_R,
     CHARLES_LAMP_POST_H,
     CHARLES_LAMP_POST_XS,
@@ -105,12 +106,17 @@ WEST_ENTRY_PAD_Y2 = (
 )
 WEST_ENTRY_PAD_X2 = ROAD_X2 + CHARLES_WALK_W + STREET_SW_SLAB_LEN
 
-# A short stone apron continuing the entry pad south, paved over what would
-# otherwise be verge grass, so the pad doesn't dead-end mid-block. Its south
-# edge (588) is the sidewalk-tiling joint that lands just past the standard
-# Charles sidewalk tile immediately south of the pad (590-651) — "just past"
-# that tile, not a fresh span of its own.
-SOUTH_STONE_PATCH_Y1 = 588
+# Depth of the tiled south-Ennis run west of the Knott driveway. The entry pad
+# beside it is 56 units deeper (see WEST_ENTRY_PAD_Y1), but the run itself stops
+# at the west-campus ground fill's north edge — pouring it as deep as the pad
+# would lay stone on top of that fill instead of meeting it.
+WEST_RUN_SW_D = CHARLES_WALK_W * 2
+
+# East of here the Knott hillside descends from its 78-unit plateau to sidewalk
+# height at the driveway, so the deep run's extra depth would surface as a
+# wedge of stone poking out of the hill toe. Across this last stretch the walk
+# keeps the standard depth and the hillside runs right up to its south edge.
+WEST_RUN_HILL_TOE_X = BRIDGE_ARCH_X[4]
 
 
 def punch_manhole_detail(brushes, seen=None):
@@ -1371,7 +1377,7 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     brushes.append(
         box(
             west_curb_x1 + layout["sw_slab_len"],
-            ENNIS_SW_EDGE + CHARLES_WALK_W - (CHARLES_WALK_W * 2 + 56),
+            ENNIS_SW_EDGE + CHARLES_WALK_W - WEST_RUN_SW_D,
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
             ENNIS_SW_EDGE + CHARLES_WALK_W,
@@ -1389,14 +1395,22 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x, curb_band_x1 in (
         (
             west_curb_x1,
-            KNOTT_DRIVEWAY_WS_X1,
-            CHARLES_WALK_W * 2 + 56,
+            WEST_RUN_HILL_TOE_X,
+            WEST_RUN_SW_D,
             west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
             (
                 west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
                 Textures.WHITE_STONE,
             ),
             west_curb_x1 + layout["sw_slab_len"] + layout["sw_gap"],
+        ),
+        (
+            WEST_RUN_HILL_TOE_X,
+            KNOTT_DRIVEWAY_WS_X1,
+            CHARLES_WALK_W,
+            WEST_RUN_HILL_TOE_X,
+            (WEST_RUN_HILL_TOE_X, Textures.WHITE_STONE),
+            None,
         ),
         (
             KNOTT_DRIVEWAY_ES_X2,
@@ -1816,10 +1830,10 @@ def _append_verge_fill_surfaces(brushes, layout):
     ]
     for evx1, evx2, evy2 in east_verge_segs:
         # The verge segment west of the Knott driveway fronts the Ennis
-        # south-west entry pad, so the strip under the pad and the stone
-        # apron continuing it south (evx1..WEST_ENTRY_PAD_X2,
-        # SOUTH_STONE_PATCH_Y1..WEST_ENTRY_PAD_Y1) is carved out of it
-        # rather than paved as grass.
+        # south-west entry pad, so the strip under the pad (evx1..
+        # WEST_ENTRY_PAD_X2, north of WEST_ENTRY_PAD_Y1) is carved out of it
+        # rather than paved as grass. South of the pad the verge is grass all
+        # the way, so it runs flush to the pad's south edge.
         if evx1 == ROAD_X2 + CHARLES_WALK_W:
             brushes.append(
                 box(
@@ -1838,35 +1852,9 @@ def _append_verge_fill_surfaces(brushes, layout):
                     layout["charles_y1"],
                     FLOOR_Z2,
                     WEST_ENTRY_PAD_X2,
-                    SOUTH_STONE_PATCH_Y1,
+                    WEST_ENTRY_PAD_Y1,
                     FLOOR_Z2 + CHARLES_WALK_H,
                     Textures.GROUND,
-                )
-            )
-            # Score a joint along the west edge where the patch meets the
-            # cement sidewalk slab (evx1 - CHARLES_WALK_W .. evx1, y:590..
-            # WEST_ENTRY_PAD_Y1) instead of leaving a hard, unscored cut.
-            west_patch_joint_w = 2
-            brushes.append(
-                box(
-                    evx1,
-                    SOUTH_STONE_PATCH_Y1,
-                    FLOOR_Z2,
-                    evx1 + west_patch_joint_w,
-                    WEST_ENTRY_PAD_Y1,
-                    FLOOR_Z2 + CHARLES_WALK_H,
-                    Textures.SIDEWALK_JOINT,
-                )
-            )
-            brushes.append(
-                box(
-                    evx1 + west_patch_joint_w,
-                    SOUTH_STONE_PATCH_Y1,
-                    FLOOR_Z2,
-                    WEST_ENTRY_PAD_X2,
-                    WEST_ENTRY_PAD_Y1,
-                    FLOOR_Z2 + CHARLES_WALK_H,
-                    Textures.WHITE_STONE,
                 )
             )
             continue
