@@ -147,8 +147,21 @@ git commit --author="Jeffrey 'Alex' Clark <aclark@aclark.net>" -F <msg-file>
 
 Commit message trailer:
 ```
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Co-authored-by: Copilot (github-copilot-cli) <223556219+Copilot@users.noreply.github.com>
 ```
+
+The app slug in parentheses matters. Two separate GitHub Apps both have the
+login `Copilot`, and their emails differ only by the numeric ID prefix:
+
+| App | Identity |
+|---|---|
+| Copilot CLI (this agent) | `Copilot (github-copilot-cli) <223556219+Copilot@users.noreply.github.com>` |
+| Copilot coding agent (cloud) | `copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>` |
+
+Without the slug both render as a bare "Copilot" in `git log` and are
+indistinguishable. GitHub itself resolves co-authors by email, so the website
+still shows two identically-named contributors regardless — the slug is for
+reading the history locally.
 
 Never make the AI assistant the primary author. A commit should carry exactly
 one AI co-author trailer — never more than one.
