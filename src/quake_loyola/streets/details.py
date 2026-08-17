@@ -1384,6 +1384,8 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     # curb_band_x1 below) since the entry pad's cement now runs flush to the
     # curb there, and the joint above now spans the full depth to the curb
     # line, so no separate cement fill is needed for that strip.
+    # Both runs are stone: WHITE_STONE is seamless, so their panels merge into
+    # unscored slabs rather than the joint-scored cement tiling.
     for curb_x1, curb_x2, sw_d, tile_x1, tex_from_x, curb_band_x1 in (
         (
             west_curb_x1,
@@ -1401,7 +1403,7 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             layout["ennis_x2"],
             CHARLES_WALK_W,
             KNOTT_DRIVEWAY_ES_X2,
-            None,
+            (KNOTT_DRIVEWAY_ES_X2, Textures.WHITE_STONE),
             None,
         ),
     ):

@@ -42,6 +42,7 @@ from ..constants import (
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
+    STREET_SURFACE_T,
     STREET_SW_GAP,
     STREET_SW_SLAB_LEN,
     WALL_T,
@@ -929,22 +930,37 @@ def _append_knott_driveway_extension(brushes):
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.GROUND,
     )
-    # The Ennis walk crosses the driveway apron and runs east past the curb
-    # bulge; tile it as one east-west run so its panels line up across both.
     _e_bulge_x2 = (
         KNOTT_DRIVEWAY_JCX_E
         + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
         + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
     )
+    # The Ennis walk crosses the driveway apron in the same stone as the rest
+    # of the south walk. It stops at the driveway's east edge: east of there
+    # the street module's own SE run owns the walk, joint, and curb, so
+    # carrying this run past the bulge would bury them in overlapping cement.
     _append_tiled_flat_sidewalk_x(
         brushes,
         KNOTT_DRIVEWAY_ES_X1,
-        _e_bulge_x2,
+        KNOTT_DRIVEWAY_ES_X2,
         ENNIS_SW_EDGE,
         ENNIS_SW_EDGE + CHARLES_WALK_W,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.CEMENT,
+        Textures.WHITE_STONE,
+    )
+    # That run used to backfill under the street module's Ennis curb across the
+    # bulge; the curb only pours from STREET_SURFACE_T up, so fill it here.
+    brushes.append(
+        box(
+            KNOTT_DRIVEWAY_ES_X2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W,
+            FLOOR_Z2,
+            _e_bulge_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.GROUND,
+        )
     )
 
     _east_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
