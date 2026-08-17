@@ -2,8 +2,10 @@
 
 This module builds the sampled ground west of Charles Street, including the
 dorm area and the bridge's west approach. The terrain grid spans the full
-modeled Charles Street Y range and tapers back to the sidewalk height at the
-street edge.
+modeled Charles Street Y range and tapers back to flush with the Charles
+St verge (the flat lawn strip ``streets.details`` pours between the
+sidewalk and this hillside — see ``_wct_verge_x``), which in turn pours its
+own curb against the sidewalk. This module never abuts the sidewalk itself.
 """
 
 from ..constants import (
@@ -11,6 +13,7 @@ from ..constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_PILLAR_OVERHANG,
     BRIDGE_X1,
+    CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
     DORM_X1,
@@ -36,6 +39,11 @@ def _clamp0(zs):
 
 _wct_dorm_cx = (DORM_X1 + DORM_X2) // 2
 _wct_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
+#: East edge of the modeled hillside ground. ``streets.details`` pours a flat
+#: verge strip (``CHARLES_RAMP_W`` wide) between here and the sidewalk, plus
+#: its own curb against the sidewalk edge, so this module tapers back to
+#: flush with the verge rather than reaching the sidewalk itself.
+_wct_verge_x = _wct_sidewalk_x - CHARLES_RAMP_W
 
 
 # Two intermediate columns, not four. The taper spans ~717 units, so four
@@ -45,16 +53,16 @@ _wct_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
 # reappear), leaving see-through-but-solid ground across the south-west
 # hillside. Wider cells fix it outright, and with fewer brushes.
 _WCT_TAPER_FRACS = (0.34, 0.67)
-if not FENCE_X1 < _wct_sidewalk_x:
+if not FENCE_X1 < _wct_verge_x:
     raise ValueError(
         "west_campus_terrain X grid must stay in strict west-to-east order; "
-        "FENCE_X1 has drifted past the sidewalk tie — re-derive the terrain "
+        "FENCE_X1 has drifted past the verge tie — re-derive the terrain "
         "grid before widening further."
     )
 
 
 def _wct_taper_x(frac):
-    return round(FENCE_X1 + (_wct_sidewalk_x - FENCE_X1) * frac)
+    return round(FENCE_X1 + (_wct_verge_x - FENCE_X1) * frac)
 
 
 _wct_raw = list(
@@ -90,7 +98,9 @@ if not (len(_wct_raw_x) == len(set(_wct_raw_x)) and _wct_raw_x == sorted(_wct_ra
         "sort itself is broken); re-derive the terrain grid before widening "
         "further."
     )
-_wct_x = _wct_raw_x + [_wct_taper_x(f) for f in _WCT_TAPER_FRACS] + [_wct_sidewalk_x]
+#: X grid used for interpolation and the sampled ground mesh, tapering to
+#: flush with the Charles St verge at its east edge.
+_wct_x = _wct_raw_x + [_wct_taper_x(f) for f in _WCT_TAPER_FRACS] + [_wct_verge_x]
 
 
 #: North face of the shifted centre-span pier footprint (Pier 2's base is the
@@ -133,6 +143,9 @@ _wct_cols = [_clamp0(col) for _, col in _wct_raw]
 
 
 _wct_fence_col = _wct_cols[-1]
+# Ground height at the verge tie-in — flush with the Charles St verge
+# (streets.details pours that strip, plus its own curb, from here to the
+# sidewalk).
 _wct_flat_walk = [CHARLES_WALK_H] * len(wct_y)
 
 

@@ -514,9 +514,14 @@ def _append_charles_west_sidewalks(
 ):
     """Append the west-side Charles crossing ramp, sidewalk, and curb return."""
 
+    # The crossing apron is widened west across the verge so the curb cut is
+    # roughly twice the sidewalk's own width. It stops one curb thickness
+    # short of the verge's west edge, leaving room for the curb return that
+    # walls the pocket (the apron's top sits a curb-height below the lawn).
+    apron_x1 = ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W + STREET_CHARLES_CURB_W
     _append_street_sidewalk_slabs_y(
         brushes,
-        ROAD_X1 - CHARLES_WALK_W,
+        apron_x1,
         ROAD_X1,
         layout["charles_crossing_mid"],
         curb_cut_y2,
@@ -528,7 +533,7 @@ def _append_charles_west_sidewalks(
     )
     brushes.append(
         ramp_slab_y(
-            ROAD_X1 - CHARLES_WALK_W,
+            apron_x1,
             ROAD_X1,
             curb_cut_y2,
             curb_ramp_y2,
@@ -537,6 +542,34 @@ def _append_charles_west_sidewalks(
             FLOOR_Z2 + STREET_SURFACE_T,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK,
+        )
+    )
+    # ``_append_street_sidewalk_slabs_y`` only lays joints *between* its own
+    # panels, so the seams where the apron meets the ramp, and where the ramp
+    # meets the sidewalk beyond it, have to be poured here. Without them the
+    # platform is left with open ``sw_gap``-wide slots straight through it.
+    apron_seam_y1 = curb_cut_y2 - layout["sw_gap"]
+    if apron_seam_y1 > layout["charles_crossing_mid"]:
+        brushes.append(
+            box(
+                apron_x1,
+                apron_seam_y1,
+                FLOOR_Z2,
+                ROAD_X1,
+                curb_cut_y2,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                Textures.SIDEWALK_JOINT,
+            )
+        )
+    brushes.append(
+        box(
+            ROAD_X1 - CHARLES_WALK_W,
+            curb_ramp_y2,
+            FLOOR_Z2,
+            ROAD_X1,
+            curb_ramp_y2 + layout["sw_gap"],
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
         )
     )
     _append_street_sidewalk_slabs_y(
@@ -575,7 +608,7 @@ def _append_charles_west_sidewalks(
     )
     brushes.append(
         box(
-            ROAD_X1 - CHARLES_WALK_W,
+            apron_x1,
             layout["charles_crossing_mid"],
             FLOOR_Z2 + STREET_SURFACE_T,
             ROAD_X1,
@@ -584,30 +617,36 @@ def _append_charles_west_sidewalks(
             Textures.SIDEWALK,
         )
     )
-    rw_x2 = ROAD_X1 - CHARLES_WALK_W
+    rw_x2 = apron_x1
     rw_x1 = rw_x2 - STREET_CHARLES_CURB_W
+    # The curb return walls the widened apron's west edge, standing the full
+    # curb height between the pocket and the verge lawn. The west-campus side
+    # of Charles is poured concrete throughout — ``Textures.CURB`` is the
+    # makkon_stone slab used on Ennis Rd and must not appear over here — so
+    # these read as plain cement, matching the strip
+    # ``_append_verge_fill_surfaces`` pours north of the ramp. Both brushes
+    # start at FLOOR_Z2 because the verge fill is cut back around the whole
+    # crossing band and nothing else fills underneath.
     brushes.append(
         box(
             rw_x1,
             layout["charles_crossing_mid"],
-            FLOOR_Z2 + STREET_SURFACE_T,
+            FLOOR_Z2,
             rw_x2,
             curb_cut_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
+            Textures.CEMENT,
         )
     )
     brushes.append(
-        ramp_slab_y(
+        box(
             rw_x1,
-            rw_x2,
             curb_cut_y2,
+            FLOOR_Z2,
+            rw_x2,
             curb_ramp_y2,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            FLOOR_Z2 + CHARLES_WALK_H - STREET_SURFACE_T,
             FLOOR_Z2 + CHARLES_WALK_H,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.SIDEWALK,
+            Textures.CEMENT,
         )
     )
     _append_charles_curb_sections(
@@ -1744,18 +1783,30 @@ def _append_intersection_corners(brushes):
 def _append_verge_fill_surfaces(brushes, layout):
     """Add the verge fill and curb apron surfaces south and east of Ennis."""
     west_verge_x1 = ROAD_X1 - CHARLES_WALK_W - CHARLES_RAMP_W
+    west_sidewalk_x = ROAD_X1 - CHARLES_WALK_W
     east_verge_x2 = WORLD_X2_EXT - WALL_T
-    brushes.append(
-        box(
-            west_verge_x1,
-            layout["charles_y1"],
-            FLOOR_Z2,
-            ROAD_X1 - CHARLES_WALK_W,
-            layout["charles_y2"],
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.GROUND,
-        )
-    )
+    # The verge lawn runs the whole way from the hillside to the sidewalk
+    # edge: there is no curb along this frontage, only around the crossing
+    # apron itself. It skips the crossing's Y band, where the widened apron
+    # and its curb return (see ``_append_charles_west_sidewalks``) claim the
+    # full width. Both segments start at FLOOR_Z2, so the band is solid all
+    # the way down.
+    for vy1, vy2 in [
+        (layout["charles_y1"], layout["charles_crossing_mid"]),
+        (layout["charles_curb_ramp_y2"], layout["charles_y2"]),
+    ]:
+        if vy2 > vy1:
+            brushes.append(
+                box(
+                    west_verge_x1,
+                    vy1,
+                    FLOOR_Z2,
+                    west_sidewalk_x,
+                    vy2,
+                    FLOOR_Z2 + CHARLES_WALK_H,
+                    Textures.GROUND,
+                )
+            )
     west_verge_y2 = ENNIS_SW_EDGE - CHARLES_WALK_W
     east_verge_segs = [
         (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1, west_verge_y2),
