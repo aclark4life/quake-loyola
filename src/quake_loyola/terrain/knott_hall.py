@@ -60,8 +60,8 @@ from ..geometry import (
     box,
     brush_ent,
     curb_seg,
+    cut_sidewalk_joints,
     ramp_slab_y,
-    recess_joint_tops,
     sidewalk_panel_spans,
     tri_prism,
     tri_ramp_prism,
@@ -1426,7 +1426,12 @@ def _build_knott_terrain():
     _append_knott_west_curb_return(BRUSHES, _west_ext_y2)
     _append_knott_east_curb_return(BRUSHES, _east_ext_y2)
 
-    recess_joint_tops(BRUSHES, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
+    cut_sidewalk_joints(
+        BRUSHES,
+        STREET_SW_JOINT_DROP,
+        Textures.SIDEWALK_JOINT,
+        Textures.SIDEWALK_JOINT_FILL,
+    )
 
     return BRUSHES
 

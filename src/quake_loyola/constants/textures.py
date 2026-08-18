@@ -53,7 +53,11 @@ class Textures:
     JOINT_GAP = "black"  # from quake101.wad; dark shadow-gap seam between joint plates
     SHELF = "shelf_1"
     SIDEWALK = "sfloor3_2"
-    SIDEWALK_JOINT = JOINT_GAP  # dark shadow-gap seam between sidewalk tiles
+    SIDEWALK_JOINT = JOINT_GAP  # marks a sidewalk joint for cut_sidewalk_joints()
+    #: What a cut joint groove is actually paved in. Asphalt reads as the
+    #: crack filler poured into a real sidewalk's control joints, where plain
+    #: black reads as a painted stripe.
+    SIDEWALK_JOINT_FILL = ROAD
     SKY = _get_build("sky")
     STONE = "sfloor3_2"
     TELEPORT = "*teleport"

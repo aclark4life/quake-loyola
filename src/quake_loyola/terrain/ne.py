@@ -32,8 +32,8 @@ from ..constants import (
     Textures,
 )
 from ..geometry import (
+    cut_sidewalk_joints,
     polygon_prism,
-    recess_joint_tops,
     split_poly_by_joints,
     tri_ramp_prism,
 )
@@ -231,6 +231,11 @@ def build():
         build_cell_brushes=_build_ne_terrain_cell,
     )
 
-    recess_joint_tops(BRUSHES, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
+    cut_sidewalk_joints(
+        BRUSHES,
+        STREET_SW_JOINT_DROP,
+        Textures.SIDEWALK_JOINT,
+        Textures.SIDEWALK_JOINT_FILL,
+    )
 
     return BRUSHES, ENTITIES

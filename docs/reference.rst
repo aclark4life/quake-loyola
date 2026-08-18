@@ -524,8 +524,9 @@ Street / road
    * - **Expansion joint**
      - The narrow groove (``STREET_SW_GAP``, 1 unit wide) between successive
        sidewalk panels, sunk ``STREET_SW_JOINT_DROP`` below the walking surface
-       so it catches a shadow. Prevents a single unbroken surface and gives the
-       impression of real poured-concrete sidewalk segments.
+       and filled with asphalt, as a real sidewalk's control joints are.
+       Prevents a single unbroken surface and gives the impression of real
+       poured-concrete sidewalk segments.
    * - **Teleport arch**
      - Decorative stone arch portal at each end of the bridge with a trigger
        field. West arch teleports to east; east to west.

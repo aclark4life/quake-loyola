@@ -80,9 +80,9 @@ from ..geometry import (
     box,
     box_with_round_hole,
     brush_ent,
+    cut_sidewalk_joints,
     polygon_prism,
     ramp_slab_y,
-    recess_joint_tops,
     score_polygon_prisms,
     sidewalk_panel_spans,
     split_poly_by_joints,
@@ -2034,7 +2034,12 @@ def _build_street_details(BRUSHES, ENTITIES):
 
     if detail_brushes:
         detail_brushes = punch_manhole_detail(detail_brushes, manhole_seen)
-        recess_joint_tops(detail_brushes, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
+        cut_sidewalk_joints(
+            detail_brushes,
+            STREET_SW_JOINT_DROP,
+            Textures.SIDEWALK_JOINT,
+            Textures.SIDEWALK_JOINT_FILL,
+        )
         ENTITIES.append(brush_ent("func_detail", detail_brushes))
 
     # NOTE: the global world-seal brushes live in shell.py::_build_world_seal()

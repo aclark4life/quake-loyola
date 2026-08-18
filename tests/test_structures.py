@@ -10,11 +10,11 @@ from quake_loyola.geometry import (
     arch_fill_y,
     arch_wall,
     box,
+    cut_sidewalk_joints,
     gable_slats,
     layered_wall,
     layered_wall_y,
     ramp_slab_y,
-    recess_joint_tops,
     square_wall,
     tile_grid_origins,
 )
@@ -201,43 +201,63 @@ class ArchWallRecessAndCapTests(unittest.TestCase):
         self.assertTrue(brushes)
 
 
-class RecessJointTopsTests(unittest.TestCase):
-    """Sidewalk joints are sunk below the walking surface, not flush with it."""
+class CutSidewalkJointsTests(unittest.TestCase):
+    """Marked joints are sunk below the walking surface and filled."""
 
     def test_lowers_a_flat_joint_top_only(self):
-        joint = box(0, 0, 0, 10, 2, 8, "black")
-        recess_joint_tops([joint], 1, "black")
+        joint = box(0, 0, 0, 10, 2, 8, "marker")
+        cut_sidewalk_joints([joint], 1, "marker", "asphalt")
         (_, _, z1), (_, _, z2) = joint.get_bbox()
         self.assertEqual((z1, z2), (0, 7))
         tops = [f for f in joint.faces if {p[2] for p in (f.p1, f.p2, f.p3)} == {7}]
         self.assertEqual(len(tops), 1)
 
+    def test_repaints_the_marker_in_the_fill_material(self):
+        joint = box(0, 0, 0, 10, 2, 8, "marker")
+        cut_sidewalk_joints([joint], 1, "marker", "asphalt")
+        self.assertEqual({f.tex for f in joint.faces}, {"asphalt"})
+
+    def test_leaves_the_fill_material_untouched_where_it_is_not_a_marker(self):
+        # The fill is a material used elsewhere in the map, so a road slab
+        # must not be mistaken for a joint and sunk.
+        road = box(0, 0, 0, 800, 800, 2, "asphalt")
+        before = [(f.p1, f.p2, f.p3, f.tex) for f in road.faces]
+        cut_sidewalk_joints([road], 1, "marker", "asphalt")
+        self.assertEqual([(f.p1, f.p2, f.p3, f.tex) for f in road.faces], before)
+
     def test_leaves_panels_and_other_textures_alone(self):
         panel = box(0, 0, 0, 10, 80, 8, "cement")
-        before = [(f.p1, f.p2, f.p3) for f in panel.faces]
-        recess_joint_tops([panel], 1, "black")
-        self.assertEqual([(f.p1, f.p2, f.p3) for f in panel.faces], before)
+        before = [(f.p1, f.p2, f.p3, f.tex) for f in panel.faces]
+        cut_sidewalk_joints([panel], 1, "marker", "asphalt")
+        self.assertEqual([(f.p1, f.p2, f.p3, f.tex) for f in panel.faces], before)
 
     def test_a_sloped_joint_keeps_its_slope(self):
-        joint = ramp_slab_y(0, 10, 0, 100, -16, -16, 8, 24, "black")
-        recess_joint_tops([joint], 1, "black")
+        joint = ramp_slab_y(0, 10, 0, 100, -16, -16, 8, 24, "marker")
+        cut_sidewalk_joints([joint], 1, "marker", "asphalt")
         zs = sorted({p[2] for f in joint.faces for p in (f.p1, f.p2, f.p3)})
         self.assertIn(7, zs)
         self.assertIn(23, zs)
 
-    def test_a_drop_of_zero_changes_nothing(self):
-        joint = box(0, 0, 0, 10, 2, 8, "black")
+    def test_only_the_marked_faces_are_repainted(self):
+        # Sloped walk slabs wear ground on their underside and ends.
+        joint = ramp_slab_y(0, 10, 0, 100, -16, -16, 8, 24, "ground", tt="marker")
+        cut_sidewalk_joints([joint], 1, "marker", "asphalt")
+        self.assertEqual({f.tex for f in joint.faces}, {"ground", "asphalt"})
+
+    def test_a_drop_of_zero_fills_without_sinking(self):
+        joint = box(0, 0, 0, 10, 2, 8, "marker")
         before = [(f.p1, f.p2, f.p3) for f in joint.faces]
-        recess_joint_tops([joint], 0, "black")
+        cut_sidewalk_joints([joint], 0, "marker", "asphalt")
         self.assertEqual([(f.p1, f.p2, f.p3) for f in joint.faces], before)
+        self.assertEqual({f.tex for f in joint.faces}, {"asphalt"})
 
     def test_rejects_a_drop_that_would_collapse_the_joint(self):
         with self.assertRaises(ValueError):
-            recess_joint_tops([box(0, 0, 0, 10, 2, 1, "black")], 1, "black")
+            cut_sidewalk_joints([box(0, 0, 0, 10, 2, 1, "marker")], 1, "marker", "a")
 
     def test_rejects_a_negative_drop(self):
         with self.assertRaises(ValueError):
-            recess_joint_tops([box(0, 0, 0, 10, 2, 8, "black")], -1, "black")
+            cut_sidewalk_joints([box(0, 0, 0, 10, 2, 8, "marker")], -1, "marker", "a")
 
 
 if __name__ == "__main__":
