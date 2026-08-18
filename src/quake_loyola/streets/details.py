@@ -14,6 +14,8 @@ from ..constants.derived import (
     ENNIS_Y,
     KNOTT_DRIVEWAY_CORRIDOR_X1,
     KNOTT_DRIVEWAY_CORRIDOR_X2,
+    KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W,
+    KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W,
     KNOTT_DRIVEWAY_ES_X2,
     KNOTT_DRIVEWAY_WS_X1,
     MANHOLE_R,
@@ -1930,9 +1932,22 @@ def _append_verge_fill_surfaces(brushes, layout):
                 )
             )
 
+    # The Knott driveway's curb bulges carry the south curb north to the bulge
+    # face on both sides of the driveway, so the straight road-edge curb stops
+    # at each bulge's outer end rather than running on through its interior.
+    west_bulge_x1 = (
+        KNOTT_DRIVEWAY_CORRIDOR_X1
+        - KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+        - KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+    )
+    east_bulge_x2 = (
+        KNOTT_DRIVEWAY_CORRIDOR_X2
+        + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
+        + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
+    )
     for vx1, vx2 in [
-        (ROAD_X2 + CHARLES_WALK_W, KNOTT_DRIVEWAY_CORRIDOR_X1),
-        (KNOTT_DRIVEWAY_CORRIDOR_X2, layout["ennis_x2"]),
+        (ROAD_X2 + CHARLES_WALK_W, west_bulge_x1),
+        (east_bulge_x2, layout["ennis_x2"]),
     ]:
         brushes.append(
             box(
