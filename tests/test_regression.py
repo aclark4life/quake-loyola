@@ -17,8 +17,8 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # hash out from under these tests — tests/conftest.py isolates the whole
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1143
-EXPECTED_ENTITIES = 106
-EXPECTED_MD5 = "136cd4683adc8218d2004bf7fcb53d1c"
+EXPECTED_ENTITIES = 107
+EXPECTED_MD5 = "98961900df51ebad5de7776bfcaf9d0d"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something
@@ -28,7 +28,7 @@ EXPECTED_MD5 = "136cd4683adc8218d2004bf7fcb53d1c"
 # so it stays in sync — but it has no independent oracle either, so review
 # the printed delta before blessing it.
 EXPECTED_ENTITY_CLASSNAME_COUNTS = {
-    "func_detail": 13,
+    "func_detail": 14,
     "func_illusionary": 5,
     "info_player_start": 1,
     "info_teleport_destination": 1,

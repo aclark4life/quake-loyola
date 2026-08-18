@@ -9,6 +9,14 @@ geometric invariants (rather than only the merged whole-map output).
 import unittest
 
 from quake_loyola import bridge, knott_hall
+from quake_loyola.constants import (
+    BRIDGE_ARCH_X,
+    BRIDGE_SUPPORT_BEAM_H,
+    KNOTT,
+    KNOTT_ENT_WALK_ZT1,
+)
+from quake_loyola.constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
+from quake_loyola.terrain import knott_hall as knott_terrain
 
 
 class KnottHallWallsTest(unittest.TestCase):
@@ -197,6 +205,44 @@ class BridgeShiftCenterSpanTest(unittest.TestCase):
                 self.assertAlmostEqual(Z2 - z2, dz, places=3)
                 checked_any = True
         self.assertTrue(checked_any, "expected at least one brush to check")
+
+
+class KnottWalkwayBentTest(unittest.TestCase):
+    """The bent under the span in front of the Knott entrance."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_walkway_bent(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+
+    def test_emits_a_beam_five_pillars_and_a_tie_beam(self):
+        self.assertEqual(len(self.brushes), 7)
+
+    def test_beam_sits_flush_under_the_span_deck(self):
+        deck_underside = (
+            KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t + BRIDGE_CENTER_SPAN_OFFSET[2]
+        )
+        tops = [maxs[2] for _mins, maxs in self.boxes]
+        self.assertEqual(max(tops), deck_underside)
+
+    def test_bent_stays_within_the_span_it_carries(self):
+        for mins, maxs in self.boxes:
+            self.assertGreaterEqual(mins[0], BRIDGE_ARCH_X[3])
+            self.assertLessEqual(maxs[0], BRIDGE_ARCH_X[4])
+
+    def test_pillars_reach_the_hillside_below_the_beam(self):
+        beam_bottom = (
+            KNOTT_ENT_WALK_ZT1
+            - KNOTT.wall_t
+            + BRIDGE_CENTER_SPAN_OFFSET[2]
+            - BRIDGE_SUPPORT_BEAM_H
+        )
+        pillars = [b for b in self.boxes if b[1][2] == beam_bottom]
+        self.assertEqual(len(pillars), 5)
+        for mins, maxs in pillars:
+            ground = knott_terrain._kh_hill_ground_z((mins[0] + maxs[0]) / 2, maxs[1])
+            self.assertLessEqual(mins[2], ground)
+            self.assertGreater(mins[2], 0)
 
 
 if __name__ == "__main__":

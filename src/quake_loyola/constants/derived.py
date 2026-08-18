@@ -295,7 +295,11 @@ def ft_to_units(feet, inches=0):
 
 
 BRIDGE_PAR_W = ft_to_units(2, 6)
+KNOTT_ENT_WALK_ZT1 = int(
+    deck_top_z(KNOTT_ORIG_CX)
+)  # Bridge deck height at the Knott approach.
 BRIDGE_PILLAR_HW = ft_to_units(2, 5.5) + 8  # Pier half-width.
+
 BRIDGE_PILLAR_PYR_W = BRIDGE_PILLAR_HW  # Pyramid cap stays flush with the pillar post.
 
 

@@ -1,14 +1,18 @@
 """Terrain and access geometry around Knott Hall.
 
 This module builds the Knott driveway, nearby hillside transitions, and the
-optional pedestrian walkway and support bent that connect Knott Hall to the
-bridge corridor.
+support bent under the bridge span in front of the Knott Hall entrance.
 """
 
 import math
 
 from ..constants import (
+    BRIDGE,
     BRIDGE_ARCH_X,
+    BRIDGE_CENTER_SPAN_OFFSET,
+    BRIDGE_SUPPORT_BEAM_H,
+    BRIDGE_SUPPORT_HW,
+    BRIDGE_SUPPORT_PIER_HALF_W,
     CHARLES_RAMP_W,
     CHARLES_WALK_H,
     CHARLES_WALK_W,
@@ -39,6 +43,7 @@ from ..constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_ENT_WALK_ZT1,
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
@@ -52,6 +57,7 @@ from ..constants import (
 )
 from ..geometry import (
     box,
+    brush_ent,
     curb_seg,
     ramp_slab_y,
     sidewalk_panel_spans,
@@ -1324,9 +1330,87 @@ def _append_knott_east_curb_return(brushes, _east_ext_y2):
     )
 
 
-def _build_knott_terrain():
-    """Build the Knott driveway slopes, hillside fills, and curb returns."""
+def _append_knott_walkway_bent(brushes):
+    """Build the support bent under the span in front of the Knott entrance.
 
+    A cement beam tucked against the deck underside, carried by drop pillars
+    down to the hillside, plus a tie beam running on from the last pillar to
+    the Pier 5 wall at the span's east end.
+    """
+    _bent_dy, _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+
+    support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy
+    support_y1 = support_y_center - BRIDGE_SUPPORT_HW
+    support_y2 = support_y_center + BRIDGE_SUPPORT_HW
+
+    beam_top_z = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t + _bent_dz
+    beam_height = BRIDGE_SUPPORT_BEAM_H
+    beam_bottom_z = beam_top_z - beam_height
+
+    beam_x1 = BRIDGE_ARCH_X[3]
+    beam_x2 = BRIDGE_ARCH_X[4]
+
+    step = (beam_x2 - beam_x1) / 6
+    support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
+    support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
+
+    # Pull the east-most support pillar in closer to the actual bridge pier at
+    # beam_x2, instead of leaving it a full even-spacing step (~209 units)
+    # away, and nudge its western neighbour east to open the gap between them.
+    support_pier_xs[-1] = int(beam_x2 - 140)
+    support_pier_xs[-2] = int(support_pier_xs[-2] + 60)
+
+    # The beam stops short of the Pier 4 wall (beam_x1) and starts flush with
+    # the first drop pillar's west face, leaving the west end open to match the
+    # real building.
+    beam_start_x = support_pier_xs[0] - support_pier_half_width
+
+    brushes.append(
+        box(
+            beam_start_x,
+            support_y1,
+            beam_bottom_z,
+            beam_x2,
+            support_y2,
+            beam_top_z,
+            Textures.CEMENT,
+        )
+    )
+
+    # Foot the pillars at the hillside height along the bent's downhill edge so
+    # they bury into the slope rather than floating off its high side.
+    for pier_x in support_pier_xs:
+        brushes.append(
+            box(
+                pier_x - support_pier_half_width,
+                support_y1,
+                _kh_hill_ground_z(pier_x, support_y2),
+                pier_x + support_pier_half_width,
+                support_y2,
+                beam_bottom_z,
+                Textures.CEMENT,
+            )
+        )
+
+    _tie_x1 = support_pier_xs[-1]
+    _tie_z = min(
+        _kh_hill_ground_z(_tie_x1, support_y2),
+        _kh_hill_ground_z(beam_x2, support_y2),
+    )
+    brushes.append(
+        box(
+            _tie_x1,
+            support_y1,
+            _tie_z,
+            beam_x2,
+            support_y2,
+            _tie_z + beam_height,
+            Textures.CEMENT,
+        )
+    )
+
+
+def _build_knott_terrain():
     BRUSHES = []
     state = _knott_terrain_state()
 
@@ -1345,7 +1429,9 @@ def _build_knott_terrain():
 
 def build():
     """Build the Knott Hall terrain, embankment, and driveway."""
-    return _build_knott_terrain(), []
+    bent = []
+    _append_knott_walkway_bent(bent)
+    return _build_knott_terrain(), [brush_ent("func_detail", bent)]
 
 
 def _kh_hill_ground_z(x, y):

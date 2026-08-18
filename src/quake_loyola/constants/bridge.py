@@ -78,6 +78,11 @@ BRIDGE_SQ_D = 1
 BRIDGE_SQ_HH = 6
 BRIDGE_SQ_HW = 8
 
+# Support bent carrying the span in front of the Knott Hall entrance.
+BRIDGE_SUPPORT_BEAM_H = 60  # Support beam height.
+BRIDGE_SUPPORT_HW = 16
+BRIDGE_SUPPORT_PIER_HALF_W = 25  # Support pier half-width.
+
 # West-abutment plinth heights.
 BRIDGE_ABUTMENT_RAMP_HIGH_H = 40  # West-face ramp height.
 BRIDGE_ABUTMENT_RAMP_LOW_H = 24  # East-face ramp height.
