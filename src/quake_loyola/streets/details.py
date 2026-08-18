@@ -66,6 +66,7 @@ from ..constants.streets import (
     STREET_LANE_DASH_MIN,
     STREET_SURFACE_T,
     STREET_SW_GAP,
+    STREET_SW_JOINT_DROP,
     STREET_SW_SLAB_LEN,
 )
 from ..constants.textures import (
@@ -81,6 +82,7 @@ from ..geometry import (
     brush_ent,
     polygon_prism,
     ramp_slab_y,
+    recess_joint_tops,
     score_polygon_prisms,
     sidewalk_panel_spans,
     split_poly_by_joints,
@@ -94,7 +96,7 @@ from .ennis import _build_ennis_entrance_features
 # the straight runs and the rounded intersection corners so the joint lands
 # at the same offset all the way around.
 CHARLES_CURB_CAP_D = 8
-CHARLES_CURB_GAP = 2
+CHARLES_CURB_GAP = STREET_SW_GAP
 
 # The Ennis south-west entry pad (the WHITE_STONE/CEMENT apron by the Charles
 # St corner) runs flush with the Charles curb joint on its west edge, rather
@@ -910,7 +912,7 @@ def _append_ennis_north_sidewalk_strip(
     # Score a joint at the west edge of the stone run, where it meets the
     # plain cement sidewalk, so the material change reads as a scored seam
     # instead of an untextured hard cut.
-    joint_w = 2
+    joint_w = STREET_SW_GAP
     _append_street_sidewalk_slabs_x(
         brushes,
         ramp_x2,
@@ -1154,7 +1156,7 @@ def _append_ennis_curb_bulge(brushes, layout, *, curb_cap_d, curb_gap, ramp_x2):
 def _append_ennis_north_sidewalks_and_curb_bulge(brushes, layout):
     """Add the north Ennis sidewalks, curb caps, and the curb bulge."""
     ennis_curb_cap_d = 8
-    ennis_curb_gap = 2
+    ennis_curb_gap = STREET_SW_GAP
     ramp_x2 = ROAD_X2 + CHARLES_WALK_W + 2 * layout["sw_slab_len"]
     _append_ennis_corner_ramp_extension(
         brushes,
@@ -1199,7 +1201,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     # scored joint or curb-block texture cutting across it — unlike the
     # tiled runs east of it, which do score a joint there.
     curb_edge_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W
-    entry_pad_joint_w = 2
+    entry_pad_joint_w = STREET_SW_GAP
     # Score joints where this stone slab meets cement: to the north (the
     # cement slab poured above it, full width) and to the south, but only
     # across the west portion (x:266..336) where the neighbor to the south
@@ -1365,7 +1367,7 @@ def _append_ennis_south_sidewalk_segment(
 def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
     """Add the south Ennis sidewalks, curb joints, and curb slabs."""
     ennis_curb_cap_d = 8
-    ennis_curb_gap = 2
+    ennis_curb_gap = STREET_SW_GAP
     west_curb_x1 = ROAD_X2 + CHARLES_WALK_W
     _append_ennis_south_west_entry_slabs(
         brushes, layout, curb_cap_d=ennis_curb_cap_d, curb_gap=ennis_curb_gap
@@ -2032,6 +2034,7 @@ def _build_street_details(BRUSHES, ENTITIES):
 
     if detail_brushes:
         detail_brushes = punch_manhole_detail(detail_brushes, manhole_seen)
+        recess_joint_tops(detail_brushes, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
         ENTITIES.append(brush_ent("func_detail", detail_brushes))
 
     # NOTE: the global world-seal brushes live in shell.py::_build_world_seal()

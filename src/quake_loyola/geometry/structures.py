@@ -2,7 +2,7 @@
 
 import math
 
-from ..mapdata import Brush, Face
+from ..mapdata import Brush, Face, _face_plane
 from ..utils import swap_xy
 from .primitives import (
     arch_pie_seg,
@@ -12,6 +12,51 @@ from .primitives import (
     box,
     ramp_slab,
 )
+
+
+def _face_up_cos(face):
+    """Cosine of the angle between a face's inward normal and +Z.
+
+    Most negative on the face pointing up out of the brush, since face normals
+    point into the solid.
+    """
+    normal, _d = _face_plane(face)
+    return normal[2] / math.dist((0, 0, 0), normal)
+
+
+def recess_joint_tops(brushes, drop, tex):
+    """Sink the top face of every brush surfaced entirely in ``tex`` by ``drop``.
+
+    Sidewalk joints are poured as slabs flush with the walking surface, which
+    reads as a painted stripe rather than a seam. Dropping their top faces
+    turns each one into a shallow groove: the panels either side now show a
+    sliver of their own edge, and the joint's dark texture sits in shadow at
+    the bottom. Keying on the top face's texture keeps the walk builders free
+    of joint depth bookkeeping — a joint is exactly a slab paved in the joint
+    texture, whatever its sides and underside are made of.
+
+    Brushes are modified in place. Sloped joints keep their slope, since the
+    top face is translated straight down rather than re-levelled.
+    """
+    if drop < 0:
+        raise ValueError(f"recess_joint_tops: drop must be >= 0, got {drop}")
+    if not drop:
+        return
+    for brush in brushes:
+        if not brush.faces:
+            continue
+        # Face normals point into the brush, so the top face is the one whose
+        # normal leans hardest downwards.
+        top = min(range(len(brush.faces)), key=lambda i: _face_up_cos(brush.faces[i]))
+        if brush.faces[top].tex != tex:
+            continue
+        (_, _, z1), (_, _, z2) = brush.get_bbox()
+        if z2 - z1 <= drop:
+            raise ValueError(
+                f"recess_joint_tops: joint brush is only {z2 - z1} units tall, "
+                f"which a drop of {drop} would collapse"
+            )
+        brush.faces[top] = brush.faces[top].translated(0, 0, -drop)
 
 
 def sidewalk_panel_spans(v1, v2, slab_len, gap, offset=0):

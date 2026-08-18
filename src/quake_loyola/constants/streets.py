@@ -15,7 +15,10 @@ STREET_CHARLES_CURB_W = 8
 # SIDEWALK_JOINT stripe of SW_GAP. Shared by Charles St, Ennis Rd, and the
 # Knott driveway walks so panels read as one paving system.
 STREET_SW_SLAB_LEN = 80
-STREET_SW_GAP = 2
+STREET_SW_GAP = 1
+# Joints are grooves, not stripes: their surface sits this far below the walk
+# so the seam catches a shadow and shows the panel edges either side of it.
+STREET_SW_JOINT_DROP = 1
 # Curbs are poured in longer sections than sidewalk panels, and their joints
 # are offset so they never line up with those of the walk running beside them.
 STREET_CURB_SLAB_LEN = 124
@@ -63,7 +66,7 @@ ENNIS_CROSSWALK_E_OFFSET = 40
 # paving gives way to grass.
 ENNIS_NE_DIAG_JOINT_P1 = (327.0, 1358.0)
 ENNIS_NE_DIAG_JOINT_P2 = (389.0, 1504.0)
-ENNIS_NE_DIAG_JOINT_W = 2.0
+ENNIS_NE_DIAG_JOINT_W = float(STREET_SW_GAP)
 # Cross joints scored across the cement pad east of that diagonal: one line
 # running east-west through this point, and one running south from it to the
 # pad's south edge. With the diagonal they leave the pad in four tiles.

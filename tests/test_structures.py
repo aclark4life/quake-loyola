@@ -9,9 +9,12 @@ from quake_loyola.geometry import (
     arch_fill,
     arch_fill_y,
     arch_wall,
+    box,
     gable_slats,
     layered_wall,
     layered_wall_y,
+    ramp_slab_y,
+    recess_joint_tops,
     square_wall,
     tile_grid_origins,
 )
@@ -196,6 +199,45 @@ class ArchWallRecessAndCapTests(unittest.TestCase):
         # corner-fill pillar boxes.
         brushes = arch_wall(0, 100, -50, 50, 0, 100, 18, 20, 4, "tex")
         self.assertTrue(brushes)
+
+
+class RecessJointTopsTests(unittest.TestCase):
+    """Sidewalk joints are sunk below the walking surface, not flush with it."""
+
+    def test_lowers_a_flat_joint_top_only(self):
+        joint = box(0, 0, 0, 10, 2, 8, "black")
+        recess_joint_tops([joint], 1, "black")
+        (_, _, z1), (_, _, z2) = joint.get_bbox()
+        self.assertEqual((z1, z2), (0, 7))
+        tops = [f for f in joint.faces if {p[2] for p in (f.p1, f.p2, f.p3)} == {7}]
+        self.assertEqual(len(tops), 1)
+
+    def test_leaves_panels_and_other_textures_alone(self):
+        panel = box(0, 0, 0, 10, 80, 8, "cement")
+        before = [(f.p1, f.p2, f.p3) for f in panel.faces]
+        recess_joint_tops([panel], 1, "black")
+        self.assertEqual([(f.p1, f.p2, f.p3) for f in panel.faces], before)
+
+    def test_a_sloped_joint_keeps_its_slope(self):
+        joint = ramp_slab_y(0, 10, 0, 100, -16, -16, 8, 24, "black")
+        recess_joint_tops([joint], 1, "black")
+        zs = sorted({p[2] for f in joint.faces for p in (f.p1, f.p2, f.p3)})
+        self.assertIn(7, zs)
+        self.assertIn(23, zs)
+
+    def test_a_drop_of_zero_changes_nothing(self):
+        joint = box(0, 0, 0, 10, 2, 8, "black")
+        before = [(f.p1, f.p2, f.p3) for f in joint.faces]
+        recess_joint_tops([joint], 0, "black")
+        self.assertEqual([(f.p1, f.p2, f.p3) for f in joint.faces], before)
+
+    def test_rejects_a_drop_that_would_collapse_the_joint(self):
+        with self.assertRaises(ValueError):
+            recess_joint_tops([box(0, 0, 0, 10, 2, 1, "black")], 1, "black")
+
+    def test_rejects_a_negative_drop(self):
+        with self.assertRaises(ValueError):
+            recess_joint_tops([box(0, 0, 0, 10, 2, 8, "black")], -1, "black")
 
 
 if __name__ == "__main__":

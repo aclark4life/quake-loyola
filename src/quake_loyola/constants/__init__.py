@@ -363,6 +363,7 @@ from .streets import (
     STREET_ENNIS_DIV_HW,
     STREET_SURFACE_T,
     STREET_SW_GAP,
+    STREET_SW_JOINT_DROP,
     STREET_SW_SLAB_LEN,
 )
 from .textures import Textures
@@ -686,6 +687,7 @@ __all__ = [
     "STREET_CURB_JOINT_OFFSET",
     "STREET_CURB_SLAB_LEN",
     "STREET_SW_GAP",
+    "STREET_SW_JOINT_DROP",
     "STREET_SW_SLAB_LEN",
     "STREET_DIV_GAP_HW",
     "STREET_DIV_HW",

@@ -49,6 +49,7 @@ from ..constants import (
     STREET_CURB_SLAB_LEN,
     STREET_SURFACE_T,
     STREET_SW_GAP,
+    STREET_SW_JOINT_DROP,
     STREET_SW_SLAB_LEN,
     WALL_T,
     WORLD_X2_EXT,
@@ -60,6 +61,7 @@ from ..geometry import (
     brush_ent,
     curb_seg,
     ramp_slab_y,
+    recess_joint_tops,
     sidewalk_panel_spans,
     tri_prism,
     tri_ramp_prism,
@@ -1423,6 +1425,8 @@ def _build_knott_terrain():
     _west_ext_y2, _east_ext_y2 = _append_knott_driveway_extension(BRUSHES)
     _append_knott_west_curb_return(BRUSHES, _west_ext_y2)
     _append_knott_east_curb_return(BRUSHES, _east_ext_y2)
+
+    recess_joint_tops(BRUSHES, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
 
     return BRUSHES
 

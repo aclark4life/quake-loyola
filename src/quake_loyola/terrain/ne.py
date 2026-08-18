@@ -24,13 +24,19 @@ from ..constants import (
     KNOTT_DRIVEWAY_CORRIDOR_X2,
     ROAD_X2,
     STREET_SURFACE_T,
+    STREET_SW_JOINT_DROP,
     STREET_SW_SLAB_LEN,
     WALL_T,
     WORLD_X2_EXT,
     WORLD_Y2,
     Textures,
 )
-from ..geometry import polygon_prism, split_poly_by_joints, tri_ramp_prism
+from ..geometry import (
+    polygon_prism,
+    recess_joint_tops,
+    split_poly_by_joints,
+    tri_ramp_prism,
+)
 from ._mesh_helpers import append_sampled_grid_mesh
 
 _NE_HEIGHT_SCALE = 0.5
@@ -224,5 +230,7 @@ def build():
         texture=Textures.GROUND,
         build_cell_brushes=_build_ne_terrain_cell,
     )
+
+    recess_joint_tops(BRUSHES, STREET_SW_JOINT_DROP, Textures.SIDEWALK_JOINT)
 
     return BRUSHES, ENTITIES

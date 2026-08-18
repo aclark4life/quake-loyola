@@ -3,7 +3,7 @@
 The dorm buildings themselves now live in ``dorms.py``.
 """
 
-from .constants import WORLD_Y2
+from .constants import STREET_SW_GAP, WORLD_Y2
 from .constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
 from .constants.derived import (
     BRIDGE_DZ2,
@@ -244,9 +244,9 @@ def _build_sidewalk(BRUSHES):
     """
     walk_lift = SDORM_LIFT - 10
     _SW_SLAB_LEN = 80
-    _SW_GAP = 2
+    _SW_GAP = STREET_SW_GAP
     _CURB_W = 8
-    _CURB_GAP = 2
+    _CURB_GAP = STREET_SW_GAP
 
     def slabs_y(x1, x2, y1, y2):
         """Tile a flat north-south run into square panels."""
