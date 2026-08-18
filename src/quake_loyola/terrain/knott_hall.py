@@ -845,6 +845,61 @@ def _append_knott_hillside_profile_fill(brushes, state):
         )
 
 
+def _append_ennis_walk_apron(brushes, x1, x2):
+    """Carry the Ennis south walk across a driveway head at ``x1``..``x2``.
+
+    Reproduces the banding the street module gives the rest of the south walk
+    — stone walk, dark joint, then the decorative curb slab sitting on a ground
+    backfill — so the aprons read as part of the same sidewalk.
+    """
+    _walk_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W - STREET_SW_GAP
+    _curb_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W
+    _append_tiled_flat_sidewalk_x(
+        brushes,
+        x1,
+        x2,
+        ENNIS_SW_EDGE,
+        _walk_y2,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.WHITE_STONE,
+    )
+    _append_flat_sidewalk_slab(
+        brushes,
+        x1,
+        x2,
+        _walk_y2,
+        _curb_y1,
+        FLOOR_Z2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+        Textures.SIDEWALK_JOINT,
+    )
+    # The curb slab pours from STREET_SURFACE_T up, as it does along the rest
+    # of the run, so back it with ground to keep the band solid.
+    brushes.append(
+        box(
+            x1,
+            _curb_y1,
+            FLOOR_Z2,
+            x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            Textures.GROUND,
+        )
+    )
+    brushes.append(
+        box(
+            x1,
+            _curb_y1,
+            FLOOR_Z2 + STREET_SURFACE_T,
+            x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CURB,
+        )
+    )
+
+
 def _append_knott_driveway_extension(brushes):
     """Build the Ennis-side driveway extension, sidewalks, and edge fills."""
     brushes.append(
@@ -883,19 +938,9 @@ def _append_knott_driveway_extension(brushes):
     )
 
     _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
-    # The Ennis walk crosses the driveway head in the same stone as the walk
-    # either side of it, matching the apron on the driveway's east side. It
-    # spans the full width to the roadbed, so the curb is depressed here.
-    _append_tiled_flat_sidewalk_x(
-        brushes,
-        KNOTT_DRIVEWAY_WS_X1,
-        KNOTT_DRIVEWAY_WS_X2,
-        ENNIS_SW_EDGE,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.WHITE_STONE,
-    )
+    # The Ennis walk crosses the driveway head banded like the walk either
+    # side of it, matching the apron on the driveway's east side.
+    _append_ennis_walk_apron(brushes, KNOTT_DRIVEWAY_WS_X1, KNOTT_DRIVEWAY_WS_X2)
     # The west curb resumes north of the walk and runs past its end to close
     # the bulge return.
     for _curb_y1, _curb_y2 in (
@@ -956,20 +1001,11 @@ def _append_knott_driveway_extension(brushes):
         + KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W
         + KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W
     )
-    # The Ennis walk crosses the driveway apron in the same stone as the rest
-    # of the south walk. It stops at the driveway's east edge: east of there
-    # the street module's own SE run owns the walk, joint, and curb, so
-    # carrying this run past the bulge would bury them in overlapping cement.
-    _append_tiled_flat_sidewalk_x(
-        brushes,
-        KNOTT_DRIVEWAY_ES_X1,
-        KNOTT_DRIVEWAY_ES_X2,
-        ENNIS_SW_EDGE,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.WHITE_STONE,
-    )
+    # The Ennis walk crosses the driveway apron banded like the rest of the
+    # south walk. It stops at the driveway's east edge: east of there the
+    # street module's own SE run owns the walk, joint, and curb, so carrying
+    # this run past the bulge would bury them in overlapping cement.
+    _append_ennis_walk_apron(brushes, KNOTT_DRIVEWAY_ES_X1, KNOTT_DRIVEWAY_ES_X2)
     # That run used to backfill under the street module's Ennis curb across the
     # bulge; the curb only pours from STREET_SURFACE_T up, so fill it here.
     brushes.append(
