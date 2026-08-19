@@ -590,7 +590,8 @@ Spatial hierarchy
    │   ├── Outer walls (5 floors + roof)
    │   ├── Interior floors, hallway & rooms
    │   ├── Elevator (func_plat) inside lift shaft
-   │   ├── Entrance staircase & railings (north face, ground level)
+   │   ├── Ground-level north door + walk (level off the threshold, a
+   │   │   railed flight of steps, then a cement path down to Ennis)
    │   └── Fascia lettering ("LOYOLA UNIVERSITY MARYLAND")
    └── Campus lamp posts (along Charles Street)
 

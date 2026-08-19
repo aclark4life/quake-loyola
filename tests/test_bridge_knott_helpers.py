@@ -7,12 +7,25 @@ geometric invariants (rather than only the merged whole-map output).
 """
 
 import unittest
+from unittest import mock
 
 from quake_loyola import bridge, knott_hall
 from quake_loyola.constants import (
     BRIDGE_ARCH_X,
     BRIDGE_SUPPORT_BEAM_H,
+    CHARLES_WALK_H,
+    ENNIS_SW_EDGE,
+    FLOOR_Z1,
+    FLOOR_Z2,
     KNOTT,
+    KNOTT_DOOR_WALK_PATH_PROUD,
+    KNOTT_DOOR_WALK_PATH_TAIL,
+    KNOTT_DOOR_WALK_RAIL_END,
+    KNOTT_DOOR_WALK_RAIL_H,
+    KNOTT_DOOR_WALK_RAIL_T,
+    KNOTT_DOOR_WALK_RISE,
+    KNOTT_DOOR_WALK_STEPS,
+    KNOTT_DOOR_WALK_TREAD,
     KNOTT_ENT_WALK_ZT1,
 )
 from quake_loyola.constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
@@ -80,7 +93,7 @@ class KnottHallSignTest(unittest.TestCase):
         self.assertTrue(sign_brushes)
         for brush in sign_brushes:
             (_, y1, _), (_, y2, _) = brush.get_bbox()
-            # The sign hangs off the north (KH_Y2) wall.
+            # The sign hangs off the north (knott_hall.KH_Y2) wall.
             self.assertGreaterEqual(y1, knott_hall.KH_Y2 - 1e-3)
             self.assertGreaterEqual(y2, knott_hall.KH_Y2 - 1e-3)
 
@@ -243,6 +256,187 @@ class KnottWalkwayBentTest(unittest.TestCase):
             ground = knott_terrain._kh_hill_ground_z((mins[0] + maxs[0]) / 2, maxs[1])
             self.assertLessEqual(mins[2], ground)
             self.assertGreater(mins[2], 0)
+
+
+class KnottEntranceWalkTest(unittest.TestCase):
+    """The walk, steps, and path outside the Knott ground-level north door."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_entrance_walk(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.flat_z = FLOOR_Z2 + CHARLES_WALK_H
+        self.stair_y1, self.stair_y2, self.stair_z2 = (
+            knott_terrain._knott_door_walk_layout()
+        )
+
+    def test_walk_lines_up_with_the_doorway(self):
+        for mins, maxs in self.boxes:
+            self.assertEqual(mins[0], knott_hall.GROUND_DOOR_X1)
+            self.assertEqual(maxs[0], knott_hall.GROUND_DOOR_X2)
+
+    def test_walk_leaves_the_doorway_at_grade(self):
+        sill = knott_hall.GROUND_DOOR_BOTTOM
+        outside = knott_terrain._kh_hill_ground_z(
+            knott_hall.GROUND_DOOR_CX, knott_hall.KH_Y2
+        )
+        self.assertEqual(sill, outside)
+        at_door = min(self.boxes, key=lambda b: b[0][1])
+        self.assertEqual(at_door[0][1], knott_hall.KH_Y2)
+        self.assertEqual(at_door[1][2], sill)
+
+    def test_level_run_carries_the_door_height_to_the_steps(self):
+        level = [b for b in self.boxes if b[1][2] == knott_hall.GROUND_DOOR_BOTTOM]
+        self.assertEqual(min(b[0][1] for b in level), knott_hall.KH_Y2)
+        self.assertEqual(max(b[1][1] for b in level), self.stair_y1)
+
+    def test_there_is_a_single_flight_of_steps(self):
+        run = KNOTT_DOOR_WALK_STEPS * KNOTT_DOOR_WALK_TREAD
+        self.assertEqual(self.stair_y2 - self.stair_y1, run)
+        tops = sorted(
+            {
+                maxs[2]
+                for mins, maxs in self.boxes
+                if self.stair_y1 <= mins[1] < self.stair_y2
+            },
+            reverse=True,
+        )
+        self.assertEqual(len(tops), KNOTT_DOOR_WALK_STEPS)
+        for upper, lower in zip(tops, tops[1:], strict=False):
+            self.assertEqual(upper - lower, KNOTT_DOOR_WALK_RISE)
+        self.assertEqual(tops[-1], self.stair_z2)
+
+    def test_steps_are_steeper_than_the_hillside_they_cross(self):
+        hill_run = ENNIS_SW_EDGE - knott_hall.KH_Y2
+        hill_fall = knott_hall.GROUND_DOOR_BOTTOM - self.flat_z
+        self.assertGreater(
+            KNOTT_DOOR_WALK_RISE / KNOTT_DOOR_WALK_TREAD, hill_fall / hill_run
+        )
+
+    def test_path_below_the_steps_lands_flush_on_the_ennis_walk(self):
+        path = next(b for b in self.brushes if b.get_bbox()[1][1] == ENNIS_SW_EDGE)
+        mins, maxs = path.get_bbox()
+        self.assertEqual(mins[1], self.stair_y2)
+        self.assertEqual(maxs[2], self.stair_z2)
+        ends = [
+            v[2]
+            for face in path.faces
+            for v in (face.p1, face.p2, face.p3)
+            if v[1] == ENNIS_SW_EDGE and v[2] > FLOOR_Z1
+        ]
+        self.assertEqual(max(ends), self.flat_z)
+
+    def test_path_ramps_the_hillside_ledge_away_at_the_bottom(self):
+        tail = max(self.brushes, key=lambda b: b.get_bbox()[1][1])
+        mins, maxs = tail.get_bbox()
+        self.assertEqual(mins[1], ENNIS_SW_EDGE)
+        self.assertEqual(maxs[1], ENNIS_SW_EDGE + KNOTT_DOOR_WALK_PATH_TAIL)
+        self.assertEqual(maxs[2], self.flat_z)
+        ends = [
+            v[2]
+            for face in tail.faces
+            for v in (face.p1, face.p2, face.p3)
+            if v[1] == maxs[1] and v[2] > FLOOR_Z1
+        ]
+        self.assertEqual(max(ends), FLOOR_Z2)
+
+    def test_nothing_is_buried_in_the_hillside(self):
+        for mins, maxs in self.boxes:
+            downhill = knott_terrain._kh_hill_ground_z((mins[0] + maxs[0]) / 2, maxs[1])
+            self.assertGreaterEqual(maxs[2], downhill)
+
+    def test_path_starts_at_ground_level(self):
+        grade = knott_terrain._kh_hill_ground_z(
+            knott_hall.GROUND_DOOR_CX, self.stair_y2
+        )
+        self.assertGreaterEqual(self.stair_z2 - grade, KNOTT_DOOR_WALK_PATH_PROUD)
+        self.assertLess(
+            self.stair_z2 - grade,
+            KNOTT_DOOR_WALK_PATH_PROUD + KNOTT_DOOR_WALK_RISE,
+        )
+
+    def test_path_falls_faster_than_the_hillside_it_crosses(self):
+        grade = knott_terrain._kh_hill_ground_z(
+            knott_hall.GROUND_DOOR_CX, self.stair_y2
+        )
+        run = ENNIS_SW_EDGE - self.stair_y2
+        self.assertGreater(
+            (self.stair_z2 - self.flat_z) / run, (grade - self.flat_z) / run
+        )
+
+    def test_a_flight_too_long_to_fit_the_hillside_is_rejected(self):
+        with mock.patch.object(knott_terrain, "KNOTT_DOOR_WALK_STEPS", 64):
+            with self.assertRaises(ValueError):
+                knott_terrain._knott_door_walk_layout()
+
+    def test_a_flight_that_would_start_inside_the_building_is_rejected(self):
+        with mock.patch.object(knott_terrain, "KNOTT_DOOR_WALK_TREAD", 512):
+            with self.assertRaises(ValueError):
+                knott_terrain._knott_door_walk_layout()
+
+    def test_a_flight_that_would_land_past_ennis_is_rejected(self):
+        with mock.patch.object(knott_terrain, "KNOTT_DOOR_WALK_RISE", 77):
+            with mock.patch.object(knott_terrain, "KNOTT_DOOR_WALK_STEPS", 1):
+                with self.assertRaises(ValueError):
+                    knott_terrain._knott_door_walk_layout()
+
+
+class KnottEntranceWalkRailsTest(unittest.TestCase):
+    """The pipe rails flanking those steps."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_entrance_walk_rails(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.stair_y1, self.stair_y2, self.stair_z2 = (
+            knott_terrain._knott_door_walk_layout()
+        )
+
+    def test_rails_flank_both_edges_of_the_steps(self):
+        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
+        east = [b for b in self.boxes if b[1][0] == knott_hall.GROUND_DOOR_X2]
+        self.assertTrue(west)
+        self.assertEqual(len(west), len(east))
+        self.assertEqual(len(west) + len(east), len(self.boxes))
+
+    def test_rails_are_a_thin_pipe_section(self):
+        for mins, maxs in self.boxes:
+            self.assertEqual(maxs[0] - mins[0], KNOTT_DOOR_WALK_RAIL_T)
+
+    def test_rails_run_level_past_each_end_of_the_flight(self):
+        self.assertEqual(
+            min(b[0][1] for b in self.boxes),
+            self.stair_y1 - KNOTT_DOOR_WALK_RAIL_END,
+        )
+        self.assertEqual(
+            max(b[1][1] for b in self.boxes),
+            self.stair_y2 + KNOTT_DOOR_WALK_RAIL_END,
+        )
+
+    def test_each_rail_stands_on_two_posts_and_no_more(self):
+        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
+        posts = [b for b in west if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
+        self.assertEqual(len(posts), 2)
+        ends = sorted(p[0][1] for p in posts)
+        self.assertEqual(ends[0], self.stair_y1 - KNOTT_DOOR_WALK_RAIL_END)
+        self.assertEqual(
+            ends[1],
+            self.stair_y2 + KNOTT_DOOR_WALK_RAIL_END - KNOTT_DOOR_WALK_RAIL_T,
+        )
+
+    def test_rail_tops_stay_a_handrail_above_the_treads(self):
+        walk = []
+        knott_terrain._append_knott_entrance_walk(walk)
+        treads = [b.get_bbox() for b in walk]
+        for mins, maxs in self.boxes:
+            underfoot = [
+                t[1][2] for t in treads if t[0][1] < maxs[1] and t[1][1] > mins[1]
+            ]
+            self.assertLessEqual(
+                maxs[2],
+                max(underfoot) + KNOTT_DOOR_WALK_RAIL_H + KNOTT_DOOR_WALK_RISE,
+            )
+            self.assertGreater(maxs[2], min(underfoot))
 
 
 if __name__ == "__main__":

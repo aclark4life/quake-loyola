@@ -23,6 +23,14 @@ from ..constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_DOOR_WALK_PATH_PROUD,
+    KNOTT_DOOR_WALK_PATH_TAIL,
+    KNOTT_DOOR_WALK_RAIL_END,
+    KNOTT_DOOR_WALK_RAIL_H,
+    KNOTT_DOOR_WALK_RAIL_T,
+    KNOTT_DOOR_WALK_RISE,
+    KNOTT_DOOR_WALK_STEPS,
+    KNOTT_DOOR_WALK_TREAD,
     KNOTT_DRIVEWAY_CURB_BULGE_D,
     KNOTT_DRIVEWAY_CURB_BULGE_FLAT_W,
     KNOTT_DRIVEWAY_CURB_BULGE_TAPER_W,
@@ -63,8 +71,16 @@ from ..geometry import (
     cut_sidewalk_joints,
     ramp_slab_y,
     sidewalk_panel_spans,
+    stair_railing_y,
+    straight_stair_y,
     tri_prism,
     tri_ramp_prism,
+)
+from ..knott_hall import (
+    GROUND_DOOR_BOTTOM,
+    GROUND_DOOR_X1,
+    GROUND_DOOR_X2,
+    KH_Y2,
 )
 
 
@@ -1332,6 +1348,142 @@ def _append_knott_east_curb_return(brushes, _east_ext_y2):
     )
 
 
+def _knott_door_walk_layout():
+    """Return the north walk's ``(stair_y1, stair_y2, stair_z2)`` layout.
+
+    The walk runs level from the doorway to ``stair_y1``, drops a single
+    flight to ``stair_z2`` at ``stair_y2``, and finishes as a cement path
+    laid down the hillside to the Ennis walk. The flight is placed where its
+    bottom tread lands the path at ground level — a slab thickness proud of
+    the hillside — so a taller flight sits further out towards Ennis.
+    """
+    flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    run = KNOTT_DOOR_WALK_STEPS * KNOTT_DOOR_WALK_TREAD
+    stair_z2 = GROUND_DOOR_BOTTOM - KNOTT_DOOR_WALK_STEPS * KNOTT_DOOR_WALK_RISE
+    if stair_z2 <= flat_z:
+        raise ValueError(
+            f"KNOTT_DOOR_WALK_STEPS={KNOTT_DOOR_WALK_STEPS} drops the walk to "
+            f"{stair_z2}, at or below the Ennis walk at {flat_z}"
+        )
+
+    cx = (GROUND_DOOR_X1 + GROUND_DOOR_X2) / 2
+    lo, hi = KH_Y2 + run, ENNIS_SW_EDGE
+    for _ in range(64):
+        mid = (lo + hi) / 2
+        if _kh_hill_ground_z(cx, mid) + KNOTT_DOOR_WALK_PATH_PROUD > stair_z2:
+            lo = mid
+        else:
+            hi = mid
+    stair_y2 = 4 * math.ceil(hi / 4)
+    if stair_y2 - run < KH_Y2:
+        raise ValueError(
+            f"KNOTT_DOOR_WALK_STEPS={KNOTT_DOOR_WALK_STEPS} needs the stair to "
+            f"start at {stair_y2 - run}, south of the Knott north wall at "
+            f"{KH_Y2}"
+        )
+    if stair_y2 >= ENNIS_SW_EDGE:
+        raise ValueError(
+            f"KNOTT_DOOR_WALK_STEPS={KNOTT_DOOR_WALK_STEPS} lands the stair at "
+            f"y={stair_y2}, at or past the Ennis walk at {ENNIS_SW_EDGE}"
+        )
+    return stair_y2 - run, stair_y2, stair_z2
+
+
+def _append_knott_entrance_walk(brushes):
+    """Build the walk outside the Knott ground-level north door.
+
+    The door opens at grade on the flat crest of the hillside, so the walk
+    runs level off the threshold, takes a single flight of steps down where
+    the hillside starts to fall away, and then follows the slope to Ennis as
+    a plain cement path, ramping the last of the hillside's height away where
+    it runs out onto open ground.
+    """
+    x1, x2 = GROUND_DOOR_X1, GROUND_DOOR_X2
+    flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
+
+    _append_tiled_flat_sidewalk_y(
+        brushes,
+        x1,
+        x2,
+        KH_Y2,
+        stair_y1,
+        FLOOR_Z1,
+        GROUND_DOOR_BOTTOM,
+        Textures.CEMENT,
+    )
+    brushes.extend(
+        straight_stair_y(
+            x1,
+            x2,
+            stair_y1,
+            FLOOR_Z1,
+            GROUND_DOOR_BOTTOM - KNOTT_DOOR_WALK_RISE,
+            KNOTT_DOOR_WALK_STEPS,
+            -KNOTT_DOOR_WALK_RISE,
+            KNOTT_DOOR_WALK_TREAD,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        ramp_slab_y(
+            x1,
+            x2,
+            stair_y2,
+            ENNIS_SW_EDGE,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            stair_z2,
+            flat_z,
+            Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        ramp_slab_y(
+            x1,
+            x2,
+            ENNIS_SW_EDGE,
+            ENNIS_SW_EDGE + KNOTT_DOOR_WALK_PATH_TAIL,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            flat_z,
+            FLOOR_Z2,
+            Textures.CEMENT,
+        )
+    )
+
+
+def _append_knott_entrance_walk_rails(brushes):
+    """Build the pipe rails flanking the north walk's flight of steps.
+
+    Only the steps are railed, as at the building's east entrance: the level
+    walk above them starts at grade by the door, and the path below them lies
+    on the hillside. Each rail runs on level past both ends of the flight,
+    where its only two posts stand.
+    """
+    stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
+    rail_t = KNOTT_DOOR_WALK_RAIL_T
+    for rx1, rx2 in (
+        (GROUND_DOOR_X1, GROUND_DOOR_X1 + rail_t),
+        (GROUND_DOOR_X2 - rail_t, GROUND_DOOR_X2),
+    ):
+        brushes.extend(
+            stair_railing_y(
+                rx1,
+                rx2,
+                stair_y1,
+                stair_y2,
+                GROUND_DOOR_BOTTOM,
+                stair_z2,
+                KNOTT_DOOR_WALK_RAIL_H,
+                Textures.RAIL,
+                rail_t=rail_t,
+                post_w=rail_t,
+                end_run=KNOTT_DOOR_WALK_RAIL_END,
+            )
+        )
+
+
 def _append_knott_walkway_bent(brushes):
     """Build the support bent under the span in front of the Knott entrance.
 
@@ -1425,6 +1577,7 @@ def _build_knott_terrain():
     _west_ext_y2, _east_ext_y2 = _append_knott_driveway_extension(BRUSHES)
     _append_knott_west_curb_return(BRUSHES, _west_ext_y2)
     _append_knott_east_curb_return(BRUSHES, _east_ext_y2)
+    _append_knott_entrance_walk(BRUSHES)
 
     cut_sidewalk_joints(
         BRUSHES,
@@ -1438,9 +1591,10 @@ def _build_knott_terrain():
 
 def build():
     """Build the Knott Hall terrain, embankment, and driveway."""
-    bent = []
-    _append_knott_walkway_bent(bent)
-    return _build_knott_terrain(), [brush_ent("func_detail", bent)]
+    detail = []
+    _append_knott_walkway_bent(detail)
+    _append_knott_entrance_walk_rails(detail)
+    return _build_knott_terrain(), [brush_ent("func_detail", detail)]
 
 
 def _kh_hill_ground_z(x, y):

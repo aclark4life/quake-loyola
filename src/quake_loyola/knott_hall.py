@@ -105,12 +105,21 @@ EAST_OPENING_W = 56
 # entrance above) — east of the center door, giving direct outside access
 # to the auditorium on the west side of the ground floor without a rider
 # having to cut through it.
-GROUND_DOOR_W = 112
+GROUND_DOOR_W = 160
 GROUND_DOOR_H = 128
-GROUND_DOOR_OFFSET = 180  # East of the center door's opening (offset 100).
-GROUND_DOOR_BOTTOM = 100  # Raised above the building's foundation footer to
-# roughly match real grade near the north wall (terrain there sits well
-# above KH_GROUND_Z).
+GROUND_DOOR_OFFSET = 132  # East of the center door's opening (offset 100).
+# Widened westward from a 112-wide door at offset 180 (the east jamb stayed
+# put), then shifted 24 west again so it sits clear of the wall's east end.
+GROUND_DOOR_BOTTOM = 86  # Sill sits on the hillside crest (the terrain north
+# of this wall is flat at this height before it falls away towards Ennis), so
+# the door opens straight onto the walk outside at grade rather than onto a
+# step. Kept in sync with terrain by test_bridge_knott_helpers.
+# Absolute X bounds of that doorway, so the terrain module can line the
+# stepped walk outside it up with the opening. Mirrors the centre-plus-offset
+# maths _wall_with_opening() does for the north wall panel.
+GROUND_DOOR_CX = (KH_NORTH_X1 + KH_NORTH_X2) / 2 + GROUND_DOOR_OFFSET
+GROUND_DOOR_X1 = GROUND_DOOR_CX - GROUND_DOOR_W / 2
+GROUND_DOOR_X2 = GROUND_DOOR_CX + GROUND_DOOR_W / 2
 MULLION_W = 22  # Vertical divider (base) thickness, bumped up from the
 # historical KH value (12) for better visibility.
 MULLION_PROUD = 12  # How far the mullion's pointed edge projects past the wall.
