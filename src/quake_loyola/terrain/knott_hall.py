@@ -1397,6 +1397,10 @@ def _append_knott_entrance_walk(brushes):
     the hillside starts to fall away, and then follows the slope to Ennis as
     a plain cement path, ramping the last of the hillside's height away where
     it runs out onto open ground.
+
+    A clip wedge rides the nosings of the flight. Without it the player's
+    collision hull, expanded off the path's slope, catches on the bottom
+    tread and the run up reads as a bump rather than a smooth ascent.
     """
     x1, x2 = GROUND_DOOR_X1, GROUND_DOOR_X2
     flat_z = FLOOR_Z2 + CHARLES_WALK_H
@@ -1423,6 +1427,19 @@ def _append_knott_entrance_walk(brushes):
             -KNOTT_DOOR_WALK_RISE,
             KNOTT_DOOR_WALK_TREAD,
             Textures.CEMENT,
+        )
+    )
+    brushes.append(
+        ramp_slab_y(
+            x1,
+            x2,
+            stair_y1,
+            stair_y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            GROUND_DOOR_BOTTOM,
+            stair_z2,
+            Textures.CLIP,
         )
     )
     brushes.append(

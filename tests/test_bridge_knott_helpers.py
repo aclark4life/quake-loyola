@@ -29,6 +29,7 @@ from quake_loyola.constants import (
     KNOTT_ENT_WALK_ZT1,
 )
 from quake_loyola.constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
+from quake_loyola.constants.textures import Textures
 from quake_loyola.terrain import knott_hall as knott_terrain
 
 
@@ -264,11 +265,30 @@ class KnottEntranceWalkTest(unittest.TestCase):
     def setUp(self):
         self.brushes = []
         knott_terrain._append_knott_entrance_walk(self.brushes)
-        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.paved = [b for b in self.brushes if b.faces[0].tex != Textures.CLIP]
+        self.boxes = [b.get_bbox() for b in self.paved]
         self.flat_z = FLOOR_Z2 + CHARLES_WALK_H
         self.stair_y1, self.stair_y2, self.stair_z2 = (
             knott_terrain._knott_door_walk_layout()
         )
+
+    def test_a_clip_wedge_rides_the_nosings_of_the_flight(self):
+        clip = [b for b in self.brushes if b.faces[0].tex == Textures.CLIP]
+        self.assertEqual(len(clip), 1)
+        mins, maxs = clip[0].get_bbox()
+        self.assertEqual((mins[1], maxs[1]), (self.stair_y1, self.stair_y2))
+        self.assertEqual(maxs[2], knott_hall.GROUND_DOOR_BOTTOM)
+        treads = [
+            b.get_bbox()
+            for b in self.paved
+            if self.stair_y1 <= b.get_bbox()[0][1] < self.stair_y2
+        ]
+        rise = (knott_hall.GROUND_DOOR_BOTTOM - self.stair_z2) / (
+            self.stair_y2 - self.stair_y1
+        )
+        for t_mins, t_maxs in treads:
+            nosing = knott_hall.GROUND_DOOR_BOTTOM - rise * (t_mins[1] - self.stair_y1)
+            self.assertGreaterEqual(nosing, t_maxs[2])
 
     def test_walk_lines_up_with_the_doorway(self):
         for mins, maxs in self.boxes:
@@ -314,7 +334,7 @@ class KnottEntranceWalkTest(unittest.TestCase):
         )
 
     def test_path_below_the_steps_lands_flush_on_the_ennis_walk(self):
-        path = next(b for b in self.brushes if b.get_bbox()[1][1] == ENNIS_SW_EDGE)
+        path = next(b for b in self.paved if b.get_bbox()[1][1] == ENNIS_SW_EDGE)
         mins, maxs = path.get_bbox()
         self.assertEqual(mins[1], self.stair_y2)
         self.assertEqual(maxs[2], self.stair_z2)
@@ -327,7 +347,7 @@ class KnottEntranceWalkTest(unittest.TestCase):
         self.assertEqual(max(ends), self.flat_z)
 
     def test_path_ramps_the_hillside_ledge_away_at_the_bottom(self):
-        tail = max(self.brushes, key=lambda b: b.get_bbox()[1][1])
+        tail = max(self.paved, key=lambda b: b.get_bbox()[1][1])
         mins, maxs = tail.get_bbox()
         self.assertEqual(mins[1], ENNIS_SW_EDGE)
         self.assertEqual(maxs[1], ENNIS_SW_EDGE + KNOTT_DOOR_WALK_PATH_TAIL)

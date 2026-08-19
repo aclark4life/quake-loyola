@@ -52,6 +52,10 @@ class Textures:
     JOINT_METAL = "gn_grey2"  # from alkaline.wad; bridge deck expansion-joint strip
     JOINT_GAP = "black"  # from quake101.wad; dark shadow-gap seam between joint plates
     SHELF = "shelf_1"
+    #: Solid to the player but never drawn. qbsp special-cases the name, so
+    #: it needs no WAD entry. Used to ramp a stair's collision hull, which
+    #: otherwise catches the player at the bottom tread.
+    CLIP = "clip"
     SIDEWALK = "sfloor3_2"
     SIDEWALK_JOINT = JOINT_GAP  # marks a sidewalk joint for cut_sidewalk_joints()
     #: What a cut joint groove is actually paved in. Asphalt reads as the
