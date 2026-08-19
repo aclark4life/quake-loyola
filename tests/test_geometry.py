@@ -435,7 +435,7 @@ class WinFrameTests(unittest.TestCase):
 
 class StairRailingTests(unittest.TestCase):
     def test_rail_is_level_sloped_level_with_a_post_at_each_end(self):
-        brushes = stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", end_run=16)
+        brushes = stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", end_run=16, post_ovh=6)
         self.assertEqual(len(brushes), 5)
         top, slope, bottom, top_post, bottom_post = (b.get_bbox() for b in brushes)
         self.assertEqual((top[0][1], top[1][1]), (-16, 0))
@@ -444,8 +444,8 @@ class StairRailingTests(unittest.TestCase):
         self.assertEqual((slope[0][2], slope[1][2]), (37, 88))
         self.assertEqual((bottom[0][1], bottom[1][1]), (96, 112))
         self.assertEqual((bottom[0][2], bottom[1][2]), (37, 40))
-        self.assertEqual((top_post[0][1], top_post[1][1]), (-16, -13))
-        self.assertEqual((bottom_post[0][1], bottom_post[1][1]), (109, 112))
+        self.assertEqual((top_post[0][1], top_post[1][1]), (-10, -7))
+        self.assertEqual((bottom_post[0][1], bottom_post[1][1]), (103, 106))
 
     def test_posts_are_sunk_below_the_walking_surface(self):
         brushes = stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_drop=6)
@@ -457,9 +457,9 @@ class StairRailingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             stair_railing_y(0, 4, 96, 96, 0, 48, 40, "t")
 
-    def test_rejects_an_end_run_too_short_for_its_post(self):
+    def test_rejects_an_end_run_too_short_for_its_post_and_overhang(self):
         with self.assertRaises(ValueError):
-            stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=4)
+            stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=10)
 
 
 class StairwellTests(unittest.TestCase):

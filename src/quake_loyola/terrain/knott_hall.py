@@ -27,6 +27,7 @@ from ..constants import (
     KNOTT_DOOR_WALK_PATH_TAIL,
     KNOTT_DOOR_WALK_RAIL_END,
     KNOTT_DOOR_WALK_RAIL_H,
+    KNOTT_DOOR_WALK_RAIL_OVH,
     KNOTT_DOOR_WALK_RAIL_T,
     KNOTT_DOOR_WALK_RISE,
     KNOTT_DOOR_WALK_STEPS,
@@ -1497,6 +1498,7 @@ def _append_knott_entrance_walk_rails(brushes):
                 rail_t=rail_t,
                 post_w=rail_t,
                 end_run=KNOTT_DOOR_WALK_RAIL_END,
+                post_ovh=KNOTT_DOOR_WALK_RAIL_OVH,
             )
         )
 

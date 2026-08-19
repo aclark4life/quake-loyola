@@ -348,6 +348,7 @@ def stair_railing_y(
     rail_t=3,
     post_w=3,
     end_run=16,
+    post_ovh=6,
     post_drop=4,
 ):
     """Return a pipe guardrail running along +Y beside a stair or ramp.
@@ -355,18 +356,19 @@ def stair_railing_y(
     The rail reads as a flattened S: it runs level for ``end_run`` off the
     top of the run at ``height`` above ``z1``, follows the walking surface
     down to ``height`` above ``z2``, and levels out again for ``end_run``
-    past the bottom. A post at each of those two outer ends carries it —
-    there are none in between, as on a short flight of steps.
+    past the bottom. A post near each of those two outer ends carries it —
+    there are none in between, as on a short flight of steps — set back
+    ``post_ovh`` so the rail overhangs it rather than stopping on it.
 
     Posts are sunk ``post_drop`` below the rail line so they still meet the
     surface where it falls away beneath them.
     """
     if y2 <= y1:
         raise ValueError(f"stair_railing_y: run must be positive (got {y1}..{y2})")
-    if end_run < post_w:
+    if end_run < post_w + post_ovh:
         raise ValueError(
-            f"stair_railing_y: end_run must leave room for a post "
-            f"(got {end_run} with post_w {post_w})"
+            f"stair_railing_y: end_run must leave room for a post and its "
+            f"overhang (got {end_run} with post_w {post_w}, post_ovh {post_ovh})"
         )
     top_z, bot_z = z1 + height, z2 + height
     return [
@@ -375,19 +377,19 @@ def stair_railing_y(
         box(x1, y2, bot_z - rail_t, x2, y2 + end_run, bot_z, tex),
         box(
             x1,
-            y1 - end_run,
+            y1 - end_run + post_ovh,
             z1 - post_drop,
             x2,
-            y1 - end_run + post_w,
+            y1 - end_run + post_ovh + post_w,
             top_z - rail_t,
             tex,
         ),
         box(
             x1,
-            y2 + end_run - post_w,
+            y2 + end_run - post_ovh - post_w,
             z2 - post_drop,
             x2,
-            y2 + end_run,
+            y2 + end_run - post_ovh,
             bot_z - rail_t,
             tex,
         ),

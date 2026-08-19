@@ -33,7 +33,8 @@ KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
 # leaving the walker to step off it.
 # The steps carry a thin pipe rail either side, running level for
 # ``KNOTT_DOOR_WALK_RAIL_END`` past each end of the flight on a single post,
-# which gives it the flattened S the real ones have.
+# which gives it the flattened S the real ones have. Each level end carries
+# on ``KNOTT_DOOR_WALK_RAIL_OVH`` past its post rather than stopping on it.
 KNOTT_DOOR_WALK_RISE = 8
 KNOTT_DOOR_WALK_TREAD = 16
 KNOTT_DOOR_WALK_STEPS = 6
@@ -42,6 +43,7 @@ KNOTT_DOOR_WALK_PATH_TAIL = 48
 KNOTT_DOOR_WALK_RAIL_H = 44
 KNOTT_DOOR_WALK_RAIL_T = 3
 KNOTT_DOOR_WALK_RAIL_END = 16
+KNOTT_DOOR_WALK_RAIL_OVH = 6
 
 
 @dataclass

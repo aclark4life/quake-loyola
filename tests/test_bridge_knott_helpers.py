@@ -22,6 +22,7 @@ from quake_loyola.constants import (
     KNOTT_DOOR_WALK_PATH_TAIL,
     KNOTT_DOOR_WALK_RAIL_END,
     KNOTT_DOOR_WALK_RAIL_H,
+    KNOTT_DOOR_WALK_RAIL_OVH,
     KNOTT_DOOR_WALK_RAIL_T,
     KNOTT_DOOR_WALK_RISE,
     KNOTT_DOOR_WALK_STEPS,
@@ -438,10 +439,27 @@ class KnottEntranceWalkRailsTest(unittest.TestCase):
         posts = [b for b in west if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
         self.assertEqual(len(posts), 2)
         ends = sorted(p[0][1] for p in posts)
-        self.assertEqual(ends[0], self.stair_y1 - KNOTT_DOOR_WALK_RAIL_END)
+        self.assertEqual(
+            ends[0],
+            self.stair_y1 - KNOTT_DOOR_WALK_RAIL_END + KNOTT_DOOR_WALK_RAIL_OVH,
+        )
         self.assertEqual(
             ends[1],
-            self.stair_y2 + KNOTT_DOOR_WALK_RAIL_END - KNOTT_DOOR_WALK_RAIL_T,
+            self.stair_y2
+            + KNOTT_DOOR_WALK_RAIL_END
+            - KNOTT_DOOR_WALK_RAIL_OVH
+            - KNOTT_DOOR_WALK_RAIL_T,
+        )
+
+    def test_each_rail_end_overhangs_its_post(self):
+        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
+        posts = [b for b in west if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
+        top_post, bottom_post = sorted(posts)
+        self.assertEqual(
+            top_post[0][1] - min(b[0][1] for b in west), KNOTT_DOOR_WALK_RAIL_OVH
+        )
+        self.assertEqual(
+            max(b[1][1] for b in west) - bottom_post[1][1], KNOTT_DOOR_WALK_RAIL_OVH
         )
 
     def test_rail_tops_stay_a_handrail_above_the_treads(self):
