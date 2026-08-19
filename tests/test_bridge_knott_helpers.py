@@ -14,6 +14,7 @@ from quake_loyola.constants import (
     BRIDGE_ARCH_X,
     BRIDGE_SUPPORT_BEAM_H,
     CHARLES_WALK_H,
+    ENNIS_CURB_W,
     ENNIS_SW_EDGE,
     FLOOR_Z1,
     FLOOR_Z2,
@@ -27,6 +28,15 @@ from quake_loyola.constants import (
     KNOTT_DOOR_WALK_RISE,
     KNOTT_DOOR_WALK_STEPS,
     KNOTT_DOOR_WALK_TREAD,
+    KNOTT_DRIVEWAY_WS_X1,
+    KNOTT_DRIVEWAY_WS_X2,
+    KNOTT_EAST_WALK_RAIL_END,
+    KNOTT_EAST_WALK_RAIL_H,
+    KNOTT_EAST_WALK_RAIL_OVH,
+    KNOTT_EAST_WALK_RAIL_T,
+    KNOTT_EAST_WALK_RISERS,
+    KNOTT_EAST_WALK_TREAD,
+    KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
 )
 from quake_loyola.constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
@@ -473,6 +483,142 @@ class KnottEntranceWalkRailsTest(unittest.TestCase):
             self.assertLessEqual(
                 maxs[2],
                 max(underfoot) + KNOTT_DOOR_WALK_RAIL_H + KNOTT_DOOR_WALK_RISE,
+            )
+            self.assertGreater(maxs[2], min(underfoot))
+
+
+class KnottEastWalkTest(unittest.TestCase):
+    """The walk hugging the Knott north face east to the driveway."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_east_walk(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.flat_z = FLOOR_Z2 + CHARLES_WALK_H
+        self.stair_x1, self.stair_x2, self.rise = (
+            knott_terrain._knott_east_walk_layout()
+        )
+        self.treads = sorted(b for b in self.boxes if b[0][0] >= self.stair_x1)
+
+    def test_walk_hugs_the_north_face(self):
+        for mins, maxs in self.boxes:
+            self.assertEqual(mins[1], knott_hall.KH_Y2)
+            self.assertEqual(maxs[1], knott_hall.KH_Y2 + KNOTT_EAST_WALK_W)
+
+    def test_walk_leaves_the_north_door_walk_at_its_own_level(self):
+        self.assertEqual(min(b[0][0] for b in self.boxes), knott_hall.GROUND_DOOR_X2)
+        level = [b for b in self.boxes if b[0][0] < self.stair_x1]
+        self.assertTrue(level)
+        for _mins, maxs in level:
+            self.assertEqual(maxs[2], knott_hall.GROUND_DOOR_BOTTOM)
+
+    def test_the_level_walk_runs_unbroken_to_the_head_of_the_steps(self):
+        level = sorted(b for b in self.boxes if b[0][0] < self.stair_x1)
+        self.assertEqual(level[-1][1][0], self.stair_x1)
+        for west, east in zip(level, level[1:], strict=False):
+            self.assertEqual(west[1][0], east[0][0])
+
+    def test_flight_drops_in_even_risers(self):
+        self.assertEqual(len(self.treads), KNOTT_EAST_WALK_RISERS - 1)
+        tops = [maxs[2] for _mins, maxs in self.treads]
+        self.assertEqual(tops[0], knott_hall.GROUND_DOOR_BOTTOM - self.rise)
+        for above, below in zip(tops, tops[1:], strict=False):
+            self.assertEqual(above - below, self.rise)
+
+    def test_treads_are_a_consistent_depth(self):
+        for mins, maxs in self.treads:
+            self.assertEqual(maxs[0] - mins[0], KNOTT_EAST_WALK_TREAD)
+
+    def test_last_riser_lands_on_the_driveway_walk(self):
+        self.assertEqual(self.treads[-1][1][2] - self.rise, self.flat_z)
+        self.assertEqual(self.treads[-1][1][0], self.stair_x2 - KNOTT_EAST_WALK_TREAD)
+        self.assertGreater(self.stair_x2, KNOTT_DRIVEWAY_WS_X1)
+
+    def test_flight_stops_short_of_the_driveway_curb(self):
+        self.assertLessEqual(
+            self.stair_x2 + KNOTT_EAST_WALK_RAIL_END,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+        )
+
+    def test_no_tread_cuts_below_the_bank(self):
+        for mins, maxs in self.treads:
+            self.assertGreaterEqual(
+                maxs[2],
+                knott_terrain._kh_hill_ground_z(mins[0], knott_hall.KH_Y2),
+            )
+
+    def test_flight_hugs_the_bank_rather_than_standing_off_it(self):
+        # One tread further west and the top tread would be buried in the crest.
+        west = self.stair_x1 - KNOTT_EAST_WALK_TREAD
+        self.assertLess(
+            knott_hall.GROUND_DOOR_BOTTOM - self.rise,
+            knott_terrain._kh_hill_ground_z(west, knott_hall.KH_Y2),
+        )
+
+    def test_layout_rejects_a_riser_count_that_does_not_divide_the_drop(self):
+        with mock.patch.object(knott_terrain, "KNOTT_EAST_WALK_RISERS", 5):
+            with self.assertRaises(ValueError):
+                knott_terrain._knott_east_walk_layout()
+
+
+class KnottEastWalkRailsTest(unittest.TestCase):
+    """The pipe rails flanking the east walk's steps."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_east_walk_rails(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.stair_x1, self.stair_x2, self.rise = (
+            knott_terrain._knott_east_walk_layout()
+        )
+
+    def test_rails_flank_both_edges_of_the_steps(self):
+        south = [b for b in self.boxes if b[0][1] == knott_hall.KH_Y2]
+        north = [
+            b for b in self.boxes if b[1][1] == knott_hall.KH_Y2 + KNOTT_EAST_WALK_W
+        ]
+        self.assertTrue(south)
+        self.assertEqual(len(south), len(north))
+        self.assertEqual(len(south) + len(north), len(self.boxes))
+
+    def test_rails_are_a_thin_pipe_section(self):
+        for mins, maxs in self.boxes:
+            self.assertEqual(maxs[1] - mins[1], KNOTT_EAST_WALK_RAIL_T)
+
+    def test_rails_run_level_past_each_end_of_the_flight(self):
+        self.assertEqual(
+            min(b[0][0] for b in self.boxes),
+            self.stair_x1 - KNOTT_EAST_WALK_RAIL_END,
+        )
+        self.assertEqual(
+            max(b[1][0] for b in self.boxes),
+            self.stair_x2 + KNOTT_EAST_WALK_RAIL_END,
+        )
+
+    def test_each_rail_stands_on_two_posts_that_its_ends_overhang(self):
+        south = [b for b in self.boxes if b[0][1] == knott_hall.KH_Y2]
+        posts = [b for b in south if b[1][0] - b[0][0] == KNOTT_EAST_WALK_RAIL_T]
+        self.assertEqual(len(posts), 2)
+        top_post, bottom_post = sorted(posts)
+        self.assertEqual(
+            top_post[0][0] - min(b[0][0] for b in south), KNOTT_EAST_WALK_RAIL_OVH
+        )
+        self.assertEqual(
+            max(b[1][0] for b in south) - bottom_post[1][0], KNOTT_EAST_WALK_RAIL_OVH
+        )
+
+    def test_rail_tops_stay_a_handrail_above_the_steps(self):
+        walk = []
+        knott_terrain._append_knott_east_walk(walk)
+        treads = [b.get_bbox() for b in walk]
+        for mins, maxs in self.boxes:
+            underfoot = [
+                t[1][2] for t in treads if t[0][0] < maxs[0] and t[1][0] > mins[0]
+            ]
+            if not underfoot:
+                continue
+            self.assertLessEqual(
+                maxs[2], max(underfoot) + KNOTT_EAST_WALK_RAIL_H + self.rise
             )
             self.assertGreater(maxs[2], min(underfoot))
 

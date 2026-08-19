@@ -52,6 +52,13 @@ from ..constants import (
     KNOTT_DRIVEWAY_Y2,
     KNOTT_DRIVEWAY_ZT_N,
     KNOTT_DRIVEWAY_ZT_S,
+    KNOTT_EAST_WALK_RAIL_END,
+    KNOTT_EAST_WALK_RAIL_H,
+    KNOTT_EAST_WALK_RAIL_OVH,
+    KNOTT_EAST_WALK_RAIL_T,
+    KNOTT_EAST_WALK_RISERS,
+    KNOTT_EAST_WALK_TREAD,
+    KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
@@ -72,7 +79,9 @@ from ..geometry import (
     cut_sidewalk_joints,
     ramp_slab_y,
     sidewalk_panel_spans,
+    stair_railing_x,
     stair_railing_y,
+    straight_stair_x,
     straight_stair_y,
     tri_prism,
     tri_ramp_prism,
@@ -1503,6 +1512,120 @@ def _append_knott_entrance_walk_rails(brushes):
         )
 
 
+def _knott_east_walk_layout():
+    """Return the east walk's ``(stair_x1, stair_x2, rise)`` layout.
+
+    The walk runs level along the Knott north face to ``stair_x1``, then
+    drops the bank to the driveway in ``KNOTT_EAST_WALK_RISERS`` even risers,
+    the last of which lands on the driveway's west sidewalk at ``stair_x2``.
+    The flight is placed as far west as it can go with every tread still at
+    or above the bank, so it hugs the slope rather than standing off it.
+    """
+    flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    drop = GROUND_DOOR_BOTTOM - flat_z
+    risers = KNOTT_EAST_WALK_RISERS
+    if drop % risers:
+        raise ValueError(
+            f"KNOTT_EAST_WALK_RISERS={risers} does not divide the {drop}-unit "
+            f"drop from the Knott crest at {GROUND_DOOR_BOTTOM} to the "
+            f"driveway walk at {flat_z} into even risers"
+        )
+    rise = drop // risers
+    tread = KNOTT_EAST_WALK_TREAD
+    run = risers * tread
+    walk_y2 = KH_Y2 + KNOTT_EAST_WALK_W
+    # The bank is highest along the building face, so testing there tests the
+    # whole width; each tread is lowest at its west edge, where it meets the
+    # riser above it.
+    east_limit = KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - KNOTT_EAST_WALK_RAIL_END
+    walk_x1 = 4 * math.ceil(GROUND_DOOR_X2 / 4)
+    for stair_x1 in range(walk_x1, int(east_limit - run), 4):
+        if all(
+            GROUND_DOOR_BOTTOM - rise * (i + 1)
+            >= _kh_hill_ground_z(stair_x1 + i * tread, KH_Y2)
+            for i in range(risers - 1)
+        ):
+            break
+    else:
+        raise ValueError(
+            f"no room for a {risers}-riser east walk flight of {tread}-unit "
+            f"treads between the Knott north door and the driveway walk"
+        )
+    if _kh_hill_ground_z(stair_x1 + run, walk_y2) > flat_z:
+        raise ValueError(
+            f"the east walk flight lands at x={stair_x1 + run}, still on the "
+            f"bank rather than at the driveway walk level of {flat_z}"
+        )
+    return stair_x1, stair_x1 + run, rise
+
+
+def _append_knott_east_walk(brushes):
+    """Build the walk running east from the Knott north door to the driveway.
+
+    It hugs the building's north face across the flat crest of the hillside,
+    then takes the bank down to the driveway in a single steep flight. The
+    bottom riser steps straight onto the driveway's west sidewalk, so that
+    walk serves as the flight's last tread and nothing is built there.
+    """
+    stair_x1, stair_x2, rise = _knott_east_walk_layout()
+    y1, y2 = KH_Y2, KH_Y2 + KNOTT_EAST_WALK_W
+
+    _append_tiled_flat_sidewalk_x(
+        brushes,
+        GROUND_DOOR_X2,
+        stair_x1,
+        y1,
+        y2,
+        FLOOR_Z1,
+        GROUND_DOOR_BOTTOM,
+        Textures.CEMENT,
+    )
+    brushes.extend(
+        straight_stair_x(
+            stair_x1,
+            y1,
+            y2,
+            FLOOR_Z1,
+            GROUND_DOOR_BOTTOM - rise,
+            KNOTT_EAST_WALK_RISERS - 1,
+            -rise,
+            KNOTT_EAST_WALK_TREAD,
+            Textures.CEMENT,
+        )
+    )
+
+
+def _append_knott_east_walk_rails(brushes):
+    """Build the pipe rails flanking the east walk's flight of steps.
+
+    The flight is the steepest run on the hillside and both its sides stand
+    clear of the building, so it is railed either side like the north one.
+    """
+    stair_x1, stair_x2, _rise = _knott_east_walk_layout()
+    flat_z = FLOOR_Z2 + CHARLES_WALK_H
+    rail_t = KNOTT_EAST_WALK_RAIL_T
+    for ry1, ry2 in (
+        (KH_Y2, KH_Y2 + rail_t),
+        (KH_Y2 + KNOTT_EAST_WALK_W - rail_t, KH_Y2 + KNOTT_EAST_WALK_W),
+    ):
+        brushes.extend(
+            stair_railing_x(
+                ry1,
+                ry2,
+                stair_x1,
+                stair_x2,
+                GROUND_DOOR_BOTTOM,
+                flat_z,
+                KNOTT_EAST_WALK_RAIL_H,
+                Textures.RAIL,
+                rail_t=rail_t,
+                post_w=rail_t,
+                end_run=KNOTT_EAST_WALK_RAIL_END,
+                post_ovh=KNOTT_EAST_WALK_RAIL_OVH,
+            )
+        )
+
+
 def _append_knott_walkway_bent(brushes):
     """Build the support bent under the span in front of the Knott entrance.
 
@@ -1597,6 +1720,7 @@ def _build_knott_terrain():
     _append_knott_west_curb_return(BRUSHES, _west_ext_y2)
     _append_knott_east_curb_return(BRUSHES, _east_ext_y2)
     _append_knott_entrance_walk(BRUSHES)
+    _append_knott_east_walk(BRUSHES)
 
     cut_sidewalk_joints(
         BRUSHES,
@@ -1613,6 +1737,7 @@ def build():
     detail = []
     _append_knott_walkway_bent(detail)
     _append_knott_entrance_walk_rails(detail)
+    _append_knott_east_walk_rails(detail)
     return _build_knott_terrain(), [brush_ent("func_detail", detail)]
 
 

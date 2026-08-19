@@ -45,6 +45,24 @@ KNOTT_DOOR_WALK_RAIL_T = 3
 KNOTT_DOOR_WALK_RAIL_END = 16
 KNOTT_DOOR_WALK_RAIL_OVH = 6
 
+# Walk hugging the Knott north face east of that door, running on to the
+# driveway. It stays level on the flat crest of the hillside, then drops the
+# bank between the crest and the driveway as a single flight of steps. That
+# bank is short and steep — it loses the whole crest height in under a
+# hundred units — so the flight is steep to match: its rise is whatever
+# divides the drop into ``KNOTT_EAST_WALK_RISERS`` even risers, and it is
+# placed as far west as it can go without any tread cutting below the bank,
+# which is what keeps it hugging the slope instead of standing off it. The
+# last riser lands on the driveway's own west sidewalk, so only
+# ``RISERS - 1`` treads are actually built.
+KNOTT_EAST_WALK_W = 80
+KNOTT_EAST_WALK_RISERS = 6
+KNOTT_EAST_WALK_TREAD = 14
+KNOTT_EAST_WALK_RAIL_H = 44
+KNOTT_EAST_WALK_RAIL_T = 3
+KNOTT_EAST_WALK_RAIL_END = 16
+KNOTT_EAST_WALK_RAIL_OVH = 6
+
 
 @dataclass
 class KnottSpec:
