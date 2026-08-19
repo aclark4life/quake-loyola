@@ -6,7 +6,7 @@ import random
 from ..constants import FASCIA_FONT, TREE_PROFILES, Textures
 from ..mapdata import Brush, Face
 from ..utils import swap_xy
-from .primitives import arch_seg, box, curb_seg, pyramid, ramp_slab
+from .primitives import arch_seg, box, curb_seg, pyramid, ramp_slab, ramp_slab_y
 from .structures import layered_wall_y
 
 
@@ -333,6 +333,65 @@ def iron_fence(
                 )
             circle_cy += spacing
     return brushes
+
+
+def stair_railing_y(
+    x1,
+    x2,
+    y1,
+    y2,
+    z1,
+    z2,
+    height,
+    tex,
+    *,
+    rail_t=3,
+    post_w=3,
+    end_run=16,
+    post_drop=4,
+):
+    """Return a pipe guardrail running along +Y beside a stair or ramp.
+
+    The rail reads as a flattened S: it runs level for ``end_run`` off the
+    top of the run at ``height`` above ``z1``, follows the walking surface
+    down to ``height`` above ``z2``, and levels out again for ``end_run``
+    past the bottom. A post at each of those two outer ends carries it —
+    there are none in between, as on a short flight of steps.
+
+    Posts are sunk ``post_drop`` below the rail line so they still meet the
+    surface where it falls away beneath them.
+    """
+    if y2 <= y1:
+        raise ValueError(f"stair_railing_y: run must be positive (got {y1}..{y2})")
+    if end_run < post_w:
+        raise ValueError(
+            f"stair_railing_y: end_run must leave room for a post "
+            f"(got {end_run} with post_w {post_w})"
+        )
+    top_z, bot_z = z1 + height, z2 + height
+    return [
+        box(x1, y1 - end_run, top_z - rail_t, x2, y1, top_z, tex),
+        ramp_slab_y(x1, x2, y1, y2, top_z - rail_t, bot_z - rail_t, top_z, bot_z, tex),
+        box(x1, y2, bot_z - rail_t, x2, y2 + end_run, bot_z, tex),
+        box(
+            x1,
+            y1 - end_run,
+            z1 - post_drop,
+            x2,
+            y1 - end_run + post_w,
+            top_z - rail_t,
+            tex,
+        ),
+        box(
+            x1,
+            y2 + end_run - post_w,
+            z2 - post_drop,
+            x2,
+            y2 + end_run,
+            bot_z - rail_t,
+            tex,
+        ),
+    ]
 
 
 def stairwell(

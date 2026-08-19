@@ -121,12 +121,29 @@ class ChimneyAndGrilleTests(unittest.TestCase):
 
 class StairTests(unittest.TestCase):
     def test_straight_stair_x_ascends_eastward(self):
-        steps = buildings.straight_stair_x(0, 0, 10, 0, 4, 16, 32, "ground")
+        steps = buildings.straight_stair_x(0, 0, 10, 0, 16, 4, 16, 32, "ground")
         self.assertEqual(len(steps), 4)
         tops = [max(p[2] for p in _pts(s)) for s in steps]
         self.assertEqual(tops, [16, 32, 48, 64])
         bottoms = {min(p[2] for p in _pts(s)) for s in steps}
         self.assertEqual(bottoms, {0})
+
+    def test_straight_stair_x_descends_on_a_negative_rise(self):
+        steps = buildings.straight_stair_x(0, 0, 10, -16, 48, 4, -16, 32, "ground")
+        tops = [max(p[2] for p in _pts(s)) for s in steps]
+        self.assertEqual(tops, [48, 32, 16, 0])
+        bottoms = {min(p[2] for p in _pts(s)) for s in steps}
+        self.assertEqual(bottoms, {-16})
+
+    def test_straight_stair_y_is_the_x_run_rotated(self):
+        steps = buildings.straight_stair_y(0, 10, 0, -16, 48, 4, -16, 32, "ground")
+        tops = [max(p[2] for p in _pts(s)) for s in steps]
+        self.assertEqual(tops, [48, 32, 16, 0])
+        runs = [(min(p[1] for p in _pts(s)), max(p[1] for p in _pts(s))) for s in steps]
+        self.assertEqual(runs, [(0, 32), (32, 64), (64, 96), (96, 128)])
+        for s in steps:
+            self.assertEqual(min(p[0] for p in _pts(s)), 0)
+            self.assertEqual(max(p[0] for p in _pts(s)), 10)
 
 
 if __name__ == "__main__":

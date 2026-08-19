@@ -36,6 +36,7 @@ from quake_loyola.geometry import (
     render_text_flat,
     render_text_flat_x,
     square_wall,
+    stair_railing_y,
     stairwell,
     tile_face_plates,
     torch_flame,
@@ -430,6 +431,35 @@ class WinFrameTests(unittest.TestCase):
     def test_win_frame_ywall_rejects_fd_not_exceeding_2x_inner_recess(self):
         with self.assertRaises(ValueError):
             win_frame_ywall(0, 64, 0, 64, 0, 1, "t", fd=4, inner_recess=2)
+
+
+class StairRailingTests(unittest.TestCase):
+    def test_rail_is_level_sloped_level_with_a_post_at_each_end(self):
+        brushes = stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", end_run=16)
+        self.assertEqual(len(brushes), 5)
+        top, slope, bottom, top_post, bottom_post = (b.get_bbox() for b in brushes)
+        self.assertEqual((top[0][1], top[1][1]), (-16, 0))
+        self.assertEqual((top[0][2], top[1][2]), (85, 88))
+        self.assertEqual((slope[0][1], slope[1][1]), (0, 96))
+        self.assertEqual((slope[0][2], slope[1][2]), (37, 88))
+        self.assertEqual((bottom[0][1], bottom[1][1]), (96, 112))
+        self.assertEqual((bottom[0][2], bottom[1][2]), (37, 40))
+        self.assertEqual((top_post[0][1], top_post[1][1]), (-16, -13))
+        self.assertEqual((bottom_post[0][1], bottom_post[1][1]), (109, 112))
+
+    def test_posts_are_sunk_below_the_walking_surface(self):
+        brushes = stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_drop=6)
+        top_post, bottom_post = (b.get_bbox() for b in brushes[3:])
+        self.assertEqual(top_post[0][2], 42)
+        self.assertEqual(bottom_post[0][2], -6)
+
+    def test_rejects_a_non_positive_run(self):
+        with self.assertRaises(ValueError):
+            stair_railing_y(0, 4, 96, 96, 0, 48, 40, "t")
+
+    def test_rejects_an_end_run_too_short_for_its_post(self):
+        with self.assertRaises(ValueError):
+            stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=4)
 
 
 class StairwellTests(unittest.TestCase):

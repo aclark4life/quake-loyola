@@ -9,6 +9,7 @@ from .buildings import (
     gable_roof_east_half,
     gable_roof_west_half,
     straight_stair_x,
+    straight_stair_y,
     transom_grille_ywall,
     wall_runs,
 )
@@ -34,6 +35,7 @@ from .prefabs import (
     octagon_column,
     render_text_flat,
     render_text_flat_x,
+    stair_railing_y,
     stairwell,
 )
 from .primitives import (
@@ -149,8 +151,10 @@ __all__ = [
     "sidewalk_panel_spans",
     "slab_chamfered_y",
     "square_wall",
+    "stair_railing_y",
     "stairwell",
     "straight_stair_x",
+    "straight_stair_y",
     "teleport_pad",
     "taper_box_x",
     "taper_box_y",

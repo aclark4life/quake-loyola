@@ -172,20 +172,42 @@ def transom_grille_ywall(
     return brushes
 
 
-def straight_stair_x(x1, y1, y2, z_base, steps, rise, run, tex):
-    """Return an eastward-ascending straight stair run.
+def straight_stair_x(x1, y1, y2, base_z, top_z, steps, rise, run, tex):
+    """Return a straight stair run along +X.
 
-    The first tread's top sits at ``z_base + rise``; every step is a solid
-    block down to ``z_base`` so the run is walkable from either end.
+    The first tread's top sits at ``top_z`` and each one after it steps by
+    ``rise`` — negative to descend eastward. Every tread is solid down to
+    ``base_z``, so a run laid on a hillside doubles as its own retaining
+    structure and stays walkable from either end.
     """
     return [
         box(
             x1 + i * run,
             y1,
-            z_base,
+            base_z,
             x1 + (i + 1) * run,
             y2,
-            z_base + (i + 1) * rise,
+            top_z + i * rise,
+            tex,
+        )
+        for i in range(steps)
+    ]
+
+
+def straight_stair_y(x1, x2, y1, base_z, top_z, steps, rise, run, tex):
+    """Return a straight stair run along +Y — ``straight_stair_x`` rotated.
+
+    ``rise`` is negative to descend northward, which is how the hillside
+    walks use it.
+    """
+    return [
+        box(
+            x1,
+            y1 + i * run,
+            base_z,
+            x2,
+            y1 + (i + 1) * run,
+            top_z + i * rise,
             tex,
         )
         for i in range(steps)
