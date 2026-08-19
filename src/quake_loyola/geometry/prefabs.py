@@ -396,6 +396,60 @@ def stair_railing_y(
     ]
 
 
+def stair_railing_x(
+    y1,
+    y2,
+    x1,
+    x2,
+    z1,
+    z2,
+    height,
+    tex,
+    *,
+    rail_t=3,
+    post_w=3,
+    end_run=16,
+    post_ovh=6,
+    post_drop=4,
+):
+    """Return a pipe guardrail running along +X — ``stair_railing_y`` rotated.
+
+    ``y1``/``y2`` give the rail's thickness across the run and ``x1``/``x2``
+    the run itself, descending from ``z1`` at ``x1`` to ``z2`` at ``x2``.
+    """
+    if x2 <= x1:
+        raise ValueError(f"stair_railing_x: run must be positive (got {x1}..{x2})")
+    if end_run < post_w + post_ovh:
+        raise ValueError(
+            f"stair_railing_x: end_run must leave room for a post and its "
+            f"overhang (got {end_run} with post_w {post_w}, post_ovh {post_ovh})"
+        )
+    top_z, bot_z = z1 + height, z2 + height
+    return [
+        box(x1 - end_run, y1, top_z - rail_t, x1, y2, top_z, tex),
+        ramp_slab(x1, x2, y1, y2, top_z - rail_t, bot_z - rail_t, top_z, bot_z, tex),
+        box(x2, y1, bot_z - rail_t, x2 + end_run, y2, bot_z, tex),
+        box(
+            x1 - end_run + post_ovh,
+            y1,
+            z1 - post_drop,
+            x1 - end_run + post_ovh + post_w,
+            y2,
+            top_z - rail_t,
+            tex,
+        ),
+        box(
+            x2 + end_run - post_ovh - post_w,
+            y1,
+            z2 - post_drop,
+            x2 + end_run - post_ovh,
+            y2,
+            bot_z - rail_t,
+            tex,
+        ),
+    ]
+
+
 def stairwell(
     x1,
     x2,

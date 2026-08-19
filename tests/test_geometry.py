@@ -36,6 +36,7 @@ from quake_loyola.geometry import (
     render_text_flat,
     render_text_flat_x,
     square_wall,
+    stair_railing_x,
     stair_railing_y,
     stairwell,
     tile_face_plates,
@@ -460,6 +461,27 @@ class StairRailingTests(unittest.TestCase):
     def test_rejects_an_end_run_too_short_for_its_post_and_overhang(self):
         with self.assertRaises(ValueError):
             stair_railing_y(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=10)
+
+    def test_x_variant_is_the_y_one_rotated(self):
+        brushes = stair_railing_x(0, 4, 0, 96, 48, 0, 40, "t", end_run=16, post_ovh=6)
+        self.assertEqual(len(brushes), 5)
+        top, slope, bottom, top_post, bottom_post = (b.get_bbox() for b in brushes)
+        self.assertEqual((top[0][0], top[1][0]), (-16, 0))
+        self.assertEqual((top[0][2], top[1][2]), (85, 88))
+        self.assertEqual((slope[0][0], slope[1][0]), (0, 96))
+        self.assertEqual((slope[0][2], slope[1][2]), (37, 88))
+        self.assertEqual((bottom[0][0], bottom[1][0]), (96, 112))
+        self.assertEqual((bottom[0][2], bottom[1][2]), (37, 40))
+        self.assertEqual((top_post[0][0], top_post[1][0]), (-10, -7))
+        self.assertEqual((bottom_post[0][0], bottom_post[1][0]), (103, 106))
+
+    def test_x_variant_rejects_a_non_positive_run(self):
+        with self.assertRaises(ValueError):
+            stair_railing_x(0, 4, 96, 96, 0, 48, 40, "t")
+
+    def test_x_variant_rejects_an_end_run_too_short_for_its_post(self):
+        with self.assertRaises(ValueError):
+            stair_railing_x(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=10)
 
 
 class StairwellTests(unittest.TestCase):

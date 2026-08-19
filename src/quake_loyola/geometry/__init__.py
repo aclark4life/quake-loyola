@@ -35,6 +35,7 @@ from .prefabs import (
     octagon_column,
     render_text_flat,
     render_text_flat_x,
+    stair_railing_x,
     stair_railing_y,
     stairwell,
 )
@@ -151,6 +152,7 @@ __all__ = [
     "sidewalk_panel_spans",
     "slab_chamfered_y",
     "square_wall",
+    "stair_railing_x",
     "stair_railing_y",
     "stairwell",
     "straight_stair_x",
