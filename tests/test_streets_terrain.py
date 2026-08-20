@@ -9,10 +9,18 @@ assertions, matching the style of the rest of the suite.
 
 import unittest
 
-from quake_loyola.constants import CHARLES_CROSSWALK_LEN, CHARLES_CROSSWALK_STRIPE_W
+from quake_loyola.constants import (
+    CHARLES_CROSSWALK_LEN,
+    CHARLES_CROSSWALK_STRIPE_W,
+    ENNIS_PULL_S,
+    ENNIS_SW_EDGE,
+    WALL_T,
+    WORLD_Y2,
+)
 from quake_loyola.constants.textures import Textures
 from quake_loyola.mapdata import Brush, Entity
-from quake_loyola.streets import details, shell
+from quake_loyola.streets import details, ennis, shell
+from quake_loyola.terrain import knott_hall as knott_terrain
 from quake_loyola.terrain import ne, west_campus
 from quake_loyola.terrain._mesh_helpers import append_sampled_grid_mesh
 
@@ -125,11 +133,20 @@ class StreetDetailLayoutTests(unittest.TestCase):
                     y2 - y1, STREET_LANE_DASH_MIN, "dash left as a stub"
                 )
             # Every gap is a full dash gap except where the pattern is cut off:
-            # the crossing interrupts it, and the north end of the street stops
-            # it mid-cycle.
+            # the crossing and the street's own ends chop it mid-cycle, and a
+            # dash clipped below STREET_LANE_DASH_MIN is dropped rather than
+            # left as a stub, which shortens or lengthens the abutting gap.
+            seg_bounds = {
+                layout["charles_y1"],
+                layout["charles_crossing_y1"],
+                layout["charles_crossing_y2"],
+                layout["charles_y2"],
+            }
             for y1, y2 in gaps:
-                if y1 == layout["charles_crossing_y2"] or y2 == layout["charles_y2"]:
-                    self.assertLess(y2 - y1, STREET_LANE_DASH_GAP)
+                if y1 in seg_bounds or y2 in seg_bounds:
+                    self.assertLess(
+                        y2 - y1, STREET_LANE_DASH_GAP + STREET_LANE_DASH_MIN
+                    )
                     continue
                 self.assertAlmostEqual(y2 - y1, STREET_LANE_DASH_GAP, places=3)
 
@@ -316,7 +333,29 @@ class StreetShellBoundsTests(unittest.TestCase):
             self.assertLessEqual(y2, WORLD_Y2 + margin)
 
 
-class SampledTerrainMeshTests(unittest.TestCase):
+class EnnisPullSouthTests(unittest.TestCase):
+    """ENNIS_PULL_S drags Ennis Rd — and the northeast terrain grid and the
+    masonry entrance wall with it — south to tighten the gap between Knott
+    Hall and Ennis. The world's north boundary stays put, so the iron fence
+    run north of the wall grows by the same amount.
+    """
+
+    def test_the_gap_to_knott_shrinks_by_the_pull(self):
+        self.assertEqual(ENNIS_SW_EDGE - knott_terrain.KH_Y2, 800 - ENNIS_PULL_S)
+
+    def test_the_northeast_grid_rows_stay_in_order(self):
+        # Pulling Ennis south slides the five southern rows toward the ones
+        # that stay at their surveyed positions. Let them cross and the mesh
+        # winds backwards, which tri_ramp_prism rejects.
+        for lo, hi in zip(ne._ne_y, ne._ne_y[1:], strict=False):
+            self.assertLess(lo, hi, f"northeast grid rows out of order: {ne._ne_y}")
+
+    def test_the_entrance_fence_still_reaches_the_world_boundary(self):
+        brushes, _ = ennis._build_ennis_entrance_features()
+        fence = [b.get_bbox() for b in brushes if b.faces[0].tex == Textures.FENCE]
+        self.assertTrue(fence)
+        self.assertEqual(max(maxs[1] for _, maxs in fence), WORLD_Y2 - WALL_T)
+
     """The sampled height grids must tile their domain exactly.
 
     Rows used to be stretched a few units past their own boundary to hide

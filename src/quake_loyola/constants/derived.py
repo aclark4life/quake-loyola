@@ -61,13 +61,13 @@ from .streets import (
     STREET_DIV_HW,
 )
 from .textures import SKYBOX_WORLDSPAWN
-from .world import ARCH_SLAB_W, FLOOR_Z2, SCALE, WORLD_EAST_BUFFER
+from .world import ARCH_SLAB_W, ENNIS_PULL_S, FLOOR_Z2, SCALE, WORLD_EAST_BUFFER
 
 # Derived constants.
 KNOTT_ENT_HALF_W = 64
 KNOTT_EAST_PIER_FACE_OFFSET = 32
 # Bridge north edge to the Ennis south curb.
-ENNIS_BRIDGE_TO_SOUTH_EDGE = 640
+ENNIS_BRIDGE_TO_SOUTH_EDGE = 640 - ENNIS_PULL_S
 # Additional northward shift for the Ennis centerline.
 ENNIS_CENTERLINE_SHIFT_N = 183
 ENNIS_NORTH_OFFSET = ENNIS_BRIDGE_TO_SOUTH_EDGE + ENNIS_HW + ENNIS_CENTERLINE_SHIFT_N

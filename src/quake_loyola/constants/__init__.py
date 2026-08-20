@@ -387,6 +387,7 @@ from .trees import TREE_PROFILES
 from .world import (
     A_SEGS,
     ARCH_SLAB_W,
+    ENNIS_PULL_S,
     FENCE_H,
     FENCE_SPACING,
     FLOOR_Z1,
@@ -604,6 +605,7 @@ __all__ = [
     "ENNIS_PILLAR_POST_H",
     "ENNIS_PILLAR_SOUTH_Y",
     "ENNIS_PILLAR_X1",
+    "ENNIS_PULL_S",
     "ENNIS_SHORT_WALL_GAP",
     "ENNIS_SHORT_WALL_NY",
     "ENNIS_SW_EDGE",

@@ -102,12 +102,17 @@ _ne_x = [
 # sidewalk tiles and the wall is paved (cement) rather than grass.
 _NE_WALL_X = ROAD_X2 + CHARLES_WALK_W + ENNIS_WALL_X_OFFSET + ENNIS_WALL_T
 
+_NE_SW_CORNER_Y = ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W
+
+# The three sidewalk rows tie to Ennis and the two between them carry sampled
+# relief from just north of it, so all five track Ennis as it moves; the rows
+# beyond stay at their surveyed positions and absorb the difference.
 _ne_y = [
-    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W,
-    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + STREET_SW_SLAB_LEN,
-    1546,
-    ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + 2 * STREET_SW_SLAB_LEN,
-    1696,
+    _NE_SW_CORNER_Y,
+    _NE_SW_CORNER_Y + STREET_SW_SLAB_LEN,
+    _NE_SW_CORNER_Y + STREET_SW_SLAB_LEN + 31,
+    _NE_SW_CORNER_Y + 2 * STREET_SW_SLAB_LEN,
+    _NE_SW_CORNER_Y + 2 * STREET_SW_SLAB_LEN + 101,
     2200,
     2800,
     3450,
