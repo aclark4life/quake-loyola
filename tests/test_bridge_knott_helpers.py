@@ -283,6 +283,29 @@ class KnottEntranceWalkTest(unittest.TestCase):
             knott_terrain._knott_door_walk_layout()
         )
 
+    def test_the_hillside_falls_away_from_the_building_face(self):
+        # The crest used to stop at y = 0, 13 units north of Knott's wall, so
+        # the fill's top stayed level with the walks over that strip and the
+        # ground z-fought the cement the length of the facade. The crest now
+        # ends at the wall and the slope starts there.
+        self.assertEqual(knott_terrain.KH_CREST_Y, knott_hall.KH_Y2)
+        for x in (2235, 2400, 2600):
+            crest = knott_terrain._kh_hill_ground_z(x, knott_hall.KH_Y2)
+            self.assertEqual(crest, knott_hall.GROUND_DOOR_BOTTOM)
+            self.assertLess(
+                knott_terrain._kh_hill_ground_z(x, knott_hall.KH_Y2 + 1), crest
+            )
+
+    def test_the_walk_never_runs_below_the_hillside(self):
+        # Every paved brush the walk lays down must top out at or above the
+        # modeled grade under it, or the ground pokes through the cement.
+        for mins, maxs in self.boxes:
+            cx = (mins[0] + maxs[0]) / 2
+            for y in (mins[1], (mins[1] + maxs[1]) / 2, maxs[1]):
+                self.assertGreaterEqual(
+                    maxs[2] + 1e-6, knott_terrain._kh_hill_ground_z(cx, y)
+                )
+
     def test_a_clip_wedge_rides_the_nosings_of_the_flight(self):
         clip = [b for b in self.brushes if b.faces[0].tex == Textures.CLIP]
         self.assertEqual(len(clip), 1)

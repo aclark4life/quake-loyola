@@ -93,6 +93,12 @@ from ..knott_hall import (
     KH_Y2,
 )
 
+# The hillside's flat crest ends — and its north slope begins — at Knott's
+# north wall. The crest used to stop at y = 0, 13 units north of the wall,
+# which left the fill's 86-unit top coplanar with the entrance and east walks
+# over that strip: a band of ground z-fighting the cement along the facade.
+KH_CREST_Y = KH_Y2
+
 
 def _kh_hill_profile():
     """Return the sampled Knott hillside X/Z profile used by terrain helpers."""
@@ -804,13 +810,13 @@ def _append_knott_hillside_profile_fill(brushes, state):
     """Build the Knott hillside profile quads north of the driveway."""
     _flat_z = FLOOR_Z2 + CHARLES_WALK_H
     _hill_profile = _kh_hill_profile()
-    _y0_ext = 0 + state["WRAMP_OVR"]
+    _y0_ext = KH_CREST_Y + state["WRAMP_OVR"]
 
     for (px1, _), (px2, _) in zip(_hill_profile, _hill_profile[1:], strict=False):
         z1 = _kh_hill_profile_z(px1, _hill_profile)
         z2 = _kh_hill_profile_z(px2, _hill_profile)
         zs1, zs2 = _knott_south_edge_z(px1, state), _knott_south_edge_z(px2, state)
-        _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (0 - KNOTT_DRIVEWAY_Y2)
+        _t0 = (_y0_ext - KNOTT_DRIVEWAY_Y2) / (KH_CREST_Y - KNOTT_DRIVEWAY_Y2)
         z1_ext = zs1 + (z1 - zs1) * _t0
         z2_ext = zs2 + (z2 - zs2) * _t0
         brushes.append(
@@ -850,9 +856,9 @@ def _append_knott_hillside_profile_fill(brushes, state):
         brushes.append(
             tri_ramp_prism(
                 px1n,
-                0,
+                KH_CREST_Y,
                 px2,
-                0,
+                KH_CREST_Y,
                 px1n,
                 ENNIS_SW_EDGE,
                 FLOOR_Z1,
@@ -865,7 +871,7 @@ def _append_knott_hillside_profile_fill(brushes, state):
         brushes.append(
             tri_ramp_prism(
                 px2,
-                0,
+                KH_CREST_Y,
                 px2,
                 ENNIS_SW_EDGE,
                 px1n,
@@ -1747,9 +1753,9 @@ def _kh_hill_ground_z(x, y):
     _hill_profile = _kh_hill_profile()
 
     hz = _kh_hill_profile_z(x, _hill_profile)
-    if y <= 0:
+    if y <= KH_CREST_Y:
         return hz
     if y >= ENNIS_SW_EDGE:
         return _flat_z
-    t = y / ENNIS_SW_EDGE
+    t = (y - KH_CREST_Y) / (ENNIS_SW_EDGE - KH_CREST_Y)
     return hz + (_flat_z - hz) * t
