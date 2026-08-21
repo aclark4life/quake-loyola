@@ -63,6 +63,30 @@ KNOTT_EAST_WALK_RAIL_T = 3
 KNOTT_EAST_WALK_RAIL_END = 16
 KNOTT_EAST_WALK_RAIL_OVH = 6
 
+# Accessible ramp from the Knott driveway up to that east walk, which is the
+# step-free way on to the north door. It leaves the driveway roadbed at the
+# gutter, cutting the curb over its own width, climbs west along the foot of
+# the Ennis walk until it is clear of the bridge piers, turns south on a
+# level landing, and runs back down the hillside to meet the east walk's
+# level run at the crest height.
+#
+# The route is derived rather than surveyed: the landing is placed wherever a
+# ``1:KNOTT_RAMP_RISE_RUN`` grade puts it, working back from the two fixed
+# ends. Two things constrain it. The west leg has to hug the Ennis walk —
+# further south the hillside climbs 13% against the ramp's 8%, and the ramp
+# would bury itself in the bank — so its north edge runs flush with that
+# walk. And the south leg has to thread between the drop pillars under the
+# bridge span, so the landing is pushed east until it clears the nearest
+# pillar by ``KNOTT_RAMP_PILLAR_GAP``. That push fixes the run at roughly 900
+# units, which is what stops the ramp reaching a true 1:12: carrying it down
+# over the curb to the roadbed, rather than stopping it at the walk behind,
+# spends a further curb's worth of rise on that same run.
+# ``KNOTT_RAMP_RISE_RUN_MIN`` is the shallowest grade still worth building.
+KNOTT_RAMP_W = 48
+KNOTT_RAMP_RISE_RUN = 12
+KNOTT_RAMP_RISE_RUN_MIN = 10
+KNOTT_RAMP_PILLAR_GAP = 16
+
 
 @dataclass
 class KnottSpec:

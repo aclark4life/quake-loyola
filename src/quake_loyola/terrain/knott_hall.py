@@ -60,6 +60,10 @@ from ..constants import (
     KNOTT_EAST_WALK_TREAD,
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
+    KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RISE_RUN,
+    KNOTT_RAMP_RISE_RUN_MIN,
+    KNOTT_RAMP_W,
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
@@ -77,6 +81,7 @@ from ..geometry import (
     brush_ent,
     curb_seg,
     cut_sidewalk_joints,
+    ramp_slab,
     ramp_slab_y,
     sidewalk_panel_spans,
     stair_railing_x,
@@ -197,6 +202,44 @@ def _append_tiled_sloped_sidewalk(
         for py1, py2 in span:
             _append_sloped_sidewalk_slab(
                 brushes, x1, x2, py1, py2, _top_z(py1), _top_z(py2), tex
+            )
+
+
+def _append_sloped_ramp_slab_x(brushes, x1, x2, y1, y2, top_z_w, top_z_e, surface_tex):
+    """Add one full-depth slab whose top slopes along X.
+
+    The counterpart to ``_append_sloped_sidewalk_slab`` for an east-west run.
+    Both long sides take the walking surface's texture: unlike a curbed walk,
+    a ramp standing off the hillside shows cement all the way down.
+    """
+    brushes.append(
+        ramp_slab(
+            x1,
+            x2,
+            y1,
+            y2,
+            FLOOR_Z1,
+            FLOOR_Z1,
+            top_z_w,
+            top_z_e,
+            Textures.GROUND,
+            tt=surface_tex,
+            ts=surface_tex,
+        )
+    )
+
+
+def _append_tiled_sloped_ramp_x(brushes, x1, x2, y1, y2, top_z_w, top_z_e, surface_tex):
+    """Tile an east-west sloped run into panels, like the Ennis Rd walks."""
+
+    def _top_z(x):
+        return top_z_w + (x - x1) * (top_z_e - top_z_w) / (x2 - x1)
+
+    panels, joints = sidewalk_panel_spans(x1, x2, STREET_SW_SLAB_LEN, STREET_SW_GAP)
+    for span, tex in [(panels, surface_tex), (joints, Textures.SIDEWALK_JOINT)]:
+        for px1, px2 in span:
+            _append_sloped_ramp_slab_x(
+                brushes, px1, px2, y1, y2, _top_z(px1), _top_z(px2), tex
             )
 
 
@@ -955,13 +998,16 @@ def _append_knott_driveway_extension(brushes):
     )
     # South of the Ennis walk: the driveway's west sidewalk, its joint, and the
     # curb strip at the roadbed edge. The walk band itself is poured as one
-    # stone apron below, so these all stop at ENNIS_SW_EDGE.
+    # stone apron below, so these all stop at ENNIS_SW_EDGE — except where the
+    # accessible ramp takes over: it comes down to the roadbed at the gutter,
+    # cutting the curb, so the walk gives way to its deck at the cut.
+    _curb_cut_y1 = _knott_ramp_curb_cut_y1()
     _append_tiled_flat_sidewalk_y(
         brushes,
         KNOTT_DRIVEWAY_WS_X1,
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
         KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE,
+        _curb_cut_y1,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.CEMENT,
@@ -971,7 +1017,7 @@ def _append_knott_driveway_extension(brushes):
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
         KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
         KNOTT_DRIVEWAY_EXT_Y1,
-        ENNIS_SW_EDGE,
+        _curb_cut_y1,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.SIDEWALK_JOINT,
@@ -984,7 +1030,7 @@ def _append_knott_driveway_extension(brushes):
     # The west curb resumes north of the walk and runs past its end to close
     # the bulge return.
     for _curb_y1, _curb_y2 in (
-        (KNOTT_DRIVEWAY_EXT_Y1, ENNIS_SW_EDGE),
+        (KNOTT_DRIVEWAY_EXT_Y1, _curb_cut_y1),
         (ENNIS_SW_EDGE + CHARLES_WALK_W, _west_ext_y2),
     ):
         _append_tiled_flat_sidewalk_y(
@@ -1632,6 +1678,157 @@ def _append_knott_east_walk_rails(brushes):
         )
 
 
+def _knott_ramp_foot_z():
+    """Return the Z the ramp's deck meets the driveway at.
+
+    The ramp runs unbroken from the roadbed rather than stopping at the walk
+    behind the curb, so its foot sits at the road surface and the curb is cut
+    away over the ramp's width. That costs the run a curb's worth of extra
+    rise, which is why the grade lands short of ``KNOTT_RAMP_RISE_RUN``.
+    """
+    return FLOOR_Z2 + STREET_SURFACE_T
+
+
+def _knott_ramp_curb_cut_y1():
+    """Return the Y the driveway's west walk and curb give way to the ramp.
+
+    North of it the ramp's own deck is the walking surface all the way to the
+    roadbed, so the walk, its joint, and the curb strip all stop here rather
+    than running on to the Ennis walk and burying the cut.
+    """
+    return _knott_ramp_layout()[1] - KNOTT_RAMP_W / 2
+
+
+def _knott_ramp_layout():
+    """Return the accessible ramp's ``(turn_x, cy, corner_z, grade)``.
+
+    The ramp's two ends are fixed: it leaves the driveway roadbed at the
+    gutter and lands on the east walk's level run at the crest height. What is
+    derived is where it turns between them. Working back from a
+    ``1:KNOTT_RAMP_RISE_RUN`` grade gives the landing's X; the landing is then
+    pushed east far enough to thread the south leg between the drop pillars
+    under the bridge span, and the grade recomputed from the run that leaves.
+    """
+    hw = KNOTT_RAMP_W / 2
+    foot_z = _knott_ramp_foot_z()
+    rise = GROUND_DOOR_BOTTOM - foot_z
+
+    cy = ENNIS_SW_EDGE - hw
+    head_y = KH_Y2 + KNOTT_EAST_WALK_W
+    south_run = (cy - hw) - head_y
+    if south_run <= 0:
+        raise ValueError(
+            f"KNOTT_RAMP_W={KNOTT_RAMP_W} leaves no south leg between the "
+            f"Ennis walk at {ENNIS_SW_EDGE} and the east walk at {head_y}"
+        )
+
+    foot_x = KNOTT_DRIVEWAY_WS_X2
+    turn_x = foot_x - hw - (KNOTT_RAMP_RISE_RUN * rise - south_run)
+    _sy1, _sy2, pillar_xs, pillar_hw = _knott_walkway_bent_layout()
+    for pillar_x in sorted(pillar_xs):
+        blocked_x1 = pillar_x - pillar_hw - KNOTT_RAMP_PILLAR_GAP - hw
+        blocked_x2 = pillar_x + pillar_hw + KNOTT_RAMP_PILLAR_GAP + hw
+        if blocked_x1 < turn_x < blocked_x2:
+            turn_x = blocked_x2
+    turn_x = 4 * math.ceil(turn_x / 4)
+
+    west_run = foot_x - (turn_x + hw)
+    if west_run <= 0:
+        raise ValueError(
+            f"the ramp's landing is derived at x={turn_x}, at or east of "
+            f"its foot on the driveway walk at {foot_x}"
+        )
+    run = west_run + south_run
+    if run < KNOTT_RAMP_RISE_RUN_MIN * rise:
+        raise ValueError(
+            f"the ramp only has {run} units of run for its {rise}-unit rise, "
+            f"a 1:{run / rise:.1f} grade steeper than the "
+            f"1:{KNOTT_RAMP_RISE_RUN_MIN} minimum"
+        )
+
+    walk_x1, stair_x1 = GROUND_DOOR_X2, _knott_east_walk_layout()[0]
+    if turn_x - hw < walk_x1 or turn_x + hw > stair_x1:
+        raise ValueError(
+            f"the ramp's south leg spans x={turn_x - hw}..{turn_x + hw}, off "
+            f"the east walk's level run of {walk_x1}..{stair_x1}"
+        )
+    return turn_x, cy, foot_z + west_run * rise / run, rise / run
+
+
+def _append_knott_ramp(brushes):
+    """Build the accessible ramp from the Knott driveway up to the east walk.
+
+    Two legs and a landing: west along the foot of the Ennis walk, a level
+    turn where it is clear of the bridge's drop pillars, then south down the
+    hillside on to the east walk's level run, which carries on to the north
+    door. Both legs are poured full depth from ``FLOOR_Z1``, so where the deck
+    stands off the hillside the slab's own side is the retaining wall.
+    """
+    hw = KNOTT_RAMP_W / 2
+    foot_x = KNOTT_DRIVEWAY_WS_X2
+    turn_x, cy, corner_z, _grade = _knott_ramp_layout()
+
+    _append_tiled_sloped_ramp_x(
+        brushes,
+        turn_x + hw,
+        foot_x,
+        cy - hw,
+        cy + hw,
+        corner_z,
+        _knott_ramp_foot_z(),
+        Textures.CEMENT,
+    )
+    brushes.append(
+        box(
+            turn_x - hw,
+            cy - hw,
+            FLOOR_Z1,
+            turn_x + hw,
+            cy + hw,
+            corner_z,
+            Textures.CEMENT,
+        )
+    )
+    _append_tiled_sloped_sidewalk(
+        brushes,
+        turn_x - hw,
+        turn_x + hw,
+        KH_Y2 + KNOTT_EAST_WALK_W,
+        cy - hw,
+        GROUND_DOOR_BOTTOM,
+        corner_z,
+        Textures.CEMENT,
+    )
+
+
+def _knott_walkway_bent_layout():
+    """Return the bent's ``(support_y1, support_y2, pillar_xs, half_w)``.
+
+    The drop pillars are shared geometry: the accessible ramp has to thread
+    its south leg between two of them, so their stations are worked out here
+    rather than inline in the builder.
+    """
+    _bent_dy = BRIDGE_CENTER_SPAN_OFFSET[1]
+    support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy
+
+    beam_x1, beam_x2 = BRIDGE_ARCH_X[3], BRIDGE_ARCH_X[4]
+    step = (beam_x2 - beam_x1) / 6
+    pillar_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
+
+    # Pull the east-most support pillar in closer to the actual bridge pier at
+    # beam_x2, instead of leaving it a full even-spacing step (~209 units)
+    # away, and nudge its western neighbour east to open the gap between them.
+    pillar_xs[-1] = int(beam_x2 - 140)
+    pillar_xs[-2] = int(pillar_xs[-2] + 60)
+
+    return (
+        support_y_center - BRIDGE_SUPPORT_HW,
+        support_y_center + BRIDGE_SUPPORT_HW,
+        pillar_xs,
+        BRIDGE_SUPPORT_PIER_HALF_W,
+    )
+
+
 def _append_knott_walkway_bent(brushes):
     """Build the support bent under the span in front of the Knott entrance.
 
@@ -1639,28 +1836,17 @@ def _append_knott_walkway_bent(brushes):
     down to the hillside, plus a tie beam running on from the last pillar to
     the Pier 5 wall at the span's east end.
     """
-    _bent_dy, _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[1], BRIDGE_CENTER_SPAN_OFFSET[2]
+    _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[2]
 
-    support_y_center = BRIDGE.y1 + BRIDGE_SUPPORT_HW + _bent_dy
-    support_y1 = support_y_center - BRIDGE_SUPPORT_HW
-    support_y2 = support_y_center + BRIDGE_SUPPORT_HW
+    support_y1, support_y2, support_pier_xs, support_pier_half_width = (
+        _knott_walkway_bent_layout()
+    )
 
     beam_top_z = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t + _bent_dz
     beam_height = BRIDGE_SUPPORT_BEAM_H
     beam_bottom_z = beam_top_z - beam_height
 
-    beam_x1 = BRIDGE_ARCH_X[3]
     beam_x2 = BRIDGE_ARCH_X[4]
-
-    step = (beam_x2 - beam_x1) / 6
-    support_pier_xs = [int(beam_x1 + step * k) for k in (1, 2, 3, 4, 5)]
-    support_pier_half_width = BRIDGE_SUPPORT_PIER_HALF_W
-
-    # Pull the east-most support pillar in closer to the actual bridge pier at
-    # beam_x2, instead of leaving it a full even-spacing step (~209 units)
-    # away, and nudge its western neighbour east to open the gap between them.
-    support_pier_xs[-1] = int(beam_x2 - 140)
-    support_pier_xs[-2] = int(support_pier_xs[-2] + 60)
 
     # The beam stops short of the Pier 4 wall (beam_x1) and starts flush with
     # the first drop pillar's west face, leaving the west end open to match the
@@ -1727,6 +1913,7 @@ def _build_knott_terrain():
     _append_knott_east_curb_return(BRUSHES, _east_ext_y2)
     _append_knott_entrance_walk(BRUSHES)
     _append_knott_east_walk(BRUSHES)
+    _append_knott_ramp(BRUSHES)
 
     cut_sidewalk_joints(
         BRUSHES,

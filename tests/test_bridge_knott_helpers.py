@@ -38,6 +38,13 @@ from quake_loyola.constants import (
     KNOTT_EAST_WALK_TREAD,
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
+    KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RISE_RUN,
+    KNOTT_RAMP_RISE_RUN_MIN,
+    KNOTT_RAMP_W,
+    STREET_SURFACE_T,
+    STREET_SW_GAP,
+    STREET_SW_SLAB_LEN,
 )
 from quake_loyola.constants.bridge import BRIDGE_CENTER_SPAN_OFFSET
 from quake_loyola.constants.textures import Textures
@@ -644,6 +651,142 @@ class KnottEastWalkRailsTest(unittest.TestCase):
                 maxs[2], max(underfoot) + KNOTT_EAST_WALK_RAIL_H + self.rise
             )
             self.assertGreater(maxs[2], min(underfoot))
+
+
+class KnottAccessibleRampTest(unittest.TestCase):
+    """The ramp taking the driveway up to the east walk step-free."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_ramp(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.walk_z = FLOOR_Z2 + CHARLES_WALK_H
+        self.foot_z = knott_terrain._knott_ramp_foot_z()
+        self.turn_x, self.cy, self.corner_z, self.grade = (
+            knott_terrain._knott_ramp_layout()
+        )
+        self.foot_x = KNOTT_DRIVEWAY_WS_X2
+        self.hw = KNOTT_RAMP_W / 2
+        self.head_y = knott_hall.KH_Y2 + KNOTT_EAST_WALK_W
+        self.west = [b for b in self.boxes if b[0][0] > self.turn_x]
+        self.south = [b for b in self.boxes if b[1][1] < self.cy]
+
+    def test_the_ramp_starts_at_the_driveway_and_ends_on_the_east_walk(self):
+        self.assertAlmostEqual(
+            max(b[1][2] for b in self.boxes), knott_hall.GROUND_DOOR_BOTTOM
+        )
+        lowest = min(b[1][2] for b in self.boxes)
+        self.assertGreater(lowest, self.foot_z)
+        self.assertLessEqual(lowest, self.foot_z + STREET_SW_SLAB_LEN * self.grade)
+        self.assertAlmostEqual(max(b[1][0] for b in self.boxes), self.foot_x)
+        self.assertAlmostEqual(min(b[0][1] for b in self.boxes), self.head_y)
+
+    def test_the_ramp_runs_on_over_the_curb_to_meet_the_roadbed(self):
+        # Stopping it on the walk behind the curb would leave a step at the
+        # one end of the route that has to be rollable.
+        self.assertAlmostEqual(self.foot_z, FLOOR_Z2 + STREET_SURFACE_T)
+        self.assertLess(self.foot_z, self.walk_z)
+        foot = [b for b in self.boxes if abs(b[1][0] - self.foot_x) < 1e-6]
+        self.assertEqual(len(foot), 1)
+        west_run = self.foot_x - (self.turn_x + self.hw)
+        self.assertAlmostEqual(self.corner_z - west_run * self.grade, self.foot_z)
+
+    def test_the_ramp_lands_on_the_level_run_of_the_east_walk(self):
+        stair_x1 = knott_terrain._knott_east_walk_layout()[0]
+        self.assertGreaterEqual(self.turn_x - self.hw, knott_hall.GROUND_DOOR_X2)
+        self.assertLessEqual(self.turn_x + self.hw, stair_x1)
+
+    def test_the_west_leg_hugs_the_ennis_walk(self):
+        # South of it the hillside climbs faster than the ramp does, so a leg
+        # set back from that walk would bury itself in the bank.
+        self.assertTrue(self.west)
+        for mins, maxs in self.west:
+            self.assertAlmostEqual(maxs[1], ENNIS_SW_EDGE)
+            self.assertAlmostEqual(mins[1], ENNIS_SW_EDGE - KNOTT_RAMP_W)
+
+    def test_both_legs_are_the_same_width(self):
+        self.assertTrue(self.south)
+        for mins, maxs in self.west:
+            self.assertAlmostEqual(maxs[1] - mins[1], KNOTT_RAMP_W)
+        for mins, maxs in self.south:
+            self.assertAlmostEqual(maxs[0] - mins[0], KNOTT_RAMP_W)
+
+    def test_the_grade_stays_within_the_accessible_range(self):
+        self.assertLessEqual(self.grade, 1 / KNOTT_RAMP_RISE_RUN_MIN)
+        self.assertGreaterEqual(self.grade, 1 / KNOTT_RAMP_RISE_RUN)
+        rise = knott_hall.GROUND_DOOR_BOTTOM - self.foot_z
+        west_run = self.foot_x - (self.turn_x + self.hw)
+        south_run = (self.cy - self.hw) - self.head_y
+        self.assertAlmostEqual(self.grade, rise / (west_run + south_run))
+        self.assertAlmostEqual(self.corner_z, self.foot_z + west_run * self.grade)
+
+    def test_the_landing_is_level_and_square(self):
+        landing = [
+            b
+            for b in self.boxes
+            if abs(b[1][0] - b[0][0] - KNOTT_RAMP_W) < 1e-6
+            and abs(b[1][1] - b[0][1] - KNOTT_RAMP_W) < 1e-6
+            and abs(b[1][2] - self.corner_z) < 1e-6
+        ]
+        self.assertEqual(len(landing), 1)
+        mins, maxs = landing[0]
+        self.assertAlmostEqual(maxs[0] - mins[0], KNOTT_RAMP_W)
+        self.assertAlmostEqual(maxs[1] - mins[1], KNOTT_RAMP_W)
+        self.assertAlmostEqual(maxs[2], self.corner_z)
+        self.assertAlmostEqual(mins[2], maxs[2] - (self.corner_z - FLOOR_Z1))
+
+    def test_the_deck_never_runs_below_the_hillside(self):
+        for mins, maxs in self.boxes:
+            if maxs[2] < self.walk_z:
+                continue  # the curb cut, which is meant to sit below grade
+            for x in (mins[0], maxs[0]):
+                for y in (mins[1], maxs[1]):
+                    self.assertGreaterEqual(
+                        maxs[2] + 1e-6, knott_terrain._kh_hill_ground_z(x, y)
+                    )
+
+    def test_the_south_leg_threads_clear_of_the_bridge_drop_pillars(self):
+        _y1, _y2, pillar_xs, half_w = knott_terrain._knott_walkway_bent_layout()
+        for pillar_x in pillar_xs:
+            gap = max(
+                (pillar_x - half_w) - (self.turn_x + self.hw),
+                (self.turn_x - self.hw) - (pillar_x + half_w),
+            )
+            self.assertGreaterEqual(gap, KNOTT_RAMP_PILLAR_GAP)
+
+    def test_the_ramp_leaves_the_driveway_at_its_curb_line(self):
+        self.assertAlmostEqual(max(b[1][0] for b in self.boxes), KNOTT_DRIVEWAY_WS_X2)
+
+    def test_the_driveway_walk_gives_way_to_the_ramp_at_the_cut(self):
+        # The walk, its joint, and the curb strip are all solid to the walk
+        # height, so running them on past the ramp would backfill the cut.
+        self.assertAlmostEqual(
+            knott_terrain._knott_ramp_curb_cut_y1(), self.cy - self.hw
+        )
+        cut = [
+            b
+            for b in (b.get_bbox() for b in knott_terrain.build()[0])
+            if b[0][0] > KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP
+            and b[0][1] >= self.cy - self.hw - 1e-6
+            and b[1][1] <= self.cy + self.hw + 1e-6
+        ]
+        self.assertTrue(cut)
+        for _mins, maxs in cut:
+            self.assertLessEqual(maxs[2], self.walk_z)
+
+    def test_the_deck_is_poured_full_depth_so_it_retains_its_own_edge(self):
+        for mins, _maxs in self.boxes:
+            self.assertAlmostEqual(mins[2], FLOOR_Z1)
+
+    def test_layout_rejects_a_grade_it_has_no_room_for(self):
+        with mock.patch.object(knott_terrain, "KNOTT_RAMP_RISE_RUN", 40):
+            with self.assertRaises(ValueError):
+                knott_terrain._knott_ramp_layout()
+
+    def test_layout_rejects_a_ramp_too_wide_for_the_hillside(self):
+        with mock.patch.object(knott_terrain, "KNOTT_RAMP_W", 4 * ENNIS_SW_EDGE):
+            with self.assertRaises(ValueError):
+                knott_terrain._knott_ramp_layout()
 
 
 if __name__ == "__main__":
