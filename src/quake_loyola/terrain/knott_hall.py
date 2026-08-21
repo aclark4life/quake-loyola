@@ -84,6 +84,7 @@ from ..constants import (
 from ..geometry import (
     box,
     brush_ent,
+    carve_box,
     curb_seg,
     cut_sidewalk_joints,
     loop_railing_x,
@@ -98,10 +99,21 @@ from ..geometry import (
     tri_ramp_prism,
 )
 from ..knott_hall import (
+    BUILDING_H,
     GROUND_DOOR_BOTTOM,
     GROUND_DOOR_X1,
     GROUND_DOOR_X2,
+    KH_GROUND_Z,
+    KH_NORTH_X1,
+    KH_NORTH_X2,
+    KH_NOTCH_Y,
+    KH_X1,
+    KH_X2,
+    KH_Y1,
     KH_Y2,
+)
+from ..knott_hall import (
+    WALL_T as KH_WALL_T,
 )
 
 # The hillside's flat crest ends — and its north slope begins — at Knott's
@@ -1474,6 +1486,21 @@ def _append_knott_entrance_walk(brushes):
     flat_z = FLOOR_Z2 + CHARLES_WALK_H
     stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
 
+    # The hillside fills are coarse enough that the crest strip crosses the
+    # wall line a little above the modeled grade, leaving a lip of ground
+    # standing through the cement on the threshold. Cut the level run's
+    # footprint out of the ground before laying it, so the walk stands alone.
+    brushes[:] = carve_box(
+        brushes,
+        x1,
+        KH_Y2,
+        FLOOR_Z1,
+        x2,
+        stair_y1,
+        KH_GROUND_Z + BUILDING_H,
+        Textures.GROUND,
+    )
+
     _append_tiled_flat_sidewalk_y(
         brushes,
         x1,
@@ -1933,6 +1960,67 @@ def _append_knott_walkway_bent(brushes):
     )
 
 
+def _knott_interior_rects():
+    """Return the rectangles the Knott Hall interior floor is made of.
+
+    The footprint steps in at both north corners, so the inside is not one
+    rectangle but two: the full-width lower hall up to the notch, and the
+    narrower upper one between the notch ledges. Both are inset by the wall
+    thickness, so the floor stops at the inside face of every wall.
+
+    A third strip fills the ground door's own reveal, where the north wall is
+    cut through: left out, the floor would stop at the inside face and the
+    player would cross a band of raw hillside standing in the doorway.
+    """
+    return (
+        (KH_X1 + KH_WALL_T, KH_Y1 + KH_WALL_T, KH_X2 - KH_WALL_T, KH_NOTCH_Y),
+        (
+            KH_NORTH_X1 + KH_WALL_T,
+            KH_NOTCH_Y,
+            KH_NORTH_X2 - KH_WALL_T,
+            KH_Y2 - KH_WALL_T,
+        ),
+        (GROUND_DOOR_X1, KH_Y2 - KH_WALL_T, GROUND_DOOR_X2, KH_Y2),
+    )
+
+
+def _knott_interior_floor(brushes):
+    """Cut the hillside out of the Knott interior and lay an even floor in it.
+
+    The building is a shell with no floor of its own, so what the player
+    walked on inside was the raw hillside: it runs from below the door sill
+    at the northeast corner to well over a hundred units above it at the
+    southeast, where the bank climbs behind the building. Nothing about that
+    is visible from outside — the walls hide all of it — so the ground under
+    the footprint is cut away entirely and replaced with one slab, level with
+    the ground door's sill so the player walks straight in.
+
+    The ground is cut through its full depth rather than only above the new
+    floor: cutting at the floor line would slice every sloped prism along it
+    and leave far more slivers behind than taking the whole column out does.
+    The cut runs up to the roofline, so the hall is open above the slab
+    however high the hillside stood there.
+    """
+    out = list(brushes)
+    for x1, y1, x2, y2 in _knott_interior_rects():
+        out = carve_box(
+            out, x1, y1, FLOOR_Z1, x2, y2, KH_GROUND_Z + BUILDING_H, Textures.GROUND
+        )
+        out.append(
+            box(
+                x1,
+                y1,
+                FLOOR_Z1,
+                x2,
+                y2,
+                GROUND_DOOR_BOTTOM,
+                Textures.ROOF_KH,
+                tt=Textures.ROOF_KH,
+            )
+        )
+    return out
+
+
 def _build_knott_terrain():
     BRUSHES = []
     state = _knott_terrain_state()
@@ -1957,7 +2045,7 @@ def _build_knott_terrain():
         Textures.SIDEWALK_JOINT_FILL,
     )
 
-    return BRUSHES
+    return _knott_interior_floor(BRUSHES)
 
 
 def build():

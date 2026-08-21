@@ -889,5 +889,103 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         )
 
 
+class KnottInteriorFloorTest(unittest.TestCase):
+    """The even floor cut into the hillside inside the Knott Hall shell."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.brushes = knott_terrain.build()[0]
+        cls.boxes = [(b.get_bbox(), b) for b in cls.brushes]
+
+    def surface_z(self, x, y):
+        near = [
+            b
+            for (mn, mx), b in self.boxes
+            if mn[0] - 1 <= x <= mx[0] + 1 and mn[1] - 1 <= y <= mx[1] + 1
+        ]
+        lo, hi = FLOOR_Z1 + 0.1, 4000
+        if not any(b.contains((x, y, lo)) for b in near):
+            return None
+        for _ in range(30):
+            mid = (lo + hi) / 2
+            if any(b.contains((x, y, mid)) for b in near):
+                lo = mid
+            else:
+                hi = mid
+        return lo
+
+    def interior_samples(self):
+        for x1, y1, x2, y2 in knott_terrain._knott_interior_rects():
+            for x in (x1 + 2, (x1 + x2) / 2, x2 - 2):
+                for y in (y1 + 2, (y1 + y2) / 2, y2 - 2):
+                    yield x, y
+
+    def test_the_floor_is_even_across_the_whole_interior(self):
+        for x, y in self.interior_samples():
+            self.assertAlmostEqual(
+                self.surface_z(x, y), knott_hall.GROUND_DOOR_BOTTOM, places=3
+            )
+
+    def test_the_floor_is_level_with_the_ground_door_sill(self):
+        # The door opens straight on to it, so any step here would be one the
+        # accessible route spends its whole length avoiding.
+        x = (knott_hall.GROUND_DOOR_X1 + knott_hall.GROUND_DOOR_X2) / 2
+        self.assertAlmostEqual(
+            self.surface_z(x, knott_hall.KH_Y2 - knott_hall.WALL_T - 2),
+            knott_hall.GROUND_DOOR_BOTTOM,
+            places=3,
+        )
+
+    def test_the_interior_is_solid_right_down_to_the_base_fill(self):
+        for x, y in self.interior_samples():
+            self.assertTrue(
+                any(b.contains((x, y, FLOOR_Z1 + 0.1)) for b in self.brushes),
+                (x, y),
+            )
+
+    def test_the_doorway_reveal_is_floored_too(self):
+        # Otherwise the floor stops at the inside face of the north wall and
+        # the player crosses raw hillside standing in the doorway.
+        *_, door = knott_terrain._knott_interior_rects()
+        self.assertEqual(
+            (door[0], door[2]),
+            (knott_hall.GROUND_DOOR_X1, knott_hall.GROUND_DOOR_X2),
+        )
+        self.assertEqual(
+            (door[1], door[3]), (knott_hall.KH_Y2 - knott_hall.WALL_T, knott_hall.KH_Y2)
+        )
+        cx = (door[0] + door[2]) / 2
+        for y in (door[1] + 1, (door[1] + door[3]) / 2, door[3] - 1):
+            self.assertAlmostEqual(
+                self.surface_z(cx, y), knott_hall.GROUND_DOOR_BOTTOM, places=3
+            )
+
+    def test_walking_out_of_the_door_never_meets_a_step(self):
+        # The coarse hillside fills used to cross the wall line a little high,
+        # leaving a lip of ground standing through the cement on the sill.
+        stair_y1 = knott_terrain._knott_door_walk_layout()[0]
+        cx = (knott_hall.GROUND_DOOR_X1 + knott_hall.GROUND_DOOR_X2) / 2
+        for y in range(knott_hall.KH_Y2 - knott_hall.WALL_T + 1, stair_y1, 8):
+            self.assertAlmostEqual(
+                self.surface_z(cx, y), knott_hall.GROUND_DOOR_BOTTOM, places=3, msg=y
+            )
+
+    def test_the_hillside_outside_the_walls_is_left_alone(self):
+        for x, y in (
+            (knott_hall.KH_X1 - 20, -1500),
+            (knott_hall.KH_X2 + 20, -1500),
+            (2600, knott_hall.KH_Y1 - 20),
+        ):
+            z = self.surface_z(x, y)
+            self.assertIsNotNone(z, (x, y))
+            self.assertNotAlmostEqual(z, knott_hall.GROUND_DOOR_BOTTOM, places=1)
+
+    def test_the_two_interior_rectangles_meet_at_the_notch(self):
+        lower, upper, _door = knott_terrain._knott_interior_rects()
+        self.assertEqual(lower[3], upper[1])
+        self.assertEqual(lower[3], knott_hall.KH_NOTCH_Y)
+        self.assertGreater(lower[2] - lower[0], upper[2] - upper[0])
+
+
 if __name__ == "__main__":
     unittest.main()

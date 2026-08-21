@@ -2,7 +2,7 @@
 
 import math
 
-from ..mapdata import Brush, Face
+from ..mapdata import Brush, Face, _face_plane, _intersect_planes
 from ..utils import swap_xy, swap_xz
 
 
@@ -69,6 +69,130 @@ def box(
             Face((x1, y1, z2), (x1, y2, z2), (x2, y1, z2), tt, tt_params),
         ]
     )
+
+
+def _clip_face(axis, coord, keep_below, tex):
+    """Return an axis-aligned ``Face`` keeping one side of ``axis = coord``.
+
+    The winding follows ``box()``'s own faces, so ``keep_below`` picks the
+    east/north/top plane and its opposite the west/south/bottom one.
+    """
+    o1, o2 = (axis + 1) % 3, (axis + 2) % 3
+
+    def pt(b, c):
+        p = [0.0, 0.0, 0.0]
+        p[axis], p[o1], p[o2] = coord, b, c
+        return tuple(p)
+
+    if keep_below:
+        return Face(pt(0, 0), pt(0, 1), pt(1, 0), tex)
+    return Face(pt(0, 0), pt(1, 0), pt(0, 1), tex)
+
+
+def _brush_vertices(faces, eps=1e-4):
+    """Return the corner points of the convex solid bounded by ``faces``."""
+    planes = [_face_plane(f) for f in faces]
+    verts = []
+    for i in range(len(planes)):
+        for j in range(i + 1, len(planes)):
+            for k in range(j + 1, len(planes)):
+                p = _intersect_planes(planes[i], planes[j], planes[k])
+                if p is None:
+                    continue
+                if all(f.is_inside(p, eps) for f in faces):
+                    verts.append(p)
+    return verts
+
+
+def _bounding_faces(faces, verts, eps=1e-3):
+    """Return only those ``faces`` that actually bound the solid.
+
+    Clipping keeps every face of the original brush, but a plane the cut has
+    reduced to a point or an edge no longer bounds anything — it carries no
+    polygon, and the compiler drops it with a warning. Dropping it here
+    instead cannot change the volume, since fewer than three corners lie on
+    it.
+    """
+    kept = []
+    for face in faces:
+        normal, dist = _face_plane(face)
+        scale = math.sqrt(sum(n * n for n in normal)) or 1.0
+        on = []
+        for v in verts:
+            if (
+                abs(sum(n * c for n, c in zip(normal, v, strict=True)) - dist) / scale
+                > eps
+            ):
+                continue
+            if not any(
+                sum((a - b) ** 2 for a, b in zip(v, u, strict=True)) < eps * eps
+                for u in on
+            ):
+                on.append(v)
+        if len(on) >= 3:
+            kept.append(face)
+    return kept
+
+
+def _clipped(brush, cuts, tex):
+    """Return ``brush`` with ``cuts`` half-spaces added, or None if that empties it.
+
+    ``cuts`` are ``(axis, coord, keep_below)`` triples. A convex solid stays
+    convex under intersection with a half-space, so clipping is just a matter
+    of adding the bounding plane as another face; the work is in deciding
+    whether anything survives, and in dropping the faces the cut has left
+    bounding nothing.
+    """
+    faces = list(brush.faces) + [_clip_face(a, c, kb, tex) for a, c, kb in cuts]
+    verts = _brush_vertices(faces)
+    if len(verts) < 4:
+        return None
+    spans = [max(v[i] for v in verts) - min(v[i] for v in verts) for i in range(3)]
+    if min(spans) < 1e-6:
+        return None
+    return Brush(_bounding_faces(faces, verts))
+
+
+def carve_box(brushes, x1, y1, z1, x2, y2, z2, tex=None):
+    """Return ``brushes`` with the axis-aligned box volume cut out of them.
+
+    Quake has no CSG, so a solid that wants a bite taken out of it has to be
+    rebuilt as several solids that between them cover everything but the
+    bite. Each brush overlapping the box is replaced by up to five convex
+    pieces — the parts west, east, south and north of it, and the part below
+    — each of which is the original brush with one or more half-spaces added,
+    so sloped and skewed brushes carve as cleanly as square ones. Nothing is
+    emitted above the box, which is what makes this a carve rather than a
+    subtraction: use ``z2`` at or above the tallest brush to open the volume
+    right up.
+
+    ``tex`` textures the new cut faces, defaulting to each brush's own first
+    face. They land inside whatever is built to fill the carved volume, so it
+    rarely matters.
+    """
+    if x2 <= x1 or y2 <= y1 or z2 <= z1:
+        raise ValueError(
+            f"carve_box: degenerate box ({x1}, {y1}, {z1}) - ({x2}, {y2}, {z2})"
+        )
+    out = []
+    for brush in brushes:
+        (bx1, by1, bz1), (bx2, by2, bz2) = brush.get_bbox()
+        if bx2 <= x1 or bx1 >= x2 or by2 <= y1 or by1 >= y2 or bz2 <= z1 or bz1 >= z2:
+            out.append(brush)
+            continue
+        face_tex = tex if tex is not None else brush.faces[0].tex
+        inside_x = [(0, x1, False), (0, x2, True)]
+        for cuts in (
+            [(0, x1, True)],
+            [(0, x2, False)],
+            [*inside_x, (1, y1, True)],
+            [*inside_x, (1, y2, False)],
+            [*inside_x, (1, y1, False), (1, y2, True), (2, z1, True)],
+        ):
+            piece = _clipped(brush, cuts, face_tex)
+            if piece is not None:
+                out.append(piece)
+    return out
 
 
 def box_with_hole(x1, y1, z1, x2, y2, z2, hx1, hy1, hx2, hy2, tex, **kw):

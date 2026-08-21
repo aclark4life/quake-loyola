@@ -13,6 +13,7 @@ from quake_loyola.geometry import (
     box,
     box_with_round_hole,
     brush_ent,
+    carve_box,
     corner_ramp,
     corner_window,
     curb_seg,
@@ -33,6 +34,7 @@ from quake_loyola.geometry import (
     octagon_column,
     polygon_prism,
     radial_fan_fills,
+    ramp_slab,
     ramp_slab_y,
     render_text_flat,
     render_text_flat_x,
@@ -483,6 +485,66 @@ class StairRailingTests(unittest.TestCase):
     def test_x_variant_rejects_an_end_run_too_short_for_its_post(self):
         with self.assertRaises(ValueError):
             stair_railing_x(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=10)
+
+
+class CarveBoxTests(unittest.TestCase):
+    def setUp(self):
+        self.src = box(0, 0, 0, 100, 100, 100, "t")
+        self.out = carve_box([self.src], 20, 20, 50, 80, 80, 200)
+
+    def covers(self, brushes, p):
+        return any(b.contains(p) for b in brushes)
+
+    def test_the_carved_volume_is_emptied(self):
+        for p in ((50, 50, 60), (21, 21, 51), (79, 79, 99)):
+            self.assertTrue(self.covers([self.src], p))
+            self.assertFalse(self.covers(self.out, p), p)
+
+    def test_everything_outside_the_box_is_kept(self):
+        for p in (
+            (50, 50, 40),
+            (10, 50, 60),
+            (90, 50, 60),
+            (50, 10, 60),
+            (50, 90, 60),
+            (1, 1, 1),
+            (99, 99, 99),
+        ):
+            self.assertTrue(self.covers(self.out, p), p)
+
+    def test_the_pieces_it_returns_are_all_convex_brushes(self):
+        for piece in self.out:
+            self.assertIsInstance(piece, Brush)
+            mins, maxs = piece.get_bbox()
+            for lo, hi in zip(mins, maxs, strict=True):
+                self.assertGreater(hi, lo)
+
+    def test_a_brush_clear_of_the_box_is_passed_through_untouched(self):
+        clear = box(200, 200, 0, 300, 300, 100, "t")
+        out = carve_box([clear], 20, 20, 50, 80, 80, 200)
+        self.assertEqual(out, [clear])
+
+    def test_a_brush_swallowed_by_the_box_disappears(self):
+        inner = box(30, 30, 60, 40, 40, 70, "t")
+        self.assertEqual(carve_box([inner], 20, 20, 50, 80, 80, 200), [])
+
+    def test_it_carves_sloped_brushes_too(self):
+        slope = ramp_slab(0, 100, 0, 100, 0, 0, 100, 20, "t")
+        out = carve_box([slope], 20, 20, -10, 80, 80, 200)
+        for p in ((50, 50, 10), (50, 50, 30)):
+            self.assertFalse(any(b.contains(p) for b in out), p)
+        self.assertTrue(any(b.contains((10, 50, 40)) for b in out))
+
+    def test_the_pieces_carry_no_face_that_bounds_nothing(self):
+        # Clipping keeps every plane of the original brush; the ones the cut
+        # reduced to an edge or a point are dropped, or the compiler would
+        # crunch them away and warn.
+        for piece in self.out:
+            self.assertLessEqual(len(piece.faces), 6)
+
+    def test_rejects_a_degenerate_box(self):
+        with self.assertRaises(ValueError):
+            carve_box([self.src], 20, 20, 50, 20, 80, 200)
 
 
 class LoopRailingTests(unittest.TestCase):
