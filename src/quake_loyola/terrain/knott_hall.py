@@ -61,6 +61,11 @@ from ..constants import (
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RAIL_H,
+    KNOTT_RAMP_RAIL_LOOP_H,
+    KNOTT_RAMP_RAIL_OVH,
+    KNOTT_RAMP_RAIL_POSTS,
+    KNOTT_RAMP_RAIL_T,
     KNOTT_RAMP_RISE_RUN,
     KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
@@ -81,6 +86,7 @@ from ..geometry import (
     brush_ent,
     curb_seg,
     cut_sidewalk_joints,
+    loop_railing_x,
     ramp_slab,
     ramp_slab_y,
     sidewalk_panel_spans,
@@ -1801,6 +1807,35 @@ def _append_knott_ramp(brushes):
     )
 
 
+def _append_knott_ramp_rails(brushes):
+    """Build the guardrail along the north side of the ramp's west leg.
+
+    That leg climbs away from the Ennis walk running alongside it, so it is
+    the one edge of the ramp with a drop off it. The rail is the accessible
+    kind — a top rail and a lower one closed into a long O — carried on
+    pillars set in from each end so the O overhangs them.
+    """
+    hw = KNOTT_RAMP_W / 2
+    turn_x, cy, corner_z, _grade = _knott_ramp_layout()
+    brushes.extend(
+        loop_railing_x(
+            cy + hw - KNOTT_RAMP_RAIL_T,
+            cy + hw,
+            turn_x + hw,
+            KNOTT_DRIVEWAY_WS_X2,
+            corner_z,
+            _knott_ramp_foot_z(),
+            KNOTT_RAMP_RAIL_H,
+            Textures.RAIL_STEEL,
+            rail_t=KNOTT_RAMP_RAIL_T,
+            loop_h=KNOTT_RAMP_RAIL_LOOP_H,
+            posts=KNOTT_RAMP_RAIL_POSTS,
+            post_w=KNOTT_RAMP_RAIL_T,
+            post_ovh=KNOTT_RAMP_RAIL_OVH,
+        )
+    )
+
+
 def _knott_walkway_bent_layout():
     """Return the bent's ``(support_y1, support_y2, pillar_xs, half_w)``.
 
@@ -1931,6 +1966,7 @@ def build():
     _append_knott_walkway_bent(detail)
     _append_knott_entrance_walk_rails(detail)
     _append_knott_east_walk_rails(detail)
+    _append_knott_ramp_rails(detail)
     return _build_knott_terrain(), [brush_ent("func_detail", detail)]
 
 

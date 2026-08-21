@@ -45,6 +45,9 @@ class Textures:
     PIER_STONE = "TF_Stone4"  # from mg1.wad; shared by bridge piers and KH walls
     FLOOR_KH = "sfloor3_2"
     RAIL = "metal5_4"
+    #: from alkaline.wad; the accessible ramp's tubular guardrail, which
+    #: wants a smoother steel than the panelled RAIL used beside the steps
+    RAIL_STEEL = "EDGE_STEEL2"
     ROAD = "thantech10_9"
     GABLE = "woodc1_cwht01"
     ROOF = "roofkell1"

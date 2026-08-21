@@ -1028,6 +1028,13 @@ def arch_seg_y(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
     )
 
 
+def arch_seg_chord_y(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex):
+    """Return ``arch_seg_chord()`` with X and Y swapped, i.e. extruded along Y."""
+    return swap_xy(
+        arch_seg_chord(yb, yf, xc, zc, rin, rout, angle_start_deg, angle_end_deg, tex)
+    )
+
+
 def arch_pie_seg_y(yb, yf, xc, zc, rad, angle_start_deg, angle_end_deg, tex):
     """Return ``arch_pie_seg()`` with X and Y swapped, i.e. extruded along Y."""
     return swap_xy(

@@ -6,7 +6,15 @@ import random
 from ..constants import FASCIA_FONT, TREE_PROFILES, Textures
 from ..mapdata import Brush, Face
 from ..utils import swap_xy
-from .primitives import arch_seg, box, curb_seg, pyramid, ramp_slab, ramp_slab_y
+from .primitives import (
+    arch_seg,
+    arch_seg_chord_y,
+    box,
+    curb_seg,
+    pyramid,
+    ramp_slab,
+    ramp_slab_y,
+)
 from .structures import layered_wall_y
 
 
@@ -448,6 +456,120 @@ def stair_railing_x(
             tex,
         ),
     ]
+
+
+def loop_railing_x(
+    y1,
+    y2,
+    x1,
+    x2,
+    z1,
+    z2,
+    height,
+    tex,
+    *,
+    rail_t=3,
+    loop_h=24,
+    posts=4,
+    post_w=3,
+    post_ovh=6,
+    post_drop=4,
+    cap_segs=6,
+):
+    """Return a sloped guardrail running along +X, closed into a long O.
+
+    This is the accessible kind rather than the single pipe used beside a
+    flight of steps: a top rail ``height`` above the walking surface and a
+    lower one ``loop_h`` beneath it, turned through a half-round at each end
+    so the pair closes into one long O — a bent tube — rather than reading as
+    two loose pipes with a plate across them. Each round is swept in
+    ``cap_segs`` chord segments off a centre ``loop_h / 2`` under the top
+    rail, so
+    the O is exactly as deep as the rounds it ends in.
+
+    ``posts`` evenly spaced pillars carry it, running the full height from the
+    walking surface up through the lower rail to the top one so they read as
+    one piece with it. They stand within the straight run, clear of both
+    rounds and set in a further ``post_ovh``, so the O overhangs them.
+
+    ``y1``/``y2`` give the rail's thickness across the run and ``x1``/``x2``
+    the run itself, the surface it stands on falling from ``z1`` at ``x1`` to
+    ``z2`` at ``x2``. Posts are sunk ``post_drop`` below that surface so they
+    still meet it where it falls away beneath them.
+    """
+    if x2 <= x1:
+        raise ValueError(f"loop_railing_x: run must be positive (got {x1}..{x2})")
+    if posts < 2:
+        raise ValueError(f"loop_railing_x: needs a post at each end (got {posts})")
+    if loop_h <= rail_t:
+        raise ValueError(
+            f"loop_railing_x: loop_h must clear the rails themselves "
+            f"(got {loop_h} with rail_t {rail_t})"
+        )
+    cap_r = (loop_h + rail_t) / 2
+    head, foot = x1 + cap_r, x2 - cap_r
+    if foot <= head:
+        raise ValueError(
+            f"loop_railing_x: run {x1}..{x2} is too short to turn a "
+            f"{loop_h}-deep O at both ends"
+        )
+    first, last = head + post_ovh, foot - post_ovh - post_w
+    if last <= first:
+        raise ValueError(
+            f"loop_railing_x: run {x1}..{x2} is too short for {posts} posts "
+            f"of {post_w} set in by {post_ovh}"
+        )
+
+    def top_z(x):
+        return z1 + (x - x1) * (z2 - z1) / (x2 - x1) + height
+
+    brushes = [
+        ramp_slab(
+            head,
+            foot,
+            y1,
+            y2,
+            top_z(head) - rail_t,
+            top_z(foot) - rail_t,
+            top_z(head),
+            top_z(foot),
+            tex,
+        ),
+        ramp_slab(
+            head,
+            foot,
+            y1,
+            y2,
+            top_z(head) - loop_h - rail_t,
+            top_z(foot) - loop_h - rail_t,
+            top_z(head) - loop_h,
+            top_z(foot) - loop_h,
+            tex,
+        ),
+    ]
+    for cap_x, sweep_from in ((head, 90), (foot, -90)):
+        step = 180 / cap_segs
+        for i in range(cap_segs):
+            brushes.append(
+                arch_seg_chord_y(
+                    y1,
+                    y2,
+                    cap_x,
+                    top_z(cap_x) - cap_r,
+                    cap_r - rail_t,
+                    cap_r,
+                    sweep_from + i * step,
+                    sweep_from + (i + 1) * step,
+                    tex,
+                )
+            )
+    step = (last - first) / (posts - 1)
+    for i in range(posts):
+        px = first + i * step
+        brushes.append(
+            box(px, y1, top_z(px) - height - post_drop, px + post_w, y2, top_z(px), tex)
+        )
+    return brushes
 
 
 def stairwell(

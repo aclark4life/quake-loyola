@@ -82,10 +82,24 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # over the curb to the roadbed, rather than stopping it at the walk behind,
 # spends a further curb's worth of rise on that same run.
 # ``KNOTT_RAMP_RISE_RUN_MIN`` is the shallowest grade still worth building.
+#
+# Only the west leg's north side is railed, and it is the one side that has
+# to be: the Ennis walk runs right along it, so the ramp climbs away from a
+# walking surface and leaves a drop. The other three edges either retain the
+# hillside or face the driveway at its own level. The rail is the accessible
+# kind rather than the single pipe used beside a flight of steps -- a top
+# rail with a lower one under it, turned through a half-round at each end so
+# the pair closes into one long O, carried on ``KNOTT_RAMP_RAIL_POSTS``
+# pillars that run the full height through both rails.
 KNOTT_RAMP_W = 48
 KNOTT_RAMP_RISE_RUN = 12
 KNOTT_RAMP_RISE_RUN_MIN = 10
 KNOTT_RAMP_PILLAR_GAP = 16
+KNOTT_RAMP_RAIL_H = 44
+KNOTT_RAMP_RAIL_T = 3
+KNOTT_RAMP_RAIL_LOOP_H = 24
+KNOTT_RAMP_RAIL_POSTS = 4
+KNOTT_RAMP_RAIL_OVH = 6
 
 
 @dataclass

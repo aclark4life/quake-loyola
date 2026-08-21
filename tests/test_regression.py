@@ -18,7 +18,7 @@ from quake_loyola.terrain import knott_hall as knott_terrain
 # session from any such file, so this stays deterministic).
 EXPECTED_BRUSHES = 1187
 EXPECTED_ENTITIES = 107
-EXPECTED_MD5 = "ea00342e855a60b1cea321327eecf8af"
+EXPECTED_MD5 = "873b8d44a329d3284c5921f65493a8dd"
 
 # Per-classname entity counts at the same golden state as EXPECTED_ENTITIES/
 # EXPECTED_MD5 above. A plain count/hash mismatch only says "something

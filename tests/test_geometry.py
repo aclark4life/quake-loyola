@@ -25,6 +25,7 @@ from quake_loyola.geometry import (
     gable_slats,
     iron_fence,
     layered_wall,
+    loop_railing_x,
     make_bush,
     make_giant_tree,
     make_pixel_tree,
@@ -482,6 +483,81 @@ class StairRailingTests(unittest.TestCase):
     def test_x_variant_rejects_an_end_run_too_short_for_its_post(self):
         with self.assertRaises(ValueError):
             stair_railing_x(0, 4, 0, 96, 48, 0, 40, "t", post_w=8, end_run=10)
+
+
+class LoopRailingTests(unittest.TestCase):
+    def setUp(self):
+        self.brushes = loop_railing_x(
+            0, 3, 0, 96, 48, 0, 44, "t", loop_h=24, posts=4, post_ovh=6, cap_segs=6
+        )
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.rails, self.caps, self.posts = (
+            self.boxes[:2],
+            self.boxes[2:14],
+            (self.boxes[14:]),
+        )
+
+    def test_returns_two_rails_a_swept_round_at_each_end_and_the_posts(self):
+        self.assertEqual(len(self.brushes), 2 + 2 * 6 + 4)
+
+    def test_the_straight_rails_stop_short_to_leave_room_for_the_rounds(self):
+        for rail in self.rails:
+            self.assertEqual((rail[0][0], rail[1][0]), (13.5, 82.5))
+
+    def test_the_rails_fall_with_the_surface_a_loop_apart(self):
+        top, lower = self.rails
+        self.assertEqual((top[0][2], top[1][2]), (47.75, 85.25))
+        self.assertEqual((lower[0][2], lower[1][2]), (23.75, 61.25))
+
+    def test_the_rounds_close_the_o_within_its_own_run(self):
+        self.assertAlmostEqual(min(b[0][0] for b in self.caps), 0)
+        self.assertAlmostEqual(max(b[1][0] for b in self.caps), 96)
+        # Each round turns through a half circle a loop deep, so the O is no
+        # taller at its ends than the pair of rails is between them.
+        # The round is turned on the same annulus the rails sit on, so it
+        # meets the top of one and the bottom of the other exactly.
+        head = [b for b in self.caps if b[0][0] < 48]
+        self.assertAlmostEqual(max(b[1][2] for b in head), 85.25)
+        self.assertAlmostEqual(min(b[0][2] for b in head), 85.25 - 24 - 3)
+
+    def test_the_posts_run_the_full_height_up_to_the_top_rail(self):
+        for i, (mins, maxs) in enumerate(self.posts):
+            surface = 48 - mins[0] / 2
+            self.assertAlmostEqual(maxs[2], surface + 44)
+            self.assertAlmostEqual(mins[2], surface - 4)
+            self.assertEqual(maxs[0] - mins[0], 3, f"post {i}")
+
+    def test_the_posts_are_evenly_spaced_within_the_straight_run(self):
+        xs = [b[0][0] for b in self.posts]
+        self.assertEqual(xs[0], 13.5 + 6)
+        self.assertEqual(xs[-1], 82.5 - 6 - 3)
+        gaps = [b - a for a, b in zip(xs[:-1], xs[1:], strict=True)]
+        for gap in gaps[1:]:
+            self.assertAlmostEqual(gap, gaps[0])
+
+    def test_the_o_overhangs_the_outermost_posts(self):
+        self.assertLess(0, self.posts[0][0][0])
+        self.assertGreater(96, self.posts[-1][1][0])
+
+    def test_rejects_a_non_positive_run(self):
+        with self.assertRaises(ValueError):
+            loop_railing_x(0, 3, 96, 96, 48, 0, 44, "t")
+
+    def test_rejects_a_loop_too_shallow_to_turn_a_round_in(self):
+        with self.assertRaises(ValueError):
+            loop_railing_x(0, 3, 0, 96, 48, 0, 44, "t", rail_t=8, loop_h=8)
+
+    def test_rejects_a_railing_with_no_end_posts(self):
+        with self.assertRaises(ValueError):
+            loop_railing_x(0, 3, 0, 96, 48, 0, 44, "t", posts=1)
+
+    def test_rejects_a_run_too_short_to_turn_both_rounds_in(self):
+        with self.assertRaises(ValueError):
+            loop_railing_x(0, 3, 0, 20, 48, 0, 44, "t", loop_h=24)
+
+    def test_rejects_a_run_too_short_for_its_posts(self):
+        with self.assertRaises(ValueError):
+            loop_railing_x(0, 3, 0, 30, 48, 0, 44, "t", loop_h=24, post_ovh=6, post_w=8)
 
 
 class StairwellTests(unittest.TestCase):

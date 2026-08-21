@@ -39,6 +39,11 @@ from quake_loyola.constants import (
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RAIL_H,
+    KNOTT_RAMP_RAIL_LOOP_H,
+    KNOTT_RAMP_RAIL_OVH,
+    KNOTT_RAMP_RAIL_POSTS,
+    KNOTT_RAMP_RAIL_T,
     KNOTT_RAMP_RISE_RUN,
     KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
@@ -787,6 +792,101 @@ class KnottAccessibleRampTest(unittest.TestCase):
         with mock.patch.object(knott_terrain, "KNOTT_RAMP_W", 4 * ENNIS_SW_EDGE):
             with self.assertRaises(ValueError):
                 knott_terrain._knott_ramp_layout()
+
+
+class KnottAccessibleRampRailsTest(unittest.TestCase):
+    """The long-O guardrail along the north side of the ramp's west leg."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_ramp_rails(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.turn_x, self.cy, self.corner_z, self.grade = (
+            knott_terrain._knott_ramp_layout()
+        )
+        self.hw = KNOTT_RAMP_W / 2
+        self.foot_z = knott_terrain._knott_ramp_foot_z()
+        self.x1, self.x2 = self.turn_x + self.hw, KNOTT_DRIVEWAY_WS_X2
+        run = self.x2 - self.x1
+        self.rails = [b for b in self.boxes if b[1][0] - b[0][0] > run / 2]
+        self.posts = [
+            b
+            for b in self.boxes
+            if b not in self.rails and abs(b[1][0] - b[0][0] - KNOTT_RAMP_RAIL_T) < 1e-6
+        ]
+        self.caps = [
+            b for b in self.boxes if b not in self.rails and b not in self.posts
+        ]
+
+    def deck_z(self, x):
+        return self.corner_z - (x - self.x1) * self.grade
+
+    def test_only_the_west_leg_is_railed(self):
+        # The other three edges either retain the hillside or meet the
+        # driveway at its own level, so there is nothing to fall off.
+        for mins, maxs in self.boxes:
+            self.assertGreaterEqual(mins[0] + 1e-6, self.x1)
+            self.assertLessEqual(maxs[0] - 1e-6, self.x2)
+
+    def test_the_rail_runs_along_the_north_edge_of_the_deck(self):
+        for mins, maxs in self.boxes:
+            self.assertAlmostEqual(maxs[1], self.cy + self.hw)
+            self.assertAlmostEqual(mins[1], self.cy + self.hw - KNOTT_RAMP_RAIL_T)
+
+    def test_the_o_spans_the_leg_end_to_end(self):
+        self.assertAlmostEqual(min(b[0][0] for b in self.boxes), self.x1)
+        self.assertAlmostEqual(max(b[1][0] for b in self.boxes), self.x2)
+
+    def test_the_o_rides_a_rail_height_above_the_ramp_deck(self):
+        self.assertEqual(len(self.rails), 2)
+        top, lower = sorted(self.rails, key=lambda b: b[1][2], reverse=True)
+        for rail, drop in ((top, 0), (lower, KNOTT_RAMP_RAIL_LOOP_H)):
+            self.assertAlmostEqual(
+                rail[1][2], self.deck_z(rail[0][0]) + KNOTT_RAMP_RAIL_H - drop
+            )
+            self.assertAlmostEqual(
+                rail[0][2],
+                self.deck_z(rail[1][0]) + KNOTT_RAMP_RAIL_H - drop - KNOTT_RAMP_RAIL_T,
+            )
+
+    def test_the_o_is_turned_through_a_round_at_each_end(self):
+        self.assertTrue(self.caps)
+        self.assertEqual(len(self.caps) % 2, 0)
+        head = [b for b in self.caps if b[0][0] < (self.x1 + self.x2) / 2]
+        foot = [b for b in self.caps if b not in head]
+        self.assertEqual(len(head), len(foot))
+        self.assertAlmostEqual(min(b[0][0] for b in head), self.x1)
+        self.assertAlmostEqual(max(b[1][0] for b in foot), self.x2)
+        # Each round is turned on the same annulus the two rails sit on, so
+        # it closes the O against both of them rather than meeting one short.
+        for end in (head, foot):
+            depth = max(b[1][2] for b in end) - min(b[0][2] for b in end)
+            self.assertAlmostEqual(
+                depth, KNOTT_RAMP_RAIL_LOOP_H + KNOTT_RAMP_RAIL_T, places=4
+            )
+
+    def test_the_whole_railing_is_steel(self):
+        for brush in self.brushes:
+            for face in brush.faces:
+                self.assertEqual(face.tex, Textures.RAIL_STEEL)
+
+    def test_it_stands_on_the_asked_for_number_of_pillars(self):
+        self.assertEqual(len(self.posts), KNOTT_RAMP_RAIL_POSTS)
+
+    def test_the_pillars_run_from_the_deck_up_through_the_top_rail(self):
+        for mins, maxs in self.posts:
+            self.assertAlmostEqual(maxs[2], self.deck_z(mins[0]) + KNOTT_RAMP_RAIL_H)
+            self.assertLess(mins[2], self.deck_z(mins[0]))
+
+    def test_the_o_overhangs_the_pillars_at_both_ends(self):
+        rail_x1 = min(b[0][0] for b in self.rails)
+        rail_x2 = max(b[1][0] for b in self.rails)
+        self.assertAlmostEqual(
+            min(b[0][0] for b in self.posts), rail_x1 + KNOTT_RAMP_RAIL_OVH
+        )
+        self.assertAlmostEqual(
+            max(b[1][0] for b in self.posts), rail_x2 - KNOTT_RAMP_RAIL_OVH
+        )
 
 
 if __name__ == "__main__":
