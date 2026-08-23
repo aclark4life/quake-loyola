@@ -51,6 +51,125 @@ class FloorWindowTests(unittest.TestCase):
         self.assertEqual(len(openings), 1)
 
 
+class FloorLevelTests(unittest.TestCase):
+    def test_decks_stack_one_storey_apart_from_the_base(self):
+        levels = list(buildings.floor_levels(221, 192, 5))
+        self.assertEqual(
+            levels, [(1, 221 + 192), (2, 221 + 384), (3, 221 + 576), (4, 221 + 768)]
+        )
+
+    def test_the_ground_deck_is_skipped_by_default(self):
+        # Storey 0's deck is base_z itself -- already terrain or a foundation
+        # slab -- so plating it again would z-fight.
+        indices = [i for i, _ in buildings.floor_levels(0, 128, 3)]
+        self.assertEqual(indices, [1, 2])
+        self.assertNotIn(0, indices)
+
+    def test_start_floor_zero_includes_the_ground_for_stairwell(self):
+        levels = list(buildings.floor_levels(0, 128, 3, start_floor=0))
+        self.assertEqual(levels, [(0, 0), (1, 128), (2, 256)])
+
+    def test_the_roof_line_is_never_yielded(self):
+        # floors=3 means decks 0,1,2 and a roof at 3*floor_h; the roof belongs
+        # to the roof builder, not to the floor stack.
+        zs = [z for _, z in buildings.floor_levels(0, 128, 3, start_floor=0)]
+        self.assertNotIn(3 * 128, zs)
+
+    def test_decks_are_not_the_window_band(self):
+        # Regression guard: floor_window_levels() is inset within the storey,
+        # so using it to place a slab would float the deck mid-storey.
+        deck = dict(buildings.floor_levels(0, 128, 3, start_floor=0))
+        for floor_index, zb, _zt in buildings.floor_window_levels(0, 128, 3, 44):
+            self.assertNotEqual(deck[floor_index], zb)
+
+    def test_a_non_positive_storey_height_is_rejected(self):
+        with self.assertRaises(ValueError):
+            list(buildings.floor_levels(0, 0, 3))
+
+
+class FloorPlateTests(unittest.TestCase):
+    def test_a_plate_hangs_below_its_walking_surface(self):
+        (brush,) = buildings.floor_plate(0, 0, 256, 256, 400, 16, "tex")
+        (_x1, _y1, z1), (_x2, _y2, z2) = brush.get_bbox()
+        self.assertEqual((z1, z2), (384, 400))
+
+    def test_one_void_becomes_a_ring_of_four(self):
+        pieces = buildings.floor_plate(
+            0, 0, 300, 300, 100, 8, "tex", voids=[(100, 100, 200, 200)]
+        )
+        self.assertEqual(len(pieces), 4)
+        for b in pieces:
+            (bx1, by1, _), (bx2, by2, _) = b.get_bbox()
+            self.assertFalse(
+                100 <= bx1 and bx2 <= 200 and 100 <= by1 and by2 <= 200,
+                "a brush was emitted inside the void",
+            )
+
+    def test_two_voids_are_both_left_open(self):
+        voids = [(50, 50, 100, 100), (200, 200, 250, 250)]
+        pieces = buildings.floor_plate(0, 0, 300, 300, 100, 8, "tex", voids=voids)
+        self.assertTrue(pieces)
+        for b in pieces:
+            (bx1, by1, _), (bx2, by2, _) = b.get_bbox()
+            for vx1, vy1, vx2, vy2 in voids:
+                self.assertFalse(
+                    vx1 <= bx1 and bx2 <= vx2 and vy1 <= by1 and by2 <= vy2,
+                    f"brush {(bx1, by1, bx2, by2)} sits inside void "
+                    f"{(vx1, vy1, vx2, vy2)}",
+                )
+
+    def test_the_plate_is_covered_exactly_once(self):
+        # Area conservation: the emitted cells must tile the plate minus the
+        # voids, with no overlap (overlapping deck brushes make BSP slivers).
+        voids = [(50, 50, 100, 100), (200, 200, 250, 250)]
+        pieces = buildings.floor_plate(0, 0, 300, 300, 100, 8, "tex", voids=voids)
+        area = 0
+        for b in pieces:
+            (bx1, by1, _), (bx2, by2, _) = b.get_bbox()
+            area += (bx2 - bx1) * (by2 - by1)
+        void_area = sum((vx2 - vx1) * (vy2 - vy1) for vx1, vy1, vx2, vy2 in voids)
+        self.assertEqual(area, 300 * 300 - void_area)
+
+    def test_a_void_outside_the_plate_is_dropped(self):
+        # A shaft footprint can be handed to every floor without the caller
+        # working out which ones it actually crosses.
+        pieces = buildings.floor_plate(
+            0, 0, 100, 100, 100, 8, "tex", voids=[(500, 500, 600, 600)]
+        )
+        self.assertEqual(len(pieces), 1)
+
+    def test_a_void_is_clipped_to_the_plate(self):
+        pieces = buildings.floor_plate(
+            0, 0, 100, 100, 100, 8, "tex", voids=[(50, -50, 150, 50)]
+        )
+        area = 0
+        for b in pieces:
+            (bx1, by1, _), (bx2, by2, _) = b.get_bbox()
+            area += (bx2 - bx1) * (by2 - by1)
+        self.assertEqual(area, 100 * 100 - 50 * 50)
+
+    def test_no_voids_is_a_single_slab(self):
+        pieces = buildings.floor_plate(0, 0, 100, 100, 100, 8, "tex")
+        self.assertEqual(len(pieces), 1)
+
+    def test_degenerate_and_zero_thickness_plates_are_rejected(self):
+        with self.assertRaises(ValueError):
+            buildings.floor_plate(0, 0, 0, 100, 100, 8, "tex")
+        with self.assertRaises(ValueError):
+            buildings.floor_plate(0, 0, 100, 100, 100, 0, "tex")
+
+    def test_a_deck_stack_plates_every_level(self):
+        # The two helpers are meant to compose.
+        plates = [
+            b
+            for _i, deck_z in buildings.floor_levels(221, 192, 5)
+            for b in buildings.floor_plate(0, 0, 256, 256, deck_z, 16, "tex")
+        ]
+        self.assertEqual(len(plates), 4)
+        tops = sorted(b.get_bbox()[1][2] for b in plates)
+        self.assertEqual(tops, [413, 605, 797, 989])
+
+
 class WallAndFrameRunTests(unittest.TestCase):
     def test_wall_runs_passes_openings_and_texture_last(self):
         seen = []

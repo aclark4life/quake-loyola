@@ -2,6 +2,8 @@
 
 from .buildings import (
     chimney_stack,
+    floor_levels,
+    floor_plate,
     floor_window_levels,
     floor_window_openings,
     frame_runs,
@@ -124,6 +126,8 @@ __all__ = [
     "entrance_arch_ywall",
     "exit_portal",
     "fascia_sign",
+    "floor_levels",
+    "floor_plate",
     "floor_window_levels",
     "floor_window_openings",
     "frame_runs",
