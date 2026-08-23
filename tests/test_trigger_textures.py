@@ -39,3 +39,29 @@ class TriggerTextureTests(unittest.TestCase):
             for brush in entity.brushes:
                 for face in brush.faces:
                     self.assertEqual(face.tex, Textures.TRIGGER)
+
+    def test_every_trigger_entity_uses_the_trigger_texture(self):
+        """No trigger volume may carry a visible or liquid ('*') texture.
+
+        Generalises the trigger_hurt case above to every trigger_* brush
+        entity. A trigger is never drawn, so any other texture is at best
+        misleading and at worst meaningful to qbsp -- a '*' name such as
+        ``*teleport`` is a liquid content type, which the basement teleporter's
+        volume used to carry.
+        """
+        triggers = [
+            e
+            for e in self.builder.entities
+            if e.classname.startswith("trigger_")
+            and (getattr(e, "brushes", None) or ())
+        ]
+        self.assertTrue(triggers, "expected at least one brush-based trigger")
+        for entity in triggers:
+            for brush in entity.brushes:
+                for face in brush.faces:
+                    self.assertEqual(
+                        face.tex,
+                        Textures.TRIGGER,
+                        f"{entity.classname} is textured {face.tex!r}; "
+                        "trigger volumes must use Textures.TRIGGER",
+                    )

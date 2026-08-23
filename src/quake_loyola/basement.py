@@ -163,7 +163,12 @@ def build():
             CHARLES_ARCH_RIN - charles_arch_trig_inset,
             basement_arch_y2,
             BASEMENT_Z1 + CHARLES_ARCH_STILT + 128,
-            Textures.TELEPORT,
+            # The trigger volume is invisible, so it takes Textures.TRIGGER and
+            # not the *teleport it sits inside: a '*' name is a liquid content
+            # type to qbsp, which has no business being applied to a brush
+            # entity whose only job is to be walked through. The visible glow
+            # above keeps *teleport.
+            Textures.TRIGGER,
         )
     ]
     ENTITIES.append(

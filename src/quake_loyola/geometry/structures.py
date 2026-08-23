@@ -866,9 +866,15 @@ def layered_wall(x1, y1, z1, x2, y2, z2, openings, tex, ts=None, tn=None, tf=Non
     return brushes
 
 
-def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex, tw=None, te=None):
-    """Return ``layered_wall()`` with X and Y swapped."""
+def layered_wall_y(y1, x1, z1, y2, x2, z2, openings, tex, tw=None, te=None, tf=None):
+    """Return ``layered_wall()`` with X and Y swapped.
+
+    ``tf`` retextures the wall faces an opening exposes, exactly as in
+    ``layered_wall()``.
+    """
     return [
         swap_xy(b)
-        for b in layered_wall(y1, x1, z1, y2, x2, z2, openings, tex, ts=tw, tn=te)
+        for b in layered_wall(
+            y1, x1, z1, y2, x2, z2, openings, tex, ts=tw, tn=te, tf=tf
+        )
     ]

@@ -10,7 +10,10 @@ ericw_dir     := justfile_directory() + "/.tools/ericw-tools-" + ericw_version +
 tools_bin     := ericw_dir
 gmqcc_bin  := justfile_directory() + "/.tools/gmqcc/gmqcc"
 progs_src  := justfile_directory() + "/qc/progs.src"
-quake_dir  := "/Applications/id1"
+# Match `quake_loyola.skyboxes.quake_dir()`, which the `ql build --deploy` path
+# uses: both honour $QUAKE_DIR so `just deploy` and `ql build` can never target
+# different directories on the same machine.
+quake_dir  := env_var_or_default("QUAKE_DIR", "/Applications/id1")
 maps_dir   := quake_dir + "/maps"
 map_name  := "loyola"
 

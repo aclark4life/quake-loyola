@@ -14,6 +14,8 @@ from quake_loyola.constants import (
     CHARLES_CROSSWALK_STRIPE_W,
     ENNIS_PULL_S,
     ENNIS_SW_EDGE,
+    KNOTT_DRIVEWAY_Y1,
+    KNOTT_DRIVEWAY_Y2,
     WALL_T,
     WORLD_Y2,
 )
@@ -450,6 +452,64 @@ class EnnisPullSouthTests(unittest.TestCase):
             east = corners.get((x1 + 100, y1))
             if east is not None:
                 self.assertEqual((z_ne, z_se), (east[0], east[1]))
+
+
+class KnottTerrainSeamTests(unittest.TestCase):
+    """Pin the Knott terrain's deliberate-overlap policy.
+
+    Unlike the sampled grid meshes above, this terrain is not a uniform tiled
+    mesh, so the "every brush stays in one cell" invariant does not apply. What
+    does apply is the policy recorded in ``_knott_terrain_state()``: the ramp
+    aprons at the driveway junction overlap their neighbour by exactly
+    ``WRAMP_OVR``, while the ``far_south_y`` bands deliberately do not overlap
+    at all — running those past each other buried one sloped surface under
+    another and made qbsp carve unbuildable slivers out of the seam (WARNING 12).
+    """
+
+    def setUp(self):
+        self.state = knott_terrain._knott_terrain_state()
+
+    def test_far_south_bands_are_ordered_and_never_overlap(self):
+        ys = self.state["far_south_y"]
+        self.assertGreater(len(ys), 1)
+        for y1, y2 in zip(ys, ys[1:], strict=False):
+            self.assertGreater(
+                y1,
+                y2,
+                f"far_south_y must march strictly south (descending Y); "
+                f"{y1} -> {y2} does not. Consecutive bands share an exact Z at "
+                "their common Y, so any overlap here re-creates WARNING 12.",
+            )
+
+    def test_far_south_bands_have_one_height_sample_per_boundary(self):
+        for side in ("far_south_z_west", "far_south_z_east"):
+            self.assertEqual(
+                len(self.state[side]),
+                len(self.state["far_south_y"]),
+                f"{side} must have exactly one sample per far_south_y boundary, "
+                "or a band silently reads its neighbour's height",
+            )
+
+    def test_the_apron_overlap_cannot_swallow_a_neighbouring_band(self):
+        # WRAMP_OVR extends the ramp aprons past KNOTT_DRIVEWAY_Y2 and
+        # KH_CREST_Y so the sloped surfaces meet without a hairline gap. It is
+        # only safe while it stays a hair of the band it reaches into; if it
+        # ever grew to band scale it would interpenetrate the whole neighbour.
+        ovr = self.state["WRAMP_OVR"]
+        self.assertGreater(ovr, 0)
+        driveway_depth = KNOTT_DRIVEWAY_Y2 - KNOTT_DRIVEWAY_Y1
+        hillside_depth = knott_terrain.KH_CREST_Y - KNOTT_DRIVEWAY_Y2
+        for depth, name in (
+            (driveway_depth, "driveway"),
+            (hillside_depth, "hillside"),
+        ):
+            self.assertGreater(depth, 0, f"{name} band must run south to north")
+            self.assertLess(
+                ovr,
+                depth / 10,
+                f"WRAMP_OVR ({ovr}) is no longer a hairline overlap against the "
+                f"{name} band ({depth} deep)",
+            )
 
 
 if __name__ == "__main__":

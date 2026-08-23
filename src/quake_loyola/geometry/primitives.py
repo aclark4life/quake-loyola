@@ -453,10 +453,16 @@ def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
 
     The result is a list of pie-slice-derived brushes that fill the rectangular
     corners left after subtracting a round opening. Raises ``ValueError`` if
-    ``n < 3``.
+    ``n < 3`` or ``r <= 0``.
     """
     if n < 3:
         raise ValueError(f"radial_fan_fills: n must be >= 3, got {n}")
+    if r <= 0:
+        raise ValueError(
+            f"radial_fan_fills: r must be > 0, got {r} — a non-positive radius "
+            "produces no opening to fill around (r=0 would silently leave the "
+            "box solid)"
+        )
     sx1, sy1, sx2, sy2 = cx - r, cy - r, cx + r, cy + r
     verts = []
     box_pts = []
@@ -511,7 +517,13 @@ def radial_fan_fills(cx, cy, r, x1, y1, x2, y2, z1, z2, tex, n=32):
 
 
 def box_with_round_hole(x1, y1, z1, x2, y2, z2, cx, cy, r, tex, n=32, **kw):
-    """Return brushes for a box with a round XY opening approximated by ``n`` sides."""
+    """Return brushes for a box with a round XY opening approximated by ``n`` sides.
+
+    Raises ``ValueError`` if ``r <= 0``; without that check ``r=0`` returns a
+    solid box, silently dropping the opening the caller asked for.
+    """
+    if r <= 0:
+        raise ValueError(f"box_with_round_hole: r must be > 0, got {r}")
     pieces = box_with_hole(
         x1, y1, z1, x2, y2, z2, cx - r, cy - r, cx + r, cy + r, tex, **kw
     )
@@ -570,13 +582,21 @@ def taper_box_y(
     """Return a trapezoidal prism whose Y span is specified independently at x1 and x2.
 
     Unlike shear_box_y(), this accepts the south and north edges directly at each X
-    endpoint, so the footprint can taper asymmetrically.
+    endpoint, so the footprint can taper asymmetrically. Each end's span must be
+    ordered south-to-north (``y1 <= y2``); a reversed end is rejected rather than
+    silently normalised, because unlike ``box()`` the two ends are paired with
+    their own X coordinate and swapping one alone would twist the prism.
     """
     tt, tb = tt or tex, tb or tex
     if x1 == x2 or z1 == z2:
         raise ValueError(
             f"taper_box_y: degenerate (zero-thickness) brush x=({x1}, {x2}) "
             f"z=({z1}, {z2})"
+        )
+    if y1a > y2a or y1b > y2b:
+        raise ValueError(
+            f"taper_box_y: each end's Y span must be ordered y1 <= y2, got "
+            f"y=({y1a}, {y2a}) at x1 and y=({y1b}, {y2b}) at x2"
         )
     if y1a == y2a and y1b == y2b:
         raise ValueError(
@@ -718,8 +738,8 @@ def ramp_slab(
 
     ``zb1``/``zt1`` apply at ``x1`` and ``zb2``/``zt2`` at ``x2``; ``tt``/``tb``
     override the top and bottom textures, while ``te``/``tw``/``ts`` control
-    the east, west, and long side faces. Raises ``ValueError`` for zero X/Y span
-    or zero thickness at both ends.
+    the east, west, and long side faces. Raises ``ValueError`` for zero X/Y span,
+    for a top below its bottom at either end, or for zero thickness at both ends.
     """
     tt, tb, te, tw, ts = tt or tex, tb or tex, te or tex, tw or tex, ts or tex
     if x1 > x2:
@@ -731,6 +751,15 @@ def ramp_slab(
     if x1 == x2 or y1 == y2:
         raise ValueError(
             f"ramp_slab: degenerate (zero-span) brush x=({x1}, {x2}) y=({y1}, {y2})"
+        )
+    if zt1 < zb1 or zt2 < zb2:
+        # An inverted end can't be normalised the way x1/x2 can: zb/zt are paired
+        # with their own end, so swapping one alone would cross the sloped side
+        # faces. Reject it here instead of emitting a self-intersecting brush that
+        # only fails later, in get_bbox() or in qbsp.
+        raise ValueError(
+            f"ramp_slab: top must not be below bottom at either end, got "
+            f"zb=({zb1}, {zb2}) zt=({zt1}, {zt2})"
         )
     if zt1 == zb1 and zt2 == zb2:
         raise ValueError(
@@ -777,6 +806,7 @@ def ramp_slab_y(
     tw=None,
     ts=None,
     tt_params="0 0 0 1 1",
+    tb_params="0 0 0 1 1",
 ):
     """Return ``ramp_slab()`` with the slope running along Y instead of X."""
     if y1 > y2:
@@ -800,6 +830,7 @@ def ramp_slab_y(
             tw=tw,
             ts=ts,
             tt_params=tt_params,
+            tb_params=tb_params,
         )
     )
 
@@ -897,7 +928,10 @@ def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
 
     The base lies on ``zbot`` and the top face uses per-vertex heights
     ``za``/``zb``/``zc``. Raises ``ValueError`` for degenerate/clockwise
-    footprints, for ``zbot`` above any top vertex, or for zero volume.
+    footprints, or for ``zbot`` at or above any top vertex: each of the three
+    side faces is defined by a top and a bottom point at the same XY vertex, so
+    a vertex whose top height equals ``zbot`` collapses two of that face's three
+    points onto each other and yields a degenerate (plane-less) face.
     """
     tt = tt or tex
     signed_area2 = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay)
@@ -911,14 +945,11 @@ def tri_ramp_prism(ax, ay, bx, by, cx, cy, zbot, za, zb, zc, tex, tt=None):
             f"tri_ramp_prism: (a, b, c) must be wound counter-clockwise, got "
             f"clockwise winding for ({ax}, {ay}), ({bx}, {by}), ({cx}, {cy})"
         )
-    if zbot > min(za, zb, zc):
+    if zbot >= min(za, zb, zc):
         raise ValueError(
-            f"tri_ramp_prism: zbot ({zbot}) must be <= za/zb/zc ({za}, {zb}, {zc})"
-        )
-    if zbot == max(za, zb, zc):
-        raise ValueError(
-            f"tri_ramp_prism: zbot ({zbot}) must be < at least one of "
-            f"za/zb/zc ({za}, {zb}, {zc}), or the prism has zero volume"
+            f"tri_ramp_prism: zbot ({zbot}) must be < every one of "
+            f"za/zb/zc ({za}, {zb}, {zc}); a top vertex at zbot collapses that "
+            "vertex's side face to two distinct points"
         )
     return Brush(
         [

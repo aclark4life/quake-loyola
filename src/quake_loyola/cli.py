@@ -176,8 +176,17 @@ def _validate_one(name: str, value: str) -> tuple[str, object]:
                     f"skybox must be {_build_options_hint('skybox')}"
                 )
             parsed_build = value_norm
-        else:
+        elif name_l == "light_extra":
             parsed_build = _parse_bool(value)
+        else:
+            # Every setting in BUILD_DEFAULTS needs an explicit branch here.
+            # A catch-all `else: _parse_bool(value)` used to live in this spot,
+            # which meant adding a new non-bool setting silently parsed it as a
+            # bool instead of failing loudly.
+            raise typer.BadParameter(
+                f"{name_l} has no validation rule in cli._validate_one() — "
+                "add one alongside the setting's entry in config.BUILD_DEFAULTS"
+            )
         return name_l, parsed_build
     else:
         typer.echo(

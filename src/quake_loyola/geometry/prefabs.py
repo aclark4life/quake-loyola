@@ -134,11 +134,12 @@ def make_pixel_tree(
     fin_seed=0,
     ring_segs=0,
 ):
-    if ring_segs == 1:
+    if ring_segs in (1, 2):
         raise ValueError(
-            "make_pixel_tree: ring_segs=1 would build a single 0-360 degree "
-            "curb_seg, which is non-convex/degenerate; use ring_segs=0 (fins "
-            "only) or ring_segs>=2"
+            f"make_pixel_tree: ring_segs={ring_segs} would build curb_seg spans "
+            "of >= 180 degrees, which are non-convex/degenerate (a full circle "
+            "at 1, two half-circles at 2); use ring_segs=0 (fins only) or "
+            "ring_segs>=3"
         )
     if ring_segs < 0:
         raise ValueError(f"make_pixel_tree: ring_segs must be >= 0, got {ring_segs!r}")

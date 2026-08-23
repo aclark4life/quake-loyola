@@ -16,15 +16,17 @@ A Quake 1 single-player and deathmatch map of the pedestrian bridge and Knott Ha
 | `src/quake_loyola/knott_hall.py` | Knott Hall shell (walls, roof, fascia sign) |
 | `src/quake_loyola/streets/` | Charles Street and surrounding road geometry (package: `shell`, `ennis`, `details`) |
 | `src/quake_loyola/west_campus.py` | West-campus frontage (iron fence, brick wall, terrace walk) |
+| `src/quake_loyola/basement.py` | Under-street basement room and the Charles arch teleporter into it |
 | `src/quake_loyola/terrain/` | Real-elevation / provisional ground-fill modules, one per quadrant (`knott_hall`, `ne`, `west_campus`) |
 | `src/quake_loyola/entities/` | Single-player spawn point + teleport destination (single module: `__init__.py`; item/monster/light placement lives in the area modules that own the geometry they occupy) |
 | `tests/` | pytest suite (geometry, mapdata, regression) |
 | `justfile` | All build recipes (see below) |
-| `ql` | Typer CLI entry point — `ql sky/fog/light/vis` / `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
+| `ql` | Typer CLI entry point — `ql sky/skybox/fog/light/vis` / `ql conf ...` / `ql gen` / `ql build` (pip-installed via `[project.scripts]`) |
 | `src/quake_loyola/config.py` | Build-setting defaults + `ql.toml` load/save |
 | `src/quake_loyola/cli.py` | `ql` CLI implementation (Typer app) |
 | `src/quake_loyola/build_presets.py` | Valid values for the `[build]` settings, and their validators |
 | `src/quake_loyola/wads.py` | The project's WAD list + a minimal WAD2 reader (used to validate `sky`) |
+| `src/quake_loyola/skyboxes.py` | Discovers the six-image environment skyboxes installed in the engine's `gfx/env` (used to validate `skybox`) |
 
 ## Workflow
 
@@ -87,6 +89,7 @@ current value and the valid ones when run with no argument:
 
 ```bash
 ql sky sky_z1     # world sky texture (a plain WAD2 texture name)
+ql skybox mak_sunset1   # engine environment skybox from gfx/env ("none" to unset)
 ql fog high       # off/low/med/high, a number, or "default" (the light preset's own)
 ql light dusk     # time-of-day lighting preset
 ql vis full       # vis pass used by `ql build`
@@ -103,7 +106,8 @@ picks up `ql.toml` automatically through `constants/lighting.py` and
 - **Naming conventions** — constant names are `AREA_FEATURE_SUFFIX`. Common suffixes: `X1/X2 Y1/Y2 Z1/Z2` = box min/max on an axis (1 = lower); `DZ1/DZ2` = deck Z bottom/top; `ZB/ZT` = z bottom/top; `CX/CY` = centre; `XS/YS` = list of positions; `N/S/E`/`NY` = compass direction; `H/HH` = height/half-height; `W/HW` = width/half-width; `T` thickness, `R` radius, `D` depth; `OVH` overhang, `PROUD` protrusion. Feature abbrevs: `PILLAR BLK SQ PYR ENT WIN DIV PLT BR`, `DRIVEWAY_WS/RD/ES` (west→east), `BIY` (Knott inner wall face), `ORIG` (pre-extension), `KH` (Knott Hall). Full legend: module docstring of `src/quake_loyola/constants/__init__.py` and `docs/reference.rst`.
 - **Module structure** — each area module (e.g. `bridge.py`) exposes a single `build() -> (brushes, entities)` function. `mapgen.build_map()` (invoked via `generate_map.py` or `ql gen`) calls every module's `build()` and merges results.
 - **Texture names** — defined in `src/quake_loyola/constants/textures.py` (`Textures.*`). Always use the constants; do not hardcode texture strings in geometry modules.
-- **No side effects in area modules** — area modules (`bridge.py`, `knott_hall.py`, `west_campus.py`, `streets/`, `terrain/`, `entities/`, etc.) must not write files or print output. File writing/printing is confined to the entrypoint layer (`mapgen.main()`, shared by `generate_map.py` and `ql gen`), not to individual area modules.
+- **No side effects in area modules** — area modules (`bridge.py`, `knott_hall.py`, `west_campus.py`, `basement.py`, `streets/`, `terrain/`, `entities/`, etc.) must not write files or print output. File writing/printing is confined to the entrypoint layer (`mapgen.main()`, shared by `generate_map.py` and `ql gen`), not to individual area modules.
+- **Trigger brushes** — every `trigger_*` brush entity is textured `Textures.TRIGGER`, never a visible or liquid (`*`-prefixed) texture. Pinned by `tests/test_trigger_textures.py`.
 - **WADs** — the list lives in `src/quake_loyola/wads.py` (`WAD_FILES`), which is the single source of truth for both the worldspawn `wad` key and the `sky` setting's validation: `quake101.wad`, `ad.wad`, `makkon_building.wad`, `ikwhite.wad`, `makkon_stone.wad`, `mg1.wad`, `alkaline.wad`, and `makkon_nature.wad` must be present in the project root. `just setup` downloads `quake101.wad` and `ad.wad` automatically; the others are provided manually.
 
 ## Dependencies

@@ -1204,15 +1204,15 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     entry_pad_joint_w = STREET_SW_GAP
     # Score joints where this stone slab meets cement: to the north (the
     # cement slab poured above it, full width) and to the south, but only
-    # across the west portion (x:266..336) where the neighbor to the south
-    # is cement — east of x=336 the neighbor is another stone patch, so no
-    # joint is scored there.
+    # across the west portion (WEST_ENTRY_PAD_X1..west_curb_x1) where the
+    # neighbor to the south is cement — east of the curb line the neighbor is
+    # another stone patch, so no joint is scored there.
     brushes.append(
         box(
             WEST_ENTRY_PAD_X1,
             west_y1,
             FLOOR_Z2,
-            336,
+            west_curb_x1,
             west_y1 + entry_pad_joint_w,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,
@@ -1224,7 +1224,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
             WEST_ENTRY_PAD_X1,
             west_y1 + entry_pad_joint_w,
             FLOOR_Z2,
-            336,
+            west_curb_x1,
             west_north_y1 - entry_pad_joint_w,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.WHITE_STONE,
@@ -1233,7 +1233,7 @@ def _append_ennis_south_west_entry_slabs(brushes, layout, *, curb_cap_d, curb_ga
     )
     brushes.append(
         box(
-            336,
+            west_curb_x1,
             west_y1,
             FLOOR_Z2,
             west_curb_x1 + layout["sw_slab_len"],
