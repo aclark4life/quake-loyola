@@ -11,6 +11,7 @@ added back here.
 """
 
 from .constants import (
+    BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
     KNOTT_SIGN_H,
@@ -25,7 +26,7 @@ from .constants import (
     PIER5_X,
     Textures,
 )
-from .geometry import box, brush_ent, fascia_sign, polygon_prism
+from .geometry import box, brush_ent, carve_box, fascia_sign, polygon_prism
 
 WALL_T = 16
 ROOF_T = 16
@@ -97,6 +98,13 @@ KH_GROUND_Z = -16
 OPENING_BOTTOM_Z = BRIDGE_DZ2 + 104  # Bumped up one beam segment (104 units)
 # so the former bottom-most opening segment is now the top-most segment
 # instead (paired with the BUILDING_H reduction above).
+# The bridge-level entrance's own sill. The rest of the facade's opening
+# grid starts a beam segment higher (OPENING_BOTTOM_Z above), which would
+# leave the doorway standing a step proud of the deck outside it; the
+# entrance alone drops to the deck surface so the crossing runs in level.
+# The bridge assembly is translated by BRIDGE_CENTER_SPAN_OFFSET after it is
+# built, so its deck at Knott sits that much above the nominal BRIDGE_DZ2.
+ENTRANCE_SILL_Z = BRIDGE_DZ2 + BRIDGE_CENTER_SPAN_OFFSET[2]
 CENTER_OPENING_W = 140
 CENTER_OPENING_OFFSET = 100  # Shift east, closer to the sign (but not past it).
 WEST_OPENING_W = 96
@@ -288,6 +296,7 @@ def _wall_with_opening(
     beams=False,
     beam_tex=None,
     entrance=False,
+    entrance_sill_z=None,
     ground_door_w=0,
     ground_door_offset=0,
     ground_door_h=None,
@@ -317,6 +326,11 @@ def _wall_with_opening(
     left fully open (no window fill, and any center — i.e. non-edge —
     mullion stops above it) to serve as a ground-level doorway.
 
+    ``entrance_sill_z``, if given and below ``bottom_z``, drops the
+    entrance's sill that far by cutting the solid base band away under the
+    opening, so the doorway starts at the bridge deck outside rather than a
+    step above it.
+
     ``ground_door_w`` (if non-zero) cuts a second, independent doorway into
     the solid base band below ``bottom_z`` — i.e. at true ground level,
     unlike ``entrance`` (which only affects the elevated bridge-deck-height
@@ -332,6 +346,7 @@ def _wall_with_opening(
     seg_h = (z2 - win_bottom) / segments
     entrance_top = win_bottom + seg_h if entrance else win_bottom
     boxes = []
+    base = []
     if bottom_z > z1:
         if ground_door_w > 0:
             gcx = (x1 + x2) / 2 + ground_door_offset
@@ -341,15 +356,19 @@ def _wall_with_opening(
                 ground_door_h if ground_door_h is not None else bottom_z - z1
             )
             if gx1 > x1:
-                boxes.append(box(x1, y1, z1, gx1, y2, bottom_z, tex))
+                base.append(box(x1, y1, z1, gx1, y2, bottom_z, tex))
             if gx2 < x2:
-                boxes.append(box(gx2, y1, z1, x2, y2, bottom_z, tex))
+                base.append(box(gx2, y1, z1, x2, y2, bottom_z, tex))
             if door_bottom > z1:
-                boxes.append(box(gx1, y1, z1, gx2, y2, door_bottom, tex))
+                base.append(box(gx1, y1, z1, gx2, y2, door_bottom, tex))
             if door_top < bottom_z:
-                boxes.append(box(gx1, y1, door_top, gx2, y2, bottom_z, tex))
+                base.append(box(gx1, y1, door_top, gx2, y2, bottom_z, tex))
         else:
-            boxes.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
+            base.append(box(x1, y1, z1, x2, y2, bottom_z, tex))
+    sill_cut = entrance and entrance_sill_z is not None and entrance_sill_z < bottom_z
+    if sill_cut:
+        base = carve_box(base, ox1, y1, entrance_sill_z, ox2, y2, bottom_z, tex)
+    boxes.extend(base)
     if x1 < ox1:
         boxes.append(box(x1, y1, bottom_z, ox1, y2, z2, tex))
     if ox2 < x2:
@@ -371,8 +390,12 @@ def _wall_with_opening(
             gap = open_w / (mullions - 1)
             positions = [ox1 + i * gap for i in range(mullions)]
         edges = {ox1, ox2}
+        # The jamb mullions run the full height of the opening, so they follow
+        # the entrance's sill down rather than stopping where the rest of the
+        # facade's grid starts.
+        jamb_bottom = min(bottom_z, entrance_sill_z) if sill_cut else bottom_z
         for mx in positions:
-            m_bottom = bottom_z if mx in edges else entrance_top
+            m_bottom = jamb_bottom if mx in edges else entrance_top
             mx -= MULLION_W / 2
             boxes.append(_mullion_prism(mx, y1, y2, m_bottom, z2, m_tex))
     if beams:
@@ -509,6 +532,7 @@ def _build_walls(z1, z2):
             beams=True,
             beam_tex=Textures.FENCE,
             entrance=True,
+            entrance_sill_z=ENTRANCE_SILL_Z,
             ground_door_w=GROUND_DOOR_W,
             ground_door_offset=GROUND_DOOR_OFFSET,
             ground_door_h=GROUND_DOOR_H,

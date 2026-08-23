@@ -987,5 +987,54 @@ class KnottInteriorFloorTest(unittest.TestCase):
         self.assertGreater(lower[2] - lower[0], upper[2] - upper[0])
 
 
+class KnottBridgeEntranceTest(unittest.TestCase):
+    """The bridge-level entrance's sill against the deck that serves it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.brushes = [b for b in knott_hall.build()[0]]
+        cls.cx = (knott_hall.KH_NORTH_X1 + knott_hall.KH_NORTH_X2) / 2 + (
+            knott_hall.CENTER_OPENING_OFFSET
+        )
+
+    def deck_top(self):
+        """The bridge deck's surface where it meets Knott's north face."""
+        bridge_brushes = bridge.build()[0]
+        for e in bridge.build()[1]:
+            bridge_brushes = bridge_brushes + list(getattr(e, "brushes", []) or [])
+        tops = [
+            b.get_bbox()[1][2]
+            for b in bridge_brushes
+            if b.contains(
+                (self.cx, knott_hall.KH_Y2 + 4, knott_hall.ENTRANCE_SILL_Z - 8)
+            )
+        ]
+        return max(tops)
+
+    def test_the_sill_is_flush_with_the_deck_outside_it(self):
+        self.assertAlmostEqual(knott_hall.ENTRANCE_SILL_Z, self.deck_top(), places=3)
+
+    def test_the_wall_under_the_entrance_stops_at_the_sill(self):
+        # Above the sill and below the rest of the facade's opening grid the
+        # doorway must be clear, or the crossing steps up into the building.
+        for z in (knott_hall.ENTRANCE_SILL_Z + 1, knott_hall.OPENING_BOTTOM_Z - 1):
+            self.assertFalse(
+                any(
+                    b.contains((self.cx, knott_hall.KH_Y2 - 8, z)) for b in self.brushes
+                ),
+                z,
+            )
+
+    def test_the_wall_below_the_sill_is_still_solid(self):
+        self.assertTrue(
+            any(
+                b.contains(
+                    (self.cx, knott_hall.KH_Y2 - 8, knott_hall.ENTRANCE_SILL_Z - 8)
+                )
+                for b in self.brushes
+            )
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
