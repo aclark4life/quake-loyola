@@ -69,16 +69,35 @@ table-driven left-shift, no final XOR.
 Deployment
 ~~~~~~~~~~
 
-Because ``/Applications/id1/`` only has ``pak0.pak`` and ``pak1.pak``, a
-custom ``pak2.pak`` is built by ``scripts/make_pak3.py`` and dropped into
-``/Applications/id1/``.  Quake scans PAK files in numeric order, stopping at
-the first gap, and higher-numbered PAKs win; so ``pak2.pak`` overrides both
-stock PAK files.
+The experiment deploys into **its own gamedir**, ``/Applications/loyola/``,
+as ``pak0.pak`` — never into ``/Applications/id1/``.
+
+This matters more than it looks.  A custom ``progs.dat`` anywhere in ``id1``
+replaces stock Quake's game logic for *every* map, not just this one, because
+Quake scans PAK files in numeric order and higher-numbered PAKs win.  An
+orphaned pak holding an old, half-finished build of this QC once sat in
+``id1`` and killed ``map loyola`` outright::
+
+    vkQuake 1.34.1 Server (49288 CRC)     <- not stock (stock = 3064)
+    player entered the game
+    Host_Error: Illegible server message 39, previous was (null)
+
+Worse, it was invisible from ``just run``, which passes ``-game ad`` and so
+loaded Arcane Dimensions' ``progs.dat`` instead; the failure only appeared
+when launching vkQuake from the macOS launcher with no arguments, where the
+gamedir falls back to ``id1``.
+
+Confined to its own gamedir the experiment is opt-in, and a plain launch can
+never pick it up.  Maps still deploy to ``id1/maps``; the engine falls back to
+``id1`` for anything the gamedir lacks, so ``-game loyola`` still finds
+``loyola.bsp``.
 
 The ``justfile`` recipes::
 
     just compile-qc    # runs gmqcc → writes progs.dat
-    just deploy-qc     # wraps progs.dat in pak2.pak → /Applications/id1/pak2.pak
+    just deploy-qc     # wraps progs.dat → /Applications/loyola/pak0.pak
+    just run-qc        # runs the map with -game loyola
+    just undeploy-qc   # removes the pak, reverting to stock game logic
 
 Train rotation feature
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -98,8 +117,8 @@ rotation was not working as expected during the test session.
 Where it was left
 -----------------
 
-* ``pak2.pak`` was **removed** from ``/Applications/id1/`` — the game runs
-  with the stock ``progs.dat`` again.
+* No custom ``progs.dat`` is deployed — the game runs with the stock one
+  again.  Any future deploy goes to ``/Applications/loyola/``, not ``id1``.
 * All QC source changes are committed in ``qc/`` and compile to CRC 5927.
 * The custom ``.field .float train_yaw`` is declared in ``defs.qc`` but is
   **outside** ``end_sys_fields`` (in the non-system section) so it does not
@@ -147,9 +166,9 @@ simple one-line additions; no structural rewrite was needed.
      before it takes effect.  A delta-rotation approach (rotate by the *yaw
      change* rather than setting an absolute angle) may be more robust.
 
-2. Re-deploy::
+2. Re-deploy and run::
 
-       just compile-qc && just deploy-qc
+       just compile-qc && just deploy-qc && just run-qc
 
 3. When done, commit and push with::
 
@@ -173,7 +192,7 @@ Key files
    * - ``scripts/make_pak3.py``
      - Builds a Quake PAK file from loose files
    * - ``justfile``
-     - ``compile-qc`` and ``deploy-qc`` recipes
+     - ``compile-qc`` / ``deploy-qc`` / ``run-qc`` / ``undeploy-qc`` recipes
    * - ``.tools/gmqcc/gmqcc``
      - Compiler binary (built from source)
    * - ``.tools/qcc-tools/build/qcc/qcc``

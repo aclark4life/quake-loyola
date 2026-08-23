@@ -14,8 +14,22 @@ progs_src  := justfile_directory() + "/qc/progs.src"
 # uses: both honour $QUAKE_DIR so `just deploy` and `ql build` can never target
 # different directories on the same machine.
 quake_dir  := env_var_or_default("QUAKE_DIR", "/Applications/id1")
+quake_base := parent_directory(quake_dir)
 maps_dir   := quake_dir + "/maps"
 map_name  := "loyola"
+
+# The QuakeC experiment gets its own gamedir rather than overriding id1's stock
+# game logic. A custom progs.dat anywhere in id1 replaces stock Quake for EVERY
+# map, not just this one -- an orphaned pak of an old, half-finished build once
+# sat in id1 and killed `map loyola` with "Host_Error: Illegible server message
+# 39" the moment the player spawned. That was invisible from `just run`, which
+# passes `-game ad` and so loaded AD's progs instead, and only showed up when
+# launching vkQuake from the macOS launcher with no arguments. Confined to its
+# own gamedir, the experiment is opt-in via `just run-qc` and can't contaminate
+# a plain launch. Maps still deploy to id1/maps; the engine falls back to id1
+# for anything the gamedir lacks, so `-game loyola` still finds loyola.bsp.
+qc_game    := "loyola"
+qc_dir     := quake_base / qc_game
 
 # Show available recipes
 default:
@@ -120,9 +134,16 @@ compile-qc:
         client.qc player.qc doors.qc buttons.qc triggers.qc plats.qc misc.qc \
         server.qc
 
-# Deploy progs.dat to the Quake id1 directory (overrides stock game logic)
+# Deploy progs.dat into its own gamedir (never id1 — see the qc_dir comment)
 deploy-qc:
-    python3 scripts/make_pak3.py progs.dat {{quake_dir}}/pak2.pak
+    mkdir -p {{qc_dir}}
+    python3 scripts/make_pak3.py progs.dat {{qc_dir}}/pak0.pak
+    @echo "Deployed to {{qc_dir}}/pak0.pak — run it with \`just run-qc\`."
+
+# Remove the deployed QuakeC gamedir pak, reverting to stock game logic
+undeploy-qc:
+    rm -f {{qc_dir}}/pak0.pak
+    @echo "Removed {{qc_dir}}/pak0.pak — \`just run-qc\` now falls back to stock progs."
 
 # Clean up temporary build files and test artifacts
 clean:
@@ -135,11 +156,15 @@ clean:
 
 # Run Quake
 run:
-    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir {{quake_base}} +map loyola -game ad
 
 # Alias for r-nosound
 alias r-ns := r-nosound
 
 # Run Quake with sound disabled
 r-nosound:
-    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir /Applications +map loyola -game ad -nosound
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir {{quake_base}} +map loyola -game ad -nosound
+
+# Run the map against the experimental QuakeC gamedir instead of Arcane Dimensions
+run-qc:
+    /Applications/vkQuake.app/Contents/MacOS/vkQuake -basedir {{quake_base}} +map loyola -game {{qc_game}}
