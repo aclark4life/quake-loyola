@@ -31,7 +31,7 @@ from .build_presets import (
     sky_options,
     skybox_options,
 )
-from .skyboxes import env_dir
+from .skyboxes import env_dir, quake_dir
 
 REPO_ROOT = config.REPO_ROOT
 
@@ -505,7 +505,7 @@ def build(
         subprocess.run(light_cmd, cwd=REPO_ROOT, check=True)
 
         if deploy:
-            maps_dir = Path("/Applications/id1/maps")
+            maps_dir = quake_dir() / "maps"
             maps_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy(REPO_ROOT / "loyola.bsp", maps_dir)
             shutil.copy(REPO_ROOT / "loyola.lit", maps_dir)

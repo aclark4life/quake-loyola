@@ -19,6 +19,17 @@ KNOTT_SIGN_PADDING = 4
 KNOTT_SIGN_Z_OFFSET = 20
 KNOTT_WALL_T = 16
 KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
+KNOTT_ROOF_T = 16
+KNOTT_PARAPET_H = 24  # Raised lip around the roof edge, per satellite
+# reference — the roof deck itself sits at the wall top (z2), with the
+# parapet standing KNOTT_PARAPET_H above it, so the rim reads as proud of
+# the roof without dipping the roof deck down into the window tops (which
+# also stop at z2).
+KNOTT_BUILDING_H = 1523  # Was 1640; net effect of two window panes removed
+# (2 x 78 units) plus half a pane (39 units, EXTRA_BASE_H in knott_hall.py)
+# added back so the ground-floor door/entrance is 1.5 panes tall instead of
+# 1, with every other window pane on every wall staying exactly 78
+# tall/unchanged.
 
 # Walk outside the ground-level north door. As at the building's own east
 # entrance, the walk leaves the doorway at grade, runs level for a short

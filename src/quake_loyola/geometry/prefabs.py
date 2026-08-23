@@ -19,6 +19,8 @@ from .structures import layered_wall_y
 
 
 def make_tree(cx, cy, base_z):
+    """Return brushes for a small tree: a trunk box and three tapering
+    foliage tiers, centred at ``(cx, cy)`` and rooted at ``base_z``."""
     TEX_TRUNK, TEX_FOLIAGE = Textures.BRICK, Textures.GROUND
     return [
         box(cx - 5, cy - 5, base_z, cx + 5, cy + 5, base_z + 56, TEX_TRUNK),
@@ -35,6 +37,9 @@ def make_tree(cx, cy, base_z):
 
 
 def make_giant_tree(cx, cy, base_z, total_h=700):
+    """Return brushes for an oversized tree scaled from ``total_h``: a trunk
+    box and three tapering foliage tiers, centred at ``(cx, cy)`` and rooted
+    at ``base_z``."""
     TEX_TRUNK, TEX_FOLIAGE = Textures.BRICK, Textures.GROUND
     trunk_h, l0, l1 = int(total_h * 0.45), int(total_h * 0.225), int(total_h * 0.57)
     m0, m1 = int(total_h * 0.48), int(total_h * 0.78)
@@ -66,6 +71,9 @@ def make_giant_tree(cx, cy, base_z, total_h=700):
 
 
 def make_bush(cx, cy, base_z, size=24):
+    """Return brushes for a low bush: a small base box, a wider box of
+    ``size``, and a tapering top, centred at ``(cx, cy)`` and rooted at
+    ``base_z``."""
     return [
         box(cx - 6, cy - 6, base_z, cx + 6, cy + 6, base_z + 10, Textures.GROUND),
         box(

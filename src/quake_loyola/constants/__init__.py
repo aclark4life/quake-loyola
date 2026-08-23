@@ -305,6 +305,7 @@ from .ennis import (
 )
 from .fonts import FASCIA_FONT
 from .knott import (
+    KNOTT_BUILDING_H,
     KNOTT_BUILDING_W,
     KNOTT_DOOR_WALK_PATH_PROUD,
     KNOTT_DOOR_WALK_PATH_TAIL,
@@ -325,6 +326,7 @@ from .knott import (
     KNOTT_EAST_WALK_W,
     KNOTT_FLOOR_H,
     KNOTT_FLOORS,
+    KNOTT_PARAPET_H,
     KNOTT_RAMP_PILLAR_GAP,
     KNOTT_RAMP_RAIL_H,
     KNOTT_RAMP_RAIL_LOOP_H,
@@ -334,6 +336,7 @@ from .knott import (
     KNOTT_RAMP_RISE_RUN,
     KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
+    KNOTT_ROOF_T,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -640,6 +643,7 @@ __all__ = [
     "FogDensity",
     "INDENT",
     "KNOTT",
+    "KNOTT_BUILDING_H",
     "KNOTT_BUILDING_W",
     "KNOTT_DRIVEWAY_CORRIDOR_X1",
     "KNOTT_DRIVEWAY_CORRIDOR_X2",
@@ -688,6 +692,7 @@ __all__ = [
     "KNOTT_GROUND_Z",
     "KNOTT_NE_PIER_X",
     "KNOTT_ORIG_CX",
+    "KNOTT_PARAPET_H",
     "KNOTT_PIER_X",
     "KNOTT_RAMP_PILLAR_GAP",
     "KNOTT_RAMP_RAIL_H",
@@ -698,6 +703,7 @@ __all__ = [
     "KNOTT_RAMP_RISE_RUN",
     "KNOTT_RAMP_RISE_RUN_MIN",
     "KNOTT_RAMP_W",
+    "KNOTT_ROOF_T",
     "KNOTT_SIGN_H",
     "KNOTT_SIGN_PADDING",
     "KNOTT_SIGN_PX_H",

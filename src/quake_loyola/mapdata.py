@@ -147,6 +147,28 @@ class Face:
         return dot / length >= -eps
 
 
+def _brush_vertices(faces: list["Face"], eps: float = 1e-4) -> list[Point]:
+    """Return the corner points of the convex solid bounded by ``faces``.
+
+    Shared by ``Brush.get_bbox`` here and clipping helpers in
+    ``geometry.primitives`` — both need the same triple-plane-intersection
+    scan, so it lives wherever the plane helpers do to avoid a circular
+    import (``geometry.primitives`` already imports those from this module).
+    """
+    planes = [_face_plane(f) for f in faces]
+    verts = []
+    n = len(planes)
+    for i in range(n):
+        for j in range(i + 1, n):
+            for k in range(j + 1, n):
+                p = _intersect_planes(planes[i], planes[j], planes[k])
+                if p is None:
+                    continue
+                if all(f.is_inside(p, eps) for f in faces):
+                    verts.append(p)
+    return verts
+
+
 @dataclass
 class Brush:
     """A convex brush — an ordered list of Faces."""
@@ -173,18 +195,7 @@ class Brush:
         """
         if not self.faces:
             raise ValueError("Brush.get_bbox() called on a brush with no faces")
-        eps = 1e-4
-        planes = [_face_plane(f) for f in self.faces]
-        verts = []
-        n = len(planes)
-        for i in range(n):
-            for j in range(i + 1, n):
-                for k in range(j + 1, n):
-                    p = _intersect_planes(planes[i], planes[j], planes[k])
-                    if p is None:
-                        continue
-                    if all(f.is_inside(p, eps) for f in self.faces):
-                        verts.append(p)
+        verts = _brush_vertices(self.faces)
         if not verts:
             raise ValueError(
                 "Brush.get_bbox(): no valid vertices found by intersecting face "

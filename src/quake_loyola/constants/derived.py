@@ -154,15 +154,14 @@ ENNIS_SHORT_WALL_GAP = 8  # gap north of the sidewalk squares
 ENNIS_SHORT_WALL_NY = (
     ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + CHARLES_WALK_W + ENNIS_SHORT_WALL_GAP
 )  # Short north-side brick wall segment.
+# Midpoint between the pillar's own setback off the sidewalk square (a flat
+# 10 units, clear of the square's own footprint) and the short wall's inner
+# face (ENNIS_SHORT_WALL_NY less its own gap), so the pillar centers between
+# the two features instead of colliding with either.
+ENNIS_PILLAR_NORTH_SETBACK = 10
 ENNIS_PILLAR_NORTH_Y = (
-    ENNIS_Y
-    + ENNIS_HW
-    + ENNIS_WIDEN_N
-    + 10
-    + ENNIS_Y
-    + ENNIS_HW
-    + ENNIS_WIDEN_N
-    + CHARLES_WALK_W
+    (ENNIS_Y + ENNIS_HW + ENNIS_WIDEN_N + ENNIS_PILLAR_NORTH_SETBACK)
+    + (ENNIS_SHORT_WALL_NY - ENNIS_SHORT_WALL_GAP)
 ) // 2
 # South pillar centered in the grass verge.
 ENNIS_PILLAR_SOUTH_Y = (

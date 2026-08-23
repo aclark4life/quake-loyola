@@ -1,6 +1,8 @@
 """West-campus frontage: the hillside iron fence, brick wall, and terrace walk.
 
-The dorm buildings themselves now live in ``dorms.py``.
+The west-campus dorm buildings this frontage originally served were retired
+(see ``git log`` for ``dorms.py``); their reusable pieces were factored out
+into ``geometry/prefabs.py`` before removal.
 """
 
 from .constants import STREET_SW_GAP, WORLD_Y2

@@ -2,7 +2,7 @@
 
 import math
 
-from ..mapdata import Brush, Face, _face_plane, _intersect_planes
+from ..mapdata import Brush, Face, _brush_vertices, _face_plane
 from ..utils import swap_xy, swap_xz
 
 
@@ -87,21 +87,6 @@ def _clip_face(axis, coord, keep_below, tex):
     if keep_below:
         return Face(pt(0, 0), pt(0, 1), pt(1, 0), tex)
     return Face(pt(0, 0), pt(1, 0), pt(0, 1), tex)
-
-
-def _brush_vertices(faces, eps=1e-4):
-    """Return the corner points of the convex solid bounded by ``faces``."""
-    planes = [_face_plane(f) for f in faces]
-    verts = []
-    for i in range(len(planes)):
-        for j in range(i + 1, len(planes)):
-            for k in range(j + 1, len(planes)):
-                p = _intersect_planes(planes[i], planes[j], planes[k])
-                if p is None:
-                    continue
-                if all(f.is_inside(p, eps) for f in faces):
-                    verts.append(p)
-    return verts
 
 
 def _bounding_faces(faces, verts, eps=1e-3):

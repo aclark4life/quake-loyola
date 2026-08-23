@@ -131,13 +131,16 @@ LIGHTING_PRESETS: dict[str, LightingPreset] = {
 # ``config.py`` validates ``lighting_preset``/``fog_density`` against
 # ``build_presets`` before this module is ever imported, so these are
 # internal-consistency checks (a mismatch here is a bug in this file, not a
-# user error) rather than user-facing validation.
-assert sorted(LIGHTING_PRESETS) == sorted(_LIGHTING_PRESET_NAME_TUPLE), (
-    "LIGHTING_PRESETS keys drifted from build_presets.LIGHTING_PRESET_NAMES"
-)
-assert sorted(FOG_DENSITY_NAMES) == sorted(_FOG_DENSITY_NAME_TUPLE), (
-    "FOG_DENSITY_NAMES keys drifted from build_presets.FOG_DENSITY_NAMES"
-)
+# user error) rather than user-facing validation. Plain ``raise`` (not
+# ``assert``) so the check still fires under ``python -O``.
+if sorted(LIGHTING_PRESETS) != sorted(_LIGHTING_PRESET_NAME_TUPLE):
+    raise AssertionError(
+        "LIGHTING_PRESETS keys drifted from build_presets.LIGHTING_PRESET_NAMES"
+    )
+if sorted(FOG_DENSITY_NAMES) != sorted(_FOG_DENSITY_NAME_TUPLE):
+    raise AssertionError(
+        "FOG_DENSITY_NAMES keys drifted from build_presets.FOG_DENSITY_NAMES"
+    )
 
 _lighting_preset_setting = _get_build("lighting_preset")
 LIGHTING = LIGHTING_PRESETS[_lighting_preset_setting]

@@ -64,6 +64,7 @@ from .constants.bridge import (
     BRIDGE_PILLAR_PYR_H,
     BRIDGE_PILLAR_SEAM_D,
     BRIDGE_PILLAR_SEAM_HW,
+    BRIDGE_SOUTH_EXTENSION,
     BRIDGE_SQ_D,
     BRIDGE_SQ_HH,
     BRIDGE_SQ_HW,
@@ -76,6 +77,7 @@ from .constants.bridge import (
     BRIDGE_TUBE_GAP,
     BRIDGE_TUBE_HW,
     BRIDGE_TUBE_RISE,
+    PIER5_LINTEL_GAP,
     PIER6_ROTATION_DEG,
     PIER6_ROTATION_MARGIN,
 )
@@ -353,11 +355,10 @@ def _build_bridge_deck_slabs(
             )
         )
 
-    bridge_south_extension = 184
     brushes.append(
         box(
             BRIDGE.x2,
-            BRIDGE.y1 - bridge_south_extension,
+            BRIDGE.y1 - BRIDGE_SOUTH_EXTENSION,
             BRIDGE_DZ1,
             PIER5_X,
             BRIDGE.y1,
@@ -1476,7 +1477,6 @@ def _build_bridge_west_abutment_fill(brushes, ctx):
 
 def _build_bridge_support_pier(brushes, entities, px):
     """Build one bridge support pier, including abutment specials."""
-    pier5_lintel_gap_default = 24
     pier6_rot_bstart = len(brushes) if px == PIER6_X else None
     pier6_rot_estart = len(entities) if px == PIER6_X else None
     pdeck = deck_top_z(px)
@@ -1515,7 +1515,7 @@ def _build_bridge_support_pier(brushes, entities, px):
         a_stilt = pier_ceiling_z - a_rout - pier_floor_z
     arch_overhang = max(0, max_outer_radius - a_rout)
 
-    pier5_lintel_gap = pier5_lintel_gap_default if px == PIER5_X else 0
+    pier5_lintel_gap = PIER5_LINTEL_GAP if px == PIER5_X else 0
     a_stilt = max(0, a_stilt - pier5_lintel_gap)
 
     if px == min(BRIDGE_ARCH_X):

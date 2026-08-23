@@ -26,19 +26,20 @@ from .constants import (
     PIER5_X,
     Textures,
 )
+from .constants import (
+    KNOTT_BUILDING_H as BUILDING_H,
+)
+from .constants import (
+    KNOTT_PARAPET_H as PARAPET_H,
+)
+from .constants import (
+    KNOTT_ROOF_T as ROOF_T,
+)
+from .constants import (
+    KNOTT_WALL_T as WALL_T,
+)
 from .geometry import box, brush_ent, carve_box, fascia_sign, polygon_prism
 
-WALL_T = 16
-ROOF_T = 16
-PARAPET_H = 24  # Raised lip around the roof edge, per satellite reference —
-# the roof deck itself sits at the wall top (z2), with the parapet
-# standing PARAPET_H above it, so the rim reads as proud of the roof
-# without dipping the roof deck down into the window tops (which also
-# stop at z2).
-BUILDING_H = 1523  # Was 1640; net effect of two window panes removed (2 x
-# 78 units) plus half a pane (39 units, EXTRA_BASE_H below) added back so
-# the ground-floor door/entrance is 1.5 panes tall instead of 1, with every
-# other window pane on every wall staying exactly 78 tall/unchanged.
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from KH_X2.
 CORNER_CUT_W_NW = 188  # West notch inset from KH_X1 — moved east more than the NE side.
@@ -196,6 +197,19 @@ def _cross_beam(x1, x2, y1, y2, bz, tex):
     return box(x1, y1, bz - BEAM_H / 2, x2, y2 + BEAM_PROUD, bz + BEAM_H / 2, tex)
 
 
+def _beam_zs(win_bottom, z2, segments):
+    """Z heights of the horizontal cross beams dividing a window opening
+    into ``segments`` equal panes between ``win_bottom`` and ``z2``.
+
+    Shared by ``_side_windows`` and ``_wall_with_opening``, which otherwise
+    each build boxes protruding along a different axis (X for the side
+    walls' beams, Y for the front/notch walls'), so only this height
+    calculation — not the box construction itself — is common between them.
+    """
+    seg_h = (z2 - win_bottom) / segments
+    return [win_bottom + i * seg_h for i in range(1, segments)]
+
+
 def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
     """Windows (with mullions/beams) set into an east/west side wall.
 
@@ -256,11 +270,9 @@ def _side_windows(x1, x2, wy1, wy2, z1, z2, bottom_z, tex, outer_x):
             ]
             detail.append(polygon_prism(pts, win_bottom, z2, Textures.CEMENT))
         segments = WINDOW_SEGMENTS
-        seg_h = (z2 - win_bottom) / segments
         beam_outer = outer_x + BEAM_PROUD * (1 if outer_x > inner_x else -1)
         bx1, bx2 = (inner_x, beam_outer) if outer_x > inner_x else (beam_outer, inner_x)
-        for i in range(1, segments):
-            bz = win_bottom + i * seg_h
+        for bz in _beam_zs(win_bottom, z2, segments):
             detail.append(
                 box(
                     bx1,
@@ -400,8 +412,7 @@ def _wall_with_opening(
             boxes.append(_mullion_prism(mx, y1, y2, m_bottom, z2, m_tex))
     if beams:
         b_tex = beam_tex if beam_tex is not None else (mullion_tex or tex)
-        for i in range(1, segments):
-            bz = win_bottom + i * seg_h
+        for bz in _beam_zs(win_bottom, z2, segments):
             boxes.append(_cross_beam(ox1, ox2, y1, y2, bz, b_tex))
     return boxes
 

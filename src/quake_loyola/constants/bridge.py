@@ -117,6 +117,9 @@ BRIDGE_CENTER_SPAN_OFFSET = (
 BRIDGE_CENTER_SPAN_PIER_EMBED = 96  # Extra pier embed when the center span is offset.
 PIER6_ROTATION_DEG = -20  # Clockwise rotation in plan view.
 PIER6_ROTATION_MARGIN = 150  # Extra section-filter margin for the rotated footprint.
+BRIDGE_SOUTH_EXTENSION = 184  # How far south of BRIDGE.y1 the deck slab
+# extends to close the gap at the Pier 5/Knott end.
+PIER5_LINTEL_GAP = 24  # Extra gap over the lintel, applied only at Pier 5.
 
 
 @dataclass
