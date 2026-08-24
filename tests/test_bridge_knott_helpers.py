@@ -122,6 +122,170 @@ class KnottHallSignTest(unittest.TestCase):
             self.assertGreaterEqual(y2, knott_hall.KH_Y2 - 1e-3)
 
 
+class KnottHallFloorTest(unittest.TestCase):
+    def test_each_storey_is_decked_over_the_whole_interior(self):
+        spans = knott_hall._interior_spans()
+        floors = knott_hall._build_floors()
+        ground = [b for b in floors if b.get_bbox()[1][2] == knott_hall.GROUND_FLOOR_Z]
+        entry = [b for b in floors if b.get_bbox()[1][2] == knott_hall.ENTRY_FLOOR_Z]
+        # The lowest deck is uncut, so one plate per span.
+        self.assertEqual(len(ground), len(spans))
+        # The one above is split around the two shafts, so it takes more.
+        self.assertGreater(len(entry), len(spans))
+        self.assertEqual(len(floors), len(ground) + len(entry))
+
+    def test_the_ground_deck_is_flush_with_the_north_door_threshold(self):
+        # The door opens onto a walk that leaves the doorway at grade, so a
+        # deck any higher or lower would put a lip in the doorway.
+        self.assertEqual(knott_hall.GROUND_FLOOR_Z, knott_hall.GROUND_DOOR_BOTTOM)
+
+    def test_the_ground_deck_is_poured_onto_the_world_floor_slab(self):
+        # It must land on the slab streets/shell.py lays at FLOOR_Z1..FLOOR_Z2
+        # rather than float above it, or the gap is a sealed dead crawlspace.
+        decks = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.GROUND_FLOOR_Z
+        ]
+        self.assertTrue(decks)
+        for brush in decks:
+            (_, _, z1), (_, _, _z2) = brush.get_bbox()
+            self.assertEqual(z1, knott_hall.FLOOR_Z2)
+
+    def test_the_entry_deck_is_level_with_the_bridge_entrance(self):
+        # The entrance sill is dropped to the bridge deck's height at Knott
+        # so the crossing runs in level (see ENTRANCE_SILL_Z); the floor has
+        # to meet it exactly or walking in puts a lip in the doorway.
+        self.assertEqual(knott_hall.ENTRY_FLOOR_Z, knott_hall.ENTRANCE_SILL_Z)
+        decks = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.ENTRY_FLOOR_Z
+        ]
+        self.assertTrue(decks)
+        for brush in decks:
+            (_, _, z1), (_, _, z2) = brush.get_bbox()
+            self.assertEqual(z2 - z1, knott_hall.FLOOR_T)
+
+    def test_the_window_sills_sit_above_the_entry_deck(self):
+        # The facade's opening grid starts a beam segment above the
+        # entrance sill, so the glazing gets an upstand rather than the
+        # floor cutting through it.
+        self.assertGreater(knott_hall.OPENING_BOTTOM_Z, knott_hall.ENTRY_FLOOR_Z)
+
+    def test_the_lowest_deck_is_left_solid_under_the_cores(self):
+        # The shafts bottom out on it, so cutting it would open a pit down
+        # onto the world ground slab rather than a shaft.
+        ground = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.GROUND_FLOOR_Z
+        ]
+        self.assertEqual(len(ground), len(knott_hall._interior_spans()))
+        for vx1, vy1, vx2, vy2 in knott_hall._core_voids():
+            cx, cy = (vx1 + vx2) / 2, (vy1 + vy2) / 2
+            covered = any(
+                b.get_bbox()[0][0] <= cx <= b.get_bbox()[1][0]
+                and b.get_bbox()[0][1] <= cy <= b.get_bbox()[1][1]
+                for b in ground
+            )
+            self.assertTrue(covered, "the lowest deck should be solid here")
+
+    def test_the_cores_are_cut_out_of_the_upper_deck(self):
+        entry = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.ENTRY_FLOOR_Z
+        ]
+        for vx1, vy1, vx2, vy2 in knott_hall._core_voids():
+            for brush in entry:
+                (bx1, by1, _), (bx2, by2, _) = brush.get_bbox()
+                overlaps = bx1 < vx2 and vx1 < bx2 and by1 < vy2 and vy1 < by2
+                self.assertFalse(
+                    overlaps, f"deck brush {(bx1, by1, bx2, by2)} blocks a shaft"
+                )
+
+    def test_the_upper_deck_loses_exactly_the_core_area(self):
+        entry = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.ENTRY_FLOOR_Z
+        ]
+        area = 0
+        for brush in entry:
+            (bx1, by1, _), (bx2, by2, _) = brush.get_bbox()
+            area += (bx2 - bx1) * (by2 - by1)
+        spans = sum(
+            (x2 - x1) * (y2 - y1) for x1, y1, x2, y2 in knott_hall._interior_spans()
+        )
+        # Clipped to the spans, not nominal: a core may abut a notch-ledge
+        # wall, where the plate already stops short of the core's own edge.
+        cores = 0
+        for sx1, sy1, sx2, sy2 in knott_hall._interior_spans():
+            for vx1, vy1, vx2, vy2 in knott_hall._core_voids():
+                w = min(sx2, vx2) - max(sx1, vx1)
+                d = min(sy2, vy2) - max(sy1, vy1)
+                if w > 0 and d > 0:
+                    cores += w * d
+        self.assertEqual(area, spans - cores)
+        self.assertGreater(cores, 0)
+
+    def test_the_cores_flank_the_bridge_entrance(self):
+        # As the retired prototype had them: stair to the west of the
+        # entrance, lift to the east, so you arrive between the two.
+        stair, lift = knott_hall._core_voids()
+        self.assertLess(stair[2], knott_hall.ENTRANCE_X1)
+        self.assertGreater(lift[0], knott_hall.ENTRANCE_X2)
+        self.assertGreaterEqual(
+            knott_hall.ENTRANCE_X1 - stair[2], knott_hall.CORE_LANDING_GAP
+        )
+        self.assertGreaterEqual(
+            lift[0] - knott_hall.ENTRANCE_X2, knott_hall.CORE_LANDING_GAP
+        )
+
+    def test_the_cores_sit_against_the_north_wall(self):
+        # Both are north-wall cores; floating them south would put them in
+        # the middle of the floor plate instead of beside the entrance.
+        for _vx1, _vy1, _vx2, vy2 in knott_hall._core_voids():
+            self.assertEqual(vy2, knott_hall.KH_NOTCH_Y)
+
+    def test_the_cores_stay_within_the_interior(self):
+        for vx1, vy1, vx2, vy2 in knott_hall._core_voids():
+            self.assertGreaterEqual(vx1, knott_hall.KH_X1 + knott_hall.WALL_T)
+            self.assertLessEqual(vx2, knott_hall.KH_X2 - knott_hall.WALL_T)
+            self.assertGreaterEqual(vy1, knott_hall.KH_Y1 + knott_hall.WALL_T)
+            self.assertLess(vx1, vx2)
+            self.assertLess(vy1, vy2)
+
+    def test_the_two_cores_do_not_overlap(self):
+        (sx1, sy1, sx2, sy2), (lx1, ly1, lx2, ly2) = knott_hall._core_voids()
+        self.assertFalse(sx1 < lx2 and lx1 < sx2 and sy1 < ly2 and ly1 < sy2)
+
+    def test_decks_stay_inside_the_shell(self):
+        for brush in knott_hall._build_floors():
+            (x1, y1, _), (x2, y2, _) = brush.get_bbox()
+            self.assertGreaterEqual(x1, knott_hall.KH_X1 + knott_hall.WALL_T)
+            self.assertLessEqual(x2, knott_hall.KH_X2 - knott_hall.WALL_T)
+            self.assertGreaterEqual(y1, knott_hall.KH_Y1 + knott_hall.WALL_T)
+            self.assertLessEqual(y2, knott_hall.KH_Y2 - knott_hall.WALL_T)
+
+    def test_the_roof_covers_the_same_footprint_as_a_floor(self):
+        # Both are built from _interior_spans(), which is the point of it:
+        # a change to the notch can't move one without moving the other.
+        # Compared against the uncut lowest deck, since the deck above is
+        # split around the shafts.
+        z2 = knott_hall.KH_GROUND_Z + knott_hall.BUILDING_H
+        roof = knott_hall._build_roof(z2, z2 + knott_hall.ROOF_T)
+        roof_xy = sorted(b.get_bbox()[0][:2] + b.get_bbox()[1][:2] for b in roof)
+        floors = [
+            b
+            for b in knott_hall._build_floors()
+            if b.get_bbox()[1][2] == knott_hall.GROUND_FLOOR_Z
+        ]
+        floor_xy = sorted(b.get_bbox()[0][:2] + b.get_bbox()[1][:2] for b in floors)
+        self.assertEqual(roof_xy, floor_xy)
+
+
 class KnottHallBuildTest(unittest.TestCase):
     def test_build_matches_sum_of_helper_parts(self):
         brushes, entities = knott_hall.build()
@@ -130,12 +294,16 @@ class KnottHallBuildTest(unittest.TestCase):
         )
         z2 = knott_hall.KH_GROUND_Z + knott_hall.BUILDING_H
         roof_brushes = knott_hall._build_roof(z2, z2 + knott_hall.ROOF_T)
+        floor_brushes = knott_hall._build_floors()
         sign_brushes = knott_hall._build_sign(knott_hall.KH_GROUND_Z)
         parapet_brushes = knott_hall._build_parapet(z2, z2 + knott_hall.PARAPET_H)
 
         self.assertEqual(
             len(brushes),
-            len(wall_brushes) + len(roof_brushes) + len(sign_brushes),
+            len(wall_brushes)
+            + len(roof_brushes)
+            + len(floor_brushes)
+            + len(sign_brushes),
         )
         self.assertEqual(len(entities), 1)
         self.assertEqual(

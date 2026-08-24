@@ -1,19 +1,24 @@
-"""Knott Hall shell: four walls and a roof, no floors.
+"""Knott Hall shell: four walls, a roof, and the ground/entry storey floors.
 
 Sized and placed against the real terrain modeled in
-``terrain/knott_hall.py``. The interior is left as one big open volume so
-the footprint and height can be iterated on before any floors, windows, or
-interior detail are added. The old, more detailed prototype (facade
+``terrain/knott_hall.py``. The interior was left as one big open volume so
+the footprint and height could be iterated on before any floors, windows,
+or interior detail were added; the ground and entry storeys are now decked
+at ``GROUND_FLOOR_Z`` and ``ENTRY_FLOOR_Z`` — the north door's threshold and
+the bridge-level entrance's sill, so you walk in level at both. The old,
+more detailed prototype (facade
 coursing, windows, elevator/stair core, interior partitions) was retired;
 its generically reusable pieces (stairwell, elevator shaft, corner window,
-fascia sign) now live in ``geometry/prefabs.py`` for reuse once floors are
-added back here.
+fascia sign) now live in ``geometry/prefabs.py`` for reuse as the rest of
+the storeys are added back here.
 """
 
 from .constants import (
     BRIDGE_CENTER_SPAN_OFFSET,
     BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
+    FLOOR_Z2,
+    INDENT,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -38,7 +43,7 @@ from .constants import (
 from .constants import (
     KNOTT_WALL_T as WALL_T,
 )
-from .geometry import box, brush_ent, carve_box, fascia_sign, polygon_prism
+from .geometry import box, brush_ent, carve_box, fascia_sign, floor_plate, polygon_prism
 
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from KH_X2.
@@ -553,53 +558,143 @@ def _build_walls(z1, z2):
     return wall_brushes, west_detail, east_detail
 
 
+def _interior_spans():
+    """The building's interior footprint, as ``(x1, y1, x2, y2)`` rectangles.
+
+    Knott is not a plain box: the north end is notched in from both sides,
+    so the interior is an L/T shape that has to be tiled by rectangles.
+    Split into 3 spans across the lower rectangle plus the upper (notched)
+    one. The two outer lower spans are additionally inset by ``WALL_T`` on
+    the north side, where the NW/NE notch-ledge walls stand; the middle
+    span is the open transition into the upper rectangle and so can run
+    flush to ``KH_NOTCH_Y``.
+
+    Shared by the roof deck and the floor decks, which cover the same
+    footprint at different heights — keeping one definition is what stops
+    a future change to the notch from moving the roof but not the floors.
+    """
+    return (
+        (KH_X1 + WALL_T, KH_Y1 + WALL_T, KH_NORTH_X1, KH_NOTCH_Y - WALL_T),
+        (KH_NORTH_X1, KH_Y1 + WALL_T, KH_NORTH_X2, KH_NOTCH_Y),
+        (KH_NORTH_X2, KH_Y1 + WALL_T, KH_X2 - WALL_T, KH_NOTCH_Y - WALL_T),
+        (KH_NORTH_X1 + WALL_T, KH_NOTCH_Y, KH_NORTH_X2 - WALL_T, KH_Y2 - WALL_T),
+    )
+
+
 def _build_roof(roof_z1, roof_z2):
     """Build the roof deck brushes, inset behind the parapet ring.
 
-    Split into 3 spans along the north edge: the two outer spans (under
-    the NW/NE notch-ledge walls) are additionally inset by ``WALL_T`` on
-    the north side so they don't sit flush against those walls' inward
-    faces; the middle span (open transition into the upper rectangle) can
-    run flush to ``KH_NOTCH_Y`` since there's no wall face there.
+    Covers :func:`_interior_spans` — see there for how the notched
+    footprint is tiled.
     """
     return [
-        box(
-            KH_X1 + WALL_T,
-            KH_Y1 + WALL_T,
-            roof_z1,
-            KH_NORTH_X1,
-            KH_NOTCH_Y - WALL_T,
-            roof_z2,
-            Textures.ROOF_KH,
+        box(x1, y1, roof_z1, x2, y2, roof_z2, Textures.ROOF_KH)
+        for x1, y1, x2, y2 in _interior_spans()
+    ]
+
+
+FLOOR_T = 16  # Deck slab thickness, matching the roof's ROOF_T.
+
+# The two floor lines the facade already fixes, so the decks land on
+# heights the building's openings agree with rather than on new invented
+# ones:
+#
+# - The ground storey sits at the north door's threshold. That door opens
+#   straight onto the north walk, which ``_knott_door_walk_layout`` runs
+#   level away from the doorway "at grade" — so a deck here is flush with
+#   the pavement outside and you simply walk in onto it.
+# - The entry storey sits on the bridge-level entrance's own sill. That
+#   sill is deliberately dropped to the bridge deck's height at Knott
+#   (ENTRANCE_SILL_Z) rather than to the facade's opening grid, so the
+#   crossing runs in level — and the floor has to meet it there, or the
+#   doorway gets a lip. The window sills stay a little above it at
+#   OPENING_BOTTOM_Z, which reads as a normal upstand under the glazing.
+GROUND_FLOOR_Z = GROUND_DOOR_BOTTOM
+ENTRY_FLOOR_Z = ENTRANCE_SILL_Z
+
+# The ground deck is poured straight onto the world ground slab that
+# streets/shell.py lays across the whole map at FLOOR_Z1..FLOOR_Z2 — which
+# is what already floors this interior, in bare dirt, and what the walls
+# stand on (KH_GROUND_Z == FLOOR_Z1). Making it a full-depth slab rather
+# than a FLOOR_T one is deliberate: the threshold is GROUND_FLOOR_Z above
+# that slab, and a thin deck would leave a sealed, unreachable crawlspace
+# under the storey for qbsp to carve up for nothing.
+GROUND_FLOOR_T = GROUND_FLOOR_Z - FLOOR_Z2
+
+# Service core, placed as the retired prototype had it: both shafts hard
+# against the north wall, flanking the bridge entrance — the stair filling
+# the NW corner and the lift tucked into the NE one, so coming in off the
+# bridge puts the stair on your left and the lift on your right. (The
+# prototype's own constants: stair from KNOTT_X1 + WALL_T + 2*INDENT east
+# to the entrance, lift KNOTT_SHAFT_W square just past it, both with their
+# north edge on the interior wall face.)
+#
+# The north end of this shell is the notched upper rectangle, far too
+# shallow to hold either, so the cores sit against the north edge of the
+# lower rectangle at KH_NOTCH_Y instead of against KH_Y2 itself.
+CORE_WEST_SETBACK = 2 * INDENT  # Stair held off the west wall, as before.
+CORE_LANDING_GAP = 16  # Clearance between a core and the entrance opening.
+CORE_STAIR_D = 256  # Switchback depth: two half-flights either side of a landing.
+CORE_LIFT_W = CORE_LIFT_D = 128  # Car plus its shaft walls.
+
+# The bridge entrance the cores flank. Mirrors the arithmetic
+# _wall_with_opening does internally for the same wall and offset.
+ENTRANCE_CX = (KH_NORTH_X1 + WALL_T + KH_NORTH_X2 - WALL_T) / 2 + CENTER_OPENING_OFFSET
+ENTRANCE_X1 = ENTRANCE_CX - CENTER_OPENING_W / 2
+ENTRANCE_X2 = ENTRANCE_CX + CENTER_OPENING_W / 2
+
+
+def _core_voids():
+    """The stair and lift shaft openings, as ``(x1, y1, x2, y2)`` rects.
+
+    Both are cut as one vertical shaft through every deck above the lowest
+    one, so a stair or car can run the full height of the building.
+    """
+    north = KH_NOTCH_Y
+    return (
+        (
+            KH_X1 + WALL_T + CORE_WEST_SETBACK,
+            north - CORE_STAIR_D,
+            ENTRANCE_X1 - CORE_LANDING_GAP,
+            north,
         ),
-        box(
-            KH_NORTH_X1,
-            KH_Y1 + WALL_T,
-            roof_z1,
-            KH_NORTH_X2,
-            KH_NOTCH_Y,
-            roof_z2,
-            Textures.ROOF_KH,
+        (
+            ENTRANCE_X2 + CORE_LANDING_GAP,
+            north - CORE_LIFT_D,
+            ENTRANCE_X2 + CORE_LANDING_GAP + CORE_LIFT_W,
+            north,
         ),
-        box(
-            KH_NORTH_X2,
-            KH_Y1 + WALL_T,
-            roof_z1,
-            KH_X2 - WALL_T,
-            KH_NOTCH_Y - WALL_T,
-            roof_z2,
-            Textures.ROOF_KH,
-        ),
-        # Roof, upper (notched) rectangle — inset behind the parapet ring.
-        box(
-            KH_NORTH_X1 + WALL_T,
-            KH_NOTCH_Y,
-            roof_z1,
-            KH_NORTH_X2 - WALL_T,
-            KH_Y2 - WALL_T,
-            roof_z2,
-            Textures.ROOF_KH,
-        ),
+    )
+
+
+def _build_floors():
+    """Build the interior storey decks.
+
+    Only the two storeys the building's own doorways pin down are decked
+    for now, so they can be looked at in-game before the rest of the stack
+    is committed to. The floor lines above are already fixed too:
+    ``_beam_zs`` puts a cross beam at every window division, and every
+    ``BEAM_SEGMENTS_PER_FLOOR``-th one is a floor line.
+
+    The lowest deck is left solid. It is the bottom of the shafts — the
+    stair starts on it and the car lands on it — so cutting the core out
+    of it would open a pit down onto the world ground slab underneath
+    rather than a shaft. Every deck above it is cut.
+
+    Kept as worldspawn (not func_detail like the parapet): a full-footprint
+    slab is exactly the kind of large opaque divider vis wants, to cut the
+    interior into per-storey clusters instead of one building-sized leaf.
+    """
+    return [
+        brush
+        for deck_z, t, voids in (
+            (GROUND_FLOOR_Z, GROUND_FLOOR_T, ()),
+            (ENTRY_FLOOR_Z, FLOOR_T, _core_voids()),
+        )
+        for x1, y1, x2, y2 in _interior_spans()
+        for brush in floor_plate(
+            x1, y1, x2, y2, deck_z, t, Textures.FLOOR_KH, voids=voids
+        )
     ]
 
 
@@ -722,7 +817,7 @@ def _build_sign(z1):
 
 
 def build():
-    """Build the Knott Hall shell: four walls and a roof, no floors.
+    """Build the Knott Hall shell: four walls, a roof, and the entry floor.
 
     Returns:
         tuple[list, list]: ``(brushes, entities)`` for the building shell.
@@ -735,10 +830,11 @@ def build():
 
     wall_brushes, west_detail, east_detail = _build_walls(z1, z2)
     roof_brushes = _build_roof(roof_z1, roof_z2)
+    floor_brushes = _build_floors()
     parapet_detail = _build_parapet(z2, parapet_z2)
     sign_brushes = _build_sign(z1)
 
-    brushes = [*wall_brushes, *roof_brushes, *sign_brushes]
+    brushes = [*wall_brushes, *roof_brushes, *floor_brushes, *sign_brushes]
     entities = [brush_ent("func_detail", west_detail + east_detail + parapet_detail)]
 
     return brushes, entities
