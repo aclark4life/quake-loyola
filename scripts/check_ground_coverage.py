@@ -56,7 +56,6 @@ GROUND_TEXTURES = {
     Textures.CEMENT,
     Textures.STONE,
     Textures.ROAD,
-    Textures.FLOOR,
     Textures.FLOOR1,
     Textures.FLOOR_KH,
     Textures.DECK_EDGE,

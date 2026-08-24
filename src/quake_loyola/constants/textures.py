@@ -34,8 +34,13 @@ class Textures:
     CENTERLINE = "win_fbylw_01"  # Fullbright yellow stand-in for centerline paint.
     PARKING_STRIPE = "win_fbblu_01"  # Reads as a light parking-stripe texture in-game.
     ENNIS_PILLAR = "stn_f14_wht1"  # from makkon_stone.wad
-    FLOOR = "sfloor3_2"
     FLOOR1 = "TF_Floor5_03"  # from mg1.wad; bridge deck walking surface
+    #: from ikwhite.wad; Knott Hall's interior storey decks. A light grey
+    #: polished terrazzo, which is what the real building's corridors are
+    #: floored in — and, unlike the cement it used to share with
+    #: :attr:`SIDEWALK` and :attr:`CEMENT`, it reads as *inside* rather than
+    #: as the pavement continuing indoors.
+    FLOOR_KH = "floor23"
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
     GROUND = "ground1_1"
     HINT = "hint"
@@ -43,7 +48,6 @@ class Textures:
     LAVA = "*lava1"
     PILLAR = "city6_8"
     PIER_STONE = "TF_Stone4"  # from mg1.wad; shared by bridge piers and KH walls
-    FLOOR_KH = "sfloor3_2"
     RAIL = "metal5_4"
     #: from alkaline.wad; the accessible ramp's tubular guardrail, which
     #: wants a smoother steel than the panelled RAIL used beside the steps

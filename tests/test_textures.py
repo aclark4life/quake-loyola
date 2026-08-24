@@ -20,3 +20,19 @@ def test_default_sky_is_a_sky_texture():
     # qbsp only compiles textures named sky* as sky, so the default must be
     # one — otherwise the map would render with a solid wall overhead.
     assert Textures.SKY.startswith(SKY_TEXTURE_PREFIX)
+
+
+def test_knott_floors_are_not_paved_in_the_exterior_cement():
+    # FLOOR_KH used to be another alias for "sfloor3_2", the same string as
+    # CEMENT/SIDEWALK/STONE, so a Knott interior deck would have rendered
+    # identically to the pavement outside. The interior needs to read as
+    # interior, so it must stay distinct from the exterior ground textures.
+    exterior = {Textures.CEMENT, Textures.SIDEWALK, Textures.STONE, Textures.ROAD}
+    assert Textures.FLOOR_KH not in exterior
+
+
+def test_knott_surfaces_are_distinct_from_each_other():
+    # Floor, wall and roof all being one texture is the failure mode that
+    # makes an interior read as a solid block, so pin them apart.
+    surfaces = [Textures.FLOOR_KH, Textures.BRICK_KH, Textures.ROOF_KH]
+    assert len(set(surfaces)) == len(surfaces)
