@@ -128,11 +128,25 @@ class KnottHallFloorTest(unittest.TestCase):
         floors = knott_hall._build_floors()
         ground = [b for b in floors if b.get_bbox()[1][2] == knott_hall.GROUND_FLOOR_Z]
         entry = [b for b in floors if b.get_bbox()[1][2] == knott_hall.ENTRY_FLOOR_Z]
+        upper = [
+            b
+            for z in knott_hall.UPPER_FLOOR_ZS
+            for b in floors
+            if b.get_bbox()[1][2] == z
+        ]
         # The lowest deck is uncut, so one plate per span.
         self.assertEqual(len(ground), len(spans))
-        # The one above is split around the two shafts, so it takes more.
+        # Every deck above it is split around the two shafts, so each takes
+        # more plates than a span alone would.
         self.assertGreater(len(entry), len(spans))
-        self.assertEqual(len(floors), len(ground) + len(entry))
+        for z in knott_hall.UPPER_FLOOR_ZS:
+            self.assertGreater(
+                len([b for b in floors if b.get_bbox()[1][2] == z]), len(spans)
+            )
+        # All five storeys (ground, entry, and the three above) account for
+        # every deck plate built.
+        self.assertEqual(len(knott_hall.UPPER_FLOOR_ZS), 3)
+        self.assertEqual(len(floors), len(ground) + len(entry) + len(upper))
 
     def test_the_ground_deck_is_flush_with_the_north_door_threshold(self):
         # The door opens onto a walk that leaves the doorway at grade, so a

@@ -1,16 +1,18 @@
-"""Knott Hall shell: four walls, a roof, and the ground/entry storey floors.
+"""Knott Hall shell: four walls, a roof, and all five storey floors.
 
 Sized and placed against the real terrain modeled in
 ``terrain/knott_hall.py``. The interior was left as one big open volume so
 the footprint and height could be iterated on before any floors, windows,
-or interior detail were added; the ground and entry storeys are now decked
-at ``GROUND_FLOOR_Z`` and ``ENTRY_FLOOR_Z`` — the north door's threshold and
-the bridge-level entrance's sill, so you walk in level at both. The old,
-more detailed prototype (facade
-coursing, windows, elevator/stair core, interior partitions) was retired;
-its generically reusable pieces (stairwell, elevator shaft, corner window,
-fascia sign) now live in ``geometry/prefabs.py`` for reuse as the rest of
-the storeys are added back here.
+or interior detail were added; every storey is now decked. Ground and
+entry land at ``GROUND_FLOOR_Z`` and ``ENTRY_FLOOR_Z`` — the north door's
+threshold and the bridge-level entrance's sill, so you walk in level at
+both — and the three above them land at ``UPPER_FLOOR_ZS``, the same beam
+lines the facade's window grid already divides into. The old, more
+detailed prototype (facade coursing, windows, elevator/stair core,
+interior partitions) was retired; its generically reusable pieces
+(stairwell, elevator shaft, corner window, fascia sign) now live in
+``geometry/prefabs.py`` for reuse as the rest of the interior (stairs,
+partitions) is added back here.
 """
 
 from .constants import (
@@ -611,6 +613,16 @@ FLOOR_T = 16  # Deck slab thickness, matching the roof's ROOF_T.
 GROUND_FLOOR_Z = GROUND_DOOR_BOTTOM
 ENTRY_FLOOR_Z = ENTRANCE_SILL_Z
 
+# The three floor lines above the entry storey are not new heights either —
+# they are the same beam lines the facade's window grid already divides
+# into at every ``BEAM_SEGMENTS_PER_FLOOR``-th division (see ``_beam_zs``
+# and ``NUM_FLOORS``), so reusing that computation rather than re-deriving
+# fresh heights is what keeps the decks landing exactly on the beam that
+# already reads as a floor line on the outside of the building.
+UPPER_FLOOR_ZS = _beam_zs(
+    OPENING_BOTTOM_Z + EXTRA_BASE_H, KH_GROUND_Z + BUILDING_H, WINDOW_SEGMENTS
+)[BEAM_SEGMENTS_PER_FLOOR - 1 :: BEAM_SEGMENTS_PER_FLOOR]
+
 # The ground deck is poured straight onto the world ground slab that
 # streets/shell.py lays across the whole map at FLOOR_Z1..FLOOR_Z2 — which
 # is what already floors this interior, in bare dirt, and what the walls
@@ -686,18 +698,18 @@ def _core_voids():
 
 
 def _build_floors():
-    """Build the interior storey decks.
+    """Build the interior storey decks: all five of KNOTT_FLOORS.
 
-    Only the two storeys the building's own doorways pin down are decked
-    for now, so they can be looked at in-game before the rest of the stack
-    is committed to. The floor lines above are already fixed too:
-    ``_beam_zs`` puts a cross beam at every window division, and every
-    ``BEAM_SEGMENTS_PER_FLOOR``-th one is a floor line.
+    Ground and entry are pinned to the building's own doorways
+    (``GROUND_FLOOR_Z``/``ENTRY_FLOOR_Z``); the three above them land on
+    ``UPPER_FLOOR_ZS``, the same beam lines the facade's window grid
+    already divides into.
 
     The lowest deck is left solid. It is the bottom of the shafts — the
     stair starts on it and the car lands on it — so cutting the core out
     of it would open a pit down onto the world ground slab underneath
-    rather than a shaft. Every deck above it is cut.
+    rather than a shaft. Every deck above it is cut, so a stair or car can
+    run the full height of the building.
 
     Kept as worldspawn (not func_detail like the parapet): a full-footprint
     slab is exactly the kind of large opaque divider vis wants, to cut the
@@ -708,6 +720,7 @@ def _build_floors():
         for deck_z, t, voids in (
             (GROUND_FLOOR_Z, GROUND_FLOOR_T, ()),
             (ENTRY_FLOOR_Z, FLOOR_T, _core_voids()),
+            *((z, FLOOR_T, _core_voids()) for z in UPPER_FLOOR_ZS),
         )
         for x1, y1, x2, y2 in _interior_spans()
         for brush in floor_plate(
@@ -835,7 +848,7 @@ def _build_sign(z1):
 
 
 def build():
-    """Build the Knott Hall shell: four walls, a roof, and the entry floor.
+    """Build the Knott Hall shell: four walls, a roof, and all five floors.
 
     Returns:
         tuple[list, list]: ``(brushes, entities)`` for the building shell.
