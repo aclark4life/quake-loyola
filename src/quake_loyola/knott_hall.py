@@ -18,7 +18,6 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
     FLOOR_Z2,
-    INDENT,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -621,47 +620,66 @@ ENTRY_FLOOR_Z = ENTRANCE_SILL_Z
 # under the storey for qbsp to carve up for nothing.
 GROUND_FLOOR_T = GROUND_FLOOR_Z - FLOOR_Z2
 
-# Service core, placed as the retired prototype had it: both shafts hard
-# against the north wall, flanking the bridge entrance — the stair filling
-# the NW corner and the lift tucked into the NE one, so coming in off the
-# bridge puts the stair on your left and the lift on your right. (The
-# prototype's own constants: stair from KNOTT_X1 + WALL_T + 2*INDENT east
-# to the entrance, lift KNOTT_SHAFT_W square just past it, both with their
-# north edge on the interior wall face.)
+# Service core: both shafts flush with the front (north) wall of the
+# building, either side of the bridge entrance, so coming in off the
+# bridge puts the stair on your left and the lift on your right and both
+# openings read off the facade line.
 #
-# The north end of this shell is the notched upper rectangle, far too
-# shallow to hold either, so the cores sit against the north edge of the
-# lower rectangle at KH_NOTCH_Y instead of against KH_Y2 itself.
-CORE_WEST_SETBACK = 2 * INDENT  # Stair held off the west wall, as before.
-CORE_LANDING_GAP = 16  # Clearance between a core and the entrance opening.
-CORE_STAIR_D = 256  # Switchback depth: two half-flights either side of a landing.
-CORE_LIFT_W = CORE_LIFT_D = 128  # Car plus its shaft walls.
-
+# Both therefore fill a corner of the notched north bay — the stair its
+# NW corner, the lift its NE one — and both run on south past KH_NOTCH_Y
+# into the main floor, the stair because a switchback needs CORE_STAIR_D
+# and the bay is only NOTCH_D deep, the lift to open its lobby up rather
+# than leave the deck flush against it.
+#
+# This is looser than the retired prototype, which held the stair off the
+# main block's west wall by 2 * INDENT and stopped both on the notch
+# line. That setback put the stair's west edge 28 units west of the bay,
+# where there is no building north of the notch to open into, so it could
+# not have been taken to the facade.
 # The bridge entrance the cores flank. Mirrors the arithmetic
 # _wall_with_opening does internally for the same wall and offset.
 ENTRANCE_CX = (KH_NORTH_X1 + WALL_T + KH_NORTH_X2 - WALL_T) / 2 + CENTER_OPENING_OFFSET
 ENTRANCE_X1 = ENTRANCE_CX - CENTER_OPENING_W / 2
 ENTRANCE_X2 = ENTRANCE_CX + CENTER_OPENING_W / 2
 
+CORE_STAIR_D = 256  # Switchback depth: two half-flights either side of a landing.
+NOTCH_D = (KH_Y2 - WALL_T) - KH_NOTCH_Y  # Depth of the notched north bay.
+CORE_LIFT_W = 192  # Car plus its shaft walls, and a lobby to wait in.
+# The bay alone would box the lobby in behind the notch line, with the
+# deck resuming flush against its south edge. Running the void on past
+# that line opens the lobby into the main floor instead.
+CORE_LIFT_OVERRUN = 64
+CORE_LIFT_D = NOTCH_D + CORE_LIFT_OVERRUN
+CORE_LIFT_X1 = KH_NORTH_X2 - WALL_T - CORE_LIFT_W
+
+# Clearance between the entrance opening and the stair. The lift's own
+# setback is emergent — it falls out of cornering a CORE_LIFT_W car in a
+# bay of this width — so the stair takes that same figure and the two
+# land symmetrically about the door. (The prototype used a token 16,
+# which dropped the stairwell immediately inside it.)
+CORE_LANDING_GAP = CORE_LIFT_X1 - ENTRANCE_X2
+
 
 def _core_voids():
     """The stair and lift shaft openings, as ``(x1, y1, x2, y2)`` rects.
 
     Both are cut as one vertical shaft through every deck above the lowest
-    one, so a stair or car can run the full height of the building.
+    one, so a stair or car can run the full height of the building. Both
+    open flush with the building's front wall, filling the west and east
+    corners of the notched north bay and running on south out of it.
     """
-    north = KH_NOTCH_Y
+    north = KH_Y2 - WALL_T
     return (
         (
-            KH_X1 + WALL_T + CORE_WEST_SETBACK,
+            KH_NORTH_X1 + WALL_T,
             north - CORE_STAIR_D,
             ENTRANCE_X1 - CORE_LANDING_GAP,
             north,
         ),
         (
-            ENTRANCE_X2 + CORE_LANDING_GAP,
+            CORE_LIFT_X1,
             north - CORE_LIFT_D,
-            ENTRANCE_X2 + CORE_LANDING_GAP + CORE_LIFT_W,
+            KH_NORTH_X2 - WALL_T,
             north,
         ),
     )

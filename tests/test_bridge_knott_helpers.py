@@ -243,11 +243,70 @@ class KnottHallFloorTest(unittest.TestCase):
             lift[0] - knott_hall.ENTRANCE_X2, knott_hall.CORE_LANDING_GAP
         )
 
-    def test_the_cores_sit_against_the_north_wall(self):
-        # Both are north-wall cores; floating them south would put them in
-        # the middle of the floor plate instead of beside the entrance.
+    def test_the_lift_fills_the_north_east_corner(self):
+        # The plan's true NE corner, in the notched north bay — not the
+        # east wall of the main block. Flush to both faces, so no unusable
+        # slot of floor is stranded beside it.
+        _stair, lift = knott_hall._core_voids()
+        self.assertEqual(lift[2], knott_hall.KH_NORTH_X2 - knott_hall.WALL_T)
+        self.assertEqual(lift[3], knott_hall.KH_Y2 - knott_hall.WALL_T)
+        self.assertEqual(lift[2] - lift[0], knott_hall.CORE_LIFT_W)
+        self.assertEqual(lift[3] - lift[1], knott_hall.CORE_LIFT_D)
+
+    def test_the_lift_takes_the_full_depth_of_the_notch(self):
+        # The bay is shallow; leaving a strip of deck behind the shaft
+        # would be unreachable floor.
+        self.assertGreaterEqual(knott_hall.CORE_LIFT_D, knott_hall.NOTCH_D)
+
+    def test_the_lift_opens_south_past_the_notch_line(self):
+        # Stopping on the notch line would wall the lobby off from the
+        # main floor with deck resuming flush against it.
+        _stair, lift = knott_hall._core_voids()
+        self.assertLess(lift[1], knott_hall.KH_NOTCH_Y)
+        self.assertEqual(knott_hall.KH_NOTCH_Y - lift[1], knott_hall.CORE_LIFT_OVERRUN)
+
+    def test_the_stair_leaves_a_landing_inside_the_door(self):
+        # Not a token gap: you should arrive on floor, not on the lip of
+        # the stairwell.
+        stair, _lift = knott_hall._core_voids()
+        self.assertGreaterEqual(knott_hall.ENTRANCE_X1 - stair[2], 64)
+
+    def test_the_cores_are_set_back_symmetrically_from_the_door(self):
+        # The stair's clearance is taken from the lift's, so the two read
+        # as a matched pair either side of the entrance.
+        stair, lift = knott_hall._core_voids()
+        self.assertEqual(
+            knott_hall.ENTRANCE_X1 - stair[2], lift[0] - knott_hall.ENTRANCE_X2
+        )
+
+    def test_the_stair_fills_the_north_west_corner(self):
+        # Mirror of the lift: the NW corner of the notched north bay,
+        # flush to the front wall and to the bay's west face.
+        stair, _lift = knott_hall._core_voids()
+        self.assertEqual(stair[0], knott_hall.KH_NORTH_X1 + knott_hall.WALL_T)
+        self.assertEqual(stair[3], knott_hall.KH_Y2 - knott_hall.WALL_T)
+        self.assertEqual(stair[3] - stair[1], knott_hall.CORE_STAIR_D)
+
+    def test_the_stair_runs_south_out_of_the_notch(self):
+        # A switchback is deeper than the bay, so it cannot be contained
+        # by it; the surplus has to come out of the main floor.
+        stair, _lift = knott_hall._core_voids()
+        self.assertGreater(knott_hall.CORE_STAIR_D, knott_hall.NOTCH_D)
+        self.assertLess(stair[1], knott_hall.KH_NOTCH_Y)
+
+    def test_the_cores_open_flush_with_the_front_wall(self):
+        # The point of the placement: both read off the facade line, so
+        # neither is a recess set back behind the notch.
+        front = knott_hall.KH_Y2 - knott_hall.WALL_T
         for _vx1, _vy1, _vx2, vy2 in knott_hall._core_voids():
-            self.assertEqual(vy2, knott_hall.KH_NOTCH_Y)
+            self.assertEqual(vy2, front)
+
+    def test_the_cores_stay_inside_the_notch_bay_in_x(self):
+        # North of KH_NOTCH_Y only the bay exists; a core reaching wider
+        # than it would open onto nothing.
+        for vx1, _vy1, vx2, _vy2 in knott_hall._core_voids():
+            self.assertGreaterEqual(vx1, knott_hall.KH_NORTH_X1 + knott_hall.WALL_T)
+            self.assertLessEqual(vx2, knott_hall.KH_NORTH_X2 - knott_hall.WALL_T)
 
     def test_the_cores_stay_within_the_interior(self):
         for vx1, vy1, vx2, vy2 in knott_hall._core_voids():
