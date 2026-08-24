@@ -35,12 +35,12 @@ class Textures:
     PARKING_STRIPE = "win_fbblu_01"  # Reads as a light parking-stripe texture in-game.
     ENNIS_PILLAR = "stn_f14_wht1"  # from makkon_stone.wad
     FLOOR1 = "TF_Floor5_03"  # from mg1.wad; bridge deck walking surface
-    #: from ikwhite.wad; Knott Hall's interior storey decks. A light grey
-    #: polished terrazzo, which is what the real building's corridors are
-    #: floored in — and, unlike the cement it used to share with
-    #: :attr:`SIDEWALK` and :attr:`CEMENT`, it reads as *inside* rather than
-    #: as the pavement continuing indoors.
-    FLOOR_KH = "floor23"
+    #: from alkaline.wad; Knott Hall's interior storey decks. The same
+    #: grey as :attr:`ROOF_KH`, deliberately: the decks and the roof are
+    #: one continuous stack of slabs, and giving the interior a separate
+    #: floor tile made each storey read as a finished room rather than as
+    #: the raw concrete structure this shell actually is.
+    FLOOR_KH = "gn_grey2"
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
     GROUND = "ground1_1"
     HINT = "hint"

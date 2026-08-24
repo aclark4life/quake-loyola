@@ -31,8 +31,16 @@ def test_knott_floors_are_not_paved_in_the_exterior_cement():
     assert Textures.FLOOR_KH not in exterior
 
 
-def test_knott_surfaces_are_distinct_from_each_other():
-    # Floor, wall and roof all being one texture is the failure mode that
-    # makes an interior read as a solid block, so pin them apart.
-    surfaces = [Textures.FLOOR_KH, Textures.BRICK_KH, Textures.ROOF_KH]
-    assert len(set(surfaces)) == len(surfaces)
+def test_knott_floors_are_distinct_from_its_walls():
+    # Floor and wall being one texture is the failure mode that makes an
+    # interior read as a solid block, so pin those two apart. The floor
+    # and the *roof* deliberately share gn_grey2 — both are slabs in the
+    # same concrete stack — so they are not compared here.
+    assert Textures.FLOOR_KH != Textures.BRICK_KH
+
+
+def test_knott_floors_and_roof_share_one_slab_texture():
+    # Deliberate, not an oversight: an interior floor tile made each
+    # storey read as a finished room rather than as raw structure. If the
+    # roof is ever retextured the decks should follow it.
+    assert Textures.FLOOR_KH == Textures.ROOF_KH
