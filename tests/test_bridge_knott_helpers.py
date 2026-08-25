@@ -39,6 +39,7 @@ from quake_loyola.constants import (
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RAIL_CORNER_RUN,
     KNOTT_RAMP_RAIL_H,
     KNOTT_RAMP_RAIL_LOOP_H,
     KNOTT_RAMP_RAIL_OVH,
@@ -1240,6 +1241,12 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         self.foot_z = knott_terrain._knott_ramp_foot_z()
         self.x1, self.x2 = self.turn_x - self.hw, KNOTT_DRIVEWAY_WS_X2
         self.landing_x2 = self.turn_x + self.hw
+        # The corner spur (and its own post/round) sits south of the plain
+        # rail band, at y < cy + hw - rail_t, so pull those out first and
+        # test the straight run's classification against what's left.
+        rail_y1 = self.cy + self.hw - KNOTT_RAMP_RAIL_T
+        self.corner_boxes = [b for b in self.boxes if b[0][1] < rail_y1 - 1e-6]
+        self.boxes = [b for b in self.boxes if b not in self.corner_boxes]
         self.rails = [b for b in self.boxes if b[1][0] - b[0][0] > 20]
         self.posts = [
             b
@@ -1293,21 +1300,16 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
                     - KNOTT_RAMP_RAIL_T,
                 )
 
-    def test_the_o_is_turned_through_a_round_at_each_end(self):
-        # Only two rounds, one at each outer end -- the bend in the middle
-        # is a plain crease in the rail, not a joint between two railings.
+    def test_the_o_is_turned_through_a_round_at_only_the_foot_end(self):
+        # The foot end still gets a round; the head end instead turns the
+        # corner and continues south as a spur, so there's no round there.
         self.assertTrue(self.caps)
-        self.assertEqual(len(self.caps) % 2, 0)
-        head = [b for b in self.caps if b[0][0] < (self.x1 + self.x2) / 2]
-        foot = [b for b in self.caps if b not in head]
-        self.assertEqual(len(head), len(foot))
-        self.assertAlmostEqual(min(b[0][0] for b in head), self.x1)
+        foot = self.caps
         self.assertAlmostEqual(max(b[1][0] for b in foot), self.x2)
-        for end in (head, foot):
-            depth = max(b[1][2] for b in end) - min(b[0][2] for b in end)
-            self.assertAlmostEqual(
-                depth, KNOTT_RAMP_RAIL_LOOP_H + KNOTT_RAMP_RAIL_T, places=4
-            )
+        depth = max(b[1][2] for b in foot) - min(b[0][2] for b in foot)
+        self.assertAlmostEqual(
+            depth, KNOTT_RAMP_RAIL_LOOP_H + KNOTT_RAMP_RAIL_T, places=4
+        )
 
     def test_the_whole_railing_is_steel(self):
         for brush in self.brushes:
@@ -1323,14 +1325,51 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
             self.assertLess(mins[2], self.deck_z(mins[0]))
 
     def test_the_o_overhangs_the_pillars_at_both_ends(self):
-        rail_x1 = min(b[0][0] for b in self.rails)
         rail_x2 = max(b[1][0] for b in self.rails)
+        cap_r = (KNOTT_RAMP_RAIL_LOOP_H + KNOTT_RAMP_RAIL_T) / 2
+        # At the head end there's no round cap (the rail turns the corner
+        # instead), so the first post sits in from the corner's own round
+        # by cap_r plus the usual overhang, rather than from the rail's
+        # bare end.
         self.assertAlmostEqual(
-            min(b[0][0] for b in self.posts), rail_x1 + KNOTT_RAMP_RAIL_OVH
+            min(b[0][0] for b in self.posts), self.x1 + cap_r + KNOTT_RAMP_RAIL_OVH
         )
         self.assertAlmostEqual(
             max(b[1][0] for b in self.posts), rail_x2 - KNOTT_RAMP_RAIL_OVH
         )
+
+    def test_the_rail_turns_the_corner_and_runs_south_a_short_distance(self):
+        # The corner spur reuses the x1..x1+rail_t column and runs south
+        # from the landing's rail band down to KNOTT_RAMP_RAIL_CORNER_RUN
+        # short of it, still at the flat landing height, with its own
+        # round at the spur's south end and an extra post along it.
+        spur_rails = [b for b in self.corner_boxes if b[1][1] - b[0][1] > 20]
+        spur_posts = [
+            b
+            for b in self.corner_boxes
+            if b not in spur_rails and abs(b[1][1] - b[0][1] - KNOTT_RAMP_RAIL_T) < 1e-6
+        ]
+        spur_caps = [
+            b for b in self.corner_boxes if b not in spur_rails and b not in spur_posts
+        ]
+        self.assertEqual(len(spur_rails), 2)
+        self.assertEqual(len(spur_posts), 1)
+        self.assertTrue(spur_caps)
+        for mins, maxs in spur_rails:
+            self.assertAlmostEqual(mins[0], self.x1)
+            self.assertAlmostEqual(maxs[0], self.x1 + KNOTT_RAMP_RAIL_T)
+            self.assertAlmostEqual(maxs[1], self.cy + self.hw)
+            self.assertAlmostEqual(
+                mins[1], self.cy + self.hw - KNOTT_RAMP_RAIL_CORNER_RUN
+            )
+        top, lower = sorted(spur_rails, key=lambda b: b[1][2], reverse=True)
+        self.assertAlmostEqual(top[1][2], self.corner_z + KNOTT_RAMP_RAIL_H)
+        self.assertAlmostEqual(
+            lower[1][2], self.corner_z + KNOTT_RAMP_RAIL_H - KNOTT_RAMP_RAIL_LOOP_H
+        )
+        for brush in self.corner_boxes:
+            self.assertAlmostEqual(brush[0][0], self.x1)
+            self.assertLessEqual(brush[1][0] - self.x1, KNOTT_RAMP_RAIL_LOOP_H + 1e-6)
 
 
 class KnottInteriorFloorTest(unittest.TestCase):

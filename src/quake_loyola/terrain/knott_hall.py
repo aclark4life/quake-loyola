@@ -61,6 +61,7 @@ from ..constants import (
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
     KNOTT_RAMP_PILLAR_GAP,
+    KNOTT_RAMP_RAIL_CORNER_RUN,
     KNOTT_RAMP_RAIL_H,
     KNOTT_RAMP_RAIL_LOOP_H,
     KNOTT_RAMP_RAIL_OVH,
@@ -1873,6 +1874,7 @@ def _append_knott_ramp_rails(brushes):
             posts=KNOTT_RAMP_RAIL_POSTS,
             post_w=KNOTT_RAMP_RAIL_T,
             post_ovh=KNOTT_RAMP_RAIL_OVH,
+            corner_run=KNOTT_RAMP_RAIL_CORNER_RUN,
         )
     )
 

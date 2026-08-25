@@ -111,6 +111,9 @@ KNOTT_RAMP_RAIL_T = 3
 KNOTT_RAMP_RAIL_LOOP_H = 24
 KNOTT_RAMP_RAIL_POSTS = 4
 KNOTT_RAMP_RAIL_OVH = 6
+# The rail also turns the corner at the landing's west edge and continues a
+# short distance south along the south leg, still as one unbroken railing.
+KNOTT_RAMP_RAIL_CORNER_RUN = 48
 
 
 @dataclass

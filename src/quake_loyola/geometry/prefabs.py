@@ -8,6 +8,7 @@ from ..mapdata import Brush, Face
 from ..utils import swap_xy
 from .primitives import (
     arch_seg,
+    arch_seg_chord,
     arch_seg_chord_y,
     box,
     curb_seg,
@@ -486,6 +487,8 @@ def bent_railing_x(
     post_ovh=6,
     post_drop=4,
     cap_segs=6,
+    corner_run=0,
+    corner_post=True,
 ):
     """Return a guardrail like ``loop_railing_x`` but bent at ``xb``.
 
@@ -494,6 +497,15 @@ def bent_railing_x(
     outer ends — the bend itself is a plain crease in the rail, not a joint
     — so it reads as one railing that follows the deck's own grade break
     rather than two railings meeting edge to edge.
+
+    If ``corner_run`` is positive, the ``x1`` end instead turns a square
+    corner and continues south along ``y2`` for ``corner_run`` units at the
+    same flat height as ``z1`` — there is no round cap at that end, since the
+    rail keeps going around the corner rather than stopping. The corner
+    itself is a plain mitred overlap of the two runs' rails rather than a
+    curved elbow, matching the crease used at the bend. ``corner_post`` adds
+    one extra post near the south end of that spur, set in the same
+    ``post_ovh`` as the straight run's own posts.
     """
     if not (x1 < xb < x2):
         raise ValueError(
@@ -508,17 +520,24 @@ def bent_railing_x(
             f"(got {loop_h} with rail_t {rail_t})"
         )
     cap_r = (loop_h + rail_t) / 2
-    head, foot = x1 + cap_r, x2 - cap_r
+    head = x1 if corner_run > 0 else x1 + cap_r
+    foot = x2 - cap_r
     if foot <= head or not (head < xb < foot):
         raise ValueError(
             f"bent_railing_x: run {x1}..{x2} bent at {xb} is too short to "
             f"turn a {loop_h}-deep O at both ends around that bend"
         )
-    first, last = head + post_ovh, foot - post_ovh - post_w
+    post_head = head + cap_r if corner_run > 0 else head
+    first, last = post_head + post_ovh, foot - post_ovh - post_w
     if last <= first:
         raise ValueError(
             f"bent_railing_x: run {x1}..{x2} is too short for {posts} posts "
             f"of {post_w} set in by {post_ovh}"
+        )
+    if corner_run > 0 and corner_run <= rail_t:
+        raise ValueError(
+            f"bent_railing_x: corner_run must clear the rail's own "
+            f"thickness (got {corner_run} with rail_t {rail_t})"
         )
 
     def top_z(x):
@@ -542,7 +561,8 @@ def bent_railing_x(
                     tex,
                 )
             )
-    for cap_x, sweep_from in ((head, 90), (foot, -90)):
+    cap_ends = [(foot, -90)] if corner_run > 0 else [(head, 90), (foot, -90)]
+    for cap_x, sweep_from in cap_ends:
         step = 180 / cap_segs
         for i in range(cap_segs):
             brushes.append(
@@ -564,6 +584,49 @@ def bent_railing_x(
         brushes.append(
             box(px, y1, top_z(px) - height - post_drop, px + post_w, y2, top_z(px), tex)
         )
+    if corner_run > 0:
+        corner_top = top_z(x1)
+        cy1, cy2 = y2 - corner_run, y2
+        for drop in (0, loop_h):
+            brushes.append(
+                box(
+                    x1,
+                    cy1,
+                    corner_top - drop - rail_t,
+                    x1 + rail_t,
+                    cy2,
+                    corner_top - drop,
+                    tex,
+                )
+            )
+        step = 180 / cap_segs
+        for i in range(cap_segs):
+            brushes.append(
+                arch_seg_chord(
+                    x1,
+                    x1 + rail_t,
+                    cy1,
+                    corner_top - cap_r,
+                    cap_r - rail_t,
+                    cap_r,
+                    90 + i * step,
+                    90 + (i + 1) * step,
+                    tex,
+                )
+            )
+        if corner_post:
+            post_y = cy1 + post_ovh
+            brushes.append(
+                box(
+                    x1,
+                    post_y,
+                    corner_top - height - post_drop,
+                    x1 + rail_t,
+                    post_y + post_w,
+                    corner_top,
+                    tex,
+                )
+            )
     return brushes
 
 
