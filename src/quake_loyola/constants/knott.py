@@ -107,7 +107,7 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # rail with a lower one under it, turned through a half-round at each end so
 # the pair closes into one long O, carried on ``KNOTT_RAMP_RAIL_POSTS``
 # pillars that run the full height through both rails.
-KNOTT_RAMP_W = 48
+KNOTT_RAMP_W = 72
 KNOTT_RAMP_RISE_RUN = 12
 KNOTT_RAMP_RISE_RUN_MIN = 10
 KNOTT_RAMP_PILLAR_GAP = 16
