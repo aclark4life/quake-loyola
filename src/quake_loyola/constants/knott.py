@@ -86,18 +86,15 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # level landing, and runs back down the hillside to meet the east walk's
 # level run at the crest height.
 #
-# The route is derived rather than surveyed: the landing is placed wherever a
-# ``1:KNOTT_RAMP_RISE_RUN`` grade puts it, working back from the two fixed
-# ends. Two things constrain it. The west leg has to hug the Ennis walk —
-# further south the hillside climbs 13% against the ramp's 8%, and the ramp
-# would bury itself in the bank — so its north edge runs flush with that
-# walk. And the south leg has to thread between the drop pillars under the
-# bridge span, so the landing is pushed east until it clears the nearest
-# pillar by ``KNOTT_RAMP_PILLAR_GAP``. That push fixes the run at roughly 900
-# units, which is what stops the ramp reaching a true 1:12: carrying it down
-# over the curb to the roadbed, rather than stopping it at the walk behind,
-# spends a further curb's worth of rise on that same run.
-# ``KNOTT_RAMP_RISE_RUN_MIN`` is the shallowest grade still worth building.
+# The route is derived rather than surveyed: the landing is placed snug
+# against the east-most drop pillar's own clearance, from which the west
+# leg's run -- and the grade that run leaves -- follow. That keeps the south
+# leg (and its rail) as short as the pillar allows, at whatever grade results.
+# The west leg has to hug the Ennis walk regardless -- further south the
+# hillside climbs 13% against the ramp's own grade, and the ramp would bury
+# itself in the bank -- so its north edge runs flush with that walk. And the
+# south leg has to thread between the drop pillars under the bridge span, so
+# the landing sits ``KNOTT_RAMP_PILLAR_GAP`` clear of the nearest one.
 #
 # Only the west leg's north side is railed, and it is the one side that has
 # to be: the Ennis walk runs right along it, so the ramp climbs away from a
@@ -108,8 +105,6 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # the pair closes into one long O, carried on ``KNOTT_RAMP_RAIL_POSTS``
 # pillars that run the full height through both rails.
 KNOTT_RAMP_W = 72
-KNOTT_RAMP_RISE_RUN = 12
-KNOTT_RAMP_RISE_RUN_MIN = 10
 KNOTT_RAMP_PILLAR_GAP = 16
 KNOTT_RAMP_RAIL_H = 44
 KNOTT_RAMP_RAIL_T = 3

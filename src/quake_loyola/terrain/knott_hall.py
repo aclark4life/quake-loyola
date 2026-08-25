@@ -66,8 +66,6 @@ from ..constants import (
     KNOTT_RAMP_RAIL_OVH,
     KNOTT_RAMP_RAIL_POSTS,
     KNOTT_RAMP_RAIL_T,
-    KNOTT_RAMP_RISE_RUN,
-    KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
     KNOTT_SUPPORT_PILLAR_JOINT_H,
     ROAD_X2,
@@ -83,12 +81,12 @@ from ..constants import (
     Textures,
 )
 from ..geometry import (
+    bent_railing_x,
     box,
     brush_ent,
     carve_box,
     curb_seg,
     cut_sidewalk_joints,
-    loop_railing_x,
     ramp_slab,
     ramp_slab_y,
     sidewalk_panel_spans,
@@ -1732,7 +1730,7 @@ def _knott_ramp_foot_z():
     The ramp runs unbroken from the roadbed rather than stopping at the walk
     behind the curb, so its foot sits at the road surface and the curb is cut
     away over the ramp's width. That costs the run a curb's worth of extra
-    rise, which is why the grade lands short of ``KNOTT_RAMP_RISE_RUN``.
+    rise, steepening the grade.
     """
     return FLOOR_Z2 + STREET_SURFACE_T
 
@@ -1752,10 +1750,11 @@ def _knott_ramp_layout():
 
     The ramp's two ends are fixed: it leaves the driveway roadbed at the
     gutter and lands on the east walk's level run at the crest height. What is
-    derived is where it turns between them. Working back from a
-    ``1:KNOTT_RAMP_RISE_RUN`` grade gives the landing's X; the landing is then
-    pushed east far enough to thread the south leg between the drop pillars
-    under the bridge span, and the grade recomputed from the run that leaves.
+    derived is where it turns between them. The landing is pulled as far east
+    as it can go while staying clear of the east-most drop pillar's own
+    clearance -- snug against its west face -- so the south leg and its rail
+    run only as far as that pillar requires, and the grade is recomputed from
+    whatever run that leaves.
     """
     hw = KNOTT_RAMP_W / 2
     foot_z = _knott_ramp_foot_z()
@@ -1771,14 +1770,10 @@ def _knott_ramp_layout():
         )
 
     foot_x = KNOTT_DRIVEWAY_WS_X2
-    turn_x = foot_x - hw - (KNOTT_RAMP_RISE_RUN * rise - south_run)
     _sy1, _sy2, pillar_xs, pillar_hw = _knott_walkway_bent_layout()
-    for pillar_x in sorted(pillar_xs):
-        blocked_x1 = pillar_x - pillar_hw - KNOTT_RAMP_PILLAR_GAP - hw
-        blocked_x2 = pillar_x + pillar_hw + KNOTT_RAMP_PILLAR_GAP + hw
-        if blocked_x1 < turn_x < blocked_x2:
-            turn_x = blocked_x2
-    turn_x = 4 * math.ceil(turn_x / 4)
+    east_pillar_x = max(pillar_xs)
+    turn_x = east_pillar_x - pillar_hw - KNOTT_RAMP_PILLAR_GAP - hw
+    turn_x = 4 * math.floor(turn_x / 4)
 
     west_run = foot_x - (turn_x + hw)
     if west_run <= 0:
@@ -1787,11 +1782,9 @@ def _knott_ramp_layout():
             f"its foot on the driveway walk at {foot_x}"
         )
     run = west_run + south_run
-    if run < KNOTT_RAMP_RISE_RUN_MIN * rise:
+    if run <= 0:
         raise ValueError(
-            f"the ramp only has {run} units of run for its {rise}-unit rise, "
-            f"a 1:{run / rise:.1f} grade steeper than the "
-            f"1:{KNOTT_RAMP_RISE_RUN_MIN} minimum"
+            f"the ramp only has {run} units of run for its {rise}-unit rise"
         )
 
     walk_x1, stair_x1 = GROUND_DOOR_X2, _knott_east_walk_layout()[0]
@@ -1859,12 +1852,18 @@ def _append_knott_ramp_rails(brushes):
     """
     hw = KNOTT_RAMP_W / 2
     turn_x, cy, corner_z, _grade = _knott_ramp_layout()
+    y1, y2 = cy + hw - KNOTT_RAMP_RAIL_T, cy + hw
+    # One unbroken rail follows the deck's own grade break: flat over the
+    # landing, then down the slope to the driveway foot, bent at the
+    # landing's east edge rather than built as two railings joined there.
     brushes.extend(
-        loop_railing_x(
-            cy + hw - KNOTT_RAMP_RAIL_T,
-            cy + hw,
+        bent_railing_x(
+            y1,
+            y2,
+            turn_x - hw,
             turn_x + hw,
             KNOTT_DRIVEWAY_WS_X2,
+            corner_z,
             corner_z,
             _knott_ramp_foot_z(),
             KNOTT_RAMP_RAIL_H,

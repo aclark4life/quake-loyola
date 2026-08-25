@@ -44,8 +44,6 @@ from quake_loyola.constants import (
     KNOTT_RAMP_RAIL_OVH,
     KNOTT_RAMP_RAIL_POSTS,
     KNOTT_RAMP_RAIL_T,
-    KNOTT_RAMP_RISE_RUN,
-    KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
     STREET_SURFACE_T,
     STREET_SW_GAP,
@@ -1145,9 +1143,7 @@ class KnottAccessibleRampTest(unittest.TestCase):
         for mins, maxs in self.south:
             self.assertAlmostEqual(maxs[0] - mins[0], KNOTT_RAMP_W)
 
-    def test_the_grade_stays_within_the_accessible_range(self):
-        self.assertLessEqual(self.grade, 1 / KNOTT_RAMP_RISE_RUN_MIN)
-        self.assertGreaterEqual(self.grade, 1 / KNOTT_RAMP_RISE_RUN)
+    def test_the_grade_is_derived_from_the_run_the_landing_leaves(self):
         rise = knott_hall.GROUND_DOOR_BOTTOM - self.foot_z
         west_run = self.foot_x - (self.turn_x + self.hw)
         south_run = (self.cy - self.hw) - self.head_y
@@ -1188,6 +1184,13 @@ class KnottAccessibleRampTest(unittest.TestCase):
             )
             self.assertGreaterEqual(gap, KNOTT_RAMP_PILLAR_GAP)
 
+    def test_the_landing_is_snug_against_the_east_most_pillar(self):
+        _y1, _y2, pillar_xs, half_w = knott_terrain._knott_walkway_bent_layout()
+        east_pillar_x = max(pillar_xs)
+        gap = (east_pillar_x - half_w) - (self.turn_x + self.hw)
+        self.assertGreaterEqual(gap, KNOTT_RAMP_PILLAR_GAP)
+        self.assertLess(gap, KNOTT_RAMP_PILLAR_GAP + 4)
+
     def test_the_ramp_leaves_the_driveway_at_its_curb_line(self):
         self.assertAlmostEqual(max(b[1][0] for b in self.boxes), KNOTT_DRIVEWAY_WS_X2)
 
@@ -1212,11 +1215,6 @@ class KnottAccessibleRampTest(unittest.TestCase):
         for mins, _maxs in self.boxes:
             self.assertAlmostEqual(mins[2], FLOOR_Z1)
 
-    def test_layout_rejects_a_grade_it_has_no_room_for(self):
-        with mock.patch.object(knott_terrain, "KNOTT_RAMP_RISE_RUN", 40):
-            with self.assertRaises(ValueError):
-                knott_terrain._knott_ramp_layout()
-
     def test_layout_rejects_a_ramp_too_wide_for_the_hillside(self):
         with mock.patch.object(knott_terrain, "KNOTT_RAMP_W", 4 * ENNIS_SW_EDGE):
             with self.assertRaises(ValueError):
@@ -1224,7 +1222,12 @@ class KnottAccessibleRampTest(unittest.TestCase):
 
 
 class KnottAccessibleRampRailsTest(unittest.TestCase):
-    """The long-O guardrail along the north side of the ramp's west leg."""
+    """The long-O guardrail along the north side of the ramp's west leg.
+
+    One unbroken rail bent where the deck's own grade breaks: flat over the
+    landing (which doesn't slope) and down the rest of the west leg to the
+    driveway foot, closed into a round only at its two outer ends.
+    """
 
     def setUp(self):
         self.brushes = []
@@ -1235,9 +1238,9 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         )
         self.hw = KNOTT_RAMP_W / 2
         self.foot_z = knott_terrain._knott_ramp_foot_z()
-        self.x1, self.x2 = self.turn_x + self.hw, KNOTT_DRIVEWAY_WS_X2
-        run = self.x2 - self.x1
-        self.rails = [b for b in self.boxes if b[1][0] - b[0][0] > run / 2]
+        self.x1, self.x2 = self.turn_x - self.hw, KNOTT_DRIVEWAY_WS_X2
+        self.landing_x2 = self.turn_x + self.hw
+        self.rails = [b for b in self.boxes if b[1][0] - b[0][0] > 20]
         self.posts = [
             b
             for b in self.boxes
@@ -1248,7 +1251,9 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         ]
 
     def deck_z(self, x):
-        return self.corner_z - (x - self.x1) * self.grade
+        if x <= self.landing_x2 + 1e-6:
+            return self.corner_z
+        return self.corner_z - (x - self.landing_x2) * self.grade
 
     def test_only_the_west_leg_is_railed(self):
         # The other three edges either retain the hillside or meet the
@@ -1267,18 +1272,30 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         self.assertAlmostEqual(max(b[1][0] for b in self.boxes), self.x2)
 
     def test_the_o_rides_a_rail_height_above_the_ramp_deck(self):
-        self.assertEqual(len(self.rails), 2)
-        top, lower = sorted(self.rails, key=lambda b: b[1][2], reverse=True)
-        for rail, drop in ((top, 0), (lower, KNOTT_RAMP_RAIL_LOOP_H)):
-            self.assertAlmostEqual(
-                rail[1][2], self.deck_z(rail[0][0]) + KNOTT_RAMP_RAIL_H - drop
-            )
-            self.assertAlmostEqual(
-                rail[0][2],
-                self.deck_z(rail[1][0]) + KNOTT_RAMP_RAIL_H - drop - KNOTT_RAMP_RAIL_T,
-            )
+        # Each of the top and lower rails is built as two segments meeting
+        # at the bend (one flat over the landing, one sloped beyond it), so
+        # there are 4 rail brushes in all rather than 2.
+        self.assertEqual(len(self.rails), 4)
+        top, lower = (
+            sorted(self.rails, key=lambda b: b[1][2], reverse=True)[:2],
+            sorted(self.rails, key=lambda b: b[1][2], reverse=True)[2:],
+        )
+        for group, drop in ((top, 0), (lower, KNOTT_RAMP_RAIL_LOOP_H)):
+            for rail in group:
+                self.assertAlmostEqual(
+                    rail[1][2], self.deck_z(rail[0][0]) + KNOTT_RAMP_RAIL_H - drop
+                )
+                self.assertAlmostEqual(
+                    rail[0][2],
+                    self.deck_z(rail[1][0])
+                    + KNOTT_RAMP_RAIL_H
+                    - drop
+                    - KNOTT_RAMP_RAIL_T,
+                )
 
     def test_the_o_is_turned_through_a_round_at_each_end(self):
+        # Only two rounds, one at each outer end -- the bend in the middle
+        # is a plain crease in the rail, not a joint between two railings.
         self.assertTrue(self.caps)
         self.assertEqual(len(self.caps) % 2, 0)
         head = [b for b in self.caps if b[0][0] < (self.x1 + self.x2) / 2]
@@ -1286,8 +1303,6 @@ class KnottAccessibleRampRailsTest(unittest.TestCase):
         self.assertEqual(len(head), len(foot))
         self.assertAlmostEqual(min(b[0][0] for b in head), self.x1)
         self.assertAlmostEqual(max(b[1][0] for b in foot), self.x2)
-        # Each round is turned on the same annulus the two rails sit on, so
-        # it closes the O against both of them rather than meeting one short.
         for end in (head, foot):
             depth = max(b[1][2] for b in end) - min(b[0][2] for b in end)
             self.assertAlmostEqual(

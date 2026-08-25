@@ -467,6 +467,106 @@ def stair_railing_x(
     ]
 
 
+def bent_railing_x(
+    y1,
+    y2,
+    x1,
+    xb,
+    x2,
+    z1,
+    zb,
+    z2,
+    height,
+    tex,
+    *,
+    rail_t=3,
+    loop_h=24,
+    posts=4,
+    post_w=3,
+    post_ovh=6,
+    post_drop=4,
+    cap_segs=6,
+):
+    """Return a guardrail like ``loop_railing_x`` but bent at ``xb``.
+
+    It runs from ``(x1, z1)`` to ``(xb, zb)`` and on to ``(x2, z2)`` as one
+    unbroken rail, closed into the same long O with a round only at its two
+    outer ends — the bend itself is a plain crease in the rail, not a joint
+    — so it reads as one railing that follows the deck's own grade break
+    rather than two railings meeting edge to edge.
+    """
+    if not (x1 < xb < x2):
+        raise ValueError(
+            f"bent_railing_x: bend must fall strictly between the ends "
+            f"(got {x1}..{xb}..{x2})"
+        )
+    if posts < 2:
+        raise ValueError(f"bent_railing_x: needs a post at each end (got {posts})")
+    if loop_h <= rail_t:
+        raise ValueError(
+            f"bent_railing_x: loop_h must clear the rails themselves "
+            f"(got {loop_h} with rail_t {rail_t})"
+        )
+    cap_r = (loop_h + rail_t) / 2
+    head, foot = x1 + cap_r, x2 - cap_r
+    if foot <= head or not (head < xb < foot):
+        raise ValueError(
+            f"bent_railing_x: run {x1}..{x2} bent at {xb} is too short to "
+            f"turn a {loop_h}-deep O at both ends around that bend"
+        )
+    first, last = head + post_ovh, foot - post_ovh - post_w
+    if last <= first:
+        raise ValueError(
+            f"bent_railing_x: run {x1}..{x2} is too short for {posts} posts "
+            f"of {post_w} set in by {post_ovh}"
+        )
+
+    def top_z(x):
+        if x <= xb:
+            return z1 + (x - x1) * (zb - z1) / (xb - x1) + height
+        return zb + (x - xb) * (z2 - zb) / (x2 - xb) + height
+
+    brushes = []
+    for drop in (0, loop_h):
+        for a, b in ((head, xb), (xb, foot)):
+            brushes.append(
+                ramp_slab(
+                    a,
+                    b,
+                    y1,
+                    y2,
+                    top_z(a) - drop - rail_t,
+                    top_z(b) - drop - rail_t,
+                    top_z(a) - drop,
+                    top_z(b) - drop,
+                    tex,
+                )
+            )
+    for cap_x, sweep_from in ((head, 90), (foot, -90)):
+        step = 180 / cap_segs
+        for i in range(cap_segs):
+            brushes.append(
+                arch_seg_chord_y(
+                    y1,
+                    y2,
+                    cap_x,
+                    top_z(cap_x) - cap_r,
+                    cap_r - rail_t,
+                    cap_r,
+                    sweep_from + i * step,
+                    sweep_from + (i + 1) * step,
+                    tex,
+                )
+            )
+    step = (last - first) / (posts - 1)
+    for i in range(posts):
+        px = first + i * step
+        brushes.append(
+            box(px, y1, top_z(px) - height - post_drop, px + post_w, y2, top_z(px), tex)
+        )
+    return brushes
+
+
 def loop_railing_x(
     y1,
     y2,

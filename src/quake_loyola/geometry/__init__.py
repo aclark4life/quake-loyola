@@ -25,6 +25,7 @@ from .entities import (
 )
 from .helpers import east_y_shift
 from .prefabs import (
+    bent_railing_x,
     corner_window,
     elevator_shaft,
     exit_portal,
@@ -107,6 +108,7 @@ __all__ = [
     "arch_seg_y",
     "arch_wall",
     "arch_wall_y",
+    "bent_railing_x",
     "box",
     "box_with_hole",
     "box_with_round_hole",
