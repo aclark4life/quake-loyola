@@ -69,6 +69,7 @@ from ..constants import (
     KNOTT_RAMP_RISE_RUN,
     KNOTT_RAMP_RISE_RUN_MIN,
     KNOTT_RAMP_W,
+    KNOTT_SUPPORT_PILLAR_JOINT_H,
     ROAD_X2,
     STREET_CURB_JOINT_OFFSET,
     STREET_CURB_SLAB_LEN,
@@ -1896,7 +1897,11 @@ def _append_knott_walkway_bent(brushes):
 
     A cement beam tucked against the deck underside, carried by drop pillars
     down to the hillside, plus a tie beam running on from the last pillar to
-    the Pier 5 wall at the span's east end.
+    the Pier 5 wall at the span's east end. The beam is split into three
+    even-length segments, with a thin SIDEWALK_JOINT_FILL seam between them,
+    and each pillar is capped with the same seam where it meets the beam's
+    underside, so the bent reads as several separately poured elements
+    rather than one continuous mass, the same treatment sidewalk panels get.
     """
     _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[2]
 
@@ -1915,9 +1920,41 @@ def _append_knott_walkway_bent(brushes):
     # real building.
     beam_start_x = support_pier_xs[0] - support_pier_half_width
 
+    # Split the beam into three even-length segments, each separated by a
+    # thin joint seam, rather than one long, continuous pour.
+    joint_h = KNOTT_SUPPORT_PILLAR_JOINT_H
+    joint_hw = joint_h / 2
+    beam_span = beam_x2 - beam_start_x
+    seg_len = beam_span / 3
+    split_xs = [beam_start_x + seg_len, beam_start_x + 2 * seg_len]
+    seg_x1 = beam_start_x
+    for split_x in split_xs:
+        brushes.append(
+            box(
+                seg_x1,
+                support_y1,
+                beam_bottom_z,
+                split_x - joint_hw,
+                support_y2,
+                beam_top_z,
+                Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                split_x - joint_hw,
+                support_y1,
+                beam_bottom_z,
+                split_x + joint_hw,
+                support_y2,
+                beam_top_z,
+                Textures.SIDEWALK_JOINT_FILL,
+            )
+        )
+        seg_x1 = split_x + joint_hw
     brushes.append(
         box(
-            beam_start_x,
+            seg_x1,
             support_y1,
             beam_bottom_z,
             beam_x2,
@@ -1928,7 +1965,11 @@ def _append_knott_walkway_bent(brushes):
     )
 
     # Foot the pillars at the hillside height along the bent's downhill edge so
-    # they bury into the slope rather than floating off its high side.
+    # they bury into the slope rather than floating off its high side. Each
+    # pillar stops KNOTT_SUPPORT_PILLAR_JOINT_H short of the beam's underside;
+    # a thin joint slab fills that gap, marking the pillar as its own poured
+    # element rather than a continuous pour with the beam above it.
+    pillar_top_z = beam_bottom_z - KNOTT_SUPPORT_PILLAR_JOINT_H
     for pier_x in support_pier_xs:
         brushes.append(
             box(
@@ -1937,8 +1978,19 @@ def _append_knott_walkway_bent(brushes):
                 _kh_hill_ground_z(pier_x, support_y2),
                 pier_x + support_pier_half_width,
                 support_y2,
-                beam_bottom_z,
+                pillar_top_z,
                 Textures.CEMENT,
+            )
+        )
+        brushes.append(
+            box(
+                pier_x - support_pier_half_width,
+                support_y1,
+                pillar_top_z,
+                pier_x + support_pier_half_width,
+                support_y2,
+                beam_bottom_z,
+                Textures.SIDEWALK_JOINT_FILL,
             )
         )
 

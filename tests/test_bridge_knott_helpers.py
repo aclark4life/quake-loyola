@@ -602,8 +602,10 @@ class KnottWalkwayBentTest(unittest.TestCase):
         knott_terrain._append_knott_walkway_bent(self.brushes)
         self.boxes = [b.get_bbox() for b in self.brushes]
 
-    def test_emits_a_beam_five_pillars_and_a_tie_beam(self):
-        self.assertEqual(len(self.brushes), 7)
+    def test_emits_a_beam_five_pillars_a_joint_each_and_a_tie_beam(self):
+        # Beam split into 3 segments with 2 joint seams between them (5) +
+        # 5 pillars, each with its own joint slab (10) + tie beam (1) = 16.
+        self.assertEqual(len(self.brushes), 16)
 
     def test_beam_sits_flush_under_the_span_deck(self):
         deck_underside = (
@@ -617,19 +619,78 @@ class KnottWalkwayBentTest(unittest.TestCase):
             self.assertGreaterEqual(mins[0], BRIDGE_ARCH_X[3])
             self.assertLessEqual(maxs[0], BRIDGE_ARCH_X[4])
 
-    def test_pillars_reach_the_hillside_below_the_beam(self):
+    def test_pillars_reach_the_hillside_below_their_own_joint_slab(self):
         beam_bottom = (
             KNOTT_ENT_WALK_ZT1
             - KNOTT.wall_t
             + BRIDGE_CENTER_SPAN_OFFSET[2]
             - BRIDGE_SUPPORT_BEAM_H
         )
-        pillars = [b for b in self.boxes if b[1][2] == beam_bottom]
+        pillar_top = beam_bottom - knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H
+        pillars = [b for b in self.boxes if b[1][2] == pillar_top]
         self.assertEqual(len(pillars), 5)
         for mins, maxs in pillars:
             ground = knott_terrain._kh_hill_ground_z((mins[0] + maxs[0]) / 2, maxs[1])
             self.assertLessEqual(mins[2], ground)
             self.assertGreater(mins[2], 0)
+
+    def test_each_pillar_gets_its_own_joint_seam_to_the_beam(self):
+        # Same treatment as a sidewalk panel joint: a thin SIDEWALK_JOINT_FILL
+        # slab between the pillar top and the beam's underside, so the two
+        # read as separately poured elements.
+        beam_bottom = (
+            KNOTT_ENT_WALK_ZT1
+            - KNOTT.wall_t
+            + BRIDGE_CENTER_SPAN_OFFSET[2]
+            - BRIDGE_SUPPORT_BEAM_H
+        )
+        joints = [
+            b for b in self.brushes if b.faces[0].tex == Textures.SIDEWALK_JOINT_FILL
+        ]
+        pillar_joints = [j for j in joints if j.get_bbox()[1][2] == beam_bottom]
+        self.assertEqual(len(pillar_joints), 5)
+        for joint in pillar_joints:
+            (_x1, _y1, z1), (_x2, _y2, z2) = joint.get_bbox()
+            self.assertEqual(z2, beam_bottom)
+            self.assertEqual(z2 - z1, knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H)
+
+    def test_beam_is_split_into_three_even_segments(self):
+        # The beam is split into three even-length segments with a thin
+        # joint groove between them, mirroring sidewalk panels butted end
+        # to end, rather than being one long continuous pour.
+        beam_top = KNOTT_ENT_WALK_ZT1 - KNOTT.wall_t + BRIDGE_CENTER_SPAN_OFFSET[2]
+        joints = [
+            b.get_bbox()
+            for b in self.brushes
+            if b.faces[0].tex == Textures.SIDEWALK_JOINT_FILL
+            and b.get_bbox()[1][2] == beam_top
+        ]
+        self.assertEqual(len(joints), 2)
+        for mins, maxs in joints:
+            self.assertEqual(
+                maxs[0] - mins[0], knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H
+            )
+        cement_boxes = [
+            b.get_bbox()
+            for b in self.brushes
+            if b.faces[0].tex == Textures.CEMENT and b.get_bbox()[1][2] == beam_top
+        ]
+        # Only the 3 beam segments run the full support_y1..support_y2
+        # depth at beam_top; the tie beam sits further downhill and is
+        # excluded by requiring the same y-span as the joints.
+        joint_y_span = round(joints[0][0][1]), round(joints[0][1][1])
+        segments = [
+            box
+            for box in cement_boxes
+            if (round(box[0][1]), round(box[1][1])) == joint_y_span
+        ]
+        self.assertEqual(len(segments), 3)
+        seg_lens = sorted(maxs[0] - mins[0] for mins, maxs in segments)
+        # The two end segments lose only one joint's width; the middle
+        # segment loses both, so allow up to a full joint width of slack.
+        joint_w = knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H
+        self.assertAlmostEqual(seg_lens[0], seg_lens[1], delta=joint_w)
+        self.assertAlmostEqual(seg_lens[1], seg_lens[2], delta=joint_w)
 
 
 class KnottEntranceWalkTest(unittest.TestCase):

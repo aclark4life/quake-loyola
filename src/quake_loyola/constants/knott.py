@@ -18,6 +18,11 @@ KNOTT_SIGN_H = 72
 KNOTT_SIGN_PADDING = 4
 KNOTT_SIGN_Z_OFFSET = 20
 KNOTT_WALL_T = 16
+# Gap between each entrance-walkway support pillar's top and the beam it
+# carries, filled with a SIDEWALK_JOINT seam like a sidewalk panel joint, so
+# the pillar reads as its own poured element rather than continuous with the
+# beam above it.
+KNOTT_SUPPORT_PILLAR_JOINT_H = 4
 KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
 KNOTT_ROOF_T = 16
 KNOTT_PARAPET_H = 24  # Raised lip around the roof edge, per satellite
