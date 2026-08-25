@@ -274,10 +274,12 @@ class KnottHallFloorTest(unittest.TestCase):
 
     def test_the_lift_opens_south_past_the_notch_line(self):
         # Stopping on the notch line would wall the lobby off from the
-        # main floor with deck resuming flush against it.
+        # main floor with deck resuming flush against it. The lift now
+        # matches the stair's own depth so both shafts' back walls align
+        # on one south line (CORE_WALL_Y) instead of staggering.
         _stair, lift = knott_hall._core_voids()
         self.assertLess(lift[1], knott_hall.KH_NOTCH_Y)
-        self.assertEqual(knott_hall.KH_NOTCH_Y - lift[1], knott_hall.CORE_LIFT_OVERRUN)
+        self.assertEqual(knott_hall.CORE_LIFT_D, knott_hall.CORE_STAIR_D)
 
     def test_the_stair_leaves_a_landing_inside_the_door(self):
         # Not a token gap: you should arrive on floor, not on the lip of
@@ -361,10 +363,13 @@ class KnottHallFloorTest(unittest.TestCase):
 
 class KnottHallCoreWallTest(unittest.TestCase):
     def test_one_storey_worth_of_brushes_per_floor(self):
-        # Three walls (center, stair, lift), each two jambs plus a header
-        # (9 brushes) per storey — five storeys, none skipped.
+        # Three doored walls (center, stair, lift), each two jambs plus a
+        # header (9 brushes), plus two solid backs closing the shafts'
+        # own far ends (2 more), plus two solid side panels closing off
+        # the shafts' remaining exterior-wall-facing sides (2 more) — 13
+        # per storey, five storeys, none skipped.
         brushes = knott_hall._build_core_wall()
-        self.assertEqual(len(brushes), 9 * len(knott_hall.FLOOR_ZS))
+        self.assertEqual(len(brushes), 13 * len(knott_hall.FLOOR_ZS))
 
     def test_wall_uses_the_interior_partition_texture(self):
         for brush in knott_hall._build_core_wall():
@@ -420,13 +425,34 @@ class KnottHallCoreWallTest(unittest.TestCase):
         self.assertGreater(knott_hall.LIFT_DOOR_Y1, knott_hall.CORE_WALL_Y)
         self.assertLess(knott_hall.LIFT_DOOR_Y2, knott_hall.LIFT_WALL_Y2)
 
+    def test_shaft_backs_close_off_each_void_at_its_own_far_end(self):
+        # Otherwise the shaft would read as open-ended into the main floor
+        # beyond it instead of an enclosed shaft.
+        (stair_x1, stair_y1, stair_x2, _), (lift_x1, lift_y1, lift_x2, _) = (
+            knott_hall._core_voids()
+        )
+        self.assertEqual(knott_hall.STAIR_SHAFT_X1, stair_x1)
+        self.assertEqual(knott_hall.STAIR_SHAFT_Y1, stair_y1)
+        self.assertEqual(knott_hall.STAIR_SHAFT_X2, stair_x2)
+        self.assertEqual(knott_hall.LIFT_SHAFT_X1, lift_x1)
+        self.assertEqual(knott_hall.LIFT_SHAFT_Y1, lift_y1)
+        self.assertEqual(knott_hall.LIFT_SHAFT_X2, lift_x2)
+
+    def test_shaft_side_panels_close_off_the_exterior_wall_facing_side(self):
+        # The back-wall panel only closes the shaft's far (south) end;
+        # without this the shaft would still be open on its west (stair)
+        # or east (lift) side, relying on the building's own exterior
+        # wall face rather than having its own interior-textured panel.
+        self.assertEqual(knott_hall.STAIR_SHAFT_WEST_X, knott_hall.STAIR_SHAFT_X1)
+        self.assertEqual(knott_hall.LIFT_SHAFT_EAST_X, knott_hall.LIFT_SHAFT_X2)
+
     def test_no_brush_is_taller_than_its_own_storey(self):
         # A jamb or header that overshot its ceiling would poke into the
         # deck above it instead of stopping flush at its underside.
         storeys = zip(knott_hall.FLOOR_ZS, knott_hall.CORE_WALL_CEILINGS, strict=True)
         brushes = iter(knott_hall._build_core_wall())
         for floor_z, ceiling_z in storeys:
-            for _ in range(9):
+            for _ in range(13):
                 (_, _, z1), (_, _, z2) = next(brushes).get_bbox()
                 self.assertGreaterEqual(z1, floor_z)
                 self.assertLessEqual(z2, ceiling_z)

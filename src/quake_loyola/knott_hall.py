@@ -660,8 +660,11 @@ CORE_LIFT_W = 192  # Car plus its shaft walls, and a lobby to wait in.
 # The bay alone would box the lobby in behind the notch line, with the
 # deck resuming flush against its south edge. Running the void on past
 # that line opens the lobby into the main floor instead.
-CORE_LIFT_OVERRUN = 64
-CORE_LIFT_D = NOTCH_D + CORE_LIFT_OVERRUN
+CORE_LIFT_OVERRUN = 64  # How far south of the notch line the lift lobby opens.
+# The lift shaft's own back wall aligns with the rest of the lobby's
+# south line (CORE_WALL_Y, set by the deeper stair) rather than stopping
+# short of it and reading as a stagger.
+CORE_LIFT_D = CORE_STAIR_D
 CORE_LIFT_X1 = KH_NORTH_X2 - WALL_T - CORE_LIFT_W
 
 # Clearance between the entrance opening and the stair. The lift's own
@@ -751,6 +754,25 @@ LIFT_DOOR_Y1 = LIFT_DOOR_CY - LIFT_DOOR_W / 2
 LIFT_DOOR_Y2 = LIFT_DOOR_CY + LIFT_DOOR_W / 2
 LIFT_DOOR_H = 128
 
+# Both voids also need a wall closing their own south (back) edge, or the
+# shaft reads as open-ended into the main floor beyond it instead of an
+# enclosed shaft: the exterior walls bound the north side, STAIR_WALL_X /
+# LIFT_WALL_X bound the side facing the lobby, but nothing yet stands at
+# the void's own far end. Solid, full height, no door — nothing needs to
+# walk through the back of a shaft.
+_STAIR_VOID, _LIFT_VOID = _core_voids()
+STAIR_SHAFT_X1, STAIR_SHAFT_Y1, STAIR_SHAFT_X2, _ = _STAIR_VOID
+LIFT_SHAFT_X1, LIFT_SHAFT_Y1, LIFT_SHAFT_X2, _ = _LIFT_VOID
+
+# The remaining fourth side of each shaft is its own exterior-wall side —
+# the stair's west, the lift's east — which the building's outer wall
+# happens to run flush against. That wall carries its own (differently
+# textured) exterior face there, so the shaft still needs its own interior
+# panel on that side to read as WALL_KH_INTERIOR on all four walls rather
+# than showing the exterior wall's finish from inside the shaft.
+STAIR_SHAFT_WEST_X = STAIR_SHAFT_X1
+LIFT_SHAFT_EAST_X = LIFT_SHAFT_X2
+
 # One entry per storey: (floor's own walking-surface Z, its ceiling — the
 # underside of the next deck up, or the roof deck's underside for the top
 # storey). Reusing FLOOR_T here (rather than GROUND_FLOOR_T, which only
@@ -803,6 +825,14 @@ def _build_core_wall():
     cy1, cy2 = CORE_WALL_Y - CORE_WALL_T / 2, CORE_WALL_Y + CORE_WALL_T / 2
     sx1, sx2 = STAIR_WALL_X - CORE_WALL_T / 2, STAIR_WALL_X + CORE_WALL_T / 2
     lx1, lx2 = LIFT_WALL_X - CORE_WALL_T / 2, LIFT_WALL_X + CORE_WALL_T / 2
+    stair_back_y1 = STAIR_SHAFT_Y1 - CORE_WALL_T / 2
+    stair_back_y2 = STAIR_SHAFT_Y1 + CORE_WALL_T / 2
+    lift_back_y1 = LIFT_SHAFT_Y1 - CORE_WALL_T / 2
+    lift_back_y2 = LIFT_SHAFT_Y1 + CORE_WALL_T / 2
+    stair_west_x1 = STAIR_SHAFT_WEST_X - CORE_WALL_T / 2
+    stair_west_x2 = STAIR_SHAFT_WEST_X + CORE_WALL_T / 2
+    lift_east_x1 = LIFT_SHAFT_EAST_X - CORE_WALL_T / 2
+    lift_east_x2 = LIFT_SHAFT_EAST_X + CORE_WALL_T / 2
     tex = Textures.WALL_KH_INTERIOR
     brushes = []
     for floor_z, ceiling_z in zip(FLOOR_ZS, CORE_WALL_CEILINGS, strict=True):
@@ -844,6 +874,56 @@ def _build_core_wall():
             floor_z,
             ceiling_z,
             tex,
+        )
+        # Solid backs, closing off the shafts' own far ends — no door, so
+        # a plain box rather than _wall_with_one_door.
+        brushes.append(
+            box(
+                STAIR_SHAFT_X1,
+                stair_back_y1,
+                floor_z,
+                STAIR_SHAFT_X2,
+                stair_back_y2,
+                ceiling_z,
+                tex,
+            )
+        )
+        brushes.append(
+            box(
+                LIFT_SHAFT_X1,
+                lift_back_y1,
+                floor_z,
+                LIFT_SHAFT_X2,
+                lift_back_y2,
+                ceiling_z,
+                tex,
+            )
+        )
+        # The fourth side of each shaft, against the building's own
+        # exterior wall — solid, no door, so the shaft reads as
+        # WALL_KH_INTERIOR on all four sides rather than showing the
+        # exterior wall's own finish from inside it.
+        brushes.append(
+            box(
+                stair_west_x1,
+                STAIR_SHAFT_Y1,
+                floor_z,
+                stair_west_x2,
+                _CORE_FRONT_Y,
+                ceiling_z,
+                tex,
+            )
+        )
+        brushes.append(
+            box(
+                lift_east_x1,
+                LIFT_SHAFT_Y1,
+                floor_z,
+                lift_east_x2,
+                _CORE_FRONT_Y,
+                ceiling_z,
+                tex,
+            )
         )
     return brushes
 
