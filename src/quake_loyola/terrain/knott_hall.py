@@ -166,12 +166,15 @@ def _kh_hill_profile_z(x, hill_profile):
 
 
 def _append_sloped_sidewalk_slab(
-    brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex
+    brushes, x1, x2, y1, y2, top_z_s, top_z_n, surface_tex, side_tex=None
 ):
     """Add one full-depth sloped sidewalk slab.
 
     The slab's east and west faces (``ts``) are the curb sides exposed to the
     driveway, so they take the walking surface's texture rather than ground.
+    ``side_tex`` overrides that side texture independently of ``surface_tex``,
+    so a joint's marker can be confined to the top face without also
+    repainting the full-height exposed side below it.
     """
     brushes.append(
         ramp_slab_y(
@@ -185,7 +188,7 @@ def _append_sloped_sidewalk_slab(
             top_z_n,
             Textures.GROUND,
             tt=surface_tex,
-            ts=surface_tex,
+            ts=side_tex or surface_tex,
         )
     )
 
@@ -217,19 +220,27 @@ def _append_tiled_sloped_sidewalk(
         return top_z_s + (y - y1) * (top_z_n - top_z_s) / (y2 - y1)
 
     panels, joints = sidewalk_panel_spans(y1, y2, slab_len, STREET_SW_GAP, offset)
-    for span, tex in [(panels, surface_tex), (joints, Textures.SIDEWALK_JOINT)]:
+    for span, tex, side_tex in [
+        (panels, surface_tex, None),
+        (joints, Textures.SIDEWALK_JOINT, surface_tex),
+    ]:
         for py1, py2 in span:
             _append_sloped_sidewalk_slab(
-                brushes, x1, x2, py1, py2, _top_z(py1), _top_z(py2), tex
+                brushes, x1, x2, py1, py2, _top_z(py1), _top_z(py2), tex, side_tex
             )
 
 
-def _append_sloped_ramp_slab_x(brushes, x1, x2, y1, y2, top_z_w, top_z_e, surface_tex):
+def _append_sloped_ramp_slab_x(
+    brushes, x1, x2, y1, y2, top_z_w, top_z_e, surface_tex, side_tex=None
+):
     """Add one full-depth slab whose top slopes along X.
 
     The counterpart to ``_append_sloped_sidewalk_slab`` for an east-west run.
     Both long sides take the walking surface's texture: unlike a curbed walk,
-    a ramp standing off the hillside shows cement all the way down.
+    a ramp standing off the hillside shows cement all the way down. ``side_tex``
+    overrides that side texture independently of ``surface_tex``, so a joint's
+    marker stays confined to the top face instead of also repainting the
+    full-height exposed side below it.
     """
     brushes.append(
         ramp_slab(
@@ -243,7 +254,7 @@ def _append_sloped_ramp_slab_x(brushes, x1, x2, y1, y2, top_z_w, top_z_e, surfac
             top_z_e,
             Textures.GROUND,
             tt=surface_tex,
-            ts=surface_tex,
+            ts=side_tex or surface_tex,
         )
     )
 
@@ -255,10 +266,13 @@ def _append_tiled_sloped_ramp_x(brushes, x1, x2, y1, y2, top_z_w, top_z_e, surfa
         return top_z_w + (x - x1) * (top_z_e - top_z_w) / (x2 - x1)
 
     panels, joints = sidewalk_panel_spans(x1, x2, STREET_SW_SLAB_LEN, STREET_SW_GAP)
-    for span, tex in [(panels, surface_tex), (joints, Textures.SIDEWALK_JOINT)]:
+    for span, tex, side_tex in [
+        (panels, surface_tex, None),
+        (joints, Textures.SIDEWALK_JOINT, surface_tex),
+    ]:
         for px1, px2 in span:
             _append_sloped_ramp_slab_x(
-                brushes, px1, px2, y1, y2, _top_z(px1), _top_z(px2), tex
+                brushes, px1, px2, y1, y2, _top_z(px1), _top_z(px2), tex, side_tex
             )
 
 
