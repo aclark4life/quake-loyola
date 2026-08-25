@@ -604,8 +604,9 @@ class KnottWalkwayBentTest(unittest.TestCase):
 
     def test_emits_a_beam_five_pillars_a_joint_each_and_a_tie_beam(self):
         # Beam split into 3 segments with 2 joint seams between them (5) +
-        # 5 pillars, each with its own joint slab (10) + tie beam (1) = 16.
-        self.assertEqual(len(self.brushes), 16)
+        # 5 pillars, each with its own joint slab (10) + a joint where the
+        # tie beam picks up from the last pillar (1) + tie beam (1) = 17.
+        self.assertEqual(len(self.brushes), 17)
 
     def test_beam_sits_flush_under_the_span_deck(self):
         deck_underside = (
@@ -691,6 +692,23 @@ class KnottWalkwayBentTest(unittest.TestCase):
         joint_w = knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H
         self.assertAlmostEqual(seg_lens[0], seg_lens[1], delta=joint_w)
         self.assertAlmostEqual(seg_lens[1], seg_lens[2], delta=joint_w)
+
+    def test_tie_beam_gets_a_joint_seam_from_the_last_pillar(self):
+        # The ground-level tie beam picks up east of the last pillar; a
+        # thin joint slab separates the two, same treatment as the beam
+        # segment joints, rather than the tie beam butting straight into
+        # the pillar.
+        _y1, _y2, pier_xs, pier_half_w = knott_terrain._knott_walkway_bent_layout()
+        last_pier_x2 = pier_xs[-1] + pier_half_w
+        joints = [
+            b.get_bbox()
+            for b in self.brushes
+            if b.faces[0].tex == Textures.SIDEWALK_JOINT_FILL
+        ]
+        tie_joints = [j for j in joints if round(j[0][0]) == round(last_pier_x2)]
+        self.assertEqual(len(tie_joints), 1)
+        mins, maxs = tie_joints[0]
+        self.assertEqual(maxs[0] - mins[0], knott_terrain.KNOTT_SUPPORT_PILLAR_JOINT_H)
 
 
 class KnottEntranceWalkTest(unittest.TestCase):

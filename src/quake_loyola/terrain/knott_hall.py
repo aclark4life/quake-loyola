@@ -1899,9 +1899,11 @@ def _append_knott_walkway_bent(brushes):
     down to the hillside, plus a tie beam running on from the last pillar to
     the Pier 5 wall at the span's east end. The beam is split into three
     even-length segments, with a thin SIDEWALK_JOINT_FILL seam between them,
-    and each pillar is capped with the same seam where it meets the beam's
-    underside, so the bent reads as several separately poured elements
-    rather than one continuous mass, the same treatment sidewalk panels get.
+    each pillar is capped with the same seam where it meets the beam's
+    underside, and the eastern-most pillar gets a matching seam where the
+    ground-level tie beam picks up, so the bent reads as several separately
+    poured elements rather than one continuous mass, the same treatment
+    sidewalk panels get.
     """
     _bent_dz = BRIDGE_CENTER_SPAN_OFFSET[2]
 
@@ -1994,10 +1996,27 @@ def _append_knott_walkway_bent(brushes):
             )
         )
 
-    _tie_x1 = support_pier_xs[-1]
+    # East face of the last pier, where the ground-level tie beam picks up
+    # and runs on to the Pier 5 wall. A thin joint seam separates the two,
+    # same treatment as the beam segment joints above, rather than the tie
+    # beam butting straight into (and overlapping) the pier.
+    _last_pier_x = support_pier_xs[-1]
+    _tie_joint_x1 = _last_pier_x + support_pier_half_width
+    _tie_x1 = _tie_joint_x1 + joint_hw
     _tie_z = min(
         _kh_hill_ground_z(_tie_x1, support_y2),
         _kh_hill_ground_z(beam_x2, support_y2),
+    )
+    brushes.append(
+        box(
+            _tie_joint_x1,
+            support_y1,
+            _tie_z,
+            _tie_joint_x1 + joint_h,
+            support_y2,
+            _tie_z + beam_height,
+            Textures.SIDEWALK_JOINT_FILL,
+        )
     )
     brushes.append(
         box(
