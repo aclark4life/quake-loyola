@@ -41,6 +41,10 @@ class Textures:
     #: floor tile made each storey read as a finished room rather than as
     #: the raw concrete structure this shell actually is.
     FLOOR_KH = "gn_grey2"
+    #: from makkon_stone.wad; the interior partition that walls the bridge
+    #: entrance/elevator/stair lobby off from the rest of each Knott Hall
+    #: storey.
+    WALL_KH_INTERIOR = "stn_w12_wht1"
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
     GROUND = "ground1_1"
     HINT = "hint"

@@ -359,6 +359,87 @@ class KnottHallFloorTest(unittest.TestCase):
         self.assertEqual(roof_xy, floor_xy)
 
 
+class KnottHallCoreWallTest(unittest.TestCase):
+    def test_one_storey_worth_of_brushes_per_floor(self):
+        # Three walls (center, stair, lift), each two jambs plus a header
+        # (9 brushes) per storey — five storeys, none skipped.
+        brushes = knott_hall._build_core_wall()
+        self.assertEqual(len(brushes), 9 * len(knott_hall.FLOOR_ZS))
+
+    def test_wall_uses_the_interior_partition_texture(self):
+        for brush in knott_hall._build_core_wall():
+            self.assertEqual(brush.faces[0].tex, Textures.WALL_KH_INTERIOR)
+
+    def test_double_door_opening_is_centered_on_the_bridge_entrance(self):
+        # The route in from the bridge should run straight through the
+        # opening rather than dogleg around it.
+        self.assertEqual(
+            (knott_hall.CORE_DOOR_X1 + knott_hall.CORE_DOOR_X2) / 2,
+            knott_hall.ENTRANCE_CX,
+        )
+
+    def test_center_wall_fills_the_gap_between_the_stair_and_lift_shafts(self):
+        # It has to land exactly on the shafts' facing edges, or it either
+        # overlaps a shaft void or leaves a gap next to one.
+        (stair_x1, _, stair_x2, _), (lift_x1, _, lift_x2, _) = knott_hall._core_voids()
+        self.assertEqual(knott_hall.CORE_WALL_X1, stair_x2)
+        self.assertEqual(knott_hall.CORE_WALL_X2, lift_x1)
+
+    def test_center_wall_aligns_with_the_back_of_the_stair_shaft(self):
+        # The whole notch bay should read as one consistent-depth lobby,
+        # not have the center wall floating at an arbitrary depth partway
+        # into it.
+        self.assertEqual(knott_hall.CORE_WALL_Y, knott_hall.STAIR_WALL_Y1)
+        self.assertLess(knott_hall.CORE_WALL_Y, knott_hall.KH_NOTCH_Y)
+
+    def test_stair_and_lift_walls_run_perpendicular_to_the_center_wall(self):
+        # The center wall's doorway is split along X (you walk through it
+        # north-south); the stair and lift doors have to be split along Y
+        # instead (you walk through them east-west) to actually be
+        # perpendicular to it.
+        self.assertEqual(knott_hall.STAIR_WALL_X, knott_hall.CORE_WALL_X1)
+        self.assertEqual(knott_hall.LIFT_WALL_X, knott_hall.CORE_WALL_X2)
+        self.assertLess(knott_hall.STAIR_DOOR_Y1, knott_hall.STAIR_DOOR_Y2)
+        self.assertLess(knott_hall.LIFT_DOOR_Y1, knott_hall.LIFT_DOOR_Y2)
+
+    def test_stair_and_lift_walls_meet_the_center_wall_at_its_own_depth(self):
+        # Both run from the front wall back to CORE_WALL_Y, whatever their
+        # own shaft's depth happens to be, so there's no gap between a
+        # shallower shaft's own back and the center wall.
+        (_, _, _, stair_y2), (_, _, _, lift_y2) = knott_hall._core_voids()
+        self.assertEqual(knott_hall.STAIR_WALL_Y1, knott_hall.CORE_WALL_Y)
+        self.assertEqual(knott_hall.STAIR_WALL_Y2, stair_y2)
+        self.assertEqual(knott_hall.LIFT_WALL_Y1, knott_hall.CORE_WALL_Y)
+        self.assertEqual(knott_hall.LIFT_WALL_Y2, lift_y2)
+
+    def test_stair_and_lift_doors_sit_in_the_lobby_short_of_the_center_wall(self):
+        # Reachable straight from the bridge entrance without first passing
+        # through the center wall's double door.
+        self.assertGreater(knott_hall.STAIR_DOOR_Y1, knott_hall.CORE_WALL_Y)
+        self.assertLess(knott_hall.STAIR_DOOR_Y2, knott_hall.STAIR_WALL_Y2)
+        self.assertGreater(knott_hall.LIFT_DOOR_Y1, knott_hall.CORE_WALL_Y)
+        self.assertLess(knott_hall.LIFT_DOOR_Y2, knott_hall.LIFT_WALL_Y2)
+
+    def test_no_brush_is_taller_than_its_own_storey(self):
+        # A jamb or header that overshot its ceiling would poke into the
+        # deck above it instead of stopping flush at its underside.
+        storeys = zip(knott_hall.FLOOR_ZS, knott_hall.CORE_WALL_CEILINGS, strict=True)
+        brushes = iter(knott_hall._build_core_wall())
+        for floor_z, ceiling_z in storeys:
+            for _ in range(9):
+                (_, _, z1), (_, _, z2) = next(brushes).get_bbox()
+                self.assertGreaterEqual(z1, floor_z)
+                self.assertLessEqual(z2, ceiling_z)
+
+    def test_door_openings_do_not_exceed_their_own_wall_span(self):
+        self.assertGreater(knott_hall.CORE_DOOR_X1, knott_hall.CORE_WALL_X1)
+        self.assertLess(knott_hall.CORE_DOOR_X2, knott_hall.CORE_WALL_X2)
+        self.assertGreater(knott_hall.STAIR_DOOR_Y1, knott_hall.STAIR_WALL_Y1)
+        self.assertLess(knott_hall.STAIR_DOOR_Y2, knott_hall.STAIR_WALL_Y2)
+        self.assertGreater(knott_hall.LIFT_DOOR_Y1, knott_hall.LIFT_WALL_Y1)
+        self.assertLess(knott_hall.LIFT_DOOR_Y2, knott_hall.LIFT_WALL_Y2)
+
+
 class KnottHallBuildTest(unittest.TestCase):
     def test_build_matches_sum_of_helper_parts(self):
         brushes, entities = knott_hall.build()
@@ -368,6 +449,7 @@ class KnottHallBuildTest(unittest.TestCase):
         z2 = knott_hall.KH_GROUND_Z + knott_hall.BUILDING_H
         roof_brushes = knott_hall._build_roof(z2, z2 + knott_hall.ROOF_T)
         floor_brushes = knott_hall._build_floors()
+        core_wall_brushes = knott_hall._build_core_wall()
         sign_brushes = knott_hall._build_sign(knott_hall.KH_GROUND_Z)
         parapet_brushes = knott_hall._build_parapet(z2, z2 + knott_hall.PARAPET_H)
 
@@ -376,6 +458,7 @@ class KnottHallBuildTest(unittest.TestCase):
             len(wall_brushes)
             + len(roof_brushes)
             + len(floor_brushes)
+            + len(core_wall_brushes)
             + len(sign_brushes),
         )
         self.assertEqual(len(entities), 1)

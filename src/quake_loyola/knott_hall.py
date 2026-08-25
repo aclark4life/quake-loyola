@@ -697,6 +697,157 @@ def _core_voids():
     )
 
 
+# Partition walling the notch bay (bridge entrance, stair, lift) off from
+# the rest of each storey, so the lobby reads as its own room instead of an
+# unbounded corner of the open floor plate.
+#
+# Three separate walls, not one: the center one carries the double door
+# straight in from the bridge entrance and runs east-west, filling the gap
+# between the two shafts; the stair and lift each get their own wall
+# running north-south instead — perpendicular to the center one — with a
+# single door in it, so reaching either means turning to face it rather
+# than walking straight through it the same way as the main entrance.
+CORE_WALL_T = WALL_T
+
+# The center (double-door) wall. Set back to align with the back of the
+# stair shaft (the deeper of the two — see _core_voids) so the whole notch
+# bay reads as one consistent-depth lobby rather than the wall floating at
+# an arbitrary depth partway into it. Spans only the gap between the two
+# shafts — the stair and lift each wall off their own side of that gap
+# instead.
+_CORE_FRONT_Y = KH_Y2 - WALL_T  # Interior face of the front (entrance) wall.
+CORE_WALL_Y = _CORE_FRONT_Y - CORE_STAIR_D
+CORE_WALL_X1 = ENTRANCE_X1 - CORE_LANDING_GAP  # The stair void's east edge.
+CORE_WALL_X2 = CORE_LIFT_X1  # The lift void's west edge.
+
+CORE_DOOR_W = 128  # Wide enough to read as a double (two-leaf) door.
+CORE_DOOR_H = 128
+CORE_DOOR_X1 = ENTRANCE_CX - CORE_DOOR_W / 2
+CORE_DOOR_X2 = ENTRANCE_CX + CORE_DOOR_W / 2
+
+# The stair and lift walls run north-south from the building's front wall
+# down to CORE_WALL_Y, meeting the center wall there so the lobby is fully
+# enclosed on all three sides — no gap where a wall's own shaft happens to
+# be shallower than the stairwell that set CORE_WALL_Y. Each door is
+# centered between the front wall and CORE_WALL_Y, the lobby's own depth,
+# so both are reachable from the lobby without first passing through the
+# double door.
+
+STAIR_WALL_X = CORE_WALL_X1  # Same line as the center wall's west edge.
+STAIR_WALL_Y1 = CORE_WALL_Y
+STAIR_WALL_Y2 = _CORE_FRONT_Y
+STAIR_DOOR_W = 96  # Wide enough for two-way switchback traffic.
+STAIR_DOOR_CY = (CORE_WALL_Y + _CORE_FRONT_Y) / 2
+STAIR_DOOR_Y1 = STAIR_DOOR_CY - STAIR_DOOR_W / 2
+STAIR_DOOR_Y2 = STAIR_DOOR_CY + STAIR_DOOR_W / 2
+STAIR_DOOR_H = 128
+
+LIFT_WALL_X = CORE_WALL_X2  # Same line as the center wall's east edge.
+LIFT_WALL_Y1 = CORE_WALL_Y
+LIFT_WALL_Y2 = _CORE_FRONT_Y
+LIFT_DOOR_W = 96  # Wide enough for a wheelchair-accessible car and door swing.
+LIFT_DOOR_CY = (CORE_WALL_Y + _CORE_FRONT_Y) / 2
+LIFT_DOOR_Y1 = LIFT_DOOR_CY - LIFT_DOOR_W / 2
+LIFT_DOOR_Y2 = LIFT_DOOR_CY + LIFT_DOOR_W / 2
+LIFT_DOOR_H = 128
+
+# One entry per storey: (floor's own walking-surface Z, its ceiling — the
+# underside of the next deck up, or the roof deck's underside for the top
+# storey). Reusing FLOOR_T here (rather than GROUND_FLOOR_T, which only
+# describes the ground deck's own thickness) is correct because it is the
+# *next* storey's deck whose underside is being found, and every deck
+# except the ground one is FLOOR_T thick.
+FLOOR_ZS = (GROUND_FLOOR_Z, ENTRY_FLOOR_Z, *UPPER_FLOOR_ZS)
+_FLOOR_ZS_ABOVE = (*FLOOR_ZS[1:], KH_GROUND_Z + BUILDING_H)
+CORE_WALL_CEILINGS = tuple(
+    z_above - (FLOOR_T if i < len(_FLOOR_ZS_ABOVE) - 1 else 0)
+    for i, z_above in enumerate(_FLOOR_ZS_ABOVE)
+)
+
+
+def _wall_with_one_door(
+    x1, y1, x2, y2, axis, door1, door2, door_h, floor_z, ceiling_z, tex
+):
+    """One storey's worth of a straight wall with a single door in it.
+
+    ``axis`` is ``"x"`` for a wall that runs east-west (the door splits its
+    ``x1``..``x2`` run, at ``door1``..``door2`` in X) or ``"y"`` for one that
+    runs north-south (the door splits its ``y1``..``y2`` run instead).
+    Returns the jamb brush(es) either side of the door plus the header
+    brush over it.
+    """
+    brushes = []
+    if axis == "x":
+        if x1 < door1:
+            brushes.append(box(x1, y1, floor_z, door1, y2, ceiling_z, tex))
+        if door2 < x2:
+            brushes.append(box(door2, y1, floor_z, x2, y2, ceiling_z, tex))
+        brushes.append(box(door1, y1, floor_z + door_h, door2, y2, ceiling_z, tex))
+    else:
+        if y1 < door1:
+            brushes.append(box(x1, y1, floor_z, x2, door1, ceiling_z, tex))
+        if door2 < y2:
+            brushes.append(box(x1, door2, floor_z, x2, y2, ceiling_z, tex))
+        brushes.append(box(x1, door1, floor_z + door_h, x2, door2, ceiling_z, tex))
+    return brushes
+
+
+def _build_core_wall():
+    """Build the notch-bay partition: the center (double-door) wall plus
+    the stair and lift's own perpendicular walls, storey by storey.
+
+    Each wall is built as jamb brushes either side of its door plus a
+    header brush over the opening, mirroring how the exterior walls build
+    their openings, rather than one solid slab with a hole punched in it.
+    """
+    cy1, cy2 = CORE_WALL_Y - CORE_WALL_T / 2, CORE_WALL_Y + CORE_WALL_T / 2
+    sx1, sx2 = STAIR_WALL_X - CORE_WALL_T / 2, STAIR_WALL_X + CORE_WALL_T / 2
+    lx1, lx2 = LIFT_WALL_X - CORE_WALL_T / 2, LIFT_WALL_X + CORE_WALL_T / 2
+    tex = Textures.WALL_KH_INTERIOR
+    brushes = []
+    for floor_z, ceiling_z in zip(FLOOR_ZS, CORE_WALL_CEILINGS, strict=True):
+        brushes += _wall_with_one_door(
+            CORE_WALL_X1,
+            cy1,
+            CORE_WALL_X2,
+            cy2,
+            "x",
+            CORE_DOOR_X1,
+            CORE_DOOR_X2,
+            CORE_DOOR_H,
+            floor_z,
+            ceiling_z,
+            tex,
+        )
+        brushes += _wall_with_one_door(
+            sx1,
+            STAIR_WALL_Y1,
+            sx2,
+            STAIR_WALL_Y2,
+            "y",
+            STAIR_DOOR_Y1,
+            STAIR_DOOR_Y2,
+            STAIR_DOOR_H,
+            floor_z,
+            ceiling_z,
+            tex,
+        )
+        brushes += _wall_with_one_door(
+            lx1,
+            LIFT_WALL_Y1,
+            lx2,
+            LIFT_WALL_Y2,
+            "y",
+            LIFT_DOOR_Y1,
+            LIFT_DOOR_Y2,
+            LIFT_DOOR_H,
+            floor_z,
+            ceiling_z,
+            tex,
+        )
+    return brushes
+
+
 def _build_floors():
     """Build the interior storey decks: all five of KNOTT_FLOORS.
 
@@ -848,7 +999,8 @@ def _build_sign(z1):
 
 
 def build():
-    """Build the Knott Hall shell: four walls, a roof, and all five floors.
+    """Build the Knott Hall shell: four walls, a roof, all five floors, and
+    the entrance/elevator/stair lobby partition.
 
     Returns:
         tuple[list, list]: ``(brushes, entities)`` for the building shell.
@@ -862,10 +1014,17 @@ def build():
     wall_brushes, west_detail, east_detail = _build_walls(z1, z2)
     roof_brushes = _build_roof(roof_z1, roof_z2)
     floor_brushes = _build_floors()
+    core_wall_brushes = _build_core_wall()
     parapet_detail = _build_parapet(z2, parapet_z2)
     sign_brushes = _build_sign(z1)
 
-    brushes = [*wall_brushes, *roof_brushes, *floor_brushes, *sign_brushes]
+    brushes = [
+        *wall_brushes,
+        *roof_brushes,
+        *floor_brushes,
+        *core_wall_brushes,
+        *sign_brushes,
+    ]
     entities = [brush_ent("func_detail", west_detail + east_detail + parapet_detail)]
 
     return brushes, entities
