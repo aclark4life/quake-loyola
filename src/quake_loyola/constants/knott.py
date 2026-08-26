@@ -90,11 +90,13 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # against the east-most drop pillar's own clearance, from which the west
 # leg's run -- and the grade that run leaves -- follow. That keeps the south
 # leg (and its rail) as short as the pillar allows, at whatever grade results.
-# The west leg has to hug the Ennis walk regardless -- further south the
+# The west leg follows the Ennis walk regardless -- further south the
 # hillside climbs 13% against the ramp's own grade, and the ramp would bury
-# itself in the bank -- so its north edge runs flush with that walk. And the
-# south leg has to thread between the drop pillars under the bridge span, so
-# the landing sits ``KNOTT_RAMP_PILLAR_GAP`` clear of the nearest one.
+# itself in the bank -- but it is pulled ``KNOTT_RAMP_SOUTH_SHIFT`` off the
+# walk's edge so its south face meets Pier 5's stonework underneath it,
+# rather than running flush against the walk. And the south leg has to
+# thread between the drop pillars under the bridge span, so the landing
+# sits ``KNOTT_RAMP_PILLAR_GAP`` clear of the nearest one.
 #
 # Only the west leg's north side is railed, and it is the one side that has
 # to be: the Ennis walk runs right along it, so the ramp climbs away from a
@@ -106,6 +108,9 @@ KNOTT_EAST_WALK_RAIL_OVH = 6
 # pillars that run the full height through both rails.
 KNOTT_RAMP_W = 72
 KNOTT_RAMP_PILLAR_GAP = 16
+# Pulls the whole ramp south, off the Ennis walk it would otherwise hug
+# flush, until its south edge meets Pier 5's stonework beneath the west leg.
+KNOTT_RAMP_SOUTH_SHIFT = 31
 KNOTT_RAMP_RAIL_H = 44
 KNOTT_RAMP_RAIL_T = 3
 KNOTT_RAMP_RAIL_LOOP_H = 24

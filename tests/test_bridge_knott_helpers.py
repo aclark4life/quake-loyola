@@ -45,6 +45,7 @@ from quake_loyola.constants import (
     KNOTT_RAMP_RAIL_OVH,
     KNOTT_RAMP_RAIL_POSTS,
     KNOTT_RAMP_RAIL_T,
+    KNOTT_RAMP_SOUTH_SHIFT,
     KNOTT_RAMP_W,
     STREET_SURFACE_T,
     STREET_SW_GAP,
@@ -1131,11 +1132,14 @@ class KnottAccessibleRampTest(unittest.TestCase):
 
     def test_the_west_leg_hugs_the_ennis_walk(self):
         # South of it the hillside climbs faster than the ramp does, so a leg
-        # set back from that walk would bury itself in the bank.
+        # set back from that walk would bury itself in the bank. It is
+        # pulled south of the walk's own edge to close up the gap to Pier 5.
         self.assertTrue(self.west)
         for mins, maxs in self.west:
-            self.assertAlmostEqual(maxs[1], ENNIS_SW_EDGE)
-            self.assertAlmostEqual(mins[1], ENNIS_SW_EDGE - KNOTT_RAMP_W)
+            self.assertAlmostEqual(maxs[1], ENNIS_SW_EDGE - KNOTT_RAMP_SOUTH_SHIFT)
+            self.assertAlmostEqual(
+                mins[1], ENNIS_SW_EDGE - KNOTT_RAMP_SOUTH_SHIFT - KNOTT_RAMP_W
+            )
 
     def test_both_legs_are_the_same_width(self):
         self.assertTrue(self.south)

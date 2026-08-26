@@ -67,6 +67,7 @@ from ..constants import (
     KNOTT_RAMP_RAIL_OVH,
     KNOTT_RAMP_RAIL_POSTS,
     KNOTT_RAMP_RAIL_T,
+    KNOTT_RAMP_SOUTH_SHIFT,
     KNOTT_RAMP_W,
     KNOTT_SUPPORT_PILLAR_JOINT_H,
     ROAD_X2,
@@ -1761,7 +1762,7 @@ def _knott_ramp_layout():
     foot_z = _knott_ramp_foot_z()
     rise = GROUND_DOOR_BOTTOM - foot_z
 
-    cy = ENNIS_SW_EDGE - hw
+    cy = ENNIS_SW_EDGE - hw - KNOTT_RAMP_SOUTH_SHIFT
     head_y = KH_Y2 + KNOTT_EAST_WALK_W
     south_run = (cy - hw) - head_y
     if south_run <= 0:
