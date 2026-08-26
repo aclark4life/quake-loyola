@@ -1031,39 +1031,47 @@ def _append_knott_driveway_extension(brushes):
     )
     # South of the Ennis walk: the driveway's west sidewalk, its joint, and the
     # curb strip at the roadbed edge. The walk band itself is poured as one
-    # stone apron below, so these all stop at ENNIS_SW_EDGE — except where the
-    # accessible ramp takes over: it comes down to the roadbed at the gutter,
-    # cutting the curb, so the walk gives way to its deck at the cut.
+    # stone apron above, so these normally stop at ENNIS_SW_EDGE — except
+    # where the accessible ramp takes over: it comes down to the roadbed at
+    # the gutter, cutting the curb over its own width, so the walk gives way
+    # to its deck at the cut and resumes in the gap the ramp leaves short of
+    # the apron.
     _curb_cut_y1 = _knott_ramp_curb_cut_y1()
-    _append_tiled_flat_sidewalk_y(
-        brushes,
-        KNOTT_DRIVEWAY_WS_X1,
-        KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
-        KNOTT_DRIVEWAY_EXT_Y1,
-        _curb_cut_y1,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.CEMENT,
-    )
-    _append_flat_sidewalk_slab(
-        brushes,
-        KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
-        KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
-        KNOTT_DRIVEWAY_EXT_Y1,
-        _curb_cut_y1,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.SIDEWALK_JOINT,
-    )
+    _curb_resume_y1 = _knott_ramp_curb_resume_y1()
+    for _sw_y1, _sw_y2 in (
+        (KNOTT_DRIVEWAY_EXT_Y1, _curb_cut_y1),
+        (_curb_resume_y1, ENNIS_SW_EDGE),
+    ):
+        _append_tiled_flat_sidewalk_y(
+            brushes,
+            KNOTT_DRIVEWAY_WS_X1,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
+            _sw_y1,
+            _sw_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+        )
+        _append_flat_sidewalk_slab(
+            brushes,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W - STREET_SW_GAP,
+            KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W,
+            _sw_y1,
+            _sw_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+        )
 
     _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
     # The Ennis walk crosses the driveway head banded like the walk either
     # side of it, matching the apron on the driveway's east side.
     _append_ennis_walk_apron(brushes, KNOTT_DRIVEWAY_WS_X1, KNOTT_DRIVEWAY_WS_X2)
-    # The west curb resumes north of the walk and runs past its end to close
-    # the bulge return.
+    # The west curb resumes north of the ramp's own cut, again north of the
+    # walk, and runs past its end to close the bulge return.
     for _curb_y1, _curb_y2 in (
         (KNOTT_DRIVEWAY_EXT_Y1, _curb_cut_y1),
+        (_curb_resume_y1, ENNIS_SW_EDGE),
         (ENNIS_SW_EDGE + CHARLES_WALK_W, _west_ext_y2),
     ):
         _append_tiled_flat_sidewalk_y(
@@ -1740,11 +1748,23 @@ def _knott_ramp_foot_z():
 def _knott_ramp_curb_cut_y1():
     """Return the Y the driveway's west walk and curb give way to the ramp.
 
-    North of it the ramp's own deck is the walking surface all the way to the
-    roadbed, so the walk, its joint, and the curb strip all stop here rather
-    than running on to the Ennis walk and burying the cut.
+    North of it the ramp's own deck is the walking surface over its own
+    width, so the walk, its joint, and the curb strip all stop here rather
+    than running under the ramp and burying the cut.
     """
     return _knott_ramp_layout()[1] - KNOTT_RAMP_W / 2
+
+
+def _knott_ramp_curb_resume_y1():
+    """Return the Y the driveway's west walk and curb resume north of the ramp.
+
+    The ramp is pulled south of the Ennis walk to meet Pier 5 (see
+    ``KNOTT_RAMP_SOUTH_SHIFT``), so it no longer reaches the walk's own stone
+    apron the way it once did flush. The gap that leaves is ordinary curbed
+    driveway frontage, not part of either the ramp or the apron, so it is
+    poured back in cement rather than left cut.
+    """
+    return _knott_ramp_layout()[1] + KNOTT_RAMP_W / 2
 
 
 def _knott_ramp_layout():
