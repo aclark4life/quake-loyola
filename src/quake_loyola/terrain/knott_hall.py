@@ -961,25 +961,67 @@ def _append_knott_hillside_profile_fill(brushes, state):
         )
 
 
-def _append_ennis_walk_apron(brushes, x1, x2):
+def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
     """Carry the Ennis south walk across a driveway head at ``x1``..``x2``.
 
     Reproduces the banding the street module gives the rest of the south walk
     — stone walk, dark joint, then the decorative curb slab sitting on a ground
     backfill — so the aprons read as part of the same sidewalk.
+
+    ``drive_curb_x`` is the ``(x1, x2)`` span of the driveway's own north-south
+    curb where it runs up through this apron. That strip is poured in cement on
+    the curb grid instead of the walk's stone, so the driveway curb reads as one
+    continuous cement pour from the roadbed to the Ennis curb rather than
+    turning to stone for the width of the walk. A ``STREET_SW_GAP`` joint is
+    scored down the stone side of that strip — through the walk and the Ennis
+    curb band alike — so the two pours meet on a joint as they do everywhere
+    else, rather than butting stone straight against cement.
     """
     _walk_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W - STREET_SW_GAP
     _curb_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W
-    _append_tiled_flat_sidewalk_x(
-        brushes,
-        x1,
-        x2,
-        ENNIS_SW_EDGE,
-        _walk_y2,
-        FLOOR_Z2,
-        FLOOR_Z2 + CHARLES_WALK_H,
-        Textures.WHITE_STONE,
-    )
+    _dc_x1, _dc_x2 = drive_curb_x if drive_curb_x else (x2, x2)
+    # The joint goes on whichever side of the driveway curb the stone is on:
+    # the west apron's curb sits at its east edge, the east apron's at its west.
+    if _dc_x1 <= x1:
+        _j_x1, _j_x2 = _dc_x2, _dc_x2 + STREET_SW_GAP
+    else:
+        _j_x1, _j_x2 = _dc_x1 - STREET_SW_GAP, _dc_x1
+    for _wx1, _wx2 in ((x1, min(_dc_x1, _j_x1)), (max(_dc_x2, _j_x2), x2)):
+        if _wx1 >= _wx2:
+            continue
+        _append_tiled_flat_sidewalk_x(
+            brushes,
+            _wx1,
+            _wx2,
+            ENNIS_SW_EDGE,
+            _walk_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.WHITE_STONE,
+        )
+    if drive_curb_x:
+        _append_flat_sidewalk_slab(
+            brushes,
+            _j_x1,
+            _j_x2,
+            ENNIS_SW_EDGE,
+            _walk_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+        )
+        _append_tiled_flat_sidewalk_y(
+            brushes,
+            _dc_x1,
+            _dc_x2,
+            ENNIS_SW_EDGE,
+            _walk_y2,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.CEMENT,
+            slab_len=STREET_CURB_SLAB_LEN,
+            offset=_knott_curb_phase(ENNIS_SW_EDGE),
+        )
     _append_flat_sidewalk_slab(
         brushes,
         x1,
@@ -991,7 +1033,9 @@ def _append_ennis_walk_apron(brushes, x1, x2):
         Textures.SIDEWALK_JOINT,
     )
     # The curb slab pours from STREET_SURFACE_T up, as it does along the rest
-    # of the run, so back it with ground to keep the band solid.
+    # of the run, so back it with ground to keep the band solid. The driveway
+    # curb crosses this band too, so its strip is cement here as well and the
+    # stone Ennis curb is poured either side of it, joint included.
     brushes.append(
         box(
             x1,
@@ -1003,17 +1047,26 @@ def _append_ennis_walk_apron(brushes, x1, x2):
             Textures.GROUND,
         )
     )
-    brushes.append(
-        box(
-            x1,
-            _curb_y1,
-            FLOOR_Z2 + STREET_SURFACE_T,
-            x2,
-            ENNIS_SW_EDGE + CHARLES_WALK_W,
-            FLOOR_Z2 + CHARLES_WALK_H,
-            Textures.CURB,
-        )
+    _curb_bands = (
+        (x1, min(_dc_x1, _j_x1), Textures.CURB),
+        (_j_x1, _j_x2, Textures.SIDEWALK_JOINT),
+        (_dc_x1, _dc_x2, Textures.CEMENT),
+        (max(_dc_x2, _j_x2), x2, Textures.CURB),
     )
+    for _cx1, _cx2, _ctex in _curb_bands:
+        if _cx1 >= _cx2:
+            continue
+        brushes.append(
+            box(
+                _cx1,
+                _curb_y1,
+                FLOOR_Z2 + STREET_SURFACE_T,
+                _cx2,
+                ENNIS_SW_EDGE + CHARLES_WALK_W,
+                FLOOR_Z2 + CHARLES_WALK_H,
+                _ctex,
+            )
+        )
 
 
 def _append_knott_driveway_extension(brushes):
@@ -1066,7 +1119,12 @@ def _append_knott_driveway_extension(brushes):
     _west_ext_y2 = KNOTT_DRIVEWAY_EXT_Y2 + KNOTT_DRIVEWAY_CURB_BULGE_D
     # The Ennis walk crosses the driveway head banded like the walk either
     # side of it, matching the apron on the driveway's east side.
-    _append_ennis_walk_apron(brushes, KNOTT_DRIVEWAY_WS_X1, KNOTT_DRIVEWAY_WS_X2)
+    _append_ennis_walk_apron(
+        brushes,
+        KNOTT_DRIVEWAY_WS_X1,
+        KNOTT_DRIVEWAY_WS_X2,
+        drive_curb_x=(KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W, KNOTT_DRIVEWAY_WS_X2),
+    )
     # The west curb resumes north of the ramp's own cut, again north of the
     # walk, and runs past its end to close the bulge return.
     for _curb_y1, _curb_y2 in (
@@ -1132,7 +1190,12 @@ def _append_knott_driveway_extension(brushes):
     # south walk. It stops at the driveway's east edge: east of there the
     # street module's own SE run owns the walk, joint, and curb, so carrying
     # this run past the bulge would bury them in overlapping cement.
-    _append_ennis_walk_apron(brushes, KNOTT_DRIVEWAY_ES_X1, KNOTT_DRIVEWAY_ES_X2)
+    _append_ennis_walk_apron(
+        brushes,
+        KNOTT_DRIVEWAY_ES_X1,
+        KNOTT_DRIVEWAY_ES_X2,
+        drive_curb_x=(KNOTT_DRIVEWAY_ES_X1, KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W),
+    )
     # That run used to backfill under the street module's Ennis curb across the
     # bulge; the curb only pours from STREET_SURFACE_T up, so fill it here.
     brushes.append(
