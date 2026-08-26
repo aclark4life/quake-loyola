@@ -822,9 +822,11 @@ class KnottEntranceWalkTest(unittest.TestCase):
         self.assertEqual(max(ends), self.flat_z)
 
     def test_path_ramps_the_hillside_ledge_away_at_the_bottom(self):
+        # The tail starts a joint gap north of the Ennis walk edge: the street
+        # module scores the seam there, and the tail would fill the groove.
         tail = max(self.paved, key=lambda b: b.get_bbox()[1][1])
         mins, maxs = tail.get_bbox()
-        self.assertEqual(mins[1], ENNIS_SW_EDGE)
+        self.assertEqual(mins[1], ENNIS_SW_EDGE + STREET_SW_GAP)
         self.assertEqual(maxs[1], ENNIS_SW_EDGE + KNOTT_DOOR_WALK_PATH_TAIL)
         self.assertEqual(maxs[2], self.flat_z)
         ends = [

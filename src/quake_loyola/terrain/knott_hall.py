@@ -961,7 +961,7 @@ def _append_knott_hillside_profile_fill(brushes, state):
         )
 
 
-def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
+def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None, south_joint_x=None):
     """Carry the Ennis south walk across a driveway head at ``x1``..``x2``.
 
     Reproduces the banding the street module gives the rest of the south walk
@@ -976,10 +976,34 @@ def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
     scored down the stone side of that strip — through the walk and the Ennis
     curb band alike — so the two pours meet on a joint as they do everywhere
     else, rather than butting stone straight against cement.
+
+    ``south_joint_x`` is the ``(x1, x2)`` span over which the apron's own south
+    edge meets the driveway's cement rather than ground, and so is scored with
+    a matching joint. The bands over that span start a ``STREET_SW_GAP`` north
+    of ``ENNIS_SW_EDGE`` to leave room for it.
     """
     _walk_y2 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W - STREET_SW_GAP
     _curb_y1 = ENNIS_SW_EDGE + CHARLES_WALK_W - ENNIS_CURB_W
     _dc_x1, _dc_x2 = drive_curb_x if drive_curb_x else (x2, x2)
+    _sj_x1, _sj_x2 = south_joint_x if south_joint_x else (x2, x2)
+
+    def _walk_y1(bx1, bx2):
+        """Return a band's south edge, held back where the joint is scored."""
+        if _sj_x1 <= bx1 and bx2 <= _sj_x2:
+            return ENNIS_SW_EDGE + STREET_SW_GAP
+        return ENNIS_SW_EDGE
+
+    if south_joint_x:
+        _append_flat_sidewalk_slab(
+            brushes,
+            _sj_x1,
+            _sj_x2,
+            ENNIS_SW_EDGE,
+            ENNIS_SW_EDGE + STREET_SW_GAP,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+        )
     # The joint goes on whichever side of the driveway curb the stone is on:
     # the west apron's curb sits at its east edge, the east apron's at its west.
     if _dc_x1 <= x1:
@@ -993,7 +1017,7 @@ def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
             brushes,
             _wx1,
             _wx2,
-            ENNIS_SW_EDGE,
+            _walk_y1(_wx1, _wx2),
             _walk_y2,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -1004,7 +1028,7 @@ def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
             brushes,
             _j_x1,
             _j_x2,
-            ENNIS_SW_EDGE,
+            _walk_y1(_j_x1, _j_x2),
             _walk_y2,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -1014,7 +1038,7 @@ def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
             brushes,
             _dc_x1,
             _dc_x2,
-            ENNIS_SW_EDGE,
+            _walk_y1(_dc_x1, _dc_x2),
             _walk_y2,
             FLOOR_Z2,
             FLOOR_Z2 + CHARLES_WALK_H,
@@ -1066,6 +1090,22 @@ def _append_ennis_walk_apron(brushes, x1, x2, drive_curb_x=None):
                 FLOOR_Z2 + CHARLES_WALK_H,
                 _ctex,
             )
+        )
+    # The driveway curb enters the Ennis curb band on the joint scored between
+    # the walk and the curb, so score its north end too rather than letting the
+    # strip run straight on into the road-edge curb north of the walk. The runs
+    # in _append_knott_driveway_extension start a STREET_SW_GAP further north to
+    # leave room for it.
+    if drive_curb_x:
+        _append_flat_sidewalk_slab(
+            brushes,
+            _dc_x1,
+            _dc_x2,
+            ENNIS_SW_EDGE + CHARLES_WALK_W,
+            ENNIS_SW_EDGE + CHARLES_WALK_W + STREET_SW_GAP,
+            FLOOR_Z2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
         )
 
 
@@ -1124,13 +1164,14 @@ def _append_knott_driveway_extension(brushes):
         KNOTT_DRIVEWAY_WS_X1,
         KNOTT_DRIVEWAY_WS_X2,
         drive_curb_x=(KNOTT_DRIVEWAY_WS_X2 - ENNIS_CURB_W, KNOTT_DRIVEWAY_WS_X2),
+        south_joint_x=(KNOTT_DRIVEWAY_WS_X1, KNOTT_DRIVEWAY_WS_X2),
     )
     # The west curb resumes north of the ramp's own cut, again north of the
     # walk, and runs past its end to close the bulge return.
     for _curb_y1, _curb_y2 in (
         (KNOTT_DRIVEWAY_EXT_Y1, _curb_cut_y1),
         (_curb_resume_y1, ENNIS_SW_EDGE),
-        (ENNIS_SW_EDGE + CHARLES_WALK_W, _west_ext_y2),
+        (ENNIS_SW_EDGE + CHARLES_WALK_W + STREET_SW_GAP, _west_ext_y2),
     ):
         _append_tiled_flat_sidewalk_y(
             brushes,
@@ -1195,6 +1236,7 @@ def _append_knott_driveway_extension(brushes):
         KNOTT_DRIVEWAY_ES_X1,
         KNOTT_DRIVEWAY_ES_X2,
         drive_curb_x=(KNOTT_DRIVEWAY_ES_X1, KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W),
+        south_joint_x=(KNOTT_DRIVEWAY_ES_X1, KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W),
     )
     # That run used to backfill under the street module's Ennis curb across the
     # bulge; the curb only pours from STREET_SURFACE_T up, so fill it here.
@@ -1226,13 +1268,13 @@ def _append_knott_driveway_extension(brushes):
         brushes,
         KNOTT_DRIVEWAY_ES_X1,
         KNOTT_DRIVEWAY_ES_X1 + ENNIS_CURB_W,
-        ENNIS_SW_EDGE + CHARLES_WALK_W,
+        ENNIS_SW_EDGE + CHARLES_WALK_W + STREET_SW_GAP,
         _east_ext_y2,
         FLOOR_Z2,
         FLOOR_Z2 + CHARLES_WALK_H,
         Textures.CEMENT,
         slab_len=STREET_CURB_SLAB_LEN,
-        offset=_knott_curb_phase(ENNIS_SW_EDGE + CHARLES_WALK_W),
+        offset=_knott_curb_phase(ENNIS_SW_EDGE + CHARLES_WALK_W + STREET_SW_GAP),
     )
 
     brushes.append(
@@ -1636,11 +1678,17 @@ def _append_knott_entrance_walk(brushes):
             Textures.CEMENT,
         )
     )
+    # The walk meets the Ennis stone walk head-on at ENNIS_SW_EDGE, where the
+    # street module scores a STREET_SW_GAP joint across the head (see
+    # streets/details.py::_score_knott_entrance_walk_joint). The tail that
+    # ramps the walk's ledge away runs under the stone, so it starts north of
+    # that gap — left where it was it would fill the groove from below. It
+    # keeps its own start height, so the gap it gives up only steepens it.
     brushes.append(
         ramp_slab_y(
             x1,
             x2,
-            ENNIS_SW_EDGE,
+            ENNIS_SW_EDGE + STREET_SW_GAP,
             ENNIS_SW_EDGE + KNOTT_DOOR_WALK_PATH_TAIL,
             FLOOR_Z1,
             FLOOR_Z1,

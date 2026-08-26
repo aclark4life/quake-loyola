@@ -80,6 +80,7 @@ from ..geometry import (
     box,
     box_with_round_hole,
     brush_ent,
+    carve_box,
     cut_sidewalk_joints,
     polygon_prism,
     ramp_slab_y,
@@ -89,6 +90,7 @@ from ..geometry import (
     torch_flame,
     tri_prism,
 )
+from ..knott_hall import GROUND_DOOR_X1, GROUND_DOOR_X2
 from .ennis import _build_ennis_entrance_features
 
 # Depth of the Charles curb cap in from the road edge, and the width of the
@@ -1437,6 +1439,41 @@ def _append_ennis_south_sidewalks_and_curbs(brushes, layout):
             curb_gap=ennis_curb_gap,
             curb_band_x1=curb_band_x1,
         )
+    _score_knott_entrance_walk_joint(brushes, layout)
+
+
+def _score_knott_entrance_walk_joint(brushes, layout):
+    """Score the seam where Knott's entrance walk lands on the stone walk.
+
+    The cement walk down from Knott's ground-floor door runs out of height
+    exactly at ENNIS_SW_EDGE, so its surface meets the deep west run's stone
+    tangentially — the two pours share a plane with nothing to mark the
+    change of material. The stone run is one slab across the walk head, so
+    the joint has to be cut out of it and re-poured as a marked band; laying
+    the band on top would simply be buried by the stone it sits in.
+    """
+    joint_y2 = ENNIS_SW_EDGE + STREET_SW_GAP
+    brushes[:] = carve_box(
+        brushes,
+        GROUND_DOOR_X1,
+        ENNIS_SW_EDGE,
+        FLOOR_Z2,
+        GROUND_DOOR_X2,
+        joint_y2,
+        FLOOR_Z2 + CHARLES_WALK_H,
+    )
+    brushes.append(
+        box(
+            GROUND_DOOR_X1,
+            ENNIS_SW_EDGE,
+            FLOOR_Z2,
+            GROUND_DOOR_X2,
+            joint_y2,
+            FLOOR_Z2 + CHARLES_WALK_H,
+            Textures.SIDEWALK_JOINT,
+            tt_params=layout["ennis_road_tt_params"],
+        )
+    )
 
 
 def _append_charles_marking_brushes(dash_brushes, layout):
