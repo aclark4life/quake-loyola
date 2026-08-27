@@ -41,10 +41,11 @@ class Textures:
     #: floor tile made each storey read as a finished room rather than as
     #: the raw concrete structure this shell actually is.
     FLOOR_KH = "gn_grey2"
-    #: from makkon_stone.wad; the interior partition that walls the bridge
-    #: entrance/elevator/stair lobby off from the rest of each Knott Hall
-    #: storey.
-    WALL_KH_INTERIOR = "stn_w10_wht1"
+    #: the interior partition that walls the bridge entrance/elevator/stair
+    #: lobby off from the rest of each Knott Hall storey. Poured cement like
+    #: :attr:`CEMENT`, not the stone the exterior wears: inside, the shell is
+    #: bare structure rather than a finished facing.
+    WALL_KH_INTERIOR = CEMENT
     DECK_EDGE = "dk3_floor1a"  # from ad.wad; deck edge strip
     GROUND = "ground1_1"
     HINT = "hint"
