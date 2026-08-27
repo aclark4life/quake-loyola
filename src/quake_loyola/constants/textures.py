@@ -64,6 +64,8 @@ class Textures:
     JOINT_METAL = "gn_grey2"  # from alkaline.wad; bridge deck expansion-joint strip
     JOINT_GAP = "black"  # from quake101.wad; dark shadow-gap seam between joint plates
     SHELF = "shelf_1"
+    #: from alkaline.wad; a rusted "AUTHORIZED PERSONNEL ONLY" plate, 96x48.
+    SIGN_AUTHORIZED = "sign87"
     #: Solid to the player but never drawn. qbsp special-cases the name, so
     #: it needs no WAD entry. Used to ramp a stair's collision hull, which
     #: otherwise catches the player at the bottom tread.

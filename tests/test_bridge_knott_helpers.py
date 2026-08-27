@@ -12,6 +12,10 @@ from unittest import mock
 from quake_loyola import bridge, knott_hall
 from quake_loyola.constants import (
     BRIDGE_ARCH_X,
+    BRIDGE_KNOTT_SIGN_PX_H,
+    BRIDGE_KNOTT_SIGN_PX_W,
+    BRIDGE_KNOTT_SIGN_SCALE,
+    BRIDGE_KNOTT_SIGN_T,
     BRIDGE_SUPPORT_BEAM_H,
     CHARLES_WALK_H,
     ENNIS_CURB_W,
@@ -33,6 +37,8 @@ from quake_loyola.constants import (
     KNOTT_DOOR_WALK_RISE,
     KNOTT_DOOR_WALK_STEPS,
     KNOTT_DOOR_WALK_TREAD,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
     KNOTT_DRIVEWAY_WS_X1,
     KNOTT_DRIVEWAY_WS_X2,
     KNOTT_EAST_WALK_RAIL_END,
@@ -662,6 +668,54 @@ class KnottLiftCarTest(unittest.TestCase):
 
     def test_car_does_not_crush_whoever_is_riding_it(self):
         self.assertEqual(self.car.fields["dmg"], "0")
+
+
+class KnottDrivewaySignTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        entities = bridge.build()[1]
+        cls.sign = entities[-1]
+        cls.boxes = [b.get_bbox() for b in cls.sign.brushes]
+        cls.panel = cls.boxes[0]
+
+    def test_panel_is_cut_to_the_texture_it_carries(self):
+        (x1, _, z1), (x2, _, z2) = self.panel
+        self.assertEqual(x2 - x1, BRIDGE_KNOTT_SIGN_PX_W * BRIDGE_KNOTT_SIGN_SCALE)
+        self.assertEqual(z2 - z1, BRIDGE_KNOTT_SIGN_PX_H * BRIDGE_KNOTT_SIGN_SCALE)
+
+    def test_panel_hangs_broadside_to_the_driveway_and_centred_on_it(self):
+        # Traffic runs north-south underneath, so the sign faces north and
+        # south and is centred on the carriageway, not on the bridge.
+        (x1, y1, _), (x2, y2, _) = self.panel
+        self.assertEqual(
+            (x1 + x2) / 2, (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) / 2
+        )
+        self.assertEqual(y2 - y1, BRIDGE_KNOTT_SIGN_T)
+        self.assertLess(y2 - y1, x2 - x1)
+
+    def test_panel_hangs_off_the_bottom_of_the_bridge_north_face(self):
+        # Off the north edge of the soffit, not the middle of it, so it is in
+        # view coming down the driveway and not only from underneath.
+        cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) / 2
+        # Everything but the sign itself, which is appended last and would
+        # otherwise be the lowest thing found over the driveway.
+        _, deck_y2, soffit_z = bridge._deck_soffit_at(bridge.build()[1][:-1], cx)
+        self.assertEqual(len(self.boxes), 1)
+        self.assertEqual(self.panel[1][2], soffit_z)
+        self.assertEqual(self.panel[1][1], deck_y2)
+
+    def test_panel_is_hung_at_one_to_one_so_the_image_is_whole(self):
+        self.assertEqual(BRIDGE_KNOTT_SIGN_SCALE, 1)
+
+    def test_only_the_broad_faces_carry_the_sign(self):
+        faces = self.sign.brushes[0].faces
+        signed = [f for f in faces if f.tex == Textures.SIGN_AUTHORIZED]
+        self.assertEqual(len(signed), 2)
+        # Quake picks the same +X texture axis for a north-facing wall as for
+        # a south-facing one, so one of the pair has to be flipped or its
+        # lettering reads backwards.
+        scales = sorted(float(f.params.split()[3]) for f in signed)
+        self.assertEqual(scales, [-BRIDGE_KNOTT_SIGN_SCALE, BRIDGE_KNOTT_SIGN_SCALE])
 
 
 class BridgeRailingTubeBoundsTest(unittest.TestCase):

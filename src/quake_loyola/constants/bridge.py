@@ -64,6 +64,15 @@ BRIDGE_BANNER_MAST_T = 6
 BRIDGE_BANNER_MAST_PROUD = 8  # Mast overhang past the banner's outer edge.
 BRIDGE_BANNER_CORNER_INSET = 40  # Half the depth of Pier 2's south corner column.
 
+# Sign hung off the bottom of the bridge's north face where it crosses the
+# Knott driveway, warning off the traffic passing beneath it. sign87 is
+# 96x48, and the panel is cut to those proportions at 1:1 so the whole image
+# lands on it exactly once with no wrap or crop.
+BRIDGE_KNOTT_SIGN_PX_W = 96
+BRIDGE_KNOTT_SIGN_PX_H = 48
+BRIDGE_KNOTT_SIGN_SCALE = 1
+BRIDGE_KNOTT_SIGN_T = 4  # Plate thickness; it hangs tucked under the edge.
+
 # Cement lining on the interior faces of each opening.
 BRIDGE_PIER_LINING_MARGIN = 6
 BRIDGE_PIER_LINING_THICK = 3

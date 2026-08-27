@@ -44,6 +44,10 @@ from .constants.bridge import (
     BRIDGE_JOINT_CEMENT_W,
     BRIDGE_JOINT_GAP_HW,
     BRIDGE_JOINT_METAL_HW,
+    BRIDGE_KNOTT_SIGN_PX_H,
+    BRIDGE_KNOTT_SIGN_PX_W,
+    BRIDGE_KNOTT_SIGN_SCALE,
+    BRIDGE_KNOTT_SIGN_T,
     BRIDGE_PIER_FILL_OFFSET,
     BRIDGE_PIER_LINING_MARGIN,
     BRIDGE_PIER_LINING_THICK,
@@ -89,6 +93,8 @@ from .constants.derived import (
     BRIDGE_PILLAR_HW,
     BRIDGE_PILLAR_PYR_W,
     BRIDGE_SEG_W,
+    KNOTT_DRIVEWAY_RD_X1,
+    KNOTT_DRIVEWAY_RD_X2,
     KNOTT_ENT_WALK_X1,
     PIER2_X,
     PIER3_X,
@@ -1958,6 +1964,87 @@ def _append_bridge_pier_banner(entities, pier_x, x_dir, y_side):
     )
 
 
+def _deck_soffit_at(entities, x):
+    """Return the deck's ``(y1, y2, z)`` underside where it crosses ``x``.
+
+    Read off the bridge's own geometry rather than from constants: the deck
+    over the Knott driveway is part of the east approach, which is rotated
+    and shifted into place, so neither its height nor its Y span survives in
+    any constant to be looked up. The lowest brush face at or above the deck
+    datum is the soffit; every brush sharing that height at this X is a piece
+    of the same deck (walkway plus the two parapet bases), so their union is
+    how wide the bridge is here.
+    """
+    spans = [
+        b.get_bbox()
+        for e in entities
+        for b in e.brushes
+        if b.get_bbox()[0][0] <= x <= b.get_bbox()[1][0]
+        and b.get_bbox()[0][2] >= BRIDGE_DZ1
+    ]
+    if not spans:
+        raise ValueError(f"no bridge deck over x={x} to hang a sign from")
+    z = min(s[0][2] for s in spans)
+    deck = [s for s in spans if s[0][2] == z]
+    return min(s[0][1] for s in deck), max(s[1][1] for s in deck), z
+
+
+def _append_knott_driveway_sign(entities):
+    """Hang the driveway sign off the bottom of the bridge's north face.
+
+    The driveway runs north-south under the bridge, so the plate hangs
+    broadside to it -- wide in X, thin in Y -- to face both directions
+    traffic approaches from, and is centred on the carriageway rather than on
+    the bridge so it sits straight ahead of anyone driving at it. It hangs
+    from the north edge of the soffit rather than from the middle of it, so
+    it is in view coming down the driveway instead of only once you are
+    underneath.
+
+    Both broad faces carry the sign, but Quake picks the same +X texture axis
+    for a face looking north as for one looking south, so the north face
+    takes a negative X scale (and the offset that re-anchors it to the
+    panel's far end) or its lettering would come out mirrored.
+    """
+    w = BRIDGE_KNOTT_SIGN_PX_W * BRIDGE_KNOTT_SIGN_SCALE
+    h = BRIDGE_KNOTT_SIGN_PX_H * BRIDGE_KNOTT_SIGN_SCALE
+    cx = (KNOTT_DRIVEWAY_RD_X1 + KNOTT_DRIVEWAY_RD_X2) / 2
+    _, deck_y2, soffit_z = _deck_soffit_at(entities, cx)
+    x1, x2 = cx - w / 2, cx + w / 2
+    z2 = soffit_z
+    offy = z2 / BRIDGE_KNOTT_SIGN_SCALE % BRIDGE_KNOTT_SIGN_PX_H
+    south = (
+        f"{-x1 / BRIDGE_KNOTT_SIGN_SCALE % BRIDGE_KNOTT_SIGN_PX_W} {offy} 0 "
+        f"{BRIDGE_KNOTT_SIGN_SCALE} {BRIDGE_KNOTT_SIGN_SCALE}"
+    )
+    north = (
+        f"{x2 / BRIDGE_KNOTT_SIGN_SCALE % BRIDGE_KNOTT_SIGN_PX_W} {offy} 0 "
+        f"{-BRIDGE_KNOTT_SIGN_SCALE} {BRIDGE_KNOTT_SIGN_SCALE}"
+    )
+    entities.append(
+        brush_ent(
+            "func_detail",
+            [
+                box(
+                    x1,
+                    deck_y2 - BRIDGE_KNOTT_SIGN_T,
+                    z2 - h,
+                    x2,
+                    deck_y2,
+                    z2,
+                    # Only the broad faces are the sign. Its four edges are
+                    # the metal of the plate, not a sliver of the image sawn
+                    # off down the side.
+                    Textures.RAIL,
+                    ts=Textures.SIGN_AUTHORIZED,
+                    tn=Textures.SIGN_AUTHORIZED,
+                    ts_params=south,
+                    tn_params=north,
+                )
+            ],
+        )
+    )
+
+
 def build():
     """Build the pedestrian bridge: deck, arch spans, piers, and parapets.
 
@@ -1974,6 +2061,7 @@ def build():
     # Pier 3's off its north corner facing west into the road.
     _append_bridge_pier_banner(ENTITIES, PIER2_X, x_dir=1, y_side=-1)
     _append_bridge_pier_banner(ENTITIES, PIER3_X, x_dir=-1, y_side=1)
+    _append_knott_driveway_sign(ENTITIES)
     return BRUSHES, ENTITIES
 
 
