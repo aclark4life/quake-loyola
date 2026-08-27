@@ -23,6 +23,9 @@ from ..constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_DOOR_WALK_CAP_JOINT_DROP,
+    KNOTT_DOOR_WALK_CAP_PROUD,
+    KNOTT_DOOR_WALK_CAP_W,
     KNOTT_DOOR_WALK_PATH_PROUD,
     KNOTT_DOOR_WALK_PATH_TAIL,
     KNOTT_DOOR_WALK_RAIL_END,
@@ -1609,8 +1612,13 @@ def _append_knott_entrance_walk(brushes):
     A clip wedge rides the nosings of the flight. Without it the player's
     collision hull, expanded off the path's slope, catches on the bottom
     tread and the run up reads as a bump rather than a smooth ascent.
+
+    The run is inset a cheek's width either side of the doorway it serves,
+    so the walk and the two cheeks flanking its steps together span the
+    doorway rather than standing out past it.
     """
-    x1, x2 = GROUND_DOOR_X1, GROUND_DOOR_X2
+    x1 = GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W
+    x2 = GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W
     flat_z = FLOOR_Z2 + CHARLES_WALK_H
     stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
 
@@ -1665,11 +1673,27 @@ def _append_knott_entrance_walk(brushes):
             Textures.CLIP,
         )
     )
+    # The bottom step lands on the path, which is a separate pour: the walk's
+    # first STREET_SW_GAP off the flight is scored as a joint rather than
+    # cement, so the two part on a line as the pours further down the run do.
+    # It is laid flat at the tread's own height and the path picks up from
+    # there, which keeps the joint out of the ramp's slope.
+    brushes.append(
+        box(
+            x1,
+            stair_y2,
+            FLOOR_Z1,
+            x2,
+            stair_y2 + STREET_SW_GAP,
+            stair_z2,
+            Textures.SIDEWALK_JOINT,
+        )
+    )
     brushes.append(
         ramp_slab_y(
             x1,
             x2,
-            stair_y2,
+            stair_y2 + STREET_SW_GAP,
             ENNIS_SW_EDGE,
             FLOOR_Z1,
             FLOOR_Z1,
@@ -1699,24 +1723,101 @@ def _append_knott_entrance_walk(brushes):
     )
 
 
+def _knott_door_walk_cap_spans():
+    """Return the ``(x1, x2)`` pair of cheek spans flanking the flight.
+
+    They stand outside the walk rather than being taken out of it, and the
+    walk is inset from the doorway by exactly their width, so the three
+    together span the doorway they serve.
+    """
+    return (
+        (GROUND_DOOR_X1, GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W),
+        (GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W, GROUND_DOOR_X2),
+    )
+
+
+def _append_knott_door_walk_cheek(brushes, x1, x2, tex):
+    """Add one cheek's three brushes over the ``x1``..``x2`` strip.
+
+    Level off the top of the flight, raking with it, then level past the
+    bottom — the run the cap takes, poured as one strip of whatever ``tex``
+    is, so a joint sliver is built exactly like the body beside it.
+    """
+    stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
+    top_z = GROUND_DOOR_BOTTOM
+    bot_z = stair_z2 + KNOTT_DOOR_WALK_CAP_PROUD
+    brushes.append(
+        box(
+            x1,
+            stair_y1 - KNOTT_DOOR_WALK_RAIL_END,
+            FLOOR_Z1,
+            x2,
+            stair_y1,
+            top_z,
+            tex,
+        )
+    )
+    brushes.append(
+        ramp_slab_y(x1, x2, stair_y1, stair_y2, FLOOR_Z1, FLOOR_Z1, top_z, bot_z, tex)
+    )
+    brushes.append(
+        box(
+            x1,
+            stair_y2,
+            FLOOR_Z1,
+            x2,
+            stair_y2 + KNOTT_DOOR_WALK_RAIL_END,
+            bot_z,
+            tex,
+        )
+    )
+
+
+def _append_knott_entrance_walk_step_caps(brushes):
+    """Build the cement cheeks flanking the north walk's steps.
+
+    Each cap meets the walk's own level at the top step and rakes down to
+    ``KNOTT_DOOR_WALK_CAP_PROUD`` above the bottom one — shallower than the
+    steps themselves, so the cheek rises out of the walk as the flight falls
+    away beneath it. It runs on level for ``KNOTT_DOOR_WALK_RAIL_END`` past
+    both ends of the flight, which is what the rail's two posts stand on:
+    they are set back that far from the rail's ends.
+
+    A ``STREET_SW_GAP`` joint is scored down the inner edge of each cheek,
+    so the cheek and the walk it stands out of part on a line the way two
+    pours do everywhere else, rather than the level stretch at the head of
+    the flight reading as more walk.
+
+    They are poured from the fill up rather than off the treads: the surface
+    beneath them steps and then falls away down the hillside, and only the
+    cap is meant to show.
+    """
+    for cx1, cx2 in _knott_door_walk_cap_spans():
+        # The joint goes on whichever edge of the cheek faces the walk.
+        if cx1 == GROUND_DOOR_X1:
+            body, joint = (cx1, cx2 - STREET_SW_GAP), (cx2 - STREET_SW_GAP, cx2)
+        else:
+            body, joint = (cx1 + STREET_SW_GAP, cx2), (cx1, cx1 + STREET_SW_GAP)
+        _append_knott_door_walk_cheek(brushes, *body, Textures.CEMENT)
+        _append_knott_door_walk_cheek(brushes, *joint, Textures.SIDEWALK_JOINT)
+
+
 def _append_knott_entrance_walk_rails(brushes):
     """Build the pipe rails flanking the north walk's flight of steps.
 
     Only the steps are railed, as at the building's east entrance: the level
     walk above them starts at grade by the door, and the path below them lies
-    on the hillside. Each rail runs on level past both ends of the flight,
-    where its only two posts stand.
+    on the hillside. Each rail runs centred along the cap of the cheek
+    beside it, its two posts standing on that cap rather than on the treads.
     """
     stair_y1, stair_y2, stair_z2 = _knott_door_walk_layout()
     rail_t = KNOTT_DOOR_WALK_RAIL_T
-    for rx1, rx2 in (
-        (GROUND_DOOR_X1, GROUND_DOOR_X1 + rail_t),
-        (GROUND_DOOR_X2 - rail_t, GROUND_DOOR_X2),
-    ):
+    inset = (KNOTT_DOOR_WALK_CAP_W - rail_t) / 2
+    for cx1, _cx2 in _knott_door_walk_cap_spans():
         brushes.extend(
             stair_railing_y(
-                rx1,
-                rx2,
+                cx1 + inset,
+                cx1 + inset + rail_t,
                 stair_y1,
                 stair_y2,
                 GROUND_DOOR_BOTTOM,
@@ -1729,6 +1830,16 @@ def _append_knott_entrance_walk_rails(brushes):
                 post_ovh=KNOTT_DOOR_WALK_RAIL_OVH,
             )
         )
+
+
+def _knott_east_walk_x1():
+    """Return the X the east walk's level run starts at.
+
+    It runs west as far as the north door's own walk, which is inset a cheek's
+    width in from the doorway, so the two pours meet edge to edge instead of
+    leaving a strip of bank standing between them.
+    """
+    return GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W
 
 
 def _knott_east_walk_layout():
@@ -1785,13 +1896,16 @@ def _append_knott_east_walk(brushes):
     then takes the bank down to the driveway in a single steep flight. The
     bottom riser steps straight onto the driveway's west sidewalk, so that
     walk serves as the flight's last tread and nothing is built there.
+
+    Its level run starts at the north door walk's own east edge, so the two
+    meet on a line rather than with the bank showing between them.
     """
     stair_x1, stair_x2, rise = _knott_east_walk_layout()
     y1, y2 = KH_Y2, KH_Y2 + KNOTT_EAST_WALK_W
 
     _append_tiled_flat_sidewalk_x(
         brushes,
-        GROUND_DOOR_X2,
+        _knott_east_walk_x1(),
         stair_x1,
         y1,
         y2,
@@ -1920,7 +2034,7 @@ def _knott_ramp_layout():
             f"the ramp only has {run} units of run for its {rise}-unit rise"
         )
 
-    walk_x1, stair_x1 = GROUND_DOOR_X2, _knott_east_walk_layout()[0]
+    walk_x1, stair_x1 = _knott_east_walk_x1(), _knott_east_walk_layout()[0]
     if turn_x - hw < walk_x1 or turn_x + hw > stair_x1:
         raise ValueError(
             f"the ramp's south leg spans x={turn_x - hw}..{turn_x + hw}, off "
@@ -2270,9 +2384,16 @@ def build():
     """Build the Knott Hall terrain, embankment, and driveway."""
     detail = []
     _append_knott_walkway_bent(detail)
+    _append_knott_entrance_walk_step_caps(detail)
     _append_knott_entrance_walk_rails(detail)
     _append_knott_east_walk_rails(detail)
     _append_knott_ramp_rails(detail)
+    cut_sidewalk_joints(
+        detail,
+        KNOTT_DOOR_WALK_CAP_JOINT_DROP,
+        Textures.SIDEWALK_JOINT,
+        Textures.SIDEWALK_JOINT_FILL,
+    )
     return _build_knott_terrain(), [brush_ent("func_detail", detail)]
 
 

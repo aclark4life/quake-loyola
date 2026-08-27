@@ -51,6 +51,17 @@ KNOTT_BUILDING_H = 1523  # Was 1640; net effect of two window panes removed
 # ``KNOTT_DOOR_WALK_RAIL_END`` past each end of the flight on a single post,
 # which gives it the flattened S the real ones have. Each level end carries
 # on ``KNOTT_DOOR_WALK_RAIL_OVH`` past its post rather than stopping on it.
+# Flanking the flight, outside the walk rather than eating into its width,
+# runs a cement cheek ``KNOTT_DOOR_WALK_CAP_W`` wide either side. Its cap
+# meets the walk's own level at the top step and rakes down to
+# ``KNOTT_DOOR_WALK_CAP_PROUD`` above the bottom step — shallower than the
+# steps, so the cheek rises out of the walk as they fall away beneath it —
+# running on level past both ends of the flight to carry the rail's posts.
+# The joint scored between cheek and walk is sunk
+# ``KNOTT_DOOR_WALK_CAP_JOINT_DROP`` rather than the shallow street-sidewalk
+# drop: it is read along the top of a raised cheek rather than across a flat
+# walk, so a groove deep enough to shadow is what makes it a line at all.
+# The rail runs centred along the cap, its posts standing on it.
 KNOTT_DOOR_WALK_RISE = 8
 KNOTT_DOOR_WALK_TREAD = 16
 KNOTT_DOOR_WALK_STEPS = 7
@@ -60,6 +71,9 @@ KNOTT_DOOR_WALK_RAIL_H = 44
 KNOTT_DOOR_WALK_RAIL_T = 3
 KNOTT_DOOR_WALK_RAIL_END = 16
 KNOTT_DOOR_WALK_RAIL_OVH = 6
+KNOTT_DOOR_WALK_CAP_W = 16
+KNOTT_DOOR_WALK_CAP_PROUD = 8
+KNOTT_DOOR_WALK_CAP_JOINT_DROP = 4
 
 # Walk hugging the Knott north face east of that door, running on to the
 # driveway. It stays level on the flat crest of the hillside, then drops the

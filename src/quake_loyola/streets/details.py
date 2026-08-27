@@ -37,6 +37,7 @@ from ..constants.ennis import (
     ENNIS_WALL_X_OFFSET,
     ENNIS_WIDEN_N,
 )
+from ..constants.knott import KNOTT_DOOR_WALK_CAP_W
 from ..constants.streets import (
     CHARLES_CRN_SEGS,
     CHARLES_CROSSWALK_LEN,
@@ -1453,21 +1454,23 @@ def _score_knott_entrance_walk_joint(brushes, layout):
     the band on top would simply be buried by the stone it sits in.
     """
     joint_y2 = ENNIS_SW_EDGE + STREET_SW_GAP
+    walk_x1 = GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W
+    walk_x2 = GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W
     brushes[:] = carve_box(
         brushes,
-        GROUND_DOOR_X1,
+        walk_x1,
         ENNIS_SW_EDGE,
         FLOOR_Z2,
-        GROUND_DOOR_X2,
+        walk_x2,
         joint_y2,
         FLOOR_Z2 + CHARLES_WALK_H,
     )
     brushes.append(
         box(
-            GROUND_DOOR_X1,
+            walk_x1,
             ENNIS_SW_EDGE,
             FLOOR_Z2,
-            GROUND_DOOR_X2,
+            walk_x2,
             joint_y2,
             FLOOR_Z2 + CHARLES_WALK_H,
             Textures.SIDEWALK_JOINT,

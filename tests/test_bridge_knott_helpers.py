@@ -19,6 +19,8 @@ from quake_loyola.constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_DOOR_WALK_CAP_PROUD,
+    KNOTT_DOOR_WALK_CAP_W,
     KNOTT_DOOR_WALK_PATH_PROUD,
     KNOTT_DOOR_WALK_PATH_TAIL,
     KNOTT_DOOR_WALK_RAIL_END,
@@ -765,10 +767,12 @@ class KnottEntranceWalkTest(unittest.TestCase):
             nosing = knott_hall.GROUND_DOOR_BOTTOM - rise * (t_mins[1] - self.stair_y1)
             self.assertGreaterEqual(nosing, t_maxs[2])
 
-    def test_walk_lines_up_with_the_doorway(self):
+    def test_walk_is_inset_a_cheek_either_side_of_the_doorway(self):
+        # The cheeks flanking the steps take up the rest of the doorway's
+        # width, so walk and cheeks together span it.
         for mins, maxs in self.boxes:
-            self.assertEqual(mins[0], knott_hall.GROUND_DOOR_X1)
-            self.assertEqual(maxs[0], knott_hall.GROUND_DOOR_X2)
+            self.assertEqual(mins[0], knott_hall.GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W)
+            self.assertEqual(maxs[0], knott_hall.GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W)
 
     def test_walk_leaves_the_doorway_at_grade(self):
         sill = knott_hall.GROUND_DOOR_BOTTOM
@@ -809,9 +813,11 @@ class KnottEntranceWalkTest(unittest.TestCase):
         )
 
     def test_path_below_the_steps_lands_flush_on_the_ennis_walk(self):
+        # The path starts a joint gap off the bottom step, which is scored
+        # where the flight's pour meets the path's own.
         path = next(b for b in self.paved if b.get_bbox()[1][1] == ENNIS_SW_EDGE)
         mins, maxs = path.get_bbox()
-        self.assertEqual(mins[1], self.stair_y2)
+        self.assertEqual(mins[1], self.stair_y2 + STREET_SW_GAP)
         self.assertEqual(maxs[2], self.stair_z2)
         ends = [
             v[2]
@@ -820,6 +826,26 @@ class KnottEntranceWalkTest(unittest.TestCase):
             if v[1] == ENNIS_SW_EDGE and v[2] > FLOOR_Z1
         ]
         self.assertEqual(max(ends), self.flat_z)
+
+    def test_a_joint_is_scored_at_the_foot_of_the_flight(self):
+        joint = next(
+            b
+            for b in self.brushes
+            if b.faces[0].tex == Textures.SIDEWALK_JOINT
+            and b.get_bbox()[0][1] == self.stair_y2
+        )
+        mins, maxs = joint.get_bbox()
+        self.assertEqual(
+            (mins[1], maxs[1]), (self.stair_y2, self.stair_y2 + STREET_SW_GAP)
+        )
+        self.assertEqual(maxs[2], self.stair_z2)
+        self.assertEqual(
+            (mins[0], maxs[0]),
+            (
+                knott_hall.GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W,
+                knott_hall.GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W,
+            ),
+        )
 
     def test_path_ramps_the_hillside_ledge_away_at_the_bottom(self):
         # The tail starts a joint gap north of the Ennis walk edge: the street
@@ -878,6 +904,100 @@ class KnottEntranceWalkTest(unittest.TestCase):
                     knott_terrain._knott_door_walk_layout()
 
 
+class KnottEntranceStepCapsTest(unittest.TestCase):
+    """The cement cheeks flanking those steps."""
+
+    def setUp(self):
+        self.brushes = []
+        knott_terrain._append_knott_entrance_walk_step_caps(self.brushes)
+        self.boxes = [b.get_bbox() for b in self.brushes]
+        self.stair_y1, self.stair_y2, self.stair_z2 = (
+            knott_terrain._knott_door_walk_layout()
+        )
+
+    def test_a_cheek_flanks_each_edge_of_the_steps(self):
+        # They stick out past the walk, which is inset from the doorway by
+        # exactly their width, so the three together span the doorway.
+        west = [b for b in self.boxes if b[0][0] < knott_hall.GROUND_DOOR_CX]
+        east = [b for b in self.boxes if b[0][0] > knott_hall.GROUND_DOOR_CX]
+        self.assertEqual(len(west), len(east))
+        self.assertEqual(len(west) + len(east), len(self.boxes))
+        self.assertEqual(min(b[0][0] for b in west), knott_hall.GROUND_DOOR_X1)
+        self.assertEqual(
+            max(b[1][0] for b in west),
+            knott_hall.GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W,
+        )
+        self.assertEqual(
+            min(b[0][0] for b in east),
+            knott_hall.GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W,
+        )
+        self.assertEqual(max(b[1][0] for b in east), knott_hall.GROUND_DOOR_X2)
+
+    def test_a_joint_is_scored_where_each_cheek_meets_the_walk(self):
+        joints = [
+            b.get_bbox()
+            for b in self.brushes
+            if b.faces[0].tex == Textures.SIDEWALK_JOINT
+        ]
+        self.assertEqual(len(joints), 6)
+        for mins, maxs in joints:
+            self.assertEqual(maxs[0] - mins[0], STREET_SW_GAP)
+        inner = sorted({round(b[0][0]) for b in joints})
+        self.assertEqual(
+            inner,
+            sorted(
+                {
+                    round(knott_hall.GROUND_DOOR_X1 + KNOTT_DOOR_WALK_CAP_W)
+                    - STREET_SW_GAP,
+                    round(knott_hall.GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W),
+                }
+            ),
+        )
+
+    def test_cheeks_run_level_past_each_end_of_the_flight(self):
+        # Each level end carries a post of the rail above; outside the walk
+        # there is nothing else under one.
+        self.assertEqual(
+            min(b[0][1] for b in self.boxes),
+            self.stair_y1 - KNOTT_DOOR_WALK_RAIL_END,
+        )
+        self.assertEqual(
+            max(b[1][1] for b in self.boxes),
+            self.stair_y2 + KNOTT_DOOR_WALK_RAIL_END,
+        )
+
+    def test_the_cap_ends_level_with_the_walk_and_rakes_out_of_it(self):
+        # The cap ends level with the walk carrying on above the flight,
+        # then rakes shallower than the steps, so the cheek rises out of the
+        # walk rather than reading as more of it.
+        top = knott_hall.GROUND_DOOR_BOTTOM
+        bot = self.stair_z2 + KNOTT_DOOR_WALK_CAP_PROUD
+        west = [
+            b for b in self.brushes if b.get_bbox()[0][0] == knott_hall.GROUND_DOOR_X1
+        ]
+        self.assertEqual(len(west), 3)
+        above, rake, below = sorted(west, key=lambda b: b.get_bbox()[0][1])
+        self.assertEqual(above.get_bbox()[1][2], top)
+        self.assertEqual(below.get_bbox()[1][2], bot)
+        self.assertEqual(rake.get_bbox()[0][1], self.stair_y1)
+        self.assertEqual(rake.get_bbox()[1][1], self.stair_y2)
+        ends = [
+            v[2]
+            for face in rake.faces
+            for v in (face.p1, face.p2, face.p3)
+            if v[1] == self.stair_y2 and v[2] > FLOOR_Z1
+        ]
+        self.assertEqual(rake.get_bbox()[1][2], top)
+        self.assertEqual(max(ends), bot)
+
+    def test_cheeks_are_poured_from_the_fill_not_off_the_treads(self):
+        # The surface under them steps and then falls away downhill, so only
+        # the cap is meant to show — a cheek standing on the treads would
+        # leave the run's own steps showing through its side.
+        for mins, _maxs in self.boxes:
+            self.assertEqual(mins[2], FLOOR_Z1)
+
+
 class KnottEntranceWalkRailsTest(unittest.TestCase):
     """The pipe rails flanking those steps."""
 
@@ -889,9 +1009,10 @@ class KnottEntranceWalkRailsTest(unittest.TestCase):
             knott_terrain._knott_door_walk_layout()
         )
 
-    def test_rails_flank_both_edges_of_the_steps(self):
-        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
-        east = [b for b in self.boxes if b[1][0] == knott_hall.GROUND_DOOR_X2]
+    def test_rails_run_centred_along_each_cheek(self):
+        inset = (KNOTT_DOOR_WALK_CAP_W - KNOTT_DOOR_WALK_RAIL_T) / 2
+        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1 + inset]
+        east = [b for b in self.boxes if b[1][0] == knott_hall.GROUND_DOOR_X2 - inset]
         self.assertTrue(west)
         self.assertEqual(len(west), len(east))
         self.assertEqual(len(west) + len(east), len(self.boxes))
@@ -911,7 +1032,8 @@ class KnottEntranceWalkRailsTest(unittest.TestCase):
         )
 
     def test_each_rail_stands_on_two_posts_and_no_more(self):
-        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
+        inset = (KNOTT_DOOR_WALK_CAP_W - KNOTT_DOOR_WALK_RAIL_T) / 2
+        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1 + inset]
         posts = [b for b in west if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
         self.assertEqual(len(posts), 2)
         ends = sorted(p[0][1] for p in posts)
@@ -927,16 +1049,23 @@ class KnottEntranceWalkRailsTest(unittest.TestCase):
             - KNOTT_DOOR_WALK_RAIL_T,
         )
 
-    def test_each_rail_end_overhangs_its_post(self):
-        west = [b for b in self.boxes if b[0][0] == knott_hall.GROUND_DOOR_X1]
-        posts = [b for b in west if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
-        top_post, bottom_post = sorted(posts)
-        self.assertEqual(
-            top_post[0][1] - min(b[0][1] for b in west), KNOTT_DOOR_WALK_RAIL_OVH
-        )
-        self.assertEqual(
-            max(b[1][1] for b in west) - bottom_post[1][1], KNOTT_DOOR_WALK_RAIL_OVH
-        )
+    def test_the_posts_stand_within_the_cheek_below_them(self):
+        caps = []
+        knott_terrain._append_knott_entrance_walk_step_caps(caps)
+        cap_boxes = [b.get_bbox() for b in caps]
+        posts = [b for b in self.boxes if b[1][1] - b[0][1] == KNOTT_DOOR_WALK_RAIL_T]
+        self.assertEqual(len(posts), 4)
+        for mins, maxs in posts:
+            self.assertTrue(
+                any(
+                    c[0][0] <= mins[0]
+                    and c[1][0] >= maxs[0]
+                    and c[0][1] <= mins[1]
+                    and c[1][1] >= maxs[1]
+                    and c[1][2] >= mins[2]
+                    for c in cap_boxes
+                )
+            )
 
     def test_rail_tops_stay_a_handrail_above_the_treads(self):
         walk = []
@@ -972,7 +1101,12 @@ class KnottEastWalkTest(unittest.TestCase):
             self.assertEqual(maxs[1], knott_hall.KH_Y2 + KNOTT_EAST_WALK_W)
 
     def test_walk_leaves_the_north_door_walk_at_its_own_level(self):
-        self.assertEqual(min(b[0][0] for b in self.boxes), knott_hall.GROUND_DOOR_X2)
+        # It starts at the north door walk's east edge, which is inset a
+        # cheek's width in from the doorway, so the two pours meet on a line.
+        self.assertEqual(
+            min(b[0][0] for b in self.boxes),
+            knott_hall.GROUND_DOOR_X2 - KNOTT_DOOR_WALK_CAP_W,
+        )
         level = [b for b in self.boxes if b[0][0] < self.stair_x1]
         self.assertTrue(level)
         for _mins, maxs in level:
