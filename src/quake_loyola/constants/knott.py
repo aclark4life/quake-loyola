@@ -23,6 +23,14 @@ KNOTT_WALL_T = 16
 # the pillar reads as its own poured element rather than continuous with the
 # beam above it.
 KNOTT_SUPPORT_PILLAR_JOINT_H = 4
+# Control joints scoring the cement partitions around each storey's bridge
+# entrance, elevator, and stair lobby. Poured cement that long cracks unless
+# it is given somewhere to: the panels are KNOTT_CORE_WALL_JOINT_LEN long,
+# parted by a KNOTT_CORE_WALL_JOINT_W groove held KNOTT_CORE_WALL_JOINT_D
+# back from both faces so it reads from either side of the wall.
+KNOTT_CORE_WALL_JOINT_LEN = 96
+KNOTT_CORE_WALL_JOINT_W = 2
+KNOTT_CORE_WALL_JOINT_D = 2
 KNOTT_Y1, KNOTT_Y2 = -1888, -233  # Bridge-facing facade bounds.
 KNOTT_ROOF_T = 16
 KNOTT_PARAPET_H = 24  # Raised lip around the roof edge, per satellite

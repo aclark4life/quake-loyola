@@ -19,6 +19,9 @@ from quake_loyola.constants import (
     FLOOR_Z1,
     FLOOR_Z2,
     KNOTT,
+    KNOTT_CORE_WALL_JOINT_D,
+    KNOTT_CORE_WALL_JOINT_LEN,
+    KNOTT_CORE_WALL_JOINT_W,
     KNOTT_DOOR_WALK_CAP_PROUD,
     KNOTT_DOOR_WALK_CAP_W,
     KNOTT_DOOR_WALK_PATH_PROUD,
@@ -370,12 +373,70 @@ class KnottHallCoreWallTest(unittest.TestCase):
         # own far ends (2 more), plus two solid side panels closing off
         # the shafts' remaining exterior-wall-facing sides (2 more) — 13
         # per storey, five storeys, none skipped.
-        brushes = knott_hall._build_core_wall()
+        brushes = knott_hall._build_core_wall_slabs()
         self.assertEqual(len(brushes), 13 * len(knott_hall.FLOOR_ZS))
 
     def test_wall_uses_the_interior_partition_texture(self):
-        for brush in knott_hall._build_core_wall():
+        for brush in knott_hall._build_core_wall_slabs():
             self.assertEqual(brush.faces[0].tex, Textures.WALL_KH_INTERIOR)
+
+    def test_every_slab_is_scored_into_panels_parted_by_joints(self):
+        # Each slab comes back as panels of the wall's full thickness with
+        # grooves between them, held back from both faces so the joint
+        # reads from either side of the wall.
+        slabs = knott_hall._build_core_wall_slabs()
+        scored = knott_hall._build_core_wall()
+        self.assertGreater(len(scored), len(slabs))
+        joints = [b for b in scored if b.faces[0].tex == Textures.SIDEWALK_JOINT_FILL]
+        self.assertTrue(joints)
+        for brush in joints:
+            (x1, y1, _), (x2, y2, _) = brush.get_bbox()
+            run, thick = sorted((x2 - x1, y2 - y1))
+            self.assertEqual(run, KNOTT_CORE_WALL_JOINT_W)
+            self.assertEqual(
+                thick, knott_hall.CORE_WALL_T - 2 * KNOTT_CORE_WALL_JOINT_D
+            )
+
+    def test_every_corner_is_jointed_on_both_of_its_walls(self):
+        # Where a partition dies into another the two are separate pours, so
+        # the groove goes just clear of the wall being met -- on both walls,
+        # since each meets the other.
+        scored = knott_hall._build_core_wall()
+        joints = {
+            b.get_bbox()[0][:2]
+            for b in scored
+            if b.faces[0].tex == Textures.SIDEWALK_JOINT_FILL
+        }
+        half_t = knott_hall.CORE_WALL_T / 2
+        # A joint brush is held back KNOTT_CORE_WALL_JOINT_D from both of its
+        # wall's faces, so its own low corner sits that far in.
+        # The lobby's southwest corner, scored on the center wall, just clear
+        # of the stair wall it runs into...
+        self.assertIn(
+            (
+                knott_hall.STAIR_WALL_X + half_t,
+                knott_hall.CORE_WALL_Y - half_t + KNOTT_CORE_WALL_JOINT_D,
+            ),
+            joints,
+        )
+        # ...and on the stair wall itself, just clear of the center wall.
+        self.assertIn(
+            (
+                knott_hall.STAIR_WALL_X - half_t + KNOTT_CORE_WALL_JOINT_D,
+                knott_hall.CORE_WALL_Y + half_t,
+            ),
+            joints,
+        )
+
+    def test_panels_are_no_longer_than_a_single_pour(self):
+        for brush in knott_hall._build_core_wall():
+            if brush.faces[0].tex != Textures.WALL_KH_INTERIOR:
+                continue
+            (x1, y1, _), (x2, y2, _) = brush.get_bbox()
+            self.assertLessEqual(
+                max(x2 - x1, y2 - y1),
+                KNOTT_CORE_WALL_JOINT_LEN + KNOTT_CORE_WALL_JOINT_W,
+            )
 
     def test_double_door_opening_is_centered_on_the_bridge_entrance(self):
         # The route in from the bridge should run straight through the
@@ -452,7 +513,7 @@ class KnottHallCoreWallTest(unittest.TestCase):
         # A jamb or header that overshot its ceiling would poke into the
         # deck above it instead of stopping flush at its underside.
         storeys = zip(knott_hall.FLOOR_ZS, knott_hall.CORE_WALL_CEILINGS, strict=True)
-        brushes = iter(knott_hall._build_core_wall())
+        brushes = iter(knott_hall._build_core_wall_slabs())
         for floor_z, ceiling_z in storeys:
             for _ in range(13):
                 (_, _, z1), (_, _, z2) = next(brushes).get_bbox()

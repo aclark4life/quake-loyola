@@ -20,6 +20,9 @@ from .constants import (
     BRIDGE_DZ2,
     BRIDGE_PILLAR_HW,
     FLOOR_Z2,
+    KNOTT_CORE_WALL_JOINT_D,
+    KNOTT_CORE_WALL_JOINT_LEN,
+    KNOTT_CORE_WALL_JOINT_W,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -44,7 +47,15 @@ from .constants import (
 from .constants import (
     KNOTT_WALL_T as WALL_T,
 )
-from .geometry import box, brush_ent, carve_box, fascia_sign, floor_plate, polygon_prism
+from .geometry import (
+    box,
+    brush_ent,
+    carve_box,
+    fascia_sign,
+    floor_plate,
+    polygon_prism,
+    wall_with_joints,
+)
 
 CORNER_CUT_DEPTH = 160  # How far south (into the building) both notches cut.
 CORNER_CUT_W_NE = 128  # East notch inset from KH_X2.
@@ -814,13 +825,84 @@ def _wall_with_one_door(
     return brushes
 
 
-def _build_core_wall():
+def _wall_run(brush):
+    """Return a core-wall brush's ``(run_x, run, thickness)`` extents.
+
+    A wall runs along whichever horizontal axis is its longer; the shorter
+    one is its thickness. Both come back as ``(lo, hi)`` pairs.
+    """
+    (x1, y1, _), (x2, y2, _) = brush.get_bbox()
+    if (x2 - x1) >= (y2 - y1):
+        return True, (x1, x2), (y1, y2)
+    return False, (y1, y2), (x1, x2)
+
+
+def _core_wall_corner_joints(brush, brushes):
+    """Return the run-axis positions ``brush`` is jointed at by its corners.
+
+    A wall that dies into another one is jointed where the two meet: the
+    groove goes on the inside of the corner, just clear of the wall being
+    met, so the two pours part on a line rather than running into each other.
+    Corners are found from the geometry itself -- any wall crossing this one
+    at right angles and overlapping it -- so nothing has to be told where the
+    partitions happen to meet.
+    """
+    run_x, (v1, v2), (t1, t2) = _wall_run(brush)
+    joints = []
+    for other in brushes:
+        other_run_x, (o_run1, o_run2), (o1, o2) = _wall_run(other)
+        if other_run_x == run_x:
+            continue
+        # It has to cross this wall's run and reach across its thickness.
+        if not (o1 < v2 and v1 < o2 and o_run1 < t2 and t1 < o_run2):
+            continue
+        if o1 <= v1:
+            joints.append(o2)
+        elif o2 >= v2:
+            joints.append(o1 - KNOTT_CORE_WALL_JOINT_W)
+    # Two walls can die into the same corner -- a shaft's back and the lobby
+    # wall it continues, say -- and that corner is still one joint.
+    return list(dict.fromkeys(joints))
+
+
+def _score_core_walls(brushes):
+    """Return the core walls' brushes re-poured with control joints in them.
+
+    Every brush the core walls are made of is a plain box, so each can be
+    handed straight to :func:`wall_with_joints` and comes back as the run of
+    panels and recessed grooves that box would be poured as. Scoring them
+    here, rather than at each call site, keeps the wall builders concerned
+    only with where the walls and their openings are.
+    """
+    scored = []
+    for brush in brushes:
+        (x1, y1, z1), (x2, y2, z2) = brush.get_bbox()
+        scored += wall_with_joints(
+            x1,
+            y1,
+            z1,
+            x2,
+            y2,
+            z2,
+            Textures.WALL_KH_INTERIOR,
+            Textures.SIDEWALK_JOINT_FILL,
+            KNOTT_CORE_WALL_JOINT_LEN,
+            KNOTT_CORE_WALL_JOINT_W,
+            KNOTT_CORE_WALL_JOINT_D,
+            extra=_core_wall_corner_joints(brush, brushes),
+        )
+    return scored
+
+
+def _build_core_wall_slabs():
     """Build the notch-bay partition: the center (double-door) wall plus
     the stair and lift's own perpendicular walls, storey by storey.
 
     Each wall is built as jamb brushes either side of its door plus a
     header brush over the opening, mirroring how the exterior walls build
     their openings, rather than one solid slab with a hole punched in it.
+    Each comes back as one unbroken slab; :func:`_build_core_wall` scores
+    them into panels afterwards.
     """
     cy1, cy2 = CORE_WALL_Y - CORE_WALL_T / 2, CORE_WALL_Y + CORE_WALL_T / 2
     sx1, sx2 = STAIR_WALL_X - CORE_WALL_T / 2, STAIR_WALL_X + CORE_WALL_T / 2
@@ -926,6 +1008,16 @@ def _build_core_wall():
             )
         )
     return brushes
+
+
+def _build_core_wall():
+    """Build the notch-bay partitions, scored with control joints.
+
+    Poured cement this long is cast in panels rather than in one piece, so
+    the slabs the wall builder lays down are re-poured as panels parted by
+    recessed grooves.
+    """
+    return _score_core_walls(_build_core_wall_slabs())
 
 
 def _build_floors():

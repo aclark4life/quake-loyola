@@ -92,6 +92,75 @@ def sidewalk_panel_spans(v1, v2, slab_len, gap, offset=0):
     return panels, joints
 
 
+def wall_with_joints(
+    x1, y1, z1, x2, y2, z2, tex, joint_tex, slab_len, gap, depth, extra=()
+):
+    """Return one straight wall's boxes, parted by recessed control joints.
+
+    The wall runs along whichever horizontal axis is the longer of the two;
+    the shorter one is its thickness. The run is tiled into ``slab_len``
+    panels of the wall's full thickness, separated by ``gap``-wide joints
+    held back ``depth`` from both faces, so the groove reads from either
+    side rather than only the one the wall is looked at from.
+
+    The panel grid is anchored on the world origin rather than on ``x1`` or
+    ``y1``, so walls that stack or meet end to end line their joints up
+    instead of each starting its own run of panels. ``extra`` names further
+    run-axis positions to start a joint at whatever the grid says -- corners,
+    say, where the wall is jointed because of what it meets rather than
+    because of how far the last joint is behind it. A grid joint overlapping
+    one of those gives way to it, so no two joints end up side by side.
+    """
+    if depth < 0:
+        raise ValueError(f"wall_with_joints: depth must be >= 0, got {depth}")
+    run_x = (x2 - x1) >= (y2 - y1)
+    v1, v2 = (x1, x2) if run_x else (y1, y2)
+    t1, t2 = (y1, y2) if run_x else (x1, x2)
+    if 2 * depth >= t2 - t1:
+        raise ValueError(
+            f"wall_with_joints: a depth of {depth} either side collapses a "
+            f"wall only {t2 - t1} units thick"
+        )
+    _panels, grid = sidewalk_panel_spans(
+        v1, v2, slab_len, gap, offset=v1 % (slab_len + gap)
+    )
+    forced = []
+    for v in sorted(extra):
+        span = (max(v, v1), min(v + gap, v2))
+        if span[0] < span[1] and not any(
+            span[0] < f2 and f1 < span[1] for f1, f2 in forced
+        ):
+            forced.append(span)
+    joints = sorted(
+        forced
+        + [
+            span
+            for span in grid
+            if not any(span[0] < f2 and f1 < span[1] for f1, f2 in forced)
+        ]
+    )
+    panels, v = [], v1
+    for j1, j2 in joints:
+        if j1 > v:
+            panels.append((v, j1))
+        v = max(v, j2)
+    if v < v2:
+        panels.append((v, v2))
+
+    out = []
+    for spans, (a, b), span_tex in (
+        (panels, (t1, t2), tex),
+        (joints, (t1 + depth, t2 - depth), joint_tex),
+    ):
+        for s, e in spans:
+            out.append(
+                box(s, a, z1, e, b, z2, span_tex)
+                if run_x
+                else box(a, s, z1, b, e, z2, span_tex)
+            )
+    return out
+
+
 def tile_grid_origins(width, height, tile=34, gap=3):
     """Return centered lower-left origins for a rectangular tile grid.
 

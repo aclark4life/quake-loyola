@@ -92,6 +92,7 @@ from .structures import (
     square_wall,
     tile_face_plates,
     tile_grid_origins,
+    wall_with_joints,
     win_frame_xwall,
     win_frame_ywall,
 )
@@ -180,6 +181,7 @@ __all__ = [
     "tri_prism",
     "tri_ramp_prism",
     "wall_runs",
+    "wall_with_joints",
     "win_frame_xwall",
     "win_frame_ywall",
 ]
