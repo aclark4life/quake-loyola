@@ -43,6 +43,10 @@ from quake_loyola.constants import (
     KNOTT_EAST_WALK_TREAD,
     KNOTT_EAST_WALK_W,
     KNOTT_ENT_WALK_ZT1,
+    KNOTT_LIFT_CAR_GAP,
+    KNOTT_LIFT_CAR_H,
+    KNOTT_LIFT_CAR_T,
+    KNOTT_LIFT_CAR_W,
     KNOTT_RAMP_PILLAR_GAP,
     KNOTT_RAMP_RAIL_CORNER_RUN,
     KNOTT_RAMP_RAIL_H,
@@ -550,11 +554,114 @@ class KnottHallBuildTest(unittest.TestCase):
             + len(core_wall_brushes)
             + len(sign_brushes),
         )
-        self.assertEqual(len(entities), 1)
+        self.assertEqual(len(entities), 3)
         self.assertEqual(
             len(entities[0].brushes),
-            len(west_detail) + len(east_detail) + len(parapet_brushes),
+            len(west_detail)
+            + len(east_detail)
+            + len(parapet_brushes)
+            + len(knott_hall._build_lift_sill()),
         )
+        self.assertEqual(entities[1].classname, "func_door")
+        self.assertEqual(entities[2].classname, "trigger_multiple")
+
+
+class KnottLiftCarTest(unittest.TestCase):
+    def setUp(self):
+        self.car, self.call = knott_hall._build_lift_car()
+        self.boxes = [b.get_bbox() for b in self.car.brushes]
+
+    def test_car_rides_inside_the_lift_shaft(self):
+        lift_x1, lift_y1, lift_x2, lift_y2 = knott_hall._LIFT_VOID
+        for (x1, y1, _), (x2, y2, _) in self.boxes:
+            self.assertGreaterEqual(x1, lift_x1)
+            self.assertLessEqual(x2, lift_x2)
+            self.assertGreaterEqual(y1, lift_y1)
+            self.assertLessEqual(y2, lift_y2)
+
+    def test_car_stands_a_sill_gap_off_the_shaft_wall_it_serves(self):
+        # A real elevator has one; the player hull is far too wide to drop
+        # down a gap this narrow.
+        west = knott_hall.LIFT_WALL_X + knott_hall.CORE_WALL_T / 2
+        self.assertEqual(min(b[0][0] for b in self.boxes), west + KNOTT_LIFT_CAR_GAP)
+        self.assertLess(KNOTT_LIFT_CAR_GAP, 32)
+
+    def test_car_door_lines_up_with_the_shaft_door(self):
+        # The opening in the car's own lobby-facing wall has to be the one
+        # the shaft door is, or the two never line up at a landing.
+        west = min(b[0][0] for b in self.boxes)
+        wall = [
+            b
+            for b in self.boxes
+            if b[0][0] == west and b[1][0] == west + KNOTT_LIFT_CAR_T
+        ]
+        floor_top = min(b[0][2] for b in self.boxes) + KNOTT_LIFT_CAR_T
+        jambs = sorted(b for b in wall if b[0][2] == floor_top)
+        self.assertEqual(len(jambs), 2)
+        self.assertEqual(jambs[0][1][1], knott_hall.LIFT_DOOR_Y1)
+        self.assertEqual(jambs[1][0][1], knott_hall.LIFT_DOOR_Y2)
+        header = [b for b in wall if b[0][2] == floor_top + knott_hall.LIFT_DOOR_H]
+        self.assertEqual(len(header), 1)
+
+    def test_car_is_a_box_with_a_floor_and_a_ceiling(self):
+        z1 = min(b[0][2] for b in self.boxes)
+        z2 = max(b[1][2] for b in self.boxes)
+        self.assertEqual(z2 - z1, KNOTT_LIFT_CAR_H)
+        decks = [
+            b
+            for b in self.boxes
+            if b[1][0] - b[0][0] == KNOTT_LIFT_CAR_W
+            and b[1][2] - b[0][2] == KNOTT_LIFT_CAR_T
+        ]
+        self.assertEqual(sorted(b[0][2] for b in decks), [z1, z2 - KNOTT_LIFT_CAR_T])
+
+    def test_call_trigger_is_invisible(self):
+        for brush in self.call.brushes:
+            for face in brush.faces:
+                self.assertEqual(face.tex, Textures.TRIGGER)
+
+    def test_car_is_finished_like_the_building_own_decks(self):
+        for brush in self.car.brushes:
+            for face in brush.faces:
+                self.assertEqual(face.tex, Textures.ROOF_KH)
+
+    def test_car_floor_comes_out_level_with_the_ground_storey_deck(self):
+        # You walk into the car, you don't step up into it -- so the floor
+        # slab is sunk into the deck rather than laid on top of it. The deck
+        # it disappears into is the one _build_floors leaves solid, and is
+        # thicker than the slab, so no part of the car pokes out underneath.
+        base_z = min(b[0][2] for b in self.boxes)
+        self.assertEqual(base_z + KNOTT_LIFT_CAR_T, knott_hall.FLOOR_ZS[0])
+        self.assertGreaterEqual(knott_hall.GROUND_FLOOR_T, KNOTT_LIFT_CAR_T)
+
+    def test_car_is_called_from_inside_it_and_climbs_to_the_top(self):
+        # A plat's own trigger is fitted to the top of its brush, which on a
+        # car is the roof, well above anyone standing on the floor inside, and
+        # a door's own field reaches out into the lobby -- so the car gets a
+        # trigger of its own, filling the space a passenger stands in.
+        self.assertEqual(self.car.classname, "func_door")
+        self.assertEqual(self.call.classname, "trigger_multiple")
+        self.assertEqual(self.call.fields["target"], self.car.fields["targetname"])
+        (tx1, ty1, tz1), (tx2, ty2, tz2) = self.call.brushes[0].get_bbox()
+        x1 = min(b[0][0] for b in self.boxes)
+        z1 = min(b[0][2] for b in self.boxes)
+        self.assertEqual((tx1, tz1), (x1 + KNOTT_LIFT_CAR_T, z1 + KNOTT_LIFT_CAR_T))
+        self.assertEqual(tz2, z1 + KNOTT_LIFT_CAR_H - KNOTT_LIFT_CAR_T)
+        self.assertGreater(tx2, tx1)
+        self.assertGreater(ty2, ty1)
+        self.assertEqual(self.car.fields["angle"], "-1")
+        # A door travels its own height along the move direction less the lip.
+        travel = KNOTT_LIFT_CAR_H - float(self.car.fields["lip"])
+        floor_top = min(b[0][2] for b in self.boxes) + KNOTT_LIFT_CAR_T
+        self.assertEqual(floor_top + travel, knott_hall.FLOOR_ZS[-1])
+
+    def test_car_clears_the_top_storey_ceiling_when_raised(self):
+        travel = KNOTT_LIFT_CAR_H - float(self.car.fields["lip"])
+        top = max(b[1][2] for b in self.boxes) + travel
+        self.assertLessEqual(top, knott_hall.CORE_WALL_CEILINGS[-1])
+
+    def test_car_does_not_crush_whoever_is_riding_it(self):
+        self.assertEqual(self.car.fields["dmg"], "0")
 
 
 class BridgeRailingTubeBoundsTest(unittest.TestCase):

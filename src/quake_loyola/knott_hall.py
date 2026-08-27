@@ -23,6 +23,15 @@ from .constants import (
     KNOTT_CORE_WALL_JOINT_D,
     KNOTT_CORE_WALL_JOINT_LEN,
     KNOTT_CORE_WALL_JOINT_W,
+    KNOTT_LIFT_CAR_D,
+    KNOTT_LIFT_CAR_GAP,
+    KNOTT_LIFT_CAR_H,
+    KNOTT_LIFT_CAR_SPEED,
+    KNOTT_LIFT_CAR_T,
+    KNOTT_LIFT_CAR_TARGET,
+    KNOTT_LIFT_CAR_W,
+    KNOTT_LIFT_CAR_WAIT,
+    KNOTT_LIFT_SILL_PROUD,
     KNOTT_SIGN_H,
     KNOTT_SIGN_PADDING,
     KNOTT_SIGN_PX_H,
@@ -894,6 +903,154 @@ def _score_core_walls(brushes):
     return scored
 
 
+def _lift_car_bounds():
+    """Return the car's ``(x1, y1, x2, y2)`` footprint in the lift shaft.
+
+    Its lobby-facing side stands ``KNOTT_LIFT_CAR_GAP`` off the shaft wall's
+    inside face, the sill gap a real elevator has between car and landing --
+    narrow enough that the player hull bridges it rather than dropping down
+    it. The other three sides run clear of the shaft, and the car is centred
+    on the shaft door so its own opening lines up with the one it serves.
+    """
+    x1 = LIFT_WALL_X + CORE_WALL_T / 2 + KNOTT_LIFT_CAR_GAP
+    return (
+        x1,
+        LIFT_DOOR_CY - KNOTT_LIFT_CAR_D / 2,
+        x1 + KNOTT_LIFT_CAR_W,
+        LIFT_DOOR_CY + KNOTT_LIFT_CAR_D / 2,
+    )
+
+
+def _build_lift_sill():
+    """Plate the ground landing's sill gap in black.
+
+    The gap the car stands off the shaft wall is only KNOTT_LIFT_CAR_GAP
+    wide, and at the ground storey the deck runs solid underneath it, so
+    there is nothing to see there: floor on both sides of a seam. This lays
+    a stripe of Textures.JOINT_GAP across it so the gap reads as the gap it
+    is. Only the ground storey gets one -- every deck above is cut away over
+    the shaft, where the drop shows the gap by itself.
+    """
+    car_x1 = _lift_car_bounds()[0]
+    x1 = car_x1 - KNOTT_LIFT_CAR_GAP
+    z2 = FLOOR_ZS[0]
+    return [
+        box(
+            x1,
+            LIFT_DOOR_Y1,
+            z2 - KNOTT_LIFT_CAR_T,
+            car_x1,
+            LIFT_DOOR_Y2,
+            z2 + KNOTT_LIFT_SILL_PROUD,
+            Textures.JOINT_GAP,
+            tt=Textures.JOINT_GAP,
+        )
+    ]
+
+
+def _build_lift_car():
+    """Build the elevator car and the entity that runs it.
+
+    A car, not a bare platform: a floor and a ceiling with four walls between
+    them, the lobby-facing one opened to the same width and height as the
+    shaft door it pulls up to.
+
+    It is a ``func_door`` rather than the ``func_plat`` a lift is usually
+    built from, because a plat's own trigger is fitted to the top of its
+    brush: on a flat platform that is the surface you stand on, but on a car
+    it is the roof, and a passenger standing on the floor inside would be
+    below the trigger and never call it.
+
+    The door is called by a ``trigger_multiple`` filling the car's inside,
+    rather than by the field a door spawns for itself. That field is the
+    car's own bounds grown by 60 units every way, which reaches out through
+    the shaft door and into the lobby, so the car would leave as somebody
+    walked up to it rather than once they were aboard. Touching the car
+    directly is no good either: vanilla's ``door_touch`` opens nothing unless
+    the door is a key door.
+    It is built standing on the ground storey's deck rather than let down
+    into it. That deck is the one the shafts are not cut through, so a car
+    sunk flush into it would put its own floor in the same plane as the
+    world's: whoever stepped in would be standing on the building, not on
+    the car, and nothing would touch the door. The sill that leaves is a
+    single step up at the ground landing, and the climb is measured to bring
+    the car's floor level with the top storey's deck.
+
+    It is decked and lined in the same grey the building's own floors and
+    roof are: the car is part of the same poured structure, not a fitting
+    brought in and finished separately.
+    """
+    x1, y1, x2, y2 = _lift_car_bounds()
+    # Sunk so the car's floor comes out level with the storey deck rather
+    # than an KNOTT_LIFT_CAR_T sill above it: you walk in, you don't step up.
+    # The slab this buries it in is the one deck _build_floors leaves solid,
+    # which is thick enough to swallow it whole, so only the two tops meet --
+    # and they carry the same texture, aligned the same way.
+    floor_z = FLOOR_ZS[0]
+    base_z = floor_z - KNOTT_LIFT_CAR_T
+    ceiling_z = base_z + KNOTT_LIFT_CAR_H - KNOTT_LIFT_CAR_T
+    top_z = base_z + KNOTT_LIFT_CAR_H
+    if ceiling_z - floor_z < LIFT_DOOR_H:
+        raise ValueError(
+            f"KNOTT_LIFT_CAR_H={KNOTT_LIFT_CAR_H} leaves only "
+            f"{ceiling_z - floor_z} units of headroom in the car, less than "
+            f"the {LIFT_DOOR_H}-unit shaft door it has to pull up to"
+        )
+    tex = Textures.ROOF_KH
+    t = KNOTT_LIFT_CAR_T
+    brushes = [
+        box(x1, y1, base_z, x2, y2, floor_z, tex, tt=tex),
+        box(x1, y1, ceiling_z, x2, y2, top_z, tex, tt=tex),
+        box(x1, y1, floor_z, x2, y1 + t, ceiling_z, tex),
+        box(x1, y2 - t, floor_z, x2, y2, ceiling_z, tex),
+        box(x2 - t, y1 + t, floor_z, x2, y2 - t, ceiling_z, tex),
+    ]
+    brushes += _wall_with_one_door(
+        x1,
+        y1 + t,
+        x1 + t,
+        y2 - t,
+        "y",
+        LIFT_DOOR_Y1,
+        LIFT_DOOR_Y2,
+        LIFT_DOOR_H,
+        floor_z,
+        ceiling_z,
+        tex,
+    )
+    # A door travels its own size along the move direction less the lip, so
+    # the lip is what is left over once the climb is taken off the car's
+    # height -- negative, since the climb is many times the car.
+    travel = FLOOR_ZS[-1] - floor_z
+    car = brush_ent(
+        "func_door",
+        brushes,
+        targetname=KNOTT_LIFT_CAR_TARGET,
+        angle="-1",
+        lip=str(KNOTT_LIFT_CAR_H - travel),
+        speed=str(KNOTT_LIFT_CAR_SPEED),
+        wait=str(KNOTT_LIFT_CAR_WAIT),
+        dmg="0",
+    )
+    call = brush_ent(
+        "trigger_multiple",
+        [
+            box(
+                x1 + t,
+                y1 + t,
+                floor_z,
+                x2 - t,
+                y2 - t,
+                ceiling_z,
+                Textures.TRIGGER,
+            )
+        ],
+        target=KNOTT_LIFT_CAR_TARGET,
+        wait="1",
+    )
+    return car, call
+
+
 def _build_core_wall_slabs():
     """Build the notch-bay partition: the center (double-door) wall plus
     the stair and lift's own perpendicular walls, storey by storey.
@@ -1171,8 +1328,8 @@ def _build_sign(z1):
 
 
 def build():
-    """Build the Knott Hall shell: four walls, a roof, all five floors, and
-    the entrance/elevator/stair lobby partition.
+    """Build the Knott Hall shell: four walls, a roof, all five floors, the
+    entrance/elevator/stair lobby partition, and the elevator car.
 
     Returns:
         tuple[list, list]: ``(brushes, entities)`` for the building shell.
@@ -1188,6 +1345,7 @@ def build():
     floor_brushes = _build_floors()
     core_wall_brushes = _build_core_wall()
     parapet_detail = _build_parapet(z2, parapet_z2)
+    sill_detail = _build_lift_sill()
     sign_brushes = _build_sign(z1)
 
     brushes = [
@@ -1197,6 +1355,12 @@ def build():
         *core_wall_brushes,
         *sign_brushes,
     ]
-    entities = [brush_ent("func_detail", west_detail + east_detail + parapet_detail)]
+    entities = [
+        brush_ent(
+            "func_detail",
+            west_detail + east_detail + parapet_detail + sill_detail,
+        ),
+        *_build_lift_car(),
+    ]
 
     return brushes, entities

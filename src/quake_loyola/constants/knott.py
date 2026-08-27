@@ -28,6 +28,30 @@ KNOTT_SUPPORT_PILLAR_JOINT_H = 4
 # it is given somewhere to: the panels are KNOTT_CORE_WALL_JOINT_LEN long,
 # parted by a KNOTT_CORE_WALL_JOINT_W groove held KNOTT_CORE_WALL_JOINT_D
 # back from both faces so it reads from either side of the wall.
+# The elevator car running the lift shaft. It is a car rather than a bare
+# platform: a floor, a ceiling, and four walls, the one facing the lobby
+# opened for the shaft's own door to line up with. KNOTT_LIFT_CAR_T is the
+# thickness of every one of those, and the clear height inside is what
+# KNOTT_LIFT_CAR_H leaves between the floor and the ceiling.
+KNOTT_LIFT_CAR_W = 128
+KNOTT_LIFT_CAR_D = 128
+KNOTT_LIFT_CAR_H = 160
+KNOTT_LIFT_CAR_T = 8
+# How far the car stands off the shaft wall, leaving the sill gap a real
+# elevator has between car and landing. Well under the 32-unit player hull,
+# so nobody can drop down it.
+KNOTT_LIFT_CAR_GAP = 8
+# How far the sill plate stands proud of the ground-storey deck. The deck
+# runs solid under the shaft, so a recessed stripe would be buried in it and
+# never drawn; a proud one reads from every angle and is far below the
+# 18-unit step height, so nobody feels it underfoot.
+KNOTT_LIFT_SILL_PROUD = 1
+KNOTT_LIFT_CAR_SPEED = 200
+KNOTT_LIFT_CAR_TARGET = "knott_lift_car"
+# How long the car stands at the top storey before returning to the ground
+# one. It is counted from the moment it arrives, not from the moment the
+# passenger steps out, so it has to be long enough to get out in.
+KNOTT_LIFT_CAR_WAIT = 8
 KNOTT_CORE_WALL_JOINT_LEN = 96
 KNOTT_CORE_WALL_JOINT_W = 2
 KNOTT_CORE_WALL_JOINT_D = 2
